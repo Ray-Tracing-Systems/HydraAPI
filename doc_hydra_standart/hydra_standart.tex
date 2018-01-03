@@ -1,0 +1,264 @@
+\title{Rendering Feature Requrenments}
+\author{Ray Tracing Systems}
+\date{\today}
+
+\documentclass[12pt]{article}
+
+\usepackage[
+  a4paper, mag=1000, includefoot,
+  left=3cm, right=1cm, top=2cm, bottom=2cm, headsep=1cm, footskip=1cm
+]{geometry}
+\usepackage[T2A]{fontenc}
+\usepackage[cp1251]{inputenc}
+\usepackage[english]{babel} 	
+\usepackage{float}
+\usepackage[section]{placeins}
+
+\usepackage{hyperref}
+\hypersetup{pdfborder={0 0 0}, colorlinks=true, urlcolor=blue} % Specify a color for hyperlinks
+\usepackage{todonotes} % Required for the boxes that questions appear in
+\usepackage{tocloft} % Required to give customize the table of contents to display questions
+\usepackage{enumitem}
+
+
+\renewcommand{\baselinestretch}{1.25}
+
+
+\usepackage{xcolor} % for setting colors
+\definecolor{gray}{rgb}{0.4,0.4,0.4}
+\definecolor{darkblue}{rgb}{0.0,0.0,0.6}
+\definecolor{cyan}{rgb}{0.0,0.5,0.5}
+\definecolor{maroon}{rgb}{0.5,0,0}
+\definecolor{darkgreen}{rgb}{0.0,0.5,0.0}
+
+\usepackage{listings}
+\lstdefinelanguage{XML}
+{
+	basicstyle=\ttfamily\footnotesize,
+	morestring=[b]",
+	moredelim=[s][\bfseries\color{darkblue}]{<}{\ },
+	moredelim=[s][\bfseries\color{darkblue}]{</}{>},
+	moredelim=[l][\bfseries\color{darkblue}]{/>},
+	moredelim=[l][\bfseries\color{darkblue}]{>},
+	morecomment=[s]{<?}{?>},
+	morecomment=[s]{<!--}{-->},
+	commentstyle=\color{darkgreen},
+	stringstyle=\color{black},
+	identifierstyle=\color{cyan},
+	commentstyle=\color{gray}\upshape,
+	keywordstyle=\color{cyan}\underbar,
+	morekeywords={ver, type, brdf_type, shape, distribution}% list your attributes here
+}
+
+% set the default code style
+\lstset{
+	frame=leftline,                 % draw line on left of code
+	tabsize=4,                      % tab space width
+	showstringspaces=false,         % don't mark spaces in strings
+	xleftmargin=2em,
+	framexleftmargin=2em
+}
+
+% Create the command used for removed procs
+\newcommand{\listreqname}{}
+\newlistof{req}{def2}{\listreqname}
+
+
+\newcommand{\reqirenment}[1]{%
+	\refstepcounter{req}%
+	\par\noindent 
+	\phantomsection % Needed for hyperref compatibility with the \addcontensline command
+	%\addcontentsline{def2}{figure}{#1} % Adds the question to the list of questions
+	\addcontentsline{def2}{figure}
+	{\protect\numberline{\thesection.\thereq}#1}\par
+	\todo[inline, color=green!25]{\textbf{mat\_0.\thesection.\thereq:} \textbf{#1} \hyperref[ruleslist]{(core)}} % Uses the todonotes package to create a fancy box to put the question
+	\vspace{1em} % White space after the question before the start of the answer
+}
+
+\newcommand{\reqirenmentextension}[1]{%
+	\refstepcounter{req}%
+	\par\noindent 
+	\phantomsection % Needed for hyperref compatibility with the \addcontensline command
+	%\addcontentsline{def2}{figure}{#1} % Adds the question to the list of questions
+	\addcontentsline{def2}{figure}
+	{\protect\numberline{\thesection.\thereq}#1}\par
+	\todo[inline, color=blue!25]{\textbf{mat\_0.\thesection.\thereq:} \textbf{#1} \hyperref[ruleslist]{(extension)}} % Uses the todonotes package to create a fancy box to put the question
+	\vspace{1em} % White space after the question before the start of the answer
+}
+
+
+
+\newcommand{\exception}[1]{%
+	\refstepcounter{req}%
+	\par\noindent 
+	\phantomsection % Needed for hyperref compatibility with the \addcontensline command
+	%\addcontentsline{def2}{figure}{#1} % Adds the question to the list of questions
+	\addcontentsline{def2}{figure}
+	{\protect\numberline{\thesection.\thereq}#1}\par
+	\todo[inline, color=red!25]{\textbf{Правило-исключение\_\thesection.\thereq:} \textbf{#1} \hyperref[ruleslist]{(up)}} % Uses the todonotes package to create a fancy box to put the question
+	\vspace{1em} % White space after the question before the start of the answer
+}
+
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The standard feature number definition consists of 3 parts. They are material, lights and geometry. Thus to determine a finite set of features renderer support you have to specify 3 numbers in subsequent order. For example: <<0.3/0.4/0.1>> means <<0.3>> version for materials, - <<0.4>> for lights and <<0.1>> for geometry. Each number in standart definition means all <<core>> requirenments with less number are are fulfilled. For example, materials ver 0.2 means 0.0.* and 0.1.* requirenemnts are implemented/fulfilled but 0.2.1 may be not implemented/fulfilled.
+
+\end{abstract}
+
+\section{List of features}\label{ruleslist}
+
+\listofreq
+
+\section{Materials v0.1.}\label{general}
+
+Image \ref{fig:brdf} and equation \ref{eq:integral} show lighting integral and related angles. These notation will be used further in the document.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.3\linewidth]{images/brdf}           
+	\caption{\label{fig:brdf}
+		BRDF and angles.}   
+\end{figure}
+
+\begin{eqnarray}\label{eq:integral}
+I(\phi_{in}, \theta_{in}) = \int\limits_{\phi_{out}}\int\limits_{\theta_{out}}  L(\phi_{out},\theta_{out})BRDF(\phi_{out},\theta_{out},\phi_{in},\theta_{in})cos(\theta_{out}) \mathrm{d}\phi_{out}  \mathrm{d}\theta_{out}
+\end{eqnarray}
+
+
+Note that all BRDF and BTDF should be implemented without $cos(\theta_{out})$ term. For mirrors cosine shouldn't be applied, thus you should pre-divide $cos(\theta_{out})$ instead (so that the cosines cancel each other). Also note that we do not include color in BRDF/BTDF equations. The color should be multiplied with the BRDF value.
+
+\addtocounter{section}{-2}
+
+\reqirenment{lambert}
+
+Basic support for Lambertian reflections. The BRDF function \textbf{must} be implemented according to equation \ref{brdf_lambert}. See fig \ref{fig:test_101_image} and listing \ref{lambertxml} for image and XML example respectively.
+
+\begin{equation}\label{brdf_lambert}
+BRDF_{lambert} = \frac{1}{\pi}
+\end{equation}
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.25\linewidth]{images/test_101/w_ref.png}           
+	\caption{\label{fig:test_101_image}
+     Example of lambertian material. The grey ball material described in listing \ref{lambertxml}.  }   
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Lambert material definition in Hydra XML standart, label=lambertxml, captionpos=b]
+<material id="0" name="mysimplemat" type="hydra_material">
+  <diffuse brdf_type="lambert">
+    <color val="0.5 0.5 0.5" />
+  </diffuse>
+</material>
+\end{lstlisting}
+
+\reqirenment{phong}
+
+Basic support for Phong reflections. Note that mixing of phong and lambertian reflections is not needed at this level of standard. Renderer may suppose mutually exclusive phong or lambert. 
+
+\reqirenment{mirror}
+
+Pure specular reflection. Note that mixing of mirror and lambertian reflections is not needed at this level of standard. Renderer may suppose mutually exclusive: (phong, mirror or lambert). 
+
+\reqirenment{lambert\_texture\_color}
+
+Adding LDR textures for Lambertian materials. When reading from LDR texture, gamma transform \textbf{should} be applied.
+
+\reqirenment{phong\_mirror\_texture\_color}
+
+Adding LDR textures for reflection color for both phong and mirrors. When reading from LDR texture, gamma transform \textbf{should} be applied.
+
+\reqirenment{phong\_texture\_glosiness}
+
+Adding textures for reflection glosiness in phong model. The phong power \textbf{must} be obtained from glosiness value via function: 
+
+\begin{lstlisting}[language=C++, caption={phong cos power from glosiness}]
+const float glosscoeff[10][4] = {
+ { 8.88178419700125e-14f, -1.77635683940025e-14f, 5.0f, 1.0f },     //0-0.1
+ { 357.142857142857f, -35.7142857142857f, 5.0f, 1.5f },             //0.1-0.2
+ { -2142.85714285714f, 428.571428571429f, 8.57142857142857f, 2.0f}, //0.2-0.3
+ { 428.571428571431f, -42.8571428571432f, 30.0f, 5.0f },            //0.3-0.4
+ { 2095.23809523810f, -152.380952380952f, 34.2857142857143f, 8.0f}, //0.4-0.5
+ { -4761.90476190476f, 1809.52380952381f, 66.6666666666667f, 12.0f},//0.5-0.6
+ { 9914.71215351811f, 1151.38592750533f, 285.714285714286f, 32.0f}, //0.6-0.7
+ { 45037.7068059246f, 9161.90096119855f, 813.432835820895f, 82.0f}, //0.7-0.8
+ { 167903.678757035f, 183240.189801913f, 3996.94423223835f, 300.0f},//0.8-0.9
+ { -20281790.7444668f, 6301358.14889336f, 45682.0925553320f,2700.0f}//0.9-1.0
+};
+
+float cosPowerFromGlosiness(float glosiness)
+{
+  const float cMin = 1.0f;
+  const float cMax = 1000000.0f;
+
+  const float x  = glosiness;
+  const int   k  = (fabs(x - 1.0f) < 1e-5f) ? 10 : (int)(x*10.0f);
+  const float x1 = (x - (float)(k)*0.1f);
+
+  if (k == 10 || x >= 0.99f)
+    return cMax;
+  else
+    return glosscoeff[k][3] + glosscoeff[k][2] * x1    \
+                            + glosscoeff[k][1] * x1*x1 \
+                            + glosscoeff[k][0] * x1*x1*x1;
+}
+\end{lstlisting}\label{cospowerfromglosiness}
+
+Colored textures should use $max(color.r, color.g, color.b)$ to get glosiness value from textures.
+
+Note that on this standard level phong with glosiness equal to 1 \textbf{must} become mirror material.
+
+\reqirenment{phong\_to\_mirror\_cos\_theta\_fix}
+
+When evaluating light integral render usually multiply BRDF values with $cos(\theta_{out})$. For mirrors this shouldn't be done, so we pre-divide $cos(\theta_{out})$ inside BRDF. Thus, for high glossy values and phong brdf there should be some intermediate solution because near-specular phong should predivide $cos(\theta_{out})$ and rough-glossy should not do this. If don't pre-divide, near-specular phong will be too dark.
+
+For glossy values greater than 0.5 we use linear interpolated multiplier $cosMult$:
+
+\begin{eqnarray*}
+t &=& 2*(gloss-0.5)\\
+cosMult &=& 1 + t*(\frac{1}{cos(\theta_{out})} - 1)
+\end{eqnarray*}
+
+It is easy to see that for gloss equal to 0.5 we get 1.0 and for gloss equal to 1 we get $\frac{1}{cos(\theta_{out})}$.
+
+\reqirenment{mix\_phong\_lambert\_extrusion\_maxcolor}
+
+Mixing phong and lambert. The phong reflection have a higher priority and \textbf{must} extrude lambertian reflectiosn if summ of reflection coeffitients are greater than 1.
+
+Colored textures gain $max(color.r, color.g, color.b)$ for mix coeffitient.
+
+\reqirenment{mix\_phong\_lambert\_extrusion\_avgcolor}
+
+Mixing phong and lambert. The phong reflection have a higher priority and \textbf{must} extrude lambertian reflectiosn if summ of reflection coeffitients are greater than 1. The Corona and Mental Ray renderers use this extrusion type by default.
+
+Colored textures gain $avg(color.r, color.g, color.b)$ for mix coeffitient.
+
+
+\reqirenmentextension{mix\_phong\_lambert\_extrusion\_percomponent}
+
+Mixing phong and lambert separately for each color component.  The phong reflection have a higher priority and \textbf{must} extrude lambertian reflectiosn \textit{separately for each color component} if summ of reflection coeffitients are greater than 1. The VRay renderer use this extrusion type by default.
+
+\reqirenmentextension{mix\_phong\_lambert\_extrusion\_sumcolor}
+
+Mixing phong and lambert without priority. If summ of reflection coeffitients is greater than 1, both of them \textbf{should} be scaled lineary to get sum equal to 1.0 \textit{separately for each color component}.
+
+
+\addtocounter{section}{2}
+
+Note that all mixtures could be (and in general recommended to be) implemented via blend by bask (see blend\_mask). Howeve, on this level of standart you don't have to implement blend for BRDFs.
+
+\section{Light features}\label{core}
+
+\exception{pureFunctions}\label{c99func}
+
+Функции не имеющие побочных состояний называются чистыми. Чистые функции, написанные на C99 и используемые в ядре \textbf{должны} использовать соглашение \textit{lowerCamelCase} (листинг \ref{examplebasiccore}).
+
+
+
+\end{document}

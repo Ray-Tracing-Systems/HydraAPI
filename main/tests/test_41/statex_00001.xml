@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<textures_lib total_chunks="9">
+  <texture name="Map#0" id="0" loc="data/chunk_00000.image4ub" offset="8" bytesize="16" />
+  <texture id="1" name="data/textures/chess_red.bmp" path="data/textures/chess_red.bmp" loc="data/chunk_00001.image4ub" offset="8" bytesize="16384" dl="0" />
+  <texture id="2" name="data/textures/texture1.bmp" path="data/textures/texture1.bmp" loc="data/chunk_00002.image4ub" offset="8" bytesize="262144" dl="0" />
+  <texture id="3" name="data/textures/relief_wood.jpg" path="data/textures/relief_wood.jpg" loc="data/chunk_00003.image4ub" offset="8" bytesize="1048576" dl="0" />
+  <texture id="4" name="data/textures/163.jpg" path="data/textures/163.jpg" loc="data/chunk_00004.image4ub" offset="8" bytesize="250000" dl="0" />
+</textures_lib>
+<materials_lib>
+  <material id="0" name="mysimplemat" type="hydra_material">
+    <diffuse brdf_type="lambert">
+      <color>0.75 0.75 0.25</color>
+      <texture id="2" type="texref" />
+    </diffuse>
+  </material>
+  <material id="1" name="mysimplemat2" type="hydra_material">
+    <diffuse brdf_type="lambert">
+      <color>1 1 1</color>
+      <texture id="1" type="texref" />
+    </diffuse>
+  </material>
+  <material id="2" name="mysimplemat3" type="hydra_material">
+    <diffuse brdf_type="lambert">
+      <color>0.75 0.75 0.75</color>
+      <texture id="3" type="texref" />
+    </diffuse>
+  </material>
+  <material id="3" name="mysimplemat4" type="hydra_material">
+    <diffuse brdf_type="lambert">
+      <color>0.75 0.75 0.75</color>
+      <texture id="4" type="texref" />
+    </diffuse>
+  </material>
+</materials_lib>
+<lights_lib />
+<cam_lib>
+  <camera id="0" name="my camera" type="uvn">
+    <fov>45</fov>
+    <nearClipPlane>0.01</nearClipPlane>
+    <farClipPlane>100.0</farClipPlane>
+    <up>0 1 0</up>
+    <position>0 0 0</position>
+    <look_at>0 0 -1</look_at>
+  </camera>
+</cam_lib>
+<geometry_lib total_chunks="9">
+  <mesh id="0" name="my_cube" type="vsgf" bytesize="1560" loc="data/chunk_00005.vsgf" offset="0" vertNum="24" triNum="12" dl="0" path="">
+    <positions type="array4f" bytesize="384" offset="24" />
+    <normals type="array4f" bytesize="384" offset="408" />
+    <tangents type="array4f" bytesize="384" offset="792" />
+    <texcoords type="array2f" bytesize="192" offset="1176" />
+    <indices type="array1i" bytesize="144" offset="1368" />
+    <matindices type="array1i" bytesize="48" offset="1512" />
+  </mesh>
+  <mesh id="1" name="my_plane" type="vsgf" bytesize="280" loc="data/chunk_00006.vsgf" offset="0" vertNum="4" triNum="2" dl="0" path="">
+    <positions type="array4f" bytesize="64" offset="24" />
+    <normals type="array4f" bytesize="64" offset="88" />
+    <tangents type="array4f" bytesize="64" offset="152" />
+    <texcoords type="array2f" bytesize="32" offset="216" />
+    <indices type="array1i" bytesize="24" offset="248" />
+    <matindices type="array1i" bytesize="8" offset="272" />
+  </mesh>
+  <mesh id="2" name="my_sphere" type="vsgf" bytesize="47824" loc="data/chunk_00007.vsgf" offset="0" vertNum="561" triNum="1024" dl="0" path="">
+    <positions type="array4f" bytesize="8976" offset="24" />
+    <normals type="array4f" bytesize="8976" offset="9000" />
+    <tangents type="array4f" bytesize="8976" offset="17976" />
+    <texcoords type="array2f" bytesize="4488" offset="26952" />
+    <indices type="array1i" bytesize="12288" offset="31440" />
+    <matindices type="array1i" bytesize="4096" offset="43728" />
+  </mesh>
+  <mesh id="3" name="my_torus" type="vsgf" bytesize="93776" loc="data/chunk_00008.vsgf" offset="0" vertNum="1089" triNum="2048" dl="0" path="">
+    <positions type="array4f" bytesize="17424" offset="24" />
+    <normals type="array4f" bytesize="17424" offset="17448" />
+    <tangents type="array4f" bytesize="17424" offset="34872" />
+    <texcoords type="array2f" bytesize="8712" offset="52296" />
+    <indices type="array1i" bytesize="24576" offset="61008" />
+    <matindices type="array1i" bytesize="8192" offset="85584" />
+  </mesh>
+</geometry_lib>
+<render_lib>
+  <render_settings type="opengl1" id="0">
+    <width>1024</width>
+    <height>768</height>
+  </render_settings>
+</render_lib>
+<scenes>
+  <scene id="0" name="my scene" discard="1">
+    <instance id="0" mesh_id="0" mmat_id="-1" matrix="-0.766044 0 0.642788 0 -0.413176 -0.766044 -0.492404 0.25 0.492404 -0.642788 0.586824 -5 0 0 0 1 " />
+    <instance id="1" mesh_id="1" mmat_id="-1" matrix="1 0 0 0 0 1 0 -1 0 0 1 -5 0 0 0 1 " />
+    <instance id="2" mesh_id="2" mmat_id="-1" matrix="0.766044 0 -0.642788 -1.5 0 1 0 -0.5 0.642788 0 0.766044 -4 0 0 0 1 " />
+    <instance id="3" mesh_id="3" mmat_id="-1" matrix="0.939693 0 -0.34202 2 -0.219846 0.766044 -0.604023 0.25 0.262003 0.642788 0.719846 -5 0 0 0 1 " />
+  </scene>
+</scenes>

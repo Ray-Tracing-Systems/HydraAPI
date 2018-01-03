@@ -1,0 +1,503 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% LaTeX book template                           %%
+%% Author:  Amber Jain (http://amberj.devio.us/) %%
+%% License: ISC license                          %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[a4paper,11pt]{report}
+
+\usepackage[left=2.5cm,right=2cm,
+top=2cm,bottom=2cm,bindingoffset=0cm]{geometry}
+
+\usepackage[unicode]{hyperref}
+\usepackage{graphicx}
+\graphicspath{{images/}}
+
+\usepackage{cmap} % this is for copy text from pdf via ctr+c/ctr+v
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{float}
+\usepackage{textcomp} % copyright simbol
+
+\usepackage{placeins}
+
+\usepackage{listings}
+
+\usepackage{color}
+\definecolor{gray}{rgb}{0.4,0.4,0.4}
+\definecolor{darkblue}{rgb}{0.0,0.0,0.6}
+\definecolor{cyan}{rgb}{0.0,0.5,0.5}
+\definecolor{maroon}{rgb}{0.5,0,0}
+\definecolor{darkgreen}{rgb}{0,0.5,0}
+
+\lstdefinelanguage{XML}
+{
+	basicstyle=\ttfamily\footnotesize,
+	morestring=[b]",
+	moredelim=[s][\bfseries\color{darkblue}]{<}{\ },
+	moredelim=[s][\bfseries\color{darkblue}]{</}{>},
+	moredelim=[l][\bfseries\color{darkblue}]{/>},
+	moredelim=[l][\bfseries\color{darkblue}]{>},
+	morecomment=[s]{<?}{?>},
+	morecomment=[s]{<!--}{-->},
+	commentstyle=\color{darkgreen},
+	stringstyle=\color{black},
+	identifierstyle=\color{cyan},
+	commentstyle=\color{gray}\upshape,
+	keywordstyle=\color{cyan}\underbar,
+	morekeywords={ver, type, brdf_type, shape, distribution}% list your attributes here
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Chapter quote at the start of chapter        %
+% Source: http://tex.stackexchange.com/a/53380 %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\makeatletter
+\renewcommand{\@chapapp}{}% Not necessary...
+\newenvironment{chapquote}[2][2em]
+  {\setlength{\@tempdima}{#1}%
+   \def\chapquote@author{#2}%
+   \parshape 1 \@tempdima \dimexpr\textwidth-2\@tempdima\relax%
+   \itshape}
+  {\par\normalfont\hfill--\ \chapquote@author\hspace*{\@tempdima}\par\bigskip}
+\makeatother
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% First page of book which contains 'stuff' like: %
+%  - Book title, subtitle                         %
+%  - Book author name                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Book's title and subtitle
+\title{\Huge \textbf{Hydra Renderer 2.2}  \footnote{ Copyright \space \textcopyright \space  Ray Tracing Systems, 2014-2017.} \\ \huge XML Doc }
+% Author
+\author{\url{www.raytracing.ru}}
+
+
+\begin{document}
+
+\maketitle
+
+\chapter{Introduction}
+
+Our xml description follow certain agreements. They are just a few, please read them before study xml description itself.
+
+\section{Selectors}
+
+Selectors are attributes that are highlighted by \underline{underlining}. For example, light <<type>> and <<shape>> attributes are selectors in subsequent example.
+
+\lstset{language=XML}
+\begin{lstlisting}
+<light id="0" name="anyString" type="area" shape="cylinder" />
+\end{lstlisting}
+
+The big issue around selectors is that they values define current node and child nodes schema. Well, yes, the schema is not fixed. For example, area light with shape equal to <<rect>> or <<disk>> have additional <<distribution>> attribute. From the other side, lights with shape equal to <<cylinder>> completely ignore <<distribution>> attribute.
+
+You should not be embarrassed that <<distribution>> attribute can also be a selector. For example, when equal to <<spot>>, the light have additional <<falloff\_angle>> and <<falloff\_angle2>> childs. When equal to <<ies>>, light have additional <<ies>> child.
+
+Thus if you have multiple selectors in node, they should be prioritized. The \underline{<<type>>} attribute is always of the first priority. 
+
+\section{Attribute enumerations}
+
+Enumeration helps you to identify all possible values of a particular attribute. They can be found \underline{only} in this documentation. You should never put <<[]>> or <<|>> symbols inside double quotes. In the further example we show emumeration for light shape. 
+
+\lstset{language=XML}
+\begin{lstlisting}
+<light id="0" name="anyString" type="area" shape="[rect|disk|cylinder|sphere]" />
+\end{lstlisting}
+
+ The enumeration suppose that all other attribute are fixed (except for <<anyString>> and e.t.c). Thus, from this example we learn that: <<For \underline{area} light type there could be several shapes. They are rect, disk, cylinder or sphere >>.
+
+\chapter{XML Description}
+
+\section{Geometry}
+
+Generally, you should know nothing about this. The API forms correct xml structure itself.
+
+\section{Materials}
+
+\subsection{Where to put textures?}
+
+In general, any tag could have child texture. Currently we support textures inside color and glosiness.
+
+\lstset{language=XML}
+\begin{lstlisting}
+<material id="12" name="matMetal" type="hydra_material">
+  <reflectivity brdf_type="phong]">
+    <color val="0.9 0.9 0.9" >
+      <texture id="3" type="texref" />
+    </color>
+    <glossiness val="0.8" />
+      <texture id="6" type="texref" />
+    </glossiness>    
+  </reflectivity>
+</material>
+\end{lstlisting}
+
+\subsection{Texture attributes}
+
+When bind texture to some xml node via hrTextureBind to form texture sampler. You may put additional parameters.
+
+\lstset{language=XML}
+\begin{lstlisting}
+<texture id="2" matrix="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1" 
+                addressing_mode_u="[clamp|wrap]" 
+                addressing_mode_v="[clamp|wrap]" 
+                input_gamma="2.20000005" input_alpha="rgb" />
+\end{lstlisting}
+
+PS: Actually you may call them <<sampler>> parameters. But the tag is called <<texture>>.
+
+\subsection{Hydra Material}
+
+\subsubsection{Diffuse}
+\lstset{language=XML}
+\begin{lstlisting}
+<material id="3" name="matR" type="hydra_material">
+  <diffuse brdf_type="lambert|orennayar">
+    <roughness val="0.0" />
+    <color val="0.95 0.05 0.05" tex_apply_mode="[multiply|replace]">    
+      <texture id="2" type="texref" />
+    </color>
+  </diffuse>
+</material>
+\end{lstlisting}
+
+\lstset{language=XML}
+\begin{lstlisting}
+<!-- roughness is from 0.0 to 1.0. -->
+\end{lstlisting} 
+
+\subsubsection{Reflectivity}
+\lstset{language=XML}
+\begin{lstlisting}
+<material id="12" name="matMetal" type="hydra_material">
+  <reflectivity brdf_type="phong|torranse_sparrow]">
+    <color val="0.9 0.9 0.9" tex_apply_mode="[multiply|replace]">
+      <texture id="3" type="texref" />
+    </color>
+    <glossiness val="0.8" />
+      <texture id="6" type="texref" />
+    </glossiness>    
+    <extrusion val="[maxcolor|luminance|colored]" />
+    <fresnel val="[0|1]" />
+    <fresnel_ior val="50" />
+  </reflectivity>
+</material>
+\end{lstlisting}
+
+\lstset{language=XML}
+\begin{lstlisting}
+  <!-- 
+  glossiness val is from 0.0 to 1.0. 
+  However, you may put larger values if your glossy textures are too dark.
+  fresnel_ior val is from 0.0 to 100.0
+  -->
+\end{lstlisting}
+
+\subsubsection{Transparency}
+\lstset{language=XML}
+\begin{lstlisting}
+<material id="42" name="matTransp" type="hydra_material">
+  <transparency>
+    <color val="0.3 0.9 0.5" />
+    <glossiness val="0.8" />
+    <thin_walled val="[0|1]" />
+    <fog_color val="1.0 1.0 1.0" />
+    <fog_multiplier val="1" />
+    <ior val="1.5" />
+  </transparency>
+</material>
+\end{lstlisting}
+
+\lstset{language=XML}
+\begin{lstlisting}
+<!-- 
+glossiness is from 0.0 to 1.0
+However, you may put larger values if your glossy textures are too dark.
+ior val is from 0.0 to 100.0
+-->
+\end{lstlisting}
+
+\subsubsection{Opacity}
+\lstset{language=XML}
+\begin{lstlisting}
+<material id="1" name="matG" type="hydra_material">
+  <opacity smooth = [0|1]>
+    <skip_shadow val="[0|1]" />
+    <texture id="7" type="texref" />
+  </opacity>
+</material>
+\end{lstlisting}
+
+\subsubsection{Translucency}
+\lstset{language=XML}
+\begin{lstlisting}
+<material id="0" name="matB" type="hydra_material">
+  <translucency>
+    <color val="0.0 0.15 1.0" />
+  </translucency>
+</material>
+\end{lstlisting}
+
+\subsubsection{Emission}
+\lstset{language=XML}
+\begin{lstlisting}
+<material id="0" name="matR" type="hydra_material">
+  <emission>
+    <multiplier val="1" />
+    <cast_gi val="[0|1]" />
+    <color val="1.0 0.0 0.0" tex_apply_mode="[multiply|replace]">
+      <texture id="2" type="texref" />
+    </color>    
+  </emission>
+</material>
+\end{lstlisting}
+
+\subsubsection{Relief}
+\lstset{language=XML}
+\begin{lstlisting}
+<material id="3" name="matHeightBump" type="hydra_material">
+  <displacement type="height_bump">
+    <height_map amount="0.5">
+      <texture id="2" type="texref" />
+    </height_map>
+  </displacement>
+</material>
+
+<material id="5" name="matNormalBump" type="hydra_material">
+  <displacement type="normal_bump">
+    <normal_map>
+      <invert x="0" y="0" />
+      <texture id="2" type="texref" />
+    </normal_map>
+  </displacement>
+</material>
+\end{lstlisting}
+
+\lstset{language=XML}
+\begin{lstlisting}
+<!-- height_map is a positive float. -->
+\end{lstlisting}
+
+
+\subsubsection{Combining components in hydra\_material}
+
+While the physics of combining different brdf components is not so trivial, it is easy to combine them in xml. For example reflection and diffuse.
+
+\lstset{language=XML}
+\begin{lstlisting}
+<material  id="0" name="matBluePlastic" type="hydra_material">
+  <diffuse brdf_type="lambert">
+    <color val="0.1 0.2 0.8" />
+  </diffuse>
+  <reflectivity brdf_type="phong">
+    <color val="1.0 1.0 1.0" />
+    <glossiness val="0.8" />
+    <extrusion val="maxcolor" />
+    <fresnel val="1" />
+    <fresnel_IOR val="1.5" />
+  </reflectivity>
+</material>
+\end{lstlisting}
+
+Also it is possible to combine any number of componenets in a single hydra\_material.
+
+\lstset{language=XML}
+\begin{lstlisting}
+<material id="2" name="matFull" type="hydra_material">
+  <diffuse brdf_type="orennayar">
+    <color val="0.4 0.4 0.4" />
+    <roughness val="0.5" />
+  </diffuse>
+  <reflectivity brdf_type="torranse_sparrow">
+    <color val="0.8 0.8 0.8" />
+    <glossiness val="0.5" />
+    <extrusion val="maxcolor" />
+    <fresnel val="1" />
+    <fresnel_ior val="1.5" />
+  </reflectivity>
+  <transparency>
+    <color val="0.6 0.7 0.8" />
+    <glossiness val="1" />
+    <thin_walled val="0" />
+    <fog_color val="0.2 1.0 0.8" />
+    <fog_multiplier val="10" />
+    <ior val="1.5" />
+  </transparency>  
+  <translucency>
+    <color val="0.4 0.4 0.4" />
+  </translucency>
+  <opacity>
+    <skip_shadow val="0" />
+    <texture id="2" type="texref" />
+  </opacity>
+  <emission>
+    <color val="1.0 1.0 1.0" />
+    <multiplier val="0.25" />
+  </emission>
+  <displacement type="height_bump">
+    <height_map amount="0.5">
+      <texture id="3" type="texref" />
+    </height_map>
+  </displacement>  
+</material>
+
+\end{lstlisting}
+
+\subsection{Blend Material (in progress)}
+
+
+\section{Lights}
+
+There are several main types of lights.
+
+\lstset{language=XML}
+\begin{lstlisting}
+<light id="0" name="anyString" type="[point|directional|area|sphere|sky]" />
+\end{lstlisting}
+
+\subsection{Point Light}
+
+Point light don't have shape, but it can have different distributions:
+\lstset{language=XML}
+\begin{lstlisting}
+<light id="0" name="anyString" type="point" distribution="[uniform|spot|ies]" />
+\end{lstlisting}
+
+\subsection{Area Light}
+
+First of all, area light could have different shapes.
+\lstset{language=XML}
+\begin{lstlisting}
+<light id="0" name="anyString" type="area" shape="[rect|disk|cylinder]" />
+\end{lstlisting}
+
+For rect and disk share there could be various distributions.
+
+\lstset{language=XML}
+\begin{lstlisting}
+<light id="0" name="anyString" type="area" shape="[rect|disk]" 
+                                           distribution="[diffuse|spot|ies]" />
+\end{lstlisting}
+
+And both area and sphere light could be visible or not.
+\lstset{language=XML}
+\begin{lstlisting}
+<light id="0" name="anyString" type="[area|sphere]" visible="[1|0]" />
+\end{lstlisting}
+
+
+\subsubsection{Rect}
+
+Rectangle light have size attributes called <<half\_length>> and <<half\_width>>. Note how different distributions lead to different xml structure. The spot distribution gives additional <<falloff\_angle>> and <<falloff\_angle2>> and the ies distribution gives additional ies tag. The diffuse distribution gives no additional tags. 
+
+\lstset{language=XML}
+\begin{lstlisting}
+<light id="2" name="spot3" type="area" shape="rect" distribution="spot" visible="1">
+  <size half_length="1" half_width="1" />
+  <intensity>
+    <color val="0.5 0.5 1" />
+    <multiplier val="8.0" />
+  </intensity>
+  <falloff_angle val="100" />
+  <falloff_angle2 val="75" />
+</light>
+
+<light id="0" name="light1" type="area" shape="rect" distribution="ies" visible="1">
+  <ies data="myInput.ies" matrix="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1" />  
+  <size half_length="0.125" half_width="0.125" />
+  <intensity>
+    <color val="0.5 1.0 0.5" />
+    <multiplier val="1000.0" />
+  </intensity>
+</light>
+\end{lstlisting}
+
+\subsubsection{Disk}
+
+Disk and spheres have size radius attribute:
+
+\lstset{language=XML}
+\begin{lstlisting}
+<light id="1" name="anyStr" type="area" shape="disk" distribution="diffuse" visible="1">
+  <size radius="1" />
+  <intensity>
+    <color val="0.5 1 0.5" />
+    <multiplier val="8.0" />
+  </intensity>
+</light>
+\end{lstlisting}
+
+\subsubsection{Cylinder}
+
+\lstset{language=XML}
+\begin{lstlisting}
+<light id="0" name="anyString" type="area" shape="cylinder" distribution="diffuse" 
+       visible="1">
+  <size radius="0.5" height="4" angle="360" />
+  <intensity>
+    <color val="1 1 1" />
+    <multiplier val="4.0" />
+  </intensity>
+</light>
+\end{lstlisting}
+
+\subsubsection{Sphere}
+
+\lstset{language=XML}
+\begin{lstlisting}
+<light id="0" name="anyStr" type="area" shape="sphere" visible="[1|0]">
+  <intensity>
+    <color val="1 0.5 1" />
+    <multiplier val="8.0" />
+  </intensity>
+  <size radius="0.5" />
+</light>
+\end{lstlisting}
+
+\subsection{Directional Light}
+\lstset{language=XML}
+\begin{lstlisting}
+<light id="0" name="my_direct_light" type="directional" shape="point" distribution="omni" visible="1" mat_id="4">
+  <size>
+    <inner_radius>10.0</inner_radius>
+    <outer_radius>20.0</outer_radius>
+  </size>
+  <intensity>
+    <color>1 1 1</color>
+    <multiplier>2.0</multiplier>
+  </intensity>
+</light>
+\end{lstlisting}
+
+\subsection{Sky Light (in progress)}
+\lstset{language=XML}
+\begin{lstlisting}
+<light id="0" name="sky" type="sky" shape="point" distribution="map" visible="1" mat_id="2">
+  <intensity>
+    <color val="1 1 1">
+      <texture id="1" type="texref" matrix="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1" addressing_mode_u="wrap" addressing_mode_v="wrap" />
+    </color>
+    <multiplier val="1.0" />
+  </intensity>
+</light>
+\end{lstlisting}
+
+
+\subsection{Sky Portal (in progress)}
+\lstset{language=XML}
+\begin{lstlisting}
+<light id="1" name="portal1" type="area" shape="rect" distribution="uniform" visible="0" mat_id="2" mesh_id="5">
+  <size half_length="4" half_width="6" />
+  <intensity>
+    <color val="1 0 0" />
+    <multiplier val="3.0" />
+  </intensity>
+  <sky_portal val="1" source="skylight" />
+</light>
+\end{lstlisting}
+
+\end{document}
