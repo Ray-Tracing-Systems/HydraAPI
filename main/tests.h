@@ -154,6 +154,7 @@ bool test71_out_of_memory();
 bool test72_load_library_sigle_teapot_with_opacity();
 bool test73_big_resolution();
 bool test74_frame_buffer_line();
+bool test75_repeated_render();
 
 bool test90_check_xml_fail_lights();
 bool test91_check_xml_fail_lights();

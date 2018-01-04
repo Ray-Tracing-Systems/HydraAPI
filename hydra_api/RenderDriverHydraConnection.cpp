@@ -342,6 +342,8 @@ void RD_HydraConnection::RunAllHydraHeads()
 
   if (m_pSharedImage == nullptr)
     m_pSharedImage = CreateImageAccum();
+  else
+    m_pSharedImage->Clear();
 
   char err[256];
   bool shmemImageIsOk = m_pSharedImage->Create(width, height, 1, "hydraimage", err);

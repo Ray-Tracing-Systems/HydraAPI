@@ -23,6 +23,8 @@ struct SharedAccumImageWin32 : public IHRSharedAccumImage
   bool   Create(int w, int h, int d, const char* name, char errMsg[256]) override;
   bool   Attach(const char* name, char errMsg[256]) override;
 
+  void Clear() override;
+
   bool   Lock(int a_miliseconds) override;
   void   Unlock() override;
   
@@ -210,6 +212,18 @@ bool SharedAccumImageWin32::Attach(const char* name, char errMsg[256])
 
   strcpy(errMsg, "");
   return true;
+}
+
+
+void SharedAccumImageWin32::Clear()
+{
+  auto* pHeader = Header();
+  pHeader->spp = 0.0f;
+  pHeader->counterRcv = 0;
+  pHeader->counterSnd = 0;
+
+  auto pImg = ImageData(0);
+  memset(m_memory, 0, size_t(pHeader->width*pHeader->height * sizeof(float) * 4));
 }
 
 

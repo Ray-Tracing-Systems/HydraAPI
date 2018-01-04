@@ -361,6 +361,8 @@ struct IHRSharedAccumImage
 
   virtual bool Create(int w, int h, int d, const char* name, char errMsg[256]) = 0; 
   virtual bool Attach(const char* name, char errMsg[256])                      = 0;
+
+  virtual void Clear() = 0;
                  
   virtual bool Lock(int a_miliseconds) = 0;
   virtual void Unlock() = 0;

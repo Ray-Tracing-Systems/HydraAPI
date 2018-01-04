@@ -86,8 +86,8 @@ int main(int argc, const char** argv)
     //run_all_ipp_tests();
     //run_all_api_tests();
 
-    //std::cout << test74_frame_buffer_line() << std::endl;
-    std::cout << test39_mesh_from_vsgf() << std::endl;
+    std::cout << test75_repeated_render() << std::endl;
+    //std::cout << test48_light_geom_sphere() << std::endl;
     //test42_load_library_basic();
     //PP_TESTS::test305_fbi_from_render();
 
@@ -96,7 +96,7 @@ int main(int argc, const char** argv)
     //std::cout << test_70_area_lights16() << std::endl;
 
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
-
+    
     //GEO_TESTS::test_001_mesh_from_memory();
     //MTL_TESTS::test_136_opacity_glass();
     //LGHT_TESTS::test_210_skyportal_hdr();
