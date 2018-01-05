@@ -67,6 +67,9 @@ int main(int argc, const char** argv)
   SetConsoleCtrlHandler(&HandlerExit, TRUE);  // if some one kill console :)
   wchar_t NPath[512];
   GetCurrentDirectoryW(512, NPath);
+#ifdef NEED_DIR_CHANGE
+  SetCurrentDirectoryW(L"../../main");
+#endif
   std::wcout << L"[main]: curr_dir = " << NPath << std::endl;
 #else
   std::string workingDir = "../../main";

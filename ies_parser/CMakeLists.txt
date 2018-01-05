@@ -6,5 +6,9 @@ set(SOURCE_FILES
     IES_READ.C
     )
 
-ADD_LIBRARY(ies_parser STATIC ${SOURCE_FILES})
+add_library(ies_parser STATIC ${SOURCE_FILES})
+
+if(WIN32)
+  add_definitions(-DUNICODE -D_UNICODE)
+endif()
 

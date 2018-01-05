@@ -137,11 +137,7 @@ static void IE_CalcCU_Array( IE_CALC * );
  */
 
 
-#ifdef WIN32
-BOOL IE_ReadFile( char *fname, IE_DATA *pdata )
-#else
 extern "C" BOOL IE_ReadFile(char *fname, IE_DATA *pdata)
-#endif
 {
   char *tilt_str;               /* TILT line parameter pointer          */
   int i;                        /* Loop index                           */
@@ -419,11 +415,7 @@ extern "C" BOOL IE_ReadFile(char *fname, IE_DATA *pdata)
  */
 
 
-#ifdef WIN32
-void IE_Flush(IE_DATA *pdata)
-#else
 extern "C" void IE_Flush( IE_DATA *pdata )
-#endif
 {
   int i;                        /* Loop index                           */
   float **ppcandela;            /* Candela values array pointer pointer */
@@ -528,11 +520,7 @@ extern "C" void IE_Flush( IE_DATA *pdata )
  *************************************************************************
  */
 
-#ifdef WIN32
-BOOL IE_CalcData(IE_DATA *pdata, IE_CALC *pcalc)
-#else
 extern "C" BOOL IE_CalcData( IE_DATA *pdata, IE_CALC *pcalc )
-#endif
 {
   float **pcandela;                     /* Candela array pointer        */
   int i;                                /* Scratch counter              */
