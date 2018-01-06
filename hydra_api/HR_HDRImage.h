@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 
-#if _MSC_VER >= 1400
+#ifdef WIN32
 #include <intrin.h>
 #else
 #include <xmmintrin.h>

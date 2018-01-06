@@ -445,7 +445,12 @@ HAPI void hrTexture2DGetDataLDR(HRTextureNodeRef a_tex, int* pW, int* pH, int* p
   char* data = (char*)chunk.GetMemoryNow();
   if (data == nullptr)
   {
+#ifdef WIN32
     const std::wstring loc = g_objManager.GetLoc(xml_node);   // load from file from "loc" #TODO: find a way to test it in proper way.
+#else
+    std::wstring s1(g_objManager.GetLoc(xml_node));
+    const std::string  loc(s1.begin(), s1.end());
+#endif
     std::ifstream fin(loc.c_str(), std::ios::binary);
     fin.seekg(offset);
     fin.read((char*)pData, bytesize);

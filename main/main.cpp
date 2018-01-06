@@ -72,7 +72,7 @@ int main(int argc, const char** argv)
 #endif
   std::wcout << L"[main]: curr_dir = " << NPath << std::endl;
 #else
-  std::string workingDir = "../../main";
+  std::string workingDir = "../main";
   chdir(workingDir.c_str());
   char cwd[1024];
   if (getcwd(cwd, sizeof(cwd)) != nullptr)
@@ -89,7 +89,7 @@ int main(int argc, const char** argv)
     //run_all_ipp_tests();
     //run_all_api_tests();
 
-    std::cout << test75_repeated_render() << std::endl;
+    //std::cout << test75_repeated_render() << std::endl;
     //std::cout << test48_light_geom_sphere() << std::endl;
     //test42_load_library_basic();
     //PP_TESTS::test305_fbi_from_render();
@@ -111,7 +111,7 @@ int main(int argc, const char** argv)
    
     //test39_mesh_from_vsgf();
 
-    //window_main_free_look(L"tests/test_gl32_002_", L"opengl32Deferred", &test_gl32_002_init, &test_gl32_002_draw);
+    window_main_free_look(L"tests/test_gl32_002_", L"opengl32Deferred", &test_gl32_002_init, &test_gl32_002_draw);
     //window_main_free_look(L"tests/lucy_deferred", L"opengl32Deferred", &test_gl32_001_init, &test_gl32_001_draw);
     //window_main_free_look(L"tests/zgl1_test_cube", L"opengl32Deferred", &test02_init, &test02_draw);
     //window_main_free_look(L"tests/zgl1_test_cube", L"opengl1Debug", &test_gl32_001_init, &test_gl32_001_draw);
