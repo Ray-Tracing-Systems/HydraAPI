@@ -223,7 +223,7 @@ void SharedAccumImageWin32::Clear()
   pHeader->counterSnd = 0;
 
   auto pImg = ImageData(0);
-  memset(pImg, 0, size_t(pHeader->width * pHeader->height * size_t(sizeof(float) * 4)));
+  memset(pImg, 0, size_t(pHeader->width*pHeader->height)*size_t(sizeof(float)*4));
 }
 
 

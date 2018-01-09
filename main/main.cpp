@@ -86,9 +86,9 @@ int main(int argc, const char** argv)
     //run_all_ipp_tests();
     //run_all_api_tests();
 
-    std::cout << test75_repeated_render() << std::endl;
+    //std::cout << test75_repeated_render() << std::endl;
     //std::cout << test48_light_geom_sphere() << std::endl;
-    //test42_load_library_basic();
+    test39_mesh_from_vsgf();
     //PP_TESTS::test305_fbi_from_render();
 
     //std::cout << test44_four_lights() << std::endl;
@@ -98,7 +98,7 @@ int main(int argc, const char** argv)
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
     
     //GEO_TESTS::test_001_mesh_from_memory();
-    //MTL_TESTS::test_136_opacity_glass();
+    //MTL_TESTS::test_119_opacity_texture();
     //LGHT_TESTS::test_210_skyportal_hdr();
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
 
@@ -113,7 +113,7 @@ int main(int argc, const char** argv)
     //window_main_free_look(L"tests/zgl1_test_cube", L"opengl32Deferred", &test02_init, &test02_draw);
     //window_main_free_look(L"tests/zgl1_test_cube", L"opengl1Debug", &test_gl32_001_init, &test_gl32_001_draw);
     //window_main_free_look(L"tests/zgl1_test_cube", L"opengl32Forward", &test_gl32_001_init, &test_gl32_001_draw);
-    //window_main_free_look(L"D:/PROG/HydraAPP/hydra_app/tests/test_59", L"opengl1");
+    //window_main_free_look(L"D:/PROG/HydraCore/hydra_app/tests/test_42", L"opengl1DrawRays");
     //test_gl32_002();
     //window_main_free_look(L"tests/test_gl32_002", L"opengl32Deferred");
     //window_main_free_look(L"tests_f/test_235", L"opengl1");

@@ -117,7 +117,7 @@ bool test39_mesh_from_vsgf();
 bool test40_several_changes();
 
 bool test41_load_library_basic();
-bool test42_load_library_basic();
+bool test42_load_library_basic(); // broken data!!!
 
 bool test43_test_direct_light();
 bool test44_four_lights();

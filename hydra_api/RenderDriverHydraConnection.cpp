@@ -124,7 +124,8 @@ protected:
 
   struct RenderPresets
   {
-    int   maxrays;
+    int  maxrays;
+    bool allocImageB;
   } m_presets;
 
   bool m_firstUpdate;
@@ -185,7 +186,9 @@ void RD_HydraConnection::ClearAll()
   delete m_pSharedImage;
   m_pSharedImage = nullptr;
 
-  m_presets.maxrays = 2048;
+  m_presets.maxrays     = 2048;
+  m_presets.allocImageB = false;
+
 }
 
 HRDriverAllocInfo RD_HydraConnection::AllocAll(HRDriverAllocInfo a_info)
@@ -299,12 +302,9 @@ bool RD_HydraConnection::UpdateSettings(pugi::xml_node a_settingsNode)
                 (std::wstring(a_settingsNode.child(L"method_tertiary").text().as_string())  == L"mlt") ||
                 (std::wstring(a_settingsNode.child(L"method_caustic").text().as_string())   == L"mlt");
  
-  m_presets.maxrays = a_settingsNode.child(L"maxRaysPerPixel").text().as_int();
-  
-  //if (m_pColorBuffer == nullptr)
-  //  m_pColorBuffer = std::make_shared<HDRImage4f>(m_width, m_height);
-  //else if (m_pColorBuffer->width() != m_width || m_pColorBuffer->height() != m_height)
-  //  m_pColorBuffer->resize(m_width, m_height);
+  m_presets.maxrays     = a_settingsNode.child(L"maxRaysPerPixel").text().as_int();
+  m_presets.allocImageB = (std::wstring(a_settingsNode.child(L"method_secondary").text().as_string()) == L"lighttracing") || 
+                          (std::wstring(a_settingsNode.child(L"method_primary").text().as_string())   == L"lighttracing");
 
   return true;
 }
@@ -381,6 +381,9 @@ void RD_HydraConnection::RunAllHydraHeads()
     std::string temp = ws2s(libPath);
     std::stringstream auxInput;
     auxInput << "-inputlib \"" << temp.c_str() << "\" -width " << width << " -height " << height << " ";
+
+    if (m_presets.allocImageB)          // this is needed for LT and IBPT
+      auxInput << "-alloc_image_b 1 ";  // this is needed for LT and IBPT
 
     params.customExePath = "C:/[Hydra]/bin2/hydra.exe";
     params.customExeArgs = auxInput.str();
