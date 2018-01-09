@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 set(SOURCE_FILES
         alloc16.h
+        cube2sphere.cpp
         HR_HDRImage.h
         HR_HDRImage4f.cpp
         HR_HDRImageTool.h
@@ -43,6 +44,8 @@ set(SOURCE_FILES
         RenderDriverOpenGL1_TestSplit.cpp
         RenderDriverOpenGL1Debug.cpp
         RenderDriverOpenGL1DebugDrawRays.cpp
+        ssemath.cpp
+        ssemath.h
         VirtualBuffer.cpp
         xxhash.c
         xxhash.h
@@ -50,7 +53,10 @@ set(SOURCE_FILES
 
 
 if (WIN32)
-    set(SOURCE_FILES ${SOURCE_FILES} SystemWin.cpp)
+    set(SOURCE_FILES ${SOURCE_FILES} SystemWin.cpp HR_AccumImageWin.cpp)
+    set(SOURCE_FILES ${SOURCE_FILES} RenderDriverHydraConnection.cpp
+                                     RenderDriverHydraLegacyStuff.cpp
+                                     RenderDriverHydraLegacyStuff.h)
 else()
 	set(SOURCE_FILES ${SOURCE_FILES} SystemUnix.cpp)
 endif()
@@ -62,9 +68,6 @@ set(MODERN_GL_RENDER_DRIVER
         RenderDriverOpenGL32Forward.h RenderDriverOpenGL32Forward.cpp
         OpenGLCoreProfileUtils.h OpenGLCoreProfileUtils.cpp
         RenderDriverOpenGL32Deferred.h RenderDriverOpenGL32Deferred.cpp )
-
-set(ADDITIONAL_INCLUDE_DIRS
-        ../LIBRARY/include)
 
 set(POST_PROC
         HydraPostProcessAPI.h
@@ -89,7 +92,13 @@ include_directories(${ADDITIONAL_INCLUDE_DIRS})
 #build hydra API static library
 add_library(hydra_api STATIC ${SOURCE_FILES} ${POST_PROC} ${MODERN_GL_RENDER_DRIVER})
 target_include_directories (hydra_api PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${OPENGL_INCLUDE_DIR})
-target_link_libraries(hydra_api LINK_PUBLIC ${LIBS} ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY} ies_parser stdc++fs rt dl)
+
+if(WIN32)
+  add_definitions(-DUNICODE -D_UNICODE)
+  target_link_libraries(hydra_api LINK_PUBLIC ${LIBS} ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY} ies_parser)
+else()
+  target_link_libraries(hydra_api LINK_PUBLIC ${LIBS} ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY} ies_parser stdc++fs rt dl)
+endif()
 
 
 #build python bindings shared library

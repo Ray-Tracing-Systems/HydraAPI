@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.7)
 project(main)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 
 set(SOURCE_FILES
         Camera.h
@@ -29,35 +29,46 @@ set(SOURCE_FILES
         tests_gl.cpp
         tests_lights.cpp
         tests_lights2.cpp
+        test_lights3.cpp
+        test_lights4.cpp
         tests_mtl.cpp
         tests_mtl2.cpp
         tests_mtl3.cpp
+        tests_pp.cpp
         Timer.cpp
         Timer.h
         utils.cpp
         #../hydra_api/glad.c
         )
 
-set(ADDITIONAL_INCLUDE_DIRS
-        ../LIBRARY/include)
+#set (CMAKE_CXX_FLAGS_DEBUG  "${CMAKE_CXX_FLAGS_DEBUG}")
 
-set (CMAKE_CXX_FLAGS_DEBUG  "${CMAKE_CXX_FLAGS_DEBUG}")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 
 if(WIN32)
-	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
-
-	include_directories(${GLFW_INCLUDE_DIRS})
-	set(LIBS ${LIBS} ${GLFW_LIBRARIES})
+  link_directories(${ADDITIONAL_LIBRARY_DIRS})
 else()
-	find_package(glfw3 REQUIRED)
+  find_package(glfw3 REQUIRED)
+  include_directories(${GLFW_INCLUDE_DIRS})
+  set(LIBS ${LIBS} ${GLFW_LIBRARIES})
 endif()
+
 
 find_package(OpenGL REQUIRED)
 
 add_executable(main ${SOURCE_FILES})
-
 include_directories(${ADDITIONAL_INCLUDE_DIRS})
 
-target_compile_options(main PRIVATE -fpermissive -Wnarrowing)
-target_include_directories(main PRIVATE ${OPENGL_INCLUDE_DIR})
-target_link_libraries(main LINK_PUBLIC ${OPENGL_gl_LIBRARY} hydra_api glfw)
+target_include_directories(main PUBLIC ${OPENGL_INCLUDE_DIR})
+
+if(WIN32)
+  add_definitions(-DUNICODE -D_UNICODE)
+  add_definitions(-DNEED_DIR_CHANGE)
+  target_link_libraries(main LINK_PUBLIC ${OPENGL_gl_LIBRARY} hydra_api glfw3dll )
+else()
+  target_compile_options(main PRIVATE -fpermissive -Wnarrowing)
+  target_link_libraries(main LINK_PUBLIC ${OPENGL_gl_LIBRARY} ${LIBS} hydra_api glfw )
+endif()
+
+
+

@@ -60,7 +60,7 @@ else()
 		DOC "The FreeImage library")
 endif()
 
-# Handle REQUIRD argument, define *_FOUND variable
+# Handle REQUIRED argument, define *_FOUND variable
 find_package_handle_standard_args(FreeImage DEFAULT_MSG FREEIMAGE_INCLUDE_DIR FREEIMAGE_LIBRARY)
 
 # Define FREEIMAGE_LIBRARIES and FREEIMAGE_INCLUDE_DIRS

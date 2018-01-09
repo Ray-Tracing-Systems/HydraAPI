@@ -67,9 +67,12 @@ int main(int argc, const char** argv)
   SetConsoleCtrlHandler(&HandlerExit, TRUE);  // if some one kill console :)
   wchar_t NPath[512];
   GetCurrentDirectoryW(512, NPath);
+#ifdef NEED_DIR_CHANGE
+  SetCurrentDirectoryW(L"../../main");
+#endif
   std::wcout << L"[main]: curr_dir = " << NPath << std::endl;
 #else
-  std::string workingDir = "../../main";
+  std::string workingDir = "../main";
   chdir(workingDir.c_str());
   char cwd[1024];
   if (getcwd(cwd, sizeof(cwd)) != nullptr)
@@ -108,7 +111,7 @@ int main(int argc, const char** argv)
    
     //test39_mesh_from_vsgf();
 
-    //window_main_free_look(L"tests/test_gl32_002_", L"opengl32Deferred", &test_gl32_002_init, &test_gl32_002_draw);
+    window_main_free_look(L"tests/test_gl32_002_", L"opengl32Deferred", &test_gl32_002_init, &test_gl32_002_draw);
     //window_main_free_look(L"tests/lucy_deferred", L"opengl32Deferred", &test_gl32_001_init, &test_gl32_001_draw);
     //window_main_free_look(L"tests/zgl1_test_cube", L"opengl32Deferred", &test02_init, &test02_draw);
     //window_main_free_look(L"tests/zgl1_test_cube", L"opengl1Debug", &test_gl32_001_init, &test_gl32_001_draw);
