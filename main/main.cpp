@@ -91,7 +91,7 @@ int main(int argc, const char** argv)
 
     //std::cout << test75_repeated_render() << std::endl;
     //std::cout << test48_light_geom_sphere() << std::endl;
-    test39_mesh_from_vsgf();
+    //test39_mesh_from_vsgf();
     //PP_TESTS::test305_fbi_from_render();
 
     //std::cout << test44_four_lights() << std::endl;
@@ -100,9 +100,9 @@ int main(int argc, const char** argv)
 
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
     
-    //GEO_TESTS::test_001_mesh_from_memory();
+    GEO_TESTS::test_004_dof();
     //MTL_TESTS::test_119_opacity_texture();
-    //LGHT_TESTS::test_210_skyportal_hdr();
+    //LGHT_TESTS::test_205_sky_and_directional_sun();
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
 
     //window_main_free_look(L"tests_f/test_241", L"opengl1Debug");
