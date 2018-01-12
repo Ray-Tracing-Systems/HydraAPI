@@ -104,7 +104,7 @@
 \maketitle
 
 \begin{abstract}
-The standard feature number definition consists of 3 parts. They are material, lights and geometry. Thus to determine a finite set of features renderer support you have to specify 3 numbers in subsequent order. For example: <<0.3/0.4/0.1>> means <<0.3>> version for materials, - <<0.4>> for lights and <<0.1>> for geometry. Each number in standart definition means all <<core>> requirenments with less number are are fulfilled. For example, materials ver 0.2 means 0.0.* and 0.1.* requirenemnts are implemented/fulfilled but 0.2.1 may be not implemented/fulfilled.
+The standard feature number definition consists of 3 parts. They are material, lights and geometry. Thus to determine a finite set of features renderer support you have to specify 3 numbers in subsequent order. For example: <<0.3/0.4/0.1>> means <<0.3>> version for materials, - <<0.4>> for lights and <<0.1>> for geometry. Each number in standart definition means all <<core>> requirenments with less number are fulfilled. For example, materials ver 0.2 means 0.0.* and 0.1.* requirenemnts are implemented/fulfilled but 0.2.1 may be not implemented/fulfilled.
 
 \end{abstract}
 
@@ -251,7 +251,7 @@ Mixing phong and lambert without priority. If summ of reflection coeffitients is
 
 \addtocounter{section}{2}
 
-Note that all mixtures could be (and in general recommended to be) implemented via blend by bask (see blend\_mask). Howeve, on this level of standart you don't have to implement blend for BRDFs.
+Note that all mixtures could be (and in general recommended to be) implemented via blend by mask (see blend\_mask). However, on this level of standart you don't have to implement blend for BRDFs.
 
 \section{Light features}\label{core}
 
