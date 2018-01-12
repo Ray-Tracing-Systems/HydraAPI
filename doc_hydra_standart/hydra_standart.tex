@@ -71,7 +71,7 @@
 	%\addcontentsline{def2}{figure}{#1} % Adds the question to the list of questions
 	\addcontentsline{def2}{figure}
 	{\protect\numberline{\thesection.\thereq}#1}\par
-	\todo[inline, color=green!25]{\textbf{mat\_0.\thesection.\thereq:} \textbf{#1} \hyperref[ruleslist]{(core)}} % Uses the todonotes package to create a fancy box to put the question
+	\todo[inline, color=green!25]{\textbf{mat\_\thesection.\thereq:} \textbf{#1} \hyperref[ruleslist]{(core)}} % Uses the todonotes package to create a fancy box to put the question
 	\vspace{1em} % White space after the question before the start of the answer
 }
 
@@ -82,7 +82,7 @@
 	%\addcontentsline{def2}{figure}{#1} % Adds the question to the list of questions
 	\addcontentsline{def2}{figure}
 	{\protect\numberline{\thesection.\thereq}#1}\par
-	\todo[inline, color=blue!25]{\textbf{mat\_0.\thesection.\thereq:} \textbf{#1} \hyperref[ruleslist]{(extension)}} % Uses the todonotes package to create a fancy box to put the question
+	\todo[inline, color=blue!25]{\textbf{mat\_\thesection.\thereq:} \textbf{#1} \hyperref[ruleslist]{(extension)}} % Uses the todonotes package to create a fancy box to put the question
 	\vspace{1em} % White space after the question before the start of the answer
 }
 
@@ -104,7 +104,7 @@
 \maketitle
 
 \begin{abstract}
-The standard feature number definition consists of 3 parts. They are material, lights and geometry. Thus to determine a finite set of features renderer support you have to specify 3 numbers in subsequent order. For example: <<0.3/0.4/0.1>> means <<0.3>> version for materials, - <<0.4>> for lights and <<0.1>> for geometry. Each number in standart definition means all <<core>> requirenments with less number are fulfilled. For example, materials ver 0.2 means 0.0.* and 0.1.* requirenemnts are implemented/fulfilled but 0.2.1 may be not implemented/fulfilled.
+The standard feature number definition consists of 3 parts. They are material, lights and geometry. Thus to determine a finite set of features renderer support you have to specify 3 numbers in subsequent order. For example: <<0.3/0.4/0.1>> means <<0.3>> version for materials, - <<0.4>> for lights and <<0.1>> for geometry. Each number in standart definition means all <<core>> requirenments with less number are fulfilled. For example, materials ver 2.2 means 0.* and 1.* requirenemnts, 2.1 and 2.2 are implemented/fulfilled but 2.3 may be not implemented/fulfilled.
 
 \end{abstract}
 
@@ -160,19 +160,31 @@ BRDF_{lambert} = \frac{1}{\pi}
 
 \reqirenment{phong}
 
-Basic support for Phong reflections. Note that mixing of phong and lambertian reflections is not needed at this level of standard. Renderer may suppose mutually exclusive phong or lambert. 
+Basic support for reflections via Phong mode. Note that mixing of phong and lambertian reflections is not needed at this level of standard. Renderer may suppose mutually exclusive phong or lambert. 
 
 \reqirenment{mirror}
 
 Pure specular reflection. Note that mixing of mirror and lambertian reflections is not needed at this level of standard. Renderer may suppose mutually exclusive: (phong, mirror or lambert). 
 
+\reqirenment{emission}
+
+Basic support for emissive material. On this level of standart emissive materials don't combined with others. Renderer may suppose mutually exclusive: (emissive or 'some other'). Please note that emissve materials have not be considered as lights (i.e. they don't have to be sampled with any sampling strategy, however, of cource, they could), but they must cast GI.
+
 \reqirenment{lambert\_texture\_color}
 
-Adding LDR textures for Lambertian materials. When reading from LDR texture, gamma transform \textbf{should} be applied.
+Adding LDR textures for Lambertian materials. When reading from LDR texture, gamma transform \textbf{should} be applied. The resulting color must be the product of texture color and material color. Texture matrices support is not needed on this level of standart.
 
 \reqirenment{phong\_mirror\_texture\_color}
 
-Adding LDR textures for reflection color for both phong and mirrors. When reading from LDR texture, gamma transform \textbf{should} be applied.
+Adding LDR textures for reflection color for both phong and mirrors. When reading from LDR texture, gamma transform \textbf{should} be applied. The resulting color must be the product of texture color and material color. Texture matrices support is not needed on this level of standart.
+
+\reqirenment{emission\_texture\_color\_ldr}
+
+Adding LDR textures to emission color. The resulting color must be the product of texture color and material color. Texture matrices support is not needed on this level of standart.
+
+\reqirenment{emission\_texture\_color\_hdr}
+
+Adding HDR textures to emission color. The resulting color must be the product of texture color and material color. Texture matrices support is not needed on this level of standart.
 
 \reqirenment{phong\_texture\_glosiness}
 
