@@ -60,4 +60,3 @@ IHydraNetPluginAPI* CreateHydraServerConnection(int renderWidth, int renderHeigh
 
 std::string  ws2s(const std::wstring& s);
 std::wstring s2ws(const std::string& s);
-std::vector<HydaRenderDevice> InitDeviceList(int mode);
