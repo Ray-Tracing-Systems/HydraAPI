@@ -35,7 +35,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -222,6 +222,9 @@
     <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\clew\clew.vcxproj">
+      <Project>{5f13e40f-c0f1-4ef4-a775-ab8bc703de88}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\ies_parser\ies_parser.vcxproj">
       <Project>{1d53b494-4b7e-464b-82a1-a2052240f6ef}</Project>
     </ProjectReference>
