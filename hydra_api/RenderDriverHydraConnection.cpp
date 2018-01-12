@@ -18,6 +18,7 @@
 #include <thread>
 
 #include "ssemath.h"
+#include "../clew/clew.h"
 
 #pragma warning(disable:4996) // for wcscpy to be ok
 
@@ -28,7 +29,7 @@ using HydraRender::HDRImage4f;
 struct RD_HydraConnection : public IHRRenderDriver
 {
   RD_HydraConnection() : m_pConnection(nullptr), m_pSharedImage(nullptr), m_progressVal(0.0f), m_firstUpdate(true), m_width(0), m_height(0), m_avgBrightness(0.0f), m_avgBCounter(0),
-                         m_enableMedianFilter(false), m_medianthreshold(0.4f), m_stopThreadImmediately(false), haveUpdateFromMT(false), m_threadIsRun(false), m_threadFinished(false), hadFinalUpdate(false)
+                         m_enableMedianFilter(false), m_medianthreshold(0.4f), m_stopThreadImmediately(false), haveUpdateFromMT(false), m_threadIsRun(false), m_threadFinished(false), hadFinalUpdate(false), m_clewInitRes(-1)
   {
     m_msg = L"";
     InitBothDeviceList();
@@ -104,6 +105,7 @@ protected:
   int          m_instancesNum; //// current instance num in the scene; (m_instancesNum == 0) => empty scene! 
   int          m_oldCounter;
   float        m_oldSPP;
+  int          m_clewInitRes;
 
   void InitBothDeviceList();
   void RunAllHydraHeads();
@@ -152,25 +154,105 @@ protected:
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+struct PlatformDevPair
+{
+  PlatformDevPair(cl_device_id a_dev, cl_platform_id a_platform) : dev(a_dev), platform(a_platform) {}
+
+  cl_device_id   dev;
+  cl_platform_id platform;
+};
+
+static std::string cutSpaces(const std::string& a_rhs)
+{
+  int pos = 0;
+  for (int i = 0; i < a_rhs.size(); i++)
+  {
+    if (a_rhs[i] != ' ')
+      break;
+    pos++;
+  }
+
+  return a_rhs.substr(pos, a_rhs.size() - pos);
+}
+
+static std::vector<PlatformDevPair> listAllOpenCLDevices()
+{
+  const int MAXPLATFORMS = 4;
+  const int MAXDEVICES_PER_PLATFORM = 8;
+
+  cl_platform_id platforms[MAXPLATFORMS];
+  cl_device_id   devices[MAXDEVICES_PER_PLATFORM];
+
+  cl_uint factPlatroms = 0;
+  cl_uint factDevs = 0;
+
+  std::vector<PlatformDevPair> result;
+
+  clGetPlatformIDs(MAXPLATFORMS, platforms, &factPlatroms);
+
+  for (size_t i = 0; i < factPlatroms; i++)
+  {
+    clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_ALL, MAXDEVICES_PER_PLATFORM, devices, &factDevs);
+    for (cl_uint j = 0; j < factDevs; j++)
+      result.push_back(PlatformDevPair(devices[j], platforms[i]));
+  }
+
+  return result;
+
+}
+
 void RD_HydraConnection::InitBothDeviceList()
 {
-  m_devList = InitDeviceList(1);
-  m_devList2.resize(m_devList.size());
+  if (m_clewInitRes == -1)
+  {
+    m_clewInitRes = clewInit(L"opencl.dll");
+    if (m_clewInitRes == -1)
+    {
+      // HydaRenderDevice cpuDev; #TODO: add CPU "-1" dev when it will work
+      m_devList.resize(0);
+      m_devList2.resize(0);
+      return;
+    }
+  }
 
-  // form list in memory ... )
+  // (1) get device list and info
   //
+  const std::vector<PlatformDevPair> devList = listAllOpenCLDevices();
+  m_devList.resize(devList.size());
+  char deviceName[1024];
+
+  for (size_t i = 0; i < devList.size(); i++)
+  {
+    memset(deviceName, 0, 1024);
+    clGetDeviceInfo(devList[i].dev, CL_DEVICE_NAME, 1024, deviceName, NULL);
+    std::string devName2 = cutSpaces(deviceName);
+    m_devList[i].name    = s2ws(devName2);
+
+    cl_device_type devType = CL_DEVICE_TYPE_GPU;
+    clGetDeviceInfo(devList[i].dev, CL_DEVICE_TYPE, sizeof(cl_device_type), &devType, NULL);
+    m_devList[i].isCPU = (devType == CL_DEVICE_TYPE_CPU);
+
+    memset(deviceName, 0, 1024);
+    clGetPlatformInfo(devList[i].platform, CL_PLATFORM_VERSION, 1024, deviceName, NULL);
+    m_devList[i].driverName = s2ws(deviceName);
+    m_devList[i].id         = i;
+  }
+ 
+  // (2) form list in memory ... )
+  //
+  m_devList2.resize(m_devList.size()); 
   for (size_t i = 0; i < m_devList2.size(); i++)
   {
-    const HydaRenderDevice& devInfo = m_devList[i];
+    const HydaRenderDevice&       devInfo = m_devList[i];
     HRRenderDeviceInfoListElem* pListElem = &m_devList2[i];
-
-    pListElem->id = (int32_t)(i);
-    pListElem->isCPU = devInfo.isCPU;
+  
+    pListElem->id        = (int32_t)(i);
+    pListElem->isCPU     = devInfo.isCPU;
     pListElem->isEnabled = false;
-
-    wcscpy(pListElem->name, devInfo.name.c_str());
+  
+    wcscpy(pListElem->name,   devInfo.name.c_str());
     wcscpy(pListElem->driver, devInfo.driverName.c_str());
-
+  
     if (i != m_devList2.size() - 1)
       pListElem->next = &m_devList2[i + 1];
     else

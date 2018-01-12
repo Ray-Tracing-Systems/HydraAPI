@@ -89,6 +89,7 @@ int main(int argc, const char** argv)
     //run_all_ipp_tests();
     //run_all_api_tests();
 
+    test35_cornell_with_light();
     //std::cout << test75_repeated_render() << std::endl;
     //std::cout << test48_light_geom_sphere() << std::endl;
     //test39_mesh_from_vsgf();
@@ -100,7 +101,7 @@ int main(int argc, const char** argv)
 
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
     
-    GEO_TESTS::test_004_dof();
+    //GEO_TESTS::test_001_mesh_from_memory();
     //MTL_TESTS::test_119_opacity_texture();
     //LGHT_TESTS::test_205_sky_and_directional_sun();
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
@@ -111,7 +112,7 @@ int main(int argc, const char** argv)
    
     //test39_mesh_from_vsgf();
 
-    window_main_free_look(L"tests/test_gl32_002_", L"opengl32Deferred", &test_gl32_002_init, &test_gl32_002_draw);
+    //window_main_free_look(L"tests/test_gl32_002_", L"opengl32Deferred", &test_gl32_002_init, &test_gl32_002_draw);
     //window_main_free_look(L"tests/lucy_deferred", L"opengl32Deferred", &test_gl32_001_init, &test_gl32_001_draw);
     //window_main_free_look(L"tests/zgl1_test_cube", L"opengl32Deferred", &test02_init, &test02_draw);
     //window_main_free_look(L"tests/zgl1_test_cube", L"opengl1Debug", &test_gl32_001_init, &test_gl32_001_draw);

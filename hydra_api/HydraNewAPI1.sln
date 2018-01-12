@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2003
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HydraAPI", "HydraNewAPI1.vcxproj", "{C05FF9EA-3D61-48B7-ABEA-4353253691DC}"
 EndProject
@@ -19,6 +19,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ies_parser", "..\ies_parser\ies_parser.vcxproj", "{1D53B494-4B7E-464B-82A1-A2052240F6EF}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PostProcess", "..\PostProcessDLLTrofimm\PostProcessDLLTrofimm.vcxproj", "{999F34F2-BF3C-4D55-AFDF-75235335B1A1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "clew", "..\clew\clew.vcxproj", "{5F13E40F-C0F1-4EF4-A775-AB8BC703DE88}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -90,8 +92,23 @@ Global
 		{999F34F2-BF3C-4D55-AFDF-75235335B1A1}.Release|Win32.Build.0 = Release|Win32
 		{999F34F2-BF3C-4D55-AFDF-75235335B1A1}.Release|x64.ActiveCfg = Release|x64
 		{999F34F2-BF3C-4D55-AFDF-75235335B1A1}.Release|x64.Build.0 = Release|x64
+		{5F13E40F-C0F1-4EF4-A775-AB8BC703DE88}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{5F13E40F-C0F1-4EF4-A775-AB8BC703DE88}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{5F13E40F-C0F1-4EF4-A775-AB8BC703DE88}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5F13E40F-C0F1-4EF4-A775-AB8BC703DE88}.Debug|Win32.Build.0 = Debug|Win32
+		{5F13E40F-C0F1-4EF4-A775-AB8BC703DE88}.Debug|x64.ActiveCfg = Debug|x64
+		{5F13E40F-C0F1-4EF4-A775-AB8BC703DE88}.Debug|x64.Build.0 = Debug|x64
+		{5F13E40F-C0F1-4EF4-A775-AB8BC703DE88}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{5F13E40F-C0F1-4EF4-A775-AB8BC703DE88}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{5F13E40F-C0F1-4EF4-A775-AB8BC703DE88}.Release|Win32.ActiveCfg = Release|Win32
+		{5F13E40F-C0F1-4EF4-A775-AB8BC703DE88}.Release|Win32.Build.0 = Release|Win32
+		{5F13E40F-C0F1-4EF4-A775-AB8BC703DE88}.Release|x64.ActiveCfg = Release|x64
+		{5F13E40F-C0F1-4EF4-A775-AB8BC703DE88}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {03B3AFB1-F362-421C-B0A0-040B160CF6FC}
 	EndGlobalSection
 EndGlobal
