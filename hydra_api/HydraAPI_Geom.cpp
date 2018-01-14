@@ -546,6 +546,12 @@ HAPI void hrMeshAppendTriangles3(HRMeshRef a_mesh, int indNum, const int* indice
   if (matIndices != nullptr)
     pMesh->m_allMeshMatId = -1;
 
+  if (indices == 0)
+  {
+    HrPrint(HR_SEVERITY_WARNING, L"hrMeshAppendTriangles3: nullptr input indices", a_mesh.id);
+    return;
+  }
+
   // find max vertex id
   //
   int maxVertexId = 0;

@@ -2408,7 +2408,7 @@ bool test69_pause_and_resume()
 
 
 
-bool test_70_area_lights16()
+bool test70_area_lights16()
 {
   initGLIfNeeded();
 
@@ -4173,4 +4173,229 @@ bool test75_repeated_render()
   HydraRender::SaveImageToFile(L"tests_images/test_75/z_out2.png", hdrImage);                             // it save to ldr image !!!
 
   return check_images("test_75", 2, 20.0f); // #TODO: add check for HDR image
+}
+
+const int TEST_IMG_SIZE = 512;
+
+bool test76_empty_mesh()
+{
+  initGLIfNeeded();
+
+  hrErrorCallerPlace(L"test_76");
+
+
+  hrSceneLibraryOpen(L"tests/test_76", HR_WRITE_DISCARD);
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Materials
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  HRMaterialRef mat0 = hrMaterialCreate(L"mat0");
+  HRMaterialRef mat1 = hrMaterialCreate(L"mat1");
+
+  hrMaterialOpen(mat0, HR_WRITE_DISCARD);
+  {
+    auto matNode = hrMaterialParamNode(mat0);
+
+    auto diff = matNode.append_child(L"diffuse");
+    diff.append_attribute(L"brdf_type").set_value(L"lambert");
+
+    auto color = diff.append_child(L"color");
+    color.append_attribute(L"val").set_value(L"0.5 0.75 0.5");
+
+    VERIFY_XML(matNode);
+  }
+  hrMaterialClose(mat0);
+
+  hrMaterialOpen(mat1, HR_WRITE_DISCARD);
+  {
+    auto matNode = hrMaterialParamNode(mat1);
+
+    auto diff = matNode.append_child(L"diffuse");
+    diff.append_attribute(L"brdf_type").set_value(L"lambert");
+
+    auto color = diff.append_child(L"color");
+    color.append_attribute(L"val").set_value(L"0.25 0.25 0.25");
+
+    VERIFY_XML(matNode);
+  }
+  hrMaterialClose(mat1);
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Meshes
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  SimpleMesh cube = CreateCube(0.75f);
+  SimpleMesh plane = CreatePlane(10.0f);
+  HRMeshRef cubeRef = hrMeshCreate(L"my_cube");
+  HRMeshRef planeRef = hrMeshCreate(L"my_plane");
+
+
+  hrMeshOpen(cubeRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
+  {
+    hrMeshVertexAttribPointer4f(cubeRef, L"pos",      nullptr);
+    hrMeshVertexAttribPointer4f(cubeRef, L"norm",     nullptr);
+    hrMeshVertexAttribPointer2f(cubeRef, L"texcoord", nullptr);
+    hrMeshMaterialId(cubeRef, mat0.id);
+    hrMeshAppendTriangles3(cubeRef, 0, nullptr);
+  }
+  hrMeshClose(cubeRef);
+
+  hrMeshOpen(planeRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
+  {
+    hrMeshVertexAttribPointer4f(planeRef, L"pos", &plane.vPos[0]);
+    hrMeshVertexAttribPointer4f(planeRef, L"norm", &plane.vNorm[0]);
+    hrMeshVertexAttribPointer2f(planeRef, L"texcoord", &plane.vTexCoord[0]);
+
+    hrMeshMaterialId(planeRef, mat1.id);
+    hrMeshAppendTriangles3(planeRef, int32_t(plane.triIndices.size()), &plane.triIndices[0]);
+  }
+  hrMeshClose(planeRef);
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Light
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  HRLightRef rectLight = hrLightCreate(L"my_area_light");
+
+  hrLightOpen(rectLight, HR_WRITE_DISCARD);
+  {
+    auto lightNode = hrLightParamNode(rectLight);
+
+    lightNode.attribute(L"type").set_value(L"area");
+    lightNode.attribute(L"shape").set_value(L"rect");
+    lightNode.attribute(L"distribution").set_value(L"diffuse");
+
+    auto sizeNode = lightNode.append_child(L"size");
+
+    sizeNode.append_attribute(L"half_length").set_value(1.0f);
+    sizeNode.append_attribute(L"half_width").set_value(1.0f);
+
+    auto intensityNode = lightNode.append_child(L"intensity");
+
+    intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"8.0");
+
+    VERIFY_XML(lightNode);
+  }
+  hrLightClose(rectLight);
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Camera
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  HRCameraRef camRef = hrCameraCreate(L"my camera");
+
+  hrCameraOpen(camRef, HR_WRITE_DISCARD);
+  {
+    auto camNode = hrCameraParamNode(camRef);
+
+    camNode.append_child(L"fov").text().set(L"45");
+    camNode.append_child(L"nearClipPlane").text().set(L"0.01");
+    camNode.append_child(L"farClipPlane").text().set(L"100.0");
+
+    camNode.append_child(L"up").text().set(L"0 1 0");
+    camNode.append_child(L"position").text().set(L"0 0 15");
+    camNode.append_child(L"look_at").text().set(L"0 0 0");
+
+    VERIFY_XML(camNode);
+  }
+  hrCameraClose(camRef);
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Render settings
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, TEST_IMG_SIZE, TEST_IMG_SIZE, 256, 2048);
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Create scene
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  HRSceneInstRef scnRef = hrSceneCreate(L"my scene");
+
+  float matrixT[4][4];
+  float mTranslate[4][4];
+  float mRes[4][4];
+  float mRes2[4][4];
+
+  hrSceneOpen(scnRef, HR_WRITE_DISCARD);
+
+  ///////////
+
+  mat4x4_identity(mTranslate);
+  mat4x4_identity(mRes);
+
+  mat4x4_translate(mTranslate, 0.0f, -1.0f, 0.0f);
+  mat4x4_mul(mRes2, mTranslate, mRes);
+  mat4x4_transpose(matrixT, mRes2);
+
+  hrMeshInstance(scnRef, planeRef, &matrixT[0][0]);
+
+  ///////////
+
+  mat4x4_identity(mTranslate);
+  mat4x4_identity(mRes);
+
+  mat4x4_translate(mTranslate, -2.0f, 0.0f, 0.0f);
+  mat4x4_mul(mRes2, mTranslate, mRes);
+  mat4x4_transpose(matrixT, mRes2);
+
+  hrMeshInstance(scnRef, cubeRef, &matrixT[0][0]);
+
+  ///////////
+
+  mat4x4_identity(mTranslate);
+  mat4x4_identity(mRes);
+
+  mat4x4_translate(mTranslate, 2.0f, 0.0f, 0.0f);
+  mat4x4_mul(mRes2, mTranslate, mRes);
+  mat4x4_transpose(matrixT, mRes2); //swap rows and columns
+
+  hrMeshInstance(scnRef, cubeRef, &matrixT[0][0]);
+
+  ///////////
+
+  mat4x4_identity(mTranslate);
+  mat4x4_translate(mTranslate, 0, 3.85f, 0);
+  mat4x4_transpose(matrixT, mTranslate);
+
+  hrLightInstance(scnRef, rectLight, &matrixT[0][0]);
+
+  ///////////
+
+  hrSceneClose(scnRef);
+
+  hrFlush(scnRef, renderRef);
+
+  glViewport(0, 0, TEST_IMG_SIZE, TEST_IMG_SIZE);
+  std::vector<int32_t> image(TEST_IMG_SIZE * TEST_IMG_SIZE);
+
+  while (true)
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+    HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
+
+    if (info.haveUpdateFB)
+    {
+      hrRenderGetFrameBufferLDR1i(renderRef, TEST_IMG_SIZE, TEST_IMG_SIZE, &image[0]);
+
+      glDisable(GL_TEXTURE_2D);
+      glDrawPixels(TEST_IMG_SIZE, TEST_IMG_SIZE, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+
+      auto pres = std::cout.precision(2);
+      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout.precision(pres);
+
+      glfwSwapBuffers(g_window);
+      glfwPollEvents();
+    }
+
+    if (info.finalUpdate)
+      break;
+  }
+
+  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_76/z_out.png");
+
+  return check_images("test_76");
 }
