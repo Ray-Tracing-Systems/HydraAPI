@@ -149,12 +149,13 @@ bool test66_fast_render_no_final_update();
 bool test67_fast_empty_scene();
 bool test68_scene_library_file_info();
 bool test69_pause_and_resume();
-bool test_70_area_lights16();
+bool test70_area_lights16();
 bool test71_out_of_memory();
 bool test72_load_library_sigle_teapot_with_opacity();
 bool test73_big_resolution();
 bool test74_frame_buffer_line();
 bool test75_repeated_render();
+bool test76_empty_mesh();
 
 bool test90_check_xml_fail_lights();
 bool test91_check_xml_fail_lights();
