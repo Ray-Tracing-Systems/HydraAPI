@@ -89,7 +89,7 @@ int main(int argc, const char** argv)
     //run_all_ipp_tests();
     //run_all_api_tests();
 
-    test35_cornell_with_light();
+    test76_empty_mesh();
     //std::cout << test75_repeated_render() << std::endl;
     //std::cout << test48_light_geom_sphere() << std::endl;
     //test39_mesh_from_vsgf();
