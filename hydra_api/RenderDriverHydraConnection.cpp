@@ -128,6 +128,7 @@ protected:
   {
     int  maxrays;
     bool allocImageB;
+    bool allocImageBOnGPU;
   } m_presets;
 
   bool m_firstUpdate;
@@ -268,8 +269,9 @@ void RD_HydraConnection::ClearAll()
   delete m_pSharedImage;
   m_pSharedImage = nullptr;
 
-  m_presets.maxrays     = 2048;
-  m_presets.allocImageB = false;
+  m_presets.maxrays          = 2048;
+  m_presets.allocImageB      = false;
+  m_presets.allocImageBOnGPU = false;
 
 }
 
@@ -388,6 +390,8 @@ bool RD_HydraConnection::UpdateSettings(pugi::xml_node a_settingsNode)
   m_presets.allocImageB = (std::wstring(a_settingsNode.child(L"method_secondary").text().as_string()) == L"lighttracing") || 
                           (std::wstring(a_settingsNode.child(L"method_primary").text().as_string())   == L"lighttracing");
 
+  m_presets.allocImageBOnGPU = (std::wstring(a_settingsNode.child(L"forceGPUFrameBuffer").text().as_string()) == L"1");
+
   return true;
 }
 
@@ -466,6 +470,11 @@ void RD_HydraConnection::RunAllHydraHeads()
 
     if (m_presets.allocImageB)          // this is needed for LT and IBPT
       auxInput << "-alloc_image_b 1 ";  // this is needed for LT and IBPT
+
+    if(m_presets.allocImageBOnGPU)
+      auxInput << "-cpu_fb 0 ";
+    else
+      auxInput << "-cpu_fb 1 ";
 
     params.customExePath = "C:/[Hydra]/bin2/hydra.exe";
     params.customExeArgs = auxInput.str();
