@@ -529,9 +529,6 @@ struct HRObjectManager
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 
-  HRSceneData&   scnlib()           { return scnData; }
-  const HRSceneData& scnlib() const { return scnData; }
-
   HRMesh*        PtrById(HRMeshRef a_ref);
   HRLight*       PtrById(HRLightRef a_ref);
   HRMaterial*    PtrById(HRMaterialRef a_ref);
@@ -553,16 +550,16 @@ struct HRObjectManager
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 
-  inline pugi::xml_node textures_lib_append_child()  { return scnlib().m_texturesLibChanges.append_child(L"texture"); }
-  inline pugi::xml_node materials_lib_append_child() { return scnlib().m_materialsLibChanges.append_child(L"material"); }
-  inline pugi::xml_node lights_lib_append_child()    { return scnlib().m_lightsLibChanges.append_child(L"light"); }
-  inline pugi::xml_node camera_lib_append_child()    { return scnlib().m_cameraLibChanges.append_child(L"camera"); }
+  inline pugi::xml_node textures_lib_append_child()  { return scnData.m_texturesLibChanges.append_child(L"texture"); }
+  inline pugi::xml_node materials_lib_append_child() { return scnData.m_materialsLibChanges.append_child(L"material"); }
+  inline pugi::xml_node lights_lib_append_child()    { return scnData.m_lightsLibChanges.append_child(L"light"); }
+  inline pugi::xml_node camera_lib_append_child()    { return scnData.m_cameraLibChanges.append_child(L"camera"); }
 
-  inline pugi::xml_node geom_lib_append_child()      { return scnlib().m_geometryLibChanges.append_child(L"mesh"); }
-  inline pugi::xml_node scenes_node_append_child()   { return scnlib().m_sceneNodeChanges.append_child(L"scene"); }
-  inline pugi::xml_node settings_lib_append_child()  { return scnlib().m_settingsNodeChanges.append_child(L"render_settings"); }
+  inline pugi::xml_node geom_lib_append_child()      { return scnData.m_geometryLibChanges.append_child(L"mesh"); }
+  inline pugi::xml_node scenes_node_append_child()   { return scnData.m_sceneNodeChanges.append_child(L"scene"); }
+  inline pugi::xml_node settings_lib_append_child()  { return scnData.m_settingsNodeChanges.append_child(L"render_settings"); }
 
-  inline pugi::xml_node trash_node()                 { return scnlib().m_trashNode; }
+  inline pugi::xml_node trash_node()                 { return scnData.m_trashNode; }
 
   void BadMaterialId(int32_t a_id) { if (m_badMaterialId.size() < 10) m_badMaterialId.push_back(a_id); }
   std::vector<int32_t> m_badMaterialId;

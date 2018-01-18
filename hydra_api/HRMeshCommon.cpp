@@ -172,8 +172,8 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
 
   const size_t totalByteSize = data.sizeInBytes();
 
-  const size_t chunkId = g_objManager.scnlib().m_vbCache.AllocChunk(totalByteSize, pSysObj->id);
-  auto& chunk          = g_objManager.scnlib().m_vbCache.chunk_at(chunkId);
+  const size_t chunkId = g_objManager.scnData.m_vbCache.AllocChunk(totalByteSize, pSysObj->id);
+  auto& chunk          = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
   chunk.type           = CHUNK_TYPE_VSGF;
    
   if (chunkId == size_t(-1))

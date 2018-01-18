@@ -89,7 +89,6 @@ int main(int argc, const char** argv)
     //run_all_ipp_tests();
     //run_all_api_tests();
 
-    test76_empty_mesh();
     //std::cout << test75_repeated_render() << std::endl;
     //std::cout << test48_light_geom_sphere() << std::endl;
     //test39_mesh_from_vsgf();
@@ -103,7 +102,7 @@ int main(int argc, const char** argv)
     
     //GEO_TESTS::test_001_mesh_from_memory();
     //MTL_TESTS::test_119_opacity_texture();
-    //LGHT_TESTS::test_205_sky_and_directional_sun();
+    LGHT_TESTS::test_228_point_ies_for_bpt();
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
 
     //window_main_free_look(L"tests_f/test_241", L"opengl1Debug");

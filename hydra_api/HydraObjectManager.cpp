@@ -66,7 +66,7 @@ void HRObjectManager::init(const wchar_t* a_className)
   }
 
   m_pFactory = new HydraFactoryCommon;
-  scnlib().init();
+  scnData.init();
 
   _hrInitPostProcess();
 }
@@ -82,39 +82,39 @@ void HRObjectManager::destroy()
     r.clear();
   renderSettings.clear();
 
-  scnData.clear(); // for all scnlib() --> .clear()
+  scnData.clear(); // for all scnData --> .clear()
   scnInst.clear();
   _hrDestroyPostProcess();
 
-	scnlib().m_xmlDoc.reset();
-	scnlib().m_xmlDocChanges.reset();
+	scnData.m_xmlDoc.reset();
+	scnData.m_xmlDocChanges.reset();
 
-	scnlib().m_texturesLib  = pugi::xml_node();
-	scnlib().m_materialsLib = pugi::xml_node();
-	scnlib().m_lightsLib    = pugi::xml_node();
-	scnlib().m_cameraLib    = pugi::xml_node();
-	scnlib().m_geometryLib  = pugi::xml_node();
-	scnlib().m_settingsNode = pugi::xml_node();
-	scnlib().m_sceneNode    = pugi::xml_node();
+	scnData.m_texturesLib  = pugi::xml_node();
+	scnData.m_materialsLib = pugi::xml_node();
+	scnData.m_lightsLib    = pugi::xml_node();
+	scnData.m_cameraLib    = pugi::xml_node();
+	scnData.m_geometryLib  = pugi::xml_node();
+	scnData.m_settingsNode = pugi::xml_node();
+	scnData.m_sceneNode    = pugi::xml_node();
 
-	scnlib().m_texturesLibChanges	 = pugi::xml_node();
-	scnlib().m_materialsLibChanges = pugi::xml_node();
-	scnlib().m_lightsLibChanges		 = pugi::xml_node();
-	scnlib().m_cameraLibChanges		 = pugi::xml_node();
-	scnlib().m_geometryLibChanges	 = pugi::xml_node();
-	scnlib().m_settingsNodeChanges = pugi::xml_node();
-	scnlib().m_sceneNodeChanges		 = pugi::xml_node();
+	scnData.m_texturesLibChanges	 = pugi::xml_node();
+	scnData.m_materialsLibChanges = pugi::xml_node();
+	scnData.m_lightsLibChanges		 = pugi::xml_node();
+	scnData.m_cameraLibChanges		 = pugi::xml_node();
+	scnData.m_geometryLibChanges	 = pugi::xml_node();
+	scnData.m_settingsNodeChanges = pugi::xml_node();
+	scnData.m_sceneNodeChanges		 = pugi::xml_node();
 }
 
 const std::wstring HRObjectManager::GetLoc(const pugi::xml_node a_node) const
 {
-  return scnlib().m_path + std::wstring(L"/") + std::wstring(a_node.attribute(L"loc").as_string());
+  return scnData.m_path + std::wstring(L"/") + std::wstring(a_node.attribute(L"loc").as_string());
   //return std::wstring(a_node.attribute(L"loc").as_string());
 }
 
 void HRObjectManager::SetLoc(pugi::xml_node a_node, const std::wstring& a_loc)
 {
-  const std::wstring& libPath = scnlib().m_path;
+  const std::wstring& libPath = scnData.m_path;
   const size_t charsNum       = libPath.size();
   const std::wstring loc      = a_loc.substr(charsNum+1, a_loc.size());
 
@@ -127,67 +127,67 @@ void HRObjectManager::SetLoc(pugi::xml_node a_node, const std::wstring& a_loc)
 
 HRMesh* HRObjectManager::PtrById(HRMeshRef a_ref)
 {
-  if (scnlib().meshes.size() == 0)
+  if (scnData.meshes.size() == 0)
     return nullptr;
-  else if (a_ref.id < 0 || a_ref.id >(int32_t)scnlib().meshes.size())
+  else if (a_ref.id < 0 || a_ref.id >(int32_t)scnData.meshes.size())
   {
     HrError(L"Invalid HRMeshRef, id = ", a_ref.id);
     return nullptr;
   }
   else
-    return &scnlib().meshes[a_ref.id];
+    return &scnData.meshes[a_ref.id];
 }
 
 HRLight* HRObjectManager::PtrById(HRLightRef a_ref)
 {
-  if (scnlib().lights.size() == 0)
+  if (scnData.lights.size() == 0)
     return nullptr;
-  else if (a_ref.id < 0 || a_ref.id >(int32_t)scnlib().lights.size())
+  else if (a_ref.id < 0 || a_ref.id >(int32_t)scnData.lights.size())
   {
     HrError(L"Invalid HRLightRef, id = ", a_ref.id);
     return nullptr;
   }
   else
-    return &scnlib().lights[a_ref.id];
+    return &scnData.lights[a_ref.id];
 }
 
 HRMaterial* HRObjectManager::PtrById(HRMaterialRef a_ref)
 {
-  if (scnlib().materials.size() == 0)
+  if (scnData.materials.size() == 0)
     return nullptr;
-  else if (a_ref.id < 0 || a_ref.id >(int32_t)scnlib().materials.size())
+  else if (a_ref.id < 0 || a_ref.id >(int32_t)scnData.materials.size())
   {
     HrError(L"Invalid HRMaterialRef, id = ", a_ref.id);
     return nullptr;
   }
   else
-    return &scnlib().materials[a_ref.id];
+    return &scnData.materials[a_ref.id];
 }
 
 HRCamera* HRObjectManager::PtrById(HRCameraRef a_ref)
 {
-  if (scnlib().cameras.size() == 0)
+  if (scnData.cameras.size() == 0)
     return nullptr;
-  else if (a_ref.id < 0 || a_ref.id >(int32_t)scnlib().cameras.size())
+  else if (a_ref.id < 0 || a_ref.id >(int32_t)scnData.cameras.size())
   {
     //Error(L"Invalid HRCameraRef, id = ", a_ref.id);
     return nullptr;
   }
   else
-    return &scnlib().cameras[a_ref.id];
+    return &scnData.cameras[a_ref.id];
 }
 
 HRTextureNode* HRObjectManager::PtrById(HRTextureNodeRef a_ref)
 {
-  if (scnlib().textures.size() == 0)
+  if (scnData.textures.size() == 0)
     return nullptr;
-  else if (a_ref.id < 0 || a_ref.id >(int32_t)scnlib().textures.size())
+  else if (a_ref.id < 0 || a_ref.id >(int32_t)scnData.textures.size())
   {
     //Error(L"Invalid HRTextureNodeRef, id = ", a_ref.id);
     return nullptr;
   }
   else
-    return &scnlib().textures[a_ref.id];
+    return &scnData.textures[a_ref.id];
 }
 
 HRSceneInst* HRObjectManager::PtrById(HRSceneInstRef a_ref)
@@ -222,20 +222,20 @@ void HRObjectManager::CommitChanges(pugi::xml_document& a_from, pugi::xml_docume
 {
   // copy 'a_from' to 'a_to' #TODO: optimize this brute force Update loop
   //
-  for (size_t i = 0; i < g_objManager.scnlib().lights.size(); i++)
-    g_objManager.scnlib().lights[i].commit();
+  for (size_t i = 0; i < g_objManager.scnData.lights.size(); i++)
+    g_objManager.scnData.lights[i].commit();
 
-  for (size_t i = 0; i < g_objManager.scnlib().materials.size(); i++)
-    g_objManager.scnlib().materials[i].commit();
+  for (size_t i = 0; i < g_objManager.scnData.materials.size(); i++)
+    g_objManager.scnData.materials[i].commit();
 
-	for (size_t i = 0; i < g_objManager.scnlib().textures.size(); i++)
-		g_objManager.scnlib().textures[i].commit();
+	for (size_t i = 0; i < g_objManager.scnData.textures.size(); i++)
+		g_objManager.scnData.textures[i].commit();
 
-  for (size_t i = 0; i < g_objManager.scnlib().cameras.size(); i++)
-    g_objManager.scnlib().cameras[i].commit();
+  for (size_t i = 0; i < g_objManager.scnData.cameras.size(); i++)
+    g_objManager.scnData.cameras[i].commit();
 
-  for (size_t i = 0; i < g_objManager.scnlib().meshes.size(); i++)
-    g_objManager.scnlib().meshes[i].commit();
+  for (size_t i = 0; i < g_objManager.scnData.meshes.size(); i++)
+    g_objManager.scnData.meshes[i].commit();
 
   for (size_t i = 0; i < g_objManager.scnInst.size(); i++)
     g_objManager.scnInst[i].commit();
@@ -245,31 +245,31 @@ void HRObjectManager::CommitChanges(pugi::xml_document& a_from, pugi::xml_docume
 
   // ...
   //
-  scnlib().m_texturesLib         = a_to.child(L"textures_lib");
-  scnlib().m_materialsLib        = a_to.child(L"materials_lib");
-  scnlib().m_lightsLib           = a_to.child(L"lights_lib");
-  scnlib().m_geometryLib         = a_to.child(L"geometry_lib");
-  scnlib().m_cameraLib           = a_to.child(L"cam_lib");
-  scnlib().m_settingsNode        = a_to.child(L"render_lib");
-  scnlib().m_sceneNode           = a_to.child(L"scenes");
+  scnData.m_texturesLib         = a_to.child(L"textures_lib");
+  scnData.m_materialsLib        = a_to.child(L"materials_lib");
+  scnData.m_lightsLib           = a_to.child(L"lights_lib");
+  scnData.m_geometryLib         = a_to.child(L"geometry_lib");
+  scnData.m_cameraLib           = a_to.child(L"cam_lib");
+  scnData.m_settingsNode        = a_to.child(L"render_lib");
+  scnData.m_sceneNode           = a_to.child(L"scenes");
 
-	scnlib().m_texturesLibChanges  = a_from.child(L"textures_lib");
-	scnlib().m_materialsLibChanges = a_from.child(L"materials_lib");
-  scnlib().m_lightsLibChanges    = a_from.child(L"lights_lib");
-  scnlib().m_geometryLibChanges  = a_from.child(L"geometry_lib");
-  scnlib().m_cameraLibChanges    = a_from.child(L"cam_lib");
-  scnlib().m_settingsNodeChanges = a_from.child(L"render_lib");
-  scnlib().m_sceneNodeChanges    = a_from.child(L"scenes");
+	scnData.m_texturesLibChanges  = a_from.child(L"textures_lib");
+	scnData.m_materialsLibChanges = a_from.child(L"materials_lib");
+  scnData.m_lightsLibChanges    = a_from.child(L"lights_lib");
+  scnData.m_geometryLibChanges  = a_from.child(L"geometry_lib");
+  scnData.m_cameraLibChanges    = a_from.child(L"cam_lib");
+  scnData.m_settingsNodeChanges = a_from.child(L"render_lib");
+  scnData.m_sceneNodeChanges    = a_from.child(L"scenes");
 
 
   // clear changes
   //
-  clear_node_childs(scnlib().m_texturesLibChanges);
-  clear_node_childs(scnlib().m_materialsLibChanges);
-  clear_node_childs(scnlib().m_lightsLibChanges);
-  clear_node_childs(scnlib().m_geometryLibChanges);
-  clear_node_childs(scnlib().m_settingsNodeChanges);
-  clear_node_childs(scnlib().m_sceneNodeChanges);
+  clear_node_childs(scnData.m_texturesLibChanges);
+  clear_node_childs(scnData.m_materialsLibChanges);
+  clear_node_childs(scnData.m_lightsLibChanges);
+  clear_node_childs(scnData.m_geometryLibChanges);
+  clear_node_childs(scnData.m_settingsNodeChanges);
+  clear_node_childs(scnData.m_sceneNodeChanges);
 }
 
 

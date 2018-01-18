@@ -30,7 +30,7 @@ using HydraLiteMath::float4;
 HAPI HRLightRef hrLightCreate(const wchar_t* a_objectName)
 {
   HRLightRef ref;
-  ref.id = HR_IDType(g_objManager.scnlib().lights.size());
+  ref.id = HR_IDType(g_objManager.scnData.lights.size());
 
   std::wstring nameGenerated;
   if (a_objectName == nullptr) // create internal name for material
@@ -43,7 +43,7 @@ HAPI HRLightRef hrLightCreate(const wchar_t* a_objectName)
 
   HRLight light;
   light.name = std::wstring(a_objectName);
-  g_objManager.scnlib().lights.push_back(light);
+  g_objManager.scnData.lights.push_back(light);
 
 
   pugi::xml_node nodeXml = g_objManager.lights_lib_append_child();
@@ -55,8 +55,8 @@ HAPI HRLightRef hrLightCreate(const wchar_t* a_objectName)
   nodeXml.append_attribute(L"distribution").set_value(L"omni");
 	nodeXml.append_attribute(L"visible").set_value(L"1");
 
-  g_objManager.scnlib().lights[ref.id].update_next(nodeXml);
-  g_objManager.scnlib().lights[ref.id].id = ref.id;
+  g_objManager.scnData.lights[ref.id].update_next(nodeXml);
+  g_objManager.scnData.lights[ref.id].id = ref.id;
 
   return ref;
 }
@@ -148,7 +148,7 @@ HAPI void hrLightClose(HRLightRef a_pLight)
       fileNameOut << L"data/ies_" << a_pLight.id << ".ies";
 
       std::wstring newFileName = fileNameOut.str();
-      std::wstring fullPath    = g_objManager.scnlib().m_path + std::wstring(L"/") + newFileName;
+      std::wstring fullPath    = g_objManager.scnData.m_path + std::wstring(L"/") + newFileName;
 
       auto p = g_objManager.scnData.m_iesCache.find(iesFilePath); //#TODO: add some test for check m_iesCache in work!!!
       if (p == g_objManager.scnData.m_iesCache.end())

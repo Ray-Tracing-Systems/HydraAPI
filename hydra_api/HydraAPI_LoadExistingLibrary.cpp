@@ -29,8 +29,8 @@ HRTextureNodeRef _hrTexture2DCreateFromNode(pugi::xml_node a_node)
 
   /////////////////////////////////////////////////////////////////////////////////////////////////
   {
-    auto p = g_objManager.scnlib().m_textureCache.find(a_fileName2);
-    if (p != g_objManager.scnlib().m_textureCache.end() && std::wstring(a_fileName2) != L"")
+    auto p = g_objManager.scnData.m_textureCache.find(a_fileName2);
+    if (p != g_objManager.scnData.m_textureCache.end() && std::wstring(a_fileName2) != L"")
     {
       HRTextureNodeRef ref;
       ref.id = p->second;
@@ -41,17 +41,17 @@ HRTextureNodeRef _hrTexture2DCreateFromNode(pugi::xml_node a_node)
 
   HRTextureNode texRes;
   texRes.name = std::wstring(a_fileName1);
-  texRes.id   = g_objManager.scnlib().textures.size();
-  g_objManager.scnlib().textures.push_back(texRes);
+  texRes.id   = g_objManager.scnData.textures.size();
+  g_objManager.scnData.textures.push_back(texRes);
 
   HRTextureNodeRef ref;
-  ref.id = HR_IDType(g_objManager.scnlib().textures.size() - 1);
+  ref.id = HR_IDType(g_objManager.scnData.textures.size() - 1);
 
-  HRTextureNode& texture   = g_objManager.scnlib().textures[ref.id];
+  HRTextureNode& texture   = g_objManager.scnData.textures[ref.id];
   texture.m_loadedFromFile = true;
 
-  g_objManager.scnlib().textures      [ref.id].update_this(a_node);
-  g_objManager.scnlib().m_textureCache[a_fileName2] = ref.id; // remember texture id for given file name
+  g_objManager.scnData.textures      [ref.id].update_this(a_node);
+  g_objManager.scnData.m_textureCache[a_fileName2] = ref.id; // remember texture id for given file name
 
   if (std::wstring(a_chunkPath) != L"")
     texture.pImpl = g_objManager.m_pFactory->CreateTextureInfoFromChunkFile(&texture, a_chunkPath);
@@ -64,12 +64,12 @@ HRMaterialRef _hrMaterialCreateFromNode(pugi::xml_node a_node)
   const wchar_t* a_objectName = a_node.attribute(L"name").as_string();
 
   HRMaterialRef ref;
-  ref.id = HR_IDType(g_objManager.scnlib().materials.size());
+  ref.id = HR_IDType(g_objManager.scnData.materials.size());
 
   HRMaterial mat;
   mat.name = std::wstring(a_objectName);
-  g_objManager.scnlib().materials.push_back(mat);
-  g_objManager.scnlib().materials[ref.id].update_this(a_node);
+  g_objManager.scnData.materials.push_back(mat);
+  g_objManager.scnData.materials[ref.id].update_this(a_node);
 
   return ref;
 }
@@ -83,15 +83,15 @@ HAPI HRMeshRef _hrMeshCreateFromNode(pugi::xml_node a_node)
 
   HRMesh mesh;
   mesh.name = std::wstring(a_objectName);
-  g_objManager.scnlib().meshes.push_back(mesh);
+  g_objManager.scnData.meshes.push_back(mesh);
 
   HRMeshRef ref;
-  ref.id = HR_IDType(g_objManager.scnlib().meshes.size() - 1);
+  ref.id = HR_IDType(g_objManager.scnData.meshes.size() - 1);
 
-  g_objManager.scnlib().meshes[ref.id].update_this(a_node);
-  g_objManager.scnlib().meshes[ref.id].id = ref.id;
+  g_objManager.scnData.meshes[ref.id].update_this(a_node);
+  g_objManager.scnData.meshes[ref.id].id = ref.id;
 
-  HRMesh* pMesh = &g_objManager.scnlib().meshes[ref.id];
+  HRMesh* pMesh = &g_objManager.scnData.meshes[ref.id];
   pMesh->pImpl  = g_objManager.m_pFactory->CreateVSGFFromFile(pMesh, a_fileName);
 
   if (pMesh->pImpl == nullptr)
@@ -105,14 +105,14 @@ HRLightRef _hrLightCreateFromNode(pugi::xml_node a_node)
   const wchar_t* a_objectName = a_node.attribute(L"name").as_string();
 
   HRLightRef ref;
-  ref.id = HR_IDType(g_objManager.scnlib().lights.size());
+  ref.id = HR_IDType(g_objManager.scnData.lights.size());
 
   HRLight light;
   light.name = std::wstring(a_objectName);
-  g_objManager.scnlib().lights.push_back(light);
+  g_objManager.scnData.lights.push_back(light);
 
-  g_objManager.scnlib().lights[ref.id].update_this(a_node);
-  g_objManager.scnlib().lights[ref.id].id = ref.id;
+  g_objManager.scnData.lights[ref.id].update_this(a_node);
+  g_objManager.scnData.lights[ref.id].id = ref.id;
 
   return ref;
 }
@@ -123,13 +123,13 @@ HAPI HRCameraRef _hrCameraCreateFromNode(pugi::xml_node a_node)
 
   HRCamera cam;
   cam.name = std::wstring(a_objectName);
-  g_objManager.scnlib().cameras.push_back(cam);
+  g_objManager.scnData.cameras.push_back(cam);
 
   HRCameraRef ref;
-  ref.id = HR_IDType(g_objManager.scnlib().cameras.size() - 1);
+  ref.id = HR_IDType(g_objManager.scnData.cameras.size() - 1);
 
-  g_objManager.scnlib().cameras[ref.id].update_this(a_node);
-  g_objManager.scnlib().cameras[ref.id].id = ref.id;
+  g_objManager.scnData.cameras[ref.id].update_this(a_node);
+  g_objManager.scnData.cameras[ref.id].id = ref.id;
 
   return ref;
 }
@@ -304,7 +304,7 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int32_t a_stateId)
   g_objManager.scnData.clear();
   g_objManager.scnInst.clear();
 
-  auto loadResult = g_objManager.scnlib().m_xmlDoc.load_file(fileName.c_str());
+  auto loadResult = g_objManager.scnData.m_xmlDoc.load_file(fileName.c_str());
 
   if (!loadResult)
   {
@@ -312,41 +312,41 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int32_t a_stateId)
     return -1;
   }
 
-  g_objManager.scnlib().init_existing();
+  g_objManager.scnData.init_existing();
 
   // (2) set change id to curr value
   //
-  g_objManager.scnlib().changeId = stateId;
+  g_objManager.scnData.changeId = stateId;
 
   // (3) load textures
   //
-  g_objManager.scnlib().textures.reserve(HRSceneData::TEXTURES_RESERVE);
-  g_objManager.scnlib().meshes.reserve(HRSceneData::MESHES_RESERVE);
-  g_objManager.scnlib().lights.reserve(HRSceneData::LIGHTS_RESERVE);
-  g_objManager.scnlib().materials.reserve(HRSceneData::MATERIAL_RESERVE);
-  g_objManager.scnlib().cameras.reserve(HRSceneData::CAMERAS_RESERVE);
+  g_objManager.scnData.textures.reserve(HRSceneData::TEXTURES_RESERVE);
+  g_objManager.scnData.meshes.reserve(HRSceneData::MESHES_RESERVE);
+  g_objManager.scnData.lights.reserve(HRSceneData::LIGHTS_RESERVE);
+  g_objManager.scnData.materials.reserve(HRSceneData::MATERIAL_RESERVE);
+  g_objManager.scnData.cameras.reserve(HRSceneData::CAMERAS_RESERVE);
 
-  for (pugi::xml_node node = g_objManager.scnlib().m_texturesLib.first_child(); node != nullptr; node = node.next_sibling())
+  for (pugi::xml_node node = g_objManager.scnData.m_texturesLib.first_child(); node != nullptr; node = node.next_sibling())
     _hrTexture2DCreateFromNode(node);
 
   // (4) load materials
   //
-  for (pugi::xml_node node = g_objManager.scnlib().m_materialsLib.first_child(); node != nullptr; node = node.next_sibling())
+  for (pugi::xml_node node = g_objManager.scnData.m_materialsLib.first_child(); node != nullptr; node = node.next_sibling())
     _hrMaterialCreateFromNode(node);
 
   // (5) load geom
   //
-  for (pugi::xml_node node = g_objManager.scnlib().m_geometryLib.first_child(); node != nullptr; node = node.next_sibling())
+  for (pugi::xml_node node = g_objManager.scnData.m_geometryLib.first_child(); node != nullptr; node = node.next_sibling())
     _hrMeshCreateFromNode(node);
 
   // (6) load lights
   //
-  for (pugi::xml_node node = g_objManager.scnlib().m_lightsLib.first_child(); node != nullptr; node = node.next_sibling())
+  for (pugi::xml_node node = g_objManager.scnData.m_lightsLib.first_child(); node != nullptr; node = node.next_sibling())
     _hrLightCreateFromNode(node);
 
   // (7) load camera
   //
-  for (pugi::xml_node node = g_objManager.scnlib().m_cameraLib.first_child(); node != nullptr; node = node.next_sibling())
+  for (pugi::xml_node node = g_objManager.scnData.m_cameraLib.first_child(); node != nullptr; node = node.next_sibling())
     _hrCameraCreateFromNode(node);
 
   g_objManager.scnInst.resize(0);
@@ -354,7 +354,7 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int32_t a_stateId)
 
   // (8) load instanced objects (i.e. scenes)
   //
-  for (pugi::xml_node node = g_objManager.scnlib().m_sceneNode.first_child(); node != nullptr; node = node.next_sibling())
+  for (pugi::xml_node node = g_objManager.scnData.m_sceneNode.first_child(); node != nullptr; node = node.next_sibling())
   {
     g_objManager.scnInst.push_back(HRSceneInst());
 
@@ -375,14 +375,14 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int32_t a_stateId)
 
   // (9) load render settings
   //
-  pugi::xml_node renderSettings = g_objManager.scnlib().m_settingsNode.first_child();
+  pugi::xml_node renderSettings = g_objManager.scnData.m_settingsNode.first_child();
   _hrRendeSettingsFromNode(renderSettings);
 
 
   // (10) load empty chunks to have correct chunk id for new objects
   //
-  size_t chunks = size_t(g_objManager.scnlib().m_geometryLib.attribute(L"total_chunks").as_llong());
-  g_objManager.scnlib().m_vbCache.ResizeAndAllocEmptyChunks(chunks);
+  size_t chunks = size_t(g_objManager.scnData.m_geometryLib.attribute(L"total_chunks").as_llong());
+  g_objManager.scnData.m_vbCache.ResizeAndAllocEmptyChunks(chunks);
 
   return 0;
 }

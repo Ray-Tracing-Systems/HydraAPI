@@ -25,7 +25,7 @@ extern HRObjectManager   g_objManager;
 HAPI HRMaterialRef hrMaterialCreate(const wchar_t* a_objectName)
 {
   HRMaterialRef ref;
-  ref.id = HR_IDType(g_objManager.scnlib().materials.size());
+  ref.id = HR_IDType(g_objManager.scnData.materials.size());
 
   std::wstring nameGenerated;
   if (a_objectName == nullptr) // create internal name for material
@@ -38,7 +38,7 @@ HAPI HRMaterialRef hrMaterialCreate(const wchar_t* a_objectName)
 
   HRMaterial mat;
   mat.name = std::wstring(a_objectName);
-  g_objManager.scnlib().materials.push_back(mat);
+  g_objManager.scnData.materials.push_back(mat);
 
   pugi::xml_node matNodeXml = g_objManager.materials_lib_append_child();
 
@@ -46,7 +46,7 @@ HAPI HRMaterialRef hrMaterialCreate(const wchar_t* a_objectName)
   matNodeXml.append_attribute(L"name").set_value(mat.name.c_str());
   matNodeXml.append_attribute(L"type").set_value(L"hydra_material");
 
-  g_objManager.scnlib().materials[ref.id].update_next(matNodeXml);
+  g_objManager.scnData.materials[ref.id].update_next(matNodeXml);
 
   return ref;
 }
@@ -65,7 +65,7 @@ HAPI HRMaterialRef hrMaterialCreateBlend(const wchar_t* a_objectName, HRMaterial
   }
 
   HRMaterialRef ref;
-  ref.id = HR_IDType(g_objManager.scnlib().materials.size());
+  ref.id = HR_IDType(g_objManager.scnData.materials.size());
 
   std::wstring nameGenerated;
   if (a_objectName == nullptr) // create internal name for material
@@ -78,7 +78,7 @@ HAPI HRMaterialRef hrMaterialCreateBlend(const wchar_t* a_objectName, HRMaterial
 
   HRMaterial mat; // # create blend
   mat.name = std::wstring(a_objectName);
-  g_objManager.scnlib().materials.push_back(mat);
+  g_objManager.scnData.materials.push_back(mat);
 
 
   pugi::xml_node matNodeXml = g_objManager.materials_lib_append_child();
@@ -89,7 +89,7 @@ HAPI HRMaterialRef hrMaterialCreateBlend(const wchar_t* a_objectName, HRMaterial
   matNodeXml.append_attribute(L"node_top").set_value(a_pMat1.id);
   matNodeXml.append_attribute(L"node_bottom").set_value(a_pMat2.id);
 
-  g_objManager.scnlib().materials[ref.id].update_next(matNodeXml);
+  g_objManager.scnData.materials[ref.id].update_next(matNodeXml);
 
   return ref;
 }

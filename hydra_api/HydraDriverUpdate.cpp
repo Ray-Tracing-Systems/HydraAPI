@@ -71,10 +71,10 @@ void ScanXmlNodeRecursiveAndAppendTexture(pugi::xml_node a_node, std::unordered_
 
 void AddUsedMaterialChildrenRecursive(ChangeList& objects, int32_t matId)
 {
-	if (matId >= g_objManager.scnlib().materials.size())
+	if (matId >= g_objManager.scnData.materials.size())
 		return;
 
-  HRMaterial& mat = g_objManager.scnlib().materials[matId];
+  HRMaterial& mat = g_objManager.scnData.materials[matId];
   auto matNode = mat.xml_node_immediate();
   auto matType = std::wstring(matNode.attribute(L"type").as_string());
 
@@ -100,6 +100,8 @@ void FindNewObjects(ChangeList& objects, HRSceneInst& scn)
   for (size_t i = 0; i < scn.drawList.size(); i++)
   {
     auto instance = scn.drawList[i];
+    if (instance.meshId >= g_objManager.scnData.meshes.size()) //#TODO: ? add log message if need to debug some thiing here
+      continue;
 
     auto& mesh = g_objManager.scnData.meshes[instance.meshId];
 
@@ -141,12 +143,15 @@ void FindNewObjects(ChangeList& objects, HRSceneInst& scn)
 
   // (1.2) loop through needed meshed to define what material used in scene      --> ?
   //
-  if (g_objManager.scnlib().meshes.size() > 0)
+  if (g_objManager.scnData.meshes.size() > 0)
   {
     for (auto p = objects.meshUsed.begin(); p != objects.meshUsed.end(); ++p)
     {
       size_t meshId = (*p);
-      HRMesh& mesh = g_objManager.scnlib().meshes[meshId];
+      if (meshId >= g_objManager.scnData.meshes.size()) //#TODO: ? add log message if need to debug some thiing here
+        continue;
+
+      HRMesh& mesh = g_objManager.scnData.meshes[meshId];
       auto pImpl = mesh.pImpl;
 
       if (pImpl != nullptr)
@@ -166,14 +171,17 @@ void FindNewObjects(ChangeList& objects, HRSceneInst& scn)
 
   // (1.3) loop through needed materials to define what textures used in scene 
   //
-  if (g_objManager.scnlib().materials.size() > 0)
+  if (g_objManager.scnData.materials.size() > 0)
   {
     for (auto p = objects.matUsed.begin(); p != objects.matUsed.end(); ++p)
     {
       size_t matId = (*p);
-      if (matId < g_objManager.scnlib().materials.size())
+      if (matId >= g_objManager.scnData.materials.size()) //#TODO: ? add log message if need to debug some thiing here
+        continue;
+
+      if (matId < g_objManager.scnData.materials.size())
       {
-        HRMaterial& mat = g_objManager.scnlib().materials[matId];
+        HRMaterial& mat = g_objManager.scnData.materials[matId];
 
         // (1.3.1) list all textures for mat, add them to set
         //
@@ -189,14 +197,17 @@ void FindNewObjects(ChangeList& objects, HRSceneInst& scn)
 
   // (1.4) loop through all changed lights to define what lights are used in scene --> TEXTURES
   //
-  if (g_objManager.scnlib().lights.size() > 0)
+  if (g_objManager.scnData.lights.size() > 0)
   {
     for (auto p = objects.lightUsed.begin(); p != objects.lightUsed.end(); ++p)
     {
       size_t lightId = (*p);
-      if (lightId < g_objManager.scnlib().lights.size())
+      if (lightId >= g_objManager.scnData.lights.size()) //#TODO: ? add log message if need to debug some thiing here
+        continue;
+
+      if (lightId < g_objManager.scnData.lights.size())
       {
-        HRLight& light = g_objManager.scnlib().lights[lightId];
+        HRLight& light = g_objManager.scnData.lights[lightId];
         ScanXmlNodeRecursiveAndAppendTexture(light.xml_node_immediate(), objects.texturesUsed);
       }
     }
@@ -220,10 +231,10 @@ void InsertChangedIds(std::unordered_set<int32_t>& a_set, const std::unordered_s
 
 void FindOldObjectsThatWeNeedToUpdate(ChangeList& objects, HRSceneInst& scn)
 {
-  pugi::xml_node meshesChanges   = g_objManager.scnlib().m_geometryLibChanges;
-  pugi::xml_node lightsChanges   = g_objManager.scnlib().m_lightsLibChanges;
-  pugi::xml_node matsChanges     = g_objManager.scnlib().m_materialsLibChanges;
-  pugi::xml_node texturesChanges = g_objManager.scnlib().m_texturesLibChanges;
+  pugi::xml_node meshesChanges   = g_objManager.scnData.m_geometryLibChanges;
+  pugi::xml_node lightsChanges   = g_objManager.scnData.m_lightsLibChanges;
+  pugi::xml_node matsChanges     = g_objManager.scnData.m_materialsLibChanges;
+  pugi::xml_node texturesChanges = g_objManager.scnData.m_texturesLibChanges;
 
   InsertChangedIds(objects.meshUsed,     scn.meshUsedByDrv,  meshesChanges, L"mesh");
   InsertChangedIds(objects.lightUsed,    scn.lightUsedByDrv, lightsChanges, L"light");
@@ -238,9 +249,9 @@ void FindOldObjectsThatWeNeedToUpdate(ChangeList& objects, HRSceneInst& scn)
   {
     int matId = (*p);
 
-    if (size_t(matId) < g_objManager.scnlib().materials.size() && scn.texturesUsedByDrv.find(matId) == scn.texturesUsedByDrv.end())
+    if (size_t(matId) < g_objManager.scnData.materials.size() && scn.texturesUsedByDrv.find(matId) == scn.texturesUsedByDrv.end())
     {
-      HRMaterial& mat = g_objManager.scnlib().materials[matId];
+      HRMaterial& mat = g_objManager.scnData.materials[matId];
 
       // (1.3.1) list all textures for mat, add them to set
       //
@@ -271,7 +282,7 @@ void FindObjectsByDependency(ChangeList& objList, HRSceneInst& scn, IHRRenderDri
 
   if (dInfo.meshDependsOfMaterial)
   {
-    auto& depHashMap = g_objManager.scnlib().m_materialToMeshDependency;
+    auto& depHashMap = g_objManager.scnData.m_materialToMeshDependency;
 
     for (auto p = objList.matUsed.begin(); p != objList.matUsed.end(); ++p)
       for (auto meshListIter = depHashMap.find(*p); meshListIter != depHashMap.end() && meshListIter->first == (*p); ++meshListIter)
@@ -399,7 +410,7 @@ void UpdateImageFromFileOrChunk(int32_t a_id, HRTextureNode& img, IHRRenderDrive
 //
 int32_t HR_DriverUpdateTextures(HRSceneInst& scn, ChangeList& objList, IHRRenderDriver* a_pDriver)
 {
-  if (g_objManager.scnlib().textures.size() == 0 || a_pDriver == nullptr)
+  if (g_objManager.scnData.textures.size() == 0 || a_pDriver == nullptr)
     return 0;
 
   a_pDriver->BeginTexturesUpdate();
@@ -410,7 +421,7 @@ int32_t HR_DriverUpdateTextures(HRSceneInst& scn, ChangeList& objList, IHRRender
 
   for (auto p = objList.texturesUsed.begin(); p != objList.texturesUsed.end(); ++p)
   {
-    HRTextureNode& texNode = g_objManager.scnlib().textures[(*p)];
+    HRTextureNode& texNode = g_objManager.scnData.textures[(*p)];
 
     int32_t w     = 0;
     int32_t h     = 0;
@@ -426,7 +437,7 @@ int32_t HR_DriverUpdateTextures(HRSceneInst& scn, ChangeList& objList, IHRRender
       uint64_t chunkId = texNode.pImpl->chunkId();
       if (chunkId != uint64_t(-1))
       {
-        ChunkPointer chunk = g_objManager.scnlib().m_vbCache.chunk_at(chunkId);
+        ChunkPointer chunk = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
         dataPtr = (char*)chunk.GetMemoryNow();
       }
     }
@@ -471,7 +482,7 @@ int32_t HR_DriverUpdateMaterials(HRSceneInst& scn, ChangeList& objList, IHRRende
 {
   a_pDriver->BeginMaterialUpdate();
 
-  if (g_objManager.scnlib().materials.size() == 0)
+  if (g_objManager.scnData.materials.size() == 0)
     return 0;
 
   // we should update meterials in their id order !!!
@@ -486,9 +497,9 @@ int32_t HR_DriverUpdateMaterials(HRSceneInst& scn, ChangeList& objList, IHRRende
   for (auto p = idsToUpdate.begin(); p != idsToUpdate.end(); ++p)
   {
     int32_t matId = int32_t(*p);
-    if (matId < g_objManager.scnlib().materials.size())
+    if (matId < g_objManager.scnData.materials.size())
     {
-      pugi::xml_node node = g_objManager.scnlib().materials[matId].xml_node_immediate();
+      pugi::xml_node node = g_objManager.scnData.materials[matId].xml_node_immediate();
       scn.matUsedByDrv.insert(*p);
       a_pDriver->UpdateMaterial(int32_t(*p), node);
       updatedMaterials++;
@@ -508,7 +519,7 @@ int32_t HR_DriverUpdateLight(HRSceneInst& scn, ChangeList& objList, IHRRenderDri
 {
   a_pDriver->BeginLightsUpdate();
 
-  if (g_objManager.scnlib().lights.size() == 0)
+  if (g_objManager.scnData.lights.size() == 0)
     return 0;
 
   int32_t updatedLights = 0;
@@ -518,7 +529,7 @@ int32_t HR_DriverUpdateLight(HRSceneInst& scn, ChangeList& objList, IHRRenderDri
     auto id = (*p);
     if (id >= 0)
     {
-      pugi::xml_node node = g_objManager.scnlib().lights[id].xml_node_immediate();
+      pugi::xml_node node = g_objManager.scnData.lights[id].xml_node_immediate();
 
       scn.lightUsedByDrv.insert(*p);
       a_pDriver->UpdateLight(int32_t(*p), node);
@@ -534,7 +545,7 @@ int32_t HR_DriverUpdateLight(HRSceneInst& scn, ChangeList& objList, IHRRenderDri
 
 HRMeshDriverInput HR_GetMeshDataPointers(size_t a_meshId)
 {
-  HRSceneData& scn = g_objManager.scnlib();
+  HRSceneData& scn = g_objManager.scnData;
 
   HRMeshDriverInput input;
   if (a_meshId >= scn.meshes.size())
@@ -552,7 +563,7 @@ HRMeshDriverInput HR_GetMeshDataPointers(size_t a_meshId)
   if (chunkId == uint64_t(-1))
     return input;
 
-  ChunkPointer chunk  = g_objManager.scnlib().m_vbCache.chunk_at(chunkId);
+  ChunkPointer chunk  = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
   char* dataPtr       = (char*)chunk.GetMemoryNow();
 
   if (dataPtr == nullptr)
@@ -604,7 +615,7 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, const std::vector<HRBatchIn
 
   if (chunkId != uint64_t(-1))
   {
-    ChunkPointer chunk = g_objManager.scnlib().m_vbCache.chunk_at(chunkId);
+    ChunkPointer chunk = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
 
     g_objManager.m_tempBuffer.resize(chunk.sizeInBytes / uint64_t(sizeof(int)) + uint64_t(sizeof(int) * 16));
     dataPtr = (char*)&g_objManager.m_tempBuffer[0];
@@ -668,7 +679,7 @@ int32_t HR_DriverUpdateMeshes(HRSceneInst& scn, ChangeList& objList, IHRRenderDr
 
   for (auto p = objList.meshUsed.begin(); p != objList.meshUsed.end(); ++p)
   {
-    HRMesh& mesh            = g_objManager.scnlib().meshes[*p];
+    HRMesh& mesh            = g_objManager.scnData.meshes[*p];
     HRMeshDriverInput input = HR_GetMeshDataPointers(*p);
     pugi::xml_node meshNode = mesh.xml_node_immediate();
 
@@ -712,10 +723,10 @@ int32_t HR_DriverUpdateMeshes(HRSceneInst& scn, ChangeList& objList, IHRRenderDr
 
 void HR_DriverUpdateCamera(HRSceneInst& scn, ChangeList& objList, IHRRenderDriver* a_pDriver)
 {
-  if (g_objManager.m_currCamId >= g_objManager.scnlib().cameras.size())
+  if (g_objManager.m_currCamId >= g_objManager.scnData.cameras.size())
     return;
 
-  HRCamera& cam = g_objManager.scnlib().cameras[g_objManager.m_currCamId];
+  HRCamera& cam = g_objManager.scnData.cameras[g_objManager.m_currCamId];
 
   a_pDriver->UpdateCamera(cam.xml_node_immediate());
 }
@@ -763,7 +774,7 @@ int64_t EstimateGeometryMem(const ChangeList& a_objList)
 
   for (auto texId : a_objList.meshUsed)
   {
-    auto meshObj          = g_objManager.scnlib().meshes[texId];
+    auto meshObj          = g_objManager.scnData.meshes[texId];
     pugi::xml_node node   = meshObj.xml_node_immediate();
     const size_t byteSize = node.attribute(L"bytesize").as_llong();
     memAmount += byteSize;
@@ -778,7 +789,7 @@ int64_t EstimateTexturesMem(const ChangeList& a_objList)
 
   for (auto texId : a_objList.texturesUsed)
   {
-    auto texObj           = g_objManager.scnlib().textures[texId];
+    auto texObj           = g_objManager.scnData.textures[texId];
     pugi::xml_node node   = texObj.xml_node_immediate();
     const size_t byteSize = node.attribute(L"bytesize").as_llong();
     memAmount += byteSize;
@@ -817,7 +828,7 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 
     allocInfo.imgMem      = (4*neededMemT/3) + 512*1024*1024;
     allocInfo.geomMem     = (4*neededMemG/3) + 256*1024*1024;
-    allocInfo.libraryPath = g_objManager.scnlib().m_path.c_str();
+    allocInfo.libraryPath = g_objManager.scnData.m_path.c_str();
 
     HR_DriverUpdateSettings(scn, objList, a_pDriver);
 

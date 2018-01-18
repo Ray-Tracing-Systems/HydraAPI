@@ -133,10 +133,10 @@ HAPI HRMeshRef hrMeshCreate(const wchar_t* a_objectName)
 {
   HRMesh mesh;
   mesh.name = std::wstring(a_objectName);
-  g_objManager.scnlib().meshes.push_back(mesh);
+  g_objManager.scnData.meshes.push_back(mesh);
 
   HRMeshRef ref;
-  ref.id = HR_IDType(g_objManager.scnlib().meshes.size() - 1);
+  ref.id = HR_IDType(g_objManager.scnData.meshes.size() - 1);
 
   pugi::xml_node nodeXml = g_objManager.geom_lib_append_child();
 
@@ -157,8 +157,8 @@ HAPI HRMeshRef hrMeshCreate(const wchar_t* a_objectName)
   nodeXml.append_attribute(L"dl").set_value(L"0");
   nodeXml.append_attribute(L"path").set_value(L"");
 
-  g_objManager.scnlib().meshes[ref.id].update_next(nodeXml);
-  g_objManager.scnlib().meshes[ref.id].id = ref.id;
+  g_objManager.scnData.meshes[ref.id].update_next(nodeXml);
+  g_objManager.scnData.meshes[ref.id].id = ref.id;
 
   return ref;
 }
@@ -171,13 +171,13 @@ HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName)
   // (1) this implementation is old, we create the new one later
   // 
   // HRMeshRef ref = hrMeshCreate(a_fileName);
-  // pugi::xml_node nodeXml = g_objManager.scnlib().meshes[ref.id].xml_node_immediate();
+  // pugi::xml_node nodeXml = g_objManager.scnData.meshes[ref.id].xml_node_immediate();
   // nodeXml.attribute(L"dl").set_value(L"1");
   // nodeXml.attribute(L"path").set_value(a_fileName);
   // 
   // ReadInfoFromVSGFHeaderToXML(a_fileName, nodeXml, true);
   // 
-  // HRMesh* pMesh = &g_objManager.scnlib().meshes[ref.id];
+  // HRMesh* pMesh = &g_objManager.scnData.meshes[ref.id];
   // pMesh->pImpl  = g_objManager.m_pFactory->CreateVSGFFromFile(pMesh, a_fileName);
 
   // (2) to have this function works, we temporary convert it via common mesh that placed in memory, not really DelayedLoad (!!!)
@@ -264,7 +264,7 @@ void OpenHRMesh(HRMesh* pMesh, pugi::xml_node nodeXml)
   // form m_input from serialized representation ... 
   //
   auto chunkId = pMesh->pImpl->chunkId();
-  auto chunk   = g_objManager.scnlib().m_vbCache.chunk_at(chunkId);
+  auto chunk   = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
 
   pMesh->m_input.clear();
 
@@ -384,7 +384,7 @@ HAPI void hrMeshClose(HRMeshRef a_mesh)
   //
   auto& mindices = pMesh->m_input.matIndices;
   for (size_t i = 0; i < mindices.size(); i++)
-    g_objManager.scnlib().m_materialToMeshDependency.emplace(mindices[i], a_mesh.id);
+    g_objManager.scnData.m_materialToMeshDependency.emplace(mindices[i], a_mesh.id);
 
   pMesh->pImpl  = g_objManager.m_pFactory->CreateVSGFFromSimpleInputMesh(pMesh);
   pMesh->opened = false;
@@ -398,7 +398,7 @@ HAPI void hrMeshClose(HRMeshRef a_mesh)
   ////
   //
   size_t       chunkId  = pImpl->chunkId();
-  ChunkPointer chunk    = g_objManager.scnlib().m_vbCache.chunk_at(chunkId);
+  ChunkPointer chunk    = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
   std::wstring location = ChunkName(chunk);
 
 

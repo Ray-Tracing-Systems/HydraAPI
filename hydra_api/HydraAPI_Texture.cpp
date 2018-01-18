@@ -53,8 +53,8 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFile(const wchar_t* a_fileName, int w
   /////////////////////////////////////////////////////////////////////////////////////////////////
 
   {
-    auto p = g_objManager.scnlib().m_textureCache.find(a_fileName);
-    if (p != g_objManager.scnlib().m_textureCache.end())
+    auto p = g_objManager.scnData.m_textureCache.find(a_fileName);
+    if (p != g_objManager.scnData.m_textureCache.end())
     {
       HRTextureNodeRef ref;
       ref.id = p->second;
@@ -66,25 +66,25 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFile(const wchar_t* a_fileName, int w
 
   HRTextureNode texRes;
   texRes.name = std::wstring(a_fileName);
-  texRes.id   = g_objManager.scnlib().textures.size();
-  g_objManager.scnlib().textures.push_back(texRes);
+  texRes.id   = g_objManager.scnData.textures.size();
+  g_objManager.scnData.textures.push_back(texRes);
 
   HRTextureNodeRef ref;
-  ref.id = HR_IDType(g_objManager.scnlib().textures.size() - 1);
+  ref.id = HR_IDType(g_objManager.scnData.textures.size() - 1);
 
-  HRTextureNode& texture = g_objManager.scnlib().textures[ref.id];
+  HRTextureNode& texture = g_objManager.scnData.textures[ref.id];
   auto pTextureImpl = g_objManager.m_pFactory->CreateTexture2DFromFile(&texture, a_fileName);
   texture.pImpl = pTextureImpl;
   texture.m_loadedFromFile = true;
 
   pugi::xml_node texNodeXml = g_objManager.textures_lib_append_child();
 
-  ChunkPointer chunk(&g_objManager.scnlib().m_vbCache);
+  ChunkPointer chunk(&g_objManager.scnData.m_vbCache);
 
   if (pTextureImpl != nullptr)
   {
     auto chunkId = pTextureImpl->chunkId();
-    chunk = g_objManager.scnlib().m_vbCache.chunk_at(chunkId);
+    chunk = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
 
     w   = pTextureImpl->width();
     h   = pTextureImpl->height();
@@ -93,7 +93,7 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFile(const wchar_t* a_fileName, int w
   else
   {
     HrPrint(HR_SEVERITY_WARNING, L"hrTexture2DCreateFromFile can't open file ", a_fileName);
-    g_objManager.scnlib().textures.pop_back();
+    g_objManager.scnData.textures.pop_back();
     HRTextureNodeRef ref2; // dummy white texture
     ref2.id = 0;
     return ref2;
@@ -122,8 +122,8 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFile(const wchar_t* a_fileName, int w
   texNodeXml.append_attribute(L"height") = h;
   texNodeXml.append_attribute(L"dl").set_value(L"0");
 
-  g_objManager.scnlib().textures[ref.id].update_next(texNodeXml);
-  g_objManager.scnlib().m_textureCache[a_fileName] = ref.id; // remember texture id for given file name
+  g_objManager.scnData.textures[ref.id].update_next(texNodeXml);
+  g_objManager.scnData.m_textureCache[a_fileName] = ref.id; // remember texture id for given file name
 
   return ref;
 }
@@ -132,8 +132,8 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, int
 {
   /////////////////////////////////////////////////////////////////////////////////////////////////
   {
-    auto p = g_objManager.scnlib().m_textureCache.find(a_fileName);
-    if (p != g_objManager.scnlib().m_textureCache.end())
+    auto p = g_objManager.scnData.m_textureCache.find(a_fileName);
+    if (p != g_objManager.scnData.m_textureCache.end())
     {
       HRTextureNodeRef ref;
       ref.id = p->second;
@@ -162,13 +162,13 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, int
 
   HRTextureNode texRes;
   texRes.name = std::wstring(a_fileName);
-  texRes.id   = g_objManager.scnlib().textures.size();
-  g_objManager.scnlib().textures.push_back(texRes);
+  texRes.id   = g_objManager.scnData.textures.size();
+  g_objManager.scnData.textures.push_back(texRes);
 
   HRTextureNodeRef ref;
-  ref.id = HR_IDType(g_objManager.scnlib().textures.size() - 1);
+  ref.id = HR_IDType(g_objManager.scnData.textures.size() - 1);
 
-  HRTextureNode& texture   = g_objManager.scnlib().textures[ref.id];
+  HRTextureNode& texture   = g_objManager.scnData.textures[ref.id];
   texture.m_loadedFromFile = true;
 
   pugi::xml_node texNodeXml = g_objManager.textures_lib_append_child();
@@ -184,8 +184,8 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, int
   //texNodeXml.append_attribute(L"height") = h; // #TODO: unfortunately we don't know it yet. but we can read headr if possible via vreeimage
   texNodeXml.append_attribute(L"dl").set_value(L"1");
 
-  g_objManager.scnlib().textures[ref.id].update_next(texNodeXml);
-  g_objManager.scnlib().m_textureCache[a_fileName] = ref.id; // remember texture id for given file name
+  g_objManager.scnData.textures[ref.id].update_next(texNodeXml);
+  g_objManager.scnData.m_textureCache[a_fileName] = ref.id; // remember texture id for given file name
 
   return ref;
 }
@@ -193,24 +193,24 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, int
 
 HAPI HRTextureNodeRef hrTexture2DUpdateFromFile(HRTextureNodeRef currentRef, const wchar_t* a_fileName, int w, int h, int bpp)
 {
-	g_objManager.scnlib().textures.at(currentRef.id).name = a_fileName;
+	g_objManager.scnData.textures.at(currentRef.id).name = a_fileName;
 
 	HRTextureNodeRef ref;
 	ref.id = currentRef.id;
 
-	HRTextureNode& texture = g_objManager.scnlib().textures[ref.id];
+	HRTextureNode& texture = g_objManager.scnData.textures[ref.id];
 	auto pTextureImpl = g_objManager.m_pFactory->CreateTexture2DFromFile(&texture, a_fileName);
 	texture.pImpl = pTextureImpl;
 	texture.m_loadedFromFile = true;
 
 	pugi::xml_node texNodeXml = g_objManager.textures_lib_append_child();
 
-	ChunkPointer chunk(&g_objManager.scnlib().m_vbCache);
+	ChunkPointer chunk(&g_objManager.scnData.m_vbCache);
 
 	if (pTextureImpl != nullptr)
 	{
 		auto chunkId = pTextureImpl->chunkId();
-		chunk = g_objManager.scnlib().m_vbCache.chunk_at(chunkId);
+		chunk = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
 
 		w = pTextureImpl->width();
 		h = pTextureImpl->height();
@@ -245,8 +245,8 @@ HAPI HRTextureNodeRef hrTexture2DUpdateFromFile(HRTextureNodeRef currentRef, con
   texNodeXml.append_attribute(L"height") = h;
   texNodeXml.append_attribute(L"dl").set_value(L"0");
 
-	g_objManager.scnlib().textures[ref.id].update_next(texNodeXml);
-	g_objManager.scnlib().m_textureCache[a_fileName] = ref.id; // remember texture id for given file name
+	g_objManager.scnData.textures[ref.id].update_next(texNodeXml);
+	g_objManager.scnData.m_textureCache[a_fileName] = ref.id; // remember texture id for given file name
 
 	return ref;
 }
@@ -266,16 +266,16 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromMemory(int w, int h, int bpp, const v
   /////////////////////////////////////////////////////////////////////////////////////////////////
 
   std::wstringstream outStr;
-  outStr << L"texture2d_" << g_objManager.scnlib().textures.size();
+  outStr << L"texture2d_" << g_objManager.scnData.textures.size();
 
   HRTextureNode texRes; // int w, int h, int bpp, const void* a_data
   texRes.name = outStr.str();
-  g_objManager.scnlib().textures.push_back(texRes);
+  g_objManager.scnData.textures.push_back(texRes);
 
   HRTextureNodeRef ref;
-  ref.id = HR_IDType(g_objManager.scnlib().textures.size() - 1);
+  ref.id = HR_IDType(g_objManager.scnData.textures.size() - 1);
 
-  HRTextureNode& texture = g_objManager.scnlib().textures[ref.id];
+  HRTextureNode& texture = g_objManager.scnData.textures[ref.id];
   auto pTextureImpl = g_objManager.m_pFactory->CreateTexture2DFromMemory(&texture, w, h, bpp, a_data);
   texture.pImpl = pTextureImpl;
 
@@ -285,7 +285,7 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromMemory(int w, int h, int bpp, const v
 
   if (pTextureImpl != nullptr)
   {
-    ChunkPointer chunk = g_objManager.scnlib().m_vbCache.chunk_at(pTextureImpl->chunkId());
+    ChunkPointer chunk = g_objManager.scnData.m_vbCache.chunk_at(pTextureImpl->chunkId());
 
     // form tex name
     //
@@ -305,7 +305,7 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromMemory(int w, int h, int bpp, const v
     texNodeXml.append_attribute(L"height") = h;
     texNodeXml.append_attribute(L"dl").set_value(L"0");
 
-    g_objManager.scnlib().textures[ref.id].update_next(texNodeXml);
+    g_objManager.scnData.textures[ref.id].update_next(texNodeXml);
 
     return ref;
   }
@@ -328,12 +328,12 @@ HAPI HRTextureNodeRef hrTexture2DUpdateFromMemory(HRTextureNodeRef currentRef, i
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 
 	std::wstringstream outStr;
-	outStr << L"texture2d_" << g_objManager.scnlib().textures.size();
+	outStr << L"texture2d_" << g_objManager.scnData.textures.size();
 
 	HRTextureNodeRef ref;
 	ref.id = currentRef.id;
 
-	HRTextureNode& texture = g_objManager.scnlib().textures[ref.id];
+	HRTextureNode& texture = g_objManager.scnData.textures[ref.id];
 	auto pTextureImpl = g_objManager.m_pFactory->CreateTexture2DFromMemory(&texture, w, h, bpp, a_data);
 	texture.pImpl = pTextureImpl;
 
@@ -341,7 +341,7 @@ HAPI HRTextureNodeRef hrTexture2DUpdateFromMemory(HRTextureNodeRef currentRef, i
 
 	int byteSize = size_t(w)*size_t(h)*size_t(bpp);
 
-	ChunkPointer chunk = g_objManager.scnlib().m_vbCache.chunk_at(pTextureImpl->chunkId());
+	ChunkPointer chunk = g_objManager.scnData.m_vbCache.chunk_at(pTextureImpl->chunkId());
 
 	// form tex name
 	//
@@ -361,12 +361,12 @@ HAPI HRTextureNodeRef hrTexture2DUpdateFromMemory(HRTextureNodeRef currentRef, i
   texNodeXml.append_attribute(L"height") = h;
   texNodeXml.append_attribute(L"dl").set_value(L"0");
 
-	g_objManager.scnlib().textures[ref.id].update_next(texNodeXml);
+	g_objManager.scnData.textures[ref.id].update_next(texNodeXml);
 
 	return ref;
 }
 
-HAPI HRTextureNodeRef hrArray1DCreateFromMemory(const float* a_data, int a_size) // #TODO: implement, add "g_objManager.scnlib().textures[ref.id].Update(texNodeXml);"
+HAPI HRTextureNodeRef hrArray1DCreateFromMemory(const float* a_data, int a_size) // #TODO: implement, add "g_objManager.scnData.textures[ref.id].Update(texNodeXml);"
 {
   if (a_size == 0 || a_data == nullptr)
   {
@@ -378,14 +378,14 @@ HAPI HRTextureNodeRef hrArray1DCreateFromMemory(const float* a_data, int a_size)
 
   /////////////////////////////////////////////////////////////////////////////////////////////////
   std::wstringstream outStr;
-  outStr << L"array1d_" << g_objManager.scnlib().textures.size();
+  outStr << L"array1d_" << g_objManager.scnData.textures.size();
 
   HRTextureNode texRes; // const float* a_data, int a_size
   texRes.name = outStr.str();
-  g_objManager.scnlib().textures.push_back(texRes);
+  g_objManager.scnData.textures.push_back(texRes);
 
   HRTextureNodeRef ref;
-  ref.id = HR_IDType(g_objManager.scnlib().textures.size() - 1);
+  ref.id = HR_IDType(g_objManager.scnData.textures.size() - 1);
   return ref;
 }
 
@@ -438,7 +438,7 @@ HAPI void hrTexture2DGetDataLDR(HRTextureNodeRef a_tex, int* pW, int* pH, int* p
   }
 
   auto chunkId  = pTexture->pImpl->chunkId();
-  auto chunk    = g_objManager.scnlib().m_vbCache.chunk_at(chunkId);
+  auto chunk    = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
   auto bytesize = xml_node.attribute(L"bytesize").as_int();
   auto offset   = xml_node.attribute(L"offset").as_int();
 
@@ -612,13 +612,13 @@ HAPI HRTextureNodeRef hrTextureCreateAdvanced(const wchar_t* a_texType, const wc
 
 	HRTextureNode texRes;
 	texRes.name = std::wstring(a_objName);
-	texRes.id = g_objManager.scnlib().textures.size();
-	g_objManager.scnlib().textures.push_back(texRes);
+	texRes.id = g_objManager.scnData.textures.size();
+	g_objManager.scnData.textures.push_back(texRes);
 
 	HRTextureNodeRef ref;
-	ref.id = HR_IDType(g_objManager.scnlib().textures.size() - 1);
+	ref.id = HR_IDType(g_objManager.scnData.textures.size() - 1);
 
-	HRTextureNode& texture = g_objManager.scnlib().textures[ref.id];
+	HRTextureNode& texture = g_objManager.scnData.textures[ref.id];
 	auto pTextureImpl = nullptr;
 	texture.pImpl = pTextureImpl;
 
@@ -632,7 +632,7 @@ HAPI HRTextureNodeRef hrTextureCreateAdvanced(const wchar_t* a_texType, const wc
 	texNodeXml.append_attribute(L"name").set_value(a_objName);
 	texNodeXml.append_attribute(L"type").set_value(type.c_str());
 
-	g_objManager.scnlib().textures[ref.id].update_next(texNodeXml);
+	g_objManager.scnData.textures[ref.id].update_next(texNodeXml);
 
 	return ref;
 }

@@ -314,7 +314,7 @@ extern HRObjectManager g_objManager;
 std::wstring ChunkName(const ChunkPointer& a_chunk)
 {
   std::wstringstream namestream;
-  namestream << g_objManager.scnlib().m_path.c_str() << L"/data/chunk_" << std::setfill(L"0"[0]) << std::setw(5) << a_chunk.id;
+  namestream << g_objManager.scnData.m_path.c_str() << L"/data/chunk_" << std::setfill(L"0"[0]) << std::setw(5) << a_chunk.id;
 
   switch (a_chunk.type)
   {
