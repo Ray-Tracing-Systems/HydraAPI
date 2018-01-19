@@ -186,7 +186,7 @@ extern "C" BOOL IE_ReadFile(char *fname, IE_DATA *pdata)
 #if defined WIN32
     if (strcmp(IE_TextBuf, "IESNA:LM-63-1995") == 0)
 #else
-    if (strcmp(IE_TextBuf, "IESNA:LM-63-1995\r") == 0)
+    if (strcmp(IE_TextBuf, "IESNA:LM-63-1995") == 0)
 #endif
     {
       /* File is LM-63-1995 format                                      */
@@ -195,7 +195,7 @@ extern "C" BOOL IE_ReadFile(char *fname, IE_DATA *pdata)
 #if defined WIN32
     else if (strcmp(IE_TextBuf, "IESNA91") == 0)
 #else
-    else if (strcmp(IE_TextBuf, "IESNA91\r") == 0)
+    else if (strcmp(IE_TextBuf, "IESNA91") == 0)
 #endif
     {
       /* File is LM-63-1991 format                                      */
@@ -221,7 +221,7 @@ extern "C" BOOL IE_ReadFile(char *fname, IE_DATA *pdata)
 #if defined WIN32
       if (strncmp(IE_TextBuf, "TILT=", 5) == 0)
 #else
-      if (strncmp(IE_TextBuf, "TILT=\r", 5) == 0)
+      if (strncmp(IE_TextBuf, "TILT=", 5) == 0)
 #endif
         break;
 
@@ -271,13 +271,13 @@ extern "C" BOOL IE_ReadFile(char *fname, IE_DATA *pdata)
 #if defined WIN32
     if (strcmp(tilt_str, "NONE") != 0)
 #else
-    if (strcmp(tilt_str, "NONE\r") != 0)
+    if (strcmp(tilt_str, "NONE") != 0)
 #endif
     {
 #if defined WIN32
       if (strcmp(tilt_str, "INCLUDE") != 0)
 #else
-      if (strcmp(tilt_str, "INCLUDE\r") != 0)
+      if (strcmp(tilt_str, "INCLUDE") != 0)
 #endif
       {
         /* Open the TILT data file                                      */
