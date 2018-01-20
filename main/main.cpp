@@ -101,8 +101,8 @@ int main(int argc, const char** argv)
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
     
     //GEO_TESTS::test_001_mesh_from_memory();
-    //MTL_TESTS::test_119_opacity_texture();
-    LGHT_TESTS::test_228_point_ies_for_bpt();
+    //MTL_TESTS::test_103_diffuse_texture();
+    LGHT_TESTS::test_232_point_area_ies();
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
 
     //window_main_free_look(L"tests_f/test_241", L"opengl1Debug");
