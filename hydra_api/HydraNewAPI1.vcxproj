@@ -168,6 +168,8 @@
     <ClCompile Include="HydraAPI_Material.cpp" />
     <ClCompile Include="HydraAPI_Texture.cpp" />
     <ClCompile Include="HydraDriverUpdate.cpp" />
+    <ClCompile Include="HydraLaunchProcessWin32.cpp" />
+    <ClCompile Include="HydraLegacyUtils.cpp" />
     <ClCompile Include="HydraPostProcessAPI.cpp" />
     <ClCompile Include="HydraPostProcessCommon.cpp" />
     <ClCompile Include="HydraPostProcessSpecial.cpp" />
@@ -178,7 +180,6 @@
     <ClCompile Include="pugixml.cpp" />
     <ClCompile Include="RenderDriverDebugPrint.cpp" />
     <ClCompile Include="RenderDriverHydraConnection.cpp" />
-    <ClCompile Include="RenderDriverHydraLegacyStuff.cpp" />
     <ClCompile Include="RenderDriverOpenGL1.cpp" />
     <ClCompile Include="RenderDriverOpenGL1Debug.cpp" />
     <ClCompile Include="RenderDriverOpenGL1_TestSplit.cpp" />
@@ -196,6 +197,7 @@
     <ClInclude Include="HR_HDRImage.h" />
     <ClInclude Include="HR_HDRImageTool.h" />
     <ClInclude Include="HydraAPI.h" />
+    <ClInclude Include="HydraLegacyUtils.h" />
     <ClInclude Include="HydraPostProcessAPI.h" />
     <ClInclude Include="HydraPostProcessCommon.h" />
     <ClInclude Include="HydraPostProcessSpecial.h" />
@@ -210,7 +212,6 @@
     <ClInclude Include="OpenGLCoreProfileUtils.h" />
     <ClInclude Include="pugiconfig.hpp" />
     <ClInclude Include="pugixml.hpp" />
-    <ClInclude Include="RenderDriverHydraLegacyStuff.h" />
     <ClInclude Include="RenderDriverOpenGL1.h" />
     <ClInclude Include="RenderDriverOpenGL32Deferred.h" />
     <ClInclude Include="RenderDriverOpenGL32Forward.h" />

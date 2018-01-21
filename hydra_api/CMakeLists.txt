@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 14)
 set(SOURCE_FILES
         alloc16.h
         cube2sphere.cpp
+        HydraLegacyUtils.cpp
+        HydraLegacyUtils.h
         HR_HDRImage.h
         HR_HDRImage4f.cpp
         HR_HDRImageTool.h
@@ -44,6 +46,7 @@ set(SOURCE_FILES
         RenderDriverOpenGL1_TestSplit.cpp
         RenderDriverOpenGL1Debug.cpp
         RenderDriverOpenGL1DebugDrawRays.cpp
+        RenderDriverHydraConnection.cpp
         ssemath.cpp
         ssemath.h
         VirtualBuffer.cpp
@@ -54,11 +57,11 @@ set(SOURCE_FILES
 
 if (WIN32)
     set(SOURCE_FILES ${SOURCE_FILES} SystemWin.cpp HR_AccumImageWin.cpp)
-    set(SOURCE_FILES ${SOURCE_FILES} RenderDriverHydraConnection.cpp
-                                     RenderDriverHydraLegacyStuff.cpp
-                                     RenderDriverHydraLegacyStuff.h)
+    set(SOURCE_FILES ${SOURCE_FILES} HydraLaunchProcessWin32.cpp)
 else()
-	set(SOURCE_FILES ${SOURCE_FILES} SystemUnix.cpp)
+	set(SOURCE_FILES ${SOURCE_FILES} SystemUnix.cpp
+                                     HR_AccumImageLinux.cpp
+                                     HydraLaunchProcessLinux.cpp)
 endif()
 
 		
@@ -97,7 +100,8 @@ if(WIN32)
   add_definitions(-DUNICODE -D_UNICODE)
   target_link_libraries(hydra_api LINK_PUBLIC ${LIBS} ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY} ies_parser)
 else()
-  target_link_libraries(hydra_api LINK_PUBLIC ${LIBS} ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY} ies_parser stdc++fs rt dl)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1")
+  target_link_libraries(hydra_api LINK_PUBLIC ${LIBS} ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY} ies_parser stdc++fs rt dl OpenCL)
 endif()
 
 

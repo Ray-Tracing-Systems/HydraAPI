@@ -2853,3 +2853,199 @@ bool test63_cornell_with_caustic_from_torus()
 
   return check_images("test_63");
 }
+
+
+
+bool test100_dummy_hydra_exec()
+{
+	initGLIfNeeded();
+
+	hrErrorCallerPlace(L"test_100");
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	hrSceneLibraryOpen(L"tests/test_100", HR_WRITE_DISCARD);
+
+	SimpleMesh sphere = CreateSphere(1.0f, 32);
+	HRMaterialRef mat0 = hrMaterialCreate(L"mysimplemat");
+
+	hrMaterialOpen(mat0, HR_WRITE_DISCARD);
+	{
+		xml_node matNode = hrMaterialParamNode(mat0);
+
+		xml_node diff = matNode.append_child(L"diffuse");
+
+		diff.append_attribute(L"brdf_type").set_value(L"lambert");
+		diff.append_child(L"color").append_attribute(L"val").set_value(L"0.5 0.75 0.5");
+	}
+	hrMaterialClose(mat0);
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	HRMeshRef sphereRef = hrMeshCreate(L"my_sphere");
+
+
+	hrMeshOpen(sphereRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
+	{
+		hrMeshVertexAttribPointer4f(sphereRef, L"pos", &sphere.vPos[0]);
+		hrMeshVertexAttribPointer4f(sphereRef, L"norm", &sphere.vNorm[0]);
+		hrMeshVertexAttribPointer2f(sphereRef, L"texcoord", &sphere.vTexCoord[0]);
+
+		for (size_t i = 0; i < sphere.matIndices.size(); i++)
+			sphere.matIndices[i] = mat0.id;
+
+		hrMeshPrimitiveAttribPointer1i(sphereRef, L"mind", &sphere.matIndices[0]);
+		hrMeshAppendTriangles3(sphereRef, int32_t(sphere.triIndices.size()), &sphere.triIndices[0]);
+	}
+	hrMeshClose(sphereRef);
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	HRLightRef rectLight = hrLightCreate(L"my_area_light");
+
+	hrLightOpen(rectLight, HR_WRITE_DISCARD);
+	{
+		pugi::xml_node lightNode = hrLightParamNode(rectLight);
+
+		lightNode.attribute(L"type").set_value(L"area");
+		lightNode.attribute(L"shape").set_value(L"rect");
+		lightNode.attribute(L"distribution").set_value(L"diffuse");
+
+		pugi::xml_node sizeNode = lightNode.append_child(L"size");
+
+		sizeNode.append_attribute(L"half_length") = 0.5f;
+		sizeNode.append_attribute(L"half_width") = 0.5f;
+
+		pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
+
+		intensityNode.append_child(L"color").text().set(L"1 1 1");
+		intensityNode.append_child(L"multiplier").text().set(L"32.0");
+	}
+	hrLightClose(rectLight);
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	// camera
+	//
+	HRCameraRef camRef = hrCameraCreate(L"my camera");
+
+	hrCameraOpen(camRef, HR_WRITE_DISCARD);
+	{
+		xml_node camNode = hrCameraParamNode(camRef);
+
+		camNode.append_child(L"fov").text().set(L"45");
+		camNode.append_child(L"nearClipPlane").text().set(L"0.01");
+		camNode.append_child(L"farClipPlane").text().set(L"100.0");
+
+		camNode.append_child(L"up").text().set(L"0 1 0");
+		camNode.append_child(L"position").text().set(L"0 0 15");
+		camNode.append_child(L"look_at").text().set(L"0 0 0");
+	}
+	hrCameraClose(camRef);
+
+	// set up render settings
+	//
+	HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1
+										
+	hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	hrRenderOpen(renderRef, HR_WRITE_DISCARD);
+	{
+		pugi::xml_node node = hrRenderParamNode(renderRef);
+
+		node.append_child(L"width").text() = L"1024";
+		node.append_child(L"height").text() = L"768";
+
+		node.append_child(L"method_primary").text() = L"pathtracing";
+		node.append_child(L"method_secondary").text() = L"pathtracing";
+		node.append_child(L"method_tertiary").text() = L"pathtracing";
+		node.append_child(L"method_caustic").text() = L"pathtracing";
+		node.append_child(L"shadows").text() = L"1";
+
+		node.append_child(L"trace_depth").text() = L"10";
+		node.append_child(L"diff_trace_depth").text() = L"3";
+
+		node.append_child(L"pt_error").text() = L"2";
+		node.append_child(L"minRaysPerPixel").text() = L"256";
+		node.append_child(L"maxRaysPerPixel").text() = L"1024";
+
+	}
+	hrRenderClose(renderRef);
+
+	// create scene
+	//
+	HRSceneInstRef scnRef = hrSceneCreate(L"my scene");
+
+	static GLfloat	rtri = 25.0f; // Angle For The Triangle ( NEW )
+	static GLfloat	rquad = 40.0f;
+	static float    g_FPS = 60.0f;
+	static int      frameCounter = 0;
+
+	const float DEG_TO_RAD = float(3.14159265358979323846f) / 180.0f;
+
+	using namespace HydraLiteMath;
+
+	hrSceneOpen(scnRef, HR_WRITE_DISCARD);
+	{
+		float4x4 mRot;
+		float4x4 mTranslate;
+		float4x4 mScale;
+		float4x4 mRes;
+
+		///////////
+		mTranslate.identity();
+		mRes.identity();
+
+		mTranslate = translate4x4(float3(0.0f, -1.0f, 0.0f));
+		mRes = mul(mTranslate, mRes);
+
+		hrMeshInstance(scnRef, sphereRef, mRes.L());
+
+		/////////////////////////////////////////////////////////////////////// instance light (!!!)
+		mTranslate.identity();
+		mRes.identity();
+
+		mTranslate = translate4x4(float3(0.0f, 4.0f, 0.0f));
+		mRes = mul(mTranslate, mRes);
+
+		hrLightInstance(scnRef, rectLight, mRes.L());
+	}
+	hrSceneClose(scnRef);
+
+	hrFlush(scnRef, renderRef);
+
+	glViewport(0, 0, 1024, 768);
+	std::vector<int32_t> image(1024 * 768);
+
+	while (true)
+	{
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+		HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
+
+		if (info.haveUpdateFB)
+		{
+			hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+
+			glDisable(GL_TEXTURE_2D);
+			glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+
+			auto pres = std::cout.precision(2);
+			std::cout << "rendering progress = " << info.progress << "% \r";
+			std::cout.precision(pres);
+
+			glfwSwapBuffers(g_window);
+			glfwPollEvents();
+		}
+
+		if (info.finalUpdate)
+			break;
+	}
+
+	hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_100/z_out.png");
+
+	return check_images("test_100");
+}
