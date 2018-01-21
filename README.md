@@ -7,6 +7,22 @@ The Hydra Renderer consists of 3 heads:
 
 This repo contain the second one.
 
+# Usage
+
+Windows:
+1. Clone HydraAPI repo
+2. Copy 'bin2' folder content to 'C:/[Hydra]/bin2' under windows;
+3. Open 'hydra_api/HydraNewAPI1.sln' under windows with visual studio 2015 or later; If use 2015 you will need to downgrade platform toolset to v140 (2015).
+4. Select x64 configuration
+5. Set 'main' as startup project.
+6. Now you can try 'HydraModern' with some tests. Try 'test39_mesh_from_vsgf' for example. It is simple cornell box test.
+
+Linux:
+1. Clone HydraAPI repo
+2. Currently main engine is not yet ported to Linux, so do nothing.
+3. use Cmake;
+4. use OpenGL1 or OpenGL3 render drivers. try some interactive 'main_window' tests.
+
 # Licence and dependency
 
 Hydra API uses MIT licence itself, however it depends on the other software as follows (see doc/licence directory):

@@ -26,10 +26,10 @@ HAPI HRCameraRef hrCameraCreate(const wchar_t* a_objectName)
 {
   HRCamera cam;
   cam.name = std::wstring(a_objectName);
-  g_objManager.scnlib().cameras.push_back(cam);
+  g_objManager.scnData.cameras.push_back(cam);
 
   HRCameraRef ref;
-  ref.id = HR_IDType(g_objManager.scnlib().cameras.size() - 1);
+  ref.id = HR_IDType(g_objManager.scnData.cameras.size() - 1);
 
   pugi::xml_node nodeXml = g_objManager.camera_lib_append_child();
 
@@ -37,8 +37,8 @@ HAPI HRCameraRef hrCameraCreate(const wchar_t* a_objectName)
   nodeXml.append_attribute(L"name").set_value(a_objectName);
   nodeXml.append_attribute(L"type").set_value(L"default_cam");
 
-  g_objManager.scnlib().cameras[ref.id].update_next(nodeXml);
-  g_objManager.scnlib().cameras[ref.id].id = ref.id;
+  g_objManager.scnData.cameras[ref.id].update_next(nodeXml);
+  g_objManager.scnData.cameras[ref.id].id = ref.id;
 
   return ref;
 }

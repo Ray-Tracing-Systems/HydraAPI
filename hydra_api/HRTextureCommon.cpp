@@ -80,8 +80,8 @@ std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTexture2DFromMemory(HR
   const size_t textureSizeInBytes     = size_t(width)*size_t(height)*size_t(bpp);
   const size_t totalByteSizeOfTexture = textureSizeInBytes + size_t(2 * sizeof(unsigned int));
 
-  const size_t chunkId = g_objManager.scnlib().m_vbCache.AllocChunk(totalByteSizeOfTexture, pSysObj->id);
-  auto& chunk          = g_objManager.scnlib().m_vbCache.chunk_at(chunkId);
+  const size_t chunkId = g_objManager.scnData.m_vbCache.AllocChunk(totalByteSizeOfTexture, pSysObj->id);
+  auto& chunk          = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
   chunk.type           = (bpp <= 4) ? CHUNK_TYPE_IMAGE4UB : CHUNK_TYPE_IMAGE4F;
 
   if (chunkId == size_t(-1))
@@ -272,8 +272,8 @@ std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTexture2DFromFile(HRTe
   //
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ////
-  size_t chunkId = g_objManager.scnlib().m_vbCache.AllocChunk(totalByteSizeOfTexture, pSysObj->id);
-  auto& chunk    = g_objManager.scnlib().m_vbCache.chunk_at(chunkId);
+  size_t chunkId = g_objManager.scnData.m_vbCache.AllocChunk(totalByteSizeOfTexture, pSysObj->id);
+  auto& chunk    = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
   chunk.type     = (bytesPerPixel <= 4) ? CHUNK_TYPE_IMAGE4UB : CHUNK_TYPE_IMAGE4F;
 
   //unsigned char* data = new unsigned char[size];

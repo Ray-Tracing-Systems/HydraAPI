@@ -125,10 +125,10 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int32_t a_stateId);
 
 HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMode)
 {
-  g_objManager.scnlib().opened   = true;
-  g_objManager.scnlib().openMode = a_openMode;
+  g_objManager.scnData.opened   = true;
+  g_objManager.scnData.openMode = a_openMode;
   if (a_libPath != nullptr)
-    g_objManager.scnlib().m_path = a_libPath;
+    g_objManager.scnData.m_path = a_libPath;
 
 #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
   std::wstring s1(a_libPath);
@@ -161,7 +161,7 @@ HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMod
     g_objManager.renderSettings[i].clear();
   g_objManager.renderSettings.clear();
 
-  g_objManager.scnlib().clear();
+  g_objManager.scnData.clear();
 
   if (g_objManager.m_pDriver != nullptr)
   {
@@ -884,7 +884,7 @@ HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pC
   std::wstring newPath = outStr3.str();
 
   g_objManager.scnData.m_xmlDoc.save_file(oldPath.c_str(), L"  ");
-  g_objManager.m_tempPathToChangeFile = cngPath; // postpone g_objManager.scnlib().m_xmlDocChanges.save_file(cngPath.c_str(), L"  ");
+  g_objManager.m_tempPathToChangeFile = cngPath; // postpone g_objManager.scnData.m_xmlDocChanges.save_file(cngPath.c_str(), L"  ");
 
   hrCommit(a_pScn, a_pRender, a_pCam);
 

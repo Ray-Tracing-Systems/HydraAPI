@@ -268,7 +268,7 @@ void PluginShmemPipe::runAllRenderProcesses(RenderProcessRunParams a_params, con
     else
     {
       std::stringstream ss;
-      ss << "-nowindow 1 -cpufb 1 ";
+      ss << "-nowindow 1 ";
       ss << a_params.customExeArgs.c_str();
       if(a_params.customLogFold != "")
         ss << "-logdir \"" << a_params.customLogFold.c_str() << "\" ";
