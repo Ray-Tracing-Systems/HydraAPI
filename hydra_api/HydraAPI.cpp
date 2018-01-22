@@ -578,10 +578,8 @@ std::unique_ptr<IHRRenderDriver> CreateRenderFromString(const wchar_t *a_classNa
     return std::unique_ptr<IHRRenderDriver>(CreateOpenGL32Forward_RenderDriver());
   else if (!wcscmp(a_className, L"opengl32Deferred"))
     return std::unique_ptr<IHRRenderDriver>(CreateOpenGL32Deferred_RenderDriver());
-#if defined WIN32
   else if (!wcscmp(a_className, L"HydraModern"))
     return std::unique_ptr<IHRRenderDriver>(CreateHydraConnection_RenderDriver());
-#endif
   else
   {
     HrPrint(HR_SEVERITY_ERROR, L"CreateRenderFromString, unknown render driver name ", a_className);

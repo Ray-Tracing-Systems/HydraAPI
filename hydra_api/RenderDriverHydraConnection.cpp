@@ -29,7 +29,7 @@
 
 #pragma warning(disable:4996) // for wcscpy to be ok
 
-static constexpr bool MODERN_DRIVER_DEBUG = false;
+static constexpr bool MODERN_DRIVER_DEBUG = true;
 
 using HydraRender::HDRImage4f;
 
@@ -485,7 +485,11 @@ void RD_HydraConnection::RunAllHydraHeads()
     else
       auxInput << "-cpu_fb 1 ";
 
+#ifdef WIN32
     params.customExePath = "C:/[Hydra]/bin2/hydra.exe";
+#else
+    params.customExePath = ""; ///opt/hydra/hydra
+#endif
     params.customExeArgs = auxInput.str();
     params.customLogFold = m_logFolderS;
 

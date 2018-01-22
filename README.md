@@ -23,7 +23,7 @@ Linux:
 3. use Cmake;
 4. use OpenGL1 or OpenGL3 render drivers. try some interactive 'main_window' tests.
 
-# Licence and dependency
+# License and dependency
 
 Hydra API uses MIT licence itself, however it depends on the other software as follows (see doc/licence directory):
 

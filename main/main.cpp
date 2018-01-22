@@ -79,6 +79,9 @@ int main(int argc, const char** argv)
     std::cout << "[main]: curr_dir = " << cwd <<std::endl;
   else
     std::cout << "getcwd() error" <<std::endl;
+
+  std::cout << sizeof(size_t) <<std::endl;
+
 #endif
 
   try
@@ -102,7 +105,7 @@ int main(int argc, const char** argv)
     
     //GEO_TESTS::test_004_dof();
     //MTL_TESTS::test_119_opacity_texture();
-    LGHT_TESTS::test_206_ies1();
+    //LGHT_TESTS::test_206_ies1();
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
 
     //window_main_free_look(L"tests_f/test_241", L"opengl1Debug");
@@ -111,7 +114,7 @@ int main(int argc, const char** argv)
    
     //test39_mesh_from_vsgf();
 
-    //test100_dummy_hydra_exec();
+    test100_dummy_hydra_exec();
 
     //window_main_free_look(L"tests/test_gl32_002_", L"opengl32Deferred", &test_gl32_002_init, &test_gl32_002_draw);
     //window_main_free_look(L"tests/lucy_deferred", L"opengl32Deferred", &test_gl32_001_init, &test_gl32_001_draw);
