@@ -94,15 +94,15 @@ int main(int argc, const char** argv)
     //test39_mesh_from_vsgf();
     //PP_TESTS::test305_fbi_from_render();
 
-    std::cout << test44_four_lights() << std::endl;
+    //std::cout << test44_four_lights() << std::endl;
     //std::cout << test59_cornell_water_mlt() << std::endl;
     //std::cout << test_70_area_lights16() << std::endl;
 
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
     
-    //GEO_TESTS::test_001_mesh_from_memory();
+    //GEO_TESTS::test_004_dof();
     //MTL_TESTS::test_119_opacity_texture();
-    //LGHT_TESTS::test_228_point_ies_for_bpt();
+    LGHT_TESTS::test_206_ies1();
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
 
     //window_main_free_look(L"tests_f/test_241", L"opengl1Debug");
