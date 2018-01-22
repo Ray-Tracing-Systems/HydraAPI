@@ -6,7 +6,8 @@
 #include <fstream>
 
 //#include "HydraInternal.h" // #TODO: this is only for hr_mkdir and hr_cleardir. Remove this further
-#include "RenderDriverHydraLegacyStuff.h"
+
+#include "HydraLegacyUtils.h"
 
 #include "HydraXMLHelpers.h"
 
@@ -18,7 +19,13 @@
 #include <thread>
 
 #include "ssemath.h"
+
+
+#ifdef WIN32
 #include "../clew/clew.h"
+#else
+#include <CL/cl.h>
+#endif
 
 #pragma warning(disable:4996) // for wcscpy to be ok
 
@@ -204,6 +211,7 @@ static std::vector<PlatformDevPair> listAllOpenCLDevices()
 
 void RD_HydraConnection::InitBothDeviceList()
 {
+#ifdef WIN32
   if (m_clewInitRes == -1)
   {
     m_clewInitRes = clewInit(L"opencl.dll");
@@ -215,6 +223,7 @@ void RD_HydraConnection::InitBothDeviceList()
       return;
     }
   }
+#endif
 
   // (1) get device list and info
   //

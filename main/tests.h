@@ -168,6 +168,8 @@ bool test96_save_temp_renders();
 
 bool test98_test_split_clipping();
 
+bool test100_dummy_hydra_exec();
+
 namespace GEO_TESTS
 {
   bool test_001_mesh_from_memory();

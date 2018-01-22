@@ -99,9 +99,6 @@
     <ClCompile Include="RenderDriverHydraConnection.cpp">
       <Filter>Source\RenderDrivers</Filter>
     </ClCompile>
-    <ClCompile Include="RenderDriverHydraLegacyStuff.cpp">
-      <Filter>Source\RenderDrivers</Filter>
-    </ClCompile>
     <ClCompile Include="RenderDriverOpenGL1.cpp">
       <Filter>Source\RenderDrivers</Filter>
     </ClCompile>
@@ -147,6 +144,12 @@
     <ClCompile Include="ssemath.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="HydraLegacyUtils.cpp">
+      <Filter>Source\RenderDrivers</Filter>
+    </ClCompile>
+    <ClCompile Include="HydraLaunchProcessWin32.cpp">
+      <Filter>Source\RenderDrivers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LiteMath.h">
@@ -180,9 +183,6 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="RenderDriverOpenGL1.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderDriverHydraLegacyStuff.h">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="HR_HDRImage.h">
@@ -219,6 +219,9 @@
       <Filter>Source\OpenGLCoreUtils</Filter>
     </ClInclude>
     <ClInclude Include="ssemath.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="HydraLegacyUtils.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>

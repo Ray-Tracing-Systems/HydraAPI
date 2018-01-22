@@ -94,15 +94,15 @@ int main(int argc, const char** argv)
     //test39_mesh_from_vsgf();
     //PP_TESTS::test305_fbi_from_render();
 
-    //std::cout << test44_four_lights() << std::endl;
+    std::cout << test44_four_lights() << std::endl;
     //std::cout << test59_cornell_water_mlt() << std::endl;
     //std::cout << test_70_area_lights16() << std::endl;
 
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
     
     //GEO_TESTS::test_001_mesh_from_memory();
-    //MTL_TESTS::test_103_diffuse_texture();
-    LGHT_TESTS::test_232_point_area_ies();
+    //MTL_TESTS::test_119_opacity_texture();
+    //LGHT_TESTS::test_228_point_ies_for_bpt();
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
 
     //window_main_free_look(L"tests_f/test_241", L"opengl1Debug");
@@ -110,6 +110,8 @@ int main(int argc, const char** argv)
     //std::cout << PP_TESTS::test301_resample() << std::endl;
    
     //test39_mesh_from_vsgf();
+
+    //test100_dummy_hydra_exec();
 
     //window_main_free_look(L"tests/test_gl32_002_", L"opengl32Deferred", &test_gl32_002_init, &test_gl32_002_draw);
     //window_main_free_look(L"tests/lucy_deferred", L"opengl32Deferred", &test_gl32_001_init, &test_gl32_001_draw);
