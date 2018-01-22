@@ -9,6 +9,18 @@
 #include <string.h> // memcpy in linux
 #include <math.h>   // sqrt, exp, fmax, fmin
 
+#ifndef _MM_DENORMALS_ZERO_MASK
+  #define _MM_DENORMALS_ZERO_MASK	0x0040
+#endif
+
+#ifndef _MM_DENORMALS_ZERO_ON
+  #define _MM_DENORMALS_ZERO_ON		0x0040
+#endif
+
+#ifndef _MM_SET_DENORMALS_ZERO_MODE
+#define _MM_SET_DENORMALS_ZERO_MODE(mode) _mm_setcsr((_mm_getcsr() & ~_MM_DENORMALS_ZERO_MASK) | (mode))
+#endif
+
 namespace HydraRender
 {
 
