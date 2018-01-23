@@ -16,6 +16,7 @@ extern HRObjectManager g_objManager;
 
 #include <string>
 #include <iostream>
+#include <algorithm>
 
 #include "xxhash.h"
 
@@ -209,7 +210,7 @@ std::unique_ptr<IHRRenderDriver> CreateRenderFromString(const wchar_t *a_classNa
 HRRenderRef _hrRendeSettingsFromNode(pugi::xml_node a_node)
 {
   const wchar_t* a_className = a_node.attribute(L"type").as_string();
-
+  
   HRRenderRef ref;
   ref.id = HR_IDType(g_objManager.renderSettings.size());
 
@@ -250,6 +251,8 @@ void _hrFindTargetOrLastState(const wchar_t* a_libPath, int32_t a_stateId,
     std::string libPath(s1.begin(), s1.end());
     auto fileList = hr_listfiles(libPath);
 
+    std::sort(fileList.begin(), fileList.end());
+    
     for (auto p : fileList)
     {
       const std::string& currFile = p;
@@ -290,7 +293,7 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int32_t a_stateId)
 
   _hrFindTargetOrLastState(a_libPath, a_stateId,
                            fileName, stateId);
-
+  
 	if(fileName == L"")
 	{
     HrError(L"_hrSceneLibraryLoad, can't find existing library at: ", a_libPath);
