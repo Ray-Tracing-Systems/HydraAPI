@@ -111,7 +111,7 @@ bool SharedAccumImageLinux::Create(int a_width, int a_height, int a_depth, const
 
     Free();
 
-    m_mutex = sem_open (m_mutexName.c_str(), O_CREAT, 0775, 2); //0775
+    m_mutex = sem_open (m_mutexName.c_str(), O_CREAT | O_EXCL, 0775, 2); //0775
 
     if (m_mutex == NULL)
     {
@@ -278,10 +278,12 @@ bool SharedAccumImageLinux::Lock(int a_miliseconds)
   ts.tv_nsec = 1000;
 
   int res = sem_timedwait(m_mutex, &ts);
-  //perror("sem_timedwait");
 
   if(res == -1)
+  {
+    perror("sem_timedwait");
     return false;
+  }
   else
     return true;
 

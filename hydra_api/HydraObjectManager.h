@@ -404,7 +404,7 @@ struct HRSceneInst : public HRObject<IHRSceneInst>
     m_xmlNodeNext = a_newNode;
   }
 
-  void commit()
+  void commit() override
   {
     if (m_xmlNodeNext == nullptr)
       return;
@@ -444,8 +444,8 @@ struct HRSceneInst : public HRObject<IHRSceneInst>
 
   std::shared_ptr<IHRSceneInst> pImpl;
 
-  pugi::xml_node copy_node(pugi::xml_node a_node, bool a_lite);
-  pugi::xml_node copy_node_back(pugi::xml_node a_node);
+  pugi::xml_node copy_node(pugi::xml_node a_node, bool a_lite) override;
+  pugi::xml_node copy_node_back(pugi::xml_node a_node) override;
   pugi::xml_node append_instances_back(pugi::xml_node a_node);
 
   struct Instance

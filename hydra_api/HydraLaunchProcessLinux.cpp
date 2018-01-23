@@ -128,8 +128,7 @@ void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params
     }
     else
     {
-      ss.clear();
-
+      ss.str(std::string());
       ss << "-nowindow 1 ";
       ss << a_params.customExeArgs.c_str();
       if(!a_params.customLogFold.empty())
@@ -144,16 +143,18 @@ void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params
       for (size_t i = 0; i < m_mdDeviceList.size(); i++)
       {
         int devId = m_mdDeviceList[i];
-        ss.clear();
 
+        ss.str(std::string());
         ss << " -cl_device_id " << devId;
 
         std::string cmdFull = basicCmd + ss.str();
         std::string hydraExe(hydraPath + "hydra");
+
         std::vector<char> hydraExe_cstr(hydraExe.c_str(), hydraExe.c_str() + hydraExe.size() + 1);
+        std::vector<char> cmdFull_cstr(cmdFull.c_str(), cmdFull.c_str() + cmdFull.size() + 1);
 
 
-        char *cmd[] = {&hydraExe_cstr[0], NULL};
+        char *cmd[] = {&hydraExe_cstr[0], &cmdFull_cstr[0], NULL};
 
         if (!a_debug)
         {

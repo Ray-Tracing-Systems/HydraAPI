@@ -711,7 +711,7 @@ void HR_UpdateLightsGeometryAndMaterial(pugi::xml_node a_lightLibChanges, pugi::
 
       //// sky portals should not be invisiable because their visibility is implemented via spetial material and flags
       //
-      if(HR_LightHaveShape(lshape) && !invisiable || isSkyPortal)
+      if((HR_LightHaveShape(lshape) && !invisiable) || isSkyPortal)
         instToAdd.push_back(LightInstance(matrixStr, meshId, lightId, instId));
     }
     else

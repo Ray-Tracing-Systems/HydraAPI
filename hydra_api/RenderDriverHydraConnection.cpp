@@ -56,8 +56,8 @@ struct RD_HydraConnection : public IHRRenderDriver
     ClearAll();
   }
 
-  void              ClearAll();
-  HRDriverAllocInfo AllocAll(HRDriverAllocInfo a_info);
+  void              ClearAll() override;
+  HRDriverAllocInfo AllocAll(HRDriverAllocInfo a_info) override;
 
   void GetLastErrorW(wchar_t a_msg[256]) override;
 
@@ -75,12 +75,12 @@ struct RD_HydraConnection : public IHRRenderDriver
 
   /////////////////////////////////////////////////////////////////////////////////////////////
 
-  void BeginScene();
-  void EndScene();
+  void BeginScene() override;
+  void EndScene() override;
   void InstanceMeshes(int32_t a_mesh_id, const float* a_matrices, int32_t a_instNum, const int* a_lightInstId) override;
   void InstanceLights(int32_t a_light_id, const float* a_matrix, pugi::xml_node* a_custAttrArray, int32_t a_instNum, int32_t a_lightGroupId) override;
 
-  void Draw();
+  void Draw() override;
 
   HRRenderUpdateInfo HaveUpdateNow(int a_maxRaysPerPixel) override;
 
@@ -94,11 +94,11 @@ struct RD_HydraConnection : public IHRRenderDriver
 
   // info and devices
   //
-  HRDriverInfo Info();
-  const HRRenderDeviceInfoListElem* DeviceList() const;
-  void EnableDevice(int32_t id, bool a_enable);
+  HRDriverInfo Info() override;
+  const HRRenderDeviceInfoListElem* DeviceList() const override;
+  void EnableDevice(int32_t id, bool a_enable) override;
 
-  void ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out);
+  void ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out) override;
   void EndFlush() override;
 
   void SetLogDir(const wchar_t* a_logDir, bool a_hideCmd) override;
