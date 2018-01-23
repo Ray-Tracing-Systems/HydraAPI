@@ -44,13 +44,13 @@ private:
   char*  m_msgRcv;
   float* m_images;
 
-  size_t totalSize;
+  uint64_t totalSize;
 
   std::string m_mutexName;
   std::string m_shmemName;
 };
 
-SharedAccumImageLinux::SharedAccumImageLinux() : m_buffDescriptor(0), /*m_mutex(NULL),*/ m_memory(nullptr), m_msgSend(nullptr), m_msgRcv(nullptr), m_images(nullptr)
+SharedAccumImageLinux::SharedAccumImageLinux() : m_buffDescriptor(0), m_mutex(NULL), m_memory(nullptr), m_msgSend(nullptr), m_msgRcv(nullptr), m_images(nullptr)
 {
 
 }
@@ -107,11 +107,11 @@ bool SharedAccumImageLinux::Create(int a_width, int a_height, int a_depth, const
 
     m_shmemName = a_name;
     m_mutexName = std::string(a_name) + "_mutex";
-    totalSize   = size_t(sizeof(HRSharedBufferHeader)) + size_t(MESSAGE_SIZE * 2) + size_t(a_width*a_height)*size_t(a_depth*sizeof(float)*4) + size_t(1024);
+    totalSize   = uint64_t(sizeof(HRSharedBufferHeader)) + uint64_t(MESSAGE_SIZE * 2) + uint64_t(a_width*a_height)*size_t(a_depth*sizeof(float)*4) + uint64_t(1024);
 
     Free();
 
-    m_mutex = sem_open (m_mutexName.c_str(), O_CREAT, 0775, 2); //0775
+    m_mutex = sem_open (m_mutexName.c_str(), O_CREAT | O_EXCL, 0775, 1); //0775
 
     if (m_mutex == NULL)
     {
@@ -231,7 +231,7 @@ bool SharedAccumImageLinux::Attach(const char* name, char errMsg[256])
   if (m_memory != nullptr)
     munmap(m_memory, totalSize);
 
-  totalSize   = int64_t(sizeof(HRSharedBufferHeader)) + int64_t(MESSAGE_SIZE * 2) + int64_t(a_width*a_height)*int64_t(a_depth*sizeof(float)*4) + int64_t(1024);
+  totalSize   = uint64_t(sizeof(HRSharedBufferHeader)) + uint64_t(MESSAGE_SIZE * 2) + uint64_t(a_width*a_height)*uint64_t(a_depth*sizeof(float)*4) + uint64_t(1024);
 
   m_memory = (char*)mmap(nullptr, totalSize + 1, PROT_READ | PROT_WRITE, MAP_SHARED, m_buffDescriptor, 0);
 
@@ -274,14 +274,16 @@ void SharedAccumImageLinux::AttachTo(char* a_memory)
 bool SharedAccumImageLinux::Lock(int a_miliseconds)
 {
   struct timespec ts;
-  ts.tv_sec = 0;
-  ts.tv_nsec = 1000;
+  ts.tv_sec = a_miliseconds / 1000;
+  ts.tv_nsec = a_miliseconds * 1'000'000 - ts.tv_sec * 1'000'000'000;
 
   int res = sem_timedwait(m_mutex, &ts);
-  //perror("sem_timedwait");
 
   if(res == -1)
+  {
+    perror("sem_timedwait");
     return false;
+  }
   else
     return true;
 

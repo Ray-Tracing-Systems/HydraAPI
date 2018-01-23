@@ -21,7 +21,7 @@ struct RD_OGL32_Deferred : IHRRenderDriver
   bool UpdateMaterial(int32_t a_matId, pugi::xml_node a_materialNode) override;
   bool UpdateLight(int32_t a_lightIdId, pugi::xml_node a_lightNode) override;
 
-  bool UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode, const HRMeshDriverInput &a_input, const HRBatchInfo *a_batchList, int32_t a_listSize);
+  bool UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode, const HRMeshDriverInput &a_input, const HRBatchInfo *a_batchList, int32_t a_listSize) override;
 
   bool UpdateImageFromFile(int32_t a_texId, const wchar_t* a_fileName, pugi::xml_node a_texNode) override {return false;}
   bool UpdateMeshFromFile(int32_t a_meshId, pugi::xml_node a_meshNode, const wchar_t* a_fileName) override {return false;}
