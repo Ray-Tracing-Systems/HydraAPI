@@ -44,7 +44,7 @@ private:
   char*  m_msgRcv;
   float* m_images;
 
-  size_t totalSize;
+  uint64_t totalSize;
 
   std::string m_mutexName;
   std::string m_shmemName;
@@ -107,7 +107,7 @@ bool SharedAccumImageLinux::Create(int a_width, int a_height, int a_depth, const
 
     m_shmemName = a_name;
     m_mutexName = std::string(a_name) + "_mutex";
-    totalSize   = size_t(sizeof(HRSharedBufferHeader)) + size_t(MESSAGE_SIZE * 2) + size_t(a_width*a_height)*size_t(a_depth*sizeof(float)*4) + size_t(1024);
+    totalSize   = uint64_t(sizeof(HRSharedBufferHeader)) + uint64_t(MESSAGE_SIZE * 2) + uint64_t(a_width*a_height)*size_t(a_depth*sizeof(float)*4) + uint64_t(1024);
 
     Free();
 
@@ -231,7 +231,7 @@ bool SharedAccumImageLinux::Attach(const char* name, char errMsg[256])
   if (m_memory != nullptr)
     munmap(m_memory, totalSize);
 
-  totalSize   = int64_t(sizeof(HRSharedBufferHeader)) + int64_t(MESSAGE_SIZE * 2) + int64_t(a_width*a_height)*int64_t(a_depth*sizeof(float)*4) + int64_t(1024);
+  totalSize   = uint64_t(sizeof(HRSharedBufferHeader)) + uint64_t(MESSAGE_SIZE * 2) + uint64_t(a_width*a_height)*uint64_t(a_depth*sizeof(float)*4) + uint64_t(1024);
 
   m_memory = (char*)mmap(nullptr, totalSize + 1, PROT_READ | PROT_WRITE, MAP_SHARED, m_buffDescriptor, 0);
 
