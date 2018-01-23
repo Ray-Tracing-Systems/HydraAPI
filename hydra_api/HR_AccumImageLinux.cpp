@@ -111,7 +111,7 @@ bool SharedAccumImageLinux::Create(int a_width, int a_height, int a_depth, const
 
     Free();
 
-    m_mutex = sem_open (m_mutexName.c_str(), O_CREAT | O_EXCL, 0775, 2); //0775
+    m_mutex = sem_open (m_mutexName.c_str(), O_CREAT | O_EXCL, 0775, 1); //0775
 
     if (m_mutex == NULL)
     {
@@ -274,8 +274,8 @@ void SharedAccumImageLinux::AttachTo(char* a_memory)
 bool SharedAccumImageLinux::Lock(int a_miliseconds)
 {
   struct timespec ts;
-  ts.tv_sec = 0;
-  ts.tv_nsec = 1000;
+  ts.tv_sec = a_miliseconds / 1000;
+  ts.tv_nsec = a_miliseconds * 1'000'000 - ts.tv_sec * 1'000'000'000;
 
   int res = sem_timedwait(m_mutex, &ts);
 

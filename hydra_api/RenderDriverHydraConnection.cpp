@@ -786,9 +786,15 @@ void RD_HydraConnection::GetFrameBufferHDR(int32_t w, int32_t h, float* a_out, c
 
 void RD_HydraConnection::GetFrameBufferLDR(int32_t w, int32_t h, int32_t* a_out)
 {
-  #pragma omp parallel for
-  for (int y = 0; y < h; y++)
-    GetFrameBufferLineLDR(0, w, y, a_out + y*w);
+  /*auto res = m_pSharedImage->Lock(100);
+
+  if(res)
+  {*/
+    #pragma omp parallel for
+    for (int y = 0; y < h; y++)
+      GetFrameBufferLineLDR(0, w, y, a_out + y * w);
+ /*   m_pSharedImage->Unlock();
+  }*/
 
 }
 

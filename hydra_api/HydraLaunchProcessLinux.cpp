@@ -158,12 +158,6 @@ void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params
 
         if (!a_debug)
         {
-         /* pid_t pid;
-          int status;
-
-          status = posix_spawn(&pid, "/home/vsan/test/a.out", NULL, NULL, cmd, environ);
-          (*m_pLog) << status << "PID : " << pid << std::endl;*/
-
           auto pid = fork();
 
           switch (pid)
@@ -201,7 +195,6 @@ void HydraProcessLauncher::stopAllRenderProcesses()
         continue;
 
       kill(m_mdProcessList[i], SIGKILL);
-
     }
   }
 }
