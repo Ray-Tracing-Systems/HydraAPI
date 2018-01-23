@@ -2971,7 +2971,7 @@ bool test100_dummy_hydra_exec()
 		node.append_child(L"pt_error").text() = L"2";
 		node.append_child(L"minRaysPerPixel").text() = L"256";
 		node.append_child(L"maxRaysPerPixel").text() = L"1024";
-
+    node.append_child(L"render_executable").text() = L"/home/vsan/test";
 	}
 	hrRenderClose(renderRef);
 
@@ -3040,7 +3040,6 @@ bool test100_dummy_hydra_exec()
 			glfwSwapBuffers(g_window);
 			glfwPollEvents();
 		}
-
 		if (info.finalUpdate)
 			break;
 	}

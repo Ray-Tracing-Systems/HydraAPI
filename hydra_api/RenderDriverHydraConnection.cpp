@@ -29,7 +29,7 @@
 
 #pragma warning(disable:4996) // for wcscpy to be ok
 
-static constexpr bool MODERN_DRIVER_DEBUG = true;
+static constexpr bool MODERN_DRIVER_DEBUG = false;
 
 using HydraRender::HDRImage4f;
 
@@ -401,6 +401,9 @@ bool RD_HydraConnection::UpdateSettings(pugi::xml_node a_settingsNode)
 
   m_presets.allocImageBOnGPU = (std::wstring(a_settingsNode.child(L"forceGPUFrameBuffer").text().as_string()) == L"1");
 
+  std::wstring tmp  = std::wstring(a_settingsNode.child(L"render_executable").text().as_string());
+  m_params.customExePath = std::string(tmp.begin(), tmp.end());
+  m_params.customExePath += "/";
   return true;
 }
 
@@ -485,11 +488,8 @@ void RD_HydraConnection::RunAllHydraHeads()
     else
       auxInput << "-cpu_fb 1 ";
 
-#ifdef WIN32
-    params.customExePath = "C:/[Hydra]/bin2/hydra.exe";
-#else
-    params.customExePath = ""; ///opt/hydra/hydra
-#endif
+
+    params.customExePath = m_params.customExePath; ///opt/hydra/hydra
     params.customExeArgs = auxInput.str();
     params.customLogFold = m_logFolderS;
 
@@ -789,6 +789,7 @@ void RD_HydraConnection::GetFrameBufferLDR(int32_t w, int32_t h, int32_t* a_out)
   #pragma omp parallel for
   for (int y = 0; y < h; y++)
     GetFrameBufferLineLDR(0, w, y, a_out + y*w);
+
 }
 
 void RD_HydraConnection::GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_lineData, int32_t a_startX, int32_t a_endX)

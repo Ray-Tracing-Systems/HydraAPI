@@ -93,7 +93,12 @@ find_package (Threads REQUIRED)
 
 include_directories(${ADDITIONAL_INCLUDE_DIRS})
 
-set(THREADS_PREFER_PTHREAD_FLAG ON)
+if(WIN32)
+else()
+    find_package (Threads REQUIRED)
+    set(THREADS_PREFER_PTHREAD_FLAG ON)
+endif()
+
 
 #build hydra API static library
 add_library(hydra_api STATIC ${SOURCE_FILES} ${POST_PROC} ${MODERN_GL_RENDER_DRIVER})
@@ -104,7 +109,7 @@ if(WIN32)
   target_link_libraries(hydra_api LINK_PUBLIC ${LIBS} ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY} ies_parser)
 else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1")
-  target_link_libraries(hydra_api LINK_PUBLIC Threads::Threads ${LIBS} ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY} ies_parser pthread stdc++fs rt dl OpenCL)
+  target_link_libraries(hydra_api LINK_PUBLIC Threads::Threads ${LIBS} ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY} ies_parser stdc++fs rt dl OpenCL)
 endif()
 
 

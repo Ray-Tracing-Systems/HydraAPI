@@ -4,6 +4,7 @@
 
 #include <unistd.h>
 #include <spawn.h>
+#include <signal.h>
 #include "HydraLegacyUtils.h"
 
 struct HydraProcessLauncher : IHydraNetPluginAPI
@@ -86,7 +87,7 @@ HydraProcessLauncher::HydraProcessLauncher(const char* imageFileName, int width,
 
 HydraProcessLauncher::~HydraProcessLauncher()
 {
-
+  stopAllRenderProcesses();
 }
 
 
@@ -111,37 +112,49 @@ void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params
   if (m_connectionType == "main")
   {
 
-    const char* hydraPath = "/home/vsan/test/";
-    if (a_params.customExePath != "")
-      hydraPath = a_params.customExePath.c_str();
+    char user_name[L_cuserid];
+    cuserid(user_name);
 
-    if (!isFileExist(hydraPath))
+    std::stringstream ss;
+    ss << "/home/" << user_name << "/hydra/";
+
+    std::string hydraPath = ss.str();
+    if (a_params.customExePath != "")
+      hydraPath = a_params.customExePath;
+
+    if (!isFileExist(hydraPath.c_str()))
     {
       m_hydraServerStarted = false;
     }
     else
     {
-      std::stringstream ss;
+      ss.clear();
+
       ss << "-nowindow 1 ";
       ss << a_params.customExeArgs.c_str();
-      if(a_params.customLogFold != "")
+      if(!a_params.customLogFold.empty())
         ss << "-logdir \"" << a_params.customLogFold.c_str() << "\" ";
 
 
       std::string basicCmd = ss.str();
 
       m_hydraServerStarted = true;
-      std::ofstream fout("/home/vsan/test/zcmd.txt");
+      std::ofstream fout(hydraPath + "zcmd.txt");
 
       for (size_t i = 0; i < m_mdDeviceList.size(); i++)
       {
         int devId = m_mdDeviceList[i];
+        ss.clear();
 
-        std::stringstream ss3;
-        ss3 << " -cl_device_id " << devId;
+        ss << " -cl_device_id " << devId;
 
-        std::string cmdFull = basicCmd + ss3.str();
-        char *cmd[] = {"/home/vsan/test/a.out", NULL};
+        std::string cmdFull = basicCmd + ss.str();
+        std::string hydraExe(hydraPath + "hydra");
+        std::vector<char> hydraExe_cstr(hydraExe.c_str(), hydraExe.c_str() + hydraExe.size() + 1);
+
+
+        char *cmd[] = {&hydraExe_cstr[0], NULL};
+
         if (!a_debug)
         {
          /* pid_t pid;
@@ -159,14 +172,9 @@ void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params
               break;
             case 0: //child process
               (*m_pLog) << "before executing Hydra Core" << std::endl;
-
-
-              execv("/home/vsan/test/a.out",cmd);
-
-              //execl(hydraPath, "hydra", 0);
+              execv(hydraExe.c_str(), cmd);
               (*m_pLog) << "error launching or executing Hydra Core" << std::endl;
               exit(1);
-              break;
             default:
               m_mdProcessList.push_back(pid);
               fout << cmdFull.c_str() << std::endl;
@@ -184,5 +192,15 @@ void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params
 
 void HydraProcessLauncher::stopAllRenderProcesses()
 {
+  if (m_hydraServerStarted)
+  {
+    for (auto i = 0; i < m_mdProcessList.size(); i++)
+    {
+      if (m_mdProcessList[i] <= 0)
+        continue;
 
+      kill(m_mdProcessList[i], SIGKILL);
+
+    }
+  }
 }

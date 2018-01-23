@@ -44,13 +44,13 @@ private:
   char*  m_msgRcv;
   float* m_images;
 
-  int64_t totalSize;
+  size_t totalSize;
 
   std::string m_mutexName;
   std::string m_shmemName;
 };
 
-SharedAccumImageLinux::SharedAccumImageLinux() : m_buffDescriptor(0), m_mutex(NULL), m_memory(nullptr), m_msgSend(nullptr), m_msgRcv(nullptr), m_images(nullptr)
+SharedAccumImageLinux::SharedAccumImageLinux() : m_buffDescriptor(0), /*m_mutex(NULL),*/ m_memory(nullptr), m_msgSend(nullptr), m_msgRcv(nullptr), m_images(nullptr)
 {
 
 }
@@ -64,10 +64,9 @@ void SharedAccumImageLinux::Free()
 {
   sem_close(m_mutex);
   sem_unlink(m_mutexName.c_str());
-
   m_mutex = NULL;
 
-  if (mmap != nullptr)
+  if (m_memory != nullptr)
     munmap(m_memory, totalSize);
   m_memory = nullptr;
 
@@ -105,22 +104,23 @@ bool SharedAccumImageLinux::Create(int a_width, int a_height, int a_depth, const
         return true;
     }
 
-    Free();
+
     m_shmemName = a_name;
-
-    totalSize   = int64_t(sizeof(HRSharedBufferHeader)) + int64_t(MESSAGE_SIZE * 2) + int64_t(a_width*a_height)*int64_t(a_depth*sizeof(float)*4) + int64_t(1024);
     m_mutexName = std::string(a_name) + "_mutex";
+    totalSize   = size_t(sizeof(HRSharedBufferHeader)) + size_t(MESSAGE_SIZE * 2) + size_t(a_width*a_height)*size_t(a_depth*sizeof(float)*4) + size_t(1024);
 
-    m_mutex = sem_open (m_mutexName.c_str(), O_CREAT , 0777, 2); //0775
+    Free();
 
-    if (m_mutex == NULL || m_mutex == SEM_FAILED)
+    m_mutex = sem_open (m_mutexName.c_str(), O_CREAT, 0775, 2); //0775
+
+    if (m_mutex == NULL)
     {
       perror("sem_open");
-      strcpy(a_errMsg, "FAILED to create semaphore (sem_open)");
+      strcpy(a_errMsg, "FAILED to create mutex (shared_mutex_init)");
       return false;
     }
 
-    m_buffDescriptor = shm_open(m_shmemName.c_str(), O_CREAT | O_RDWR, 0777);
+    m_buffDescriptor = shm_open(m_shmemName.c_str(), O_CREAT | O_RDWR, 0775);
     int truncate_res = ftruncate(m_buffDescriptor, totalSize);
 
     if(m_buffDescriptor == -1 || truncate_res == -1)
@@ -191,7 +191,8 @@ bool SharedAccumImageLinux::Attach(const char* name, char errMsg[256])
   const std::string mutexName = std::string(name) + "_mutex";
   m_mutexName = mutexName;
   m_shmemName = std::string(name);
-  m_mutex = sem_open (m_mutexName.c_str(), 0);
+
+  m_mutex = sem_open(m_mutexName.c_str(), 0);
   if (m_mutex == NULL || m_mutex == SEM_FAILED)
   {
     perror("sem_open");
@@ -208,6 +209,29 @@ bool SharedAccumImageLinux::Attach(const char* name, char errMsg[256])
     Free();
     return false;
   }
+
+  totalSize = 0;
+
+  m_memory = (char*)mmap(nullptr, totalSize + 1, PROT_READ | PROT_WRITE, MAP_SHARED, m_buffDescriptor, 0);
+
+  if(m_memory == MAP_FAILED)
+  {
+    perror("mmap");
+    strcpy(errMsg, "FAILED to map shared memory (mmap)");
+    Free();
+    return false;
+  }
+
+  HRSharedBufferHeader* pHeader = (HRSharedBufferHeader*)m_memory;
+
+  int a_width = pHeader->width;
+  int a_height = pHeader->height;
+  int a_depth = pHeader->depth;
+
+  if (m_memory != nullptr)
+    munmap(m_memory, totalSize);
+
+  totalSize   = int64_t(sizeof(HRSharedBufferHeader)) + int64_t(MESSAGE_SIZE * 2) + int64_t(a_width*a_height)*int64_t(a_depth*sizeof(float)*4) + int64_t(1024);
 
   m_memory = (char*)mmap(nullptr, totalSize + 1, PROT_READ | PROT_WRITE, MAP_SHARED, m_buffDescriptor, 0);
 
@@ -250,15 +274,19 @@ void SharedAccumImageLinux::AttachTo(char* a_memory)
 bool SharedAccumImageLinux::Lock(int a_miliseconds)
 {
   struct timespec ts;
-  ts.tv_nsec = 10e6;
+  ts.tv_sec = 0;
+  ts.tv_nsec = 1000;
+
   int res = sem_timedwait(m_mutex, &ts);
-  perror("sem_timedwait");
+  //perror("sem_timedwait");
+
   if(res == -1)
     return false;
   else
     return true;
-  //sem_wait(m_mutex);
-  return true;
+
+  /*sem_wait(m_mutex);
+  perror("sem_wait");*/
 }
 
 void SharedAccumImageLinux::Unlock()
