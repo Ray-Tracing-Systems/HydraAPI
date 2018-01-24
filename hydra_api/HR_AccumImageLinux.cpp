@@ -111,7 +111,7 @@ bool SharedAccumImageLinux::Create(int a_width, int a_height, int a_depth, const
 
     Free();
 
-    m_mutex = sem_open (m_mutexName.c_str(), O_CREAT | O_EXCL, 0775, 1); //0775
+    m_mutex = sem_open (m_mutexName.c_str(), O_CREAT | O_EXCL, 0775, 1); //0775  | O_EXCL
 
     if (m_mutex == NULL)
     {

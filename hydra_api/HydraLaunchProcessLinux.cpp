@@ -96,6 +96,51 @@ bool HydraProcessLauncher::hasConnection() const
   return true;
 }
 
+void CreateProcessUnix(const char* exePath, const char* allArgs, const bool a_debug, std::ostream* a_pLog, std::vector<pid_t>& a_mdProcessList)
+{
+  std::stringstream inStr(allArgs);
+  std::vector<char*> cmd; // {"", "", NULL};
+  
+  std::string copyPath(exePath);
+  cmd.push_back(const_cast<char*>(copyPath.c_str()));
+  
+  int i=0;
+  while(!inStr.eof())
+  {
+    char* data = (char*)malloc(256);
+    inStr >> data;
+    cmd.push_back(data);
+    i++;
+  }
+  
+  cmd.push_back(nullptr);
+  
+  if (!a_debug)
+  {
+    auto pid = fork();
+    
+    switch (pid)
+    {
+      case -1:
+        (*a_pLog) << "error forking hydraAPI" << std::endl;
+        break;
+      case 0: //child process
+        (*a_pLog) << "before executing Hydra Core" << std::endl;
+        execv(exePath, &cmd[0]);
+        (*a_pLog) << "error launching or executing Hydra Core" << std::endl;
+        exit(1);
+      default:
+        a_mdProcessList.push_back(pid);
+        break;
+    }
+    
+  }
+  
+  for (auto x : cmd)
+    free(x);
+  
+}
+
 
 void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydaRenderDevice>& a_devList)
 {
@@ -149,34 +194,9 @@ void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params
 
         std::string cmdFull = basicCmd + ss.str();
         std::string hydraExe(hydraPath + "hydra");
-
-        std::vector<char> hydraExe_cstr(hydraExe.c_str(), hydraExe.c_str() + hydraExe.size() + 1);
-        std::vector<char> cmdFull_cstr(cmdFull.c_str(), cmdFull.c_str() + cmdFull.size() + 1);
-
-
-        char *cmd[] = {&hydraExe_cstr[0], &cmdFull_cstr[0], NULL};
-
-        if (!a_debug)
-        {
-          auto pid = fork();
-
-          switch (pid)
-          {
-            case -1:
-              (*m_pLog) << "error forking hydraAPI" << std::endl;
-              break;
-            case 0: //child process
-              (*m_pLog) << "before executing Hydra Core" << std::endl;
-              execv(hydraExe.c_str(), cmd);
-              (*m_pLog) << "error launching or executing Hydra Core" << std::endl;
-              exit(1);
-            default:
-              m_mdProcessList.push_back(pid);
-              fout << cmdFull.c_str() << std::endl;
-              break;
-          }
-
-        }
+  
+        CreateProcessUnix(hydraExe.c_str(), cmdFull.c_str(), a_debug, m_pLog, m_mdProcessList);
+        fout << cmdFull.c_str() << std::endl;
       }
 
       fout.close();
