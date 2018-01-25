@@ -693,8 +693,8 @@ bool test44_four_lights()
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
   HRRenderRef renderRef = hrRenderCreate(L"HydraModern");
+  //hrRenderLogDir(renderRef, L"C:/[Hydra]/logs/", false);
 
-  // hrRenderLogDir(renderRef, L"C:/[Hydra]/logs/", true); // use hrRenderLogDir(renderRef, L"", false); to disable logging
 
   hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
   hrRenderOpen(renderRef, HR_WRITE_DISCARD);
