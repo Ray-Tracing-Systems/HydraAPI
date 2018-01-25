@@ -238,29 +238,34 @@ HRRenderRef _hrRendeSettingsFromNode(pugi::xml_node a_node)
   std::vector<std::wstring> hr_listfiles(const wchar_t* a_folder);
 #endif
 
+std::string ws2s(const std::wstring& s);
+std::wstring s2ws(const std::string& s);
+
+
 void _hrFindTargetOrLastState(const wchar_t* a_libPath, int32_t a_stateId,
                               std::wstring& fileName, int& stateId)
 {
   // (0) (a_stateId == -1) => find last state in folder
   //
-
+  
   if (a_stateId == -1)
   {
 #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
+    
     std::wstring s1(a_libPath);
-    std::string libPath(s1.begin(), s1.end());
+    std::string libPath = ws2s(s1);
+    
     auto fileList = hr_listfiles(libPath);
-
+    
     std::sort(fileList.begin(), fileList.end());
     
     for (auto p : fileList)
     {
       const std::string& currFile = p;
-
+      
       if (currFile.find("statex") != std::string::npos)
       {
-        std::wstring s2(currFile.begin(), currFile.end());
-        fileName = s2;
+        fileName = s2ws(currFile);
         stateId++;
       }
     }

@@ -46,26 +46,33 @@ int hr_cleardir(const char* a_folder)
 std::vector<std::string> hr_listfiles(const std::string &a_folder)
 {
   std::vector<std::string> result;
-  DIR *dir;
-  class dirent *ent;
+  class dirent *ent = nullptr;
   class stat st;
-
-  dir = opendir(a_folder.c_str());
-  while ((ent = readdir(dir)) != NULL) {
-    const std::string file_name = ent->d_name;
+  
+  DIR* dir = opendir(a_folder.c_str());
+  if(dir == nullptr)
+  {
+    // std::cout << "[debug]: hr_listfiles, can't open DIR " << a_folder.c_str() << std::endl;
+    // std::cout << "[debug]: errno = " << strerror(errno) << std::endl;
+    return result;
+  }
+  
+  while ((ent = readdir(dir)) != NULL)
+  {
+    const std::string file_name      = ent->d_name;
     const std::string full_file_name = a_folder + "/" + file_name;
-
+    
     if (file_name[0] == '.')
       continue;
 
     if (stat(full_file_name.c_str(), &st) == -1)
       continue;
-
+    
     const bool is_directory = (st.st_mode & S_IFDIR) != 0;
-
+    
     if (is_directory)
       continue;
-
+    
     result.push_back(full_file_name);
   }
   closedir(dir);

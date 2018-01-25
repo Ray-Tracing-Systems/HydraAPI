@@ -96,57 +96,15 @@ bool HydraProcessLauncher::hasConnection() const
   return true;
 }
 
+#include <thread>
+
 void CreateProcessUnix(const char* exePath, const char* allArgs, const bool a_debug, std::ostream* a_pLog, std::vector<pid_t>& a_mdProcessList)
 {
-  std::stringstream inStr(allArgs);
-  std::vector<char*> cmd; // {"", "", NULL};
-  
-  std::string copyPath(exePath);
-  cmd.push_back(const_cast<char*>(copyPath.c_str()));
-  
-  int i=0;
-  while(!inStr.eof())
-  {
-    char* data = (char*)malloc(256);
-    inStr >> data;
-    cmd.push_back(data);
-    i++;
-  }
-  
-  cmd.push_back(nullptr);
-  
-  if (!a_debug)
-  {
-    auto pid = fork();
-    
-    switch (pid)
-    {
-      case -1:
-        (*a_pLog) << "error forking hydraAPI" << std::endl;
-        break;
-      case 0: //child process
-        (*a_pLog) << "before executing Hydra Core" << std::endl;
-        execv(exePath, &cmd[0]);
-        (*a_pLog) << "error launching or executing Hydra Core" << std::endl;
-        exit(1);
-      default:
-        a_mdProcessList.push_back(pid);
-        break;
-    }
-    
-  }
-  
-  for (auto x : cmd)
-    free(x);
-  
+  std::string command = std::string(exePath) + " " + std::string(allArgs) + " &";
+  system(command.c_str());
 }
-
-
 void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydaRenderDevice>& a_devList)
 {
-
-  bool a_debug             = a_params.debug;
-
   const char* imageFileName = m_imageFileName.c_str();
 
   int width = m_width;
@@ -195,12 +153,11 @@ void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params
         std::string cmdFull = basicCmd + ss.str();
         std::string hydraExe(hydraPath + "hydra");
   
-        CreateProcessUnix(hydraExe.c_str(), cmdFull.c_str(), a_debug, m_pLog, m_mdProcessList);
+        CreateProcessUnix(hydraExe.c_str(), cmdFull.c_str(), a_params.debug, m_pLog, m_mdProcessList);
         fout << cmdFull.c_str() << std::endl;
       }
 
       fout.close();
-
     }
   }
 }

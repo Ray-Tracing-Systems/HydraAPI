@@ -153,32 +153,48 @@ std::wstring s2ws(const std::string& s)
 #else
 
 
-std::string ws2s(const std::wstring& s)
+// std::string ws2s(const std::wstring& s)
+// {
+//   const size_t size = std::wcslen(s.c_str());
+//   std::string str;
+//
+//   if (size > 0)
+//   {
+//     str.resize(size);
+//     std::wcstombs(&str[0], s.c_str(), size);
+//   }
+//
+//   return str;
+// }
+//
+// std::wstring s2ws(const std::string& s)
+// {
+//   const size_t size = std::strlen(s.c_str());
+//   std::wstring wstr;
+//
+//   if (size > 0)
+//   {
+//     wstr.resize(size);
+//     std::mbstowcs(&wstr[0], s.c_str(), size);
+//   }
+//
+//   return wstr;
+// }
+
+std::wstring s2ws(const std::string& str)
 {
-  const size_t size = std::wcslen(s.c_str());
-  std::string str;
-
-  if (size > 0)
-  {
-    str.resize(size);
-    std::wcstombs(&str[0], s.c_str(), size);
-  }
-
-  return str;
+  using convert_typeX = std::codecvt_utf8<wchar_t>;
+  std::wstring_convert<convert_typeX, wchar_t> converterX;
+  
+  return converterX.from_bytes(str);
 }
 
-std::wstring s2ws(const std::string& s)
+std::string ws2s(const std::wstring& wstr)
 {
-  const size_t size = std::strlen(s.c_str());
-  std::wstring wstr;
-
-  if (size > 0)
-  {
-    wstr.resize(size);
-    std::mbstowcs(&wstr[0], s.c_str(), size);
-  }
-
-  return wstr;
+  using convert_typeX = std::codecvt_utf8<wchar_t>;
+  std::wstring_convert<convert_typeX, wchar_t> converterX;
+  
+  return converterX.to_bytes(wstr);
 }
 
 #endif
