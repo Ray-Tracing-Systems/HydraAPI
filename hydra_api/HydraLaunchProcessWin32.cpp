@@ -178,7 +178,7 @@ void PluginShmemPipe::runAllRenderProcesses(RenderProcessRunParams a_params, con
     m_hydraStartupInfo.dwFlags     = STARTF_USESHOWWINDOW; // CREATE_NEW_CONSOLE // DETACHED_PROCESS
     m_hydraStartupInfo.wShowWindow = SW_SHOWMINNOACTIVE;
 
-    const char* hydraPath = "C:\\[Hydra]\\bin\\hydra.exe";
+    const char* hydraPath = "C:\\[Hydra]\\bin2\\hydra.exe";
     if (a_params.customExePath != "")
       hydraPath = a_params.customExePath.c_str();
 
