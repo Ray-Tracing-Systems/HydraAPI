@@ -123,12 +123,6 @@ PYBIND11_MODULE(hydraPy, m) {
           .value("HR_OPEN_READ_ONLY", HR_OPEN_READ_ONLY)
           .export_values();
 
-  py::enum_<HR_TEX_CHANNEL_SRC>(m, "HR_TEX_CHANNEL_SRC", py::arithmetic())
-          .value("HR_RGB_FROM_RGB", HR_RGB_FROM_RGB)
-          .value("HR_RGB_FROM_Alpha", HR_RGB_FROM_Alpha)
-          .value("HR_Alpha_FROM_Alpha", HR_Alpha_FROM_Alpha)
-          .value("HR_Alpha_FROM_RGB", HR_Alpha_FROM_RGB)
-          .export_values();
 
   py::enum_<HR_PRIM_TYPE>(m, "HR_PRIM_TYPE", py::arithmetic())
           .value("HR_TRIANGLE_LIST", HR_TRIANGLE_LIST)
