@@ -32,3 +32,5 @@
 *.app
 doc_xml/hydra_xml.pdf
 clew/x64/
+hydra_api/x64/
+ies_parser/x64/
