@@ -448,7 +448,7 @@ namespace LGHT_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_227/z_out.png");
 
-    return check_images("test_227", 1, 50);
+    return check_images("test_227", 1, 60);
   }
 
   bool test_228_point_ies_for_bpt()
@@ -1834,7 +1834,7 @@ namespace LGHT_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_233/z_out.png");
 
-    return check_images("test_233", 1, 20.0f);
+    return check_images("test_233", 1, 30.0f);
   }
 
   bool test_234_light_group_light_inst_cust_params()
@@ -2044,7 +2044,7 @@ namespace LGHT_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_234/z_out.png");
 
-    return check_images("test_234", 1, 30);
+    return check_images("test_234", 1, 40);
   }
 
   bool test_235_stadium()
@@ -2587,7 +2587,7 @@ namespace LGHT_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_236/z_out.png");
 
-    return check_images("test_236", 1, 20);
+    return check_images("test_236", 1, 25);
   }
 
 };

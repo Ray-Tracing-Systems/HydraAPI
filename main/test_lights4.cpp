@@ -1513,7 +1513,7 @@ namespace LGHT_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_241/z_out.png");
 
-    return check_images("test_241", 1, 20.0f);
+    return check_images("test_241", 1, 35.0f);
   }
 
 
@@ -1807,7 +1807,7 @@ namespace LGHT_TESTS
 
       node.append_child(L"pt_error").text()        = L"1";
       node.append_child(L"minRaysPerPixel").text() = 256;
-      node.append_child(L"maxRaysPerPixel").text() = 2048;
+      node.append_child(L"maxRaysPerPixel").text() = 4096;
 
       node.append_child(L"draw_tiles").text() = L"0";
     }
@@ -1915,7 +1915,7 @@ namespace LGHT_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_242/z_out.png");
 
-    return check_images("test_242", 1, 20.0f);
+    return check_images("test_242", 1, 40.0f);
   }
 
   bool test_243_mesh_light_do_not_sample_me()
@@ -2188,7 +2188,7 @@ namespace LGHT_TESTS
 
       node.append_child(L"pt_error").text() = L"2";
       node.append_child(L"minRaysPerPixel").text() = L"256";
-      node.append_child(L"maxRaysPerPixel").text() = L"2048";
+      node.append_child(L"maxRaysPerPixel").text() = L"4096";
 
       node.append_child(L"draw_tiles").text() = L"0";
     }
@@ -2280,7 +2280,7 @@ namespace LGHT_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_243/z_out.png");
 
-    return check_images("test_243", 1, 20.0f);
+    return check_images("test_243", 1, 35.0f);
   }
 
   bool test_244_do_not_sample_me()

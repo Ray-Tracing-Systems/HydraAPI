@@ -87,8 +87,8 @@ int main(int argc, const char** argv)
   try
   {
 	  //run_all_geo_tests();
-    //run_all_lgt_tests();
-	  //run_all_mtl_tests();
+    run_all_mtl_tests(2);
+    run_all_lgt_tests();
     //run_all_ipp_tests();
     //run_all_api_tests();
 
@@ -97,7 +97,7 @@ int main(int argc, const char** argv)
     //test39_mesh_from_vsgf();
     //PP_TESTS::test305_fbi_from_render();
 
-    std::cout << test44_four_lights() << std::endl;
+    //std::cout << test44_four_lights() << std::endl;
     //std::cout << test59_cornell_water_mlt() << std::endl;
     //std::cout << test_70_area_lights16() << std::endl;
 
@@ -105,7 +105,7 @@ int main(int argc, const char** argv)
     
     //GEO_TESTS::test_004_dof();
     //MTL_TESTS::test_119_opacity_texture();
-    //LGHT_TESTS::test_206_ies1();
+    //LGHT_TESTS::test_204_sky_hdr_rotate();
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
 
     //window_main_free_look(L"tests_f/test_241", L"opengl1Debug");
