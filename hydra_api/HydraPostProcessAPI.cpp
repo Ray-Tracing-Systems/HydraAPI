@@ -32,6 +32,7 @@ PCREATEFUN_T  g_createFunc2 = nullptr;
 #endif
 
 extern HRObjectManager g_objManager;
+bool g_hydraapipostprocessloaddll = true;
 
 void _hrDestroyPostProcess()
 {
@@ -60,6 +61,7 @@ void _hrInitPostProcess()
 
   // add filters from example DLL 
   //
+  if(g_hydraapipostprocessloaddll)
   {
     g_dllFilterHangle = LoadLibraryW(L"D:/PROG/HydraAPI/hydra_api/x64/Release/PostProcessDLLExample.dll");
 
@@ -77,6 +79,7 @@ void _hrInitPostProcess()
 
   // add filters from Hydra private post process dll
   //
+  if (g_hydraapipostprocessloaddll)
   {
     g_dllFilterHangle2 = LoadLibraryW(L"C:/[Hydra]/bin2/PostProcess.dll");
 
