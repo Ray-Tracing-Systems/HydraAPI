@@ -1705,10 +1705,10 @@ bool test39_mesh_from_vsgf()
     node.append_child(L"width").text() = L"1024";
     node.append_child(L"height").text() = L"768";
 
-    node.append_child(L"method_primary").text()   = L"lighttracing"; // L"pathtracing"; // L"lighttracing";
-    node.append_child(L"method_secondary").text() = L"lighttracing"; // L"pathtracing"; // L"lighttracing";
-    node.append_child(L"method_tertiary").text()  = L"lighttracing"; // L"pathtracing"; // L"lighttracing";
-    node.append_child(L"method_caustic").text()   = L"lighttracing"; // L"pathtracing"; // L"lighttracing";
+    node.append_child(L"method_primary").text()   = L"IBPT"; // L"pathtracing"; // L"lighttracing";
+    node.append_child(L"method_secondary").text() = L"IBPT"; // L"pathtracing"; // L"lighttracing";
+    node.append_child(L"method_tertiary").text()  = L"IBPT"; // L"pathtracing"; // L"lighttracing";
+    node.append_child(L"method_caustic").text()   = L"IBPT"; // L"pathtracing"; // L"lighttracing";
     node.append_child(L"shadows").text()          = L"1";
 
     node.append_child(L"trace_depth").text()      = L"5";
