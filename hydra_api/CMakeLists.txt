@@ -104,20 +104,12 @@ endif()
 add_library(hydra_api STATIC ${SOURCE_FILES} ${POST_PROC} ${MODERN_GL_RENDER_DRIVER})
 target_include_directories (hydra_api PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${OPENGL_INCLUDE_DIR})
 
+
 if(WIN32)
   add_definitions(-DUNICODE -D_UNICODE)
   target_link_libraries(hydra_api LINK_PUBLIC ${LIBS} ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY} ies_parser)
 else()
+  set_property(TARGET hydra_api PROPERTY POSITION_INDEPENDENT_CODE ON)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1")
   target_link_libraries(hydra_api LINK_PUBLIC Threads::Threads ${LIBS} ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY} ies_parser stdc++fs rt dl OpenCL)
 endif()
-
-
-#build python bindings shared library
-
-#add_subdirectory (hydra_api_py)
-#add_subdirectory(pybind11)
-#pybind11_add_module(hydraPy ${SOURCE_FILES} hydraPy.cpp)
-
-#target_include_directories (hydraPy PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${OPENGL_INCLUDE_DIR})
-#target_link_libraries(hydraPy LINK_PUBLIC ${LIBS} ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY} stdc++fs rt)
