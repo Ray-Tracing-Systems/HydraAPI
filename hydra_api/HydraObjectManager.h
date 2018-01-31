@@ -309,7 +309,7 @@ struct HRSceneData : public HRObject<IHRSceneData>
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 
-  void init()
+  void init(bool a_emptyvb)
   {
     m_texturesLib         = m_xmlDoc.append_child(L"textures_lib");
     m_materialsLib        = m_xmlDoc.append_child(L"materials_lib");
@@ -329,7 +329,10 @@ struct HRSceneData : public HRObject<IHRSceneData>
 
     m_trashNode = m_xmlDocChanges.append_child(L"trash");
 
-    m_vbCache.Init(VIRTUAL_BUFFER_SIZE, "HYDRAAPISHMEM2");
+    if (a_emptyvb)
+      m_vbCache.Init(4096, "NOSUCHSHMEM");
+    else
+      m_vbCache.Init(VIRTUAL_BUFFER_SIZE, "HYDRAAPISHMEM2");
   }
 
   void init_existing()
@@ -352,7 +355,7 @@ struct HRSceneData : public HRObject<IHRSceneData>
 
     m_trashNode           = m_xmlDocChanges.child(L"trash");
 
-    m_vbCache.Init(VIRTUAL_BUFFER_SIZE, "HYDRAAPISHMEM2");
+    m_vbCache.Init(4096, "HYDRAAPISHMEM2");
   }
 
   void clear()
