@@ -6,6 +6,7 @@
 
 #include "pybind11/include/pybind11/pybind11.h"
 #include "pybind11/include/pybind11/stl.h"
+#include <pybind11/numpy.h>
 //#include "pybind11/include/pybind11/stl_bind.h"
 #include "HydraAPI.h"
 
@@ -54,6 +55,19 @@ void hrMeshInstancePy(HRSceneInstRef a_pScn, HRMeshRef a_pMesh, std::vector<floa
 void hrLightInstancePy(HRSceneInstRef pScn, HRLightRef pLight, std::vector<float> &m)
 {
   hrLightInstance(pScn, pLight, &m[0]);
+}
+
+void hrRenderGetFrameBufferLDR1iPy(const HRRenderRef a_pRender, int w, int h, py::array_t<int32_t> imgData)
+{
+  //auto buf1 = imgData.request();
+  auto buf1 = imgData.mutable_unchecked<1>();
+
+  hrRenderGetFrameBufferLDR1i(a_pRender, w, h, buf1.mutable_data(0));
+}
+
+void hrRenderGetFrameBufferLDR1iPyCopy(const HRRenderRef a_pRender, int w, int h, std::vector<int32_t> &imgData)
+{
+  hrRenderGetFrameBufferLDR1i(a_pRender, w, h, &imgData[0]);
 }
 
 PYBIND11_MODULE(hydraPy, m) {
@@ -203,8 +217,10 @@ PYBIND11_MODULE(hydraPy, m) {
   m.def("hrRenderClose", &hrRenderClose);
   m.def("hrRenderParamNode", &hrRenderParamNode);
   m.def("hrRenderHaveUpdate", &hrRenderHaveUpdate);
+  m.def("hrRenderEnableDevice", &hrRenderEnableDevice);
   m.def("hrRenderGetFrameBufferHDR4f", &hrRenderGetFrameBufferHDR4f);
-  m.def("hrRenderGetFrameBufferLDR1i", &hrRenderGetFrameBufferLDR1i);
+  m.def("hrRenderGetFrameBufferLDR1i", &hrRenderGetFrameBufferLDR1iPy);
+  m.def("hrRenderGetFrameBufferLDR1iCopy", &hrRenderGetFrameBufferLDR1iPyCopy);
   m.def("hrRenderSaveFrameBufferLDR", &hrRenderSaveFrameBufferLDR);
   m.def("hrRenderSaveFrameBufferHDR", &hrRenderSaveFrameBufferHDR);
   m.def("hrRenderGetGBufferLine", &hrRenderGetGBufferLine);
