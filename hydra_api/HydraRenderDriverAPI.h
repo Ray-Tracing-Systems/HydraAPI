@@ -25,6 +25,10 @@ struct HRDriverAllocInfo
   int32_t geomNum;
   int32_t lightNum;
 
+  int32_t lightsWithIESNum;
+  int32_t envLightTexSize;
+  bool    envIsHDR;
+
   int64_t imgMem;
   int64_t geomMem;
 
