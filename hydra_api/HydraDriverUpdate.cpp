@@ -826,8 +826,8 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
     const int64_t neededMemT = EstimateTexturesMem(objList);
     const int64_t neededMemG = EstimateGeometryMem(objList);
 
-    allocInfo.imgMem      = (4*neededMemT/3) + size_t(128)*size_t(1024*1024);
-    allocInfo.geomMem     = (neededMemG)     + size_t(64)*size_t(1024*1024);
+    allocInfo.imgMem      = neededMemT; // + size_t(32)*size_t(1024*1024);
+    allocInfo.geomMem     = neededMemG; // + size_t(16)*size_t(1024*1024);
     allocInfo.libraryPath = g_objManager.scnData.m_path.c_str();
 
     HR_DriverUpdateSettings(scn, objList, a_pDriver);
