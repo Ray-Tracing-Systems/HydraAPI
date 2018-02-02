@@ -6,6 +6,7 @@
 
 #include "pybind11/include/pybind11/pybind11.h"
 #include "pybind11/include/pybind11/stl.h"
+#include <pybind11/numpy.h>
 //#include "pybind11/include/pybind11/stl_bind.h"
 #include "HydraAPI.h"
 
@@ -18,8 +19,22 @@ std::unordered_map<std::wstring, std::vector<float>> g_vertexAttribf;
 std::unordered_map<std::wstring, std::vector<int>> g_vertexAttribi;
 
 
+void hrMeshOpenPy(HRMeshRef a_pMesh, HR_PRIM_TYPE a_type, HR_OPEN_MODE a_mode)
+{
+  py::object gc = py::module::import("gc");
+  py::object disable = gc.attr("disable");
+
+  g_vertexAttribf.clear();
+  g_vertexAttribi.clear();
+  hrMeshOpen(a_pMesh, a_type, a_mode);
+}
+
+
 void hrMeshClosePy(HRMeshRef a_pMesh)
 {
+  py::object gc = py::module::import("gc");
+  py::object enable = gc.attr("enable");
+
   g_vertexAttribf.clear();
   g_vertexAttribi.clear();
   hrMeshClose(a_pMesh);
@@ -41,6 +56,31 @@ void hrMeshVertexAttribPointer2fPy(HRMeshRef pMesh, const wchar_t* a_name, std::
   g_vertexAttribf[std::wstring(a_name)] = pointer;
   hrMeshVertexAttribPointer2f(pMesh, a_name, &g_vertexAttribf[std::wstring(a_name)][0], a_stride);
 }
+
+void hrMeshVertexAttribPointer4fNumPy(HRMeshRef pMesh, const wchar_t* a_name, py::array_t<float> &arr, int a_stride = 0)
+{
+  auto myArr = arr.unchecked<1>();
+  hrMeshVertexAttribPointer4f(pMesh, a_name, myArr.data(0), a_stride);
+}
+
+void hrMeshVertexAttribPointer2fNumPy(HRMeshRef pMesh, const wchar_t* a_name, py::array_t<float> &arr, int a_stride = 0)
+{
+  auto myArr = arr.unchecked<1>();
+  hrMeshVertexAttribPointer2f(pMesh, a_name, myArr.data(0), a_stride);
+}
+
+void hrMeshAppendTriangles3NumPy(HRMeshRef a_pMesh, int indNum, py::array_t<int32_t> &arr)
+{
+  auto myArr = arr.unchecked<1>();
+  hrMeshAppendTriangles3(a_pMesh, indNum, myArr.data(0));
+}
+
+bool hrRenderGetFrameBufferLDR1iNumPy(const HRRenderRef a_pRender, int w, int h, py::array_t<int32_t> &imgData)
+{
+  auto myArr = imgData.mutable_unchecked<1>();
+  return hrRenderGetFrameBufferLDR1i(a_pRender, w, h, myArr.mutable_data(0));
+}
+
 
 void hrMeshInstancePy(HRSceneInstRef a_pScn, HRMeshRef a_pMesh, std::vector<float> &a_mat,
                         std::vector<int32_t> a_mmListm = std::vector<int32_t>(), int32_t a_mmListSize = 0)
@@ -175,18 +215,21 @@ PYBIND11_MODULE(hydraPy, m) {
   m.def("hrCameraParamNode", &hrCameraParamNode);
   m.def("hrMeshCreate", &hrMeshCreate);
   m.def("hrMeshCreateFromFileDL", &hrMeshCreateFromFileDL);
-  m.def("hrMeshOpen", &hrMeshOpen);
+  m.def("hrMeshOpen", &hrMeshOpenPy);
   m.def("hrMeshClose", &hrMeshClosePy);
   m.def("hrMeshVertexAttribPointer1f", &hrMeshVertexAttribPointer1f);
   m.def("hrMeshVertexAttribPointer2f", &hrMeshVertexAttribPointer2fPy);
+  m.def("hrMeshVertexAttribPointer2fNumPy", &hrMeshVertexAttribPointer2fNumPy, py::arg(), py::arg(), py::arg().noconvert(), py::arg());
   //m.def("hrMeshVertexAttribPointer2f", &hrMeshVertexAttribPointer2f);
   m.def("hrMeshVertexAttribPointer3f", &hrMeshVertexAttribPointer3f);
   //m.def("hrMeshVertexAttribPointer4f", &hrMeshVertexAttribPointer4f);
   m.def("hrMeshVertexAttribPointer4f", &hrMeshVertexAttribPointer4fPy);
+  m.def("hrMeshVertexAttribPointer4fNumPy", &hrMeshVertexAttribPointer4fNumPy, py::arg(), py::arg(), py::arg().noconvert(), py::arg());
   m.def("hrMeshPrimitiveAttribPointer1i", &hrMeshPrimitiveAttribPointer1i);
   m.def("hrMeshMaterialId", &hrMeshMaterialId);
   //m.def("hrMeshAppendTriangles3", &hrMeshAppendTriangles3);
   m.def("hrMeshAppendTriangles3", &hrMeshAppendTriangles3Py);
+  m.def("hrMeshAppendTriangles3NumPy", &hrMeshAppendTriangles3NumPy, py::arg(), py::arg(), py::arg().noconvert());
   m.def("hrMeshGetAttribPointer", &hrMeshGetAttribPointer);
   m.def("hrMeshGetPrimitiveAttribPointer", &hrMeshGetPrimitiveAttribPointer);
   m.def("hrMeshGetInfo", &hrMeshGetInfo);
@@ -203,7 +246,9 @@ PYBIND11_MODULE(hydraPy, m) {
   m.def("hrRenderClose", &hrRenderClose);
   m.def("hrRenderParamNode", &hrRenderParamNode);
   m.def("hrRenderHaveUpdate", &hrRenderHaveUpdate);
-  m.def("hrRenderGetFrameBufferHDR4f", &hrRenderGetFrameBufferHDR4f);
+  m.def("hrRenderEnableDevice", &hrRenderEnableDevice);
+  //m.def("hrRenderGetFrameBufferHDR4f", &hrRenderGetFrameBufferHDR4f);
+  m.def("hrRenderGetFrameBufferLDR1i", &hrRenderGetFrameBufferLDR1iNumPy);
   m.def("hrRenderGetFrameBufferLDR1i", &hrRenderGetFrameBufferLDR1i);
   m.def("hrRenderSaveFrameBufferLDR", &hrRenderSaveFrameBufferLDR);
   m.def("hrRenderSaveFrameBufferHDR", &hrRenderSaveFrameBufferHDR);
