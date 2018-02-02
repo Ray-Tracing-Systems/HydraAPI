@@ -103,33 +103,33 @@ PYBIND11_MODULE(hydraPy, m) {
 
   py::class_<HRMeshRef>(m, "HRMeshRef")
           .def(py::init<>())
-          .def_readonly("def_readonly", &HRMeshRef::id);
+          .def_readonly("id", &HRMeshRef::id);
   py::class_<HRLightRef>(m, "HRLightRef")
           .def(py::init<>())
-          .def_readonly("def_readonly", &HRLightRef::id);
+          .def_readonly("id", &HRLightRef::id);
   py::class_<HRMaterialRef>(m, "HRMaterialRef")
           .def(py::init<>())
-          .def_readonly("def_readonly", &HRMaterialRef::id);
+          .def_readonly("id", &HRMaterialRef::id);
   py::class_<HRCameraRef>(m, "HRCameraRef")
           .def(py::init<>())
-          .def_readonly("def_readonly", &HRCameraRef::id);
+          .def_readonly("id", &HRCameraRef::id);
   py::class_<HRTextureNodeRef>(m, "HRTextureNodeRef")
           .def(py::init<>())
-          .def_readonly("def_readonly", &HRTextureNodeRef::id);
+          .def_readonly("id", &HRTextureNodeRef::id);
   py::class_<HRSceneInstRef>(m, "HRSceneInstRef")
           .def(py::init<>())
-          .def_readonly("def_readonly", &HRSceneInstRef::id);
+          .def_readonly("id", &HRSceneInstRef::id);
   py::class_<HRRenderRef>(m, "HRRenderRef")
           .def(py::init<>())
-          .def_readonly("def_readonly", &HRRenderRef::id);
+          .def_readonly("id", &HRRenderRef::id);
 
   py::class_<HRSceneLibraryInfo>(m, "HRSceneLibraryInfo")
-          .def_readwrite("def_readwrite", &HRSceneLibraryInfo::texturesNum)
-          .def_readwrite("def_readwrite", &HRSceneLibraryInfo::materialsNum)
-          .def_readwrite("def_readwrite", &HRSceneLibraryInfo::meshesNum)
-          .def_readwrite("def_readwrite", &HRSceneLibraryInfo::camerasNum)
-          .def_readwrite("def_readwrite", &HRSceneLibraryInfo::scenesNum)
-          .def_readwrite("def_readwrite", &HRSceneLibraryInfo::renderDriversNum);
+          .def_readwrite("texturesNum", &HRSceneLibraryInfo::texturesNum)
+          .def_readwrite("materialsNum", &HRSceneLibraryInfo::materialsNum)
+          .def_readwrite("meshesNum", &HRSceneLibraryInfo::meshesNum)
+          .def_readwrite("camerasNum", &HRSceneLibraryInfo::camerasNum)
+          .def_readwrite("scenesNum", &HRSceneLibraryInfo::scenesNum)
+          .def_readwrite("renderDriversNum", &HRSceneLibraryInfo::renderDriversNum);
 
   py::class_<HRRenderDeviceInfoListElem>(m, "HRRenderDeviceInfoListElem")
           .def_readonly("name", &HRRenderDeviceInfoListElem::name)
