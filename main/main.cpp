@@ -99,7 +99,7 @@ int main(int argc, const char** argv)
 
     std::cout << test39_mesh_from_vsgf() << std::endl;
     //std::cout << test59_cornell_water_mlt() << std::endl;
-    //std::cout << test_70_area_lights16() << std::endl;
+    //std::cout << test70_area_lights16() << std::endl;
 
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
     
