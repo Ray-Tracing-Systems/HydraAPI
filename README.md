@@ -23,7 +23,7 @@ Linux:
 2. sudo apt-get install libfreeimage-dev
 3. sudo apt-get install mesa-common-dev libglu1-mesa-dev libglfw3-dev libglfw3
 4. sudo apt install ocl-icd-opencl-dev
-5. Copy bin_ubuntu/hydra forder to your home folder to form '/home/hydra' or build HydraCore from sources; 
+5. Copy bin_ubuntu/hydra forder to your home folder to form '/home/hydra' or build and install HydraCore from sources; 
 6. use Cmake;
 
 # License and dependency
