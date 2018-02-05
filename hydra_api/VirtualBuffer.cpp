@@ -48,15 +48,6 @@ bool VirtualBuffer::Init(uint64_t a_sizeInBytes, const char* a_shmemName)
     return false;
   }
 
-#ifdef WIN32
-  unsigned long long totalMem;
-  GetPhysicallyInstalledSystemMemory(&totalMem);
-  totalMem *= size_t(1024);
-  
-  if (totalMem / 4 < a_sizeInBytes)
-    a_sizeInBytes = totalMem / 4;
-#endif
-  
   m_totalSize = a_sizeInBytes;
 
 #ifdef WIN32
@@ -79,13 +70,14 @@ bool VirtualBuffer::Init(uint64_t a_sizeInBytes, const char* a_shmemName)
     }
 
     m_data = MapViewOfFile(m_fileHandle, FILE_MAP_WRITE | FILE_MAP_READ, 0, 0, 0);
+  }
 
-    if (m_data == nullptr)
-    {
-      CloseHandle(m_fileHandle); m_fileHandle = NULL;
-      HrError(L"VirtualBuffer::FATAL ERROR: shmem file can not be maped");
-      return false;
-    }
+
+  if (m_data == nullptr)
+  {
+    CloseHandle(m_fileHandle); m_fileHandle = NULL;
+    HrError(L"VirtualBuffer::FATAL ERROR: shmem file can not be maped");
+    return false;
   }
 
 #else
