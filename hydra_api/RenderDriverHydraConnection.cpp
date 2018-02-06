@@ -653,7 +653,7 @@ static inline HRGBufferPixel UnpackGBuffer(const float a_input[4], const float a
   HRGBufferPixel res;
 
   res.depth = a_input[0];
-  res.matId = as_int(a_input[2]);
+  res.matId = as_int(a_input[2]) & 0x00FFFFFF;
   decodeNormal(as_int(a_input[1]), res.norm);
 
   unsigned int rgba = as_int(a_input[3]);

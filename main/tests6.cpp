@@ -894,6 +894,7 @@ bool test37_cornell_with_light_different_image_layers()
 
     if (info.finalUpdate)
       break;
+
   }
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_37/z_out.png");
@@ -901,10 +902,19 @@ bool test37_cornell_with_light_different_image_layers()
   std::vector<int32_t> normalsImageLDR(1024 * 768);
   std::vector<int32_t> txColorImageLDR(1024 * 768);
   std::vector<int32_t> depthImageLDR(1024 * 768);
+  std::vector<int32_t> mindicesImageLDR(1024 * 768);
+  std::vector<int32_t> instIndicesImageLDR(1024 * 768);
+  std::vector<int32_t> objIndicesImageLDR(1024 * 768);
 
   std::vector<HRGBufferPixel> line(1024);
 
   const float invGamma = 1.0f / 2.2f;
+
+  const int palette[20] = { 0xffe6194b, 0xff3cb44b, 0xffffe119, 0xff0082c8,
+                            0xfff58231, 0xff911eb4, 0xff46f0f0, 0xfff032e6,
+                            0xffd2f53c, 0xfffabebe, 0xff008080, 0xffe6beff,
+                            0xffaa6e28, 0xfffffac8, 0xff800000, 0xffaaffc3,
+                            0xff808000, 0xffffd8b1, 0xff000080, 0xff808080 };
 
   for (int y = 0; y < 768; y++)
   {
@@ -937,9 +947,22 @@ bool test37_cornell_with_light_different_image_layers()
                                     texc[3]
       };
 
-      normalsImageLDR[y * 1024 + x] = RealColorToUint32(norm);
-      txColorImageLDR[y * 1024 + x] = RealColorToUint32(color);
-      depthImageLDR  [y * 1024 + x] = RealColorToUint32(depth);
+      normalsImageLDR    [y * 1024 + x] = RealColorToUint32(norm);
+      txColorImageLDR    [y * 1024 + x] = RealColorToUint32(color);
+      depthImageLDR      [y * 1024 + x] = RealColorToUint32(depth);
+
+      if (line[x].matId == -1 || line[x].depth >= 5e5f)
+      {
+        mindicesImageLDR   [y * 1024 + x] = 0xFF000000;
+        instIndicesImageLDR[y * 1024 + x] = 0xFF000000;
+        objIndicesImageLDR [y * 1024 + x] = 0xFF000000;
+      }
+      else
+      {
+        mindicesImageLDR   [y * 1024 + x] = palette[line[x].matId  % 20];
+        instIndicesImageLDR[y * 1024 + x] = palette[line[x].instId % 20];
+        objIndicesImageLDR [y * 1024 + x] = palette[line[x].objId  % 20];
+      }
     }
 
   }
@@ -948,7 +971,11 @@ bool test37_cornell_with_light_different_image_layers()
   SaveImageToFile(std::string("tests_images/test_37/z_out3.png"), 1024, 768, (unsigned int*)&txColorImageLDR[0]);
   SaveImageToFile(std::string("tests_images/test_37/z_out4.png"), 1024, 768, (unsigned int*)&depthImageLDR[0]);
 
-  return check_images("test_37", 4);
+  SaveImageToFile(std::string("tests_images/test_37/z_out5.png"), 1024, 768, (unsigned int*)&mindicesImageLDR[0]);
+  SaveImageToFile(std::string("tests_images/test_37/z_out6.png"), 1024, 768, (unsigned int*)&instIndicesImageLDR[0]);
+  SaveImageToFile(std::string("tests_images/test_37/z_out7.png"), 1024, 768, (unsigned int*)&objIndicesImageLDR[0]);
+
+  return check_images("test_37", 7);
 }
 
 
