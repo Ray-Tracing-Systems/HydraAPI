@@ -647,11 +647,10 @@ static inline void decodeNormal(unsigned int a_data, float a_norm[3])
   a_norm[2] = sign*sqrt(fmax(1.0f - a_norm[0] * a_norm[0] - a_norm[1] * a_norm[1], 0.0f));
 }
 
-typedef HRGBufferPixel GBuffer1;
 
-static inline GBuffer1 unpackGBuffer1(const float a_input[4])
+static inline HRGBufferPixel UnpackGBuffer(const float a_input[4], const float a_input2[4])
 {
-  GBuffer1 res;
+  HRGBufferPixel res;
 
   res.depth = a_input[0];
   res.matId = as_int(a_input[2]);
@@ -662,6 +661,11 @@ static inline GBuffer1 unpackGBuffer1(const float a_input[4])
   res.rgba[1] = ((rgba & 0x0000FF00) >> 8)*(1.0f / 255.0f);
   res.rgba[2] = ((rgba & 0x00FF0000) >> 16)*(1.0f / 255.0f);
   res.rgba[3] = ((rgba & 0xFF000000) >> 24)*(1.0f / 255.0f);
+
+  res.texc[0] = a_input2[0];
+  res.texc[1] = a_input2[1];
+  res.objId   = as_int(a_input2[2]);
+  res.instId  = as_int(a_input2[3]);
 
   return res;
 }
@@ -830,19 +834,39 @@ void RD_HydraConnection::GetFrameBufferLDR(int32_t w, int32_t h, int32_t* a_out)
 
 }
 
+
 void RD_HydraConnection::GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_lineData, int32_t a_startX, int32_t a_endX)
 {
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// #TODO: Refactor this
+  float* data1 = nullptr;
+  float* data2 = nullptr;
+  if (m_pSharedImage->Header()->depth == 4) // some other process already have computed gbuffer
+  {
+    data1 = m_pSharedImage->ImageData(2);
+    data2 = m_pSharedImage->ImageData(3);
+  }
+  else if (m_pSharedImage->Header()->depth == 3) // some other process already have computed gbuffer
+  {
+    data1 = m_pSharedImage->ImageData(1);
+    data2 = m_pSharedImage->ImageData(2);
+  }
+  else
+    return;
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// #TODO: Refactor this
+
+
   if (a_endX > m_width)
     a_endX = m_width;
 
   const int32_t lineOffset = (a_lineNumber*m_width + a_startX);
   const int32_t lineSize   = (a_endX - a_startX);
 
-  // for (int32_t x = 0; x < lineSize; x++)
-  // {
-  //   const float* data = &m_gbuffer[(lineOffset + x) * 4];
-  //   a_lineData[x] = unpackGBuffer1(data);
-  // }
+  for (int32_t x = 0; x < lineSize; x++)
+  {
+    const float* data11 = &data1[(lineOffset + x) * 4];
+    const float* data22 = &data2[(lineOffset + x) * 4];
+    a_lineData[x] = UnpackGBuffer(data11, data22);
+  }
 
 }
 

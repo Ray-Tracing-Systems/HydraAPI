@@ -911,8 +911,11 @@ struct HRGBufferPixel
 {
   float   depth;
   float   norm[3];
+  float   texc[2];
   float   rgba[4];
   int32_t matId;
+  int32_t objId;
+  int32_t instId;
 };
 
 /**
