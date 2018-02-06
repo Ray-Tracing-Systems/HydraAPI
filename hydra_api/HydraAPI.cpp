@@ -809,6 +809,20 @@ HAPI void hrDrawPassOnly(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraR
   HR_DriverDraw(g_objManager.scnInst[g_objManager.m_currSceneId], g_objManager.m_pDriver.get());
 }
 
+HAPI void hrRenderEvalGbuffer(HRRenderRef a_pRender)
+{
+  HRRender* pSettings = g_objManager.PtrById(a_pRender);
+
+  if (a_pRender.id != -1 && pSettings != nullptr)
+  {
+    g_objManager.m_currRenderId = a_pRender.id;
+    g_objManager.m_pDriver      = pSettings->m_pDriver;
+  }
+
+  if(g_objManager.m_pDriver != nullptr)
+    g_objManager.m_pDriver->EvalGBuffer();
+}
+
 
 HAPI IHRRenderDriver* hrRenderDriverPointer(HRRenderRef a_pRender)
 {

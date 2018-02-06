@@ -800,7 +800,7 @@ int64_t EstimateTexturesMem(const ChangeList& a_objList)
 
 void EstimateMemHungryLights(const ChangeList& a_objList, bool* pIsHDR, int* pHungryLightsNumber, int* pEnvSize)
 {
-  int32_t envMemAmount   = 0;
+  size_t  envMemAmount   = 0;
   int32_t hungryLightNum = 0;
 
   std::unordered_set<std::wstring> processed;
@@ -835,7 +835,7 @@ void EstimateMemHungryLights(const ChangeList& a_objList, bool* pIsHDR, int* pHu
         const int32_t height   = nodeTex.attribute(L"height").as_int();
         const size_t bytesize  = nodeTex.attribute(L"bytesize").as_llong(); 
                                
-        const int32_t bpp      = bytesize / (width*height);
+        const int32_t bpp      = int32_t(bytesize / (width*height));
 
         if (bpp < 16)
         {

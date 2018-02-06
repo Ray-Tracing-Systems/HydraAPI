@@ -348,10 +348,10 @@ struct HRSharedBufferHeader
   int     messageSendOffset;
   int     messageRcvOffset;
 
-  int   imageDataOffset; // up to 4 image layers currently
+  int   imageDataOffset; 
   int   counterRcv;
   int   counterSnd;
-  int   dummy3;
+  int   gbufferIsEmpty;
 };
 
 struct IHRSharedAccumImage

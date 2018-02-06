@@ -130,6 +130,7 @@ protected:
 
   bool m_enableMLT = false;
   bool m_hideCmd   = false;
+  bool m_needGbuff = false;
 
   struct RenderPresets
   {
@@ -395,6 +396,8 @@ bool RD_HydraConnection::UpdateSettings(pugi::xml_node a_settingsNode)
                 (std::wstring(a_settingsNode.child(L"method_tertiary").text().as_string())  == L"mlt") ||
                 (std::wstring(a_settingsNode.child(L"method_caustic").text().as_string())   == L"mlt");
  
+  m_needGbuff = (std::wstring(a_settingsNode.child(L"evalgbuffer").text().as_string()) == L"1");
+
   m_presets.maxrays     = a_settingsNode.child(L"maxRaysPerPixel").text().as_int();
   m_presets.allocImageB = (std::wstring(a_settingsNode.child(L"method_secondary").text().as_string()) == L"lighttracing") || 
                           (std::wstring(a_settingsNode.child(L"method_primary").text().as_string())   == L"lighttracing");
@@ -446,9 +449,30 @@ void RD_HydraConnection::RunAllHydraHeads()
   else
     m_pSharedImage->Clear();
 
-  char err[256];
-  bool shmemImageIsOk = m_pSharedImage->Create(width, height, 1, "hydraimage", err);
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  const bool runMLT      = false;
+  const bool needGBuffer = m_needGbuff; 
 
+  int layersNum = 1;
+  if (runMLT && needGBuffer)
+    layersNum = 4;
+  else if (needGBuffer)
+    layersNum = 3;
+  else if (runMLT)
+    layersNum = 2;
+  else
+    layersNum = 1;
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  auto currtime = std::chrono::system_clock::now();
+  auto now_ms   = std::chrono::time_point_cast<std::chrono::milliseconds>(currtime).time_since_epoch().count();
+  std::stringstream nameStream;
+  nameStream << "hydraimage_" << now_ms;
+  const std::string hydraImageName = nameStream.str();
+
+  char err[256];
+  bool shmemImageIsOk = m_pSharedImage->Create(width, height, layersNum, hydraImageName.c_str(), err); // #TODO: change this and pass via cmd line
+  
   if (!shmemImageIsOk)
   {
     //#TODO: call error callback or do some thing like that
@@ -457,9 +481,10 @@ void RD_HydraConnection::RunAllHydraHeads()
   m_oldSPP     = 0.0f;
   m_oldCounter = 0;
 
-  m_pSharedImage->Header()->spp        = 0.0f;
-  m_pSharedImage->Header()->counterRcv = 0;
-  m_pSharedImage->Header()->counterSnd = 0;
+  m_pSharedImage->Header()->spp            = 0.0f;
+  m_pSharedImage->Header()->counterRcv     = 0;
+  m_pSharedImage->Header()->counterSnd     = 0;
+  m_pSharedImage->Header()->gbufferIsEmpty = needGBuffer ? 1 : -1;
   strncpy(m_pSharedImage->MessageSendData(), "-layer color -action wait ", 256); // #TODO: (sid, mid) !!!
   m_pSharedImage->Header()->counterSnd++;
 
@@ -491,6 +516,10 @@ void RD_HydraConnection::RunAllHydraHeads()
     else
       auxInput << "-cpu_fb 1 ";
 
+    if (needGBuffer)
+      auxInput << "-evalgbuffer 1 ";
+
+    auxInput << "-sharedimage " << hydraImageName.c_str();
 
     params.customExePath = m_params.customExePath; ///opt/hydra/hydra
     params.customExeArgs = auxInput.str();
@@ -618,14 +647,13 @@ static inline void decodeNormal(unsigned int a_data, float a_norm[3])
   a_norm[2] = sign*sqrt(fmax(1.0f - a_norm[0] * a_norm[0] - a_norm[1] * a_norm[1], 0.0f));
 }
 
-typedef HRGBufferPixel GBuffer1;
 
-static inline GBuffer1 unpackGBuffer1(const float a_input[4])
+static inline HRGBufferPixel UnpackGBuffer(const float a_input[4], const float a_input2[4])
 {
-  GBuffer1 res;
+  HRGBufferPixel res;
 
   res.depth = a_input[0];
-  res.matId = as_int(a_input[2]);
+  res.matId = as_int(a_input[2]) & 0x00FFFFFF;
   decodeNormal(as_int(a_input[1]), res.norm);
 
   unsigned int rgba = as_int(a_input[3]);
@@ -633,6 +661,11 @@ static inline GBuffer1 unpackGBuffer1(const float a_input[4])
   res.rgba[1] = ((rgba & 0x0000FF00) >> 8)*(1.0f / 255.0f);
   res.rgba[2] = ((rgba & 0x00FF0000) >> 16)*(1.0f / 255.0f);
   res.rgba[3] = ((rgba & 0xFF000000) >> 24)*(1.0f / 255.0f);
+
+  res.texc[0] = a_input2[0];
+  res.texc[1] = a_input2[1];
+  res.objId   = as_int(a_input2[2]);
+  res.instId  = as_int(a_input2[3]);
 
   return res;
 }
@@ -801,19 +834,39 @@ void RD_HydraConnection::GetFrameBufferLDR(int32_t w, int32_t h, int32_t* a_out)
 
 }
 
+
 void RD_HydraConnection::GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_lineData, int32_t a_startX, int32_t a_endX)
 {
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// #TODO: Refactor this
+  float* data1 = nullptr;
+  float* data2 = nullptr;
+  if (m_pSharedImage->Header()->depth == 4) // some other process already have computed gbuffer
+  {
+    data1 = m_pSharedImage->ImageData(2);
+    data2 = m_pSharedImage->ImageData(3);
+  }
+  else if (m_pSharedImage->Header()->depth == 3) // some other process already have computed gbuffer
+  {
+    data1 = m_pSharedImage->ImageData(1);
+    data2 = m_pSharedImage->ImageData(2);
+  }
+  else
+    return;
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// #TODO: Refactor this
+
+
   if (a_endX > m_width)
     a_endX = m_width;
 
   const int32_t lineOffset = (a_lineNumber*m_width + a_startX);
   const int32_t lineSize   = (a_endX - a_startX);
 
-  // for (int32_t x = 0; x < lineSize; x++)
-  // {
-  //   const float* data = &m_gbuffer[(lineOffset + x) * 4];
-  //   a_lineData[x] = unpackGBuffer1(data);
-  // }
+  for (int32_t x = 0; x < lineSize; x++)
+  {
+    const float* data11 = &data1[(lineOffset + x) * 4];
+    const float* data22 = &data2[(lineOffset + x) * 4];
+    a_lineData[x] = UnpackGBuffer(data11, data22);
+  }
 
 }
 
