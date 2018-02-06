@@ -519,7 +519,7 @@ void RD_HydraConnection::RunAllHydraHeads()
     if (needGBuffer)
       auxInput << "-evalgbuffer 1 ";
 
-    auxInput << "-sharedimage " << hydraImageName.c_str();
+    auxInput << "-sharedimage " << hydraImageName.c_str() << " ";
 
     params.customExePath = m_params.customExePath; ///opt/hydra/hydra
     params.customExeArgs = auxInput.str();

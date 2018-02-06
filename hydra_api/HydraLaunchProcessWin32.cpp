@@ -192,7 +192,7 @@ void PluginShmemPipe::runAllRenderProcesses(RenderProcessRunParams a_params, con
       ss << "-nowindow 1 ";
       ss << a_params.customExeArgs.c_str();
       if(a_params.customLogFold != "")
-        ss << "-logdir \"" << a_params.customLogFold.c_str() << "\" ";
+        ss << " -logdir \"" << a_params.customLogFold.c_str() << "\" ";
 
       //if (pImageA != nullptr)
       //pImageA->SendMsg("-node_t A -sid 0 -layer wait -action wait");

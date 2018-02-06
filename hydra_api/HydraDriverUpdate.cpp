@@ -962,7 +962,7 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 
   // reset dirty flag; now we don't need to Update the scene to driver untill this flag changes or
   // some new objects will be added/updated
-  //
+  //rj
   scn.driverDirtyFlag = false; 
 }
 
