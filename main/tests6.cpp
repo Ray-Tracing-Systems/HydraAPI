@@ -629,11 +629,11 @@ bool test37_cornell_with_light_different_image_layers()
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  HRMeshRef cubeRef = hrMeshCreate(L"my_cube");
+  HRMeshRef cubeRef     = hrMeshCreate(L"my_cube");
   HRMeshRef cubeOpenRef = hrMeshCreate(L"my_box");
-  HRMeshRef planeRef = hrMeshCreate(L"my_plane");
-  HRMeshRef sphereRef = hrMeshCreate(L"my_sphere");
-  HRMeshRef torusRef = hrMeshCreate(L"my_torus");
+  HRMeshRef planeRef    = hrMeshCreate(L"my_plane");
+  HRMeshRef sphereRef   = hrMeshCreate(L"my_sphere");
+  HRMeshRef torusRef    = hrMeshCreate(L"my_torus");
 
   hrMeshOpen(cubeRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
   {
@@ -763,7 +763,7 @@ bool test37_cornell_with_light_different_image_layers()
 
   // set up render settings
   //
-  HRRenderRef renderRef = hrRenderCreate(L"HydraLegacy"); // opengl1
+  HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -784,21 +784,14 @@ bool test37_cornell_with_light_different_image_layers()
   {
     pugi::xml_node node = hrRenderParamNode(renderRef);
 
-    node.append_child(L"width").text()  = L"1024";
-    node.append_child(L"height").text() = L"768";
+    node.append_child(L"width").text()  = 1024;
+    node.append_child(L"height").text() = 768;
 
-    node.append_child(L"method_primary").text()   = L"pathtracing";
-    node.append_child(L"method_secondary").text() = L"pathtracing";
-    node.append_child(L"method_tertiary").text()  = L"pathtracing";
-    node.append_child(L"method_caustic").text()   = L"pathtracing";
-    node.append_child(L"shadows").text()          = L"1";
-
-    node.append_child(L"trace_depth").text()      = L"5";
-    node.append_child(L"diff_trace_depth").text() = L"3";
-
-    node.append_child(L"pt_error").text()         = L"2";
-    node.append_child(L"minRaysPerPixel").text()  = L"256";
-    node.append_child(L"maxRaysPerPixel").text()  = L"1024";
+    node.append_child(L"method_primary").text()   = L"pathtracing"; // L"pathtracing"; // L"lighttracing";
+    node.append_child(L"trace_depth").text()      = 5;
+    node.append_child(L"diff_trace_depth").text() = 3;
+    node.append_child(L"maxRaysPerPixel").text()  = 1024;
+    node.append_child(L"evalgbuffer").text()      = 1;
   }
   hrRenderClose(renderRef);
 
@@ -1709,6 +1702,7 @@ bool test39_mesh_from_vsgf()
     node.append_child(L"trace_depth").text()      = 5;
     node.append_child(L"diff_trace_depth").text() = 3;
     node.append_child(L"maxRaysPerPixel").text()  = 1024;
+    node.append_child(L"evalgbuffer").text()      = 1;
   }
   hrRenderClose(renderRef);
 

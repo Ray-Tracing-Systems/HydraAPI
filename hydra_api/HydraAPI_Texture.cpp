@@ -128,6 +128,8 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFile(const wchar_t* a_fileName, int w
   return ref;
 }
 
+void GetTextureFileInfo(const wchar_t* a_fileName, int32_t* pW, int32_t* pH, size_t* pByteSize);
+
 HAPI HRTextureNodeRef hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, int w, int h, int bpp)
 {
   /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -180,9 +182,18 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, int
 	texNodeXml.append_attribute(L"id").set_value(id.c_str());
   texNodeXml.append_attribute(L"name").set_value(a_fileName);
   texNodeXml.append_attribute(L"path").set_value(a_fileName);
-  //texNodeXml.append_attribute(L"width") = w;  // #TODO: unfortunately we don't know it yet. but we can read headr if possible via vreeimage
-  //texNodeXml.append_attribute(L"height") = h; // #TODO: unfortunately we don't know it yet. but we can read headr if possible via vreeimage
+
+  int32_t w1, h1;
+  size_t  bpp1;
+  GetTextureFileInfo(a_fileName, &w1, &h1, &bpp1);
+
+  texNodeXml.append_attribute(L"width")    = w1; 
+  texNodeXml.append_attribute(L"height")   = h1; 
+  texNodeXml.append_attribute(L"bytesize") = w1*h1*bpp1;
   texNodeXml.append_attribute(L"dl").set_value(L"1");
+
+  if(w > 0) texNodeXml.append_attribute(L"width_rec")  = w;
+  if(h > 0) texNodeXml.append_attribute(L"height_rec") = h;
 
   g_objManager.scnData.textures[ref.id].update_next(texNodeXml);
   g_objManager.scnData.m_textureCache[a_fileName] = ref.id; // remember texture id for given file name

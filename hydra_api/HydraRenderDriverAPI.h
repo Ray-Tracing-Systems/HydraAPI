@@ -272,6 +272,9 @@ struct IHRRenderDriver
   virtual void    GetFrameBufferLineHDR(int32_t a_xBegin, int32_t a_xEnd, int32_t y, float* a_out, const wchar_t* a_layerName) {}
   virtual void    GetFrameBufferLineLDR(int32_t a_xBegin, int32_t a_xEnd, int32_t y, int32_t* a_out)                           {}
 
+
+  virtual void    EvalGBuffer() { } ///< run gbuffer evaluation (which can be async in general).
+
   virtual void    GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_lineData, int32_t a_startX, int32_t a_endX) = 0; ///< get single gbuffer line (because the whole gbuffer is quite big!)
 
   // info and devices
