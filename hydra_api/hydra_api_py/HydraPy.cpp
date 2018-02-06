@@ -57,10 +57,10 @@ void hrMeshVertexAttribPointer2fPy(HRMeshRef pMesh, const wchar_t* a_name, std::
   hrMeshVertexAttribPointer2f(pMesh, a_name, &g_vertexAttribf[std::wstring(a_name)][0], a_stride);
 }
 
-void hrMeshVertexAttribPointer4fNumPy(HRMeshRef pMesh, const wchar_t* a_name, py::array_t<float> &arr, int a_stride = 0)
+void hrMeshVertexAttribPointer1fNumPy(HRMeshRef pMesh, const wchar_t* a_name, py::array_t<float> &arr, int a_stride = 0)
 {
   auto myArr = arr.unchecked<1>();
-  hrMeshVertexAttribPointer4f(pMesh, a_name, myArr.data(0), a_stride);
+  hrMeshVertexAttribPointer1f(pMesh, a_name, myArr.data(0), a_stride);
 }
 
 void hrMeshVertexAttribPointer2fNumPy(HRMeshRef pMesh, const wchar_t* a_name, py::array_t<float> &arr, int a_stride = 0)
@@ -68,6 +68,25 @@ void hrMeshVertexAttribPointer2fNumPy(HRMeshRef pMesh, const wchar_t* a_name, py
   auto myArr = arr.unchecked<1>();
   hrMeshVertexAttribPointer2f(pMesh, a_name, myArr.data(0), a_stride);
 }
+
+void hrMeshVertexAttribPointer3fNumPy(HRMeshRef pMesh, const wchar_t* a_name, py::array_t<float> &arr, int a_stride = 0)
+{
+  auto myArr = arr.unchecked<1>();
+  hrMeshVertexAttribPointer3f(pMesh, a_name, myArr.data(0), a_stride);
+}
+
+void hrMeshVertexAttribPointer4fNumPy(HRMeshRef pMesh, const wchar_t* a_name, py::array_t<float> &arr, int a_stride = 0)
+{
+  auto myArr = arr.unchecked<1>();
+  hrMeshVertexAttribPointer4f(pMesh, a_name, myArr.data(0), a_stride);
+}
+
+void hrMeshPrimitiveAttribPointer1iNumPy(HRMeshRef pMesh, const wchar_t* a_name, py::array_t<int> &arr, int a_stride = 0)
+{
+  auto myArr = arr.unchecked<1>();
+  hrMeshPrimitiveAttribPointer1i(pMesh, a_name, myArr.data(0), a_stride);
+}
+
 
 void hrMeshAppendTriangles3NumPy(HRMeshRef a_pMesh, int indNum, py::array_t<int32_t> &arr)
 {
@@ -218,14 +237,17 @@ PYBIND11_MODULE(hydraPy, m) {
   m.def("hrMeshOpen", &hrMeshOpenPy);
   m.def("hrMeshClose", &hrMeshClosePy);
   m.def("hrMeshVertexAttribPointer1f", &hrMeshVertexAttribPointer1f);
+  m.def("hrMeshVertexAttribPointer1fNumPy", &hrMeshVertexAttribPointer1fNumPy, py::arg(), py::arg(), py::arg().noconvert(), py::arg());
   m.def("hrMeshVertexAttribPointer2f", &hrMeshVertexAttribPointer2fPy);
   m.def("hrMeshVertexAttribPointer2fNumPy", &hrMeshVertexAttribPointer2fNumPy, py::arg(), py::arg(), py::arg().noconvert(), py::arg());
   //m.def("hrMeshVertexAttribPointer2f", &hrMeshVertexAttribPointer2f);
   m.def("hrMeshVertexAttribPointer3f", &hrMeshVertexAttribPointer3f);
+  m.def("hrMeshVertexAttribPointer3fNumPy", &hrMeshVertexAttribPointer3fNumPy, py::arg(), py::arg(), py::arg().noconvert(), py::arg());
   //m.def("hrMeshVertexAttribPointer4f", &hrMeshVertexAttribPointer4f);
   m.def("hrMeshVertexAttribPointer4f", &hrMeshVertexAttribPointer4fPy);
   m.def("hrMeshVertexAttribPointer4fNumPy", &hrMeshVertexAttribPointer4fNumPy, py::arg(), py::arg(), py::arg().noconvert(), py::arg());
   m.def("hrMeshPrimitiveAttribPointer1i", &hrMeshPrimitiveAttribPointer1i);
+  m.def("hrMeshPrimitiveAttribPointer1iNumPy", &hrMeshPrimitiveAttribPointer1iNumPy, py::arg(), py::arg(), py::arg().noconvert(), py::arg());
   m.def("hrMeshMaterialId", &hrMeshMaterialId);
   //m.def("hrMeshAppendTriangles3", &hrMeshAppendTriangles3);
   m.def("hrMeshAppendTriangles3", &hrMeshAppendTriangles3Py);
