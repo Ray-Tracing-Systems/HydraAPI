@@ -101,18 +101,23 @@ bool hrRenderGetFrameBufferLDR1iNumPy(const HRRenderRef a_pRender, int w, int h,
 }
 
 
-void hrMeshInstancePy(HRSceneInstRef a_pScn, HRMeshRef a_pMesh, std::vector<float> &a_mat,
-                        std::vector<int32_t> a_mmListm = std::vector<int32_t>(), int32_t a_mmListSize = 0)
+void hrMeshInstancePy(HRSceneInstRef a_pScn, HRMeshRef a_pMesh, py::array_t<float> &a_mat,
+                      py::array_t<int32_t> *a_mmListm = 0, int32_t a_mmListSize = 0)
 {
-  if(a_mmListm.empty())
-    hrMeshInstance(a_pScn, a_pMesh, &a_mat[0], nullptr, a_mmListSize);
+
+  auto mmList = a_mmListm->unchecked<1>();
+  auto mat = a_mat.mutable_unchecked<1>();
+
+  if(mmList.size() == 0)
+    hrMeshInstance(a_pScn, a_pMesh, mat.mutable_data(0), nullptr, a_mmListSize);
   else
-    hrMeshInstance(a_pScn, a_pMesh, &a_mat[0], &a_mmListm[0], a_mmListSize);
+    hrMeshInstance(a_pScn, a_pMesh, mat.mutable_data(0), mmList.data(0), a_mmListSize);
 }
 
-void hrLightInstancePy(HRSceneInstRef pScn, HRLightRef pLight, std::vector<float> &m)
+void hrLightInstancePy(HRSceneInstRef pScn, HRLightRef pLight, py::array_t<float> &m)
 {
-  hrLightInstance(pScn, pLight, &m[0]);
+  auto mat = m.mutable_unchecked<1>();
+  hrLightInstance(pScn, pLight, mat.mutable_data(0));
 }
 
 PYBIND11_MODULE(hydraPy, m) {
@@ -260,7 +265,7 @@ PYBIND11_MODULE(hydraPy, m) {
   m.def("hrSceneOpen", &hrSceneOpen);
   m.def("hrSceneClose", &hrSceneClose);
   //m.def("hrMeshInstance", &hrMeshInstance);
-  m.def("hrMeshInstance", &hrMeshInstancePy);
+  m.def("hrMeshInstance", &hrMeshInstancePy, py::arg(), py::arg(), py::arg("a_mat").noconvert(), py::arg("a_mmListm").noconvert(),  py::arg("a_mmListSize"));
   //m.def("hrLightInstance", &hrLightInstance);
   m.def("hrLightInstance", &hrLightInstancePy);
   m.def("hrRenderCreate", &hrRenderCreate);
