@@ -5778,7 +5778,7 @@ namespace MTL_TESTS
     HRMaterialRef matGray = hrMaterialCreate(L"matGray");
 
     HRTextureNodeRef texChecker = hrTexture2DCreateFromFile(L"data/textures/chess_white.bmp");
-    HRTextureNodeRef texPattern = hrTexture2DCreateFromFile(L"data/textures/blur_pattern.bmp");
+    HRTextureNodeRef texPattern = hrTexture2DCreateFromFile(L"data/textures/bigleaf3.tga");
 
     hrMaterialOpen(matR, HR_WRITE_DISCARD);
     {
