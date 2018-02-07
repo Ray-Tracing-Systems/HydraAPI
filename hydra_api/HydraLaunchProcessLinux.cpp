@@ -135,7 +135,7 @@ void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params
       ss << "-nowindow 1 ";
       ss << a_params.customExeArgs.c_str();
       if(!a_params.customLogFold.empty())
-        ss << "-logdir \"" << a_params.customLogFold.c_str() << "\" ";
+        ss << " -logdir \"" << a_params.customLogFold.c_str() << "\" ";
 
 
       std::string basicCmd = ss.str();
