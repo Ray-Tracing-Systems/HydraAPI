@@ -570,7 +570,7 @@ bool test94_check_xml_fail_camera()
 
 bool test95_check_xml_fail_render()
 {
-	HRRenderRef renderRef = hrRenderCreate(L"HydraLegacy");
+	HRRenderRef renderRef = hrRenderCreate(L"HydraModern");
 
 	hrRenderOpen(renderRef, HR_WRITE_DISCARD);
 	{

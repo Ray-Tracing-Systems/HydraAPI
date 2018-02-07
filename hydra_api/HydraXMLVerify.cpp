@@ -403,7 +403,7 @@ namespace HydraVerify
 	{
 		const std::wstring rtype = a_node.attribute(L"type").as_string();
 
-		if (rtype == L"HydraLegacy" || rtype == L"HydraModern" || rtype == L"HydraRTE")
+		if (rtype == L"HydraModern" || rtype == L"HydraRTE")
 		{
 			CheckChildNotNull(a_node, L"width", a_file, a_line);
 			CheckChildNotNull(a_node, L"height", a_file, a_line);

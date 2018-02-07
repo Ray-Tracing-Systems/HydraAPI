@@ -792,7 +792,7 @@ bool PP_TESTS::test305_fbi_from_render()
 
   // set up render settings
   //
-  HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1 // HydraLegacy
+  HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

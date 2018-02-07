@@ -1500,7 +1500,7 @@ namespace LGHT_TESTS
 
     // set up render settings
     //
-    HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1 // HydraLegacy
+    HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1 
 
     hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
 
@@ -1909,7 +1909,7 @@ namespace LGHT_TESTS
 
     // set up render settings
     //
-    HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1 // HydraLegacy
+    HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1
 
     hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
 

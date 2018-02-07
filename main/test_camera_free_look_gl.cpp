@@ -133,7 +133,7 @@ static void Init()
     renderRef = hrRenderCreate(g_input.inputRenderName.c_str()); // L"opengl1"
   }
   else
-    renderRef = hrRenderCreate(L"HydraLegacy"); 
+    renderRef = hrRenderCreate(L"HydraModern"); 
   
   hrRenderOpen(renderRef, HR_WRITE_DISCARD);
   {

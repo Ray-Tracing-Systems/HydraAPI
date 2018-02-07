@@ -1701,7 +1701,7 @@ bool test39_mesh_from_vsgf()
 
   // set up render settings
   //
-  HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1 // HydraLegacy
+  HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1 // 
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -2072,7 +2072,7 @@ bool test40_several_changes()
 
   // set up render settings
   //
-  HRRenderRef renderRef = hrRenderCreate(L"HydraLegacy"); // opengl1 // HydraLegacy
+  HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1 // 
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

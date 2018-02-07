@@ -318,7 +318,7 @@ protected:
 IHRRenderDriver* CreateOpenGL1_RenderDriver();
 IHRRenderDriver* CreateOpenGL1Debug_RenderDriver();
 IHRRenderDriver* CreateOpenGL1_DelayedLoad_RenderDriver(bool a_canLoadMeshes);
-IHRRenderDriver* CreateHydraLegacy_RenderDriver();
+
 IHRRenderDriver* CreateOpenGL32Forward_RenderDriver();
 IHRRenderDriver* CreateOpenGL32Deferred_RenderDriver();
 
