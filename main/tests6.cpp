@@ -910,11 +910,11 @@ bool test37_cornell_with_light_different_image_layers()
 
   const float invGamma = 1.0f / 2.2f;
 
-  const int palette[20] = { 0xffe6194b, 0xff3cb44b, 0xffffe119, 0xff0082c8,
-                            0xfff58231, 0xff911eb4, 0xff46f0f0, 0xfff032e6,
-                            0xffd2f53c, 0xfffabebe, 0xff008080, 0xffe6beff,
-                            0xffaa6e28, 0xfffffac8, 0xff800000, 0xffaaffc3,
-                            0xff808000, 0xffffd8b1, 0xff000080, 0xff808080 };
+  const unsigned int palette[20] = { 0xffe6194b, 0xff3cb44b, 0xffffe119, 0xff0082c8,
+                                     0xfff58231, 0xff911eb4, 0xff46f0f0, 0xfff032e6,
+                                     0xffd2f53c, 0xfffabebe, 0xff008080, 0xffe6beff,
+                                     0xffaa6e28, 0xfffffac8, 0xff800000, 0xffaaffc3,
+                                     0xff808000, 0xffffd8b1, 0xff000080, 0xff808080 };
 
   for (int y = 0; y < 768; y++)
   {

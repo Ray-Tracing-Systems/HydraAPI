@@ -384,7 +384,7 @@ void GetTextureFileInfo(const wchar_t* a_fileName, int32_t* pW, int32_t* pH, siz
   fif = FreeImage_GetFileTypeU(a_fileName, 0);
 #else
   char filename_s[256];
-  size_t len = wcstombs(filename_s, filename, sizeof(filename_s));
+  size_t len = wcstombs(filename_s, a_fileName, sizeof(filename_s));
   fif = FreeImage_GetFileType(filename_s, 0);
 #endif
 
