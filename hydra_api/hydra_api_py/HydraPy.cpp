@@ -136,16 +136,16 @@ PYBIND11_MODULE(hydraPy, m) {
           .def_readonly("id", &HRMaterialRef::id);
   py::class_<HRCameraRef>(m, "HRCameraRef")
           .def(py::init<>())
-          .def_readonly("id", &HRCameraRef::id);
+          .def_readwrite("id", &HRCameraRef::id);
   py::class_<HRTextureNodeRef>(m, "HRTextureNodeRef")
           .def(py::init<>())
           .def_readonly("id", &HRTextureNodeRef::id);
   py::class_<HRSceneInstRef>(m, "HRSceneInstRef")
           .def(py::init<>())
-          .def_readonly("id", &HRSceneInstRef::id);
+          .def_readwrite("id", &HRSceneInstRef::id);
   py::class_<HRRenderRef>(m, "HRRenderRef")
           .def(py::init<>())
-          .def_readonly("id", &HRRenderRef::id);
+          .def_readwrite("id", &HRRenderRef::id);
 
   py::class_<HRSceneLibraryInfo>(m, "HRSceneLibraryInfo")
           .def_readwrite("texturesNum", &HRSceneLibraryInfo::texturesNum)

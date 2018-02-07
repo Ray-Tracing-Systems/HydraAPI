@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <textures_lib total_chunks="9">
   <texture name="Map#0" id="0" loc="data/chunk_00000.image4ub" offset="8" bytesize="16" width="2" height="2" dl="0" />
-  <texture id="1" name="data/textures/chess_red.bmp" path="data/textures/chess_red.bmp" dl="1" />
+  <texture id="1" name="data/textures/chess_red.bmp" path="data/textures/chess_red.bmp" width="64" height="64" bytesize="16384" dl="1" />
   <texture id="2" name="data/textures/texture1.bmp" path="data/textures/texture1.bmp" loc="data/chunk_00001.image4ub" offset="8" bytesize="262144" width="256" height="256" dl="0" />
   <texture id="3" name="data/textures/relief_wood.jpg" path="data/textures/relief_wood.jpg" loc="data/chunk_00002.image4ub" offset="8" bytesize="1048576" width="512" height="512" dl="0" />
-  <texture id="4" name="data/textures/163.jpg" path="data/textures/163.jpg" dl="1" />
+  <texture id="4" name="data/textures/163.jpg" path="data/textures/163.jpg" width="250" height="250" bytesize="250000" dl="1" />
 </textures_lib>
 <materials_lib>
   <material id="0" name="mysimplemat" type="hydra_material">
@@ -139,17 +139,11 @@
   <render_settings type="HydraModern" id="0">
     <width>1024</width>
     <height>768</height>
-    <method_primary>pathtracing</method_primary>
-    <method_secondary>pathtracing</method_secondary>
-    <method_tertiary>pathtracing</method_tertiary>
-    <method_caustic>pathtracing</method_caustic>
-    <shadows>1</shadows>
+    <method_primary>IBPT</method_primary>
     <trace_depth>5</trace_depth>
     <diff_trace_depth>3</diff_trace_depth>
-    <pt_error>2</pt_error>
-    <minRaysPerPixel>256</minRaysPerPixel>
     <maxRaysPerPixel>1024</maxRaysPerPixel>
-    <draw_tiles>0</draw_tiles>
+    <evalgbuffer>1</evalgbuffer>
   </render_settings>
 </render_lib>
 <scenes>
