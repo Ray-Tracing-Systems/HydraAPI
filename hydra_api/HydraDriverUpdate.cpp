@@ -798,6 +798,64 @@ int64_t EstimateTexturesMem(const ChangeList& a_objList)
   return memAmount;
 }
 
+void EstimateMemHungryLights(const ChangeList& a_objList, bool* pIsHDR, int* pHungryLightsNumber, int* pEnvSize)
+{
+  size_t  envMemAmount   = 0;
+  int32_t hungryLightNum = 0;
+
+  std::unordered_set<std::wstring> processed;
+
+  for (auto lid : a_objList.lightUsed)
+  {
+    auto objLight       = g_objManager.scnData.lights[lid];
+    pugi::xml_node node = objLight.xml_node_immediate();
+
+    if (std::wstring(node.attribute(L"distribution").as_string()) == L"ies" ||
+        std::wstring(node.attribute(L"shape").as_string()) == L"mesh")
+    {
+      const std::wstring path = node.child(L"ies").attribute(L"loc").as_string();
+
+      auto p = processed.find(path);
+      if (p == processed.end())
+      {
+        hungryLightNum++;
+        processed.insert(path);
+      }
+    }
+    else if (std::wstring(node.attribute(L"type").as_string()) == L"sky")
+    {
+      pugi::xml_attribute attrId = node.child(L"intensity").child(L"color").child(L"texture").attribute(L"id");
+      if (attrId != nullptr)
+      {
+        int32_t texId          = attrId.as_int();
+        auto texObj            = g_objManager.scnData.textures[texId];
+        pugi::xml_node nodeTex = texObj.xml_node_immediate();
+
+        const int32_t width    = nodeTex.attribute(L"width").as_int();
+        const int32_t height   = nodeTex.attribute(L"height").as_int();
+        const size_t bytesize  = nodeTex.attribute(L"bytesize").as_llong(); 
+                               
+        const int32_t bpp      = int32_t(bytesize / (width*height));
+
+        if (bpp < 16)
+        {
+          (*pIsHDR) = false;
+          if(envMemAmount < 256 * 256 * 4)
+            envMemAmount = 256*256*4;
+        }
+        else
+        {
+          (*pIsHDR) = true;
+          if(envMemAmount < bytesize)
+            envMemAmount = bytesize;
+        }
+      }
+    }
+  }
+
+  (*pHungryLightsNumber) = hungryLightNum;
+  (*pEnvSize)            = envMemAmount;
+}
 
 
 /////
@@ -826,9 +884,14 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
     const int64_t neededMemT = EstimateTexturesMem(objList);
     const int64_t neededMemG = EstimateGeometryMem(objList);
 
-    allocInfo.imgMem      = neededMemT; // + size_t(32)*size_t(1024*1024);
-    allocInfo.geomMem     = neededMemG; // + size_t(16)*size_t(1024*1024);
     allocInfo.libraryPath = g_objManager.scnData.m_path.c_str();
+    allocInfo.imgMem      = neededMemT;
+    allocInfo.geomMem     = neededMemG;
+
+    EstimateMemHungryLights(objList, 
+                            &allocInfo.envIsHDR, 
+                            &allocInfo.lightsWithIESNum, 
+                            &allocInfo.envLightTexSize);
 
     HR_DriverUpdateSettings(scn, objList, a_pDriver);
 
@@ -899,7 +962,7 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 
   // reset dirty flag; now we don't need to Update the scene to driver untill this flag changes or
   // some new objects will be added/updated
-  //
+  //rj
   scn.driverDirtyFlag = false; 
 }
 

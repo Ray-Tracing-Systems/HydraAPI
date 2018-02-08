@@ -10,6 +10,7 @@ This repo contain the second one.
 # Usage
 
 Windows:
+
 1. Clone HydraAPI repo
 2. Copy 'bin2' folder content to 'C:/[Hydra]/bin2' under windows;
 3. Open 'hydra_api/HydraNewAPI1.sln' under windows with visual studio 2015 or later; If use 2015 you will need to downgrade platform toolset to v140 (2015).
@@ -19,9 +20,11 @@ Windows:
 
 Linux:
 1. Clone HydraAPI repo
-2. Currently main engine is not yet ported to Linux, so do nothing.
-3. use Cmake;
-4. use OpenGL1 or OpenGL3 render drivers. try some interactive 'main_window' tests.
+2. sudo apt-get install libfreeimage-dev
+3. sudo apt-get install mesa-common-dev libglu1-mesa-dev libglfw3-dev libglfw3
+4. sudo apt install ocl-icd-opencl-dev
+5. Copy bin_ubuntu/hydra forder to your home folder to form '/home/hydra' or build and install HydraCore from sources; 
+6. use Cmake;
 
 # License and dependency
 

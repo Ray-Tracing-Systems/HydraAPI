@@ -25,6 +25,10 @@ struct HRDriverAllocInfo
   int32_t geomNum;
   int32_t lightNum;
 
+  int32_t lightsWithIESNum;
+  int32_t envLightTexSize;
+  bool    envIsHDR;
+
   int64_t imgMem;
   int64_t geomMem;
 
@@ -268,6 +272,9 @@ struct IHRRenderDriver
   virtual void    GetFrameBufferLineHDR(int32_t a_xBegin, int32_t a_xEnd, int32_t y, float* a_out, const wchar_t* a_layerName) {}
   virtual void    GetFrameBufferLineLDR(int32_t a_xBegin, int32_t a_xEnd, int32_t y, int32_t* a_out)                           {}
 
+
+  virtual void    EvalGBuffer() { } ///< run gbuffer evaluation (which can be async in general).
+
   virtual void    GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_lineData, int32_t a_startX, int32_t a_endX) = 0; ///< get single gbuffer line (because the whole gbuffer is quite big!)
 
   // info and devices
@@ -311,7 +318,7 @@ protected:
 IHRRenderDriver* CreateOpenGL1_RenderDriver();
 IHRRenderDriver* CreateOpenGL1Debug_RenderDriver();
 IHRRenderDriver* CreateOpenGL1_DelayedLoad_RenderDriver(bool a_canLoadMeshes);
-IHRRenderDriver* CreateHydraLegacy_RenderDriver();
+
 IHRRenderDriver* CreateOpenGL32Forward_RenderDriver();
 IHRRenderDriver* CreateOpenGL32Deferred_RenderDriver();
 

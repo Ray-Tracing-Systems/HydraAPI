@@ -374,3 +374,72 @@ std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTextureInfoFromChunkFi
 
   return pBitMapIndo;
 }
+
+
+void GetTextureFileInfo(const wchar_t* a_fileName, int32_t* pW, int32_t* pH, size_t* pByteSize)
+{
+  FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
+
+#if defined WIN32
+  fif = FreeImage_GetFileTypeU(a_fileName, 0);
+#else
+  char filename_s[256];
+  size_t len = wcstombs(filename_s, a_fileName, sizeof(filename_s));
+  fif = FreeImage_GetFileType(filename_s, 0);
+#endif
+
+  if (fif == FIF_UNKNOWN)
+#if defined WIN32
+    fif = FreeImage_GetFIFFromFilenameU(a_fileName);
+#else
+    fif = FreeImage_GetFIFFromFilename(filename_s);
+#endif
+  if (fif == FIF_UNKNOWN)
+  {
+    (*pW)        = 0;
+    (*pH)        = 0;
+    (*pByteSize) = 0;
+    return;
+  }
+
+  //check that the plugin has reading capabilities and load the file
+  //
+
+  FIBITMAP* dib = nullptr;
+
+  if (FreeImage_FIFSupportsReading(fif))
+#if defined WIN32
+    dib = FreeImage_LoadU(fif, a_fileName);
+#else
+    dib = FreeImage_Load(fif, filename_s);
+#endif
+  else
+  {
+    (*pW) = 0;
+    (*pH) = 0;
+    (*pByteSize) = 0;
+    return;
+  }
+
+  if(dib == nullptr)
+  {
+    (*pW) = 0;
+    (*pH) = 0;
+    (*pByteSize) = 0;
+    return;
+  }
+
+  auto width  = FreeImage_GetWidth(dib);
+  auto height = FreeImage_GetHeight(dib);
+  auto bpp    = FreeImage_GetBPP(dib);
+  if (bpp <= 24) 
+    bpp = 32;
+  else if (bpp < 128) 
+    bpp = 128;
+
+  FreeImage_Unload(dib);
+
+  (*pW)        = width;
+  (*pH)        = height;
+  (*pByteSize) = bpp/8;
+}

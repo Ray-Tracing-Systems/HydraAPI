@@ -766,7 +766,7 @@ bool test65_several_changes_light_rect()
 
   // set up render settings
   //
-  HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1 // HydraLegacy
+  HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -2244,7 +2244,7 @@ bool test69_pause_and_resume()
 
   // set up render settings
   //
-  HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1 // HydraLegacy
+  HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1 // 
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -2701,7 +2701,7 @@ bool test70_area_lights16()
 
   // set up render settings
   //
-  HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1 // HydraLegacy
+  HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1 // 
 
   hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
 
@@ -3214,7 +3214,7 @@ bool test73_big_resolution()
 
   // set up render settings
   //
-  HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1 // HydraLegacy
+  HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1 // 
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -3600,7 +3600,7 @@ bool test74_frame_buffer_line()
 
   // set up render settings
   //
-  HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1 // HydraLegacy
+  HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1 // 
 
                                                           ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -4011,7 +4011,7 @@ bool test75_repeated_render()
 
   // set up render settings
   //
-  HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1 // HydraLegacy
+  HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1 // 
 
                                                           ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

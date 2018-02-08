@@ -1117,7 +1117,7 @@ bool test45_mesh_from_vsgf_opengl_bug_teapot()
 
   // set up render settings
   //
-  HRRenderRef renderRef = hrRenderCreate(L"opengl1"); // opengl1 // HydraLegacy
+  HRRenderRef renderRef = hrRenderCreate(L"opengl1"); // opengl1 // 
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1483,7 +1483,7 @@ bool test46_light_geom_rect()
 
   // set up render settings
   //
-  HRRenderRef renderRef = hrRenderCreate(L"opengl1"); // opengl1 // HydraLegacy
+  HRRenderRef renderRef = hrRenderCreate(L"opengl1"); // opengl1 // 
 
                                                           ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1905,7 +1905,7 @@ bool test47_light_geom_disk()
 
   // set up render settings
   //
-  HRRenderRef renderRef = hrRenderCreate(L"opengl1"); // opengl1 // HydraLegacy
+  HRRenderRef renderRef = hrRenderCreate(L"opengl1"); // opengl1 // 
 
                                                           ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -2314,7 +2314,7 @@ bool test48_light_geom_sphere()
 
   // set up render settings
   //
-  HRRenderRef renderRef = hrRenderCreate(L"opengl1"); // opengl1 // HydraLegacy
+  HRRenderRef renderRef = hrRenderCreate(L"opengl1"); // opengl1 // 
 
                                                       ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -2698,7 +2698,7 @@ bool test49_light_geom_disk()
 
   // set up render settings
   //
-  HRRenderRef renderRef = hrRenderCreate(L"HydraLegacy"); // opengl1 // HydraLegacy
+  HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1
 
                                                       ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

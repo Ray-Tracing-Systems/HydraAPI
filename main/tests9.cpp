@@ -2304,7 +2304,7 @@ bool test61_cornell_with_light_near_wall_and_glossy_wall()
 
   // set up render settings
   //
-  HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1 // HydraLegacy
+  HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1
 
   hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
 
