@@ -399,8 +399,11 @@ bool RD_HydraConnection::UpdateSettings(pugi::xml_node a_settingsNode)
   m_needGbuff = (std::wstring(a_settingsNode.child(L"evalgbuffer").text().as_string()) == L"1");
 
   m_presets.maxrays     = a_settingsNode.child(L"maxRaysPerPixel").text().as_int();
+
   m_presets.allocImageB = (std::wstring(a_settingsNode.child(L"method_secondary").text().as_string()) == L"lighttracing") || 
-                          (std::wstring(a_settingsNode.child(L"method_primary").text().as_string())   == L"lighttracing");
+                          (std::wstring(a_settingsNode.child(L"method_primary").text().as_string())   == L"lighttracing") || 
+                          (std::wstring(a_settingsNode.child(L"method_primary").text().as_string())   == L"IBPT") || 
+                          (std::wstring(a_settingsNode.child(L"method_secondary").text().as_string()) == L"IBPT");
 
   m_presets.allocImageBOnGPU = (std::wstring(a_settingsNode.child(L"forceGPUFrameBuffer").text().as_string()) == L"1");
 
