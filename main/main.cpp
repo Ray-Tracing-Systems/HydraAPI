@@ -97,8 +97,8 @@ int main(int argc, const char** argv)
     //test39_mesh_from_vsgf();
     //PP_TESTS::test305_fbi_from_render();
 
-    test42_load_library_basic();
-    //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
+    //test42_load_library_basic();
+    std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
     //std::cout << test39_mesh_from_vsgf() << std::endl;
     //std::cout << test59_cornell_water_mlt() << std::endl;
     //std::cout << test70_area_lights16() << std::endl;
