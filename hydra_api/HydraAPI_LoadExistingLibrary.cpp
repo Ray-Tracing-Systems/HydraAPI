@@ -210,12 +210,14 @@ std::unique_ptr<IHRRenderDriver> CreateRenderFromString(const wchar_t *a_classNa
 HRRenderRef _hrRendeSettingsFromNode(pugi::xml_node a_node)
 {
   const wchar_t* a_className = a_node.attribute(L"type").as_string();
-  
+
+  int maxRaysPerPixel = a_node.child(L"maxRaysPerPixel").text().as_int();
   HRRenderRef ref;
   ref.id = HR_IDType(g_objManager.renderSettings.size());
 
   HRRender settingsTmp;
   settingsTmp.name = a_className;
+  settingsTmp.maxRaysPerPixel = maxRaysPerPixel;
   g_objManager.renderSettings.push_back(settingsTmp);
 
   HRRender& settings = g_objManager.renderSettings[ref.id];

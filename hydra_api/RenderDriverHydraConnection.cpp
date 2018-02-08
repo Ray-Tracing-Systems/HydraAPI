@@ -897,7 +897,7 @@ void RD_HydraConnection::ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out)
   {
     // (1) create connection and run process
     //
-    RunAllHydraHeads();
+    //RunAllHydraHeads();
 
     // (2) load imageA
     //
