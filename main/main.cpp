@@ -98,7 +98,9 @@ int main(int argc, const char** argv)
     //PP_TESTS::test305_fbi_from_render();
 
     //test42_load_library_basic();
-    std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
+    test1000_loadlibrary_and_edit();
+    //test1001_loadlibrary_and_add_textures();
+    //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
     //std::cout << test39_mesh_from_vsgf() << std::endl;
     //std::cout << test59_cornell_water_mlt() << std::endl;
     //std::cout << test70_area_lights16() << std::endl;
@@ -107,7 +109,7 @@ int main(int argc, const char** argv)
     
     //GEO_TESTS::test_004_dof();
     //MTL_TESTS::test_119_opacity_texture();
-    //LGHT_TESTS::test_204_sky_hdr_rotate();
+    //LGHT_TESTS::test_202_sky_color();
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
 
     //window_main_free_look(L"tests_f/test_241", L"opengl1Debug");
