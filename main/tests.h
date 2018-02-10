@@ -227,12 +227,12 @@ namespace MTL_TESTS
   
   bool test_135_opacity_metal();        // not smooth backface
   bool test_136_opacity_glass();        // transparency work as thin;
-  bool test_137_opacity_emission();     // #NOT_SUPPORTED_CURRENTLY;  falloff doesw not work in emission 
+  bool test_137_opacity_emission();     // #NOT_SUPPORTED_CURRENTLY;  falloff does not work in emission
 
   bool test_138_translucency_and_diffuse();
   bool test_139_glass_and_bump();
   bool test_140_blend_emission();       // 1) I suggest that the opacity from first mat always cut all the blends. 
-                                        // 2) Not visible emission frough glass.
+                                        // 2) Not visible emission through glass.
   bool test_141_opacity_smooth();
   bool test_142_blend_normalmap_heightmap();
 
@@ -319,7 +319,14 @@ namespace PP_TESTS
   bool test316_post_process_hydra1_chromAberr();
   bool test317_post_process_hydra1_ECCSWUNVC();
 
-};                                 
+};
+
+
+bool test1000_loadlibrary_and_edit();
+bool test1001_loadlibrary_and_add_textures(); //BUG - VirtualBuffer::AllocInCache : the object is too big! -> segmentation fault
+
+
+
 
 void run_all_api_tests(const int startTestId = 0);
 void run_all_geo_tests();
