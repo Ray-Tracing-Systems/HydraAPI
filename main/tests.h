@@ -71,7 +71,7 @@ void window_main_free_look(const wchar_t* a_libPath, const wchar_t* a_renderName
 void test_console_render(const wchar_t* a_libPath, const wchar_t* a_savePath);
 
 
-bool check_all_duplicates(const std::wstring a_fileName);
+bool check_all_duplicates(const std::wstring& a_fileName);
 
 bool test01_materials_add();
 bool test02_materials_changes_open_mode();

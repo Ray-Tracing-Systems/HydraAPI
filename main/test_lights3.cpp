@@ -1595,8 +1595,8 @@ namespace LGHT_TESTS
     const std::wstring blueLedName  = a_lightName + L"_blue_led";
 
     HRLightRef redLed   = hrLightCreate(redLedName.c_str());
-    HRLightRef greenLed = hrLightCreate(redLedName.c_str());
-    HRLightRef blueLed  = hrLightCreate(redLedName.c_str());
+    HRLightRef greenLed = hrLightCreate(greenLedName.c_str());
+    HRLightRef blueLed  = hrLightCreate(blueLedName.c_str());
 
     MyCAD_SetupLED(redLed  , L"data/ies/ies_1.ies", L"1 0 0");
     MyCAD_SetupLED(greenLed, L"data/ies/ies_1.ies", L"0 1 0");
@@ -2346,8 +2346,8 @@ namespace LGHT_TESTS
     const std::wstring blueLedName  = a_lightName + L"_blue_led";
 
     HRLightRef redLed   = hrLightCreate(redLedName.c_str());
-    HRLightRef greenLed = hrLightCreate(redLedName.c_str());
-    HRLightRef blueLed  = hrLightCreate(redLedName.c_str());
+    HRLightRef greenLed = hrLightCreate(greenLedName.c_str());
+    HRLightRef blueLed  = hrLightCreate(blueLedName.c_str());
 
     MyCAD_SetupLED(redLed  , L"data/ies/ies_1.ies", L"1 0 0");
     MyCAD_SetupLED(greenLed, L"data/ies/ies_1.ies", L"0 1 0");

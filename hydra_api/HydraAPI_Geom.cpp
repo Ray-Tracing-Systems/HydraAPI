@@ -49,7 +49,7 @@ void FillXMLFromVSGFInfo(pugi::xml_node nodeXml, VSGFChunkInfo info, std::wstrin
 
   nodeXml.attribute(L"bytesize").set_value(info.dataBytes);
   if(!dlLoad) 
-    g_objManager.SetLoc(nodeXml, location.c_str());
+    g_objManager.SetLoc(nodeXml, location);
   nodeXml.attribute(L"offset").set_value(L"0");
   nodeXml.attribute(L"vertNum").set_value(info.vertNum);
   nodeXml.attribute(L"triNum").set_value(info.indNum / 3);

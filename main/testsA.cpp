@@ -66,7 +66,7 @@ bool test62_bad_textures()
   unsigned int colors2[4] = { 0xFF00FF00, 0xFFFF0000, 0xFFFF00FF, 0xFFFFFFFF };
 
   std::vector<unsigned int> imageData1 = CreateStripedImageData(colors1, 4, 128, 128);
-  std::vector<unsigned int> imageData2 = CreateStripedImageData(colors2, 4, 300, 300);
+  //std::vector<unsigned int> imageData2 = CreateStripedImageData(colors2, 4, 300, 300);
 
   HRTextureNodeRef testTex2 = hrTexture2DCreateFromMemory(128, 128, 4, &imageData1[0]);
   HRTextureNodeRef testTex3 = hrTexture2DCreateFromMemory(300, 300, 4, nullptr);
@@ -1904,7 +1904,7 @@ bool test96_save_temp_renders()
   hrFlush(scnRef, renderRef);
 
   glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
+  //std::vector<int32_t> image(1024 * 768);
 
   int i = 0;
   while (true)

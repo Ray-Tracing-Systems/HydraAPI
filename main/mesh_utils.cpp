@@ -423,7 +423,7 @@ SimpleMesh CreateSphere(float radius, int numberSlices)
   int numberIndices   = numberParallels * numberSlices * 3;
 
   float angleStep     = (2.0f * 3.14159265358979323846f) / ((float)numberSlices);
-  float helpVector[3] = { 0.0f, 1.0f, 0.0f };
+  //float helpVector[3] = { 0.0f, 1.0f, 0.0f };
  
   sphere.vPos.resize(numberVertices * 4);
   sphere.vNorm.resize(numberVertices * 4);
@@ -505,7 +505,7 @@ SimpleMesh CreateTorus(float innerRadius, float outerRadius, int numSides, int n
   int numberIndices;
 
   // used later to help us calculating tangents vectors
-  float helpVector[3] = { 0.0f, 1.0f, 0.0f };
+  //float helpVector[3] = { 0.0f, 1.0f, 0.0f };
 
   // indices for each type of buffer (of vertices, indices, normals...)
   int indexVertices, indexIndices, indexNormals, indexTexCoords;

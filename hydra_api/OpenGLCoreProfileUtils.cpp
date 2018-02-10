@@ -199,7 +199,7 @@ namespace GL_RENDER_DRIVER_UTILS
     boundingSphereIndices = numberIndices;
 
     float angleStep = (2.0f * 3.14159265358979323846f) / ((float) numberSlices);
-    float helpVector[3] = {0.0f, 1.0f, 0.0f};
+    //float helpVector[3] = {0.0f, 1.0f, 0.0f};
 
     std::vector<float> pos(numberVertices * 4, 0.0f);
     std::vector<float> norm(numberVertices * 4, 0.0f);

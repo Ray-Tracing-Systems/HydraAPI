@@ -114,7 +114,7 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFile(const wchar_t* a_fileName, int w
   if (pTextureImpl == nullptr)
     texNodeXml.append_attribute(L"loc").set_value(L"unknown");
   else
-    g_objManager.SetLoc(texNodeXml, location.c_str());
+    g_objManager.SetLoc(texNodeXml, location);
 
   texNodeXml.append_attribute(L"offset").set_value(L"8");
   texNodeXml.append_attribute(L"bytesize").set_value(bytesize.c_str());
@@ -248,7 +248,7 @@ HAPI HRTextureNodeRef hrTexture2DUpdateFromFile(HRTextureNodeRef currentRef, con
 	if (pTextureImpl == nullptr)
 		texNodeXml.append_attribute(L"loc").set_value(L"unknown");
 	else
-    g_objManager.SetLoc(texNodeXml, location.c_str());
+    g_objManager.SetLoc(texNodeXml, location);
 
 	texNodeXml.append_attribute(L"offset").set_value(L"8");
 	texNodeXml.append_attribute(L"bytesize").set_value(bytesize.c_str());
@@ -309,7 +309,7 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromMemory(int w, int h, int bpp, const v
 
     texNodeXml.append_attribute(L"name").set_value(texName.c_str());
     texNodeXml.append_attribute(L"id").set_value(id.c_str());
-    g_objManager.SetLoc(texNodeXml, location.c_str());
+    g_objManager.SetLoc(texNodeXml, location);
     texNodeXml.append_attribute(L"offset").set_value(L"8");
     texNodeXml.append_attribute(L"bytesize").set_value(bytesize.c_str());
     texNodeXml.append_attribute(L"width")  = w;
@@ -365,7 +365,7 @@ HAPI HRTextureNodeRef hrTexture2DUpdateFromMemory(HRTextureNodeRef currentRef, i
 
 	texNodeXml.append_attribute(L"name").set_value(texName.c_str());
 	texNodeXml.append_attribute(L"id").set_value(id.c_str());
-  g_objManager.SetLoc(texNodeXml, location.c_str());
+  g_objManager.SetLoc(texNodeXml, location);
 	texNodeXml.append_attribute(L"offset").set_value(L"8");
 	texNodeXml.append_attribute(L"bytesize").set_value(bytesize.c_str());
   texNodeXml.append_attribute(L"width")  = w;

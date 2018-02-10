@@ -28,7 +28,7 @@ bool check_duplacates(pugi::xml_node a_lib) // check that each object with some 
   return true;
 }
 
-bool check_all_duplicates(const std::wstring a_fileName)
+bool check_all_duplicates(const std::wstring& a_fileName)
 {
   pugi::xml_document doc;
   doc.load_file(a_fileName.c_str());
