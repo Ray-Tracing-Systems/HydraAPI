@@ -283,7 +283,7 @@ struct IHRRenderDriver
   virtual HRDriverDependencyInfo DependencyInfo() { return HRDriverDependencyInfo(); }  ///< return render dependency info (look at OpenGL1 implementation with display lists to understand this. You have to update mesh when you update material because old mesh display list contains old material color).
 
   virtual const HRRenderDeviceInfoListElem* DeviceList() const = 0; ///< this method is for multi-GPU render. return device list or nullptr
-  virtual void EnableDevice(int32_t id, bool a_enable)         = 0; ///<  this method is for multi-GPU render. enable target device or disable it.
+  virtual bool  EnableDevice(int32_t id, bool a_enable)        = 0; ///<  this method is for multi-GPU render; enable target device or disable it; if fail, return false;
 
   // specific signals for create correct relations between blend leafs and e.t.c
   // for most of renderers these functions do nothing

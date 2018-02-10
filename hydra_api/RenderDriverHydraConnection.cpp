@@ -96,7 +96,7 @@ struct RD_HydraConnection : public IHRRenderDriver
   //
   HRDriverInfo Info() override;
   const HRRenderDeviceInfoListElem* DeviceList() const override;
-  void EnableDevice(int32_t id, bool a_enable) override;
+  bool EnableDevice(int32_t id, bool a_enable) override;
 
   void ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out) override;
   void EndFlush() override;
@@ -300,10 +300,24 @@ const HRRenderDeviceInfoListElem* RD_HydraConnection::DeviceList() const
     return &m_devList2[0];
 }
 
-void RD_HydraConnection::EnableDevice(int32_t id, bool a_enable)
+bool RD_HydraConnection::EnableDevice(int32_t id, bool a_enable)
 {
+  int devNumTotal = 0;
+  const auto* devList = DeviceList();
+
+  while (devList != nullptr)
+  {
+    devNumTotal++;
+    devList = devList->next;
+  }
+
+  if (id >= devNumTotal)
+    return false;
+
   if (id < m_devList2.size())
     m_devList2[id].isEnabled = a_enable;
+
+  return true;
 }
 
 HRDriverInfo RD_HydraConnection::Info()

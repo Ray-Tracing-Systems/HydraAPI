@@ -48,7 +48,7 @@ struct RD_OGL32_Deferred : IHRRenderDriver
 
   HRDriverInfo Info() override;
   const HRRenderDeviceInfoListElem* DeviceList() const override { return nullptr; }
-  void EnableDevice(int32_t id, bool a_enable) override {}
+  bool EnableDevice(int32_t id, bool a_enable) override { return true; }
 
 protected:
 

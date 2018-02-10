@@ -71,7 +71,7 @@ struct RD_OGL1_Plain : public IHRRenderDriver
 
   HRDriverInfo Info() override;
   const HRRenderDeviceInfoListElem* DeviceList() const override { return nullptr; } //#TODO: implement quering GPU info bu glGetString(GL_VENDOR) and e.t.c.
-  void EnableDevice(int32_t id, bool a_enable) override {}
+  bool EnableDevice(int32_t id, bool a_enable) override { return true; }
 
 protected:
 

@@ -24,7 +24,7 @@
 #include <fstream>
 
 #include "tests.h"
-#include "HydraXMLHelpers.h"
+#include "../hydra_api/HydraXMLHelpers.h"
 #include "../hydra_api/HR_HDRImageTool.h"
 
 #pragma warning(disable:4996)

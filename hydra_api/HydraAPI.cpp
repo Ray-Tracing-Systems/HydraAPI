@@ -738,7 +738,13 @@ HAPI void hrRenderEnableDevice(HRRenderRef a_pRender, int32_t a_deviceId, bool a
   if (pDriver == nullptr)
     return;
 
-  pDriver->EnableDevice(a_deviceId, a_enableOrDisable);
+  if (!pDriver->EnableDevice(a_deviceId, a_enableOrDisable))
+  {
+    std::wstringstream strOut;
+    strOut << L"hrRenderEnableDevice, bad device id" << a_deviceId;
+    std::wstring temp = strOut.str();
+    HrError(temp.c_str());
+  }
 }
 
 HAPI HRRenderUpdateInfo hrRenderHaveUpdate(const HRRenderRef a_pRender)
