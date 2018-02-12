@@ -99,8 +99,10 @@ bool test1000_loadlibrary_and_edit()
 
 
   hrFlush(scnRef, renderRef);
+
   //hrCommit(scnRef, renderRef);
   //hrRenderCommand(renderRef, L"resume");
+  bool firstUpdate = true;
 
   glViewport(0, 0, 1024, 768);
   std::vector<int32_t> image(1024 * 768);
@@ -112,6 +114,12 @@ bool test1000_loadlibrary_and_edit()
 
     if (info.haveUpdateFB)
     {
+      if(firstUpdate)
+      {
+        std::remove("tests/test_1000/change_00001.xml");
+        std::remove("tests/test_1000/statex_00002.xml");
+        firstUpdate = false;
+      }
       hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
 
       glDisable(GL_TEXTURE_2D);
@@ -130,9 +138,6 @@ bool test1000_loadlibrary_and_edit()
   }
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_1000/z_out.png");
-
-  std::remove("tests/test_1000/change_00001.xml");
-  std::remove("tests/test_1000/statex_00002.xml");
 
   return check_images("test_1000", 1, 50.0f);
 }
@@ -204,9 +209,10 @@ bool test1001_loadlibrary_and_add_textures()
   hrLightClose(sky);
 
   hrFlush(scnRef, renderRef);
+
   //hrCommit(scnRef, renderRef);
   //hrRenderCommand(renderRef, L"resume");
-
+  bool firstUpdate = true;
 
   while (true)
   {
@@ -216,6 +222,13 @@ bool test1001_loadlibrary_and_add_textures()
 
     if (info.haveUpdateFB)
     {
+      if(firstUpdate)
+      {
+        std::remove("tests/test_1001/change_00001.xml");
+        std::remove("tests/test_1001/statex_00002.xml");
+        firstUpdate = false;
+      }
+
       hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
 
       glDisable(GL_TEXTURE_2D);
@@ -234,9 +247,6 @@ bool test1001_loadlibrary_and_add_textures()
   }
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_1001/z_out.png");
-
-  std::remove("tests/test_1001/change_00001.xml");
-  std::remove("tests/test_1001/statex_00002.xml");
 
   return check_images("test_1001", 1, 50.0f);
 }

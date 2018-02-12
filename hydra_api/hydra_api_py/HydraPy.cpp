@@ -144,13 +144,13 @@ PYBIND11_MODULE(hydraPy, m) {
 
   py::class_<HRMeshRef>(m, "HRMeshRef")
           .def(py::init<>())
-          .def_readonly("id", &HRMeshRef::id);
+          .def_readwrite("id", &HRMeshRef::id);
   py::class_<HRLightRef>(m, "HRLightRef")
           .def(py::init<>())
-          .def_readonly("id", &HRLightRef::id);
+          .def_readwrite("id", &HRLightRef::id);
   py::class_<HRMaterialRef>(m, "HRMaterialRef")
           .def(py::init<>())
-          .def_readonly("id", &HRMaterialRef::id);
+          .def_readwrite("id", &HRMaterialRef::id);
   py::class_<HRCameraRef>(m, "HRCameraRef")
           .def(py::init<>())
           .def_readwrite("id", &HRCameraRef::id);
