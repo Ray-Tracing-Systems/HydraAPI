@@ -183,7 +183,7 @@ bool test1001_loadlibrary_and_add_textures()
 
     auto intensityNode = lightNode.append_child(L"intensity");
 
-    intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 0 0");
+    intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
     intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"1.0");
 
     auto texNode = hrTextureBind(texEnv, intensityNode.child(L"color"));
@@ -234,6 +234,9 @@ bool test1001_loadlibrary_and_add_textures()
   }
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_1001/z_out.png");
+
+  std::remove("tests/test_1001/change_00001.xml");
+  std::remove("tests/test_1001/statex_00002.xml");
 
   return check_images("test_1001", 1, 50.0f);
 }

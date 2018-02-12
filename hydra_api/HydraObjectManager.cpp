@@ -47,7 +47,8 @@ void HRObjectManager::init(const wchar_t* a_className)
   m_useLocalPath               = false;
   m_copyTexFilesToLocalStorage = false;
   m_sortTriIndices             = false;
-  bool emptyvb                 = false;
+  m_emptyVB                    = false;
+
 
   std::wistringstream instr(a_className);
 
@@ -65,11 +66,11 @@ void HRObjectManager::init(const wchar_t* a_className)
     else if (std::wstring(name) == L"-sort_indices" && val != 0)
       m_sortTriIndices = true;
     else if (std::wstring(name) == L"-emptyvirtualbuffer" && val != 0)
-      emptyvb = true;
+      m_emptyVB = true;
   }
 
   m_pFactory = new HydraFactoryCommon;
-  scnData.init(emptyvb);
+  scnData.init(m_emptyVB);
 
   _hrInitPostProcess();
 }

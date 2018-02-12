@@ -335,7 +335,7 @@ struct HRSceneData : public HRObject<IHRSceneData>
       m_vbCache.Init(VIRTUAL_BUFFER_SIZE, "HYDRAAPISHMEM2");
   }
 
-  void init_existing()
+  void init_existing(bool a_emptyVB)
   {
     m_texturesLib         = m_xmlDoc.child(L"textures_lib");
     m_materialsLib        = m_xmlDoc.child(L"materials_lib");
@@ -355,7 +355,10 @@ struct HRSceneData : public HRObject<IHRSceneData>
 
     m_trashNode           = m_xmlDocChanges.child(L"trash");
 
-    m_vbCache.Init(4096, "HYDRAAPISHMEM2");
+    if (a_emptyVB)
+      m_vbCache.Init(4096, "NOSUCHSHMEM");
+    else
+      m_vbCache.Init(VIRTUAL_BUFFER_SIZE, "HYDRAAPISHMEM2");
   }
 
   void clear()
@@ -514,7 +517,7 @@ struct HRRender : public HRObject<IHRRender>
 struct HRObjectManager
 {
   HRObjectManager() : m_pFactory(nullptr), m_pDriver(nullptr), m_currSceneId(0), m_currRenderId(0), m_currCamId(0),
-                      m_copyTexFilesToLocalStorage(false), m_useLocalPath(true) {}
+                      m_copyTexFilesToLocalStorage(false), m_useLocalPath(true), m_emptyVB(false) {}
  
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 
@@ -574,6 +577,7 @@ struct HRObjectManager
   bool m_copyTexFilesToLocalStorage;
   bool m_useLocalPath;
   bool m_sortTriIndices;
+  bool m_emptyVB;
 };
 
 void HrError(std::wstring a_str);

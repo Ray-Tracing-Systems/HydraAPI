@@ -322,7 +322,7 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int32_t a_stateId)
     return -1;
   }
 
-  g_objManager.scnData.init_existing();
+  g_objManager.scnData.init_existing(g_objManager.m_emptyVB);
 
   // (2) set change id to curr value
   //
@@ -380,7 +380,7 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int32_t a_stateId)
     }
     
     g_objManager.scnInst[a_pScn.id].driverDirtyFlag = true; // driver need to Update this scene
-    g_objManager.scnInst[a_pScn.id].update(node);
+    //g_objManager.scnInst[a_pScn.id].update(node);
   }
 
   // (9) load render settings

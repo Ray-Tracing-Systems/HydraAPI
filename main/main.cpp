@@ -99,17 +99,16 @@ int main(int argc, const char** argv)
 
     //test42_load_library_basic();
     //test1000_loadlibrary_and_edit();
-    //test1001_loadlibrary_and_add_textures();
+    test1001_loadlibrary_and_add_textures();
     //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
     //std::cout << test39_mesh_from_vsgf() << std::endl;
     //std::cout << test59_cornell_water_mlt() << std::endl;
     //std::cout << test70_area_lights16() << std::endl;
 
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
-    
     //GEO_TESTS::test_004_dof();
     //MTL_TESTS::test_119_opacity_texture();
-    MTL_TESTS::test_141_opacity_smooth();
+    //MTL_TESTS::test_141_opacity_smooth();
     //LGHT_TESTS::test_202_sky_color();
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
 

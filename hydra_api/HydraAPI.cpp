@@ -174,7 +174,7 @@ HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMod
 
   if (a_openMode == HR_WRITE_DISCARD) // total clear of all objects
   {
-    if (a_libPath != nullptr && std::wstring(a_libPath) != L"")
+    if (a_libPath != nullptr && !std::wstring(a_libPath).empty())
 #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
       hr_cleardir(libPath.c_str());
       hr_mkdir(dataPath.c_str());
