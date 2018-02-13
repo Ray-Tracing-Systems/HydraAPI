@@ -165,7 +165,7 @@ HAPI HRMaterialRef hrMaterialFindByName(const wchar_t *a_matName)
 
   if(a_matName != nullptr)
   {
-    for (auto mat : g_objManager.scnData.lights)
+    for (auto mat : g_objManager.scnData.materials)
     {
       if (mat.name == std::wstring(a_matName))
       {
