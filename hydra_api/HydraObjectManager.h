@@ -32,7 +32,7 @@ struct HRObject
   //////////////////////////////////////////////////
 
   std::wstring name;     ///< object name that user usually have to specify
-  size_t       id;       ///< object id, unique for each object type; no-overwrite policy is used; deleted objects never became valid again;
+  int32_t       id;       ///< object id, unique for each object type; no-overwrite policy is used; deleted objects never became valid again;
 
 
   HR_OPEN_MODE openMode;   ///< HR_WRITE_DISCARD or HR_OPEN_EXINTING or HR_OPEN_READ_ONLY

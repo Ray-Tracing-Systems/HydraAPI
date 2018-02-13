@@ -764,3 +764,29 @@ void HR_UpdateLightsGeometryAndMaterial(pugi::xml_node a_lightLibChanges, pugi::
 
 }
 
+
+HAPI HRLightRef hrLightFindByName(const wchar_t *a_lightName)
+{
+  HRLightRef light;
+
+  if(a_lightName != nullptr)
+  {
+    for (auto lgt : g_objManager.scnData.lights)
+    {
+      if (lgt.name == std::wstring(a_lightName))
+      {
+        light.id = lgt.id;
+        break;
+      }
+    }
+  }
+
+  if(light.id == -1)
+  {
+    std::wstringstream ss;
+    ss << L"hrLightFindByName: can't find light \"" << a_lightName << "\"";
+    HrError(ss.str());
+  }
+
+  return light;
+}

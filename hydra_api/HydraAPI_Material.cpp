@@ -157,3 +157,30 @@ HAPI pugi::xml_node hrMaterialParamNode(HRMaterialRef a_matRef)
 
   return pMat->xml_node_next(pMat->openMode);
 }
+
+
+HAPI HRMaterialRef hrMaterialFindByName(const wchar_t *a_matName)
+{
+  HRMaterialRef material;
+
+  if(a_matName != nullptr)
+  {
+    for (auto mat : g_objManager.scnData.materials)
+    {
+      if (mat.name == std::wstring(a_matName))
+      {
+        material.id = mat.id;
+        break;
+      }
+    }
+  }
+
+  if(material.id == -1)
+  {
+    std::wstringstream ss;
+    ss << L"hrMaterialFindByName: can't find material \"" << a_matName << "\"";
+    HrError(ss.str());
+  }
+
+  return material;
+}

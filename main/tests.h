@@ -324,7 +324,10 @@ namespace PP_TESTS
 
 
 bool test1000_loadlibrary_and_edit();
-bool test1001_loadlibrary_and_add_textures(); //BUG - VirtualBuffer::AllocInCache : the object is too big! -> segmentation fault
+bool test1001_loadlibrary_and_add_textures();
+bool test1002_get_material_by_name_and_edit();
+bool test1003_get_light_by_name_and_edit();
+bool test1004_get_camera_by_name_and_edit();
 
 
 

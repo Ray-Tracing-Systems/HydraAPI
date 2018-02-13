@@ -124,3 +124,29 @@ HAPI pugi::xml_node hrCameraParamNode(HRCameraRef a_camRef)
 
   return pCam->xml_node_next();
 }
+
+HAPI HRCameraRef hrCameraFindByName(const wchar_t *a_cameraName)
+{
+  HRCameraRef camera;
+
+  if(a_cameraName != nullptr)
+  {
+    for (auto cam : g_objManager.scnData.cameras)
+    {
+      if (cam.name == std::wstring(a_cameraName))
+      {
+        camera.id = cam.id;
+        break;
+      }
+    }
+  }
+
+  if(camera.id == -1)
+  {
+    std::wstringstream ss;
+    ss << L"hrCameraFindByName: can't find camera \"" << a_cameraName << "\"";
+    HrError(ss.str());
+  }
+
+  return camera;
+}

@@ -137,7 +137,8 @@ void WriteMatrix4x4Py(pugi::xml_node a_node, const wchar_t* a_attrib_name, py::a
   HydraXMLHelpers::WriteMatrix4x4(a_node, a_attrib_name, mat.mutable_data(0));
 }
 
-PYBIND11_MODULE(hydraPy, m) {
+PYBIND11_MODULE(hydraPy, m)
+{
 
   //py::bind_vector<std::vector<float>>(m, "VectorFloat");
   //py::bind_vector<std::vector<int>>(m, "VectorInt");
@@ -245,15 +246,18 @@ PYBIND11_MODULE(hydraPy, m) {
   m.def("hrMaterialOpen", &hrMaterialOpen);
   m.def("hrMaterialParamNode", &hrMaterialParamNode);
   m.def("hrMaterialClose", &hrMaterialClose);
+  m.def("hrMaterialFindByName", &hrMaterialFindByName);
   //m.def("hrMaterialCreateBRDFLeaf", &hrMaterialCreateBRDFLeaf);
   m.def("hrLightCreate", &hrLightCreate);
   m.def("hrLightOpen", &hrLightOpen);
   m.def("hrLightClose", &hrLightClose);
   m.def("hrLightParamNode", &hrLightParamNode);
+  m.def("hrLightFindByName", &hrLightFindByName);
   m.def("hrCameraCreate", &hrCameraCreate);
   m.def("hrCameraOpen", &hrCameraOpen);
   m.def("hrCameraClose", &hrCameraClose);
   m.def("hrCameraParamNode", &hrCameraParamNode);
+  m.def("hrCameraFindByName", &hrCameraFindByName);
   m.def("hrMeshCreate", &hrMeshCreate);
   m.def("hrMeshCreateFromFileDL", &hrMeshCreateFromFileDL);
   m.def("hrMeshOpen", &hrMeshOpenPy);
