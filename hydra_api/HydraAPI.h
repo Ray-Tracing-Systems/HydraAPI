@@ -1016,5 +1016,37 @@ namespace HRUtils
 
   */
   HRTextureNodeRef Cube2SphereLDR(HRTextureNodeRef a_cube[6]);
+
 };
 
+
+/**
+\brief get HRMaterialRef by name from the library.
+\param a_matName  - material name
+
+
+ If material with name = a_matName does not exist, HRMaterialRef with id = -1 is returned
+
+*/
+HAPI HRMaterialRef hrMaterialFindByName(const wchar_t *a_matName);
+
+
+/**
+\brief get HRLightRef by name from the library.
+\param a_lightName  - light name
+
+
+ If light with name = a_lightName does not exist, HRLightRef with id = -1 is returned
+
+*/
+HAPI HRLightRef hrLightFindByName(const wchar_t *a_lightName);
+
+/**
+\brief get HRCameraRef by name from the library.
+\param a_cameraName  - camera name
+
+
+ If camera with name = a_cameraName does not exist, HRCameraRef with id = -1 is returned
+
+*/
+HAPI HRCameraRef hrCameraFindByName(const wchar_t *a_cameraName);

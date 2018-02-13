@@ -95,9 +95,12 @@ int main(int argc, const char** argv)
     //test42_load_library_basic();
     //test1000_loadlibrary_and_edit();
     //test1001_loadlibrary_and_add_textures();
+    //test1002_get_material_by_name_and_edit();
+    test1003_get_light_by_name_and_edit();
+    //test1004_get_camera_by_name_and_edit();
 
     //std::cout << test39_mesh_from_vsgf() << std::endl;
-    std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
+    //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
     //std::cout << test59_cornell_water_mlt() << std::endl;
     //std::cout << test70_area_lights16() << std::endl;
 
@@ -105,7 +108,7 @@ int main(int argc, const char** argv)
     //GEO_TESTS::test_004_dof();
     //MTL_TESTS::test_119_opacity_texture();
     //MTL_TESTS::test_141_opacity_smooth();
-    //LGHT_TESTS::test_202_sky_color();
+    //LGHT_TESTS::test_201_sphere();
     //PP_TESTS::test305_fbi_from_render();
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
 

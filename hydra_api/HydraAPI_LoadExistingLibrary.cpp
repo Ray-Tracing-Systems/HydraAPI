@@ -31,7 +31,7 @@ HRTextureNodeRef _hrTexture2DCreateFromNode(pugi::xml_node a_node)
   /////////////////////////////////////////////////////////////////////////////////////////////////
   {
     auto p = g_objManager.scnData.m_textureCache.find(a_fileName2);
-    if (p != g_objManager.scnData.m_textureCache.end() && std::wstring(a_fileName2) != L"")
+    if (p != g_objManager.scnData.m_textureCache.end() && !std::wstring(a_fileName2).empty())
     {
       HRTextureNodeRef ref;
       ref.id = p->second;
@@ -40,13 +40,14 @@ HRTextureNodeRef _hrTexture2DCreateFromNode(pugi::xml_node a_node)
   }
   /////////////////////////////////////////////////////////////////////////////////////////////////
 
+  HRTextureNodeRef ref;
+  ref.id = HR_IDType(g_objManager.scnData.textures.size());
+
   HRTextureNode texRes;
   texRes.name = std::wstring(a_fileName1);
-  texRes.id   = g_objManager.scnData.textures.size();
+  texRes.id   = ref.id;
   g_objManager.scnData.textures.push_back(texRes);
 
-  HRTextureNodeRef ref;
-  ref.id = HR_IDType(g_objManager.scnData.textures.size() - 1);
 
   HRTextureNode& texture   = g_objManager.scnData.textures[ref.id];
   texture.m_loadedFromFile = true;
@@ -54,7 +55,7 @@ HRTextureNodeRef _hrTexture2DCreateFromNode(pugi::xml_node a_node)
   g_objManager.scnData.textures      [ref.id].update_this(a_node);
   g_objManager.scnData.m_textureCache[a_fileName2] = ref.id; // remember texture id for given file name
 
-  if (std::wstring(a_chunkPath) != L"")
+  if (!std::wstring(a_chunkPath).empty())
     texture.pImpl = g_objManager.m_pFactory->CreateTextureInfoFromChunkFile(&texture, a_chunkPath);
 
   return ref;
@@ -69,6 +70,7 @@ HRMaterialRef _hrMaterialCreateFromNode(pugi::xml_node a_node)
 
   HRMaterial mat;
   mat.name = std::wstring(a_objectName);
+  mat.id = ref.id;
   g_objManager.scnData.materials.push_back(mat);
   g_objManager.scnData.materials[ref.id].update_this(a_node);
 
@@ -82,12 +84,13 @@ HAPI HRMeshRef _hrMeshCreateFromNode(pugi::xml_node a_node)
   const wchar_t* a_objectName = a_node.attribute(L"name").as_string();
   const wchar_t* a_fileName   = (dl == L"1") ? a_node.attribute(L"path").as_string() : loc.c_str();
 
+  HRMeshRef ref;
+  ref.id = HR_IDType(g_objManager.scnData.meshes.size());
+
   HRMesh mesh;
   mesh.name = std::wstring(a_objectName);
+  mesh.id = ref.id;
   g_objManager.scnData.meshes.push_back(mesh);
-
-  HRMeshRef ref;
-  ref.id = HR_IDType(g_objManager.scnData.meshes.size() - 1);
 
   g_objManager.scnData.meshes[ref.id].update_this(a_node);
   g_objManager.scnData.meshes[ref.id].id = ref.id;
@@ -110,6 +113,7 @@ HRLightRef _hrLightCreateFromNode(pugi::xml_node a_node)
 
   HRLight light;
   light.name = std::wstring(a_objectName);
+  light.id = ref.id;
   g_objManager.scnData.lights.push_back(light);
 
   g_objManager.scnData.lights[ref.id].update_this(a_node);
@@ -122,12 +126,14 @@ HAPI HRCameraRef _hrCameraCreateFromNode(pugi::xml_node a_node)
 {
   const wchar_t* a_objectName = a_node.attribute(L"name").as_string();
 
+  HRCameraRef ref;
+  ref.id = HR_IDType(g_objManager.scnData.cameras.size());
+
   HRCamera cam;
   cam.name = std::wstring(a_objectName);
+  cam.id = ref.id;
   g_objManager.scnData.cameras.push_back(cam);
 
-  HRCameraRef ref;
-  ref.id = HR_IDType(g_objManager.scnData.cameras.size() - 1);
 
   g_objManager.scnData.cameras[ref.id].update_this(a_node);
   g_objManager.scnData.cameras[ref.id].id = ref.id;
