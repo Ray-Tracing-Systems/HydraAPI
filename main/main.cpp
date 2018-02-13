@@ -92,16 +92,12 @@ int main(int argc, const char** argv)
     //run_all_ipp_tests();
     //run_all_api_tests();
 
-    //std::cout << test75_repeated_render() << std::endl;
-    //std::cout << test48_light_geom_sphere() << std::endl;
-    //test39_mesh_from_vsgf();
-    //PP_TESTS::test305_fbi_from_render();
-
     //test42_load_library_basic();
     //test1000_loadlibrary_and_edit();
-    test1001_loadlibrary_and_add_textures();
-    //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
+    //test1001_loadlibrary_and_add_textures();
+
     //std::cout << test39_mesh_from_vsgf() << std::endl;
+    std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
     //std::cout << test59_cornell_water_mlt() << std::endl;
     //std::cout << test70_area_lights16() << std::endl;
 
@@ -110,6 +106,7 @@ int main(int argc, const char** argv)
     //MTL_TESTS::test_119_opacity_texture();
     //MTL_TESTS::test_141_opacity_smooth();
     //LGHT_TESTS::test_202_sky_color();
+    //PP_TESTS::test305_fbi_from_render();
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
 
     //window_main_free_look(L"tests_f/test_241", L"opengl1Debug");

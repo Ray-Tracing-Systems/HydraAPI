@@ -684,6 +684,8 @@ static inline HRGBufferPixel UnpackGBuffer(const float a_input[4], const float a
   res.objId   = as_int(a_input2[2]);
   res.instId  = as_int(a_input2[3]);
 
+  res.shadow  = 0.0f;
+
   return res;
 }
 
@@ -855,8 +857,10 @@ void RD_HydraConnection::GetFrameBufferLDR(int32_t w, int32_t h, int32_t* a_out)
 void RD_HydraConnection::GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_lineData, int32_t a_startX, int32_t a_endX)
 {
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// #TODO: Refactor this
+  float* data0 = nullptr;
   float* data1 = nullptr;
   float* data2 = nullptr;
+  data0 = m_pSharedImage->ImageData(0);
   if (m_pSharedImage->Header()->depth == 4) // some other process already have computed gbuffer
   {
     data1 = m_pSharedImage->ImageData(2);
@@ -871,18 +875,20 @@ void RD_HydraConnection::GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_
     return;
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// #TODO: Refactor this
 
-
   if (a_endX > m_width)
     a_endX = m_width;
 
   const int32_t lineOffset = (a_lineNumber*m_width + a_startX);
   const int32_t lineSize   = (a_endX - a_startX);
 
+  const float normC = 1.0f / m_pSharedImage->Header()->spp;
+
   for (int32_t x = 0; x < lineSize; x++)
   {
-    const float* data11 = &data1[(lineOffset + x) * 4];
-    const float* data22 = &data2[(lineOffset + x) * 4];
-    a_lineData[x] = UnpackGBuffer(data11, data22);
+    const float* data11  = &data1[(lineOffset + x) * 4];
+    const float* data22  = &data2[(lineOffset + x) * 4];
+    a_lineData[x]        = UnpackGBuffer(data11, data22);         // store main gbuffer data
+    a_lineData[x].shadow = data0[(lineOffset + x) * 4 + 3]*normC; // get shadow from the fourthm channel
   }
 
 }

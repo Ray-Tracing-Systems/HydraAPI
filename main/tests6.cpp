@@ -905,6 +905,7 @@ bool test37_cornell_with_light_different_image_layers()
   std::vector<int32_t> mindicesImageLDR(1024 * 768);
   std::vector<int32_t> instIndicesImageLDR(1024 * 768);
   std::vector<int32_t> objIndicesImageLDR(1024 * 768);
+  std::vector<int32_t> shadowImageLDR(1024 * 768);
 
   std::vector<HRGBufferPixel> line(1024);
 
@@ -947,9 +948,12 @@ bool test37_cornell_with_light_different_image_layers()
                                     texc[3]
       };
 
-      normalsImageLDR    [y * 1024 + x] = RealColorToUint32(norm);
-      txColorImageLDR    [y * 1024 + x] = RealColorToUint32(color);
-      depthImageLDR      [y * 1024 + x] = RealColorToUint32(depth);
+      const float shadow[4] = { line[x].shadow, line[x].shadow, line[x].shadow, 1 };
+
+      normalsImageLDR[y * 1024 + x] = RealColorToUint32(norm);
+      txColorImageLDR[y * 1024 + x] = RealColorToUint32(color);
+      depthImageLDR  [y * 1024 + x] = RealColorToUint32(depth);
+      shadowImageLDR [y * 1024 + x] = RealColorToUint32(shadow);
 
       if (line[x].matId == -1 || line[x].depth >= 5e5f)
       {
@@ -974,8 +978,9 @@ bool test37_cornell_with_light_different_image_layers()
   SaveImageToFile(std::string("tests_images/test_37/z_out5.png"), 1024, 768, (unsigned int*)&mindicesImageLDR[0]);
   SaveImageToFile(std::string("tests_images/test_37/z_out6.png"), 1024, 768, (unsigned int*)&instIndicesImageLDR[0]);
   SaveImageToFile(std::string("tests_images/test_37/z_out7.png"), 1024, 768, (unsigned int*)&objIndicesImageLDR[0]);
+  SaveImageToFile(std::string("tests_images/test_37/z_out8.png"), 1024, 768, (unsigned int*)&shadowImageLDR[0]);
 
-  return check_images("test_37", 7);
+  return check_images("test_37", 8);
 }
 
 
@@ -1725,11 +1730,11 @@ bool test39_mesh_from_vsgf()
     node.append_child(L"width").text()  = 1024;
     node.append_child(L"height").text() = 768;
 
-    node.append_child(L"method_primary").text()   = L"IBPT"; // L"pathtracing"; // L"lighttracing";
+    node.append_child(L"method_primary").text()   = L"IBPT"; // L"pathtracing"; // L"lighttracing"; // IBPT
     node.append_child(L"trace_depth").text()      = 5;
     node.append_child(L"diff_trace_depth").text() = 3;
     node.append_child(L"maxRaysPerPixel").text()  = 1024;
-    node.append_child(L"evalgbuffer").text()      = 1;
+    node.append_child(L"evalgbuffer").text()      = 0;
   }
   hrRenderClose(renderRef);
 
