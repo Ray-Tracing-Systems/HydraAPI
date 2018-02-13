@@ -150,6 +150,9 @@
     <ClCompile Include="HydraLaunchProcessWin32.cpp">
       <Filter>Source\RenderDrivers</Filter>
     </ClCompile>
+    <ClCompile Include="HydraAPI_GBuffer.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LiteMath.h">

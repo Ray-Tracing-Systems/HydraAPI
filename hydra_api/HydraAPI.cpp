@@ -763,22 +763,7 @@ HAPI HRRenderUpdateInfo hrRenderHaveUpdate(const HRRenderRef a_pRender)
   return result;
 }
 
-HAPI void hrRenderGetGBufferLine(const HRRenderRef a_pRender, int32_t a_lineNumber, HRGBufferPixel* a_lineData, int32_t a_startX, int32_t a_endX)
-{
-  HRRender* pRender = g_objManager.PtrById(a_pRender);
 
-  if (pRender == nullptr)
-  {
-    HrError(L"hrRenderGetDeviceList: nullptr input");
-    return;
-  }
-
-  auto pDriver = pRender->m_pDriver;
-  if (pDriver == nullptr)
-    return;
-
-  pDriver->GetGBufferLine(a_lineNumber, a_lineData, a_startX, a_endX);
-}
 
 static pugi::xml_attribute force_attrib(pugi::xml_node a_parent, const wchar_t* a_name) ///< helper function
 {
