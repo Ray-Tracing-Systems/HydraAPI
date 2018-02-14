@@ -11,6 +11,9 @@
 #include "FreeImage.h"
 #pragma comment(lib, "FreeImage.lib")
 
+bool HR_SaveLDRImageToFile(const wchar_t* a_fileName, int w, int h, int32_t* data);
+bool HR_SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, const float* a_data, const float a_scale = 1.0f);
+
 namespace HydraRender
 {
 
@@ -121,53 +124,12 @@ namespace HydraRender
 
   void SaveHDRImageToFileHDR(const std::wstring& a_fileName, int w, int h, const float* a_data)
   {
-    struct float3 { float x, y, z; };
-    struct float4 { float x, y, z, w; };
-
-    const float4* data = (const float4*)a_data;
-
-    std::vector<float3> tempData(w*h);
-    for (int i = 0; i < w*h; i++)
-    {
-      float4 src = data[i];
-      float3 dst;
-      dst.x = src.x;
-      dst.y = src.y;
-      dst.z = src.z;
-      tempData[i] = dst;
-    }
-
-    FIBITMAP* dib = FreeImage_AllocateT(FIT_RGBF, w, h);
-
-    BYTE* bits = FreeImage_GetBits(dib);
-    memcpy(bits, &tempData[0], sizeof(float3)*w*h);
-
-    FreeImage_SetOutputMessage(FreeImageErrorHandler);
-
-    if (!FreeImage_SaveU(FIF_HDR, dib, a_fileName.c_str()))
-      std::cerr << "SaveImageToFile(): FreeImage_Save error " << std::endl;
-
-    FreeImage_Unload(dib);
+    HR_SaveHDRImageToFileHDR(a_fileName.c_str(), w, h, a_data, 1.0f);
   }
 
   void SaveImageToFile(const std::wstring& a_fileName, int w, int h, const unsigned int* data)
   {
-    FIBITMAP* dib = FreeImage_Allocate(w, h, 32);
-
-    BYTE* bits = FreeImage_GetBits(dib);
-    BYTE* data2 = (BYTE*)data;
-    for (int i = 0; i < w*h; i++)
-    {
-      bits[4 * i + 0] = data2[4 * i + 2];
-      bits[4 * i + 1] = data2[4 * i + 1];
-      bits[4 * i + 2] = data2[4 * i + 0];
-      bits[4 * i + 3] = data2[4 * i + 3];
-    }
-
-    if (!FreeImage_SaveU(FIF_PNG, dib, a_fileName.c_str()))
-      std::cerr << "SaveImageToFile(): FreeImage_Save error on " << a_fileName.c_str() << std::endl;
-
-    FreeImage_Unload(dib);
+    HR_SaveLDRImageToFile(a_fileName.c_str(), w, h, (int32_t*)data);
   }
 
 
@@ -277,7 +239,10 @@ namespace HydraRender
     image = HDRImage4f(w, h, &data[0]);
   }
 
-  void LoadImageFromFile(const std::wstring& a_fileName, std::vector<float>& data, int& w, int& h) // loads both LDR and HDR images(!)
+
+  /// #TODO: fix unicode on Linux!!!
+  ///
+  void LoadImageFromFile(const std::wstring& a_fileName, std::vector<float>& data, int& w, int& h) // loads both LDR and HDR images(!) 
   {
     const wchar_t* filename = a_fileName.c_str();
 
@@ -287,9 +252,9 @@ namespace HydraRender
     unsigned int width(0), height(0);    //image width and height
 
 
-                                         //check the file signature and deduce its format
-                                         //if still unknown, try to guess the file format from the file extension
-                                         //
+    //check the file signature and deduce its format
+    //if still unknown, try to guess the file format from the file extension
+    //
     fif = FreeImage_GetFileTypeU(filename, 0);
     if (fif == FIF_UNKNOWN)
       fif = FreeImage_GetFIFFromFilenameU(filename);

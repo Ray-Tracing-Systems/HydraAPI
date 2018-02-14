@@ -932,6 +932,22 @@ struct HRGBufferPixel
 HAPI void hrRenderGetGBufferLine(const HRRenderRef a_pRender, int32_t a_lineNumber, HRGBufferPixel* a_lineData, int32_t a_startX, int32_t a_endX);  // w*4*sizeof(float)
 
 /**
+\brief save custom gbuffer layer
+* \param a_pRender     - render reference
+* \param a_outFileName - output file name
+* \param a_layerName   - layer name we are going to save [depth,normals,texcoord,diffcolor,alpha,shadow,matid,objid,instid]
+* \param a_palette     - color palette; aplied to indices only!
+* \param a_paletteSize - color palette size;
+
+If palette is not set for "id" layers, this function will use it's default palette. 
+if GBuffer was not evaluated by render driver (you have to set 'evalgbuffer' = 1 in render settings), this function do nothing.
+
+*/
+HAPI bool hrRenderSaveGBufferLayerLDR(const HRRenderRef a_pRender, const wchar_t* a_outFileName, const wchar_t* a_layerName,
+                                      const int* a_palette = nullptr, const int a_paletteSize = 0); 
+
+
+/**
 \brief execute custom command for render driver
 * \param a_pRender - render reference
 * \param a_command - command string
