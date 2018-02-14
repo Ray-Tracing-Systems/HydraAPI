@@ -330,31 +330,32 @@ inline pugi::xml_node append_copy_lite(pugi::xml_node a_to, pugi::xml_node a_pro
 }
 
 /**
-\brief copy a_proto data to nodeToCopy by replacing all nodeToCopy's internal data. nodeToCopy is a child of libNodeTo
+\brief copy a_proto data to nodeCopyTo by replacing all nodeCopyTo's internal data. nodeCopyTo is a child of libNodeTo
 \param a_proto    - node data we want to copy
-\param nodeToCopy - node where we want copy data from a_proto to.
-\param libNodeTo  - parent of nodeToCopy. Note that nodeToCopy mat be null ,so we must pass libNodeTo explicit from some-where.
+\param nodeCopyTo - node where we want copy data from a_proto to.
+\param libNodeTo  - parent of nodeCopyTo. Note that nodeCopyTo mat be null ,so we must pass libNodeTo explicit from some-where.
 \param a_lite     - make deep or lite copy
 
 */
 
-inline pugi::xml_node replace_copy(pugi::xml_node a_proto, pugi::xml_node& nodeToCopy, pugi::xml_node& libNodeTo, bool a_lite)
+inline pugi::xml_node replace_copy(pugi::xml_node a_proto, pugi::xml_node& nodeCopyTo, pugi::xml_node& libNodeTo, bool a_lite)
 {
-  if (nodeToCopy == nullptr)
+  if (nodeCopyTo == nullptr)
   {
     if (a_lite)
-      nodeToCopy = append_copy_lite(libNodeTo, a_proto);
+      nodeCopyTo = append_copy_lite(libNodeTo, a_proto);
     else
-      nodeToCopy = libNodeTo.append_copy(a_proto);
+      nodeCopyTo = libNodeTo.append_copy(a_proto);
+      //nodeCopyTo = libNodeTo.append_move(a_proto);
   }
   else
   {
-    pugi::xml_node resNode = libNodeTo.insert_copy_after(a_proto, nodeToCopy);
-    libNodeTo.remove_child(nodeToCopy);
-    nodeToCopy = resNode;
+    pugi::xml_node resNode = libNodeTo.insert_copy_after(a_proto, nodeCopyTo);
+    libNodeTo.remove_child(nodeCopyTo);
+    nodeCopyTo = resNode;
   }
 
-  return nodeToCopy;
+  return nodeCopyTo;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -366,10 +367,10 @@ pugi::xml_node HRMesh::copy_node(pugi::xml_node a_proto, bool a_lite)
   if (id == -1)
     return pugi::xml_node();
 
-  auto& nodeToCopy = g_objManager.scnData.meshes[id].m_xmlNodeNext;
+  auto& nodeCopyTo = g_objManager.scnData.meshes[id].m_xmlNodeNext;
   auto& libNodeTo  = g_objManager.scnData.m_geometryLibChanges;
 
-  return replace_copy(a_proto, nodeToCopy, libNodeTo, a_lite);
+  return replace_copy(a_proto, nodeCopyTo, libNodeTo, a_lite);
 }
 
 pugi::xml_node HRLight::copy_node(pugi::xml_node a_proto, bool a_lite)
@@ -378,10 +379,10 @@ pugi::xml_node HRLight::copy_node(pugi::xml_node a_proto, bool a_lite)
   if (id == -1)
     return pugi::xml_node();
 
-  auto& nodeToCopy = g_objManager.scnData.lights[id].m_xmlNodeNext;
+  auto& nodeCopyTo = g_objManager.scnData.lights[id].m_xmlNodeNext;
   auto& libNodeTo  = g_objManager.scnData.m_lightsLibChanges;
 
-  return replace_copy(a_proto, nodeToCopy, libNodeTo, a_lite);
+  return replace_copy(a_proto, nodeCopyTo, libNodeTo, a_lite);
 }
 
 pugi::xml_node HRMaterial::copy_node(pugi::xml_node a_proto, bool a_lite)
@@ -390,10 +391,10 @@ pugi::xml_node HRMaterial::copy_node(pugi::xml_node a_proto, bool a_lite)
   if (id == -1)
     return pugi::xml_node();
 
-  auto& nodeToCopy = g_objManager.scnData.materials[id].m_xmlNodeNext;
+  auto& nodeCopyTo = g_objManager.scnData.materials[id].m_xmlNodeNext;
   auto& libNodeTo  = g_objManager.scnData.m_materialsLibChanges;
 
-  return replace_copy(a_proto, nodeToCopy, libNodeTo, a_lite);
+  return replace_copy(a_proto, nodeCopyTo, libNodeTo, a_lite);
 }
 
 pugi::xml_node HRCamera::copy_node(pugi::xml_node a_proto, bool a_lite)
@@ -402,10 +403,10 @@ pugi::xml_node HRCamera::copy_node(pugi::xml_node a_proto, bool a_lite)
   if (id == -1)
     return pugi::xml_node();
 
-  auto& nodeToCopy = g_objManager.scnData.cameras[id].m_xmlNodeNext;
+  auto& nodeCopyTo = g_objManager.scnData.cameras[id].m_xmlNodeNext;
   auto& libNodeTo  = g_objManager.scnData.m_cameraLibChanges;
 
-  return replace_copy(a_proto, nodeToCopy, libNodeTo, a_lite);
+  return replace_copy(a_proto, nodeCopyTo, libNodeTo, a_lite);
 }
 
 pugi::xml_node HRTextureNode::copy_node(pugi::xml_node a_proto, bool a_lite)
@@ -414,10 +415,10 @@ pugi::xml_node HRTextureNode::copy_node(pugi::xml_node a_proto, bool a_lite)
   if (id == -1)
     return pugi::xml_node();
 
-  auto& nodeToCopy = g_objManager.scnData.textures[id].m_xmlNodeNext;
+  auto& nodeCopyTo = g_objManager.scnData.textures[id].m_xmlNodeNext;
   auto& libNodeTo  = g_objManager.scnData.m_texturesLibChanges;
 
-  return replace_copy(a_proto, nodeToCopy, libNodeTo, a_lite);
+  return replace_copy(a_proto, nodeCopyTo, libNodeTo, a_lite);
 }
 
 pugi::xml_node HRSceneData::copy_node(pugi::xml_node a_node, bool a_lite)
@@ -431,10 +432,10 @@ pugi::xml_node HRSceneInst::copy_node(pugi::xml_node a_proto, bool a_lite)
   if (id == -1)
     return pugi::xml_node();
   
-  auto& nodeToCopy = g_objManager.scnInst[id].m_xmlNodeNext;
+  auto& nodeCopyTo = g_objManager.scnInst[id].m_xmlNodeNext;
   auto& libNodeTo  = g_objManager.scnData.m_sceneNodeChanges;
   
-  return replace_copy(a_proto, nodeToCopy, libNodeTo, a_lite);
+  return replace_copy(a_proto, nodeCopyTo, libNodeTo, a_lite);
 }
 
 pugi::xml_node HRRender::copy_node(pugi::xml_node a_proto, bool a_lite)
@@ -443,10 +444,10 @@ pugi::xml_node HRRender::copy_node(pugi::xml_node a_proto, bool a_lite)
   if (id == -1)
     return pugi::xml_node();
 
-  auto& nodeToCopy = g_objManager.renderSettings[id].m_xmlNodeNext;
+  auto& nodeCopyTo = g_objManager.renderSettings[id].m_xmlNodeNext;
   auto& libNodeTo  = g_objManager.scnData.m_settingsNodeChanges;
 
-  return replace_copy(a_proto, nodeToCopy, libNodeTo, a_lite);
+  return replace_copy(a_proto, nodeCopyTo, libNodeTo, a_lite);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -458,10 +459,10 @@ pugi::xml_node HRMesh::copy_node_back(pugi::xml_node a_proto)
   if (id == -1)
     return pugi::xml_node();
 
-  auto& nodeToCopy = g_objManager.scnData.meshes[id].m_xmlNode;
+  auto& nodeCopyTo = g_objManager.scnData.meshes[id].m_xmlNode;
   auto& libNodeTo  = g_objManager.scnData.m_geometryLib;
 
-  return replace_copy(a_proto, nodeToCopy, libNodeTo, false);
+  return replace_copy(a_proto, nodeCopyTo, libNodeTo, false);
 }
 
 pugi::xml_node HRLight::copy_node_back(pugi::xml_node a_proto)
@@ -470,10 +471,10 @@ pugi::xml_node HRLight::copy_node_back(pugi::xml_node a_proto)
   if (id == -1)
     return pugi::xml_node();
 
-  auto& nodeToCopy = g_objManager.scnData.lights[id].m_xmlNode;
+  auto& nodeCopyTo = g_objManager.scnData.lights[id].m_xmlNode;
   auto& libNodeTo  = g_objManager.scnData.m_lightsLib;
 
-  return replace_copy(a_proto, nodeToCopy, libNodeTo, false);
+  return replace_copy(a_proto, nodeCopyTo, libNodeTo, false);
 }
 
 pugi::xml_node HRMaterial::copy_node_back(pugi::xml_node a_proto)
@@ -482,10 +483,10 @@ pugi::xml_node HRMaterial::copy_node_back(pugi::xml_node a_proto)
   if (id == -1)
     return pugi::xml_node();
 
-  auto& nodeToCopy = g_objManager.scnData.materials[id].m_xmlNode;
+  auto& nodeCopyTo = g_objManager.scnData.materials[id].m_xmlNode;
   auto& libNodeTo  = g_objManager.scnData.m_materialsLib;
 
-  return replace_copy(a_proto, nodeToCopy, libNodeTo, false);
+  return replace_copy(a_proto, nodeCopyTo, libNodeTo, false);
 }
 
 pugi::xml_node HRCamera::copy_node_back(pugi::xml_node a_proto)
@@ -494,10 +495,10 @@ pugi::xml_node HRCamera::copy_node_back(pugi::xml_node a_proto)
   if (id == -1)
     return pugi::xml_node();
 
-  auto& nodeToCopy = g_objManager.scnData.cameras[id].m_xmlNode;
+  auto& nodeCopyTo = g_objManager.scnData.cameras[id].m_xmlNode;
   auto& libNodeTo  = g_objManager.scnData.m_cameraLib;
 
-  return replace_copy(a_proto, nodeToCopy, libNodeTo, false);
+  return replace_copy(a_proto, nodeCopyTo, libNodeTo, false);
 }
 
 pugi::xml_node HRTextureNode::copy_node_back(pugi::xml_node a_proto)
@@ -506,10 +507,10 @@ pugi::xml_node HRTextureNode::copy_node_back(pugi::xml_node a_proto)
   if (id == -1)
     return pugi::xml_node();
 
-  auto& nodeToCopy = g_objManager.scnData.textures[id].m_xmlNode;
+  auto& nodeCopyTo = g_objManager.scnData.textures[id].m_xmlNode;
   auto& libNodeTo  = g_objManager.scnData.m_texturesLib;
 
-  return replace_copy(a_proto, nodeToCopy, libNodeTo, false);
+  return replace_copy(a_proto, nodeCopyTo, libNodeTo, false);
 }
 
 pugi::xml_node HRSceneData::copy_node_back(pugi::xml_node a_node)
@@ -524,21 +525,21 @@ pugi::xml_node HRSceneInst::copy_node_back(pugi::xml_node a_proto)
   if (id == -1)
     return pugi::xml_node();
 
-  auto& nodeToCopy = g_objManager.scnInst[id].m_xmlNode;
+  auto& nodeCopyTo = g_objManager.scnInst[id].m_xmlNode;
   auto& libNodeTo = g_objManager.scnData.m_sceneNode;
 
-  return replace_copy(a_proto, nodeToCopy, libNodeTo, false);
+  return replace_copy(a_proto, nodeCopyTo, libNodeTo, false);
 }
 
 
-inline pugi::xml_node lite_copy_node_to(pugi::xml_node a_proto, pugi::xml_node libNodeTo, pugi::xml_node& nodeToCopy)
+inline pugi::xml_node lite_copy_node_to(pugi::xml_node a_proto, pugi::xml_node libNodeTo, pugi::xml_node& nodeCopyTo)
 {
   pugi::xml_node resNode;
 
-  if (nodeToCopy != nullptr)
+  if (nodeCopyTo != nullptr)
   {
-    resNode = libNodeTo.insert_copy_after(a_proto, nodeToCopy); //#TODO implement lite version of insert_copy_after
-    libNodeTo.remove_child(nodeToCopy);
+    resNode = libNodeTo.insert_copy_after(a_proto, nodeCopyTo); //#TODO implement lite version of insert_copy_after
+    libNodeTo.remove_child(nodeCopyTo);
   }
   else
     resNode = append_copy_lite(libNodeTo, a_proto);
@@ -563,8 +564,8 @@ pugi::xml_node HRSceneInst::append_instances_back(pugi::xml_node a_node)
   for (pugi::xml_node inst = a_node.first_child(); inst != nullptr; inst = inst.next_sibling())
   {
     int32_t id = inst.attribute(L"id").as_int();
-    pugi::xml_node& nodeToCopy = nodeById[id];
-    lite_copy_node_to(inst, sceneToCopy, nodeToCopy);
+    pugi::xml_node& nodeCopyTo = nodeById[id];
+    lite_copy_node_to(inst, sceneToCopy, nodeCopyTo);
   }
 
   return sceneToCopy; 
@@ -577,8 +578,8 @@ pugi::xml_node HRRender::copy_node_back(pugi::xml_node a_proto)
   if (id == -1)
     return pugi::xml_node();
 
-  auto& nodeToCopy = g_objManager.renderSettings[id].m_xmlNode;
+  auto& nodeCopyTo = g_objManager.renderSettings[id].m_xmlNode;
   auto& libNodeTo  = g_objManager.scnData.m_settingsNode;
 
-  return replace_copy(a_proto, nodeToCopy, libNodeTo, false);
+  return replace_copy(a_proto, nodeCopyTo, libNodeTo, false);
 }

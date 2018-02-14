@@ -372,10 +372,20 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int32_t a_stateId)
   //
   for (pugi::xml_node node = g_objManager.scnData.m_sceneNode.first_child(); node != nullptr; node = node.next_sibling())
   {
-    g_objManager.scnInst.push_back(HRSceneInst());
 
     HRSceneInstRef a_pScn;
-    a_pScn.id = HR_IDType(g_objManager.scnInst.size()-1);
+    a_pScn.id = HR_IDType(g_objManager.scnInst.size());
+
+    HRSceneInst scn;
+    scn.name = node.attribute(L"name").value();
+    scn.id = a_pScn.id;
+
+    g_objManager.scnInst.push_back(scn);
+
+    /*g_objManager.scnInst.push_back(HRSceneInst());
+
+    HRSceneInstRef a_pScn;
+    a_pScn.id = HR_IDType(g_objManager.scnInst.size()-1);*/
 
     for (pugi::xml_node nodeInst = node.first_child(); nodeInst != nullptr; nodeInst = nodeInst.next_sibling())
     {
@@ -386,7 +396,7 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int32_t a_stateId)
     }
     
     g_objManager.scnInst[a_pScn.id].driverDirtyFlag = true; // driver need to Update this scene
-    //g_objManager.scnInst[a_pScn.id].update(node);
+    g_objManager.scnInst[a_pScn.id].update_this(node);
   }
 
   // (9) load render settings
