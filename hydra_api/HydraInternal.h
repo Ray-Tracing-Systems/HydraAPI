@@ -17,7 +17,9 @@
 #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
 #include <experimental/filesystem>
 #include <cstring>
-#elif defined WIN32
+#endif
+
+#ifdef WIN32
 #include <filesystem>
 #endif
 
@@ -301,7 +303,7 @@ protected:
   uint64_t m_totalSizeAllocated;
 
 #ifdef WIN32
-  HANDLE m_fileHandle;
+  void* m_fileHandle;
 #else
   int m_fileDescriptor;
   std::string shmemName;

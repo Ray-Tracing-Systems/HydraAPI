@@ -22,11 +22,12 @@
 #include <string.h>
 #include <sstream>
 #include <fstream>
-#include <HydraObjectManager.h>
 
-#include "tests.h"
+#include "../hydra_api/HydraObjectManager.h"
 #include "../hydra_api/HydraXMLHelpers.h"
 #include "../hydra_api/HR_HDRImageTool.h"
+
+#include "tests.h"
 
 #pragma warning(disable:4996)
 using namespace TEST_UTILS;
