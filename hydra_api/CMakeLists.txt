@@ -19,6 +19,7 @@ set(SOURCE_FILES
         HydraAPI_Camera.cpp
         HydraAPI_FrameBuffer.cpp
         HydraAPI_Geom.cpp
+        HydraAPI_GBuffer.cpp
         HydraAPI_Light.cpp
         HydraAPI_LoadExistingLibrary.cpp
         HydraAPI_Material.cpp
