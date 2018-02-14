@@ -22,6 +22,7 @@
 #include <string.h>
 #include <sstream>
 #include <fstream>
+#include <HydraObjectManager.h>
 
 #include "tests.h"
 #include "../hydra_api/HydraXMLHelpers.h"
@@ -602,4 +603,85 @@ bool test1004_get_camera_by_name_and_edit()
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_1004/z_out.png");
 
   return check_images("test_1004", 1, 50.0f);
+}
+
+bool test1005_transform_all_instances()
+{
+  initGLIfNeeded();
+
+  hrSceneLibraryOpen(L"tests/test_1005", HR_OPEN_EXISTING);
+
+  /////////////////////////////////////////////////////////
+  HRRenderRef renderRef;
+  renderRef.id = 0;
+
+  HRSceneInstRef scnRef;
+  scnRef.id = 0;
+  /////////////////////////////////////////////////////////
+
+  auto pList = hrRenderGetDeviceList(renderRef);
+
+  while (pList != nullptr)
+  {
+    std::wcout << L"device id = " << pList->id << L", name = " << pList->name << L", driver = " << pList->driver << std::endl;
+    pList = pList->next;
+  }
+
+  hrRenderEnableDevice(renderRef, 0, true);
+
+  hrCommit(scnRef, renderRef);
+  hrRenderCommand(renderRef, L"pause");
+  std::this_thread::sleep_for(std::chrono::milliseconds(500)); //so render has some time to actually stop
+  
+
+  float matrix[16] = { 0.7071f, 0, -0.7071f, 0,
+                             0, 1,        0, 6,
+                       0.7071f, 0,  0.7071f, 0,
+                             0, 0,        0, 1 };
+
+
+  HRUtils::TransformAllInstances(scnRef, matrix);
+
+  hrFlush(scnRef, renderRef);
+
+  //hrCommit(scnRef, renderRef);
+  //hrRenderCommand(renderRef, L"resume");
+  bool firstUpdate = true;
+
+  glViewport(0, 0, 1024, 768);
+  std::vector<int32_t> image(1024 * 768);
+  while (true)
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+    HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
+
+    if (info.haveUpdateFB)
+    {
+      if(firstUpdate)
+      {
+        std::remove("tests/test_1005/change_00001.xml");
+        std::remove("tests/test_1005/statex_00002.xml");
+        firstUpdate = false;
+      }
+      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+
+      glDisable(GL_TEXTURE_2D);
+      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+
+      auto pres = std::cout.precision(2);
+      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout.precision(pres);
+
+      glfwSwapBuffers(g_window);
+      glfwPollEvents();
+    }
+
+    if (info.finalUpdate)
+      break;
+  }
+
+  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_1005/z_out.png");
+
+  return check_images("test_1005", 1, 50.0f);
 }

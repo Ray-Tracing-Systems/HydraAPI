@@ -1033,6 +1033,7 @@ namespace HRUtils
   */
   HRTextureNodeRef Cube2SphereLDR(HRTextureNodeRef a_cube[6]);
 
+  void TransformAllInstances(HRSceneInstRef a_pScn, float a_mat[16]);
 };
 
 
