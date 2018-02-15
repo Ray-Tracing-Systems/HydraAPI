@@ -26,6 +26,15 @@ Linux:
 5. Copy bin_ubuntu/hydra forder to your home folder to form '/home/hydra' or build and install HydraCore from sources; 
 6. use Cmake;
 
+Optionally, to build and use python bindings library (tested only under Linux):
+1. Clone pybind11 repo in hydra_api/hydra_api_py
+2. Build pybind11 with Cmake
+3. Build hydra bindings with Cmake (hydra_api/hydra_api_py)
+4. Import resulting library in your python project
+
+
+Some examples can be found in hydra_api/hydra_api_py/hydraPyTests.py
+
 # License and dependency
 
 Hydra API uses MIT licence itself, however it depends on the other software as follows (see doc/licence directory):
@@ -38,6 +47,7 @@ Hydra API uses MIT licence itself, however it depends on the other software as f
 * 07 - IESNA MIT-like licence (IESNA used in the form of sources)
 * 08 - glad MIT licence (glad is used in form of generated source code).
 * 09 - glfw BSD-like license (glfw is used in form of binaries only for demonstration purposes).
+* 10 - pybind11 BSD-style license (used in the form of sources) 
 
 Most of them are simple MIT-like-licences without any serious restrictions. 
 So in general there should be no problem to use HydraAPI in your open source or commertial projects. 
