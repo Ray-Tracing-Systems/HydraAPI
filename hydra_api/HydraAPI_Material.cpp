@@ -159,7 +159,7 @@ HAPI pugi::xml_node hrMaterialParamNode(HRMaterialRef a_matRef)
 }
 
 
-HAPI HRMaterialRef hrMaterialFindByName(const wchar_t *a_matName)
+HAPI HRMaterialRef hrFindMaterialByName(const wchar_t *a_matName)
 {
   HRMaterialRef material;
 

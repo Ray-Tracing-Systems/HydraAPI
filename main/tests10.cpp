@@ -282,7 +282,7 @@ bool test1002_get_material_by_name_and_edit()
   std::this_thread::sleep_for(std::chrono::milliseconds(500)); //so render has some time to actually stop
 
   std::wstring mat1(L"matRefl");
-  HRMaterialRef matRefl = hrMaterialFindByName(mat1.c_str());
+  HRMaterialRef matRefl = hrFindMaterialByName(mat1.c_str());
 
   if(matRefl.id != -1)
   {
@@ -301,7 +301,7 @@ bool test1002_get_material_by_name_and_edit()
   }
 
   std::wstring mat2(L"matGray");
-  HRMaterialRef matGray = hrMaterialFindByName(mat2.c_str());
+  HRMaterialRef matGray = hrFindMaterialByName(mat2.c_str());
 
   if(matGray.id != -1)
   {
@@ -315,7 +315,7 @@ bool test1002_get_material_by_name_and_edit()
   }
 
   std::wstring mat3(L"matSomething");
-  HRMaterialRef matSmth = hrMaterialFindByName(mat3.c_str());
+  HRMaterialRef matSmth = hrFindMaterialByName(mat3.c_str());
 
   if(matSmth.id != -1)
   {
@@ -402,7 +402,7 @@ bool test1003_get_light_by_name_and_edit()
   std::this_thread::sleep_for(std::chrono::milliseconds(500)); //so render has some time to actually stop
 
   std::wstring light1(L"sphere1");
-  auto lightRef1 = hrLightFindByName(light1.c_str());
+  auto lightRef1 = hrFindLightByName(light1.c_str());
 
   if(lightRef1.id != -1)
   {
@@ -429,7 +429,7 @@ bool test1003_get_light_by_name_and_edit()
   }
 
   std::wstring light2(L"sphere1");
-  auto lightRef2 = hrLightFindByName(light2.c_str());
+  auto lightRef2 = hrFindLightByName(light2.c_str());
 
   if(lightRef2.id != -1)
   {
@@ -447,7 +447,7 @@ bool test1003_get_light_by_name_and_edit()
   }
 
   std::wstring light3(L"lightDoesntExist");
-  auto lightRef3 = hrLightFindByName(light3.c_str());
+  auto lightRef3 = hrFindLightByName(light3.c_str());
 
   if(lightRef3.id != -1)
   {
@@ -537,7 +537,7 @@ bool test1004_get_camera_by_name_and_edit()
   std::this_thread::sleep_for(std::chrono::milliseconds(500)); //so render has some time to actually stop
 
   std::wstring cam1(L"my camera");
-  HRCameraRef camRef1 = hrCameraFindByName(cam1.c_str());
+  HRCameraRef camRef1 = hrFindCameraByName(cam1.c_str());
 
   if(camRef1.id != -1)
   {
@@ -550,7 +550,7 @@ bool test1004_get_camera_by_name_and_edit()
   }
 
   std::wstring cam2(L"my non-existent camera");
-  HRCameraRef camRef2 = hrCameraFindByName(cam2.c_str());
+  HRCameraRef camRef2 = hrFindCameraByName(cam2.c_str());
 
   if(camRef2.id != -1)
   {
@@ -636,12 +636,12 @@ bool test1005_transform_all_instances()
   
 
   float matrix[16] = { 0.7071f, 0, -0.7071f, 0,
-                             0, 1,        0, 6,
+                             0, 1,        0, 1,
                        0.7071f, 0,  0.7071f, 0,
                              0, 0,        0, 1 };
 
 
-  HRUtils::TransformAllInstances(scnRef, matrix);
+  HRUtils::TransformAllInstances(scnRef, matrix, false);
 
   hrFlush(scnRef, renderRef);
 
@@ -684,5 +684,86 @@ bool test1005_transform_all_instances()
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_1005/z_out.png");
 
-  return check_images("test_1005", 1, 50.0f);
+  return check_images("test_1005", 1, 100.0f);
+}
+
+bool test1006_transform_all_instances_origin()
+{
+  initGLIfNeeded();
+
+  hrSceneLibraryOpen(L"tests/test_1006", HR_OPEN_EXISTING);
+
+  /////////////////////////////////////////////////////////
+  HRRenderRef renderRef;
+  renderRef.id = 0;
+
+  HRSceneInstRef scnRef;
+  scnRef.id = 0;
+  /////////////////////////////////////////////////////////
+
+  auto pList = hrRenderGetDeviceList(renderRef);
+
+  while (pList != nullptr)
+  {
+    std::wcout << L"device id = " << pList->id << L", name = " << pList->name << L", driver = " << pList->driver << std::endl;
+    pList = pList->next;
+  }
+
+  hrRenderEnableDevice(renderRef, 0, true);
+
+  hrCommit(scnRef, renderRef);
+  hrRenderCommand(renderRef, L"pause");
+  std::this_thread::sleep_for(std::chrono::milliseconds(500)); //so render has some time to actually stop
+
+
+  float matrix[16] = { 0.7071f, 0, -0.7071f, 0,
+                       0, 1,        0,       0,
+                       0.7071f, 0,  0.7071f, 0,
+                       0, 0,        0,       1 };
+
+
+  HRUtils::TransformAllInstances(scnRef, matrix);
+
+  hrFlush(scnRef, renderRef);
+
+  //hrCommit(scnRef, renderRef);
+  //hrRenderCommand(renderRef, L"resume");
+  bool firstUpdate = true;
+
+  glViewport(0, 0, 1024, 768);
+  std::vector<int32_t> image(1024 * 768);
+  while (true)
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+    HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
+
+    if (info.haveUpdateFB)
+    {
+      if(firstUpdate)
+      {
+       // std::remove("tests/test_1006/change_00001.xml");
+       // std::remove("tests/test_1006/statex_00002.xml");
+        firstUpdate = false;
+      }
+      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+
+      glDisable(GL_TEXTURE_2D);
+      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+
+      auto pres = std::cout.precision(2);
+      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout.precision(pres);
+
+      glfwSwapBuffers(g_window);
+      glfwPollEvents();
+    }
+
+    if (info.finalUpdate)
+      break;
+  }
+
+  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_1006/z_out.png");
+
+  return check_images("test_1006", 1, 100.0f);
 }

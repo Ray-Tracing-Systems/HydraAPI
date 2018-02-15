@@ -934,7 +934,7 @@ HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, const int indexNum)
 }
 
 
-void HRUtils::TransformAllInstances(HRSceneInstRef a_pScn, float a_mat[16])
+void HRUtils::TransformAllInstances(HRSceneInstRef a_pScn, float a_mat[16], bool origin)
 {
   HRSceneInst* pScn = g_objManager.PtrById(a_pScn);
   if (pScn == nullptr)
@@ -967,17 +967,24 @@ void HRUtils::TransformAllInstances(HRSceneInstRef a_pScn, float a_mat[16])
 
   for(auto mesh : backupListMeshes)
   {
-    HRMeshRef tmp;
-    tmp.id = mesh.meshId;
-    float currentMatrix[16];
-    memcpy(currentMatrix, mesh.m, 16 * sizeof(float));
+    if(mesh.lightId < 0)
+    {
+      HRMeshRef tmp;
+      tmp.id = mesh.meshId;
+      float currentMatrix[16];
+      memcpy(currentMatrix, mesh.m, 16 * sizeof(float));
 
-    float4x4 m1(currentMatrix);
-    float4x4 m2(a_mat);
+      float4x4 m1(currentMatrix);
+      float4x4 m2(a_mat);
+      float4x4 mRes;
 
-    float4x4 mRes = mul(m2, m1);
+      if (origin)
+        mRes = mul(m1, m2);
+      else
+        mRes = mul(m2, m1);
 
-    hrMeshInstance(a_pScn, tmp, mRes.L());
+      hrMeshInstance(a_pScn, tmp, mRes.L());
+    }
   }
 
   hrSceneClose(a_pScn);

@@ -765,7 +765,7 @@ void HR_UpdateLightsGeometryAndMaterial(pugi::xml_node a_lightLibChanges, pugi::
 }
 
 
-HAPI HRLightRef hrLightFindByName(const wchar_t *a_lightName)
+HAPI HRLightRef hrFindLightByName(const wchar_t *a_lightName)
 {
   HRLightRef light;
 

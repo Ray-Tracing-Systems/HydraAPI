@@ -329,6 +329,7 @@ bool test1002_get_material_by_name_and_edit();
 bool test1003_get_light_by_name_and_edit();
 bool test1004_get_camera_by_name_and_edit();
 bool test1005_transform_all_instances();
+bool test1006_transform_all_instances_origin();
 
 
 

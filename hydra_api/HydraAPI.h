@@ -1033,7 +1033,7 @@ namespace HRUtils
   */
   HRTextureNodeRef Cube2SphereLDR(HRTextureNodeRef a_cube[6]);
 
-  void TransformAllInstances(HRSceneInstRef a_pScn, float a_mat[16]);
+  void TransformAllInstances(HRSceneInstRef a_pScn, float a_mat[16], bool origin = true);
 };
 
 
@@ -1045,7 +1045,7 @@ namespace HRUtils
  If material with name = a_matName does not exist, HRMaterialRef with id = -1 is returned
 
 */
-HAPI HRMaterialRef hrMaterialFindByName(const wchar_t *a_matName);
+HAPI HRMaterialRef hrFindMaterialByName(const wchar_t *a_matName);
 
 
 /**
@@ -1056,7 +1056,7 @@ HAPI HRMaterialRef hrMaterialFindByName(const wchar_t *a_matName);
  If light with name = a_lightName does not exist, HRLightRef with id = -1 is returned
 
 */
-HAPI HRLightRef hrLightFindByName(const wchar_t *a_lightName);
+HAPI HRLightRef hrFindLightByName(const wchar_t *a_lightName);
 
 /**
 \brief get HRCameraRef by name from the library.
@@ -1066,4 +1066,4 @@ HAPI HRLightRef hrLightFindByName(const wchar_t *a_lightName);
  If camera with name = a_cameraName does not exist, HRCameraRef with id = -1 is returned
 
 */
-HAPI HRCameraRef hrCameraFindByName(const wchar_t *a_cameraName);
+HAPI HRCameraRef hrFindCameraByName(const wchar_t *a_cameraName);

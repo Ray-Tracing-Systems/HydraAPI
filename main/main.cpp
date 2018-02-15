@@ -95,15 +95,18 @@ int main(int argc, const char** argv)
     //test42_load_library_basic();
     //test1000_loadlibrary_and_edit();
     //test1001_loadlibrary_and_add_textures();
+    //test1002_get_material_by_name_and_edit();
+    //test1006_transform_all_instances_origin();
+    test1005_transform_all_instances();
 
-    std::cout << test39_mesh_from_vsgf() << std::endl;
+    //std::cout << test39_mesh_from_vsgf() << std::endl;
     //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
     //std::cout << test77_save_gbuffer_layers() << std::endl;
     //std::cout << test59_cornell_water_mlt() << std::endl;
     //std::cout << test70_area_lights16() << std::endl;
 
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
-    //GEO_TESTS::test_004_dof();
+    //GEO_TESTS::test_002_mesh_from_vsgf();
     //MTL_TESTS::test_119_opacity_texture();
     //MTL_TESTS::test_141_opacity_smooth();
     //LGHT_TESTS::test_202_sky_color();

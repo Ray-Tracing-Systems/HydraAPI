@@ -378,6 +378,7 @@ namespace GEO_TESTS
 
     hrMeshInstance(scnRef, lucyRef, &matrixT[0][0]);
 
+
     ///////////
 
     mat4x4_identity(mTranslate);

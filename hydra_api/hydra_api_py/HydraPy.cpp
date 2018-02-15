@@ -137,6 +137,16 @@ void WriteMatrix4x4Py(pugi::xml_node a_node, const wchar_t* a_attrib_name, py::a
   HydraXMLHelpers::WriteMatrix4x4(a_node, a_attrib_name, mat.mutable_data(0));
 }
 
+
+void TransformAllInstancesPy(HRSceneInstRef a_pScn, py::array_t<float> &a_mat, bool origin = true)
+{
+  auto mat = a_mat.mutable_unchecked<1>();
+
+  HRUtils::TransformAllInstances(a_pScn,  mat.mutable_data(0), origin);
+}
+
+
+
 PYBIND11_MODULE(hydraPy, m)
 {
 
@@ -246,18 +256,18 @@ PYBIND11_MODULE(hydraPy, m)
   m.def("hrMaterialOpen", &hrMaterialOpen);
   m.def("hrMaterialParamNode", &hrMaterialParamNode);
   m.def("hrMaterialClose", &hrMaterialClose);
-  m.def("hrMaterialFindByName", &hrMaterialFindByName);
+  m.def("hrFindMaterialByName", &hrFindMaterialByName);
   //m.def("hrMaterialCreateBRDFLeaf", &hrMaterialCreateBRDFLeaf);
   m.def("hrLightCreate", &hrLightCreate);
   m.def("hrLightOpen", &hrLightOpen);
   m.def("hrLightClose", &hrLightClose);
   m.def("hrLightParamNode", &hrLightParamNode);
-  m.def("hrLightFindByName", &hrLightFindByName);
+  m.def("hrFindLightByName", &hrFindLightByName);
   m.def("hrCameraCreate", &hrCameraCreate);
   m.def("hrCameraOpen", &hrCameraOpen);
   m.def("hrCameraClose", &hrCameraClose);
   m.def("hrCameraParamNode", &hrCameraParamNode);
-  m.def("hrCameraFindByName", &hrCameraFindByName);
+  m.def("hrFindCameraByName", &hrFindCameraByName);
   m.def("hrMeshCreate", &hrMeshCreate);
   m.def("hrMeshCreateFromFileDL", &hrMeshCreateFromFileDL);
   m.def("hrMeshOpen", &hrMeshOpenPy);
@@ -303,6 +313,8 @@ PYBIND11_MODULE(hydraPy, m)
   m.def("hrRenderGetFrameBufferLDR1i", &hrRenderGetFrameBufferLDR1iNumPy);
   m.def("hrRenderGetFrameBufferLDR1i", &hrRenderGetFrameBufferLDR1i);
   m.def("hrRenderSaveFrameBufferLDR", &hrRenderSaveFrameBufferLDR);
+  m.def("hrRenderSaveGBufferLayerLDR", &hrRenderSaveGBufferLayerLDR, py::arg("a_pRender"), py::arg("a_outFileName"), py::arg("a_layerName"),
+        py::arg("a_palette") = (const int*)nullptr, py::arg("a_paletteSize") = 0);
   m.def("hrRenderSaveFrameBufferHDR", &hrRenderSaveFrameBufferHDR);
   m.def("hrRenderGetGBufferLine", &hrRenderGetGBufferLine);
   m.def("hrRenderCommand", &hrRenderCommand);
@@ -310,6 +322,7 @@ PYBIND11_MODULE(hydraPy, m)
   m.def("hrCommit", &hrCommit, py::arg("a_pScn") = HRSceneInstRef(), py::arg("a_pRender") = HRRenderRef(),  py::arg("a_pCam") = HRCameraRef());
   m.def("hrFlush", &hrFlush, py::arg("a_pScn") = HRSceneInstRef(), py::arg("a_pRender") = HRRenderRef(),  py::arg("a_pCam") = HRCameraRef());
   m.def("WriteMatrix4x4", &WriteMatrix4x4Py, py::arg("a_node"), py::arg("a_attrib_name"), py::arg("a_mat").noconvert());
+  m.def("TransformAllInstances", &TransformAllInstancesPy, py::arg("a_pScn"), py::arg("a_mat").noconvert(), py::arg("origin") = true);
 
   py::class_<pugi::xml_node>(m, "xml_node")
           .def("force_child", &pugi::xml_node::force_child)
