@@ -854,7 +854,7 @@ void EstimateMemHungryLights(const ChangeList& a_objList, bool* pIsHDR, int* pHu
   }
 
   (*pHungryLightsNumber) = hungryLightNum;
-  (*pEnvSize)            = envMemAmount;
+  (*pEnvSize)            = int(envMemAmount);
 }
 
 

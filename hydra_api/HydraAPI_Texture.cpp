@@ -66,7 +66,7 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFile(const wchar_t* a_fileName, int w
 
   HRTextureNode texRes;
   texRes.name = std::wstring(a_fileName);
-  texRes.id   = g_objManager.scnData.textures.size();
+  texRes.id   = int32_t(g_objManager.scnData.textures.size());
   g_objManager.scnData.textures.push_back(texRes);
 
   HRTextureNodeRef ref;
@@ -164,7 +164,7 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, int
 
   HRTextureNode texRes;
   texRes.name = std::wstring(a_fileName);
-  texRes.id   = g_objManager.scnData.textures.size();
+  texRes.id   = int32_t(g_objManager.scnData.textures.size());
   g_objManager.scnData.textures.push_back(texRes);
 
   HRTextureNodeRef ref;
@@ -623,7 +623,7 @@ HAPI HRTextureNodeRef hrTextureCreateAdvanced(const wchar_t* a_texType, const wc
 
 	HRTextureNode texRes;
 	texRes.name = std::wstring(a_objName);
-	texRes.id = g_objManager.scnData.textures.size();
+	texRes.id   = int32_t(g_objManager.scnData.textures.size());
 	g_objManager.scnData.textures.push_back(texRes);
 
 	HRTextureNodeRef ref;

@@ -1160,9 +1160,7 @@ bool test66_fast_render_no_final_update()
   hrRenderOpen(renderRef, HR_OPEN_EXISTING);
   {
     auto node = hrRenderParamNode(renderRef);
-    node.child(L"pt_error").text() = 10.0f; // 1.5%
-    node.child(L"minRaysPerPixel").text() = L"16";    // pu5t lpow quality params, important to get the bug!
-    node.child(L"maxRaysPerPixel").text() = L"16";    // pu5t lpow quality params, important to get the bug!
+    node.child(L"maxRaysPerPixel").text() = L"64";    // pu5t lpow quality params, important to get the bug!
   }
   hrRenderClose(renderRef);
 
@@ -1277,9 +1275,8 @@ bool test66_fast_render_no_final_update()
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_66/z_out.png");
 
-  return check_images("test_66");
-
-  return true;
+  return check_images("test_66", 1, 40.0f);
+  //return true;
 }
 
 bool test67_fast_empty_scene()

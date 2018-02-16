@@ -166,7 +166,7 @@ bool SharedAccumImageWin32::Create(int a_width, int a_height, int a_depth, const
       intptr = reinterpret_cast<std::uintptr_t>(pData);
     };
 
-    pHeader->imageDataOffset = (pData - m_memory);
+    pHeader->imageDataOffset = int32_t(pData - m_memory);
     //
     // \\
 

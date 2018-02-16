@@ -607,6 +607,15 @@ HRRenderUpdateInfo RD_HydraConnection::HaveUpdateNow(int a_maxRaysPerPixel)
   result.haveUpdateFB  = false;
   result.haveUpdateMSG = false;
 
+  if (m_instancesNum == 0) // #TODO: Put error message here!
+  {
+    result.finalUpdate   = true;
+    result.progress      = 100.0f;
+    result.haveUpdateFB  = true;
+    result.haveUpdateMSG = false;  
+    return result;
+  }
+
   if (m_pSharedImage == nullptr)
     return result;
   
