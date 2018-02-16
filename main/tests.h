@@ -148,10 +148,10 @@ bool test65_several_changes_light_rect();
 bool test66_fast_render_no_final_update();
 bool test67_fast_empty_scene();
 bool test68_scene_library_file_info();
-bool test69_pause_and_resume();
+bool test69_pause_and_resume();                      //#TODO: implement image save an load;
 bool test70_area_lights16();
 bool test71_out_of_memory();
-bool test72_load_library_sigle_teapot_with_opacity();
+bool test72_load_library_single_teapot_with_opacity();
 bool test73_big_resolution();
 bool test74_frame_buffer_line();
 bool test75_repeated_render();
@@ -341,7 +341,7 @@ void run_all_lgt_tests(int a_start = 0);
 void run_all_ipp_tests(int a_start = 0);
 void terminate_opengl();
 
-static const int CURR_RENDER_DEVICE = 0;
+static const int CURR_RENDER_DEVICE = 1;
 
 //void image_p_sandbox();
 

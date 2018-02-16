@@ -2371,6 +2371,7 @@ bool test69_pause_and_resume()
   
   std::cout << "resume" << std::endl;
   
+  hrCommit(scnRef, renderRef);
   hrRenderCommand(renderRef, L"resume z_image.bin"); // resume here
 
   while (true)
@@ -2708,21 +2709,17 @@ bool test70_area_lights16()
   {
     pugi::xml_node node = hrRenderParamNode(renderRef);
 
-    node.append_child(L"width").text() = L"1024";
-    node.append_child(L"height").text() = L"768";
+    node.append_child(L"width").text()  = 512;
+    node.append_child(L"height").text() = 512;
 
-    node.append_child(L"method_primary").text() = L"pathtracing";
+    node.append_child(L"method_primary").text()   = L"pathtracing";
     node.append_child(L"method_secondary").text() = L"pathtracing";
-    node.append_child(L"method_tertiary").text() = L"pathtracing";
-    node.append_child(L"method_caustic").text() = L"pathtracing";
-    node.append_child(L"shadows").text() = L"1";
+    node.append_child(L"method_tertiary").text()  = L"pathtracing";
+    node.append_child(L"method_caustic").text()   = L"pathtracing";
 
-    node.append_child(L"trace_depth").text() = L"6";
+    node.append_child(L"trace_depth").text()      = L"6";
     node.append_child(L"diff_trace_depth").text() = L"3";
-
-    node.append_child(L"pt_error").text() = L"1";
-    node.append_child(L"minRaysPerPixel").text() = L"256";
-    node.append_child(L"maxRaysPerPixel").text() = L"4096";
+    node.append_child(L"maxRaysPerPixel").text()  = L"4096";
   }
   hrRenderClose(renderRef);
 
@@ -2780,8 +2777,8 @@ bool test70_area_lights16()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
+  glViewport(0, 0, 512, 512);
+  std::vector<int32_t> image(512 * 512);
 
   while (true)
   {
@@ -2791,10 +2788,10 @@ bool test70_area_lights16()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
       glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
@@ -2810,7 +2807,7 @@ bool test70_area_lights16()
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_70/z_out.png");
 
-  return check_images("test_70", 1, 50.0f);
+  return check_images("test_70", 1, 25.0f);
 }
 
 
@@ -2869,7 +2866,7 @@ bool test71_out_of_memory()
   return (bigTex.id == -1);
 }
 
-bool test72_load_library_sigle_teapot_with_opacity()
+bool test72_load_library_single_teapot_with_opacity()
 {
   initGLIfNeeded();
 
@@ -2894,6 +2891,7 @@ bool test72_load_library_sigle_teapot_with_opacity()
   hrRenderEnableDevice(renderRef, 1, true);
 
   hrCommit(scnRef, renderRef);
+  hrRenderCommand(renderRef, L"start"); 
 
   glViewport(0, 0, 512, 512);
   std::vector<int32_t> image(512 * 512);
@@ -3618,7 +3616,7 @@ bool test74_frame_buffer_line()
   {
     pugi::xml_node node = hrRenderParamNode(renderRef);
 
-    node.append_child(L"width").text() = L"1024";
+    node.append_child(L"width").text()  = L"1024";
     node.append_child(L"height").text() = L"768";
 
     node.append_child(L"method_primary").text() = L"pathtracing";
@@ -3725,7 +3723,7 @@ bool test74_frame_buffer_line()
   HydraRender::SaveImageToFile(L"tests_images/test_74/z_out.png", 1024, 768, (const unsigned*)&image[0]);
   HydraRender::SaveImageToFile(L"tests_images/test_74/z_out2.png", hdrImage);                             // it save to ldr image !!!
 
-  return check_images("test_74", 2, 20.0f); // #TODO: add check for HDR image
+  return check_images("test_74", 2, 20.0f); 
 }
 
 bool test75_repeated_render()
@@ -4029,8 +4027,8 @@ bool test75_repeated_render()
   {
     pugi::xml_node node = hrRenderParamNode(renderRef);
 
-    node.append_child(L"width").text() = L"1024";
-    node.append_child(L"height").text() = L"768";
+    node.append_child(L"width").text()  = 512;
+    node.append_child(L"height").text() = 512;
 
     node.append_child(L"method_primary").text() = L"pathtracing";
     node.append_child(L"method_secondary").text() = L"pathtracing";
@@ -4096,13 +4094,13 @@ bool test75_repeated_render()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
+  glViewport(0, 0, 512, 512);
+  std::vector<int32_t> image(512 * 512);
 
-  HydraRender::HDRImage4f hdrImage(1024, 768);
+  HydraRender::HDRImage4f hdrImage(512, 512);
 
   float* data = hdrImage.data();
-  memset(data, 0, 1024 * 768 * sizeof(float) * 4);
+  memset(data, 0, 512 * 512 * sizeof(float) * 4);
 
   while (true)
   {
@@ -4112,14 +4110,14 @@ bool test75_repeated_render()
 
     if (info.haveUpdateFB)
     {
-      for (int y = 0; y < 768; y++)
+      for (int y = 0; y < 512; y++)
       {
-        hrRenderGetFrameBufferLineLDR1i(renderRef, 0, 1024, y, &image[y * 1024]);
-        hrRenderGetFrameBufferLineHDR4f(renderRef, 0, 1024, y, &data[(y * 1024) * 4]);
+        hrRenderGetFrameBufferLineLDR1i(renderRef, 0, 512, y, &image[y * 512]);
+        hrRenderGetFrameBufferLineHDR4f(renderRef, 0, 512, y, &data[(y * 512) * 4]);
       }
 
       glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
@@ -4136,7 +4134,7 @@ bool test75_repeated_render()
   HydraRender::SaveImageToFile(L"tests_images/test_75/z_out.png", hdrImage);
 
   hrFlush(scnRef, renderRef);
-  memset(data, 0, 1024 * 768 * sizeof(float) * 4);
+  memset(data, 0, 512 * 512 * sizeof(float) * 4);
 
   while (true)
   {
@@ -4146,14 +4144,14 @@ bool test75_repeated_render()
 
     if (info.haveUpdateFB)
     {
-      for (int y = 0; y < 768; y++)
+      for (int y = 0; y < 512; y++)
       {
-        hrRenderGetFrameBufferLineLDR1i(renderRef, 0, 1024, y, &image[y * 1024]);
-        hrRenderGetFrameBufferLineHDR4f(renderRef, 0, 1024, y, &data[(y * 1024) * 4]);
+        hrRenderGetFrameBufferLineLDR1i(renderRef, 0, 512, y, &image[y * 512]);
+        hrRenderGetFrameBufferLineHDR4f(renderRef, 0, 512, y, &data[(y * 512) * 4]);
       }
 
       glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
