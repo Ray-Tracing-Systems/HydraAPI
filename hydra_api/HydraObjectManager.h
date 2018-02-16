@@ -393,7 +393,7 @@ struct HRSceneData : public HRObject<IHRSceneData>
     m_materialToMeshDependency.clear();
   }
 
-  size_t m_commitId;
+  int32_t m_commitId;
   std::wstring m_path;
 };
 

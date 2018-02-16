@@ -98,6 +98,7 @@ int main(int argc, const char** argv)
     //test1002_get_material_by_name_and_edit();
     //test1006_transform_all_instances_origin();
     test1005_transform_all_instances();
+    //test1007_merge_library();
 
     //std::cout << test39_mesh_from_vsgf() << std::endl;
     //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;

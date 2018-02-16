@@ -856,7 +856,7 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
   }
 
   g_objManager.CommitChanges(g_objManager.scnData.m_xmlDocChanges, g_objManager.scnData.m_xmlDoc);   // copy nodes from m_xmlDocChanges to m_xmlDoc
-  g_objManager.scnData.m_commitId++;
+  //g_objManager.scnData.m_commitId++;
 
   size_t chunks = g_objManager.scnData.m_vbCache.size();
   force_attrib(g_objManager.scnData.m_geometryLib, L"total_chunks").set_value(chunks);
@@ -890,6 +890,7 @@ HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pC
   g_objManager.m_tempPathToChangeFile = cngPath; // postpone g_objManager.scnData.m_xmlDocChanges.save_file(cngPath.c_str(), L"  ");
 
   hrCommit(a_pScn, a_pRender, a_pCam);
+  g_objManager.scnData.m_commitId++;
 
   g_objManager.scnData.m_xmlDoc.save_file(newPath.c_str(), L"  ");
   g_objManager.scnData.m_vbCache.FlushToDisc();
@@ -983,4 +984,13 @@ HRLightGroupExt& HRLightGroupExt::operator=(HRLightGroupExt&& a_in)
   a_in.matrix     = nullptr;
 
   return *this;
+}
+
+
+void HRUtils::MergeLibraryIntoLibrary(const wchar_t* a_libpath) //WIP
+{
+  if(a_libpath == nullptr)
+    return;
+
+
 }
