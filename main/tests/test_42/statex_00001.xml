@@ -143,7 +143,7 @@
     <trace_depth>5</trace_depth>
     <diff_trace_depth>3</diff_trace_depth>
     <maxRaysPerPixel>1024</maxRaysPerPixel>
-    <evalgbuffer>1</evalgbuffer>
+    <evalgbuffer>0</evalgbuffer>
   </render_settings>
 </render_lib>
 <scenes>

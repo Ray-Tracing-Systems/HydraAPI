@@ -92,12 +92,12 @@ int main(int argc, const char** argv)
     //run_all_ipp_tests();
     //run_all_api_tests();
 
-    //test42_load_library_basic();
+    test42_load_library_basic();
     //test1000_loadlibrary_and_edit();
     //test1001_loadlibrary_and_add_textures();
     //test1002_get_material_by_name_and_edit();
     //test1006_transform_all_instances_origin();
-    test1005_transform_all_instances();
+    //test1005_transform_all_instances();
 
     //std::cout << test39_mesh_from_vsgf() << std::endl;
     //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
