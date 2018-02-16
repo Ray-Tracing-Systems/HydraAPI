@@ -131,12 +131,13 @@ void ReadInfoFromVSGFHeaderToXML(const wchar_t* a_fileName, pugi::xml_node nodeX
 
 HAPI HRMeshRef hrMeshCreate(const wchar_t* a_objectName)
 {
+  HRMeshRef ref;
+  ref.id = HR_IDType(g_objManager.scnData.meshes.size());
+
   HRMesh mesh;
   mesh.name = std::wstring(a_objectName);
+  mesh.id = ref.id;
   g_objManager.scnData.meshes.push_back(mesh);
-
-  HRMeshRef ref;
-  ref.id = HR_IDType(g_objManager.scnData.meshes.size() - 1);
 
   pugi::xml_node nodeXml = g_objManager.geom_lib_append_child();
 

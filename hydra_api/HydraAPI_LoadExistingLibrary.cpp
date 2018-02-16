@@ -413,3 +413,175 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int32_t a_stateId)
 
   return 0;
 }
+
+void fixTextureIds(pugi::xml_node a_node, int increment)
+{
+  if (std::wstring(a_node.name()) == L"texture")
+  {
+    int32_t id = a_node.attribute(L"id").as_int();
+    a_node.attribute(L"id").set_value(id + increment);
+  }
+  else
+  {
+    for (pugi::xml_node child = a_node.first_child(); child != nullptr; child = child.next_sibling())
+      fixTextureIds(child, increment);
+  }
+}
+
+
+HRMaterialRef _hrMaterialMergeFromNode(pugi::xml_node a_node, int32_t numTexturesPreMerge, int32_t numMaterialsPreMerge)
+{
+  const wchar_t* a_objectName = a_node.attribute(L"name").as_string();
+
+  std::wstring matType = a_node.attribute(L"type").as_string();
+  int notBlend = matType.compare(std::wstring(L"hydra_blend"));
+  HRMaterialRef ref;
+
+  if(notBlend)
+  {
+    ref = hrMaterialCreate(a_objectName);
+
+    hrMaterialOpen(ref, HR_WRITE_DISCARD);
+    {
+      auto matNode = hrMaterialParamNode(ref);
+
+      for (pugi::xml_node node = a_node.first_child(); node != nullptr; node = node.next_sibling())
+      {
+        matNode.append_copy(node);
+      }
+      fixTextureIds(matNode, numTexturesPreMerge);
+    }
+    hrMaterialClose(ref);
+  }
+  else
+  {
+    HRMaterialRef matA;
+    HRMaterialRef matB;
+
+    matA.id = a_node.attribute(L"node_top").as_int() + numMaterialsPreMerge;
+    matB.id = a_node.attribute(L"node_bottom").as_int() + numMaterialsPreMerge;
+
+    ref = hrMaterialCreateBlend(a_objectName, matA, matB);
+
+
+    hrMaterialOpen(ref, HR_WRITE_DISCARD);
+    {
+      auto matNode = hrMaterialParamNode(ref);
+
+      for (pugi::xml_node node = a_node.first_child(); node != nullptr; node = node.next_sibling())
+      {
+        matNode.append_copy(node);
+      }
+      fixTextureIds(matNode, numTexturesPreMerge);
+
+    }
+    hrMaterialClose(ref);
+  }
+
+  return ref;
+}
+
+HRTextureNodeRef _hrTexture2DMergeFromNode(pugi::xml_node a_node, std::wstring a_libPath)
+{
+  const std::wstring dl       = a_node.attribute(L"dl").as_string();
+  const std::wstring loc      = a_node.attribute(L"loc").as_string();
+  const std::wstring a_objectName = a_node.attribute(L"name").as_string();
+
+  std::wstring a_fileName;
+  if(dl == L"1")
+  {
+    a_fileName = a_node.attribute(L"path").as_string();
+  }
+  else
+  {
+    std::wstringstream ss;
+    ss << a_libPath << L"/" << loc;
+    a_fileName = ss.str();
+  }
+
+  HRTextureNodeRef ref = hrTexture2DCreateFromFile(a_fileName.c_str());
+
+  return ref;
+}
+
+
+HRMeshRef _hrMeshMergeFromNode(pugi::xml_node a_node, std::wstring a_libPath, int32_t numMaterialsPreMerge)
+{
+  const std::wstring dl       = a_node.attribute(L"dl").as_string();
+  const std::wstring loc      = a_node.attribute(L"loc").as_string();
+  const std::wstring a_objectName = a_node.attribute(L"name").as_string();
+
+  std::wstring a_fileName;
+  if(dl == L"1")
+  {
+    a_fileName = a_node.attribute(L"path").as_string();
+  }
+  else
+  {
+    std::wstringstream ss;
+    ss << a_libPath << L"/" << loc;
+    a_fileName = ss.str();
+  }
+
+  HRMeshRef ref = hrMeshCreateFromFileDL(a_fileName.c_str());
+
+  hrMeshOpen(ref, HR_TRIANGLE_IND3, HR_OPEN_EXISTING);
+  {
+    auto meshInfo = hrMeshGetInfo(ref);
+
+    const int triNum = meshInfo.indicesNum / 3;
+
+    auto matindices = (int32_t*)hrMeshGetPrimitiveAttribPointer(ref, L"mind");
+
+    for(auto i = 0; i < triNum; ++i)
+      matindices[i] += numMaterialsPreMerge;
+  }
+  hrMeshClose(ref);
+
+  return ref;
+}
+
+
+void HRUtils::MergeLibraryIntoLibrary(const wchar_t* a_libPath) //WIP
+{
+
+  std::wstring fileName;
+  int stateId = 0;
+
+  _hrFindTargetOrLastState(a_libPath, -1,
+                           fileName, stateId);
+
+  if(fileName.empty())
+  {
+    HrError(L"MergeLibraryIntoLibrary, can't find existing library at: ", a_libPath);
+    return;
+  }
+
+  pugi::xml_document docToMerge;
+
+  auto loadResult = docToMerge.load_file(fileName.c_str());
+
+  if (!loadResult)
+  {
+    HrError(L"MergeLibraryIntoLibrary, pugixml load: ", loadResult.description());
+    return;
+  }
+
+  auto numTexturesPreMerge  = g_objManager.scnData.textures.size();
+  auto numMaterialsPreMerge = g_objManager.scnData.materials.size();
+
+  for (pugi::xml_node node = docToMerge.child(L"textures_lib").first_child(); node != nullptr; node = node.next_sibling())
+    _hrTexture2DMergeFromNode(node, std::wstring(a_libPath));
+
+  for (pugi::xml_node node = docToMerge.child(L"materials_lib").first_child(); node != nullptr; node = node.next_sibling())
+    _hrMaterialMergeFromNode(node, numTexturesPreMerge, numMaterialsPreMerge);
+
+  for (pugi::xml_node node = docToMerge.child(L"geometry_lib").first_child(); node != nullptr; node = node.next_sibling())
+    _hrMeshMergeFromNode(node, std::wstring(a_libPath), numMaterialsPreMerge);
+
+  //for (pugi::xml_node node = docToMerge.child(L"lights_lib").first_child(); node != nullptr; node = node.next_sibling())
+ //   _hrLightCreateFromNode(node);
+
+
+
+}

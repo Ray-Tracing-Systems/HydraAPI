@@ -43,6 +43,7 @@ HAPI HRLightRef hrLightCreate(const wchar_t* a_objectName)
 
   HRLight light;
   light.name = std::wstring(a_objectName);
+  light.id = ref.id;
   g_objManager.scnData.lights.push_back(light);
 
 

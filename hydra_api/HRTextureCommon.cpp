@@ -23,7 +23,7 @@
 
 struct BitmapLDRNode : public IHRTextureNode
 {
-  BitmapLDRNode(uint32_t w, uint32_t h, size_t a_sz, size_t a_chId) : m_width(w), m_height(h), m_sizeInBytes(a_sz), m_chunkId(a_chId), data(nullptr) {}
+  BitmapLDRNode(uint32_t w, uint32_t h, size_t a_sz, size_t a_chId) : m_width(w), m_height(h), m_sizeInBytes(a_sz), m_chunkId(a_chId) {}
 
   uint64_t chunkId() const override { return uint64_t(m_chunkId); }
   uint32_t width()   const override { return m_width; }
@@ -34,8 +34,6 @@ struct BitmapLDRNode : public IHRTextureNode
   uint32_t m_height;
   size_t   m_sizeInBytes;
   size_t   m_chunkId;
-
-  uint32_t* data;
 };
 
 struct BitmapHDRNode : public IHRTextureNode
@@ -231,7 +229,7 @@ bool HRUtils_GetImageDataFromFreeImageObject(FIBITMAP* converted, char* data)
   return true;
 }
 
-std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTexture2DFromFile(HRTextureNode* pSysObj, const std::wstring& a_fileName)
+std::shared_ptr<IHRTextureNode> CreateTexture2DFreeImage(HRTextureNode* pSysObj, const std::wstring& a_fileName)
 {
   // (1) load image from file
   //
@@ -241,10 +239,10 @@ std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTexture2DFromFile(HRTe
   FIBITMAP *dib(NULL), *converted(NULL);
   BYTE* bits(NULL);                    // pointer to the image data
   unsigned int width(0), height(0);    //image width and height
- 
+
   int bytesPerPixel = HRUtils_LoadImageFromFileToPairOfFreeImageObjects(a_fileName.c_str(), dib, converted, &fif);
   int bitsPerPixel  = bytesPerPixel * 8;
-  
+
   if (bytesPerPixel == 0)
   {
     HrError(L"FreeImage failed to load image: ", a_fileName.c_str());
@@ -312,6 +310,120 @@ std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTexture2DFromFile(HRTe
   //delete [] data;
 
   return (bitsPerPixel <= 32) ? p11 : p22;
+}
+
+std::shared_ptr<IHRTextureNode> CreateTexture2DImage4UB(HRTextureNode* pSysObj, const std::wstring& a_fileName)
+{
+  std::string m_fileName(a_fileName.begin(), a_fileName.end());
+  std::ifstream fin(m_fileName.c_str(), std::ios::binary);
+
+  if (!fin.is_open())
+    return nullptr;
+
+  unsigned int width = 0;
+  unsigned int height = 0;
+
+  fin.read((char*)&width, sizeof(unsigned int));
+  fin.read((char*)&height, sizeof(unsigned int));
+
+  size_t totalByteSizeOfTexture = size_t(width)*size_t(height)*size_t(sizeof(char)*4);
+  totalByteSizeOfTexture += size_t(2 * sizeof(unsigned int));
+
+  size_t chunkId = g_objManager.scnData.m_vbCache.AllocChunk(totalByteSizeOfTexture, pSysObj->id);
+  auto& chunk    = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
+  chunk.type     = CHUNK_TYPE_IMAGE4UB;
+
+  char* data = (char*)chunk.GetMemoryNow();
+  if (data == nullptr)
+  {
+
+    std::shared_ptr<BitmapProxy> p = std::make_shared<BitmapProxy>(width, height, totalByteSizeOfTexture, chunkId); //#TODO: return nullptr here?
+    p->fileName        = a_fileName;
+    p->m_bytesPerPixel = 4;
+    return p;
+  }
+
+  unsigned int* pW = (unsigned int*)data;
+  unsigned int* pH = pW + 1;
+  data += 2 * sizeof(unsigned int);
+
+  (*pW) = width;
+  (*pH) = height;
+
+  fin.read(data, size_t(width)*size_t(height)*size_t(sizeof(char)*4));
+
+  fin.close();
+
+  std::shared_ptr<BitmapLDRNode> p1 = std::make_shared<BitmapLDRNode>(width, height, totalByteSizeOfTexture, chunkId);
+
+  std::shared_ptr<IHRTextureNode> p11 = p1;
+
+  return p11;
+}
+
+std::shared_ptr<IHRTextureNode> CreateTexture2DImage4F(HRTextureNode* pSysObj, const std::wstring& a_fileName)
+{
+  std::string m_fileName(a_fileName.begin(), a_fileName.end());
+  std::ifstream fin(m_fileName.c_str(), std::ios::binary);
+
+  if (!fin.is_open())
+    return nullptr;
+
+  unsigned int width = 0;
+  unsigned int height = 0;
+
+  fin.read((char*)&width, sizeof(unsigned int));
+  fin.read((char*)&height, sizeof(unsigned int));
+
+  size_t totalByteSizeOfTexture = size_t(width)*size_t(height)*size_t(sizeof(float) * 4);
+  totalByteSizeOfTexture += size_t(2 * sizeof(unsigned int));
+
+  size_t chunkId = g_objManager.scnData.m_vbCache.AllocChunk(totalByteSizeOfTexture, pSysObj->id);
+  auto& chunk    = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
+  chunk.type     = CHUNK_TYPE_IMAGE4F;
+
+  char* data = (char*)chunk.GetMemoryNow();
+  if (data == nullptr)
+  {
+
+    std::shared_ptr<BitmapProxy> p = std::make_shared<BitmapProxy>(width, height, totalByteSizeOfTexture, chunkId); //#TODO: return nullptr here?
+    p->fileName        = a_fileName;
+    p->m_bytesPerPixel = 16;
+    return p;
+  }
+
+  unsigned int* pW = (unsigned int*)data;
+  unsigned int* pH = pW + 1;
+  data += 2 * sizeof(unsigned int);
+
+  (*pW) = width;
+  (*pH) = height;
+
+  fin.read(data, size_t(width)*size_t(height)*size_t(sizeof(float)*4));
+
+  fin.close();
+
+  std::shared_ptr<BitmapLDRNode> p1 = std::make_shared<BitmapLDRNode>(width, height, totalByteSizeOfTexture, chunkId);
+
+  std::shared_ptr<IHRTextureNode> p11 = p1;
+
+  return p11;
+}
+
+std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTexture2DFromFile(HRTextureNode* pSysObj, const std::wstring& a_fileName)
+{
+  if(a_fileName.find(L".image4ub") != std::wstring::npos)
+  {
+    return CreateTexture2DImage4UB(pSysObj, a_fileName);
+  }
+  else if(a_fileName.find(L".image4f") != std::wstring::npos)
+  {
+    return CreateTexture2DImage4F(pSysObj, a_fileName);
+  }
+  else
+  {
+    return CreateTexture2DFreeImage(pSysObj, a_fileName);
+  }
 }
 
 

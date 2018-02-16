@@ -1034,7 +1034,7 @@ namespace HRUtils
   HRTextureNodeRef Cube2SphereLDR(HRTextureNodeRef a_cube[6]);
 
   void TransformAllInstances(HRSceneInstRef a_pScn, float a_mat[16], bool origin = true);
-  void MergeLibraryIntoLibrary(const wchar_t* a_libpath); //TODO
+  void MergeLibraryIntoLibrary(const wchar_t* a_libPath); //TODO
 };
 
 
