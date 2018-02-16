@@ -1819,6 +1819,24 @@ bool test39_mesh_from_vsgf()
   return check_images("test_39", 1, 20.0f);
 }
 
+void test_device_list()
+{
+  hrSceneLibraryOpen(L"scenelib", HR_WRITE_DISCARD);
+
+  HRRenderRef renderRef = hrRenderCreate(L"HydraModern");
+
+  auto pList = hrRenderGetDeviceList(renderRef);
+
+  while (pList != nullptr)
+  {
+    std::wcout << L"id: " << pList->id << L", name: " << pList->name << L", driver: " << pList->driver << std::endl;
+    pList = pList->next;
+  }
+
+  //hrRenderEnableDevice(renderRef, 0, true);
+  hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
+}
+
 bool test40_several_changes()
 {
   initGLIfNeeded();

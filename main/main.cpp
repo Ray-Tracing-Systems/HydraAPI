@@ -86,11 +86,13 @@ int main(int argc, const char** argv)
 
   try
   {
+    test_device_list();
+
 	  //run_all_geo_tests();
     //run_all_mtl_tests(2);
     //run_all_lgt_tests();
     //run_all_ipp_tests();
-    run_all_api_tests(59);
+    //run_all_api_tests(59);
 
     //test42_load_library_basic();
     

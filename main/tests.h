@@ -70,6 +70,7 @@ void test02_simple_gl1_render(const wchar_t* a_driverName);
 void window_main_free_look(const wchar_t* a_libPath, const wchar_t* a_renderName = L"opengl1", InitFuncType a_pInitFunc = nullptr, DrawFuncType a_pDrawFunc = nullptr);
 void test_console_render(const wchar_t* a_libPath, const wchar_t* a_savePath);
 
+void test_device_list();
 
 bool check_all_duplicates(const std::wstring& a_fileName);
 
