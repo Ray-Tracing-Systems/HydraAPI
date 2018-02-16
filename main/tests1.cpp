@@ -1560,7 +1560,13 @@ void test03_open_scene()
   */
 }
 
-bool dummy_test() { return true; }
+bool g_testWasIgnored = false;
+
+bool dummy_test() 
+{ 
+  g_testWasIgnored = true;  
+  return false; 
+}
 
 
 typedef bool(*TestFunc)();
@@ -1619,10 +1625,10 @@ void run_all_api_tests(const int startTestId)
                        &test48_light_geom_sphere,
 	                     &test49_light_geom_disk,
 	                     &test50_open_library_several_times,
-                       &dummy_test, // 51
-                       &dummy_test, // 52
-                       &dummy_test, // 53
-                       &dummy_test, // 54
+                       &dummy_test,                 // 51
+                       &dummy_test,                 // 52
+                       &dummy_test,                 // 53
+                       &dummy_test,                 // 54
                        &test55_clear_scene,
                        &test56_mesh_change_open_existing,
                        &test57_single_instance,
@@ -1637,6 +1643,15 @@ void run_all_api_tests(const int startTestId)
                        &test66_fast_render_no_final_update,
                        &test67_fast_empty_scene,
                        &test68_scene_library_file_info,
+                       &test69_pause_and_resume,
+                       &test70_area_lights16,
+                       &test71_out_of_memory,
+                       &dummy_test,                  // 72
+                       &dummy_test,                  // 73 test73_big_resolution
+                       &test74_frame_buffer_line,
+                       &test75_repeated_render,
+                       &test76_empty_mesh,
+                       &test77_save_gbuffer_layers
                        
   };
 
@@ -1657,6 +1672,11 @@ void run_all_api_tests(const int startTestId)
       std::cout << "api_test_" << std::setfill('0') << std::setw(2) << i + 1 << "\tPASSED!\t\n";
       fout << std::fixed << "api_test_" << std::setfill('0') << std::setw(2) << i + 1 << "\tPASSED!\t\n";
     }
+    else if (g_testWasIgnored)
+    {
+      std::cout << "api_test_" << std::setfill('0') << std::setw(2) << i + 1 << "\tSKIPPED!" << std::endl;
+      fout << std::fixed << "api_test_" << std::setfill('0') << std::setw(2) << i + 1 << "\tSKIPPED!" << std::endl;
+    }
     else
     {
       std::cout << "api_test_" << std::setfill('0') << std::setw(2) << i + 1 << "\tFAILED! :-: MSE = " << g_MSEOutput << std::endl;
@@ -1664,6 +1684,8 @@ void run_all_api_tests(const int startTestId)
     }
 
     fout.flush();
+
+    g_testWasIgnored = false;
   }
 
   fout.close();
@@ -1694,11 +1716,18 @@ void run_all_geo_tests()
       std::cout << "geo_test_" << std::setfill('0') << std::setw(3) << i + 1 << "\tPASSED!\t\n";
       fout      << "geo_test_" << std::setfill('0') << std::setw(3) << i + 1 << "\tPASSED!\t\n";
     }
+    else if (g_testWasIgnored)
+    {
+      std::cout << "geo_test_" << std::setfill('0') << std::setw(3) << i + 1 << "\tSKIPPED!\t\n";
+      fout      << "geo_test_" << std::setfill('0') << std::setw(3) << i + 1 << "\tSKIPPED!\t\n";
+    }
     else
     {
       std::cout << "geo_test_" << std::setfill('0') << std::setw(3) << i + 1 << "\tFAILED! :-: MSE = " << g_MSEOutput << std::endl;
       fout      << "geo_test_" << std::setfill('0') << std::setw(3) << i + 1 << "\tFAILED! :-: MSE = " << g_MSEOutput << std::endl;
     }
+
+    g_testWasIgnored = false;
 	}
 
   fout.close();
@@ -1765,6 +1794,11 @@ void run_all_mtl_tests(int a_start)
       std::cout          << "mtl_test_" << std::setfill('0') << std::setw(3) << 100 + i + 1 << "\tPASSED!\t\n";
       fout << std::fixed << "mtl_test_" << std::setfill('0') << std::setw(3) << 100 + i + 1 << "\tPASSED!\t\n";
     }
+    else if (g_testWasIgnored)
+    {
+      std::cout          << "mtl_test_" << std::setfill('0') << std::setw(3) << 100 + i + 1 << "\tSKIPPED!\t\n";
+      fout << std::fixed << "mtl_test_" << std::setfill('0') << std::setw(3) << 100 + i + 1 << "\tSKIPPED!\t\n";
+    }
     else
     {
       std::cout          << "mtl_test_" << std::setfill('0') << std::setw(3) << 100 + i + 1 << "\tFAILED! :-: MSE = " << g_MSEOutput << std::endl;
@@ -1772,6 +1806,8 @@ void run_all_mtl_tests(int a_start)
     }
 
     fout.flush();
+
+    g_testWasIgnored = false;
 	}
 
   fout.close();
@@ -1841,16 +1877,23 @@ void run_all_lgt_tests(int a_start)
     bool res = tests[i]();
     if (res)
     {
-      std::cout << "light_test_" << std::setfill('0') << std::setw(3) << 200 + i << "\tPASSED!\t\n";
+      std::cout          << "light_test_" << std::setfill('0') << std::setw(3) << 200 + i << "\tPASSED!\t\n";
       fout << std::fixed << "light_test_" << std::setfill('0') << std::setw(3) << 200 + i << "\tPASSED!\t\n";
+    }
+    else if (g_testWasIgnored)
+    {
+      std::cout          << "light_test_" << std::setfill('0') << std::setw(3) << 200 + i << "\tSKIPPED!\t\n";
+      fout << std::fixed << "light_test_" << std::setfill('0') << std::setw(3) << 200 + i << "\tSKIPPED!\t\n";
     }
     else
     {
-      std::cout << "light_test_" << std::setfill('0') << std::setw(3) << 200 + i << "\tFAILED! :-: MSE = " << g_MSEOutput << std::endl;
+      std::cout          << "light_test_" << std::setfill('0') << std::setw(3) << 200 + i << "\tFAILED! :-: MSE = " << g_MSEOutput << std::endl;
       fout << std::fixed << "light_test_" << std::setfill('0') << std::setw(3) << 200 + i << "\tFAILED! :-: MSE = " << g_MSEOutput << std::endl;
     }
 
     fout.flush();
+
+    g_testWasIgnored = false;
   }
 
   fout.close();
@@ -1888,16 +1931,23 @@ void run_all_ipp_tests(int a_start)
     bool res = tests[i]();
     if (res)
     {
-      std::cout << "pp_test_" << std::setfill('0') << std::setw(3) << 300 + i << "\tPASSED!\t\n";
+      std::cout          << "pp_test_" << std::setfill('0') << std::setw(3) << 300 + i << "\tPASSED!\t\n";
       fout << std::fixed << "pp_test_" << std::setfill('0') << std::setw(3) << 300 + i << "\tPASSED!\t\n";
+    }
+    else if (g_testWasIgnored)
+    {
+      std::cout          << "pp_test_" << std::setfill('0') << std::setw(3) << 300 + i << "\tSKIPPED!\t\n";
+      fout << std::fixed << "pp_test_" << std::setfill('0') << std::setw(3) << 300 + i << "\tSKIPPED!\t\n";
     }
     else
     {
-      std::cout << "pp_test_" << std::setfill('0') << std::setw(3) << 300 + i << "\tFAILED! :-: MSE = " << g_MSEOutput << std::endl;
+      std::cout          << "pp_test_" << std::setfill('0') << std::setw(3) << 300 + i << "\tFAILED! :-: MSE = " << g_MSEOutput << std::endl;
       fout << std::fixed << "pp_test_" << std::setfill('0') << std::setw(3) << 300 + i << "\tFAILED! :-: MSE = " << g_MSEOutput << std::endl;
     }
 
     fout.flush();
+
+    g_testWasIgnored = false;
   }
 
   fout.close();

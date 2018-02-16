@@ -752,8 +752,8 @@ bool test56_mesh_change_open_existing()
 
     // test second call of hrMeshAppendTriangles3
     //
-    hrMeshVertexAttribPointer4f(torusRef, L"pos", &cube2.vPos[0]);
-    hrMeshVertexAttribPointer4f(torusRef, L"norm", &cube2.vNorm[0]);
+    hrMeshVertexAttribPointer4f(torusRef, L"pos",      &cube2.vPos[0]);
+    hrMeshVertexAttribPointer4f(torusRef, L"norm",     &cube2.vNorm[0]);
     hrMeshVertexAttribPointer2f(torusRef, L"texcoord", &cube2.vTexCoord[0]);
 
     int cubeMatIndices[12] = { 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 1, 1 };
@@ -788,12 +788,8 @@ bool test56_mesh_change_open_existing()
   hrRenderOpen(settingsRef, HR_WRITE_DISCARD);
   {
     pugi::xml_node node = hrRenderParamNode(settingsRef);
-
-    wchar_t temp[256];
-    swprintf(temp, 256, L"%d", 1024);
-    node.append_child(L"width").text().set(temp);
-    swprintf(temp, 256, L"%d", 768);
-    node.append_child(L"height").text().set(temp);
+    node.append_child(L"width").text()  = 512;
+    node.append_child(L"height").text() = 512;
   }
   hrRenderClose(settingsRef);
 
@@ -866,9 +862,11 @@ bool test56_mesh_change_open_existing()
     const int triNum = meshInfo.indicesNum / 3;
 
     int32_t* matindices = (int32_t*)hrMeshGetPrimitiveAttribPointer(torusRef, L"mind");
+    //for(int i=0;i<triNum;i++)
+      //matindices[i] = mat5.id;
 
-    matindices[triNum - 3] = mat5.id;
-    matindices[triNum - 4] = mat5.id;
+    matindices[triNum - 2] = mat5.id;
+    matindices[triNum - 1] = mat5.id;
   }
   hrMeshClose(torusRef);
   
@@ -919,7 +917,7 @@ bool test56_mesh_change_open_existing()
   hrFlush(scnRef, settingsRef);
   hrRenderSaveFrameBufferLDR(settingsRef, L"tests_images/test_56/z_out3.png");
 
-  return check_images("test_56", 3, 15.0f);
+  return check_images("test_56", 3, 20.0f);
 }
 
 extern GLFWwindow* g_window;
