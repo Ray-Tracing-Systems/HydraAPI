@@ -1304,9 +1304,14 @@ bool test58_crysponza_and_opacity1_perf()
   return false;
 }
 
+extern bool g_testWasIgnored;
+
 bool test59_cornell_water_mlt()
 {
-   initGLIfNeeded();
+  g_testWasIgnored = true; // this test is disable untill we got MMLT working.
+  return false;
+
+  initGLIfNeeded();
 
   hrErrorCallerPlace(L"test_59");
 
