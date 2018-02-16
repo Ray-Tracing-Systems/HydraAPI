@@ -987,10 +987,3 @@ HRLightGroupExt& HRLightGroupExt::operator=(HRLightGroupExt&& a_in)
 }
 
 
-void HRUtils::MergeLibraryIntoLibrary(const wchar_t* a_libpath) //WIP
-{
-  if(a_libpath == nullptr)
-    return;
-
-
-}

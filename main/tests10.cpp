@@ -825,24 +825,50 @@ bool test1007_merge_library()
 
   HRLightRef sky = hrLightCreate(L"sky");
 
+  HRTextureNodeRef texEnv = hrTexture2DCreateFromFile(L"data/textures/Factory_Catwalk_2k_BLUR.exr");
+
   hrLightOpen(sky, HR_WRITE_DISCARD);
   {
     auto lightNode = hrLightParamNode(sky);
 
     lightNode.attribute(L"type").set_value(L"sky");
+    lightNode.attribute(L"distribution").set_value(L"map");
 
     auto intensityNode = lightNode.append_child(L"intensity");
 
-    intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"0.75 0.75 1");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(1.0f);
+    intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"1.0");
+
+    auto texNode = hrTextureBind(texEnv, intensityNode.child(L"color"));
+
+    texNode.append_attribute(L"matrix");
+    float samplerMatrix[16] = { 1, 0, 0, 0,
+                                0, 1, 0, 0,
+                                0, 0, 1, 0,
+                                0, 0, 0, 1 };
+
+    texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
+    texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
+
+    HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
 
     VERIFY_XML(lightNode);
   }
   hrLightClose(sky);
 
 
-  HRUtils::MergeLibraryIntoLibrary(L"tests/test_1006");
+  HRUtils::MergeLibraryIntoLibrary(L"tests_f/test_131");
 
+  HRMeshRef mergedMesh;
+  mergedMesh.id = 5;
+
+  auto blend = hrFindMaterialByName(L"matBlend3");
+
+  hrMeshOpen(torusB, HR_TRIANGLE_IND3, HR_OPEN_EXISTING);
+  {
+    hrMeshMaterialId(torusB, blend.id);
+  }
+  hrMeshClose(torusB);
 
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -937,6 +963,14 @@ bool test1007_merge_library()
   mRes = mul(mTranslate, mRes);
 
   hrMeshInstance(scnRef, sphereG, mRes.L());
+
+  ///////////
+  mRes.identity();
+
+  mTranslate = translate4x4(float3(8.0f, 2.0f, 0.0f));
+  mRes = mul(mTranslate, mRes);
+
+  hrMeshInstance(scnRef, mergedMesh, mRes.L());
 
   ///////////
 

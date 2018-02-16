@@ -38,6 +38,7 @@ HAPI HRMaterialRef hrMaterialCreate(const wchar_t* a_objectName)
 
   HRMaterial mat;
   mat.name = std::wstring(a_objectName);
+  mat.id = ref.id;
   g_objManager.scnData.materials.push_back(mat);
 
   pugi::xml_node matNodeXml = g_objManager.materials_lib_append_child();
@@ -78,6 +79,7 @@ HAPI HRMaterialRef hrMaterialCreateBlend(const wchar_t* a_objectName, HRMaterial
 
   HRMaterial mat; // # create blend
   mat.name = std::wstring(a_objectName);
+  mat.id = ref.id;
   g_objManager.scnData.materials.push_back(mat);
 
 
