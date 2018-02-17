@@ -6293,7 +6293,7 @@ namespace MTL_TESTS
       camNode.append_child(L"farClipPlane").text().set(L"100.0");
 
       camNode.append_child(L"up").text().set(L"0 1 0");
-      camNode.append_child(L"position").text().set(L"0 1 13");
+      camNode.append_child(L"position").text().set(L"0 1 11");
       camNode.append_child(L"look_at").text().set(L"0 -0.5 0");
     }
     hrCameraClose(camRef);
@@ -6302,7 +6302,14 @@ namespace MTL_TESTS
     // Render settings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    HRRenderRef renderRef = CreateBasicTestRenderPTNoCaust(CURR_RENDER_DEVICE, 1024, 768, 256, 2048);
+    HRRenderRef renderRef = CreateBasicTestRenderPTNoCaust(CURR_RENDER_DEVICE, 512, 512, 256, 2048);
+
+    hrRenderOpen(renderRef, HR_OPEN_EXISTING);
+    {
+      auto camNode = hrRenderParamNode(renderRef);
+      camNode.force_child(L"evalgbuffer").text() = 1;
+    }
+    hrRenderClose(renderRef);
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -6349,8 +6356,8 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
+    glViewport(0, 0, 512, 512);
+    std::vector<int32_t> image(512 * 512);
 
     while (true)
     {
@@ -6360,10 +6367,10 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
         glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
@@ -6379,7 +6386,12 @@ namespace MTL_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_120/z_out.png");
 
-    return check_images("test_120", 1, 50);
+    hrRenderSaveGBufferLayerLDR(renderRef, L"tests_images/test_120/z_out2.png", L"depth");
+    hrRenderSaveGBufferLayerLDR(renderRef, L"tests_images/test_120/z_out3.png", L"diffcolor");
+    hrRenderSaveGBufferLayerLDR(renderRef, L"tests_images/test_120/z_out4.png", L"alpha");
+    hrRenderSaveGBufferLayerLDR(renderRef, L"tests_images/test_120/z_out5.png", L"shadow");
+
+    return check_images("test_120", 5, 25);
   }
 
   bool test_121_translucency()

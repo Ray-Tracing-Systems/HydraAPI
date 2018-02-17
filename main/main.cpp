@@ -87,10 +87,10 @@ int main(int argc, const char** argv)
   try
   {
 	  //run_all_geo_tests();
-    //run_all_mtl_tests(2);
+    //run_all_mtl_tests();
     //run_all_lgt_tests();
-    //run_all_ipp_tests();
     //run_all_api_tests();
+    //run_all_ipp_tests();
 
     //test42_load_library_basic();
     //test1000_loadlibrary_and_edit();
@@ -98,19 +98,20 @@ int main(int argc, const char** argv)
     //test1002_get_material_by_name_and_edit();
     //test1006_transform_all_instances_origin();
     //test1005_transform_all_instances();
-    test1007_merge_library();
+    //test1007_merge_library();
 
 
     //std::cout << test39_mesh_from_vsgf() << std::endl;
     //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
-    //std::cout << test77_save_gbuffer_layers() << std::endl;
+    std::cout << test77_save_gbuffer_layers() << std::endl;
     //std::cout << test59_cornell_water_mlt() << std::endl;
     //std::cout << test70_area_lights16() << std::endl;
 
+    //std::cout << MTL_TESTS::test_120_opacity_shadow_matte() << std::endl;
+
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
     //GEO_TESTS::test_002_mesh_from_vsgf();
-    //MTL_TESTS::test_119_opacity_texture();
-    //MTL_TESTS::test_141_opacity_smooth();
+    //MTL_TESTS::test_120_opacity_shadow_matte();
     //LGHT_TESTS::test_202_sky_color();
     //PP_TESTS::test305_fbi_from_render();
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
