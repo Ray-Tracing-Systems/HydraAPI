@@ -103,7 +103,7 @@ int main(int argc, const char** argv)
 
     //std::cout << test39_mesh_from_vsgf() << std::endl;
     //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
-    std::cout << test77_save_gbuffer_layers() << std::endl;
+    //std::cout << test77_save_gbuffer_layers() << std::endl;
     //std::cout << test59_cornell_water_mlt() << std::endl;
     //std::cout << test70_area_lights16() << std::endl;
 
@@ -113,7 +113,9 @@ int main(int argc, const char** argv)
     //GEO_TESTS::test_002_mesh_from_vsgf();
     //MTL_TESTS::test_120_opacity_shadow_matte();
     //LGHT_TESTS::test_202_sky_color();
-    //PP_TESTS::test305_fbi_from_render();
+    
+    //PP_TESTS::test305_fbi_from_render();    
+
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
 
     //window_main_free_look(L"tests_f/test_241", L"opengl1Debug");

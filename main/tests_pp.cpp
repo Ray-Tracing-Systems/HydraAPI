@@ -459,7 +459,43 @@ bool PP_TESTS::test316_post_process_hydra1_chromAberr()
   return check_images("test_316");
 }
 
-bool PP_TESTS::test317_post_process_hydra1_ECCSWUNVC()
+bool PP_TESTS::test317_post_process_hydra1_sharpness()
+{
+  HRFBIRef image1 = hrFBICreateFromFile(L"data/textures/kitchen.hdr");
+
+  int w, h;
+  hrFBIGetData(image1, &w, &h, nullptr);
+
+  HRFBIRef image2 = hrFBICreate(L"temp", w, h, 16);
+
+  pugi::xml_document docSettings;
+  pugi::xml_node settings = docSettings.append_child(L"settings");
+
+  settings.append_attribute(L"exposure") = 1.0f;
+  settings.append_attribute(L"compress") = 0.0f;
+  settings.append_attribute(L"contrast") = 1.0f;
+  settings.append_attribute(L"saturation") = 1.0f;
+  settings.append_attribute(L"whiteBalance") = 0.0f;
+  settings.append_attribute(L"uniformContrast") = 0.0f;
+  settings.append_attribute(L"normalize") = 0.0f;
+  settings.append_attribute(L"sharpness") = 1.0f;
+
+  // ----- Optics effects -----
+  settings.append_attribute(L"vignette") = 0.0f;
+  settings.append_attribute(L"chromAberr") = 0.0f;
+
+
+
+  hrFilterApply(L"post_process_hydra1", settings,
+    L"in_color", image1,
+    L"out_color", image2);
+
+  hrFBISaveToFile(image2, L"tests_images/test_317/z_out.png");
+
+  return check_images("test_317");
+}
+
+bool PP_TESTS::test318_post_process_hydra1_ECCSWUNSVC()
 {
   HRFBIRef image1 = hrFBICreateFromFile(L"data/textures/kitchen.hdr");
 
@@ -478,16 +514,62 @@ bool PP_TESTS::test317_post_process_hydra1_ECCSWUNVC()
   settings.append_attribute(L"whiteBalance") = 0.5f;
   settings.append_attribute(L"uniformContrast") = 0.2f;
   settings.append_attribute(L"normalize") = 1.0f;
+  settings.append_attribute(L"sharpness") = 1.0f;
+
+  // ----- Optics effects -----
   settings.append_attribute(L"vignette") = 0.3f;
   settings.append_attribute(L"chromAberr") = 0.5f;
+
+
 
   hrFilterApply(L"post_process_hydra1", settings,
                 L"in_color", image1,
                 L"out_color", image2);
 
-  hrFBISaveToFile(image2, L"tests_images/test_317/z_out.png");
+  hrFBISaveToFile(image2, L"tests_images/test_318/z_out.png");
 
-  return check_images("test_317");
+  return check_images("test_318");
+}
+
+bool PP_TESTS::test319_post_process_hydra1_diffStars()
+{
+  HRFBIRef image1 = hrFBICreateFromFile(L"data/textures/10.hdr");
+
+  int w, h;
+  hrFBIGetData(image1, &w, &h, nullptr);
+
+  HRFBIRef image2 = hrFBICreate(L"temp", w, h, 16);
+
+  pugi::xml_document docSettings;
+  pugi::xml_node settings = docSettings.append_child(L"settings");
+
+  settings.append_attribute(L"exposure") = 1.0f;
+  settings.append_attribute(L"compress") = 1.0f;
+  settings.append_attribute(L"contrast") = 1.0f;
+  settings.append_attribute(L"saturation") = 1.0f;
+  settings.append_attribute(L"whiteBalance") = 0.0f;
+  settings.append_attribute(L"uniformContrast") = 0.0f;
+  settings.append_attribute(L"normalize") = 0.0f;
+  settings.append_attribute(L"sharpness") = 0.0f;
+
+  // ----- Optics effects -----
+  settings.append_attribute(L"vignette") = 0.0f;
+  settings.append_attribute(L"chromAberr") = 0.0f;
+
+  settings.append_attribute(L"diffStars_sizeStar") = 100.0f;
+  settings.append_attribute(L"diffStars_numRay") = 8;
+  settings.append_attribute(L"diffStars_rotateRay") = 20;
+  settings.append_attribute(L"diffStars_randomAngle") = 0.2f;
+  settings.append_attribute(L"diffStars_sprayRay") = 0.3f;
+
+
+  hrFilterApply(L"post_process_hydra1", settings,
+    L"in_color", image1,
+    L"out_color", image2);
+
+  hrFBISaveToFile(image2, L"tests_images/test_319/z_out.png");
+
+  return check_images("test_319");
 }
 
 extern GLFWwindow* g_window;

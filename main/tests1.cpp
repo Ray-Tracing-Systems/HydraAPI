@@ -1919,7 +1919,9 @@ void run_all_ipp_tests(int a_start)
     &PP_TESTS::test314_post_process_hydra1_normalize,
     &PP_TESTS::test315_post_process_hydra1_vignette,
     &PP_TESTS::test316_post_process_hydra1_chromAberr,
-    &PP_TESTS::test317_post_process_hydra1_ECCSWUNVC,
+    &PP_TESTS::test317_post_process_hydra1_sharpness,
+    &PP_TESTS::test318_post_process_hydra1_ECCSWUNSVC,
+    &PP_TESTS::test319_post_process_hydra1_diffStars
   };
 
   std::ofstream fout("z_test_post_process.txt");

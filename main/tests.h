@@ -319,7 +319,9 @@ namespace PP_TESTS
   bool test314_post_process_hydra1_normalize();
   bool test315_post_process_hydra1_vignette();
   bool test316_post_process_hydra1_chromAberr();
-  bool test317_post_process_hydra1_ECCSWUNVC();
+  bool test317_post_process_hydra1_sharpness();
+  bool test318_post_process_hydra1_ECCSWUNSVC();
+  bool test319_post_process_hydra1_diffStars();
 
 };
 
