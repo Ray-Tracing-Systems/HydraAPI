@@ -315,6 +315,7 @@ namespace PP_TESTS
   bool test310_post_process_hydra1_desaturation();
   bool test311_post_process_hydra1_saturation();
   bool test312_post_process_hydra1_whiteBalance();
+  bool test312_2_post_process_hydra1_whitePointColor();
   bool test313_post_process_hydra1_uniformContrast();
   bool test314_post_process_hydra1_normalize();
   bool test315_post_process_hydra1_vignette();
@@ -322,7 +323,6 @@ namespace PP_TESTS
   bool test317_post_process_hydra1_sharpness();
   bool test318_post_process_hydra1_ECCSWUNSVC();
   bool test319_post_process_hydra1_diffStars();
-
 };
 
 

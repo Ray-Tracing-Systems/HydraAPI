@@ -115,6 +115,7 @@ int main(int argc, const char** argv)
     //LGHT_TESTS::test_202_sky_color();
     
     //PP_TESTS::test305_fbi_from_render();    
+    //PP_TESTS::test312_2_post_process_hydra1_whitePointColor();
 
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
 

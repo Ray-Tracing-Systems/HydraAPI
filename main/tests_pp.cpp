@@ -29,6 +29,7 @@
 
 #include "../hydra_api/HR_HDRImageTool.h"
 #include "../hydra_api/HydraPostProcessAPI.h"
+#include "../hydra_api/HydraXMLHelpers.h"
 
 using namespace TEST_UTILS;
 
@@ -130,6 +131,7 @@ bool PP_TESTS::test306_post_process_hydra1_exposure05()
   pugi::xml_document docSettings;
   pugi::xml_node settings = docSettings.append_child(L"settings");
 
+  settings.append_attribute(L"numThreads") = 0;
   settings.append_attribute(L"exposure") = 0.5f;
   settings.append_attribute(L"compress") = 0.0f;
   settings.append_attribute(L"contrast") = 1.0f;
@@ -161,6 +163,7 @@ bool PP_TESTS::test307_post_process_hydra1_exposure2()
   pugi::xml_document docSettings;
   pugi::xml_node settings = docSettings.append_child(L"settings");
 
+  settings.append_attribute(L"numThreads") = 0;
   settings.append_attribute(L"exposure") = 2.0f;
   settings.append_attribute(L"compress") = 0.0f;
   settings.append_attribute(L"contrast") = 1.0f;
@@ -192,6 +195,7 @@ bool PP_TESTS::test308_post_process_hydra1_compress()
   pugi::xml_document docSettings;
   pugi::xml_node settings = docSettings.append_child(L"settings");
 
+  settings.append_attribute(L"numThreads") = 0;
   settings.append_attribute(L"exposure") = 1.0f;
   settings.append_attribute(L"compress") = 1.0f;
   settings.append_attribute(L"contrast") = 1.0f;
@@ -223,6 +227,7 @@ bool PP_TESTS::test309_post_process_hydra1_contrast()
   pugi::xml_document docSettings;
   pugi::xml_node settings = docSettings.append_child(L"settings");
 
+  settings.append_attribute(L"numThreads") = 0;
   settings.append_attribute(L"exposure") = 1.0f;
   settings.append_attribute(L"compress") = 0.0f;
   settings.append_attribute(L"contrast") = 2.0f;
@@ -254,6 +259,7 @@ bool PP_TESTS::test310_post_process_hydra1_desaturation()
   pugi::xml_document docSettings;
   pugi::xml_node settings = docSettings.append_child(L"settings");
 
+  settings.append_attribute(L"numThreads") = 0;
   settings.append_attribute(L"exposure") = 1.0f;
   settings.append_attribute(L"compress") = 0.0f;
   settings.append_attribute(L"contrast") = 1.0f;
@@ -285,6 +291,7 @@ bool PP_TESTS::test311_post_process_hydra1_saturation()
   pugi::xml_document docSettings;
   pugi::xml_node settings = docSettings.append_child(L"settings");
 
+  settings.append_attribute(L"numThreads") = 0;
   settings.append_attribute(L"exposure") = 1.0f;
   settings.append_attribute(L"compress") = 0.0f;
   settings.append_attribute(L"contrast") = 1.0f;
@@ -316,6 +323,7 @@ bool PP_TESTS::test312_post_process_hydra1_whiteBalance()
   pugi::xml_document docSettings;
   pugi::xml_node settings = docSettings.append_child(L"settings");
 
+  settings.append_attribute(L"numThreads") = 0;
   settings.append_attribute(L"exposure") = 1.0f;
   settings.append_attribute(L"compress") = 0.0f;
   settings.append_attribute(L"contrast") = 1.0f;
@@ -335,6 +343,42 @@ bool PP_TESTS::test312_post_process_hydra1_whiteBalance()
   return check_images("test_312");
 }
 
+bool PP_TESTS::test312_2_post_process_hydra1_whitePointColor()
+{
+  HRFBIRef image1 = hrFBICreateFromFile(L"data/textures/kitchen.hdr");
+
+  int w, h;
+  hrFBIGetData(image1, &w, &h, nullptr);
+
+  HRFBIRef image2 = hrFBICreate(L"temp", w, h, 16);
+
+  pugi::xml_document docSettings;
+  pugi::xml_node settings = docSettings.append_child(L"settings");
+
+  settings.append_attribute(L"numThreads") = 0;
+  settings.append_attribute(L"exposure") = 1.0f;
+  settings.append_attribute(L"compress") = 0.0f;
+  settings.append_attribute(L"contrast") = 1.0f;
+  settings.append_attribute(L"saturation") = 1.0f;
+  settings.append_attribute(L"whiteBalance") = 1.0f;
+  settings.append_attribute(L"whitePointColor");
+  float colorArr[3] = { 0.36f, 0.32f, 0.27f };
+  HydraXMLHelpers::WriteFloat3(settings.attribute(L"whitePointColor"), colorArr);
+
+  settings.append_attribute(L"uniformContrast") = 0.0f;
+  settings.append_attribute(L"normalize") = 0.0f;
+  settings.append_attribute(L"vignette") = 0.0f;
+  settings.append_attribute(L"chromAberr") = 0.0f;
+
+  hrFilterApply(L"post_process_hydra1", settings,
+    L"in_color", image1,
+    L"out_color", image2);
+
+  hrFBISaveToFile(image2, L"tests_images/test_312_2/z_out.png");
+
+  return check_images("test_312_2");
+}
+
 bool PP_TESTS::test313_post_process_hydra1_uniformContrast()
 {
   HRFBIRef image1 = hrFBICreateFromFile(L"data/textures/kitchen.hdr");
@@ -347,6 +391,7 @@ bool PP_TESTS::test313_post_process_hydra1_uniformContrast()
   pugi::xml_document docSettings;
   pugi::xml_node settings = docSettings.append_child(L"settings");
 
+  settings.append_attribute(L"numThreads") = 0;
   settings.append_attribute(L"exposure") = 1.0f;
   settings.append_attribute(L"compress") = 0.0f;
   settings.append_attribute(L"contrast") = 1.0f;
@@ -378,6 +423,7 @@ bool PP_TESTS::test314_post_process_hydra1_normalize()
   pugi::xml_document docSettings;
   pugi::xml_node settings = docSettings.append_child(L"settings");
 
+  settings.append_attribute(L"numThreads") = 0;
   settings.append_attribute(L"exposure") = 1.0f;
   settings.append_attribute(L"compress") = 1.0f;
   settings.append_attribute(L"contrast") = 1.0f;
@@ -409,6 +455,7 @@ bool PP_TESTS::test315_post_process_hydra1_vignette()
   pugi::xml_document docSettings;
   pugi::xml_node settings = docSettings.append_child(L"settings");
 
+  settings.append_attribute(L"numThreads") = 0;
   settings.append_attribute(L"exposure") = 1.0f;
   settings.append_attribute(L"compress") = 0.0f;
   settings.append_attribute(L"contrast") = 1.0f;
@@ -440,6 +487,7 @@ bool PP_TESTS::test316_post_process_hydra1_chromAberr()
   pugi::xml_document docSettings;
   pugi::xml_node settings = docSettings.append_child(L"settings");
 
+  settings.append_attribute(L"numThreads") = 0;
   settings.append_attribute(L"exposure") = 1.0f;
   settings.append_attribute(L"compress") = 0.0f;
   settings.append_attribute(L"contrast") = 1.0f;
@@ -471,6 +519,7 @@ bool PP_TESTS::test317_post_process_hydra1_sharpness()
   pugi::xml_document docSettings;
   pugi::xml_node settings = docSettings.append_child(L"settings");
 
+  settings.append_attribute(L"numThreads") = 0;
   settings.append_attribute(L"exposure") = 1.0f;
   settings.append_attribute(L"compress") = 0.0f;
   settings.append_attribute(L"contrast") = 1.0f;
@@ -479,8 +528,6 @@ bool PP_TESTS::test317_post_process_hydra1_sharpness()
   settings.append_attribute(L"uniformContrast") = 0.0f;
   settings.append_attribute(L"normalize") = 0.0f;
   settings.append_attribute(L"sharpness") = 1.0f;
-
-  // ----- Optics effects -----
   settings.append_attribute(L"vignette") = 0.0f;
   settings.append_attribute(L"chromAberr") = 0.0f;
 
@@ -507,6 +554,7 @@ bool PP_TESTS::test318_post_process_hydra1_ECCSWUNSVC()
   pugi::xml_document docSettings;
   pugi::xml_node settings = docSettings.append_child(L"settings");
 
+  settings.append_attribute(L"numThreads") = 0;
   settings.append_attribute(L"exposure") = 1.5f;
   settings.append_attribute(L"compress") = 0.9f;
   settings.append_attribute(L"contrast") = 1.5f;
@@ -515,11 +563,8 @@ bool PP_TESTS::test318_post_process_hydra1_ECCSWUNSVC()
   settings.append_attribute(L"uniformContrast") = 0.2f;
   settings.append_attribute(L"normalize") = 1.0f;
   settings.append_attribute(L"sharpness") = 1.0f;
-
-  // ----- Optics effects -----
   settings.append_attribute(L"vignette") = 0.3f;
   settings.append_attribute(L"chromAberr") = 0.5f;
-
 
 
   hrFilterApply(L"post_process_hydra1", settings,
@@ -543,6 +588,7 @@ bool PP_TESTS::test319_post_process_hydra1_diffStars()
   pugi::xml_document docSettings;
   pugi::xml_node settings = docSettings.append_child(L"settings");
 
+  settings.append_attribute(L"numThreads") = 0;
   settings.append_attribute(L"exposure") = 1.0f;
   settings.append_attribute(L"compress") = 1.0f;
   settings.append_attribute(L"contrast") = 1.0f;
