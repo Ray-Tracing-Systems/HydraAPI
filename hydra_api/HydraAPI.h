@@ -1031,10 +1031,19 @@ namespace HRUtils
   \brief Convert LDR cube map to LDR spheremap
 
   */
+
+
   HRTextureNodeRef Cube2SphereLDR(HRTextureNodeRef a_cube[6]);
 
   void TransformAllInstances(HRSceneInstRef a_pScn, float a_mat[16], bool origin = true);
-  void MergeLibraryIntoLibrary(const wchar_t* a_libPath); //TODO
+
+  void MergeLibraryIntoLibrary(const wchar_t* a_libPath); 
+
+  HRMaterialRef MergeOneMaterialIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_matName, int a_matId = -1);
+
+  HRMeshRef MergeOneMeshIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_meshName);
+
+  HRTextureNodeRef MergeOneTextureIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_texName, int a_texId = -1);
 };
 
 

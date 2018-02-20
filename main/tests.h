@@ -325,7 +325,7 @@ namespace PP_TESTS
   bool test319_post_process_hydra1_diffStars();
 };
 
-
+//These tests need some scene library to exist in their respective folders
 bool test1000_loadlibrary_and_edit();
 bool test1001_loadlibrary_and_add_textures();
 bool test1002_get_material_by_name_and_edit();
@@ -333,7 +333,12 @@ bool test1003_get_light_by_name_and_edit();
 bool test1004_get_camera_by_name_and_edit();
 bool test1005_transform_all_instances();
 bool test1006_transform_all_instances_origin();
-bool test1007_merge_library(); //WIP
+
+
+bool test1007_merge_library(); //run MTL_TESTS::test_131_blend_simple() first
+bool test1008_merge_one_texture(); //run MTL_TESTS::test_131_blend_simple() first
+bool test1009_merge_one_material(); //run MTL_TESTS::test_131_blend_simple() first
+bool test1010_merge_one_mesh(); //run GEO_TESTS::test_005_instancing() and GEO_TESTS::test_002_mesh_from_vsgf() first
 
 
 
