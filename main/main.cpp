@@ -111,11 +111,11 @@ int main(int argc, const char** argv)
     //std::cout << test59_cornell_water_mlt() << std::endl;
     //std::cout << test70_area_lights16() << std::endl;
 
-    //std::cout << MTL_TESTS::test_120_opacity_shadow_matte() << std::endl;
+    std::cout << MTL_TESTS::test_153_opacity_shadow_matte_opacity() << std::endl;
 
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
     //GEO_TESTS::test_002_mesh_from_vsgf();
-    MTL_TESTS::test_119_opacity_texture();
+    //MTL_TESTS::test_153_opacity_shadow_matte_opacity();
     //LGHT_TESTS::test_202_sky_color();
     
     //PP_TESTS::test305_fbi_from_render();    
