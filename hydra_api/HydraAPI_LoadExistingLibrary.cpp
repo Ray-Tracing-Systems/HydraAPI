@@ -173,7 +173,7 @@ HAPI void _hrMeshInstanceFromNode(HRSceneInstRef a_pScn, pugi::xml_node a_node)
     model.lightId     = a_node.attribute(L"light_id").as_int();
     model.lightInstId = a_node.attribute(L"linst_id").as_int();
   }
-  model.multiMaterialId = -1;
+  model.remapListId = -1;
 
   /////////////////////////////////////////////////////////////////////////////////////////////
   const wchar_t* matString = a_node.attribute(L"matrix").as_string();
@@ -200,7 +200,7 @@ HAPI void _hrLightInstanceFromNode(HRSceneInstRef a_pScn, pugi::xml_node a_node)
   model.lightId          = a_node.attribute(L"light_id").as_int();
   model.lightGroupInstId = a_node.attribute(L"lgroup_id").as_int();
   model.meshId           = -1;
-  model.multiMaterialId  = -1;
+  model.remapListId  = -1;
 
   /////////////////////////////////////////////////////////////////////////////////////////////
   const wchar_t* matString = a_node.attribute(L"matrix").as_string();
@@ -642,7 +642,7 @@ void _hrInstanceMergeFromNode(HRSceneInstRef a_scn, pugi::xml_node a_node, int32
   else if(nodeName == std::wstring(L"instance"))
   {
     int mesh_id = a_node.attribute(L"mesh_id").as_int();
-    int mmat_id = a_node.attribute(L"mmat_id").as_int();
+    int rmap_id = a_node.attribute(L"rmap_id").as_int();
 
     HRMeshRef ref;
     ref.id = mesh_id + numMeshesPreMerge;

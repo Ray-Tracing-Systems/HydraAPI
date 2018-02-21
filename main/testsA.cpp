@@ -4801,3 +4801,297 @@ bool test77_save_gbuffer_layers()
 
   return check_images("test_77", 10, 20.0f);
 }
+
+bool test78_material_remap_list1()
+{
+  initGLIfNeeded();
+
+  hrErrorCallerPlace(L"test_78");
+
+  HRCameraRef    camRef;
+  HRSceneInstRef scnRef;
+  HRRenderRef    settingsRef;
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  hrSceneLibraryOpen(L"tests/test_78", HR_WRITE_DISCARD);
+
+  // material and textures
+  //
+  HRTextureNodeRef testTex2 = hrTexture2DCreateFromFile(L"data/textures/chess_red.bmp");
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  std::wstring rotationMatrixStr = L"0.707107 -0.707107 0 0.5 0.707107 0.707107 0 -0.207107 0 0 1 0 0 0 0 1";
+
+  HRMaterialRef mat0 = hrMaterialCreate(L"mysimplemat");
+  HRMaterialRef mat1 = hrMaterialCreate(L"mysimplemat2");
+  HRMaterialRef mat2 = hrMaterialCreate(L"mysimplemat3");
+  HRMaterialRef mat3 = hrMaterialCreate(L"mysimplemat4");
+  HRMaterialRef mat4 = hrMaterialCreate(L"mysimplemat5");
+  HRMaterialRef mat5 = hrMaterialCreate(L"mysimplemat6");
+
+  hrMaterialOpen(mat0, HR_WRITE_DISCARD);
+  {
+    xml_node matNode = hrMaterialParamNode(mat0);
+
+    xml_node diff = matNode.append_child(L"diffuse");
+
+    diff.append_attribute(L"brdf_type").set_value(L"lambert");
+    diff.append_child(L"color").text().set(L"0.75 0.75 0.25");
+
+    HRTextureNodeRef testTex = hrTexture2DCreateFromFile(L"data/textures/texture1.bmp");
+    hrTextureBind(testTex, diff);
+
+    diff.append_child(L"sampler").append_child(L"matrix").text().set(rotationMatrixStr.c_str());
+  }
+  hrMaterialClose(mat0);
+
+  hrMaterialOpen(mat1, HR_WRITE_DISCARD);
+  {
+    xml_node matNode = hrMaterialParamNode(mat1);
+
+    xml_node diff = matNode.append_child(L"diffuse");
+
+    diff.append_attribute(L"brdf_type").set_value(L"lambert");
+    diff.append_child(L"color").text().set(L"1 1 1");
+
+    hrTextureBind(testTex2, diff);
+  }
+  hrMaterialClose(mat1);
+
+  hrMaterialOpen(mat2, HR_WRITE_DISCARD);
+  {
+    xml_node matNode = hrMaterialParamNode(mat2);
+
+    xml_node diff = matNode.append_child(L"diffuse");
+
+    diff.append_attribute(L"brdf_type").set_value(L"lambert");
+    diff.append_child(L"color").text().set(L"0.75 0.75 0.75");
+
+    HRTextureNodeRef testTex = hrTexture2DCreateFromFile(L"data/textures/relief_wood.jpg");
+    hrTextureBind(testTex, diff);
+  }
+  hrMaterialClose(mat2);
+
+  hrMaterialOpen(mat3, HR_WRITE_DISCARD);
+  {
+    xml_node matNode = hrMaterialParamNode(mat3);
+
+    xml_node diff = matNode.append_child(L"diffuse");
+
+    diff.append_attribute(L"brdf_type").set_value(L"lambert");
+    diff.append_child(L"color").text().set(L"0.75 0.75 0.75");
+
+    HRTextureNodeRef testTex = hrTexture2DCreateFromFile(L"data/textures/163.jpg");
+    hrTextureBind(testTex, diff);
+  }
+  hrMaterialClose(mat3);
+
+  hrMaterialOpen(mat4, HR_WRITE_DISCARD);
+  {
+    xml_node matNode = hrMaterialParamNode(mat4);
+
+    xml_node diff = matNode.append_child(L"diffuse");
+
+    diff.append_attribute(L"brdf_type").set_value(L"lambert");
+    diff.append_child(L"color").text().set(L"0.75 0.75 0.0");
+  }
+  hrMaterialClose(mat4);
+
+  hrMaterialOpen(mat5, HR_WRITE_DISCARD);
+  {
+    xml_node matNode = hrMaterialParamNode(mat5);
+
+    xml_node diff = matNode.append_child(L"diffuse");
+
+    diff.append_attribute(L"brdf_type").set_value(L"lambert");
+    diff.append_child(L"color").text().set(L"0.0 0.0 0.85");
+  }
+  hrMaterialClose(mat5);
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  SimpleMesh cube = CreateCube(0.75f);
+  SimpleMesh cube2 = CreateCube(0.25f);
+  SimpleMesh plane = CreatePlane(2.0f);
+  SimpleMesh sphere = CreateSphere(0.5f, 32);
+  SimpleMesh torus = CreateTorus(0.2f, 0.5f, 32, 32);
+
+  HRMeshRef cubeRef = hrMeshCreate(L"my_cube");
+  HRMeshRef planeRef = hrMeshCreate(L"my_plane");
+  HRMeshRef sphereRef = hrMeshCreate(L"my_sphere");
+  HRMeshRef torusRef = hrMeshCreate(L"my_torus");
+
+  hrMeshOpen(cubeRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
+  {
+    hrMeshVertexAttribPointer4f(cubeRef, L"pos", &cube.vPos[0]);
+    hrMeshVertexAttribPointer4f(cubeRef, L"norm", &cube.vNorm[0]);
+    hrMeshVertexAttribPointer2f(cubeRef, L"texcoord", &cube.vTexCoord[0]);
+
+    int cubeMatIndices[12] = { 0, 0, 1, 1, 2, 2, 3, 3, 0, 0, 1, 1 };
+
+    //hrMeshMaterialId(cubeRef, 0);
+    hrMeshPrimitiveAttribPointer1i(cubeRef, L"mind", cubeMatIndices);
+    hrMeshAppendTriangles3(cubeRef, int(cube.triIndices.size()), &cube.triIndices[0]);
+  }
+  hrMeshClose(cubeRef);
+
+  hrMeshOpen(planeRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
+  {
+    hrMeshVertexAttribPointer4f(planeRef, L"pos", &plane.vPos[0]);
+    hrMeshVertexAttribPointer4f(planeRef, L"norm", &plane.vNorm[0]);
+    hrMeshVertexAttribPointer2f(planeRef, L"texcoord", &plane.vTexCoord[0]);
+
+    hrMeshMaterialId(planeRef, mat1.id);
+    hrMeshAppendTriangles3(planeRef, int32_t(plane.triIndices.size()), &plane.triIndices[0]);
+  }
+  hrMeshClose(planeRef);
+
+  hrMeshOpen(sphereRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
+  {
+    hrMeshVertexAttribPointer4f(sphereRef, L"pos", &sphere.vPos[0]);
+    hrMeshVertexAttribPointer4f(sphereRef, L"norm", &sphere.vNorm[0]);
+    hrMeshVertexAttribPointer2f(sphereRef, L"texcoord", &sphere.vTexCoord[0]);
+
+    for (size_t i = 0; i < sphere.matIndices.size() / 2; i++)
+      sphere.matIndices[i] = mat0.id;
+
+    for (size_t i = sphere.matIndices.size() / 2; i < sphere.matIndices.size(); i++)
+      sphere.matIndices[i] = mat2.id;
+
+    hrMeshPrimitiveAttribPointer1i(sphereRef, L"mind", &sphere.matIndices[0]);
+    hrMeshAppendTriangles3(sphereRef, int32_t(sphere.triIndices.size()), &sphere.triIndices[0]);
+  }
+  hrMeshClose(sphereRef);
+
+  hrMeshOpen(torusRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
+  {
+    hrMeshVertexAttribPointer4f(torusRef, L"pos", &torus.vPos[0]);
+    hrMeshVertexAttribPointer4f(torusRef, L"norm", &torus.vNorm[0]);
+    hrMeshVertexAttribPointer2f(torusRef, L"texcoord", &torus.vTexCoord[0]);
+
+    for (size_t i = 0; i < torus.matIndices.size() / 3; i++)
+      torus.matIndices[i] = mat0.id;
+
+    for (size_t i = 1 * torus.matIndices.size() / 3; i < 2 * torus.matIndices.size() / 3; i++)
+      torus.matIndices[i] = mat3.id;
+
+    for (size_t i = 2 * torus.matIndices.size() / 3; i < torus.matIndices.size(); i++)
+      torus.matIndices[i] = mat2.id;
+
+    //hrMeshMaterialId(torusRef, mat0.id);
+    hrMeshPrimitiveAttribPointer1i(torusRef, L"mind", &torus.matIndices[0]);
+    hrMeshAppendTriangles3(torusRef, int32_t(torus.triIndices.size()), &torus.triIndices[0]);
+
+    // test second call of hrMeshAppendTriangles3
+    //
+    hrMeshVertexAttribPointer4f(torusRef, L"pos", &cube2.vPos[0]);
+    hrMeshVertexAttribPointer4f(torusRef, L"norm", &cube2.vNorm[0]);
+    hrMeshVertexAttribPointer2f(torusRef, L"texcoord", &cube2.vTexCoord[0]);
+
+    int cubeMatIndices[12] = { 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 1, 1 };
+
+    hrMeshPrimitiveAttribPointer1i(torusRef, L"mind", cubeMatIndices);
+    hrMeshAppendTriangles3(torusRef, int(cube2.triIndices.size()), &cube2.triIndices[0]);
+  }
+  hrMeshClose(torusRef);
+
+  // camera
+  //
+  camRef = hrCameraCreate(L"my camera");
+
+  hrCameraOpen(camRef, HR_WRITE_DISCARD);
+  {
+    xml_node camNode = hrCameraParamNode(camRef);
+
+    camNode.append_child(L"fov").text().set(L"45");
+    camNode.append_child(L"nearClipPlane").text().set(L"0.01");
+    camNode.append_child(L"farClipPlane").text().set(L"100.0");
+
+    camNode.append_child(L"up").text().set(L"0 1 0");
+    camNode.append_child(L"position").text().set(L"0 0 1");
+    camNode.append_child(L"look_at").text().set(L"0 0 -1");
+  }
+  hrCameraClose(camRef);
+
+  // set up render settings
+  //
+  settingsRef = hrRenderCreate(L"opengl1");
+
+  hrRenderOpen(settingsRef, HR_WRITE_DISCARD);
+  {
+    pugi::xml_node node = hrRenderParamNode(settingsRef);
+    node.append_child(L"width").text() = 512;
+    node.append_child(L"height").text() = 512;
+  }
+  hrRenderClose(settingsRef);
+
+  // create scene
+  //
+  scnRef = hrSceneCreate(L"my scene");
+
+  float	rtri = 25.0f; // Angle For The Triangle ( NEW )
+  float	rquad = 40.0f;
+  float g_FPS = 60.0f;
+  int   frameCounter = 0;
+
+  const float DEG_TO_RAD = float(3.14159265358979323846f) / 180.0f;
+
+  float matrixT[4][4], matrixT2[4][4], matrixT3[4][4], matrixT4[4][4];
+  float mRot1[4][4], mTranslate[4][4], mRes[4][4];
+
+  float mTranslateDown[4][4], mRes2[4][4];
+
+  mat4x4_identity(mRot1);
+  mat4x4_identity(mTranslate);
+  mat4x4_identity(mRes);
+
+  mat4x4_translate(mTranslate, 0.0f, 0.25f, -5.0f);
+  mat4x4_rotate_X(mRot1, mRot1, -3.5f*rquad*DEG_TO_RAD);
+  mat4x4_rotate_Y(mRot1, mRot1, -7.0f*rquad*DEG_TO_RAD*0.5f);
+  mat4x4_mul(mRes, mTranslate, mRot1);
+  mat4x4_transpose(matrixT, mRes); // this fucking math library swap rows and columns
+
+  mat4x4_identity(mRes);
+  mat4x4_translate(mTranslateDown, 0.0f, -1.0f, -5.0f);
+  mat4x4_mul(mRes2, mTranslateDown, mRes);
+  mat4x4_transpose(matrixT2, mRes2);
+
+  mat4x4_identity(mRot1);
+  mat4x4_identity(mRes);
+  mat4x4_rotate_Y(mRes, mRot1, rquad*DEG_TO_RAD);
+  mat4x4_translate(mTranslateDown, -1.5f, -0.5f, -4.0f);
+  mat4x4_mul(mRes2, mTranslateDown, mRes);
+  mat4x4_transpose(matrixT3, mRes2);
+
+  mat4x4_identity(mRot1);
+  mat4x4_identity(mTranslate);
+  mat4x4_identity(mRes);
+
+  mat4x4_translate(mTranslate, 2.0f, 0.25f, -5.0f);
+  mat4x4_rotate_X(mRot1, mRot1, rquad*DEG_TO_RAD);
+  mat4x4_rotate_Y(mRot1, mRot1, -rquad * DEG_TO_RAD*0.5f);
+  mat4x4_mul(mRes, mTranslate, mRot1);
+  mat4x4_transpose(matrixT4, mRes); // this fucking math library swap rows and columns
+
+  int32_t remapList1[4] = { mat0.id, mat5.id, mat1.id, mat4.id };                   // 0 --> 5; 1 --> 4;
+  int32_t remapList2[6] = { mat1.id, mat5.id, mat3.id, mat5.id, mat2.id, mat4.id }; // 4 --> 2; 3 --> 5;
+
+  // draw scene
+  //
+  hrSceneOpen(scnRef, HR_WRITE_DISCARD);
+  {
+    hrMeshInstance(scnRef, torusRef,  &matrixT[0][0]);
+    hrMeshInstance(scnRef, torusRef,  &matrixT3[0][0], remapList1, 4);
+    hrMeshInstance(scnRef, torusRef,  &matrixT4[0][0], remapList2, 6);
+    hrMeshInstance(scnRef, planeRef,  &matrixT2[0][0]);
+  }
+  hrSceneClose(scnRef);
+
+  hrFlush(scnRef, settingsRef);
+  hrRenderSaveFrameBufferLDR(settingsRef, L"tests_images/test_78/z_out.png");
+
+  return check_images("test_78", 1, 20.0f);
+}

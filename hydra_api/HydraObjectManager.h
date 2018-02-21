@@ -456,7 +456,7 @@ struct HRSceneInst : public HRObject<IHRSceneInst>
 
   struct Instance
   {
-    Instance() : lightInstId(-1), lightId(-1), meshId(-1), multiMaterialId(-1), lightGroupInstId(-1)
+    Instance() : lightInstId(-1), lightId(-1), meshId(-1), remapListId(-1), lightGroupInstId(-1)
     {
       m[0] = 1; m[1] = 0; m[2] = 0; m[3] = 0;
       m[4] = 0; m[5] = 1; m[6] = 0; m[7] = 0;
@@ -468,7 +468,7 @@ struct HRSceneInst : public HRObject<IHRSceneInst>
     int32_t  lightInstId;
     int32_t  lightId;
     int32_t  meshId;
-    int32_t  multiMaterialId;
+    int32_t  remapListId;
     int32_t  lightGroupInstId;
     pugi::xml_node node;
   };
@@ -484,6 +484,9 @@ struct HRSceneInst : public HRObject<IHRSceneInst>
   std::unordered_set<int32_t> matUsedByDrv;
   std::unordered_set<int32_t> lightUsedByDrv;
   std::unordered_set<int32_t> texturesUsedByDrv;
+
+  std::vector< std::vector<int32_t> >   m_remapList;
+  std::unordered_map<uint64_t, int32_t> m_remapCache;
 
   bool driverDirtyFlag;  // if true, driver need to Update this scene.
   int32_t lightGroupCounter;
@@ -569,10 +572,6 @@ struct HRObjectManager
 
   void BadMaterialId(int32_t a_id) { if (m_badMaterialId.size() < 10) m_badMaterialId.push_back(a_id); }
   std::vector<int32_t> m_badMaterialId;
-
- 
-  std::vector< std::vector<int32_t> >   m_multiMaterials;
-  std::unordered_map<uint64_t, int32_t> m_remapList;
 
   bool m_copyTexFilesToLocalStorage;
   bool m_useLocalPath;
