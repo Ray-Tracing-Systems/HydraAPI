@@ -806,12 +806,11 @@ HAPI void              hrSceneClose(HRSceneInstRef pScn);
 
 /**
 \brief like glDrawArraysInstanced
-\param a_pScn  - pointer to scene where mesh instances will be inserted
-\param a_pMesh - pointer to mesh
-\param a_mat   - matrix
-\param a_mmListSize size of mm array
-\param a_mmList - mm  array of material indices.
-
+\param a_pScn   - pointer to scene where mesh instances will be inserted
+\param a_pMesh  - pointer to mesh
+\param a_mat    - matrix
+\param a_mmList - multimaterial remap pairs array;             @ALWAYS must be multiple of 2
+\param a_mmListSize - size of multimaterial remap pairs array; @EXAMPLE: [0,1,3,4,7,5] means [0-->1; 3-->4; 7-->5;]
 */
 HAPI void              hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh, float a_mat[16], 
                                       const int32_t* a_mmListm = nullptr, int32_t a_mmListSize = 0);
@@ -1031,8 +1030,6 @@ namespace HRUtils
   \brief Convert LDR cube map to LDR spheremap
 
   */
-
-
   HRTextureNodeRef Cube2SphereLDR(HRTextureNodeRef a_cube[6]);
 
   void InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_scnTo, float a_mat[16], bool origin = true);

@@ -572,7 +572,7 @@ struct HRObjectManager
 
  
   std::vector< std::vector<int32_t> >   m_multiMaterials;
-  std::unordered_map<uint64_t, int32_t> m_multiMaterialsId;
+  std::unordered_map<uint64_t, int32_t> m_remapList;
 
   bool m_copyTexFilesToLocalStorage;
   bool m_useLocalPath;

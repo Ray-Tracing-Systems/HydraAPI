@@ -466,22 +466,36 @@ HAPI void hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh,
 
   int32_t mmId = -1;
 
-  if (a_mmListm != nullptr) // create new multi material
+  if (a_mmListm != nullptr && a_mmListSize > 0 && a_mmListSize%2 == 0) // create new material remap list
   {
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// sort remap list by
+    struct Int2
+    {
+      int32_t from;
+      int32_t to;
+    };
+
+    std::vector<Int2> rempListSorted(a_mmListSize/2);
+    memcpy(&rempListSorted[0], a_mmListm, a_mmListSize * sizeof(int));
+
+    std::sort(rempListSorted.begin(), rempListSorted.end(), [](Int2 a, Int2 b) -> bool { return a.from > b.from; });
+    a_mmListm = (const int32_t*)&rempListSorted[0];
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// sort remap list by
+
     uint64_t hash = XXH64(a_mmListm, a_mmListSize*sizeof(int32_t), 459662034736); // compute xx hash of material list
     
-    auto p = g_objManager.m_multiMaterialsId.find(hash);
-    if (p == g_objManager.m_multiMaterialsId.end())
+    auto p = g_objManager.m_remapList.find(hash);
+    if (p == g_objManager.m_remapList.end())
     {
       std::vector<int32_t> data(a_mmListm, a_mmListm + a_mmListSize);
       g_objManager.m_multiMaterials.push_back(data);
 
-      mmId = int32_t(g_objManager.m_multiMaterialsId.size()) - 1;
-      g_objManager.m_multiMaterialsId[hash] = mmId;
+      mmId = int32_t(g_objManager.m_remapList.size()) - 1;
+      g_objManager.m_remapList[hash] = mmId;
     }
     else
       mmId = p->second;
-
   }
 
   HRSceneInst::Instance model;

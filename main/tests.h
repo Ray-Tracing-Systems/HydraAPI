@@ -158,6 +158,7 @@ bool test74_frame_buffer_line();
 bool test75_repeated_render();
 bool test76_empty_mesh();
 bool test77_save_gbuffer_layers();
+bool test78_material_remap_list1();
 
 bool test90_check_xml_fail_lights();
 bool test91_check_xml_fail_lights();

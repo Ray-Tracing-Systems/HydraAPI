@@ -108,10 +108,10 @@ int main(int argc, const char** argv)
     //std::cout << test39_mesh_from_vsgf() << std::endl;
     //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
     //std::cout << test77_save_gbuffer_layers() << std::endl;
-    //std::cout << test59_cornell_water_mlt() << std::endl;
+    std::cout << test78_material_remap_list1() << std::endl;
     //std::cout << test70_area_lights16() << std::endl;
 
-    std::cout << MTL_TESTS::test_153_opacity_shadow_matte_opacity() << std::endl;
+    //std::cout << MTL_TESTS::test_153_opacity_shadow_matte_opacity() << std::endl;
 
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
     //GEO_TESTS::test_002_mesh_from_vsgf();
