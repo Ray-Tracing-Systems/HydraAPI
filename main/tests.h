@@ -343,6 +343,8 @@ bool test1011_merge_scene(); // run MTL_TESTS::test_131_blend_simple() first
 bool test1012_merge_one_light(); // run LGHT_TESTS::test_221_cylinder_tex3();
 
 
+bool test1013_commit_without_render(); //needs scene library with at least 1 light and 2 materials
+
 
 
 void run_all_api_tests(const int startTestId = 0);
