@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2003
+VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HydraAPI", "HydraNewAPI1.vcxproj", "{C05FF9EA-3D61-48B7-ABEA-4353253691DC}"
 EndProject
@@ -20,7 +20,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ies_parser", "..\ies_parser
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "clew", "..\clew\clew.vcxproj", "{5F13E40F-C0F1-4EF4-A775-AB8BC703DE88}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PostProcess", "..\pp_trofim\PostProcessDLLTrofimm.vcxproj", "{999F34F2-BF3C-4D55-AFDF-75235335B1A1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PostProcess", "..\PostProcessDLL\PostProcessDLLTrofimm.vcxproj", "{999F34F2-BF3C-4D55-AFDF-75235335B1A1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

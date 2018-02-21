@@ -679,10 +679,10 @@ HRSceneInstRef HRUtils::MergeLibraryIntoLibrary(const wchar_t* a_libPath, bool m
     return mergedScn;
   }
 
-  auto numTexturesPreMerge  = g_objManager.scnData.textures.size();
-  auto numMaterialsPreMerge = g_objManager.scnData.materials.size();
-  auto numMeshesPreMerge  = g_objManager.scnData.meshes.size();
-  auto numLightsPreMerge = 0;
+  auto numTexturesPreMerge  = int32_t(g_objManager.scnData.textures.size());
+  auto numMaterialsPreMerge = int32_t(g_objManager.scnData.materials.size());
+  auto numMeshesPreMerge  = int32_t(g_objManager.scnData.meshes.size());
+  int32_t numLightsPreMerge = 0;
 
   for (pugi::xml_node node = docToMerge.child(L"textures_lib").first_child(); node != nullptr; node = node.next_sibling())
     _hrTexture2DMergeFromNode(node, std::wstring(a_libPath));
@@ -695,7 +695,7 @@ HRSceneInstRef HRUtils::MergeLibraryIntoLibrary(const wchar_t* a_libPath, bool m
 
   if(mergeLights)
   {
-    numLightsPreMerge = g_objManager.scnData.lights.size();
+    numLightsPreMerge = int32_t(g_objManager.scnData.lights.size());
     for (pugi::xml_node node = docToMerge.child(L"lights_lib").first_child(); node != nullptr; node = node.next_sibling())
       _hrLightMergeFromNode(node, std::wstring(a_libPath), numTexturesPreMerge);
   }
@@ -742,7 +742,7 @@ HRTextureNodeRef HRUtils::MergeOneTextureIntoLibrary(const wchar_t* a_libPath, c
     return ref;
   }
 
-  auto numTexturesPreMerge = g_objManager.scnData.textures.size();
+  auto numTexturesPreMerge = int32_t(g_objManager.scnData.textures.size());
 
   for (pugi::xml_node node = docToMerge.child(L"textures_lib").first_child(); node != nullptr; node = node.next_sibling())
   {
@@ -783,8 +783,8 @@ HRMaterialRef HRUtils::MergeOneMaterialIntoLibrary(const wchar_t* a_libPath, con
     return ref;
   }
 
-  auto numTexturesPreMerge = g_objManager.scnData.textures.size();
-  auto numMaterialsPreMerge = g_objManager.scnData.materials.size();
+  auto numTexturesPreMerge = int32_t(g_objManager.scnData.textures.size());
+  auto numMaterialsPreMerge = int32_t(g_objManager.scnData.materials.size());
 
   for (pugi::xml_node node = docToMerge.child(L"materials_lib").first_child(); node != nullptr; node = node.next_sibling())
   {
@@ -824,7 +824,7 @@ HRMeshRef HRUtils::MergeOneMeshIntoLibrary(const wchar_t* a_libPath, const wchar
     return ref;
   }
 
-  auto numMaterialsPreMerge = g_objManager.scnData.materials.size();
+  auto numMaterialsPreMerge = int32_t(g_objManager.scnData.materials.size());
 
 
   for (pugi::xml_node node = docToMerge.child(L"geometry_lib").first_child(); node != nullptr; node = node.next_sibling())
@@ -864,7 +864,7 @@ HRLightRef HRUtils::MergeOneLightIntoLibrary(const wchar_t* a_libPath, const wch
     return ref;
   }
 
-  auto numTexturesPreMerge = g_objManager.scnData.textures.size();
+  auto numTexturesPreMerge = int32_t(g_objManager.scnData.textures.size());
 
   for (pugi::xml_node node = docToMerge.child(L"lights_lib").first_child(); node != nullptr; node = node.next_sibling())
   {
