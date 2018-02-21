@@ -101,11 +101,11 @@ int main(int argc, const char** argv)
     //test1007_merge_library();
     //test1008_merge_one_texture();
     //test1009_merge_one_material();
-    test1010_merge_one_mesh();
+    //test1010_merge_one_mesh();
 
     //MTL_TESTS::test_131_blend_simple();
 
-    //std::cout << test39_mesh_from_vsgf() << std::endl;
+    std::cout << test39_mesh_from_vsgf() << std::endl;
     //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
     //std::cout << test77_save_gbuffer_layers() << std::endl;
     //std::cout << test59_cornell_water_mlt() << std::endl;
