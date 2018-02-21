@@ -19,6 +19,10 @@ extern HRObjectManager g_objManager;
 #include <algorithm>
 
 #include "xxhash.h"
+#include "HydraXMLHelpers.h"
+
+#include "LiteMath.h"
+using namespace HydraLiteMath;
 
 
 HRTextureNodeRef _hrTexture2DCreateFromNode(pugi::xml_node a_node)
@@ -414,7 +418,7 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int32_t a_stateId)
   return 0;
 }
 
-void fixTextureIds(pugi::xml_node a_node, std::wstring a_libPath, int increment, bool mergeDependencies = false)
+void fixTextureIds(pugi::xml_node a_node, const std::wstring &a_libPath, int32_t increment, bool mergeDependencies = false)
 {
   if (std::wstring(a_node.name()) == L"texture")
   {
@@ -440,7 +444,7 @@ void fixTextureIds(pugi::xml_node a_node, std::wstring a_libPath, int increment,
 }
 
 
-HRMaterialRef _hrMaterialMergeFromNode(pugi::xml_node a_node, std::wstring a_libPath, int32_t numTexturesPreMerge, int32_t numMaterialsPreMerge, bool mergeDependencies = false)
+HRMaterialRef _hrMaterialMergeFromNode(pugi::xml_node a_node, const std::wstring &a_libPath, int32_t numTexturesPreMerge, int32_t numMaterialsPreMerge, bool mergeDependencies = false)
 {
   const wchar_t* a_objectName = a_node.attribute(L"name").as_string();
 
@@ -499,7 +503,7 @@ HRMaterialRef _hrMaterialMergeFromNode(pugi::xml_node a_node, std::wstring a_lib
   return ref;
 }
 
-HRTextureNodeRef _hrTexture2DMergeFromNode(pugi::xml_node a_node, std::wstring a_libPath)
+HRTextureNodeRef _hrTexture2DMergeFromNode(pugi::xml_node a_node, const std::wstring &a_libPath)
 {
   const std::wstring dl       = a_node.attribute(L"dl").as_string();
   const std::wstring loc      = a_node.attribute(L"loc").as_string();
@@ -522,8 +526,41 @@ HRTextureNodeRef _hrTexture2DMergeFromNode(pugi::xml_node a_node, std::wstring a
   return ref;
 }
 
+HRLightRef _hrLightMergeFromNode(pugi::xml_node a_node, const std::wstring &a_libPath, int32_t numTexturesPreMerge, bool mergeDependencies = false)
+{
+  const wchar_t* a_objectName = a_node.attribute(L"name").as_string();
+  const wchar_t* a_lightType = a_node.attribute(L"type").as_string();
+  const wchar_t* a_lightShape = a_node.attribute(L"shape").as_string();
+  const wchar_t* a_lightDistribution = a_node.attribute(L"distribution").as_string();
+  int a_lightVisibility = a_node.attribute(L"visible").as_int();
 
-HRMeshRef _hrMeshMergeFromNode(pugi::xml_node a_node, std::wstring a_libPath, int32_t numMaterialsPreMerge, bool mergeDependencies = false)
+  HRLightRef ref = hrLightCreate(a_objectName);
+
+  hrLightOpen(ref, HR_WRITE_DISCARD);
+  {
+    auto lightNode = hrLightParamNode(ref);
+
+    lightNode.force_attribute(L"type").set_value(a_lightType);
+    lightNode.force_attribute(L"shape").set_value(a_lightShape);
+    lightNode.force_attribute(L"distribution").set_value(a_lightDistribution);
+    lightNode.force_attribute(L"visible").set_value(a_lightVisibility);
+
+    for (pugi::xml_node node = a_node.first_child(); node != nullptr; node = node.next_sibling())
+    {
+      lightNode.append_copy(node);
+    }
+    fixTextureIds(lightNode, a_libPath, numTexturesPreMerge, mergeDependencies);
+
+  }
+  hrLightClose(ref);
+
+
+
+  return ref;
+}
+
+
+HRMeshRef _hrMeshMergeFromNode(pugi::xml_node a_node, const std::wstring &a_libPath, int32_t numMaterialsPreMerge, bool mergeDependencies = false)
 {
   const std::wstring dl       = a_node.attribute(L"dl").as_string();
   const std::wstring loc      = a_node.attribute(L"loc").as_string();
@@ -585,8 +622,38 @@ HRMeshRef _hrMeshMergeFromNode(pugi::xml_node a_node, std::wstring a_libPath, in
   return ref;
 }
 
+void _hrInstanceMergeFromNode(HRSceneInstRef a_scn, pugi::xml_node a_node, int32_t numMeshesPreMerge, bool mergeLights = false, int32_t numLightsPreMerge = 0)
+{
+  std::wstring nodeName = a_node.name();
 
-void HRUtils::MergeLibraryIntoLibrary(const wchar_t* a_libPath) //WIP
+  float matrix[16];
+  HydraXMLHelpers::ReadMatrix4x4(a_node, L"matrix", matrix);
+
+  if(mergeLights && nodeName == std::wstring(L"instance_light"))
+  {
+    int light_id = a_node.attribute(L"light_id").as_int();
+    int lgroup_id = a_node.attribute(L"lgroup_id").as_int();
+
+    HRLightRef ref;
+    ref.id = light_id + numLightsPreMerge;
+
+    hrLightInstance(a_scn, ref, matrix);
+  }
+  else if(nodeName == std::wstring(L"instance"))
+  {
+    int mesh_id = a_node.attribute(L"mesh_id").as_int();
+    int mmat_id = a_node.attribute(L"mmat_id").as_int();
+
+    HRMeshRef ref;
+    ref.id = mesh_id + numMeshesPreMerge;
+
+    hrMeshInstance(a_scn, ref, matrix);
+  }
+
+}
+
+
+HRSceneInstRef HRUtils::MergeLibraryIntoLibrary(const wchar_t* a_libPath, bool mergeLights, bool copyScene)
 {
   std::wstring fileName;
   int stateId = 0;
@@ -594,10 +661,12 @@ void HRUtils::MergeLibraryIntoLibrary(const wchar_t* a_libPath) //WIP
   _hrFindTargetOrLastState(a_libPath, -1,
                            fileName, stateId);
 
+  HRSceneInstRef mergedScn;
+
   if(fileName.empty())
   {
     HrError(L"MergeLibraryIntoLibrary, can't find existing library at: ", a_libPath);
-    return;
+    return mergedScn;
   }
 
   pugi::xml_document docToMerge;
@@ -607,11 +676,13 @@ void HRUtils::MergeLibraryIntoLibrary(const wchar_t* a_libPath) //WIP
   if (!loadResult)
   {
     HrError(L"MergeLibraryIntoLibrary, pugixml load: ", loadResult.description());
-    return;
+    return mergedScn;
   }
 
   auto numTexturesPreMerge  = g_objManager.scnData.textures.size();
   auto numMaterialsPreMerge = g_objManager.scnData.materials.size();
+  auto numMeshesPreMerge  = g_objManager.scnData.meshes.size();
+  auto numLightsPreMerge = 0;
 
   for (pugi::xml_node node = docToMerge.child(L"textures_lib").first_child(); node != nullptr; node = node.next_sibling())
     _hrTexture2DMergeFromNode(node, std::wstring(a_libPath));
@@ -622,21 +693,43 @@ void HRUtils::MergeLibraryIntoLibrary(const wchar_t* a_libPath) //WIP
   for (pugi::xml_node node = docToMerge.child(L"geometry_lib").first_child(); node != nullptr; node = node.next_sibling())
     _hrMeshMergeFromNode(node, std::wstring(a_libPath), numMaterialsPreMerge);
 
-  //for (pugi::xml_node node = docToMerge.child(L"lights_lib").first_child(); node != nullptr; node = node.next_sibling())
- //   _hrLightCreateFromNode(node);
+  if(mergeLights)
+  {
+    numLightsPreMerge = g_objManager.scnData.lights.size();
+    for (pugi::xml_node node = docToMerge.child(L"lights_lib").first_child(); node != nullptr; node = node.next_sibling())
+      _hrLightMergeFromNode(node, std::wstring(a_libPath), numTexturesPreMerge);
+  }
+
+  if(copyScene)
+  {
+    mergedScn = hrSceneCreate(L"merged scene");
+
+    hrSceneOpen(mergedScn, HR_WRITE_DISCARD);
+
+    pugi::xml_node sceneToMergeNode = docToMerge.child(L"scenes").first_child();
+    for (pugi::xml_node node = sceneToMergeNode.first_child(); node != nullptr; node = node.next_sibling())
+    {
+      _hrInstanceMergeFromNode(mergedScn, node, numMeshesPreMerge, mergeLights, numLightsPreMerge);
+    }
+
+    hrSceneClose(mergedScn);
+  }
+
+  return mergedScn;
 }
 
 HRTextureNodeRef HRUtils::MergeOneTextureIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_texName, int a_texId)
 {
   std::wstring fileName;
   int stateId = 0;
+  HRTextureNodeRef ref;
 
   _hrFindTargetOrLastState(a_libPath, -1, fileName, stateId);
 
   if (fileName.empty())
   {
     HrError(L"MergeOneTextureIntoLibrary, can't find existing library at: ", a_libPath);
-    return HRTextureNodeRef();
+    return ref;
   }
 
   pugi::xml_document docToMerge;
@@ -646,17 +739,15 @@ HRTextureNodeRef HRUtils::MergeOneTextureIntoLibrary(const wchar_t* a_libPath, c
   if (!loadResult)
   {
     HrError(L"MergeOneTextureIntoLibrary, pugixml load: ", loadResult.description());
-    return HRTextureNodeRef();
+    return ref;
   }
 
   auto numTexturesPreMerge = g_objManager.scnData.textures.size();
 
-  HRTextureNodeRef ref;
-
   for (pugi::xml_node node = docToMerge.child(L"textures_lib").first_child(); node != nullptr; node = node.next_sibling())
   {
     std::wstring texName = node.attribute(L"name").as_string();
-    if ((a_texName != nullptr && !texName.compare(std::wstring(a_texName)))
+    if ((a_texName != nullptr && texName == std::wstring(a_texName))
           || node.attribute(L"id").as_int() == a_texId)
     {
       ref = _hrTexture2DMergeFromNode(node, std::wstring(a_libPath));
@@ -672,13 +763,14 @@ HRMaterialRef HRUtils::MergeOneMaterialIntoLibrary(const wchar_t* a_libPath, con
 {
   std::wstring fileName;
   int stateId = 0;
+  HRMaterialRef ref;
 
   _hrFindTargetOrLastState(a_libPath, -1, fileName, stateId);
 
   if (fileName.empty())
   {
     HrError(L"MergeOneMaterialIntoLibrary, can't find existing library at: ", a_libPath);
-    return HRMaterialRef();
+    return ref;
   }
 
   pugi::xml_document docToMerge;
@@ -688,18 +780,16 @@ HRMaterialRef HRUtils::MergeOneMaterialIntoLibrary(const wchar_t* a_libPath, con
   if (!loadResult)
   {
     HrError(L"MergeOneMaterialIntoLibrary, pugixml load: ", loadResult.description());
-    return HRMaterialRef();
+    return ref;
   }
 
   auto numTexturesPreMerge = g_objManager.scnData.textures.size();
   auto numMaterialsPreMerge = g_objManager.scnData.materials.size();
 
-  HRMaterialRef ref;
-
   for (pugi::xml_node node = docToMerge.child(L"materials_lib").first_child(); node != nullptr; node = node.next_sibling())
   {
     std::wstring matName = node.attribute(L"name").as_string();
-    if ((a_matName != nullptr && !matName.compare(std::wstring(a_matName)))
+    if ((a_matName != nullptr && matName == std::wstring(a_matName))
           || node.attribute(L"id").as_int() == a_matId)
     {
       ref = _hrMaterialMergeFromNode(node, std::wstring(a_libPath), numTexturesPreMerge, numMaterialsPreMerge, true);
@@ -714,13 +804,14 @@ HRMeshRef HRUtils::MergeOneMeshIntoLibrary(const wchar_t* a_libPath, const wchar
 {
   std::wstring fileName;
   int stateId = 0;
+  HRMeshRef ref;
 
   _hrFindTargetOrLastState(a_libPath, -1, fileName, stateId);
 
   if (fileName.empty())
   {
     HrError(L"MergeOneMeshIntoLibrary, can't find existing library at: ", a_libPath);
-    return HRMeshRef();
+    return ref;
   }
 
   pugi::xml_document docToMerge;
@@ -730,22 +821,127 @@ HRMeshRef HRUtils::MergeOneMeshIntoLibrary(const wchar_t* a_libPath, const wchar
   if (!loadResult)
   {
     HrError(L"MergeOneMeshIntoLibrary, pugixml load: ", loadResult.description());
-    return HRMeshRef();
+    return ref;
   }
 
   auto numMaterialsPreMerge = g_objManager.scnData.materials.size();
 
-  HRMeshRef ref;
 
   for (pugi::xml_node node = docToMerge.child(L"geometry_lib").first_child(); node != nullptr; node = node.next_sibling())
   {
     std::wstring meshName = node.attribute(L"name").as_string();
-    if (!meshName.compare(std::wstring(a_meshName)))
+    if (meshName == std::wstring(a_meshName))
     {
       ref = _hrMeshMergeFromNode(node, std::wstring(a_libPath), numMaterialsPreMerge, true);
       break;
     }
   }
   return ref;
+}
+
+
+HRLightRef HRUtils::MergeOneLightIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_lightName)
+{
+  std::wstring fileName;
+  int stateId = 0;
+  HRLightRef ref;
+
+  _hrFindTargetOrLastState(a_libPath, -1, fileName, stateId);
+
+  if (fileName.empty())
+  {
+    HrError(L"MergeOneLightIntoLibrary, can't find existing library at: ", a_libPath);
+    return ref;
+  }
+
+  pugi::xml_document docToMerge;
+
+  auto loadResult = docToMerge.load_file(fileName.c_str());
+
+  if (!loadResult)
+  {
+    HrError(L"MergeOneLightIntoLibrary, pugixml load: ", loadResult.description());
+    return ref;
+  }
+
+  auto numTexturesPreMerge = g_objManager.scnData.textures.size();
+
+  for (pugi::xml_node node = docToMerge.child(L"lights_lib").first_child(); node != nullptr; node = node.next_sibling())
+  {
+    std::wstring lightName = node.attribute(L"name").as_string();
+    if (lightName == std::wstring(a_lightName))
+    {
+      ref = _hrLightMergeFromNode(node, std::wstring(a_libPath), numTexturesPreMerge, true);
+      break;
+    }
+  }
+  return ref;
+}
+
+void HRUtils::InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_scnTo, float a_mat[16], bool origin)
+{
+  HRSceneInst *pScn = g_objManager.PtrById(a_scnFrom);
+  HRSceneInst *pScn2 = g_objManager.PtrById(a_scnTo);
+  if (pScn == nullptr || pScn2 == nullptr)
+  {
+    HrError(L"HRUtils::InstanceSceneIntoScene: one of the scenes is nullptr");
+    return;
+  }
+
+  if (pScn->opened)
+  {
+    hrSceneClose(a_scnFrom);
+  }
+  if (pScn2->opened)
+  {
+    hrSceneClose(a_scnTo);
+  }
+
+  hrSceneOpen(a_scnFrom, HR_OPEN_READ_ONLY);
+
+  std::vector<HRSceneInst::Instance> backupListMeshes(pScn->drawList);
+  std::vector<HRSceneInst::Instance> backupListLights(pScn->drawListLights);
+
+  hrSceneClose(a_scnFrom);
+
+  HR_OPEN_MODE mode;
+
+  if(a_scnFrom.id == a_scnTo.id)
+    mode = HR_WRITE_DISCARD;
+  else
+    mode = HR_OPEN_EXISTING;
+
+  hrSceneOpen(a_scnTo, mode);
+  for (auto light : backupListLights)
+  {
+    HRLightRef tmp;
+    tmp.id = light.lightId;
+    hrLightInstance(a_scnTo, tmp, light.m);
+  }
+
+  for (auto mesh : backupListMeshes)
+  {
+    if (mesh.lightId < 0)
+    {
+      HRMeshRef tmp;
+      tmp.id = mesh.meshId;
+      float currentMatrix[16];
+      memcpy(currentMatrix, mesh.m, 16 * sizeof(float));
+
+      float4x4 m1(currentMatrix);
+      float4x4 m2(a_mat);
+      float4x4 mRes;
+
+      if (origin)
+        mRes = mul(m1, m2);
+      else
+        mRes = mul(m2, m1);
+
+      hrMeshInstance(a_scnTo, tmp, mRes.L());
+    }
+  }
+
+  hrSceneClose(a_scnTo);
+
 }
 

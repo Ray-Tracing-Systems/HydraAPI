@@ -340,6 +340,8 @@ bool test1007_merge_library(); //run MTL_TESTS::test_131_blend_simple() first
 bool test1008_merge_one_texture(); //run MTL_TESTS::test_131_blend_simple() first
 bool test1009_merge_one_material(); //run MTL_TESTS::test_131_blend_simple() first
 bool test1010_merge_one_mesh(); //run GEO_TESTS::test_005_instancing() and GEO_TESTS::test_002_mesh_from_vsgf() first
+bool test1011_merge_scene(); // run MTL_TESTS::test_131_blend_simple() first
+bool test1012_merge_one_light(); // run LGHT_TESTS::test_221_cylinder_tex3();
 
 
 

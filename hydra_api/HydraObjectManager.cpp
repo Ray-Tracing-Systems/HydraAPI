@@ -555,16 +555,21 @@ pugi::xml_node HRSceneInst::append_instances_back(pugi::xml_node a_node)
   if (sceneToCopy == nullptr)
     sceneToCopy = g_objManager.scnData.m_sceneNode.append_copy(a_node);
 
-  // #TODO: optimize this with spetial two-list scanning algorithm
+  // #TODO: optimize this with special two-list scanning algorithm
   //
-  std::unordered_map<int32_t, pugi::xml_node> nodeById;
+  std::unordered_map<std::wstring, pugi::xml_node> nodeByIdAndType;
   for (pugi::xml_node inst = sceneToCopy.first_child(); inst != nullptr; inst = inst.next_sibling())
-    nodeById[inst.attribute(L"id").as_int()] = inst;
+  {
+    std::wstringstream ss;
+    ss << inst.attribute(L"id").as_int() << inst.name();
+    nodeByIdAndType[ss.str()] = inst;
+  }
 
   for (pugi::xml_node inst = a_node.first_child(); inst != nullptr; inst = inst.next_sibling())
   {
-    int32_t id = inst.attribute(L"id").as_int();
-    pugi::xml_node& nodeCopyTo = nodeById[id];
+    std::wstringstream ss;
+    ss << inst.attribute(L"id").as_int() << inst.name();
+    pugi::xml_node& nodeCopyTo = nodeByIdAndType[ss.str()];
     lite_copy_node_to(inst, sceneToCopy, nodeCopyTo);
   }
 
