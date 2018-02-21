@@ -5844,21 +5844,21 @@ namespace MTL_TESTS
       diff.append_child(L"color").append_attribute(L"val").set_value(L"0.5 0.5 1.0");
 
       auto opacity = matNode.append_child(L"opacity");
-      opacity.append_child(L"skip_shadow").append_attribute(L"val").set_value(0);
+      opacity.append_child(L"skip_shadow").append_attribute(L"val").set_value(1);
 
-			auto texNode = hrTextureBind(texPattern, opacity);
+			// auto texNode = hrTextureBind(texPattern, opacity);
+      // 
+      // texNode.append_attribute(L"matrix");
+      // float samplerMatrix[16] = { 3, 0, 0, 0,
+      //                             0, 3, 0, 0,
+      //                             0, 0, 1, 0,
+      //                             0, 0, 0, 1 };
+      // texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
+      // texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
+      // texNode.append_attribute(L"input_gamma").set_value(2.2f);
+      // texNode.append_attribute(L"input_alpha").set_value(L"rgb");
 
-      texNode.append_attribute(L"matrix");
-      float samplerMatrix[16] = { 3, 0, 0, 0,
-                                  0, 3, 0, 0,
-                                  0, 0, 1, 0,
-                                  0, 0, 0, 1 };
-      texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
-      texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
-      texNode.append_attribute(L"input_gamma").set_value(2.2f);
-      texNode.append_attribute(L"input_alpha").set_value(L"rgb");
-
-      HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
+      // HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
 
 			VERIFY_XML(matNode);
     }
