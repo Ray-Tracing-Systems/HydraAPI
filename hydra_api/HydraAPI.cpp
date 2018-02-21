@@ -523,7 +523,7 @@ HAPI void hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh,
   }
 
   HRSceneInst::Instance model;
-  model.meshId          = a_pMesh.id;
+  model.meshId      = a_pMesh.id;
   model.remapListId = mmId;                
   memcpy(model.m, a_mat, 16 * sizeof(float));
   pScn->drawList.push_back(model);

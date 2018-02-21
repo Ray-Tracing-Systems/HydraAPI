@@ -4810,7 +4810,7 @@ bool test78_material_remap_list1()
 
   HRCameraRef    camRef;
   HRSceneInstRef scnRef;
-  HRRenderRef    settingsRef;
+  HRRenderRef    renderRef;
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4998,6 +4998,23 @@ bool test78_material_remap_list1()
   }
   hrMeshClose(torusRef);
 
+  HRLightRef sky = hrLightCreate(L"sky");
+
+  hrLightOpen(sky, HR_WRITE_DISCARD);
+  {
+    auto lightNode = hrLightParamNode(sky);
+
+    lightNode.attribute(L"type").set_value(L"sky");
+
+    auto intensityNode = lightNode.append_child(L"intensity");
+
+    intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"0.75 0.75 0.85");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(1.0f);
+
+    VERIFY_XML(lightNode);
+  }
+  hrLightClose(sky);
+
   // camera
   //
   camRef = hrCameraCreate(L"my camera");
@@ -5018,15 +5035,28 @@ bool test78_material_remap_list1()
 
   // set up render settings
   //
-  settingsRef = hrRenderCreate(L"opengl1");
+  renderRef = hrRenderCreate(L"HydraModern");
 
-  hrRenderOpen(settingsRef, HR_WRITE_DISCARD);
+  hrRenderOpen(renderRef, HR_WRITE_DISCARD);
   {
-    pugi::xml_node node = hrRenderParamNode(settingsRef);
-    node.append_child(L"width").text() = 512;
+    pugi::xml_node node = hrRenderParamNode(renderRef);
+    node.append_child(L"width").text()  = 512;
     node.append_child(L"height").text() = 512;
+
+    node.append_child(L"method_primary").text()   = L"pathtracing";
+    node.append_child(L"method_secondary").text() = L"pathtracing";
+    node.append_child(L"method_tertiary").text()  = L"pathtracing";
+    node.append_child(L"method_caustic").text()   = L"pathtracing";
+
+    node.append_child(L"trace_depth").text()      = 6;
+    node.append_child(L"diff_trace_depth").text() = 3;
+    node.append_child(L"maxRaysPerPixel").text()  = 1024;
   }
-  hrRenderClose(settingsRef);
+  hrRenderClose(renderRef);
+
+  hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
+
+  // hrRenderLogDir(renderRef, L"C:/[Hydra]/logs/", true);
 
   // create scene
   //
@@ -5087,11 +5117,46 @@ bool test78_material_remap_list1()
     hrMeshInstance(scnRef, torusRef,  &matrixT3[0][0], remapList1, 4);
     hrMeshInstance(scnRef, torusRef,  &matrixT4[0][0], remapList2, 6);
     hrMeshInstance(scnRef, planeRef,  &matrixT2[0][0]);
+
+    mat4x4_identity(mRes);
+    hrLightInstance(scnRef, sky, &mRes[0][0]);
   }
   hrSceneClose(scnRef);
 
-  hrFlush(scnRef, settingsRef);
-  hrRenderSaveFrameBufferLDR(settingsRef, L"tests_images/test_78/z_out.png");
+  hrFlush(scnRef, renderRef, camRef);
+  
+  {
+    glViewport(0, 0, 512, 512);
+    std::vector<int32_t> image(512 * 512);
+
+    while (true)
+    {
+      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+      HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
+
+      if (info.haveUpdateFB)
+      {
+        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
+
+        glDisable(GL_TEXTURE_2D);
+        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+
+        auto pres = std::cout.precision(2);
+        std::cout << "rendering progress = " << info.progress << "% \r";
+        std::cout.precision(pres);
+
+        glfwSwapBuffers(g_window);
+        glfwPollEvents();
+      }
+
+      if (info.finalUpdate)
+        break;
+    }
+  }
+  
+  
+  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_78/z_out.png");
 
   return check_images("test_78", 1, 20.0f);
 }
