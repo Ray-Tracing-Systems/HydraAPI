@@ -5106,8 +5106,8 @@ bool test78_material_remap_list1()
   mat4x4_mul(mRes, mTranslate, mRot1);
   mat4x4_transpose(matrixT4, mRes); // this fucking math library swap rows and columns
 
-  int32_t remapList1[4] = { mat0.id, mat5.id, mat1.id, mat4.id };                   // 0 --> 5; 1 --> 4;
-  int32_t remapList2[6] = { mat1.id, mat5.id, mat3.id, mat5.id, mat2.id, mat4.id }; // 4 --> 2; 3 --> 5;
+  int32_t remapList1[4] = { mat0.id, mat5.id, mat2.id, mat0.id };                   // 0 --> 5; 1 --> 0;
+  int32_t remapList2[6] = { mat1.id, mat5.id, mat3.id, mat5.id, mat2.id, mat0.id }; // 1 --> 5; 3 --> 5; 2 --> 0;
 
   // draw scene
   //
