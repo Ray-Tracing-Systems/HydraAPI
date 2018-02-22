@@ -93,29 +93,36 @@ int main(int argc, const char** argv)
     //run_all_ipp_tests();
 
     //test42_load_library_basic();
+
     //test1000_loadlibrary_and_edit();
     //test1001_loadlibrary_and_add_textures();
     //test1002_get_material_by_name_and_edit();
-    //test1006_transform_all_instances_origin();
+    //test1003_get_light_by_name_and_edit();
+    //test1004_get_camera_by_name_and_edit();
+
     //test1005_transform_all_instances();
+    //test1006_transform_all_instances_origin();
     //test1007_merge_library();
     //test1008_merge_one_texture();
     //test1009_merge_one_material();
     //test1010_merge_one_mesh();
+    test1011_merge_scene();
+    //test1012_merge_one_light();
+    //test1013_commit_without_render();
 
     //MTL_TESTS::test_131_blend_simple();
 
     //std::cout << test39_mesh_from_vsgf() << std::endl;
     //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
     //std::cout << test77_save_gbuffer_layers() << std::endl;
-    std::cout << test78_material_remap_list1() << std::endl;
+    //std::cout << test59_cornell_water_mlt() << std::endl;
     //std::cout << test70_area_lights16() << std::endl;
 
-    //std::cout << MTL_TESTS::test_153_opacity_shadow_matte_opacity() << std::endl;
+    //std::cout << MTL_TESTS::test_120_opacity_shadow_matte() << std::endl;
 
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
-    //GEO_TESTS::test_002_mesh_from_vsgf();
-    //MTL_TESTS::test_153_opacity_shadow_matte_opacity();
+    //GEO_TESTS::test_005_instancing();
+    //MTL_TESTS::test_120_opacity_shadow_matte();
     //LGHT_TESTS::test_202_sky_color();
     
     //PP_TESTS::test305_fbi_from_render();    

@@ -40,10 +40,10 @@ def test01_render_cubes(report_file, inBG):
 
   hy.hrSceneLibraryOpen("tests/" + test_name, hy.HR_WRITE_DISCARD)
 
-  (cubeVertices, cubeNormals, cubeTexCoords, cubeIndices) = createCube("cube", 1.0)
+  (cubeVertices, cubeNormals, cubeTexCoords, cubeIndices) = createCube(1.0)
   numberIndicesCube = cubeIndices.size
   
-  (planeVertices, planeNormals, planeTexCoords, planeIndices) = createPlane("plane", 50.0)
+  (planeVertices, planeNormals, planeTexCoords, planeIndices) = createPlane(50.0)
   numberIndicesPlane = planeIndices.size
   
   testTex = hy.hrTexture2DCreateFromFile("../../main/data/textures/texture1.bmp")
@@ -1333,28 +1333,18 @@ def test11_load_car_and_change_env(library_path, report_file, inBG):
 
   hy.hrSceneLibraryOpen(library_path, hy.HR_OPEN_EXISTING)
     
-  renderRef = hy.HRRenderRef()
-  renderRef.id = 0
-
   scnRef = hy.HRSceneInstRef()
   scnRef.id = 0
   
-  camRef = hy.hrFindCameraByName("PhysCamera001")
-  
-  hy.hrRenderEnableDevice(renderRef, 1, True)
-  hy.hrCommit(scnRef, renderRef);
-  hy.hrRenderCommand(renderRef, "pause", "");
-  time.sleep(0.25) #let render rip
-  
+  hy.hrCommit(scnRef);
+
   texEnv = hy.hrTexture2DCreateFromFile("../../main/data/textures/Factory_Catwalk_2k_BLUR.exr");
   
   matBGRef = hy.hrFindMaterialByName("ground")
-  print("matBGRef.id = {}".format(matBGRef.id))
   hy.hrMaterialOpen(matBGRef, hy.HR_WRITE_DISCARD)
   matNode = hy.hrMaterialParamNode(matBGRef)
   matNode.attribute("type").set_value("shadow_catcher");
   hy.hrMaterialClose(matBGRef)
-  
   
   light = hy.hrFindLightByName("environment")
   
@@ -1378,7 +1368,10 @@ def test11_load_car_and_change_env(library_path, report_file, inBG):
   hy.WriteMatrix4x4(texNode, "matrix", samplerMatrix2); 
   hy.hrLightClose(light);
   
-
+  camRef = hy.hrFindCameraByName("PhysCamera001")
+  renderRef = hy.HRRenderRef()
+  renderRef.id = 0
+  hy.hrRenderEnableDevice(renderRef, 1, True)
   hy.hrFlush(scnRef, renderRef, camRef)
   
   
@@ -1398,20 +1391,15 @@ def test12_cornell_box_gbuffer(report_file, inBG):
   
   hy.hrSceneLibraryOpen("tests/" + test_name, hy.HR_OPEN_EXISTING)
     
-  renderRef = hy.HRRenderRef()
-  renderRef.id = 0
-
   scnRef = hy.HRSceneInstRef()
   scnRef.id = 0
   
-  camRef = hy.hrFindCameraByName("PhysCamera001")
-  
-  hy.hrRenderEnableDevice(renderRef, 0, True)
-  hy.hrCommit(scnRef, renderRef);
-  hy.hrRenderCommand(renderRef, "pause", "");
-  time.sleep(0.5) #let render rip
-  
+  hy.hrCommit(scnRef);
 
+  camRef = hy.hrFindCameraByName("PhysCamera001")
+  renderRef = hy.HRRenderRef()
+  renderRef.id = 0
+  hy.hrRenderEnableDevice(renderRef, 0, True)
   hy.hrFlush(scnRef, renderRef, camRef)
   
   
@@ -1434,22 +1422,19 @@ def test13_transform_instances(report_file, inBG):
 
   hy.hrSceneLibraryOpen("tests/" + test_name, hy.HR_OPEN_EXISTING)
    
-  renderRef = hy.HRRenderRef()
-  renderRef.id = 0
-
   scnRef = hy.HRSceneInstRef()
   scnRef.id = 0
   
-  camRef = hy.hrFindCameraByName("PhysCamera001")
-  
-  hy.hrRenderEnableDevice(renderRef, 0, True)
-  hy.hrCommit(scnRef, renderRef);
-  hy.hrRenderCommand(renderRef, "pause", "");
-  time.sleep(0.5) #let render rip
-  
+  hy.hrCommit(scnRef);
+ 
   matrix = rotateYM4x4(45 * DEG_TO_RAD)
   
-  hy.TransformAllInstances(scnRef, matrix.flatten(), False)
+  hy.InstanceSceneIntoScene(scnRef, scnRef, matrix.flatten(), False)
+  
+  camRef = hy.hrFindCameraByName("PhysCamera001")
+  renderRef = hy.HRRenderRef()
+  renderRef.id = 0
+  hy.hrRenderEnableDevice(renderRef, 0, True)
 
   hy.hrFlush(scnRef, renderRef, camRef)
   
@@ -1462,6 +1447,61 @@ def test13_transform_instances(report_file, inBG):
       report_file.write(test_name + " FAILED, MSE : {}\n".format(mse))   
   else:
     initAndStartOpenGL(renderRef, 1024, 768, test_name, [2])
+    
+    
+def test14_merge_scenes(report_file, inBG):
+  test_name = "test14_merge_scenes"
+
+  hy.hrSceneLibraryOpen("tests/" + test_name, hy.HR_WRITE_DISCARD)
+   
+ 
+  camRef = hy.hrCameraCreate("my camera")
+  hy.hrCameraOpen(camRef, hy.HR_WRITE_DISCARD)
+  camNode = hy.hrCameraParamNode(camRef)
+  camNode.append_child("fov").text().set("45")
+  camNode.append_child("nearClipPlane").text().set("0.01")
+  camNode.append_child("farClipPlane").text().set("100.0")
+  camNode.append_child("up").text().set("0 1 0")
+  camNode.append_child("position").text().set("0 0 5")
+  camNode.append_child("look_at").text().set("0 0 -1")
+  hy.hrCameraClose(camRef)
+   
+  renderRef = hy.hrRenderCreate("HydraModern")
+  hy.hrRenderEnableDevice(renderRef, 0, True);
+  hy.hrRenderOpen(renderRef, hy.HR_WRITE_DISCARD)
+  node = hy.hrRenderParamNode(renderRef)
+  node.force_child("width").text().set(1024)
+  node.force_child("height").text().set(768)
+  node.force_child("method_primary").text().set("pathtracing")
+  node.force_child("method_caustic").text().set("pathtracing")
+  node.force_child("trace_depth").text().set(5)
+  node.force_child("diff_trace_depth").text().set(3)
+  node.force_child("maxRaysPerPixel").text().set(1024)
+  hy.hrRenderClose(renderRef)
+
+  scnRef = hy.hrSceneCreate("my scene")
+  
+  sceneMerged1 = hy.MergeLibraryIntoLibrary("tests/test01_render_cubes", True, True)
+  matT = identityM4x4()
+  hy.InstanceSceneIntoScene(sceneMerged1, scnRef, matT.flatten())
+  
+  sceneMerged2 = hy.MergeLibraryIntoLibrary("tests/test02_mesh_form_vsgf", True, True)
+  matT = translateM4x4(np.array([0.0, -1.0, -20.0]))
+  matRot = rotateYM4x4(45.0* DEG_TO_RAD)
+  matRes = np.dot(matT, matRot)
+  hy.InstanceSceneIntoScene(sceneMerged2, scnRef, matRes.flatten())
+
+  hy.hrFlush(scnRef, renderRef, camRef)
+  
+  if(inBG):
+    runRenderInBG(renderRef, 1024, 768, test_name, [])
+    (res, mse) = check_images(test_name, 1, 50.0)
+    if(res):
+      report_file.write(test_name + " PASSED, MSE : {}\n".format(mse))
+    else:
+      report_file.write(test_name + " FAILED, MSE : {}\n".format(mse))   
+  else:
+    initAndStartOpenGL(renderRef, 1024, 768, test_name, [])
   
 def run_tests():
   hy.hrInit("-copy_textures_to_local_folder 1 -local_data_path 1 ")
@@ -1480,6 +1520,7 @@ def run_tests():
 #    test11_load_car_and_change_env("tests/test11_load_car_and_change_env", report_file, False)
 #    test12_cornell_box_gbuffer(report_file, False)
 #    test13_transform_instances(report_file, False)
+    test14_merge_scenes(report_file, False)
 #    render_scene("tests/test04_instancing")
 
 run_tests()
