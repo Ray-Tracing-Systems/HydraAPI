@@ -744,7 +744,7 @@ void HR_UpdateLightsGeometryAndMaterial(pugi::xml_node a_lightLibChanges, pugi::
 
     nodeXML.append_attribute(L"id").set_value(nextInstId);
     nodeXML.append_attribute(L"mesh_id").set_value(instData.meshId);
-    nodeXML.append_attribute(L"mmat_id").set_value(-1);
+    nodeXML.append_attribute(L"rmap_id").set_value(-1);
     nodeXML.append_attribute(L"matrix").set_value(instData.matrixStr.c_str());
     nodeXML.append_attribute(L"light_id").set_value(instData.lightId);
     nodeXML.append_attribute(L"linst_id").set_value(instData.lightInstId);
@@ -755,7 +755,7 @@ void HR_UpdateLightsGeometryAndMaterial(pugi::xml_node a_lightLibChanges, pugi::
     model.meshId          = instData.meshId;
     model.lightId         = instData.lightId;
     model.lightInstId     = instData.lightInstId;
-    model.multiMaterialId = -1;
+    model.remapListId = -1;
 
     HydraXMLHelpers::ReadMatrix4x4(nodeXML, L"matrix", model.m);
     pScn->drawList.push_back(model);

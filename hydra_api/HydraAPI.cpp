@@ -346,6 +346,9 @@ HAPI void hrSceneOpen(HRSceneInstRef a_pScn, HR_OPEN_MODE a_mode)
 
     sceneNode.attribute(L"discard").set_value(L"1");
     clear_node_childs(sceneNode);                       // #NOTE: strange bug in 3ds max plugin; for some reason this node is not empty
+
+    pScn->m_remapList.clear();
+    pScn->m_remapCache.clear();
   }
   else if (a_mode == HR_OPEN_EXISTING)
   {
@@ -374,6 +377,27 @@ HAPI void hrSceneClose(HRSceneInstRef a_pScn)
 
   pugi::xml_node sceneNode = pScn->xml_node_next(pScn->openMode);
 
+  //// add remap list
+  //
+  if (!pScn->m_remapCache.empty())
+  {
+    pugi::xml_node allLists = sceneNode.append_child(L"remap_lists");
+    for (int id = 0; id < pScn->m_remapList.size(); id++)
+    {
+      const auto& remapList = pScn->m_remapList[id];
+
+      std::wstringstream strOut;
+      for (size_t i = 0; i < remapList.size(); i++)
+        strOut << remapList[i] << " ";
+      const std::wstring finalStr = strOut.str();
+
+      pugi::xml_node rlist = allLists.append_child(L"remap_list");
+
+      rlist.append_attribute(L"id")  = id;
+      rlist.append_attribute(L"val") = finalStr.c_str();
+    }
+  }
+
   //// add all instances to xml
   //
   for (size_t i = pScn->drawBegin; i < pScn->drawList.size(); i++)
@@ -384,7 +408,7 @@ HAPI void hrSceneClose(HRSceneInstRef a_pScn)
 
     std::wstring id     = ToWString(i);
     std::wstring mod_id = ToWString(elem.meshId);
-    std::wstring mat_id = ToWString(elem.multiMaterialId);
+    std::wstring mat_id = ToWString(elem.remapListId);
 
     std::wstringstream outMat;
     for (int j = 0; j < 16;j++)
@@ -394,7 +418,7 @@ HAPI void hrSceneClose(HRSceneInstRef a_pScn)
 
     nodeXML.append_attribute(L"id").set_value(id.c_str());
     nodeXML.append_attribute(L"mesh_id").set_value(mod_id.c_str());
-    nodeXML.append_attribute(L"mmat_id").set_value(mat_id.c_str());
+    nodeXML.append_attribute(L"rmap_id").set_value(mat_id.c_str());
     nodeXML.append_attribute(L"matrix").set_value(mstr.c_str());
   }
 
@@ -466,27 +490,41 @@ HAPI void hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh,
 
   int32_t mmId = -1;
 
-  if (a_mmListm != nullptr) // create new multi material
+  if (a_mmListm != nullptr && a_mmListSize > 0 && a_mmListSize%2 == 0) // create new material remap list
   {
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// sort remap list by
+    struct Int2
+    {
+      int32_t from;
+      int32_t to;
+    };
+
+    std::vector<Int2> rempListSorted(a_mmListSize/2);
+    memcpy(&rempListSorted[0], a_mmListm, a_mmListSize * sizeof(int));
+
+    std::sort(rempListSorted.begin(), rempListSorted.end(), [](Int2 a, Int2 b) -> bool { return a.from < b.from; });
+    a_mmListm = (const int32_t*)&rempListSorted[0];
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// sort remap list by
+
     uint64_t hash = XXH64(a_mmListm, a_mmListSize*sizeof(int32_t), 459662034736); // compute xx hash of material list
     
-    auto p = g_objManager.m_multiMaterialsId.find(hash);
-    if (p == g_objManager.m_multiMaterialsId.end())
+    auto p = pScn->m_remapCache.find(hash);
+    if (p == pScn->m_remapCache.end())
     {
       std::vector<int32_t> data(a_mmListm, a_mmListm + a_mmListSize);
-      g_objManager.m_multiMaterials.push_back(data);
+      pScn->m_remapList.push_back(data);
 
-      mmId = int32_t(g_objManager.m_multiMaterialsId.size()) - 1;
-      g_objManager.m_multiMaterialsId[hash] = mmId;
+      mmId = int32_t(pScn->m_remapList.size()) - 1;
+      pScn->m_remapCache[hash] = mmId;
     }
     else
       mmId = p->second;
-
   }
 
   HRSceneInst::Instance model;
-  model.meshId          = a_pMesh.id;
-  model.multiMaterialId = mmId;                
+  model.meshId      = a_pMesh.id;
+  model.remapListId = mmId;                
   memcpy(model.m, a_mat, 16 * sizeof(float));
   pScn->drawList.push_back(model);
 }
@@ -510,7 +548,7 @@ static void _hrLightInstance(HRSceneInstRef a_pScn, HRLightRef a_pLight, float a
   model.lightId          = a_pLight.id;
   model.lightGroupInstId = a_lightGroupInstanceId;
   model.meshId           = -1;
-  model.multiMaterialId  = -1;
+  model.remapListId  = -1;
   memcpy(model.m, a_mat, 16 * sizeof(float));
   pScn->drawListLights.push_back(model);
   if (a_customAttribs == nullptr)
