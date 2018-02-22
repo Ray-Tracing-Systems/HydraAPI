@@ -173,7 +173,11 @@ HAPI void _hrMeshInstanceFromNode(HRSceneInstRef a_pScn, pugi::xml_node a_node)
     model.lightId     = a_node.attribute(L"light_id").as_int();
     model.lightInstId = a_node.attribute(L"linst_id").as_int();
   }
-  model.remapListId = -1;
+
+  if(a_node.attribute(L"rmap_id") == nullptr)
+    model.remapListId = -1;
+  else
+    model.remapListId = a_node.attribute(L"rmap_id").as_int();
 
   /////////////////////////////////////////////////////////////////////////////////////////////
   const wchar_t* matString = a_node.attribute(L"matrix").as_string();

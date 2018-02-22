@@ -29,7 +29,7 @@ struct RD_OGL1_DebugDrawRays : public RD_OGL1_Debug
 
   ~RD_OGL1_DebugDrawRays() { }
 
-  void BeginScene() override;
+  void BeginScene(pugi::xml_node a_sceneNode) override;
   void EndScene  () override;
 
 protected:
@@ -43,10 +43,10 @@ protected:
 };
 
 
-void RD_OGL1_DebugDrawRays::BeginScene()
+void RD_OGL1_DebugDrawRays::BeginScene(pugi::xml_node a_sceneNode)
 {
   m_drawWire = true;
-  Base::BeginScene();
+  Base::BeginScene(a_sceneNode);
 }
 
 void RD_OGL1_DebugDrawRays::EndScene()

@@ -75,9 +75,9 @@ struct RD_HydraConnection : public IHRRenderDriver
 
   /////////////////////////////////////////////////////////////////////////////////////////////
 
-  void BeginScene() override;
+  void BeginScene(pugi::xml_node a_sceneNode) override;
   void EndScene() override;
-  void InstanceMeshes(int32_t a_mesh_id, const float* a_matrices, int32_t a_instNum, const int* a_lightInstId) override;
+  void InstanceMeshes(int32_t a_mesh_id, const float* a_matrices, int32_t a_instNum, const int* a_lightInstId, const int* a_remapId) override;
   void InstanceLights(int32_t a_light_id, const float* a_matrix, pugi::xml_node* a_custAttrArray, int32_t a_instNum, int32_t a_lightGroupId) override;
 
   void Draw() override;
@@ -550,7 +550,7 @@ void RD_HydraConnection::RunAllHydraHeads()
 
 }
 
-void RD_HydraConnection::BeginScene()
+void RD_HydraConnection::BeginScene(pugi::xml_node a_sceneNode)
 {
   m_progressVal   = 0.0f;
   m_avgBrightness = 1.0f;
@@ -589,7 +589,7 @@ void RD_HydraConnection::Draw()
   // like glFinish();
 }
 
-void RD_HydraConnection::InstanceMeshes(int32_t a_meshId, const float* a_matrices, int32_t a_instNum, const int* a_lightInstId)
+void RD_HydraConnection::InstanceMeshes(int32_t a_meshId, const float* a_matrices, int32_t a_instNum, const int* a_lightInstId, const int* a_remapId)
 {
   m_instancesNum += a_instNum;
 }

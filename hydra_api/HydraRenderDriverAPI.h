@@ -213,8 +213,8 @@ struct IHRRenderDriver
 
   //// Scene Instance and render methods (i.e. actually render some thing ... )
   //
-  virtual void    BeginScene() = 0;  ///< this method is called before instences wiil be created (i.e. beforer all calls of InstanceMeshes/InstanceLights)
-  virtual void    EndScene()   = 0;  ///< this method is called after instences wiil be created (i.e. beforer all calls of InstanceMeshes/InstanceLights)
+  virtual void    BeginScene(pugi::xml_node a_sceneNode) = 0;  ///< this method is called before instences wiil be created (i.e. beforer all calls of InstanceMeshes/InstanceLights)
+  virtual void    EndScene()   = 0;                            ///< this method is called after instences wiil be created (i.e. beforer all calls of InstanceMeshes/InstanceLights)
 
   /**
   \brief draw all instances of target mesh
@@ -222,9 +222,10 @@ struct IHRRenderDriver
   \param a_matrix      - transformation matrices array. one matrix for one instance. each matrix is float[16]. So, the total a_matrix array size is a_instNum*16 
   \param a_instNum     - instances number for mesh with id == a_mesh_id.
   \param a_lightInstId - points to light instance if if this is a light mesh or -1 otherwise.
+  /param a_remapId     - points array of (remapId || -1)
 
   */
-  virtual void    InstanceMeshes(int32_t a_mesh_id, const float* a_matrix, int32_t a_instNum, const int* a_lightInstId)  = 0;
+  virtual void    InstanceMeshes(int32_t a_mesh_id, const float* a_matrix, int32_t a_instNum, const int* a_lightInstId, const int* a_remapId)  = 0;
 
   /**
   \brief add (and draw) all light instances of target light
@@ -238,8 +239,6 @@ struct IHRRenderDriver
   virtual void    InstanceLights(int32_t a_light_id, const float* a_matrix, pugi::xml_node* a_custAttrArray, int32_t a_instNum, int32_t a_lightGroupId) = 0;
 
   virtual void    Draw() = 0; ///< perform draw pass
-
-  // virtual void InstanceMeshesMM(int32_t a_mesh_id, const float* a_matrix, const int32_t** a_multimaterialList, const int32_t a_instNum) = 0; ???
 
   // frame buffer and gbuffer functions
   //

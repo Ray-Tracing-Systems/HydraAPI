@@ -307,7 +307,7 @@ bool RD_OGL32_Forward::UpdateSettings(pugi::xml_node a_settingsNode)
   return true;
 }
 
-void RD_OGL32_Forward::BeginScene()
+void RD_OGL32_Forward::BeginScene(pugi::xml_node a_sceneNode)
 {
   glViewport(0, 0, (GLint)m_width, (GLint)m_height);
   glClearColor(0.0f, 0.0f, 0.20f, 1.0f);
@@ -371,7 +371,7 @@ void RD_OGL32_Forward::EndScene()
 }
 
 void RD_OGL32_Forward::InstanceMeshes(int32_t a_mesh_id, const float *a_matrices, int32_t a_instNum,
-                                    const int *a_lightInstId)
+                                      const int *a_lightInstId, const int* a_remapId)
 {
   for (int32_t i = 0; i < a_instNum; i++)
   {

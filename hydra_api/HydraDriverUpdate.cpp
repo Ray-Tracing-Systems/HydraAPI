@@ -48,6 +48,7 @@ struct ChangeList
   {
     std::vector<float>    matrices;
     std::vector<int32_t>  linstid;
+    std::vector<int32_t>  remapid;
   };
 
   std::unordered_map<int32_t, InstancesInfo > drawSeq;
@@ -118,12 +119,14 @@ void FindNewObjects(ChangeList& objects, HRSceneInst& scn)
     {
       objects.drawSeq[instance.meshId].matrices = std::vector<float>  (instance.m, instance.m + 16);
       objects.drawSeq[instance.meshId].linstid  = std::vector<int32_t>(&instance.lightInstId, &instance.lightInstId + 1);
+      objects.drawSeq[instance.meshId].remapid  = std::vector<int32_t>(&instance.remapListId, &instance.remapListId + 1);
     }
     else
     {
       std::vector<float> data(instance.m, instance.m + 16);
       p->second.matrices.insert(p->second.matrices.end(), data.begin(), data.end());
       p->second.linstid.push_back(instance.lightInstId);
+      p->second.remapid.push_back(instance.remapListId);
     }
   }
 
@@ -241,6 +244,29 @@ void FindOldObjectsThatWeNeedToUpdate(ChangeList& objects, HRSceneInst& scn)
   InsertChangedIds(objects.matUsed,      scn.matUsedByDrv,   matsChanges, L"material");
   InsertChangedIds(objects.texturesUsed, scn.texturesUsedByDrv, texturesChanges, L"texture");
   InsertChangedIds(objects.texturesUsed, scn.texturesUsedByDrv, texturesChanges, L"texture_advanced");
+
+  // AddMaterialsFromSceneRemapList
+  //
+  pugi::xml_node scnRemLists = scn.xml_node_immediate().child(L"remap_lists");
+
+  for (auto remapList : scnRemLists.children())
+  {
+    const wchar_t* inputStr = remapList.attribute(L"val").as_string();
+    const int listSize = remapList.attribute(L"size").as_int();
+    std::wstringstream inStrStream(inputStr);
+
+    for (int i = 0; i < listSize; i++)
+    {
+      if (inStrStream.eof())
+        break;
+
+      int matId = 0;
+      inStrStream >> matId;
+
+      if (objects.matUsed.find(matId) == objects.matUsed.end())
+        objects.matUsed.insert(matId);
+    }
+  }
 
   // now we must add to change list all textures that are presented in the materials of matUsed 
   // but (!!!) does not present in scnlib.texturesUsedByDrv
@@ -937,19 +963,13 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
   {
     // draw/add instances to scene
     //
-    a_pDriver->BeginScene();
+    a_pDriver->BeginScene(scn.xml_node_immediate());
 
     for (auto p = objList.drawSeq.begin(); p != objList.drawSeq.end(); p++)
     {
       const auto& seq = p->second;
-      a_pDriver->InstanceMeshes(p->first, &seq.matrices[0], int32_t(seq.matrices.size() / 16), &seq.linstid[0]);
+      a_pDriver->InstanceMeshes(p->first, &seq.matrices[0], int32_t(seq.matrices.size() / 16), &seq.linstid[0], &seq.remapid[0]);
     }
-
-    // for (size_t i = 0; i < scnlib.drawList.size(); i++) // #NOTE: this loop can be optimized for glDrawElementsInstanced (by grouping together sequence of a single mesh instances)
-    // {
-    //   auto& instance = scnlib.drawList[i];
-    //   a_pDriver->InstanceMeshes(instance.meshId, instance.m, 1, nullptr);
-    // }
 
     for (size_t i = 0; i < scn.drawListLights.size(); i++) // #NOTE: this loop can be optimized
     {

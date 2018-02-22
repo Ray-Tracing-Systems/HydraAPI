@@ -395,7 +395,7 @@ bool RD_OGL1_Plain::UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode, cons
 }
 
 
-void RD_OGL1_Plain::BeginScene()
+void RD_OGL1_Plain::BeginScene(pugi::xml_node a_sceneNode)
 {
   glViewport(0, 0, (GLint)m_width, (GLint)m_height);
 
@@ -440,7 +440,7 @@ void RD_OGL1_Plain::Draw()
 }
 
 
-void RD_OGL1_Plain::InstanceMeshes(int32_t a_mesh_id, const float* a_matrices, int32_t a_instNum, const int* a_lightInstId)
+void RD_OGL1_Plain::InstanceMeshes(int32_t a_mesh_id, const float* a_matrices, int32_t a_instNum, const int* a_lightInstId, const int* a_remapId)
 {
   for (int32_t i = 0; i < a_instNum; i++)
   {
