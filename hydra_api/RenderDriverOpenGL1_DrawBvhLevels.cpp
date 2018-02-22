@@ -57,7 +57,7 @@ struct RD_OGL1_DebugDrawBVH : public RD_OGL1_Debug
 
   ~RD_OGL1_DebugDrawBVH() { glDeleteLists(m_boxesDisplayLists, MAX_BVH_LEVELS); }
 
-  void BeginScene() override;
+  void BeginScene(pugi::xml_node a_sceneNode) override;
   void EndScene() override;
 
 protected:
@@ -70,9 +70,9 @@ protected:
 };
 
 
-void RD_OGL1_DebugDrawBVH::BeginScene()
+void RD_OGL1_DebugDrawBVH::BeginScene(pugi::xml_node a_sceneNode)
 {
-  Base::BeginScene();
+  Base::BeginScene(a_sceneNode);
 
 }
 

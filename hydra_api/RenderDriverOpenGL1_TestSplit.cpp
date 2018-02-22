@@ -47,7 +47,7 @@ struct RD_OGL1_TestSplit : public RD_OGL1_Plain
 
   /////////////////////////////////////////////////////////////////////////////////////////////
 
-  void     InstanceMeshes(int32_t a_mesh_id, const float* a_matrices, int32_t a_instNum, const int* a_lightInstId);
+  void     InstanceMeshes(int32_t a_mesh_id, const float* a_matrices, int32_t a_instNum, const int* a_lightInstId, const int* a_remapId);
 
   void     EndScene();
 
@@ -579,7 +579,7 @@ bool RD_OGL1_TestSplit::UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode, 
 
 
 
-void RD_OGL1_TestSplit::InstanceMeshes(int32_t a_mesh_id, const float* a_matrices, int32_t a_instNum, const int* a_lightInstId)
+void RD_OGL1_TestSplit::InstanceMeshes(int32_t a_mesh_id, const float* a_matrices, int32_t a_instNum, const int* a_lightInstId, const int* a_remapId)
 {
   glDepthFunc(GL_LEQUAL); // for drawing wire frame correctly
 

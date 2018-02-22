@@ -394,8 +394,9 @@ HAPI void hrSceneClose(HRSceneInstRef a_pScn)
 
       pugi::xml_node rlist = allLists.append_child(L"remap_list");
 
-      rlist.append_attribute(L"id")  = id;
-      rlist.append_attribute(L"val") = finalStr.c_str();
+      rlist.append_attribute(L"id")   = id;
+      rlist.append_attribute(L"size") = int32_t(remapList.size());
+      rlist.append_attribute(L"val")  = finalStr.c_str();
     }
   }
 

@@ -467,7 +467,7 @@ bool RD_OGL32_Deferred::UpdateSettings(pugi::xml_node a_settingsNode)
   return true;
 }
 
-void RD_OGL32_Deferred::BeginScene()
+void RD_OGL32_Deferred::BeginScene(pugi::xml_node a_sceneNode)
 {
  // std::cout << "BeginScene" <<std::endl;
   glViewport(0, 0, (GLint)m_width, (GLint)m_height);
@@ -682,7 +682,7 @@ void RD_OGL32_Deferred::EndScene()
 
 
 void RD_OGL32_Deferred::InstanceMeshes(int32_t a_mesh_id, const float *a_matrices, int32_t a_instNum,
-                                      const int *a_lightInstId)
+                                      const int *a_lightInstId, const int* a_remapId)
 {
  // std::cout << "InstanceMeshes" <<std::endl;
   for (int32_t i = 0; i < a_instNum; i++)
