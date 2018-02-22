@@ -137,12 +137,11 @@ void WriteMatrix4x4Py(pugi::xml_node a_node, const wchar_t* a_attrib_name, py::a
   HydraXMLHelpers::WriteMatrix4x4(a_node, a_attrib_name, mat.mutable_data(0));
 }
 
-
-void TransformAllInstancesPy(HRSceneInstRef a_pScn, py::array_t<float> &a_mat, bool origin = true)
+void InstanceSceneIntoScenePy(HRSceneInstRef a_scnFrom, HRSceneInstRef a_scnTo, py::array_t<float> &a_mat, bool origin = true)
 {
   auto mat = a_mat.mutable_unchecked<1>();
 
-  HRUtils::TransformAllInstances(a_pScn,  mat.mutable_data(0), origin);
+  HRUtils::InstanceSceneIntoScene(a_scnFrom, a_scnTo,  mat.mutable_data(0), origin);
 }
 
 
@@ -322,7 +321,14 @@ PYBIND11_MODULE(hydraPy, m)
   m.def("hrCommit", &hrCommit, py::arg("a_pScn") = HRSceneInstRef(), py::arg("a_pRender") = HRRenderRef(),  py::arg("a_pCam") = HRCameraRef());
   m.def("hrFlush", &hrFlush, py::arg("a_pScn") = HRSceneInstRef(), py::arg("a_pRender") = HRRenderRef(),  py::arg("a_pCam") = HRCameraRef());
   m.def("WriteMatrix4x4", &WriteMatrix4x4Py, py::arg("a_node"), py::arg("a_attrib_name"), py::arg("a_mat").noconvert());
-  m.def("TransformAllInstances", &TransformAllInstancesPy, py::arg("a_pScn"), py::arg("a_mat").noconvert(), py::arg("origin") = true);
+
+  m.def("InstanceSceneIntoScene", &InstanceSceneIntoScenePy, py::arg("a_scnFrom"), py::arg("a_scnTo"), py::arg("a_mat").noconvert(), py::arg("origin") = true);
+  m.def("MergeLibraryIntoLibrary", &HRUtils::MergeLibraryIntoLibrary, py::arg("a_libPath"), py::arg("mergeLights") = false, py::arg("copyScene") = false);
+  m.def("MergeOneMaterialIntoLibrary", &HRUtils::MergeOneMaterialIntoLibrary, py::arg("a_libPath"), py::arg("a_matName"), py::arg("a_matId") = -1);
+  m.def("MergeOneMeshIntoLibrary", &HRUtils::MergeOneMeshIntoLibrary, py::arg("a_libPath") = false, py::arg("a_meshName"));
+  m.def("MergeOneLightIntoLibrary", &HRUtils::MergeOneLightIntoLibrary, py::arg("a_libPath") = false, py::arg("a_lightName"));
+  m.def("MergeOneTextureIntoLibrary", &HRUtils::MergeOneTextureIntoLibrary, py::arg("a_libPath") = false, py::arg("a_texName"), py::arg("a_texId") = -1);
+
 
   py::class_<pugi::xml_node>(m, "xml_node")
           .def("force_child", &pugi::xml_node::force_child)

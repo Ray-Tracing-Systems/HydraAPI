@@ -702,7 +702,7 @@ HRSceneInstRef HRUtils::MergeLibraryIntoLibrary(const wchar_t* a_libPath, bool m
 
   if(copyScene)
   {
-    mergedScn = hrSceneCreate(L"merged scene");
+    mergedScn = hrSceneCreate(a_libPath);
 
     hrSceneOpen(mergedScn, HR_WRITE_DISCARD);
 
