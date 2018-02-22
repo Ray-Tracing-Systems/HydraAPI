@@ -10,6 +10,7 @@
 #include <sstream>
 #include <fstream>
 #include <iomanip>
+#include <algorithm>
 
 #include "HydraObjectManager.h"
 

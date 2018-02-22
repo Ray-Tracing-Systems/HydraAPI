@@ -1503,6 +1503,114 @@ def test14_merge_scenes(report_file, inBG):
   else:
     initAndStartOpenGL(renderRef, 1024, 768, test_name, [])
   
+def test15_merge_one_object(report_file, inBG):
+  test_name = "test15_merge_one_object"
+
+  hy.hrSceneLibraryOpen("tests/" + test_name, hy.HR_WRITE_DISCARD)
+   
+  camRef = hy.hrCameraCreate("my camera")
+  hy.hrCameraOpen(camRef, hy.HR_WRITE_DISCARD)
+  camNode = hy.hrCameraParamNode(camRef)
+  camNode.append_child("fov").text().set("45")
+  camNode.append_child("nearClipPlane").text().set("0.01")
+  camNode.append_child("farClipPlane").text().set("100.0")
+  camNode.append_child("up").text().set("0 1 0")
+  camNode.append_child("position").text().set("0 0 15")
+  camNode.append_child("look_at").text().set("0 0 -1")
+  hy.hrCameraClose(camRef)
+   
+  renderRef = hy.hrRenderCreate("HydraModern")
+  hy.hrRenderEnableDevice(renderRef, 0, True);
+  hy.hrRenderOpen(renderRef, hy.HR_WRITE_DISCARD)
+  node = hy.hrRenderParamNode(renderRef)
+  node.force_child("width").text().set(1024)
+  node.force_child("height").text().set(768)
+  node.force_child("method_primary").text().set("pathtracing")
+  node.force_child("method_caustic").text().set("pathtracing")
+  node.force_child("trace_depth").text().set(5)
+  node.force_child("diff_trace_depth").text().set(3)
+  node.force_child("maxRaysPerPixel").text().set(1024)
+  hy.hrRenderClose(renderRef)
+  
+  mergedTex = hy.MergeOneTextureIntoLibrary("tests/test01_render_cubes", "../../main/data/textures/texture1.bmp")
+  mergedMat = hy.MergeOneMaterialIntoLibrary("tests/test01_render_cubes", "plane")
+  mergedMesh = hy.MergeOneMeshIntoLibrary("tests/test02_mesh_form_vsgf", "../../main/data/meshes/lucy.vsgf")
+  mergedLight = hy.MergeOneLightIntoLibrary("tests/test02_mesh_form_vsgf", "my_area_light");
+
+  print("mesh = {}".format(mergedMesh.id))
+  print("light = {}".format(mergedLight.id))
+  print("tex = {}".format(mergedTex.id))
+
+  reflMat = hy.hrMaterialCreate("refl")
+  hy.hrMaterialOpen(reflMat, hy.HR_WRITE_DISCARD)
+  matNode = hy.hrMaterialParamNode(reflMat)
+  diff = matNode.append_child("diffuse")
+  diff.append_attribute("brdf_type").set_value("lambert")
+  diff.append_child("color").text().set("0.207843 0.4 0.0")
+  diff.child("color").append_attribute("tex_apply_mode").set_value("multiply")
+  refl = matNode.append_child("reflectivity")
+  refl.append_attribute("brdf_type").set_value("torrance_sparrow")
+  refl.append_child("color").text().set("0.367059 0.345882 0")
+  texNode = hy.hrTextureBind(mergedTex, diff.child("color"));
+  texNode.append_attribute("matrix");
+  samplerMatrix = np.array([8, 0, 0, 0,
+                            0, 8, 0, 0,
+                            0, 0, 1, 0,
+                            0, 0, 0, 1], dtype = np.float32)
+
+  texNode.append_attribute("addressing_mode_u").set_value("wrap");
+  texNode.append_attribute("addressing_mode_v").set_value("wrap");
+  hy.WriteMatrix4x4(texNode, "matrix", samplerMatrix)
+  refl.append_child("glossiness").text().set("0.5")
+  refl.append_child("fresnel_IOR").text().set("14")
+  refl.append_child("fresnel").text().set("1")
+  hy.hrMaterialClose(reflMat)
+
+  plane = createPlaneRef("my plane", 5.0, mergedMat.id)
+  
+  hy.hrMeshOpen(mergedMesh, hy.HR_TRIANGLE_IND3, hy.HR_OPEN_EXISTING)
+  hy.hrMeshMaterialId(mergedMesh, reflMat.id)
+  hy.hrMeshClose(mergedMesh)
+
+  light = hy.hrLightCreate("sky")
+  hy.hrLightOpen(light, hy.HR_WRITE_DISCARD);
+  lightNode = hy.hrLightParamNode(light);
+  lightNode.attribute("type").set_value("sky");
+  lightNode.attribute("distribution").set_value("map");
+
+  intensityNode = lightNode.append_child("intensity");
+  intensityNode.append_child("color").text().set("0.1 0.2 .7");
+  intensityNode.append_child("multiplier").text().set("1.0");
+  hy.hrLightClose(light);
+
+  scnRef = hy.hrSceneCreate("my scene")
+  hy.hrSceneOpen(scnRef, hy.HR_OPEN_EXISTING)
+  
+  matT = translateM4x4(np.array([1.0, -3.0, 0.0]))
+  hy.hrMeshInstance(scnRef, mergedMesh, matT.flatten())
+  
+  matT = translateM4x4(np.array([0.0, -3.0, 0.0]))
+  hy.hrMeshInstance(scnRef, plane, matT.flatten())
+  
+  matT = translateM4x4(np.array([0.0, 5.0, 0.0]))
+  hy.hrLightInstance(scnRef, mergedLight, matT.flatten())
+  
+  hy.hrSceneClose(scnRef)  
+
+  
+
+  hy.hrFlush(scnRef, renderRef, camRef)
+  
+  if(inBG):
+    runRenderInBG(renderRef, 1024, 768, test_name, [])
+    (res, mse) = check_images(test_name, 1, 50.0)
+    if(res):
+      report_file.write(test_name + " PASSED, MSE : {}\n".format(mse))
+    else:
+      report_file.write(test_name + " FAILED, MSE : {}\n".format(mse))   
+  else:
+    initAndStartOpenGL(renderRef, 1024, 768, test_name, [])
+  
 def run_tests():
   hy.hrInit("-copy_textures_to_local_folder 1 -local_data_path 1 ")
 
@@ -1521,6 +1629,7 @@ def run_tests():
 #    test12_cornell_box_gbuffer(report_file, False)
 #    test13_transform_instances(report_file, False)
     test14_merge_scenes(report_file, False)
+#    test15_merge_one_object(report_file, False)
 #    render_scene("tests/test04_instancing")
 
 run_tests()

@@ -325,9 +325,9 @@ PYBIND11_MODULE(hydraPy, m)
   m.def("InstanceSceneIntoScene", &InstanceSceneIntoScenePy, py::arg("a_scnFrom"), py::arg("a_scnTo"), py::arg("a_mat").noconvert(), py::arg("origin") = true);
   m.def("MergeLibraryIntoLibrary", &HRUtils::MergeLibraryIntoLibrary, py::arg("a_libPath"), py::arg("mergeLights") = false, py::arg("copyScene") = false);
   m.def("MergeOneMaterialIntoLibrary", &HRUtils::MergeOneMaterialIntoLibrary, py::arg("a_libPath"), py::arg("a_matName"), py::arg("a_matId") = -1);
-  m.def("MergeOneMeshIntoLibrary", &HRUtils::MergeOneMeshIntoLibrary, py::arg("a_libPath") = false, py::arg("a_meshName"));
-  m.def("MergeOneLightIntoLibrary", &HRUtils::MergeOneLightIntoLibrary, py::arg("a_libPath") = false, py::arg("a_lightName"));
-  m.def("MergeOneTextureIntoLibrary", &HRUtils::MergeOneTextureIntoLibrary, py::arg("a_libPath") = false, py::arg("a_texName"), py::arg("a_texId") = -1);
+  m.def("MergeOneMeshIntoLibrary", &HRUtils::MergeOneMeshIntoLibrary);
+  m.def("MergeOneLightIntoLibrary", &HRUtils::MergeOneLightIntoLibrary);
+  m.def("MergeOneTextureIntoLibrary", &HRUtils::MergeOneTextureIntoLibrary, py::arg("a_libPath"), py::arg("a_texName"), py::arg("a_texId") = -1);
 
 
   py::class_<pugi::xml_node>(m, "xml_node")

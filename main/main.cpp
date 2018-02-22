@@ -106,8 +106,8 @@ int main(int argc, const char** argv)
     //test1008_merge_one_texture();
     //test1009_merge_one_material();
     //test1010_merge_one_mesh();
-    test1011_merge_scene();
-    //test1012_merge_one_light();
+    //test1011_merge_scene();
+    test1012_merge_one_light();
     //test1013_commit_without_render();
 
     //MTL_TESTS::test_131_blend_simple();
