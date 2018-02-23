@@ -1651,8 +1651,8 @@ void run_all_api_tests(const int startTestId)
                        &test74_frame_buffer_line,
                        &test75_repeated_render,
                        &test76_empty_mesh,
-                       &test77_save_gbuffer_layers
-                       
+                       &test77_save_gbuffer_layers,
+                       &test78_material_remap_list1,
   };
 
 

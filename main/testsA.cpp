@@ -4820,7 +4820,6 @@ bool test78_material_remap_list1()
 
   // material and textures
   //
-  HRTextureNodeRef testTex2 = hrTexture2DCreateFromFile(L"data/textures/chess_red.bmp");
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -4844,8 +4843,6 @@ bool test78_material_remap_list1()
 
     HRTextureNodeRef testTex = hrTexture2DCreateFromFile(L"data/textures/texture1.bmp");
     hrTextureBind(testTex, diff);
-
-    diff.append_child(L"sampler").append_child(L"matrix").text().set(rotationMatrixStr.c_str());
   }
   hrMaterialClose(mat0);
 
@@ -4858,7 +4855,11 @@ bool test78_material_remap_list1()
     diff.append_attribute(L"brdf_type").set_value(L"lambert");
     diff.append_child(L"color").text().set(L"1 1 1");
 
-    hrTextureBind(testTex2, diff);
+    HRTextureNodeRef testTex2 = hrTexture2DCreateFromFile(L"data/textures/chess_red.bmp");
+    pugi::xml_node texNode    = hrTextureBind(testTex2, diff);
+
+    texNode.append_attribute(L"addressing_mode_u").set_value(L"clamp");
+    texNode.append_attribute(L"addressing_mode_v").set_value(L"clamp");
   }
   hrMaterialClose(mat1);
 
@@ -5106,16 +5107,13 @@ bool test78_material_remap_list1()
   mat4x4_mul(mRes, mTranslate, mRot1);
   mat4x4_transpose(matrixT4, mRes); // this fucking math library swap rows and columns
 
-  int32_t remapList1[4] = { mat0.id, mat5.id, mat2.id, mat0.id };                   // 0 --> 5; 1 --> 0;
-  int32_t remapList2[6] = { mat1.id, mat5.id, mat3.id, mat5.id, mat2.id, mat0.id }; // 1 --> 5; 3 --> 5; 2 --> 0;
-
-  // draw scene
+  // no remap lists, test common case first
   //
   hrSceneOpen(scnRef, HR_WRITE_DISCARD);
   {
     hrMeshInstance(scnRef, torusRef,  &matrixT[0][0]);
-    hrMeshInstance(scnRef, torusRef,  &matrixT3[0][0], remapList1, 4);
-    hrMeshInstance(scnRef, torusRef,  &matrixT4[0][0], remapList2, 6);
+    hrMeshInstance(scnRef, torusRef,  &matrixT3[0][0]);
+    hrMeshInstance(scnRef, torusRef,  &matrixT4[0][0]);
     hrMeshInstance(scnRef, planeRef,  &matrixT2[0][0]);
 
     mat4x4_identity(mRes);
@@ -5155,8 +5153,68 @@ bool test78_material_remap_list1()
     }
   }
   
-  
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_78/z_out.png");
 
-  return check_images("test_78", 1, 20.0f);
+  // mat0 : texture1.bmp
+  // mat1 : chess_red.bmp
+  // mat2 : relief_wood.jpg
+  // mat3 : 163.jpg
+  // mat4 : just yellow
+  // mat5 : just blue
+
+  // now apply remap lists
+  //
+  int32_t remapList1[4] = { mat0.id, mat5.id, mat3.id, mat1.id }; // 0 --> 5; 3 --> 1;
+  int32_t remapList2[8] = { mat4.id, mat0.id,                     // 4 --> 0;
+                            mat3.id, mat0.id,                     // 3 --> 0;
+                            mat2.id, mat0.id,                     // 2 --> 0;
+                            mat1.id, mat0.id };                   // 1 --> 0;
+
+  hrSceneOpen(scnRef, HR_WRITE_DISCARD);
+  {
+    hrMeshInstance(scnRef, torusRef,  &matrixT[0][0]);
+    hrMeshInstance(scnRef, torusRef,  &matrixT3[0][0], remapList1, sizeof(remapList1)/sizeof(int32_t));
+    hrMeshInstance(scnRef, torusRef,  &matrixT4[0][0], remapList2, sizeof(remapList2)/sizeof(int32_t));
+    hrMeshInstance(scnRef, planeRef,  &matrixT2[0][0]);
+
+    mat4x4_identity(mRes);
+    hrLightInstance(scnRef, sky, &mRes[0][0]);
+  }
+  hrSceneClose(scnRef);
+
+  hrFlush(scnRef, renderRef, camRef);
+  
+  {
+    glViewport(0, 0, 512, 512);
+    std::vector<int32_t> image(512 * 512);
+
+    while (true)
+    {
+      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+      HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
+
+      if (info.haveUpdateFB)
+      {
+        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
+
+        glDisable(GL_TEXTURE_2D);
+        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+
+        auto pres = std::cout.precision(2);
+        std::cout << "rendering progress = " << info.progress << "% \r";
+        std::cout.precision(pres);
+
+        glfwSwapBuffers(g_window);
+        glfwPollEvents();
+      }
+
+      if (info.finalUpdate)
+        break;
+    }
+  }
+
+  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_78/z_out2.png");
+
+  return check_images("test_78", 2, 25.0f);
 }

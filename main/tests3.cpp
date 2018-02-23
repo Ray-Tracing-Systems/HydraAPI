@@ -72,8 +72,6 @@ bool test18_camera_move()
 
     HRTextureNodeRef testTex = hrTexture2DCreateFromFile(L"data/textures/texture1.bmp");
     hrTextureBind(testTex, diff);
-
-    diff.append_child(L"sampler").append_child(L"matrix").text().set(rotationMatrixStr.c_str());
   }
   hrMaterialClose(mat0);
 
@@ -376,8 +374,6 @@ bool test19_material_change()
 
     HRTextureNodeRef testTex = hrTexture2DCreateFromFile(L"data/textures/texture1.bmp");
     hrTextureBind(testTex, diff);
-
-    diff.append_child(L"sampler").append_child(L"matrix").text().set(rotationMatrixStr.c_str());
   }
   hrMaterialClose(mat0);
 
@@ -674,8 +670,6 @@ bool test20_mesh_change()
 
     HRTextureNodeRef testTex = hrTexture2DCreateFromFile(L"data/textures/texture1.bmp");
     hrTextureBind(testTex, diff);
-
-    diff.append_child(L"sampler").append_child(L"matrix").text().set(rotationMatrixStr.c_str());
   }
   hrMaterialClose(mat0);
 

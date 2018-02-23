@@ -609,8 +609,6 @@ bool test56_mesh_change_open_existing()
 
     HRTextureNodeRef testTex = hrTexture2DCreateFromFile(L"data/textures/texture1.bmp");
     hrTextureBind(testTex, diff);
-
-    diff.append_child(L"sampler").append_child(L"matrix").text().set(rotationMatrixStr.c_str());
   }
   hrMaterialClose(mat0);
 
