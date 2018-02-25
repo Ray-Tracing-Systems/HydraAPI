@@ -92,11 +92,6 @@ HRDriverInfo RD_OGL32_Forward::Info()
   return info;
 }
 
-void RD_OGL32_Forward::GetLastErrorW(wchar_t *a_msg)
-{
-  wcscpy(a_msg, m_msg.c_str());
-}
-
 bool RD_OGL32_Forward::UpdateImage(int32_t a_texId, int32_t w, int32_t h, int32_t bpp, const void *a_data,
                                  pugi::xml_node a_texNode)
 {
@@ -238,8 +233,8 @@ bool RD_OGL32_Forward::UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode, c
     glBindVertexArray(0);
 
     std::pair<GLuint, int> tmp;
-    tmp.first = vertexArrayObject;
-    tmp.second = batchIndices.size();
+    tmp.first  = vertexArrayObject;
+    tmp.second = int(batchIndices.size());
 
     batchMeshData[batch.matId] = tmp;
   }

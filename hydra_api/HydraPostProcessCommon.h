@@ -44,18 +44,17 @@ public:
   virtual const wchar_t* GetLastError() const  { return m_msg; }
   virtual const bool HasWarning() const { return m_hasWarning; }
 
+  enum { ERR_MSG_SIZE = 1024};
+
 protected:
 
   virtual float* GetInputByName (const wchar_t* a_name, int* pW, int* pH, int* pBPP);
   virtual float* GetOutputByName(const wchar_t* a_name, int* pW, int* pH, int* pBPP);
 
-  enum { ERR_MSG_SIZE = 256 };
-
-  wchar_t m_msg[ERR_MSG_SIZE];
-
   const wchar_t* GetSettingsStr() const { return m_input.settingsXmlStr; }
 
   bool m_hasWarning = false;
+  wchar_t m_msg[ERR_MSG_SIZE];
 
 private:
 

@@ -22,8 +22,6 @@ struct RD_DebugPrint : public IHRRenderDriver
   void              ClearAll() override;
   HRDriverAllocInfo AllocAll(HRDriverAllocInfo a_info) override;
 
-  void GetLastErrorW(wchar_t a_msg[256]) override {}
-
   bool UpdateImage(int32_t a_texId, int32_t w, int32_t h, int32_t bpp, const void* a_data, pugi::xml_node a_texNode) override { return false; }
   bool UpdateMaterial(int32_t a_matId, pugi::xml_node a_materialNode) override { return false; }
   bool UpdateLight(int32_t a_lightIdId, pugi::xml_node a_lightNode) override { return false; }

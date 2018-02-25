@@ -124,8 +124,6 @@ struct IHRRenderDriver
   virtual void              ClearAll()                         = 0; ///< clear everethyng insidide render engine (render driver)
   virtual HRDriverAllocInfo AllocAll(HRDriverAllocInfo a_info) = 0; ///< actual destructor, COM-like (!!!)
 
-  virtual void    GetLastErrorW(wchar_t a_msg[256]) = 0;            ///< call this function if any UpdateSomething fuction return false
-
   /**
   \brief update image inside render engine (render driver)  
   \param a_texId    - image id
@@ -284,6 +282,8 @@ struct IHRRenderDriver
   virtual const HRRenderDeviceInfoListElem* DeviceList() const = 0; ///< this method is for multi-GPU render. return device list or nullptr
   virtual bool  EnableDevice(int32_t id, bool a_enable)        = 0; ///<  this method is for multi-GPU render; enable target device or disable it; if fail, return false;
 
+  virtual void  SetInfoCallBack(HR_INFO_CALLBACK a_cllBack) { m_pInfoCallBack = a_cllBack; }
+
   // specific signals for create correct relations between blend leafs and e.t.c
   // for most of renderers these functions do nothing
   //
@@ -312,6 +312,7 @@ protected:
   IHRRenderDriver(const IHRRenderDriver& a_val) {}
   IHRRenderDriver& operator=(const IHRRenderDriver& a_val) { return (*this); }
 
+  HR_INFO_CALLBACK m_pInfoCallBack;
 };
 
 IHRRenderDriver* CreateOpenGL1_RenderDriver();

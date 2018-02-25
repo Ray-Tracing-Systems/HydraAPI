@@ -38,7 +38,6 @@ struct RD_HydraConnection : public IHRRenderDriver
   RD_HydraConnection() : m_pConnection(nullptr), m_pSharedImage(nullptr), m_progressVal(0.0f), m_firstUpdate(true), m_width(0), m_height(0), m_avgBrightness(0.0f), m_avgBCounter(0),
                          m_enableMedianFilter(false), m_medianthreshold(0.4f), m_stopThreadImmediately(false), haveUpdateFromMT(false), m_threadIsRun(false), m_threadFinished(false), hadFinalUpdate(false), m_clewInitRes(-1)
   {
-    m_msg = L"";
     InitBothDeviceList();
 
     m_oldCounter = 0;
@@ -58,8 +57,6 @@ struct RD_HydraConnection : public IHRRenderDriver
 
   void              ClearAll() override;
   HRDriverAllocInfo AllocAll(HRDriverAllocInfo a_info) override;
-
-  void GetLastErrorW(wchar_t a_msg[256]) override;
 
   bool UpdateImage(int32_t a_texId, int32_t w, int32_t h, int32_t bpp, const void* a_data, pugi::xml_node a_texNode) override;
   bool UpdateMaterial(int32_t a_matId, pugi::xml_node a_materialNode) override;
@@ -106,7 +103,6 @@ struct RD_HydraConnection : public IHRRenderDriver
 protected:
 
   std::wstring m_libPath;
-  std::wstring m_msg;
   std::wstring m_logFolder;
   std::string  m_logFolderS;
   int          m_instancesNum; //// current instance num in the scene; (m_instancesNum == 0) => empty scene! 
@@ -341,10 +337,6 @@ HRDriverInfo RD_HydraConnection::Info()
   return info;
 }
 
-void RD_HydraConnection::GetLastErrorW(wchar_t a_msg[256])
-{
-  wcscpy(a_msg, m_msg.c_str());
-}
 
 void RD_HydraConnection::SetLogDir(const wchar_t* a_logDir, bool a_hideCmd)
 {
@@ -353,8 +345,10 @@ void RD_HydraConnection::SetLogDir(const wchar_t* a_logDir, bool a_hideCmd)
 
   const std::wstring check = s2ws(m_logFolderS);
   if (m_logFolder != check)
-    m_msg = L"[RD_HydraConnection]: warning, bad log dir";
-
+  {
+    if (m_pInfoCallBack != nullptr)
+      m_pInfoCallBack(L"bad log dir", L"RD_HydraConnection::SetLogDir", HR_SEVERITY_WARNING);
+  }
   m_hideCmd = a_hideCmd;
 }
 
@@ -453,10 +447,13 @@ void RD_HydraConnection::RunAllHydraHeads()
       devList.push_back(m_devList2[i].id);
   }
 
-  if (m_devList2.size() == 0)
+  if (devList.size() == 0)
   {
     devList.resize(1);
-    devList[0] = -1;
+    devList[0] = 0;
+
+    if (m_pInfoCallBack != nullptr)
+      m_pInfoCallBack(L"No device was selected; will use device 0 by default", L"RD_HydraConnection::RunAllHydraHeads", HR_SEVERITY_WARNING);
   }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////

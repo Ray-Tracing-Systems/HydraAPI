@@ -9,8 +9,6 @@
 
 RD_OGL32_Deferred::RD_OGL32_Deferred()
 {
-  m_msg = L"";
-
   camFov       = 45.0f;
   camNearPlane = 0.05f;
   camFarPlane  = 10000.0f;
@@ -154,11 +152,6 @@ HRDriverInfo RD_OGL32_Deferred::Info()
   info.memTotal = int64_t(8) * int64_t(1024 * 1024 * 1024);
 
   return info;
-}
-
-void RD_OGL32_Deferred::GetLastErrorW(wchar_t *a_msg)
-{
-  wcscpy(a_msg, m_msg.c_str());
 }
 
 bool RD_OGL32_Deferred::UpdateImage(int32_t a_texId, int32_t w, int32_t h, int32_t bpp, const void *a_data,
@@ -445,7 +438,8 @@ bool RD_OGL32_Deferred::UpdateSettings(pugi::xml_node a_settingsNode)
 
   if (new_w < 0 || new_h < 0)
   {
-    m_msg = L"RD_OGL32_Deferred::UpdateSettings, bad input resolution";
+    if (m_pInfoCallBack != nullptr)
+      m_pInfoCallBack(L"bad input resolution", L"RD_OGL32_Deferred::UpdateSettings", HR_SEVERITY_ERROR);
     return false;
   }
 

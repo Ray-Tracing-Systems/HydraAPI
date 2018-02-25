@@ -212,7 +212,7 @@ It also don't have any stack or e.t.c., just a state, just one string! So please
 HAPI void hrErrorCallerPlace(const wchar_t* a_placeName, int a_line = 0);
 
 /**
-\brief set your custome printing error callback
+\brief set your custome printing error callback. @DEPRECATED !!! USE hrInfoCallback instead!!!
 */
 HAPI void hrErrorCallback(HR_ERROR_CALLBACK pCallback);
 

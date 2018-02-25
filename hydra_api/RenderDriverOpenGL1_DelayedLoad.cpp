@@ -101,7 +101,10 @@ bool RD_OGL1_Plain_DelayedLoad::UpdateImageFromFile(int32_t a_texId, const wchar
 
     if (bytesPerPixel == 0)
     {
-      m_msg = std::wstring(L"UpdateImageFromFile: FreeImage failed to load image: ") + filename;
+      if (m_pInfoCallBack != nullptr)
+        m_pInfoCallBack(L"UpdateImageFromFile: FreeImage failed to load image", 
+                        L"RD_OGL1_Plain_DelayedLoad::UpdateImageFromFile", 
+                        HR_SEVERITY_WARNING);
       return false;
     }
 
@@ -111,7 +114,12 @@ bool RD_OGL1_Plain_DelayedLoad::UpdateImageFromFile(int32_t a_texId, const wchar
 
     if ((bits == 0) || (width == 0) || (height == 0))
     {
-      m_msg = std::wstring(L"UpdateImageFromFile: FreeImage failed for undefined reason, file : ") + filename;
+      if (m_pInfoCallBack != nullptr)
+      {
+        std::wstring errMsg = std::wstring(L"FreeImage failed for undefined reason, file") + filename;
+        m_pInfoCallBack(errMsg.c_str(), L"RD_OGL1_Plain_DelayedLoad::UpdateImageFromFile", HR_SEVERITY_WARNING);
+      }
+
       FreeImage_Unload(converted);
       FreeImage_Unload(dib);
       return false;

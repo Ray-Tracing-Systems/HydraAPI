@@ -178,7 +178,8 @@ bool RD_OGL1_Debug::UpdateSettings(pugi::xml_node a_settingsNode)
 
   if (m_width < 0 || m_height < 0)
   {
-    m_msg = L"RD_OGL1_Debug::UpdateSettings, bad input resolution";
+    if (m_pInfoCallBack != nullptr)
+      m_pInfoCallBack(L"bad input resolution", L"RD_OGL1_Debug::UpdateSettings", HR_SEVERITY_ERROR);
     return false;
   }
 

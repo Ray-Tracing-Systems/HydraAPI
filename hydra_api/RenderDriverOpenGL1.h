@@ -23,8 +23,6 @@ struct RD_OGL1_Plain : public IHRRenderDriver
 {
   RD_OGL1_Plain() : m_displayLists(-1), m_listNum(0)
   {
-    m_msg = L"";
-
     camFov       = 45.0f;
     camNearPlane = 0.1f;
     camFarPlane  = 1000.0f;
@@ -38,8 +36,6 @@ struct RD_OGL1_Plain : public IHRRenderDriver
 
   void              ClearAll() override;
   HRDriverAllocInfo AllocAll(HRDriverAllocInfo a_info) override;
-
-  void GetLastErrorW(wchar_t a_msg[256]) override;
        
   bool UpdateImage(int32_t a_texId, int32_t w, int32_t h, int32_t bpp, const void* a_data, pugi::xml_node a_texNode) override;
   bool UpdateMaterial(int32_t a_matId, pugi::xml_node a_materialNode) override;
@@ -76,7 +72,6 @@ struct RD_OGL1_Plain : public IHRRenderDriver
 protected:
 
   std::wstring m_libPath;
-  std::wstring m_msg;
 
   GLuint  m_displayLists;
   GLsizei m_listNum;

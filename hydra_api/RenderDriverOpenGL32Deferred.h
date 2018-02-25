@@ -15,8 +15,6 @@ struct RD_OGL32_Deferred : IHRRenderDriver
   void ClearAll() override;
   HRDriverAllocInfo AllocAll(HRDriverAllocInfo a_info) override;
 
-  void GetLastErrorW(wchar_t a_msg[256]) override;
-
   bool UpdateImage(int32_t a_texId, int32_t w, int32_t h, int32_t bpp, const void* a_data, pugi::xml_node a_texNode) override;
   bool UpdateMaterial(int32_t a_matId, pugi::xml_node a_materialNode) override;
   bool UpdateLight(int32_t a_lightIdId, pugi::xml_node a_lightNode) override;
@@ -76,7 +74,6 @@ protected:
   void CreateLightSettingsUBO();
 
   std::wstring m_libPath;
-  std::wstring m_msg;
 
   using meshData = std::unordered_map<int, std::pair<GLuint, int>>;
 

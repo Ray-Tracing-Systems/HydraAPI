@@ -56,11 +56,6 @@ HRDriverInfo RD_OGL1_Plain::Info()
 
 #pragma warning(disable:4996) // for wcscpy to be ok
 
-void RD_OGL1_Plain::GetLastErrorW(wchar_t a_msg[256])
-{
-  wcscpy(a_msg, m_msg.c_str());
-}
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // typedef void (APIENTRYP PFNGLGENERATEMIPMAPPROC)(GLenum target);
@@ -227,7 +222,8 @@ bool RD_OGL1_Plain::UpdateSettings(pugi::xml_node a_settingsNode)
 
   if (m_width < 0 || m_height < 0)
   {
-    m_msg = L"RD_OGL1_Plain::UpdateSettings, bad input resolution";
+    if (m_pInfoCallBack != nullptr)
+      m_pInfoCallBack(L"bad input resolution", L"RD_OGL1_Plain::UpdateSettings", HR_SEVERITY_ERROR);
     return false;
   }
 

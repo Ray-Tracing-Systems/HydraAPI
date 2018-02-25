@@ -106,6 +106,8 @@ HAPI void hrErrorCallback(HR_ERROR_CALLBACK pCallback)
 HAPI void hrInfoCallback(HR_INFO_CALLBACK pCallback)
 {
   g_pInfoCallback = pCallback;
+  if (g_objManager.m_pDriver != nullptr)
+    g_objManager.m_pDriver->SetInfoCallBack(pCallback);
 }
 
 
@@ -648,6 +650,8 @@ HAPI HRRenderRef hrRenderCreate(const wchar_t* a_className, const wchar_t* a_fla
 	
   settings.m_pDriver = CreateRenderFromString(a_className, a_flags);
 
+  settings.m_pDriver->SetInfoCallBack(g_pInfoCallback);
+
   return ref; 
 }
 
@@ -671,6 +675,7 @@ HAPI HRRenderRef hrRenderCreateFromExistingDriver(const wchar_t* a_className, st
   g_objManager.renderSettings[ref.id].id = ref.id;
 
   settings.m_pDriver = a_pDriver;
+  settings.m_pDriver->SetInfoCallBack(g_pInfoCallback);
 
   return ref;
 }
@@ -891,6 +896,7 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
   //
   if (g_objManager.m_pDriver != nullptr && g_objManager.m_currSceneId < g_objManager.scnInst.size())
   {
+    g_objManager.m_pDriver->SetInfoCallBack(g_pInfoCallback);
     HR_DriverUpdate(g_objManager.scnInst[g_objManager.m_currSceneId], g_objManager.m_pDriver.get());
     HR_DriverDraw  (g_objManager.scnInst[g_objManager.m_currSceneId], g_objManager.m_pDriver.get());
   }
