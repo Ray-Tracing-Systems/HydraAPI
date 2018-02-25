@@ -1653,6 +1653,7 @@ void run_all_api_tests(const int startTestId)
                        &test76_empty_mesh,
                        &test77_save_gbuffer_layers,
                        &test78_material_remap_list1,
+                       &test79_material_remap_list2,
   };
 
 
