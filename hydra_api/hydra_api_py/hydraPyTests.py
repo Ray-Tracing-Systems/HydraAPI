@@ -1611,6 +1611,104 @@ def test15_merge_one_object(report_file, inBG):
   else:
     initAndStartOpenGL(renderRef, 1024, 768, test_name, [])
   
+def test16_print_matlib_map(report_file, inBG):
+  test_name = "test16_print_matlib_map"
+
+  hy.hrSceneLibraryOpen("tests/" + test_name, hy.HR_WRITE_DISCARD)
+    
+  camRef = hy.hrCameraCreate("my camera")
+  hy.hrCameraOpen(camRef, hy.HR_WRITE_DISCARD)
+  camNode = hy.hrCameraParamNode(camRef)
+  camNode.append_child("fov").text().set("45")
+  camNode.append_child("nearClipPlane").text().set("0.01")
+  camNode.append_child("farClipPlane").text().set("100.0")
+  camNode.append_child("up").text().set("0 1 0")
+  camNode.append_child("position").text().set("0 0 5")
+  camNode.append_child("look_at").text().set("0 0 -1")
+  hy.hrCameraClose(camRef)
+   
+  renderRef = hy.hrRenderCreate("HydraModern")
+  hy.hrRenderEnableDevice(renderRef, 0, True);
+  hy.hrRenderOpen(renderRef, hy.HR_WRITE_DISCARD)
+  node = hy.hrRenderParamNode(renderRef)
+  node.force_child("width").text().set(1024)
+  node.force_child("height").text().set(768)
+  node.force_child("method_primary").text().set("pathtracing")
+  node.force_child("method_caustic").text().set("pathtracing")
+  node.force_child("trace_depth").text().set(5)
+  node.force_child("diff_trace_depth").text().set(3)
+  node.force_child("maxRaysPerPixel").text().set(1024)
+  hy.hrRenderClose(renderRef)
+  
+  
+  mat0 = hy.hrMaterialCreate("mysimplemat")
+  hy.hrMaterialOpen(mat0, hy.HR_WRITE_DISCARD)
+  matNode = hy.hrMaterialParamNode(mat0)
+  diff = matNode.append_child("diffuse")
+  diff.append_attribute("brdf_type").set_value("lambert")
+  diff.append_child("color").text().set("0.75 0.75 0.0")
+  hy.hrMaterialClose(mat0)
+  
+  mat1 = hy.hrMaterialCreate("plane")
+  hy.hrMaterialOpen(mat1, hy.HR_WRITE_DISCARD)
+  matNode = hy.hrMaterialParamNode(mat1)
+  diff = matNode.append_child("diffuse")
+  diff.append_attribute("brdf_type").set_value("lambert")
+  diff.append_child("color").text().set("0.5 0.5 0.5")
+  hy.hrMaterialClose(mat1)
+  
+  mat2 = hy.hrMaterialCreate("matBlue")
+  hy.hrMaterialOpen(mat1, hy.HR_WRITE_DISCARD)
+  matNode = hy.hrMaterialParamNode(mat2)
+  diff = matNode.append_child("diffuse")
+  diff.append_attribute("brdf_type").set_value("lambert")
+  diff.append_child("color").text().set("0.0 0.0 0.95")
+  refl = matNode.append_child("reflectivity")
+  refl.append_attribute("brdf_type").set_value("cook_torrance")
+  refl.append_child("color").text().set("0.5 0.5 0.5")
+  refl.append_child("glossiness").text().set("1.0")
+  refl.append_child("fresnel_IOR").text().set("14");
+  refl.append_child("fresnel").text().set("1");
+  hy.hrMaterialClose(mat2)
+
+  mat3 = hy.hrMaterialCreate("matGreen")
+  hy.hrMaterialOpen(mat1, hy.HR_WRITE_DISCARD)
+  matNode = hy.hrMaterialParamNode(mat3)
+  diff = matNode.append_child("diffuse")
+  diff.append_attribute("brdf_type").set_value("lambert")
+  diff.append_child("color").text().set("0.01 0.85 0.02")
+  hy.hrMaterialClose(mat3)
+  
+  scnRef = hy.hrSceneCreate("my scene")
+  
+  sceneMerged1 = hy.MergeLibraryIntoLibrary("tests/test01_render_cubes", True, True)
+  matT = identityM4x4()
+  hy.InstanceSceneIntoScene(sceneMerged1, scnRef, matT.flatten())
+  
+  sceneMerged2 = hy.MergeLibraryIntoLibrary("tests/test02_mesh_form_vsgf", True, True)
+  matT = translateM4x4(np.array([0.0, -1.0, -20.0]))
+  matRot = rotateYM4x4(45.0* DEG_TO_RAD)
+  matRes = np.dot(matT, matRot)
+  hy.InstanceSceneIntoScene(sceneMerged2, scnRef, matRes.flatten())
+
+
+  hy.hrFlush(scnRef, renderRef, camRef)
+  
+  materials = hy.GetMaterialNameToIdMap(matNode)
+  
+  print(materials)
+
+  
+#  if(inBG):
+#    runRenderInBG(renderRef, 1024, 768, test_name, [])
+#    (res, mse) = check_images(test_name, 1, 50.0)
+#    if(res):
+#      report_file.write(test_name + " PASSED, MSE : {}\n".format(mse))
+#    else:
+#      report_file.write(test_name + " FAILED, MSE : {}\n".format(mse))   
+#  else:
+#    initAndStartOpenGL(renderRef, 1024, 768, test_name, [])
+  
 def run_tests():
   hy.hrInit("-copy_textures_to_local_folder 1 -local_data_path 1 ")
 
@@ -1628,8 +1726,9 @@ def run_tests():
 #    test11_load_car_and_change_env("tests/test11_load_car_and_change_env", report_file, False)
 #    test12_cornell_box_gbuffer(report_file, False)
 #    test13_transform_instances(report_file, False)
-    test14_merge_scenes(report_file, False)
+#    test14_merge_scenes(report_file, False)
 #    test15_merge_one_object(report_file, False)
+    test16_print_matlib_map(report_file, False)
 #    render_scene("tests/test04_instancing")
 
 run_tests()

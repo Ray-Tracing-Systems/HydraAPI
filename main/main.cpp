@@ -114,6 +114,7 @@ int main(int argc, const char** argv)
     //test1011_merge_scene();
     //test1012_merge_one_light();
     //test1013_commit_without_render();
+    test1014_print_matlib_map();
 
     //MTL_TESTS::test_131_blend_simple();
 
@@ -122,7 +123,7 @@ int main(int argc, const char** argv)
     //std::cout << test77_save_gbuffer_layers() << std::endl;
     //std::cout << test59_cornell_water_mlt() << std::endl;
     //std::cout << test70_area_lights16() << std::endl;
-    std::cout << test79_material_remap_list2() << std::endl;
+    //std::cout << test79_material_remap_list2() << std::endl;
 
     //std::cout << MTL_TESTS::test_120_opacity_shadow_matte() << std::endl;
 

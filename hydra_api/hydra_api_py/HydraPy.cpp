@@ -322,6 +322,9 @@ PYBIND11_MODULE(hydraPy, m)
   m.def("hrFlush", &hrFlush, py::arg("a_pScn") = HRSceneInstRef(), py::arg("a_pRender") = HRRenderRef(),  py::arg("a_pCam") = HRCameraRef());
   m.def("WriteMatrix4x4", &WriteMatrix4x4Py, py::arg("a_node"), py::arg("a_attrib_name"), py::arg("a_mat").noconvert());
 
+  m.def("GetMaterialNameToIdMap", &HydraXMLHelpers::GetMaterialNameToIdMap);
+
+
   m.def("InstanceSceneIntoScene", &InstanceSceneIntoScenePy, py::arg("a_scnFrom"), py::arg("a_scnTo"), py::arg("a_mat").noconvert(), py::arg("origin") = true);
   m.def("MergeLibraryIntoLibrary", &HRUtils::MergeLibraryIntoLibrary, py::arg("a_libPath"), py::arg("mergeLights") = false, py::arg("copyScene") = false);
   m.def("MergeOneMaterialIntoLibrary", &HRUtils::MergeOneMaterialIntoLibrary, py::arg("a_libPath"), py::arg("a_matName"), py::arg("a_matId") = -1);
