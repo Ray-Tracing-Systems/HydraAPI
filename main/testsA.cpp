@@ -5511,6 +5511,7 @@ bool test79_material_remap_list2()
 
   hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
 
+  hrRenderLogDir(renderRef, L"/home/frol/hydra/", true);
 
   // create scene
   //
