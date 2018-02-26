@@ -1692,12 +1692,13 @@ def test16_print_matlib_map(report_file, inBG):
   hy.InstanceSceneIntoScene(sceneMerged2, scnRef, matRes.flatten())
 
 
-  hy.hrFlush(scnRef, renderRef, camRef)
+  hy.hrCommit(scnRef)
   
-  materials = hy.GetMaterialNameToIdMap(matNode)
+  materials = hy.GetMaterialNameToIdMap()
   
   print(materials)
 
+#  hy.hrFlush(scnRef, renderRef, camRef)
   
 #  if(inBG):
 #    runRenderInBG(renderRef, 1024, 768, test_name, [])

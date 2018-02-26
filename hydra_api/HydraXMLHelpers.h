@@ -259,6 +259,6 @@ namespace HydraXMLHelpers
     return have;
   }
 
-  std::vector<std::pair<std::wstring, int> > GetMaterialNameToIdMap(const pugi::xml_node &some_material);
+  std::vector<std::pair<std::string, int> > GetMaterialNameToIdMap();
  
 };

@@ -2638,15 +2638,36 @@ bool test1014_print_matlib_map()
 
   hrCommit(scnRef);
 
-  auto matNode = hrMaterialParamNode(matSilver);
-  auto materials = HydraXMLHelpers::GetMaterialNameToIdMap(matNode);
+  auto materials = HydraXMLHelpers::GetMaterialNameToIdMap();
 
+  std::stringstream ss;
   for(auto mat : materials)
   {
-    std::cout << mat.first.c_str() << " : " << mat.second << std::endl;
+    ss << mat.first << " : " << mat.second << std::endl;
   }
 
-/*
+  std::string outStr = ss.str();
+
+  std::string correctStr = """matGray : 0\n"
+                             "matRefl : 1\n"
+                             "matGold : 2\n"
+                             "matSilver : 3\n"
+                             "matGold : 4\n"
+                             "matSilver : 5\n"
+                             "matLacquer : 6\n"
+                             "matGlass : 7\n"
+                             "matBricks1 : 8\n"
+                             "matBricks2 : 9\n"
+                             "matGray : 10\n"
+                             "matBlend1 : 11\n"
+                             "matBlend2 : 12\n"
+                             "matBlend3 : 13\n"
+                             "my_area_light_material : 14\n"
+                             "sky_material : 15\n""";
+
+
+  hrFlush(scnRef, renderRef, camRef);
+
   glViewport(0, 0, 1024, 768);
   std::vector<int32_t> image(1024 * 768);
 
@@ -2676,6 +2697,6 @@ bool test1014_print_matlib_map()
   }
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_1014/z_out.png");
-*/
-  return check_images("test_1014", 1, 60);
+
+  return check_images("test_1014", 1, 60) && (outStr == correctStr);
 }
