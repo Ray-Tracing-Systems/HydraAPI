@@ -115,7 +115,7 @@ int main(int argc, const char** argv)
     //test1012_merge_one_light();
     //test1013_commit_without_render();
 
-    //MTL_TESTS::test_131_blend_simple();
+    MTL_TESTS::test_120_opacity_shadow_matte();
 
     //std::cout << test39_mesh_from_vsgf() << std::endl;
     //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
@@ -123,7 +123,7 @@ int main(int argc, const char** argv)
     //std::cout << test59_cornell_water_mlt() << std::endl;
     //std::cout << test70_area_lights16() << std::endl;
     //std::cout << test78_material_remap_list1() << std::endl;
-    std::cout << test79_material_remap_list2() << std::endl;
+    //std::cout << test79_material_remap_list2() << std::endl;
 
     //std::cout << MTL_TESTS::test_120_opacity_shadow_matte() << std::endl;
 
