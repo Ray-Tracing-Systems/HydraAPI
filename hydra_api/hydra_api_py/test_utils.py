@@ -21,7 +21,9 @@ def MSE(img1, img2) :
   if (img1.size != img2.size):
     return 100000.0
 
-  return np.sum((img1 - img2) * (img1 - img2)) / img1.size
+  tmp = img1 - img2
+
+  return np.sum(tmp * tmp) / tmp.size
 
 
 def check_images(a_path, a_numImages, a_mse) :

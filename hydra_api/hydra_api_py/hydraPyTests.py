@@ -166,7 +166,7 @@ def test02_mesh_from_vsgf(report_file, inBG):
   test_name = "test02_mesh_form_vsgf"
   hy.hrSceneLibraryOpen("tests/" + test_name, hy.HR_WRITE_DISCARD)
 
-  teapotRef = hy.hrMeshCreateFromFileDL("../../main/data/meshes/lucy.vsgf")
+  myMeshRef = hy.hrMeshCreateFromFileDL("../../main/data/meshes/lucy.vsgf")
   
   mat0 = hy.hrMaterialCreate("mysimplemat")
   hy.hrMaterialOpen(mat0, hy.HR_WRITE_DISCARD)
@@ -260,11 +260,11 @@ def test02_mesh_from_vsgf(report_file, inBG):
 
 
   hy.hrSceneOpen(scnRef, hy.HR_WRITE_DISCARD)
-  hy.hrMeshInstance(scnRef, teapotRef, matrixT_1.flatten())
-  hy.hrMeshInstance(scnRef, teapotRef, matrixT_2.flatten())
-  hy.hrMeshInstance(scnRef, teapotRef, matrixT_3.flatten())
-  hy.hrMeshInstance(scnRef, teapotRef, matrixT_4.flatten())
-  hy.hrMeshInstance(scnRef, teapotRef, matrixT_5.flatten())
+  hy.hrMeshInstance(scnRef, myMeshRef, matrixT_1.flatten())
+  hy.hrMeshInstance(scnRef, myMeshRef, matrixT_2.flatten())
+  hy.hrMeshInstance(scnRef, myMeshRef, matrixT_3.flatten())
+  hy.hrMeshInstance(scnRef, myMeshRef, matrixT_4.flatten())
+  hy.hrMeshInstance(scnRef, myMeshRef, matrixT_5.flatten())
   hy.hrMeshInstance(scnRef, planeRef, matrixT_plane.flatten())
   hy.hrLightInstance(scnRef, light, matrixT_light.flatten());
   hy.hrSceneClose(scnRef)
@@ -280,8 +280,7 @@ def test02_mesh_from_vsgf(report_file, inBG):
       report_file.write(test_name + " FAILED, MSE : {}\n".format(mse))   
   else:
     initAndStartOpenGL(renderRef, 1024, 768, test_name)
-    
-
+  
   return 
 
 def test03_cornell_box(report_file, inBG):
@@ -1611,6 +1610,246 @@ def test15_merge_one_object(report_file, inBG):
   else:
     initAndStartOpenGL(renderRef, 1024, 768, test_name, [])
   
+def test16_print_matlib_map(report_file, inBG):
+  test_name = "test16_print_matlib_map"
+
+  hy.hrSceneLibraryOpen("tests/" + test_name, hy.HR_WRITE_DISCARD)
+    
+  camRef = hy.hrCameraCreate("my camera")
+  hy.hrCameraOpen(camRef, hy.HR_WRITE_DISCARD)
+  camNode = hy.hrCameraParamNode(camRef)
+  camNode.append_child("fov").text().set("45")
+  camNode.append_child("nearClipPlane").text().set("0.01")
+  camNode.append_child("farClipPlane").text().set("100.0")
+  camNode.append_child("up").text().set("0 1 0")
+  camNode.append_child("position").text().set("0 0 5")
+  camNode.append_child("look_at").text().set("0 0 -1")
+  hy.hrCameraClose(camRef)
+   
+  renderRef = hy.hrRenderCreate("HydraModern")
+  hy.hrRenderEnableDevice(renderRef, 0, True);
+  hy.hrRenderOpen(renderRef, hy.HR_WRITE_DISCARD)
+  node = hy.hrRenderParamNode(renderRef)
+  node.force_child("width").text().set(1024)
+  node.force_child("height").text().set(768)
+  node.force_child("method_primary").text().set("pathtracing")
+  node.force_child("method_caustic").text().set("pathtracing")
+  node.force_child("trace_depth").text().set(5)
+  node.force_child("diff_trace_depth").text().set(3)
+  node.force_child("maxRaysPerPixel").text().set(1024)
+  hy.hrRenderClose(renderRef)
+  
+  
+  mat0 = hy.hrMaterialCreate("mysimplemat")
+  hy.hrMaterialOpen(mat0, hy.HR_WRITE_DISCARD)
+  matNode = hy.hrMaterialParamNode(mat0)
+  diff = matNode.append_child("diffuse")
+  diff.append_attribute("brdf_type").set_value("lambert")
+  diff.append_child("color").text().set("0.75 0.75 0.0")
+  hy.hrMaterialClose(mat0)
+  
+  mat1 = hy.hrMaterialCreate("plane")
+  hy.hrMaterialOpen(mat1, hy.HR_WRITE_DISCARD)
+  matNode = hy.hrMaterialParamNode(mat1)
+  diff = matNode.append_child("diffuse")
+  diff.append_attribute("brdf_type").set_value("lambert")
+  diff.append_child("color").text().set("0.5 0.5 0.5")
+  hy.hrMaterialClose(mat1)
+  
+  mat2 = hy.hrMaterialCreate("matBlue")
+  hy.hrMaterialOpen(mat1, hy.HR_WRITE_DISCARD)
+  matNode = hy.hrMaterialParamNode(mat2)
+  diff = matNode.append_child("diffuse")
+  diff.append_attribute("brdf_type").set_value("lambert")
+  diff.append_child("color").text().set("0.0 0.0 0.95")
+  refl = matNode.append_child("reflectivity")
+  refl.append_attribute("brdf_type").set_value("cook_torrance")
+  refl.append_child("color").text().set("0.5 0.5 0.5")
+  refl.append_child("glossiness").text().set("1.0")
+  refl.append_child("fresnel_IOR").text().set("14");
+  refl.append_child("fresnel").text().set("1");
+  hy.hrMaterialClose(mat2)
+
+  mat3 = hy.hrMaterialCreate("matGreen")
+  hy.hrMaterialOpen(mat1, hy.HR_WRITE_DISCARD)
+  matNode = hy.hrMaterialParamNode(mat3)
+  diff = matNode.append_child("diffuse")
+  diff.append_attribute("brdf_type").set_value("lambert")
+  diff.append_child("color").text().set("0.01 0.85 0.02")
+  hy.hrMaterialClose(mat3)
+  
+  scnRef = hy.hrSceneCreate("my scene")
+  
+  sceneMerged1 = hy.MergeLibraryIntoLibrary("tests/test01_render_cubes", True, True)
+  matT = identityM4x4()
+  hy.InstanceSceneIntoScene(sceneMerged1, scnRef, matT.flatten())
+  
+  sceneMerged2 = hy.MergeLibraryIntoLibrary("tests/test02_mesh_form_vsgf", True, True)
+  matT = translateM4x4(np.array([0.0, -1.0, -20.0]))
+  matRot = rotateYM4x4(45.0* DEG_TO_RAD)
+  matRes = np.dot(matT, matRot)
+  hy.InstanceSceneIntoScene(sceneMerged2, scnRef, matRes.flatten())
+
+
+  hy.hrCommit(scnRef)
+  
+  materials = hy.GetMaterialNameToIdMap()
+  
+  print(materials)
+  correct_list = [('mysimplemat', 0), ('plane', 1), ('matBlue', 2), ('matGreen', 3), ('mysimplemat', 4), ('plane', 5), ('my_area_light_material', 6), ('mysimplemat', 7), ('matBlue', 8), ('my_area_light_material', 9), ('my_area_light_material', 10), ('my_area_light_material', 11)]
+
+  hy.hrFlush(scnRef, renderRef, camRef)
+  
+  if(inBG):
+    runRenderInBG(renderRef, 1024, 768, test_name, [])
+    (res, mse) = check_images(test_name, 1, 90.0)
+    if(res and (materials == correct_list)):
+      report_file.write(test_name + " PASSED, MSE : {}\n".format(mse))
+    else:
+      report_file.write(test_name + " FAILED, MSE : {}\n".format(mse))   
+  else:
+    initAndStartOpenGL(renderRef, 1024, 768, test_name, [])
+    if(materials == correct_list):
+      print("material list is correct")
+  
+  
+def test17_material_remap_lists(report_file, inBG):
+
+  test_name = "test17_material_remap_lists"
+  hy.hrSceneLibraryOpen("tests/" + test_name, hy.HR_WRITE_DISCARD)
+
+  myMeshRef = hy.hrMeshCreateFromFileDL("../../main/data/meshes/lucy.vsgf")
+  planeTex = hy.hrTexture2DCreateFromFile("../../main/data/textures/checker_16x16.bmp")
+  
+  mat0 = hy.hrMaterialCreate("mysimplemat")
+  hy.hrMaterialOpen(mat0, hy.HR_WRITE_DISCARD)
+  matNode = hy.hrMaterialParamNode(mat0)
+  diff = matNode.append_child("diffuse")
+  diff.append_attribute("brdf_type").set_value("lambert")
+  diff.append_child("color").text().set("0.5 0.5 0.5")
+  testTex = hy.hrTexture2DCreateFromFile("checker_16x16.bmp")
+  hy.hrTextureBind(planeTex, diff)
+  hy.hrMaterialClose(mat0)
+  
+  mat1 = hy.hrMaterialCreate("matBlue")
+  hy.hrMaterialOpen(mat1, hy.HR_WRITE_DISCARD)
+  matNode = hy.hrMaterialParamNode(mat1)
+  diff = matNode.append_child("diffuse")
+  diff.append_attribute("brdf_type").set_value("lambert")
+  diff.append_child("color").text().set("0.05 0.01 0.75")
+  refl = matNode.append_child("reflectivity")
+  refl.append_attribute("brdf_type").set_value("phong")
+  refl.append_child("color").text().set("0.1 0.1 0.1")
+  refl.append_child("glossiness").text().set("1.0")
+  refl.append_child("fresnel_IOR").text().set("1.3");
+  refl.append_child("fresnel").text().set("0");
+  hy.hrMaterialClose(mat1)
+  
+  planeRef = createPlaneRef("plane", 4.0, mat0.id)
+  
+  cubeOpenRef = createCornellCubeOpenRef("openBox", 0.35, mat0.id, mat0.id, mat1.id);
+
+  camRef = hy.hrCameraCreate("my camera")
+  hy.hrCameraOpen(camRef, hy.HR_WRITE_DISCARD)
+  camNode = hy.hrCameraParamNode(camRef)
+  camNode.append_child("fov").text().set("45")
+  camNode.append_child("nearClipPlane").text().set("0.01")
+  camNode.append_child("farClipPlane").text().set("100.0")
+  camNode.append_child("up").text().set("0 1 0")
+  camNode.append_child("position").text().set("0 0 5")
+  camNode.append_child("look_at").text().set("0 0 -1")
+  hy.hrCameraClose(camRef)
+
+  light = hy.hrLightCreate("my_area_light")
+
+  hy.hrLightOpen(light, hy.HR_WRITE_DISCARD);
+  lightNode = hy.hrLightParamNode(light);
+  lightNode.attribute("type").set_value("area");
+  lightNode.attribute("shape").set_value("rect");
+  lightNode.attribute("distribution").set_value("diffuse");
+
+  sizeNode = lightNode.append_child("size")
+
+  sizeNode.append_attribute("half_length").set_value(1.0);
+  sizeNode.append_attribute("half_width").set_value(1.0);
+
+  intensityNode = lightNode.append_child("intensity");
+
+  intensityNode.append_child("color").text().set("1 1 1");
+  intensityNode.append_child("multiplier").text().set("10.0");
+  hy.hrLightClose(light);
+
+  renderRef = hy.hrRenderCreate("HydraModern")
+  hy.hrRenderEnableDevice(renderRef, 0, True);
+  hy.hrRenderOpen(renderRef, hy.HR_WRITE_DISCARD)
+  node = hy.hrRenderParamNode(renderRef)
+  node.force_child("width").text().set(1024)
+  node.force_child("height").text().set(768)
+  node.force_child("method_primary").text().set("pathtracing")
+  node.force_child("method_caustic").text().set("pathtracing")
+  node.force_child("trace_depth").text().set(5)
+  node.force_child("diff_trace_depth").text().set(3)
+  node.force_child("maxRaysPerPixel").text().set(1024)
+  hy.hrRenderClose(renderRef)
+
+  scnRef = hy.hrSceneCreate("my scene")
+
+  matrixT_1 = np.dot(translateM4x4(np.array([0.0, -1.0, 0.0])), scaleM4x4(np.array([0.33, 0.33, 0.33])))
+  matrixT_2 = np.dot(translateM4x4(np.array([-1.0, -1.0, 0.0])), scaleM4x4(np.array([0.33, 0.33, 0.33])))
+  matrixT_3 = np.dot(translateM4x4(np.array([1.0, -1.0, 0.0])), scaleM4x4(np.array([0.33, 0.33, 0.33])))
+  matrixT_4 = np.dot(translateM4x4(np.array([2.0, -1.0, 0.0])), scaleM4x4(np.array([0.33, 0.33, 0.33])))
+  matrixT_5 = np.dot(translateM4x4(np.array([-2.0, -1.0, 0.0])), scaleM4x4(np.array([0.33, 0.33, 0.33])))
+  matrixT_6 = np.dot(translateM4x4(np.array([0.0, -0.5, 2.0])) , np.dot(rotateXM4x4(DEG_TO_RAD * 60.0), rotateYM4x4(DEG_TO_RAD * 180.0)))
+    
+  matrixT_plane = translateM4x4(np.array([0.0, -1.0, 0.0]))
+  matrixT_light = translateM4x4(np.array([0.0, 2.0, 0.0]))
+
+  hy.hrSceneOpen(scnRef, hy.HR_WRITE_DISCARD)
+  hy.hrMeshInstance(scnRef, myMeshRef, matrixT_1.flatten())
+  hy.hrMeshInstance(scnRef, myMeshRef, matrixT_2.flatten())
+  hy.hrMeshInstance(scnRef, myMeshRef, matrixT_3.flatten())
+  hy.hrMeshInstance(scnRef, myMeshRef, matrixT_4.flatten())
+  hy.hrMeshInstance(scnRef, myMeshRef, matrixT_5.flatten())
+  hy.hrMeshInstance(scnRef, planeRef, matrixT_plane.flatten())
+  hy.hrMeshInstance(scnRef, cubeOpenRef, matrixT_6.flatten())
+  hy.hrLightInstance(scnRef, light, matrixT_light.flatten());
+  hy.hrSceneClose(scnRef)
+  
+  hy.hrFlush(scnRef)
+  
+  mergedMat1 = hy.MergeOneMaterialIntoLibrary("tests/test01_render_cubes", "plane")
+  mergedMat2 = hy.MergeOneMaterialIntoLibrary("tests/test01_render_cubes", "mysimplemat")
+  
+  remapList1 = np.array([mat1.id, mergedMat1.id], dtype = np.int32)
+  remapList2 = np.array([mat1.id, mergedMat2.id], dtype = np.int32)
+  remapList3 = np.array([mat0.id, mergedMat1.id, mat1.id, mergedMat2.id], dtype = np.int32)
+  
+  hy.hrSceneOpen(scnRef, hy.HR_WRITE_DISCARD)
+  hy.hrMeshInstance(scnRef, myMeshRef, matrixT_1.flatten())
+  hy.hrMeshInstanceRemap(scnRef, myMeshRef, matrixT_2.flatten(), remapList1, remapList1.size)
+  hy.hrMeshInstance(scnRef, myMeshRef, matrixT_3.flatten())
+  hy.hrMeshInstanceRemap(scnRef, myMeshRef, matrixT_4.flatten(), remapList2, remapList2.size)
+  hy.hrMeshInstance(scnRef, myMeshRef, matrixT_5.flatten())
+  hy.hrMeshInstance(scnRef, planeRef, matrixT_plane.flatten())
+  hy.hrMeshInstanceRemap(scnRef, cubeOpenRef, matrixT_6.flatten(), remapList3, remapList3.size)
+  hy.hrLightInstance(scnRef, light, matrixT_light.flatten());
+  hy.hrSceneClose(scnRef)
+  
+  hy.hrFlush(scnRef, renderRef, camRef)
+  
+
+  if(inBG):
+    runRenderInBG(renderRef, 1024, 768, test_name)
+    (res, mse) = check_images(test_name, 1, 30.0)
+    if(res):
+      report_file.write(test_name + " PASSED, MSE : {}\n".format(mse))
+    else:
+      report_file.write(test_name + " FAILED, MSE : {}\n".format(mse))   
+  else:
+    initAndStartOpenGL(renderRef, 1024, 768, test_name)
+  
+  return
+  
 def run_tests():
   hy.hrInit("-copy_textures_to_local_folder 1 -local_data_path 1 ")
 
@@ -1628,8 +1867,10 @@ def run_tests():
 #    test11_load_car_and_change_env("tests/test11_load_car_and_change_env", report_file, False)
 #    test12_cornell_box_gbuffer(report_file, False)
 #    test13_transform_instances(report_file, False)
-    test14_merge_scenes(report_file, False)
+#    test14_merge_scenes(report_file, False)
 #    test15_merge_one_object(report_file, False)
+#    test16_print_matlib_map(report_file, True)
+    test17_material_remap_lists(report_file, True)
 #    render_scene("tests/test04_instancing")
 
 run_tests()

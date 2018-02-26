@@ -347,7 +347,7 @@ bool test1012_merge_one_light(); // run LGHT_TESTS::test_221_cylinder_tex3();
 
 
 bool test1013_commit_without_render(); //needs scene library with at least 1 light and 2 materials
-
+bool test1014_print_matlib_map();
 
 
 void run_all_api_tests(const int startTestId = 0);

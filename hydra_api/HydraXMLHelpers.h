@@ -3,6 +3,7 @@
 #include <sstream>
 #include "pugixml.hpp"
 #include "LiteMath.h"
+#include "HydraAPI.h"
 
 namespace HydraXMLHelpers
 {
@@ -235,7 +236,7 @@ namespace HydraXMLHelpers
 
     if (inode.child(L"multiplier") != nullptr)             // multipliers are deprecated
     {
-      if (inode.child(L"multiplier").attribute(L"val") != 0)
+      if (inode.child(L"multiplier").attribute(L"val") != nullptr)
         mult = inode.child(L"multiplier").attribute(L"val").as_float();
       else
         mult = inode.child(L"multiplier").text().as_float(); // deprecated
@@ -257,5 +258,7 @@ namespace HydraXMLHelpers
     }
     return have;
   }
+
+  std::vector<std::pair<std::string, int> > GetMaterialNameToIdMap();
  
 };

@@ -110,17 +110,21 @@ void hrMeshInstancePy(HRSceneInstRef a_pScn, HRMeshRef a_pMesh, py::array_t<floa
   hrMeshInstance(a_pScn, a_pMesh, mat.mutable_data(0), nullptr, 0);
 }
 
-void hrMeshInstancePyMatOverride(HRSceneInstRef a_pScn, HRMeshRef a_pMesh, py::array_t<float> &a_mat,
+void hrMeshInstancePyRemap(HRSceneInstRef a_pScn, HRMeshRef a_pMesh, py::array_t<float> &a_mat,
                       py::array_t<int32_t> *a_mmListm = nullptr, int32_t a_mmListSize = 0)
 {
 
-  auto mmList = a_mmListm->unchecked<1>();
   auto mat = a_mat.mutable_unchecked<1>();
 
-  if(a_mmListm == nullptr || mmList.size() == 0)
-    hrMeshInstance(a_pScn, a_pMesh, mat.mutable_data(0), nullptr, a_mmListSize);
+  if(a_mmListm == nullptr || a_mmListSize == 0)
+  {
+    hrMeshInstance(a_pScn, a_pMesh, mat.mutable_data(0), nullptr, 0);
+  }
   else
+  {
+    auto mmList = a_mmListm->unchecked<1>();
     hrMeshInstance(a_pScn, a_pMesh, mat.mutable_data(0), mmList.data(0), a_mmListSize);
+  }
 }
 
 
@@ -298,7 +302,7 @@ PYBIND11_MODULE(hydraPy, m)
   m.def("hrSceneOpen", &hrSceneOpen);
   m.def("hrSceneClose", &hrSceneClose);
   m.def("hrMeshInstance", &hrMeshInstancePy, py::arg("a_pScn"), py::arg("a_pMesh"), py::arg("a_mat").noconvert());
-  m.def("hrMeshInstanceMatOverride", &hrMeshInstancePyMatOverride, py::arg("a_pScn"), py::arg("a_pMesh"), py::arg("a_mat").noconvert(),
+  m.def("hrMeshInstanceRemap", &hrMeshInstancePyRemap, py::arg("a_pScn"), py::arg("a_pMesh"), py::arg("a_mat").noconvert(),
         py::arg("a_mmListm").noconvert() = (py::array_t<int32_t>*)nullptr,  py::arg("a_mmListSize") = 0);
 
   m.def("hrLightInstance", &hrLightInstancePy);
@@ -321,6 +325,8 @@ PYBIND11_MODULE(hydraPy, m)
   m.def("hrCommit", &hrCommit, py::arg("a_pScn") = HRSceneInstRef(), py::arg("a_pRender") = HRRenderRef(),  py::arg("a_pCam") = HRCameraRef());
   m.def("hrFlush", &hrFlush, py::arg("a_pScn") = HRSceneInstRef(), py::arg("a_pRender") = HRRenderRef(),  py::arg("a_pCam") = HRCameraRef());
   m.def("WriteMatrix4x4", &WriteMatrix4x4Py, py::arg("a_node"), py::arg("a_attrib_name"), py::arg("a_mat").noconvert());
+
+  m.def("GetMaterialNameToIdMap", &HydraXMLHelpers::GetMaterialNameToIdMap);
 
   m.def("InstanceSceneIntoScene", &InstanceSceneIntoScenePy, py::arg("a_scnFrom"), py::arg("a_scnTo"), py::arg("a_mat").noconvert(), py::arg("origin") = true);
   m.def("MergeLibraryIntoLibrary", &HRUtils::MergeLibraryIntoLibrary, py::arg("a_libPath"), py::arg("mergeLights") = false, py::arg("copyScene") = false);

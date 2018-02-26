@@ -53,7 +53,7 @@ set(SOURCE_FILES
         VirtualBuffer.cpp
         xxhash.c
         xxhash.h
-        )
+        HydraXMLHelpers.cpp)
 
 
 if (WIN32)

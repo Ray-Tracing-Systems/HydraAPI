@@ -114,6 +114,7 @@ int main(int argc, const char** argv)
     //test1011_merge_scene();
     //test1012_merge_one_light();
     //test1013_commit_without_render();
+    //std::cout << test1014_print_matlib_map() << std::endl;
 
     MTL_TESTS::test_120_opacity_shadow_matte();
 
