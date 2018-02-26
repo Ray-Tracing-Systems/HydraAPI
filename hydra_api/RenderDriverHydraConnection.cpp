@@ -636,6 +636,9 @@ HRRenderUpdateInfo RD_HydraConnection::HaveUpdateNow(int a_maxRaysPerPixel)
 
   result.finalUpdate = (result.progress >= 100.0f);
 
+  if(result.finalUpdate)
+    this->ExecuteCommand(L"exitnow", nullptr);
+  
   return result;
 }
 
