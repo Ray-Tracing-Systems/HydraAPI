@@ -176,6 +176,7 @@
     <ClCompile Include="HydraPostProcessSpecial.cpp" />
     <ClCompile Include="HydraVSGFExport.cpp" />
     <ClCompile Include="HydraObjectManager.cpp" />
+    <ClCompile Include="HydraXMLHelpers.cpp" />
     <ClCompile Include="HydraXMLVerify.cpp" />
     <ClCompile Include="OpenGLCoreProfileUtils.cpp" />
     <ClCompile Include="pugixml.cpp" />

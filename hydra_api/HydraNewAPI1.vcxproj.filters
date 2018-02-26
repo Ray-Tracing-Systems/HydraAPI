@@ -153,6 +153,9 @@
     <ClCompile Include="HydraAPI_GBuffer.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="HydraXMLHelpers.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LiteMath.h">
