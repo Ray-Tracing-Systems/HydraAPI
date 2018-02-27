@@ -750,14 +750,12 @@ void RD_HydraConnection::GetFrameBufferLineHDR(int32_t a_xBegin, int32_t a_xEnd,
 
   // if final update lock image
 
-  const __m128 mask = _mm_castsi128_ps(_mm_set_epi32(0, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF)); // kill fourth channel
-
   if (intptr % 16 == 0)
   {
     for (int i = a_xBegin*4; i < a_xEnd*4; i += 4)
     {
       const __m128 color1 = _mm_load_ps(data + i);
-      const __m128 color2 = _mm_and_ps(mask,_mm_mul_ps(mult, color1));
+      const __m128 color2 = _mm_mul_ps(mult, color1);
       _mm_store_ps(a_out + i - a_xBegin*4, color2);
     }
   }
@@ -766,7 +764,7 @@ void RD_HydraConnection::GetFrameBufferLineHDR(int32_t a_xBegin, int32_t a_xEnd,
     for (int i = a_xBegin * 4; i < a_xEnd * 4; i += 4)
     {
       const __m128 color1 = _mm_load_ps(data + i);
-      const __m128 color2 = _mm_and_ps(mask, _mm_mul_ps(mult, color1));
+      const __m128 color2 = _mm_mul_ps(mult, color1);
       _mm_storeu_ps(a_out + i - a_xBegin*4, color2);
     }
   }
