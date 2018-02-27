@@ -62,7 +62,7 @@ bool test42_load_library_basic()
 {
   initGLIfNeeded();
 
-  hrSceneLibraryOpen(L"C:/[Hydra]/pluginFiles/scenelib", HR_OPEN_EXISTING);
+  hrSceneLibraryOpen(L"tests/test_42", HR_OPEN_EXISTING);
 
   /////////////////////////////////////////////////////////
   HRRenderRef renderRef;
