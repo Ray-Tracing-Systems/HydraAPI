@@ -263,8 +263,12 @@ void FindOldObjectsThatWeNeedToUpdate(ChangeList& objects, HRSceneInst& scn)
       int matId = 0;
       inStrStream >> matId;
 
-      if (objects.matUsed.find(matId) == objects.matUsed.end())
+      if (objects.matUsed.find(matId)  == objects.matUsed.end() && // we don't add this object to list yet
+          scn.matUsedByDrv.find(matId) == scn.matUsedByDrv.end())  // and it was not added in previous updates
+      {
         objects.matUsed.insert(matId);
+        AddUsedMaterialChildrenRecursive(objects, matId);
+      }
     }
   }
 
