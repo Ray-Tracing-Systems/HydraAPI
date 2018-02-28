@@ -124,9 +124,9 @@ int main(int argc, const char** argv)
     //std::cout << test59_cornell_water_mlt() << std::endl;
     //std::cout << test70_area_lights16() << std::endl;
     //std::cout << test78_material_remap_list1() << std::endl;
-    std::cout << test79_material_remap_list2() << std::endl;
+    //std::cout << test79_material_remap_list2() << std::endl;
 
-    //std::cout << MTL_TESTS::test_120_opacity_shadow_matte() << std::endl;
+    std::cout << MTL_TESTS::test_120_opacity_shadow_matte() << std::endl;
 
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
     //GEO_TESTS::test_005_instancing();
