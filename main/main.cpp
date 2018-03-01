@@ -116,7 +116,7 @@ int main(int argc, const char** argv)
     //test1013_commit_without_render();
     //std::cout << test1014_print_matlib_map() << std::endl;
 
-    std::cout << test1015_merge_scene_with_remaps() << std::endl;
+    //std::cout << test1015_merge_scene_with_remaps() << std::endl;
 
 
     //MTL_TESTS::test_120_opacity_shadow_matte();
@@ -127,7 +127,7 @@ int main(int argc, const char** argv)
     //std::cout << test59_cornell_water_mlt() << std::endl;
     //std::cout << test70_area_lights16() << std::endl;
     //std::cout << test78_material_remap_list1() << std::endl;
-    //std::cout << test79_material_remap_list2() << std::endl;
+    std::cout << test79_material_remap_list2() << std::endl;
 
     //std::cout << MTL_TESTS::test_120_opacity_shadow_matte() << std::endl;
 
