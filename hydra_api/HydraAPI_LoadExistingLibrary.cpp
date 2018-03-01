@@ -663,14 +663,20 @@ void _hrInstanceMergeFromNode(HRSceneInstRef a_scn, pugi::xml_node a_node, int32
     if(a_node.attribute(L"rmap_id") != nullptr)
       rmap_id = a_node.attribute(L"rmap_id").as_int();
 
-    HRMeshRef ref;
-    ref.id = mesh_id + numMeshesPreMerge;
+    bool isLightMesh = (a_node.attribute(L"light_id") != nullptr);
 
-    if(rmap_id == -1)
-      hrMeshInstance(a_scn, ref, matrix);
-    else
-      hrMeshInstance(a_scn, ref, matrix, &remap_lists.at((unsigned long)rmap_id)[0], int32_t(remap_lists.at((unsigned long)rmap_id).size()));
+    if(!isLightMesh)
+    {
 
+      HRMeshRef ref;
+      ref.id = mesh_id + numMeshesPreMerge;
+
+      if (rmap_id == -1)
+        hrMeshInstance(a_scn, ref, matrix);
+      else
+        hrMeshInstance(a_scn, ref, matrix, &remap_lists.at((unsigned long) rmap_id)[0],
+                       int32_t(remap_lists.at((unsigned long) rmap_id).size()));
+    }
   }
 
 }
