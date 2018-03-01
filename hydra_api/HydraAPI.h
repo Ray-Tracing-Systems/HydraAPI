@@ -1032,7 +1032,8 @@ namespace HRUtils
   */
   HRTextureNodeRef Cube2SphereLDR(HRTextureNodeRef a_cube[6]);
 
-  void InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_scnTo, float a_mat[16], bool origin = true);
+  void InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_scnTo, float a_mat[16],
+                                bool origin = true, const int32_t* remapListOverride = nullptr, int32_t remapListSize = 0);
 
   HRSceneInstRef MergeLibraryIntoLibrary(const wchar_t* a_libPath, bool mergeLights = false, bool copyScene = false);
 

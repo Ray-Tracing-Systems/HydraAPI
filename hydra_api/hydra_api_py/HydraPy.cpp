@@ -11,6 +11,7 @@
 #include "HydraAPI.h"
 #include "HydraXMLHelpers.h"
 
+
 namespace py = pybind11;
 
 //PYBIND11_MAKE_OPAQUE(std::vector<float>);
@@ -145,8 +146,18 @@ void InstanceSceneIntoScenePy(HRSceneInstRef a_scnFrom, HRSceneInstRef a_scnTo, 
 {
   auto mat = a_mat.mutable_unchecked<1>();
 
-  HRUtils::InstanceSceneIntoScene(a_scnFrom, a_scnTo,  mat.mutable_data(0), origin);
+  HRUtils::InstanceSceneIntoScene(a_scnFrom, a_scnTo,  mat.mutable_data(0), origin, nullptr, 0);
 }
+
+void InstanceSceneIntoSceneRemapOverridePy(HRSceneInstRef a_scnFrom, HRSceneInstRef a_scnTo, py::array_t<float> &a_mat,
+                              bool origin = true, py::array_t<int32_t> *remap_override = nullptr)
+{
+  auto mat = a_mat.mutable_unchecked<1>();
+  auto remap_list = remap_override->unchecked<1>();
+
+  HRUtils::InstanceSceneIntoScene(a_scnFrom, a_scnTo,  mat.mutable_data(0), origin, remap_list.data(0), int32_t(remap_list.size()));
+}
+
 
 
 
@@ -328,7 +339,12 @@ PYBIND11_MODULE(hydraPy, m)
 
   m.def("GetMaterialNameToIdMap", &HydraXMLHelpers::GetMaterialNameToIdMap);
 
-  m.def("InstanceSceneIntoScene", &InstanceSceneIntoScenePy, py::arg("a_scnFrom"), py::arg("a_scnTo"), py::arg("a_mat").noconvert(), py::arg("origin") = true);
+  m.def("InstanceSceneIntoScene", &InstanceSceneIntoScenePy, py::arg("a_scnFrom"), py::arg("a_scnTo"), py::arg("a_mat").noconvert(),
+        py::arg("origin") = true);
+  m.def("InstanceSceneIntoSceneRemapOverride", &InstanceSceneIntoSceneRemapOverridePy, py::arg("a_scnFrom"), py::arg("a_scnTo"), py::arg("a_mat").noconvert(),
+        py::arg("origin") = true, py::arg("remap_override").noconvert() = (py::array_t<int32_t>*)nullptr);
+
+
   m.def("MergeLibraryIntoLibrary", &HRUtils::MergeLibraryIntoLibrary, py::arg("a_libPath"), py::arg("mergeLights") = false, py::arg("copyScene") = false);
   m.def("MergeOneMaterialIntoLibrary", &HRUtils::MergeOneMaterialIntoLibrary, py::arg("a_libPath"), py::arg("a_matName"), py::arg("a_matId") = -1);
   m.def("MergeOneMeshIntoLibrary", &HRUtils::MergeOneMeshIntoLibrary);

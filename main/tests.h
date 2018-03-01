@@ -350,6 +350,7 @@ bool test1013_commit_without_render(); //needs scene library with at least 1 lig
 bool test1014_print_matlib_map();
 
 bool test1015_merge_scene_with_remaps();
+bool test1016_merge_scene_remap_override();
 
 
 void run_all_api_tests(const int startTestId = 0);

@@ -1867,10 +1867,10 @@ def run_tests():
 #    test11_load_car_and_change_env("tests/test11_load_car_and_change_env", report_file, False)
 #    test12_cornell_box_gbuffer(report_file, False)
 #    test13_transform_instances(report_file, False)
-#    test14_merge_scenes(report_file, False)
+    test14_merge_scenes(report_file, False)
 #    test15_merge_one_object(report_file, False)
 #    test16_print_matlib_map(report_file, True)
-    test17_material_remap_lists(report_file, True)
+#    test17_material_remap_lists(report_file, False)
 #    render_scene("tests/test04_instancing")
 
 run_tests()

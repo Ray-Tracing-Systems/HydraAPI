@@ -926,10 +926,12 @@ HRLightRef HRUtils::MergeOneLightIntoLibrary(const wchar_t* a_libPath, const wch
   return ref;
 }
 
-void HRUtils::InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_scnTo, float a_mat[16], bool origin)
+void HRUtils::InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_scnTo, float a_mat[16],
+                            bool origin, const int32_t* remapListOverride, int32_t remapListSize)
 {
   HRSceneInst *pScn = g_objManager.PtrById(a_scnFrom);
   HRSceneInst *pScn2 = g_objManager.PtrById(a_scnTo);
+  bool overrideRemapLists = (remapListSize != 0) && (remapListOverride != nullptr);
   if (pScn == nullptr || pScn2 == nullptr)
   {
     HrError(L"HRUtils::InstanceSceneIntoScene: one of the scenes is nullptr");
@@ -949,7 +951,9 @@ void HRUtils::InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_
 
   std::vector<HRSceneInst::Instance> backupListMeshes(pScn->drawList);
   std::vector<HRSceneInst::Instance> backupListLights(pScn->drawListLights);
-  std::vector<std::vector<int32_t> > backupListRemapLists(pScn->m_remapList);
+  std::vector<std::vector<int32_t> > backupListRemapLists;
+  if(!overrideRemapLists)
+    backupListRemapLists = pScn->m_remapList;
 
   hrSceneClose(a_scnFrom);
 
@@ -988,7 +992,9 @@ void HRUtils::InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_
 
       int remapListId = mesh.remapListId;
 
-      if(remapListId == -1)
+      if(overrideRemapLists)
+        hrMeshInstance(a_scnTo, tmp, mRes.L(), remapListOverride, remapListSize);
+      else if(remapListId == -1)
         hrMeshInstance(a_scnTo, tmp, mRes.L());
       else
         hrMeshInstance(a_scnTo, tmp, mRes.L(), &backupListRemapLists.at((unsigned long)remapListId)[0],
