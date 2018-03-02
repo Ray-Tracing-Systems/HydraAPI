@@ -78,6 +78,7 @@ def saveAllGBuffferLayers(renderRef, testName):
   hy.hrRenderSaveGBufferLayerLDR(renderRef, "tests_images/" + testName + "/z_out8.png", "matid", 0, 0)
   hy.hrRenderSaveGBufferLayerLDR(renderRef, "tests_images/" + testName + "/z_out9.png", "objid", 0, 0)
   hy.hrRenderSaveGBufferLayerLDR(renderRef, "tests_images/" + testName + "/z_out10.png", "instid", 0, 0)
+  hy.hrRenderSaveFrameBufferHDR(renderRef, "tests_images/" + testName + "/z_out.hdr")
 
 def runRenderInBG(renderRef, w, h, testName, states_to_del = []):
   while True:

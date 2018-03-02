@@ -117,7 +117,7 @@ int main(int argc, const char** argv)
     //std::cout << test1014_print_matlib_map() << std::endl;
 
     //std::cout << test1015_merge_scene_with_remaps() << std::endl;
-    std::cout << test1016_merge_scene_remap_override() << std::endl;
+    //std::cout << test1016_merge_scene_remap_override() << std::endl;
 
 
     //MTL_TESTS::test_120_opacity_shadow_matte();

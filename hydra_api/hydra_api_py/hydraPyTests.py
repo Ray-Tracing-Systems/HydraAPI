@@ -1257,7 +1257,7 @@ def test10_sky_sun_physical(report_file, inBG):
   
   sunModel = lightNode.append_child("perez")
   sunModel.append_attribute("sun_id").set_value(sun.id)
-  sunModel.append_attribute("turbidity").set_value(2.0)
+  sunModel.append_attribute("turbidity").set_value(4.0)
   
   hy.hrLightClose(sky)
   
@@ -1277,7 +1277,7 @@ def test10_sky_sun_physical(report_file, inBG):
   intensityNode.append_child("multiplier").text().set("3.0");
   
   lightNode.append_child("angle_radius").append_attribute("val").set_value(0.5)
-  hy.hrLightClose(sky);
+  hy.hrLightClose(sun);
 
   renderRef = hy.hrRenderCreate("HydraModern")
   hy.hrRenderEnableDevice(renderRef, 0, True);
@@ -1300,7 +1300,7 @@ def test10_sky_sun_physical(report_file, inBG):
   matrixT_Teapot2 = np.dot(translateM4x4(np.array([0.0, 3.0, -1.0])),scaleM4x4(np.array([1.8, 1.8, 1.8])))
   matrixT_Plane = translateM4x4(np.array([0.0, -1.0, 0.0]))
   matRot = np.dot(rotateZM4x4(DEG_TO_RAD * (15.0)), rotateXM4x4(DEG_TO_RAD * (30.0)))
-  matrixT_light =  np.dot(translateM4x4(np.array([200.0, 20.0, -50.0])), matRot)
+  matrixT_light =  np.dot(translateM4x4(np.array([1000.0, 100.0, -1000.0])), matRot)
   mI = identityM4x4()
 
   hy.hrSceneOpen(scnRef, hy.HR_WRITE_DISCARD)
@@ -1863,11 +1863,11 @@ def run_tests():
 #    test07_sky_hdr_rotate(report_file, False)
 #    test08_shadow_catcher(report_file, False)
 #    test09_load_car("tests/test09_load_car", report_file, False)
-#    test10_sky_sun_physical(report_file, False)
+    test10_sky_sun_physical(report_file, False)
 #    test11_load_car_and_change_env("tests/test11_load_car_and_change_env", report_file, False)
 #    test12_cornell_box_gbuffer(report_file, False)
 #    test13_transform_instances(report_file, False)
-    test14_merge_scenes(report_file, False)
+#    test14_merge_scenes(report_file, False)
 #    test15_merge_one_object(report_file, False)
 #    test16_print_matlib_map(report_file, True)
 #    test17_material_remap_lists(report_file, False)
