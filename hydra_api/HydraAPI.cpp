@@ -384,7 +384,9 @@ HAPI void hrSceneClose(HRSceneInstRef a_pScn)
   //
   if (!pScn->m_remapCache.empty())
   {
-    pugi::xml_node allLists = sceneNode.append_child(L"remap_lists");
+
+    pugi::xml_node allLists = sceneNode.force_child(L"remap_lists");
+    clear_node_childs(allLists);
     for (int id = 0; id < pScn->m_remapList.size(); id++)
     {
       const auto& remapList = pScn->m_remapList[id];

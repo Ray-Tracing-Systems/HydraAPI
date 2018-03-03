@@ -260,5 +260,7 @@ namespace HydraXMLHelpers
   }
 
   std::vector<std::pair<std::string, int> > GetMaterialNameToIdMap();
+
+  std::vector<std::vector<int> > ReadRemapLists(pugi::xml_node a_node);
  
 };

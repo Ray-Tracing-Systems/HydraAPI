@@ -448,13 +448,19 @@ void fixTextureIds(pugi::xml_node a_node, const std::wstring &a_libPath, int32_t
 }
 
 
-HRMaterialRef _hrMaterialMergeFromNode(pugi::xml_node a_node, const std::wstring &a_libPath, int32_t numTexturesPreMerge, int32_t numMaterialsPreMerge, bool mergeDependencies = false)
+HRMaterialRef _hrMaterialMergeFromNode(pugi::xml_node a_node, const std::wstring &a_libPath, int32_t numTexturesPreMerge,
+                                       int32_t numMaterialsPreMerge, bool mergeDependencies = false, bool forceMerge = false)
 {
   const wchar_t* a_objectName = a_node.attribute(L"name").as_string();
 
   std::wstring matType = a_node.attribute(L"type").as_string();
   int notBlend = matType.compare(std::wstring(L"hydra_blend"));
   HRMaterialRef ref;
+
+  auto isLightMat = (a_node.attribute(L"light_id") != nullptr);
+
+  if(isLightMat && !forceMerge)
+    return HRMaterialRef();
 
   if(notBlend)
   {
@@ -564,11 +570,17 @@ HRLightRef _hrLightMergeFromNode(pugi::xml_node a_node, const std::wstring &a_li
 }
 
 
-HRMeshRef _hrMeshMergeFromNode(pugi::xml_node a_node, const std::wstring &a_libPath, int32_t numMaterialsPreMerge, bool mergeDependencies = false)
+HRMeshRef _hrMeshMergeFromNode(pugi::xml_node a_node, const std::wstring &a_libPath, int32_t numMaterialsPreMerge,
+                               bool mergeDependencies = false, bool forceMerge = false)
 {
   const std::wstring dl       = a_node.attribute(L"dl").as_string();
   const std::wstring loc      = a_node.attribute(L"loc").as_string();
   const std::wstring a_objectName = a_node.attribute(L"name").as_string();
+
+  auto isLightMesh = (a_node.attribute(L"light_id") != nullptr);
+
+  if(isLightMesh && !forceMerge)
+    return HRMeshRef();
 
   std::wstring a_fileName;
   if(dl == L"1")
@@ -626,7 +638,8 @@ HRMeshRef _hrMeshMergeFromNode(pugi::xml_node a_node, const std::wstring &a_libP
   return ref;
 }
 
-void _hrInstanceMergeFromNode(HRSceneInstRef a_scn, pugi::xml_node a_node, int32_t numMeshesPreMerge, bool mergeLights = false, int32_t numLightsPreMerge = 0)
+void _hrInstanceMergeFromNode(HRSceneInstRef a_scn, pugi::xml_node a_node, int32_t numMeshesPreMerge,
+                              const std::vector<std::vector<int> > &remap_lists, bool mergeLights = false, int32_t numLightsPreMerge = 0)
 {
   std::wstring nodeName = a_node.name();
 
@@ -646,12 +659,24 @@ void _hrInstanceMergeFromNode(HRSceneInstRef a_scn, pugi::xml_node a_node, int32
   else if(nodeName == std::wstring(L"instance"))
   {
     int mesh_id = a_node.attribute(L"mesh_id").as_int();
-    int rmap_id = a_node.attribute(L"rmap_id").as_int();
+    int rmap_id = -1;
+    if(a_node.attribute(L"rmap_id") != nullptr)
+      rmap_id = a_node.attribute(L"rmap_id").as_int();
 
-    HRMeshRef ref;
-    ref.id = mesh_id + numMeshesPreMerge;
+    bool isLightMesh = (a_node.attribute(L"light_id") != nullptr);
 
-    hrMeshInstance(a_scn, ref, matrix);
+    if(!isLightMesh)
+    {
+
+      HRMeshRef ref;
+      ref.id = mesh_id + numMeshesPreMerge;
+
+      if (rmap_id == -1)
+        hrMeshInstance(a_scn, ref, matrix);
+      else
+        hrMeshInstance(a_scn, ref, matrix, &remap_lists.at((unsigned long) rmap_id)[0],
+                       int32_t(remap_lists.at((unsigned long) rmap_id).size()));
+    }
   }
 
 }
@@ -710,10 +735,29 @@ HRSceneInstRef HRUtils::MergeLibraryIntoLibrary(const wchar_t* a_libPath, bool m
 
     hrSceneOpen(mergedScn, HR_WRITE_DISCARD);
 
+    std::vector< std::vector <int> > remap_lists;
     pugi::xml_node sceneToMergeNode = docToMerge.child(L"scenes").first_child();
     for (pugi::xml_node node = sceneToMergeNode.first_child(); node != nullptr; node = node.next_sibling())
     {
-      _hrInstanceMergeFromNode(mergedScn, node, numMeshesPreMerge, mergeLights, numLightsPreMerge);
+      if(node.name() == std::wstring(L"remap_lists"))
+      {
+        remap_lists = HydraXMLHelpers::ReadRemapLists(node);
+
+        for(auto& list : remap_lists)
+        {
+          std::for_each(list.begin(), list.end(), [=](int &x) { x += numMaterialsPreMerge; });
+         // list += numMaterialsPreMerge;
+          /*for(auto i = 0; i < list.size(); ++i)
+          {
+            if(i % 2 != 0)
+              list.at(i) += numMaterialsPreMerge;
+          }*/
+        }
+      }
+      else
+      {
+        _hrInstanceMergeFromNode(mergedScn, node, numMeshesPreMerge, remap_lists, mergeLights, numLightsPreMerge);
+      }
     }
 
     hrSceneClose(mergedScn);
@@ -796,7 +840,7 @@ HRMaterialRef HRUtils::MergeOneMaterialIntoLibrary(const wchar_t* a_libPath, con
     if ((a_matName != nullptr && matName == std::wstring(a_matName))
           || node.attribute(L"id").as_int() == a_matId)
     {
-      ref = _hrMaterialMergeFromNode(node, std::wstring(a_libPath), numTexturesPreMerge, numMaterialsPreMerge, true);
+      ref = _hrMaterialMergeFromNode(node, std::wstring(a_libPath), numTexturesPreMerge, numMaterialsPreMerge, true, true);
       break;
     }
   }
@@ -836,7 +880,7 @@ HRMeshRef HRUtils::MergeOneMeshIntoLibrary(const wchar_t* a_libPath, const wchar
     std::wstring meshName = node.attribute(L"name").as_string();
     if (meshName == std::wstring(a_meshName))
     {
-      ref = _hrMeshMergeFromNode(node, std::wstring(a_libPath), numMaterialsPreMerge, true);
+      ref = _hrMeshMergeFromNode(node, std::wstring(a_libPath), numMaterialsPreMerge, true, true);
       break;
     }
   }
@@ -882,10 +926,12 @@ HRLightRef HRUtils::MergeOneLightIntoLibrary(const wchar_t* a_libPath, const wch
   return ref;
 }
 
-void HRUtils::InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_scnTo, float a_mat[16], bool origin)
+void HRUtils::InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_scnTo, float a_mat[16],
+                            bool origin, const int32_t* remapListOverride, int32_t remapListSize)
 {
   HRSceneInst *pScn = g_objManager.PtrById(a_scnFrom);
   HRSceneInst *pScn2 = g_objManager.PtrById(a_scnTo);
+  bool overrideRemapLists = (remapListSize != 0) && (remapListOverride != nullptr);
   if (pScn == nullptr || pScn2 == nullptr)
   {
     HrError(L"HRUtils::InstanceSceneIntoScene: one of the scenes is nullptr");
@@ -905,6 +951,9 @@ void HRUtils::InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_
 
   std::vector<HRSceneInst::Instance> backupListMeshes(pScn->drawList);
   std::vector<HRSceneInst::Instance> backupListLights(pScn->drawListLights);
+  std::vector<std::vector<int32_t> > backupListRemapLists;
+  if(!overrideRemapLists)
+    backupListRemapLists = pScn->m_remapList;
 
   hrSceneClose(a_scnFrom);
 
@@ -941,7 +990,15 @@ void HRUtils::InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_
       else
         mRes = mul(m2, m1);
 
-      hrMeshInstance(a_scnTo, tmp, mRes.L());
+      int remapListId = mesh.remapListId;
+
+      if(overrideRemapLists)
+        hrMeshInstance(a_scnTo, tmp, mRes.L(), remapListOverride, remapListSize);
+      else if(remapListId == -1)
+        hrMeshInstance(a_scnTo, tmp, mRes.L());
+      else
+        hrMeshInstance(a_scnTo, tmp, mRes.L(), &backupListRemapLists.at((unsigned long)remapListId)[0],
+                       int32_t(backupListRemapLists.at((unsigned long)remapListId).size()));
     }
   }
 

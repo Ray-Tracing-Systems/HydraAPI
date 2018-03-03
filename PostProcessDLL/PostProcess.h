@@ -29,7 +29,10 @@ struct tagHistogram
   float* g;
   float* b;
 };
-
+int FloatToInt(const float inData)
+{
+  return int(inData + 0.5f);
+}
 float Luminance(const float3* data)
 {
   return (0.2126f * data->x + 0.7152f * data->y + 0.0722f * data->z);
@@ -935,7 +938,7 @@ void CalculateHistogram(const float& data, float histogram[], const int histogra
   if (data <= 1.0f)
   {
     // Current bin.      
-    const int currentHistogramBin = (data * float(histogramBin - 1)) + 0.5f;
+    const int currentHistogramBin = (int)((data * float(histogramBin - 1)) + 0.5f);
 
     // Increase count currents bin.
     if (currentHistogramBin >= 0 && currentHistogramBin < histogramBin)
@@ -1118,8 +1121,8 @@ void Bilinear(const float inData, float outData[], float newPosX, float newPosY,
   // | dxy1 | dxy2 |
   // |------|------|
 
-  const int floorY = floor(newPosY);
-  const int floorX = floor(newPosX);
+  const int floorY = (int)floor(newPosY);
+  const int floorX = (int)floor(newPosX);
 
   const int     dxy1 = floorY * m_width + floorX;
   int           dxy2 = dxy1 + 1;
@@ -1207,7 +1210,6 @@ void ComputeWhitePoint(const float3 summRgb, float3* whitePoint, const int sizeI
 }
 void MinMaxRgb(float4* data, float& minRgb, float& maxRgb, const float thresholdFloor, const int i)
 {
-  omp_set_lock;
   if (data[i].x < minRgb && data[i].x > 0.0f) minRgb = data[i].x;
   if (data[i].x > maxRgb)                     maxRgb = data[i].x;
 
@@ -1261,8 +1263,8 @@ void DrawColumn(float4 data[], const int width, const int height, const int offs
 void ViewHistorgam(float4 data[], tagHistogram* histogram, const int m_width, const int m_height, const int histogramBin)
 {
   const int countCol = m_width;
-  const int step = histogramBin / countCol + 0.5f;
-  int width = m_width / countCol + 0.5f;
+  const int step = FloatToInt((float)histogramBin / countCol);
+  int width = FloatToInt((float)m_width / countCol);
   if (width < 1) width = 1;
 
   float height;
@@ -1353,15 +1355,11 @@ float Max3(const float value1, const float value2, const float value3)
   else                                           return value3;
 
 }
-int FloatToInt(const float inData)
-{
-  return int(inData + 0.5f);
-}
 void Resize(float inData[], const float sourceWidth, const float sourceHeight, const float sourceSizeImage, const float resize)
 {
-  const int newSizeImage = sourceSizeImage * resize;
-  const int newHeight = sourceHeight * resize;
-  const int newWidth = sourceWidth * resize;
+  const int newSizeImage = FloatToInt(sourceSizeImage * resize);
+  const int newHeight = FloatToInt(sourceHeight * resize);
+  const int newWidth = FloatToInt(sourceWidth * resize);
 
   if (resize < 1.0f)
   {
@@ -1369,9 +1367,9 @@ void Resize(float inData[], const float sourceWidth, const float sourceHeight, c
     {
       for (int x = 0; x < newWidth; ++x)
       {
-        const int i = y * sourceWidth + x;
-        int j = y / resize * sourceWidth + x / resize;
-        if (j >= sourceSizeImage) j = sourceSizeImage - 1;
+        const int i = FloatToInt(y * sourceWidth + x);
+        int j = FloatToInt(y / resize * sourceWidth + x / resize);
+        if (j >= sourceSizeImage) j = FloatToInt(sourceSizeImage - 1);
         inData[i] = inData[j];
       }
     }
@@ -1384,8 +1382,8 @@ void Resize(float inData[], const float sourceWidth, const float sourceHeight, c
     {
       for (int x = 0; x < newWidth; ++x)
       {
-        const int i = (int)(y * newWidth) + x;
-        const int j = (int)(y / resize * 0.99f) * newWidth + x / resize;
+        const int i = (y * newWidth) + x;
+        const int j = FloatToInt((y / resize * 0.99f) * newWidth + x / resize);
         resizeArray[i] = inData[j];
       }
     }
@@ -1427,25 +1425,25 @@ std::vector<float> createGaussKernelWeights1D_HDRImage2(const int size, const fl
 }
 void Blur(float inData[], int blurRadius, const int m_width, const int m_height, const int sizeImage)
 {
-  const float diagonalImage = Distance(0, 0, m_width, m_height);
+  const float diagonalImage = Distance(0, 0, (float)m_width, (float)m_height);
   float radiusImage = diagonalImage / 2.0f;
 
   float resize = 1.0f;
   if (blurRadius >= (radiusImage / 2.0f)) resize = 0.50f;
   else if (blurRadius >= radiusImage)         resize = 0.25f;
 
-  blurRadius *= resize;
-  const int colInRadius = (blurRadius + blurRadius + 1) / 2.0f + 0.5f;
+  blurRadius = FloatToInt(blurRadius * resize);
+  const int colInRadius = FloatToInt((blurRadius + blurRadius + 1) / 2.0f);
 
-  const int smallSizeImage = sizeImage * resize;
-  const int smallHeight = m_height * resize;
-  const int smallWidth = m_width * resize;
-  float* blurRow = (float*)calloc(sizeImage * resize, sizeof(float));
-  float* blurRowCol = (float*)calloc(sizeImage * resize, sizeof(float));
+  const int smallSizeImage = FloatToInt(sizeImage * resize);
+  const int smallHeight = FloatToInt(m_height * resize);
+  const int smallWidth = FloatToInt(m_width * resize);
+  float* blurRow = (float*)calloc(FloatToInt(sizeImage * resize), sizeof(float));
+  float* blurRowCol = (float*)calloc(FloatToInt(sizeImage * resize), sizeof(float));
   std::vector<float> weights = createGaussKernelWeights1D_HDRImage2(blurRadius * 2 + 1, 1.0f);
 
   // Downsize for up speed blur
-  if (resize < 1.0f) Resize(inData, m_width, m_height, sizeImage, resize);
+  if (resize < 1.0f) Resize(inData, (float)m_width, (float)m_height, (float)sizeImage, resize);
 
   // ----- Blur -----
 

@@ -232,7 +232,7 @@ void ExecutePostProcessHydra1(
   const int sizeImage = a_width * a_height;
   const float centerImageX = a_width / 2.0f;
   const float centerImageY = a_height / 2.0f;
-  const float diagonalImage = Distance(0, 0, a_width, a_height);
+  const float diagonalImage = Distance(0, 0, (float)a_width, (float)a_height);
   const float radiusImage = diagonalImage / 2.0f;
 
   const int histogramBin = 10000;
@@ -306,11 +306,11 @@ void ExecutePostProcessHydra1(
 
   // ----- Analization, precalculate and any effects. Loop 1. -----
   //#pragma omp parallel for
-  for (int y = 0; y < a_height; ++y)
+  for (unsigned int y = 0; y < a_height; ++y)
   {
-    for (int x = 0; x < a_width; ++x)
+    for (unsigned int x = 0; x < a_width; ++x)
     {
-      const int i = y * a_width + x;
+      const unsigned int i = y * a_width + x;
 
       image4out[i] = image4in[i];  //uncomment in 3dmax plugin
 
@@ -379,11 +379,11 @@ void ExecutePostProcessHydra1(
   if (a_sharpness > 0.0f)
   {
     #pragma omp parallel for
-    for (int y = 0; y < a_height; ++y)
+    for (int y = 0; y < (int)a_height; ++y)
     {
-      for (int x = 0; x < a_width; ++x)
+      for (int x = 0; x < (int)a_width; ++x)
       {
-        const int i = y * a_width + x;
+        const unsigned int i = y * a_width + x;
 
         float mean = 0.0f;
 
@@ -395,9 +395,9 @@ void ExecutePostProcessHydra1(
             int X = x + j;
 
             if      (Y < 0)         Y = 1;
-            else if (Y >= a_height) Y = a_height - 1;
+            else if (Y >= (int)a_height) Y = a_height - 1;
             if      (X < 0)         X = 1;
-            else if (X >= a_width)  X = a_width - 1;
+            else if (X >= (int)a_width)  X = a_width - 1;
 
             mean += lumForSharp[Y * a_width + X];
           }
@@ -413,9 +413,9 @@ void ExecutePostProcessHydra1(
             int X = x + j;
 
             if      (Y < 0)         Y = 1;
-            else if (Y >= a_height) Y = a_height - 1;
+            else if (Y >= (int)a_height) Y = a_height - 1;
             if      (X < 0)         X = 1;
-            else if (X >= a_width)  X = a_width - 1;
+            else if (X >= (int)a_width)  X = a_width - 1;
 
             float a = lumForSharp[Y * a_width + X] - mean;
             dispers += abs(a);

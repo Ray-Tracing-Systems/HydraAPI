@@ -547,6 +547,21 @@ inline pugi::xml_node lite_copy_node_to(pugi::xml_node a_proto, pugi::xml_node l
   return resNode;
 }
 
+inline pugi::xml_node copy_node_to(pugi::xml_node a_proto, pugi::xml_node libNodeTo, pugi::xml_node& nodeCopyTo)
+{
+  pugi::xml_node resNode;
+
+  if (nodeCopyTo != nullptr)
+  {
+    resNode = libNodeTo.insert_copy_after(a_proto, nodeCopyTo); //#TODO implement lite version of insert_copy_after
+    libNodeTo.remove_child(nodeCopyTo);
+  }
+  else
+    resNode = libNodeTo.append_copy(a_proto);
+
+  return resNode;
+}
+
 pugi::xml_node HRSceneInst::append_instances_back(pugi::xml_node a_node)
 {
   const wchar_t* sceneId     = a_node.attribute(L"id").value();
@@ -570,7 +585,8 @@ pugi::xml_node HRSceneInst::append_instances_back(pugi::xml_node a_node)
     std::wstringstream ss;
     ss << inst.attribute(L"id").as_int() << inst.name();
     pugi::xml_node& nodeCopyTo = nodeByIdAndType[ss.str()];
-    lite_copy_node_to(inst, sceneToCopy, nodeCopyTo);
+    //lite_copy_node_to(inst, sceneToCopy, nodeCopyTo);
+    copy_node_to(inst, sceneToCopy, nodeCopyTo);
   }
 
   return sceneToCopy; 
