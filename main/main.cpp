@@ -97,7 +97,7 @@ int main(int argc, const char** argv)
     //run_all_api_tests();
     //run_all_ipp_tests();
 
-    test42_load_library_basic();
+    //test42_load_library_basic();
 
     //test1000_loadlibrary_and_edit();
     //test1001_loadlibrary_and_add_textures();
@@ -124,7 +124,7 @@ int main(int argc, const char** argv)
 
     //std::cout << test39_mesh_from_vsgf() << std::endl;
     //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
-    //std::cout << test77_save_gbuffer_layers() << std::endl;
+    std::cout << test77_save_gbuffer_layers() << std::endl;
     //std::cout << test59_cornell_water_mlt() << std::endl;
     //std::cout << test70_area_lights16() << std::endl;
     //std::cout << test78_material_remap_list1() << std::endl;
