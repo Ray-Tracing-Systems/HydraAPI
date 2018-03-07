@@ -901,10 +901,52 @@ void RD_HydraConnection::GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_
     a_lineData[x]        = UnpackGBuffer(data11, data22);         // store main gbuffer data
     a_lineData[x].shadow = data0[(lineOffset + x) * 4 + 3]*normC; // get shadow from the fourthm channel
 
-    // if (a_lineData[x].rgba[3] < 0.85f && a_lineData[x].coverage < 0.85f)
-    // {
-    // 
-    // }
+    // kill borders alpha for pixels that are neighbours to background 
+    //
+    if (a_lineData[x].rgba[3] < 0.85f && a_lineData[x].coverage < 0.85f)
+    {
+      // set up search window
+      //
+      constexpr int WINDOW_SIZE = 2;
+
+      int minY = a_lineNumber - WINDOW_SIZE;
+      int maxY = a_lineNumber + WINDOW_SIZE;
+
+      int minX = x - WINDOW_SIZE;
+      int maxX = x + WINDOW_SIZE;
+      
+      if (minY < 0) 
+        minY = 0;
+      if (maxY >= m_height)
+        maxY = m_height - 1;
+
+      if (minX < 0)
+        minX = 0;
+      if (maxX >= m_width)
+        maxX = m_width - 1;
+
+      // locate background in nearby pixels
+      //
+      bool foundBack = false;
+      for (int y1 = minY; y1 <= maxY; y1++)
+      {
+        for (int x1 = minX; x1 <= maxX; x1++)
+        {
+          const int instId = as_int(data2[(y1*m_width + x1) * 4 + 3]);
+          if (instId < 0)
+          {
+            foundBack = true;
+            goto BREAK_BOTH;
+          }
+        }
+      }
+      BREAK_BOTH:
+      
+      // now finally kill alpha
+      //
+      if (foundBack)
+        a_lineData[x].rgba[3] = 0.0f;
+    }
 
   }
 
