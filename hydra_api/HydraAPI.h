@@ -913,6 +913,7 @@ struct HRGBufferPixel
   float   texc[2];
   float   rgba[4];
   float   shadow;
+  float   coverage;
   int32_t matId;
   int32_t objId;
   int32_t instId;

@@ -204,6 +204,16 @@ static void ExtractInstId(const HRGBufferPixel* a_inLine, int32_t* a_outLine, in
 }
 
 
+static void ExtractCoverage(const HRGBufferPixel* a_inLine, int32_t* a_outLine, int a_width)
+{
+  for (int x = 0; x < a_width; x++)
+  {
+    const float cov    = a_inLine[x].coverage;
+    const float col[4] = { cov, cov, cov, 1};
+    a_outLine[x]  = RealColorToUint32(col);
+  }
+}
+
 
 bool HR_SaveLDRImageToFile(const wchar_t* a_fileName, int w, int h, int32_t* data);
 
@@ -286,6 +296,8 @@ HAPI bool hrRenderSaveGBufferLayerLDR(const HRRenderRef a_pRender, const wchar_t
       ExtractObjId(&gbufferLine[0], &imageLDR[y*width], width);
     else if (lname == L"instid")
       ExtractInstId(&gbufferLine[0], &imageLDR[y*width], width);
+    else if (lname == L"coverage")
+      ExtractCoverage(&gbufferLine[0], &imageLDR[y*width], width);
 
     if (lname == L"matid" || lname == L"mid" || lname == L"objid" || lname == L"instid")
     {

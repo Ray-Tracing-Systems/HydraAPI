@@ -693,7 +693,9 @@ static inline HRGBufferPixel UnpackGBuffer(const float a_input[4], const float a
   res.objId   = as_int(a_input2[2]);
   res.instId  = as_int(a_input2[3]);
 
-  res.shadow  = 0.0f;
+  const int compressedCoverage = (as_int(a_input[2]) & 0xFF000000) >> 24;
+  res.coverage = ((float)compressedCoverage)*(1.0f / 255.0f);
+  res.shadow   = 0.0f;
 
   return res;
 }
@@ -898,6 +900,12 @@ void RD_HydraConnection::GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_
     const float* data22  = &data2[(lineOffset + x) * 4];
     a_lineData[x]        = UnpackGBuffer(data11, data22);         // store main gbuffer data
     a_lineData[x].shadow = data0[(lineOffset + x) * 4 + 3]*normC; // get shadow from the fourthm channel
+
+    // if (a_lineData[x].rgba[3] < 0.85f && a_lineData[x].coverage < 0.85f)
+    // {
+    // 
+    // }
+
   }
 
 }

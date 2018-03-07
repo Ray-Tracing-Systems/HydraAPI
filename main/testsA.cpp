@@ -4799,7 +4799,9 @@ bool test77_save_gbuffer_layers()
   hrRenderSaveGBufferLayerLDR(renderRef, L"tests_images/test_77/z_out9.png", L"objid",  (const int32_t*)palette, 20);
   hrRenderSaveGBufferLayerLDR(renderRef, L"tests_images/test_77/z_out10.png", L"instid", (const int32_t*)palette, 20);
 
-  return check_images("test_77", 10, 20.0f);
+  hrRenderSaveGBufferLayerLDR(renderRef, L"tests_images/test_77/z_out11.png", L"coverage");
+
+  return check_images("test_77", 11, 20.0f);
 }
 
 bool test78_material_remap_list1()
