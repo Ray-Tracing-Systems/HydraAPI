@@ -3188,11 +3188,14 @@ namespace LGHT_TESTS
     mRot.identity();
     mRot2.identity();
 
-    mTranslate = translate4x4(float3(100.0f, 100.0f, -50.0f));
-    mRot = rotate_X_4x4(-45.0f*DEG_TO_RAD);
+    mRot  = rotate_X_4x4(-45.0f*DEG_TO_RAD);
     mRot2 = rotate_Z_4x4(-30.f*DEG_TO_RAD);
-    mRes = mul(mRot2, mRot);
-    mRes = mul(mTranslate, mRes);
+    mRes  = mul(mRot2, mRot);
+
+    const float3 sunPos = mul(mRes, float3(0.0f, 100.0f, 0.0f));
+
+    mTranslate = translate4x4(sunPos);
+    mRes       = mul(mTranslate, mRes);
 
     hrLightInstance(scnRef, sun, mRes.L());
 
