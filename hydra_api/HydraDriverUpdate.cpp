@@ -807,7 +807,10 @@ int64_t EstimateGeometryMem(const ChangeList& a_objList)
     auto meshObj          = g_objManager.scnData.meshes[texId];
     pugi::xml_node node   = meshObj.xml_node_immediate();
     const size_t byteSize = node.attribute(L"bytesize").as_llong();
-    memAmount += byteSize;
+
+    const int trisNum     = (node.child(L"indices").attribute(L"bytesize").as_llong()/(sizeof(int)*3)); // aux per poly shadow ray offsets
+
+    memAmount += (byteSize + trisNum*sizeof(float));
   }
 
   return memAmount;

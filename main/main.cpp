@@ -91,11 +91,11 @@ int main(int argc, const char** argv)
 
   try
   {
-	  //run_all_geo_tests();
-    //run_all_mtl_tests();
-    //run_all_lgt_tests();
-    //run_all_api_tests();
-    //run_all_ipp_tests();
+	  run_all_geo_tests();
+    run_all_mtl_tests();
+    run_all_lgt_tests();
+    run_all_api_tests();
+    run_all_ipp_tests();
 
     //test42_load_library_basic();
 
@@ -124,7 +124,7 @@ int main(int argc, const char** argv)
 
     //std::cout << test39_mesh_from_vsgf() << std::endl;
     //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
-    std::cout << test77_save_gbuffer_layers() << std::endl;
+    //std::cout << test77_save_gbuffer_layers() << std::endl;
     //std::cout << test59_cornell_water_mlt() << std::endl;
     //std::cout << test70_area_lights16() << std::endl;
     //std::cout << test78_material_remap_list1() << std::endl;
@@ -135,7 +135,7 @@ int main(int argc, const char** argv)
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
     //GEO_TESTS::test_005_instancing();
     //MTL_TESTS::test_120_opacity_shadow_matte();
-    //LGHT_TESTS::test_202_sky_color();
+    //LGHT_TESTS::test_211_sky_and_sun_perez();
     
     //PP_TESTS::test305_fbi_from_render();    
     //PP_TESTS::test312_2_post_process_hydra1_whitePointColor();
