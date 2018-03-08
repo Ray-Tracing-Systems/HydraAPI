@@ -306,6 +306,7 @@ struct HRSceneData : public HRObject<IHRSceneData>
   // dependency data
   //
   std::unordered_multimap<int32_t, int32_t> m_materialToMeshDependency;
+  std::unordered_set<int32_t>               m_shadowCatchers;
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 
@@ -391,6 +392,7 @@ struct HRSceneData : public HRObject<IHRSceneData>
     m_iesCache.clear();
 
     m_materialToMeshDependency.clear();
+    m_shadowCatchers.clear();
   }
 
   int32_t m_commitId;

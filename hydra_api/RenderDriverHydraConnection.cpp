@@ -87,7 +87,7 @@ struct RD_HydraConnection : public IHRRenderDriver
   void GetFrameBufferLineHDR(int32_t a_xBegin, int32_t a_xEnd, int32_t y, float* a_out, const wchar_t* a_layerName) override;
   void GetFrameBufferLineLDR(int32_t a_xBegin, int32_t a_xEnd, int32_t y, int32_t* a_out)                           override;
 
-  void GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_lineData, int32_t a_startX, int32_t a_endX) override;
+  void GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_lineData, int32_t a_startX, int32_t a_endX, const std::unordered_set<int32_t>& a_shadowCatchers) override;
 
   // info and devices
   //
@@ -865,7 +865,7 @@ void RD_HydraConnection::GetFrameBufferLDR(int32_t w, int32_t h, int32_t* a_out)
 }
 
 
-void RD_HydraConnection::GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_lineData, int32_t a_startX, int32_t a_endX)
+void RD_HydraConnection::GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_lineData, int32_t a_startX, int32_t a_endX, const std::unordered_set<int32_t>& a_shadowCatchers)
 {
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// #TODO: Refactor this
   float* data0 = nullptr;
@@ -932,8 +932,9 @@ void RD_HydraConnection::GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_
       {
         for (int x1 = minX; x1 <= maxX; x1++)
         {
-          const int instId = as_int(data2[(y1*m_width + x1) * 4 + 3]);
-          if (instId < 0)
+          //const int instId = as_int(data2[(y1*m_width + x1) * 4 + 3]);
+          const int matId = as_int(data1[(y1*m_width + x1) * 4 + 2])& 0x00FFFFFF;
+          if (matId < 0 || matId >= int(0x00FFFFFF) || a_shadowCatchers.find(matId) != a_shadowCatchers.end())
           {
             foundBack = true;
             goto BREAK_BOTH;

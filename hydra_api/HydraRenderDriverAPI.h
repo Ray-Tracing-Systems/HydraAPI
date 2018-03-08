@@ -8,6 +8,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <unordered_set>
 
 #include "pugixml.hpp"
 #include "HydraAPI.h"
@@ -272,7 +273,7 @@ struct IHRRenderDriver
 
   virtual void    EvalGBuffer() { } ///< run gbuffer evaluation (which can be async in general).
 
-  virtual void    GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_lineData, int32_t a_startX, int32_t a_endX) = 0; ///< get single gbuffer line (because the whole gbuffer is quite big!)
+  virtual void    GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_lineData, int32_t a_startX, int32_t a_endX, const std::unordered_set<int32_t>& a_shadowCatchers) = 0; ///< get single gbuffer line (because the whole gbuffer is quite big!)
 
   // info and devices
   //

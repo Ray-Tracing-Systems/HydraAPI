@@ -532,6 +532,8 @@ int32_t HR_DriverUpdateMaterials(HRSceneInst& scn, ChangeList& objList, IHRRende
       pugi::xml_node node = g_objManager.scnData.materials[matId].xml_node_immediate();
       scn.matUsedByDrv.insert(*p);
       a_pDriver->UpdateMaterial(int32_t(*p), node);
+      if (std::wstring(L"shadow_catcher") == node.attribute(L"type").as_string())
+        g_objManager.scnData.m_shadowCatchers.insert(matId);
       updatedMaterials++;
     }
     else
