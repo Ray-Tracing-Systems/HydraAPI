@@ -97,7 +97,6 @@ int main(int argc, const char** argv)
     run_all_api_tests();
     run_all_ipp_tests();
 
-    //std::cout << test40_several_changes() << std::endl;
     //test42_load_library_basic();
 
     //test1000_loadlibrary_and_edit();
