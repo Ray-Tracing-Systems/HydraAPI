@@ -42,7 +42,7 @@ struct RD_OGL32_Deferred : IHRRenderDriver
   void GetFrameBufferHDR(int32_t w, int32_t h, float*   a_out, const wchar_t* a_layerName) override;
   void GetFrameBufferLDR(int32_t w, int32_t h, int32_t* a_out) override;
 
-  void GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_lineData, int32_t a_startX, int32_t a_endX) override {}
+  void GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_lineData, int32_t a_startX, int32_t a_endX, const std::unordered_set<int32_t>& a_shadowCatchers) override {}
 
   HRDriverInfo Info() override;
   const HRRenderDeviceInfoListElem* DeviceList() const override { return nullptr; }

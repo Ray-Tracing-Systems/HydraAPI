@@ -33,7 +33,7 @@ HAPI void hrRenderGetGBufferLine(const HRRenderRef a_pRender, int32_t a_lineNumb
   if (pDriver == nullptr)
     return;
 
-  pDriver->GetGBufferLine(a_lineNumber, a_lineData, a_startX, a_endX);
+  pDriver->GetGBufferLine(a_lineNumber, a_lineData, a_startX, a_endX, g_objManager.scnData.m_shadowCatchers);
 }
 
 static inline int RealColorToUint32(const float real_color[4])
@@ -160,7 +160,7 @@ void FindDepthMinMax(std::shared_ptr<IHRRenderDriver> a_pDriver, int width, int 
 
   for (int y = 0; y < height; y++)
   {
-    a_pDriver->GetGBufferLine(y, &gbufferLine[0], 0, width);
+    a_pDriver->GetGBufferLine(y, &gbufferLine[0], 0, width, g_objManager.scnData.m_shadowCatchers);
     for (int x = 0; x < width; x++)
     {
       const float d = gbufferLine[x].depth;
@@ -276,7 +276,7 @@ HAPI bool hrRenderSaveGBufferLayerLDR(const HRRenderRef a_pRender, const wchar_t
 
   for (int y = 0; y < height; y++)
   {
-    pDriver->GetGBufferLine(y, &gbufferLine[0], 0, width);
+    pDriver->GetGBufferLine(y, &gbufferLine[0], 0, width, g_objManager.scnData.m_shadowCatchers);
 
     if (lname == L"depth")
       ExtractDepthLine(&gbufferLine[0], &imageLDR[y*width], width, dmin, dmax);
