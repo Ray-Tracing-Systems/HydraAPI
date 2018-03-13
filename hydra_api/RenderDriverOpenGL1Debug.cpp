@@ -249,13 +249,15 @@ bool RD_OGL1_Debug::UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode, cons
   //
 	glNewList(m_displayLists + m_meshNum + GLuint(a_meshId), GL_COMPILE);
 
+  const float scale = 0.1f;
+
   glBegin(GL_LINES);
 	for (int i = 0; i < a_input.vertNum; i++)
 	{
 		float4 A = float4(a_input.pos4f[i*4 + 0], a_input.pos4f[i*4 + 1], a_input.pos4f[i*4 + 2], a_input.pos4f[i*4 + 3]);
 		float4 B = float4(a_input.norm4f[i*4 + 0], a_input.norm4f[i*4 + 1], a_input.norm4f[i*4 + 2], a_input.norm4f[i*4 + 3]);
 		glVertex3f(A.x, A.y, A.z);
-		glVertex3f(A.x + m_renderNormalLength*B.x, A.y + m_renderNormalLength*B.y, A.z + m_renderNormalLength*B.z);
+		glVertex3f(A.x + scale * m_renderNormalLength*B.x, A.y + scale * m_renderNormalLength*B.y, A.z + scale * m_renderNormalLength*B.z);
 	}
   glEnd();
 
@@ -271,7 +273,7 @@ bool RD_OGL1_Debug::UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode, cons
     float4 A = float4(a_input.pos4f[i * 4 + 0], a_input.pos4f[i * 4 + 1], a_input.pos4f[i * 4 + 2], 0.0f);
     float4 B = float4(a_input.tan4f[i * 4 + 0], a_input.tan4f[i * 4 + 1], a_input.tan4f[i * 4 + 2], 0.0f);
     glVertex3f(A.x, A.y, A.z);
-    glVertex3f(A.x + m_renderNormalLength*B.x, A.y + m_renderNormalLength*B.y, A.z + m_renderNormalLength*B.z);
+    glVertex3f(A.x + scale*m_renderNormalLength*B.x, A.y + scale * m_renderNormalLength*B.y, A.z + scale * m_renderNormalLength*B.z);
   }
   glEnd();
 
