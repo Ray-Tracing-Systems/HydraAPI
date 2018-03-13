@@ -42,6 +42,7 @@ struct RD_HydraConnection : public IHRRenderDriver
 
     m_oldCounter = 0;
     m_oldSPP     = 0.0f;
+    m_dontRun    = false;
     //#TODO: init m_currAllocInfo
     //#TODO: init m_presets
     //#TODO: init m_lastServerReply
@@ -109,6 +110,7 @@ protected:
   int          m_oldCounter;
   float        m_oldSPP;
   int          m_clewInitRes;
+  bool         m_dontRun;
 
   void InitBothDeviceList();
   void RunAllHydraHeads();
@@ -421,6 +423,12 @@ bool RD_HydraConnection::UpdateSettings(pugi::xml_node a_settingsNode)
     m_params.customExePath = std::string(tmp.begin(), tmp.end());
     m_params.customExePath += "/";
   }
+
+  if(a_settingsNode.child(L"dont_run").text().as_int() == 1)
+    m_dontRun = true;
+  else
+    m_dontRun = false;
+
   return true;
 }
 
@@ -559,7 +567,8 @@ void RD_HydraConnection::BeginScene(pugi::xml_node a_sceneNode)
 
   // (3) run hydras
   //
-  RunAllHydraHeads();
+  if(!m_dontRun)
+    RunAllHydraHeads();
 
   m_firstUpdate  = true;
   m_instancesNum = 0;
