@@ -1730,7 +1730,7 @@ bool test39_mesh_from_vsgf()
     node.append_child(L"width").text()  = 1024;
     node.append_child(L"height").text() = 768;
 
-    node.append_child(L"method_primary").text()   = L"IBPT"; // L"pathtracing"; // L"lighttracing"; // IBPT
+    node.append_child(L"method_primary").text()   = L"lighttracing"; // L"pathtracing"; // L"lighttracing"; // IBPT
     node.append_child(L"trace_depth").text()      = 5;
     node.append_child(L"diff_trace_depth").text() = 3;
     node.append_child(L"maxRaysPerPixel").text()  = 1024;
@@ -1814,9 +1814,9 @@ bool test39_mesh_from_vsgf()
   }
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_39/z_out.png");
-  hrRenderSaveFrameBufferHDR(renderRef, L"tests_images/test_39/z_out.hdr");
+  //hrRenderSaveFrameBufferHDR(renderRef, L"tests_images/test_39/z_out.hdr");
 
-  return check_images("test_39", 1, 20.0f);
+  return check_images("test_39", 1, 40.0f);
 }
 
 void test_device_list()

@@ -910,6 +910,9 @@ void RD_HydraConnection::GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_
     a_lineData[x]        = UnpackGBuffer(data11, data22);         // store main gbuffer data
     a_lineData[x].shadow = data0[(lineOffset + x) * 4 + 3]*normC; // get shadow from the fourthm channel
 
+    if (a_lineData[x].matId < 0 || a_lineData[x].instId < 0)
+      a_lineData[x].shadow = 1.0f;
+
     // kill borders alpha for pixels that are neighbours to background 
     //
     if (a_lineData[x].rgba[3] < 0.85f && a_lineData[x].coverage < 0.85f)
