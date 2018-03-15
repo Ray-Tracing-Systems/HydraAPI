@@ -33,12 +33,12 @@
 \rusabstr{ Integration layer between digital content creation software (DCCS) and rendering software in a form of specialized database is proposed in this paper. In our approach, we focus on providing fast 3D-scene updates, ability to work with large digital assets (not fitting into memory), importing and exporting arbitrary parameters, serialization, convenient debugging tools and distributed rendering. Such database can be used as means to integrate different rendering engines with DCCS and also to transfer data between different DCCS. }
 
 \author{
-{\bfseries V.F.\,Frolov$^1,^2$,  V.S.\,Sangarov$^3$}
+{\bfseries V.A.\,Frolov$^1,^2$,  V.V.\,Sanzharov$^3$}
 \\ {\itshape $^1$ Keldysh Institute of Applied Mathematics (Russian Academy of Sciences), Moscow, Russia.}
 \\ {\itshape $^2$ Moscow State University, Moscow, Russia. }
 \\ {\itshape $^3$ Gubkin russian state university of oil and gas, Moscow, Russia. }
 \\ {\itshape E-mail: vfrolov@graphics.cs.msu.ru, vs@asugubkin.ru, vlgal@gin.keldysh.ru }}
-\title{Modern problems of integration in computer graphics applications and ways to solve them}
+\title{Modern problems of software integration in computer graphics applications and ways to solve them}
 %\thanks{~}
 %\date{}
 
@@ -59,7 +59,7 @@ Fast growth of computing power in the past 20 years gave rise to new research an
 
 \item \textit{No restrictions on memory}. The whole 3D scene may not fit into RAM of a single computer, but content creation process and rendering (at the very least in preview mode) should not have delays \cite{outofcore}. 
 
-\item \textit{Parameters variability} and extensibility of both DCCS and rendering systems. Different projects may require different computer graphics algorithms to be used (like for hair and fur). It's quite common for post-production studios to create their own rendering plugins both for DCCS and renderers \cite{mrhair}. 
+\item \textit{Parameters variability} and extensibility of both digital content creation software (DCCS) and rendering systems. Different projects may require different computer graphics algorithms to be used (like for hair and fur). It's quite common for post-production studios to create their own rendering plugins both for DCCS and renderers \cite{mrhair}. 
 
 \item \textit{Serialization}, import and export. Artists reuse variety of digital assets from their previous works or content repositories and therefore it's necessary to import and export everything. Moreover, in the visual effects and animation industry pipeline content needs to be passed between different software back and forth \cite{usd, sdb}.
 
@@ -70,17 +70,17 @@ Fast growth of computing power in the past 20 years gave rise to new research an
 	
 \end{enumerate}
 
-\subsection{Специфика области}
+\subsection{Domain-specific characteristics}
 
-Важно отметить, что обозначенная совокупность требований характерна именно для рассматриваемой области - приложений создания цифрового контента (3D и 2D редакторы), поскольку в других типичных приложениях компьютерной графики данные требования встречаются лишь частично. Рассмотрим некоторые примеры.
+It's important to note that requirements listed above are specific to digital content creation software, since in other computer graphics software these requirements can only be found partially. Let's take a look at a few examples.
 
 \begin{enumerate}
-	
-	\item Cовременные \underline{компьютерные игры}, \underline{симуляторы и. т. д.} являются чрезвычайно сложными программными системами, объём визуализируемого 3D контента в которых почти всегда не помещаются в оперативную память или память GPU. Однако в данном типе приложений отсутствует требование вариативности параметров (требование №3). Весь отображаемый контент оптимизируется и подготавливается заранее (зачастую совместными усилиями художника и программиста), а все используемые математические модели жёстко-фиксированы (типы геометрии, материалы, источники, алгоритмы отображения). Отредактировать какую-либо 3D модель или текстуру в процессе игры невозможно, да и не требуется. В редакторах это, с другой стороны, является основной функциональностью, как и возможность расширять модели материалов и источников произвольными параметрами.
 
-    \item В приложениях, традиционно работающих с \underline{базами данных} (например ГИС системы), выполняются многие из описанных выше требований, однако, как правило, не выполняется требование №1. Такие приложения ориентированы в основном на быстрый поиск семантически-значимой информации и на транзакции, обеспечивающие целостность базы при одновременной работе нескольких пользователей. Быстро добавлять информацию в базу данных большими порциями не требуется. Помимо этого, распределённость базы (требование №7) здесь также отличается. Пользователю базы данных, как правило, не нужно уметь получать на своей машине состояние базы целиком (или какой-то значительной её части). Тем более не нужно дублировать состояние базы данных на различных машинах (разве что частично в целях повышение отказоустойчивости). В рендер-системах ситуация обратная. Для того чтобы получить реалистичное изображение, рендер-системе необходимо иметь доступ ко всей сцене целиком. Причём все машины, участвующие в распределённом рендеринге должны получить одно и то же состояние сцены. С другой стороны, рендер-системе не нужен механизм транзакций, поскольку экспорт контента из редактора в рендер-систему всегда идёт из единственного приложения (что, правда \textbf{не исключает многопточности} самого процесса экспорта).
+	\item Modern \underline{computer games}, \underline{simulators} and other similar applications are exceptionally complex software where the amount of visualized 3d content almost always does not fit into RAM or GPU memory. However, there is no parameters variability requirement in such applications: all digital content is optimized and prepared beforehand by both artists and programmers; mathematical models (materials, lights, geometry types, etc.) are fixed. Generally, you can't (and you don't need to) edit a 3d model or a texture in the process of playing a computer game. However, for DCCS it is the main functionality, as is the ability to extend materials' and lights' models with arbitrary parameters.
 
-    \item Упомянутый ранее \underline{MS Word} является, пожалуй, наиболее близким аналогом трёхмерного редактора. В таком ПО необходимо выполнять все перечисленные требования кроме двух: №2 и №7. Редко можно встретить документ, не помещающийся в оперативную память компьютера или требующий вычислительный кластер для рассчётов. В 3D редакторах подобная ситуация является нормой.
+    \item In applications that usually work with \underline{databases} (like geographic information systems), most of the requirements described above are held, but with the exception of 1st requirement. Such applications are usually focused on a quick search for semantically important information and transactions that ensure the integrity of the database when multiple users are working simultaneously. There is generally no need to add big protions of information to the database. The distributed nature of the database (requirement #7) is also different since for a user there's usually no need to obtain the whole database (or a sizeable part of it). All the more so,  there's no need to replicate the database state on different computers (except for the sake of improving resiliency). It's completely opposite for a rendering system - to produce a photorealistic image renderer needs to have access to the whole scene and all computers participating in a distributed rendering process need to have the same state of the scene. On the other hand rendering system has no need for transaction mechanism since scene export takes place only from single application (which, however, \textbf{doesn't exclude possible multithreaded nature} of exporting process) 
+
+    \item Interestingly, \underline{MS Word}, which we mentioned earlier, is, perhaps, the closest analogue of the DCCS. In such application only requirements #2 and #7 don't need to be hold - it's quite rare for a document to not fit into RAM or require a computational cluster. But in 3d editors it's a common situation.
 
 \end{enumerate}
 
@@ -129,22 +129,23 @@ Bunsen provides users with the ability to process imported data in the most suit
 
 Since Bunsen is in the stage of active development, many details about it are not yet known to the public \cite{bunsen_gtc}. Nevertheless, the announcement of such system shows that there's a demand for novel integration solutions oriented on user-friendliness and emerging technologies as we pointed out in the begging of this paper.
 
-\paragraph{Holodeck.}
+\paragraph{Holodeck}
 
-Аналогом системы Bunsen можно назвать находящуюся на данный момент в стадии бета-тестирования систему Holodeck от компании Nvidia \cite{holodeck_gtc, holodeck_gtcdc}. Holodeck представляет собой среду виртуальной реальности для совместного дизайна и проектирования, созданную на основе Unreal Engine (так же как и Bunsen) и интегрированную с различными проприетарными технологиями компании - PhysX, VRWorks, DesignWorks. Для импорта контента используется механизм плагинов - 3d модели, материалы и текстуры экспортируются в специальный формат из ПО 3ds Max или Maya (на момент анонсирования бета-версии), после чего они могут быть импортированы в саму систему Holodeck. При этом при создании контента требуется использование проприетарной рендер-системы Iray и материалов из библиотеки vMaterials, описанных на языке MDL (material definition language) \cite{holodeck_website}.
-Механизм взаимодействия пользователей использует клиент-серверную архитектуру, доступную в Unreal Engine - один из пользователей является хостом, а остальные - клиентами, подключающимися к нему. Действия пользователей по изменению сцены синхронизируется с сервером, а непосредственно рендеринг происходит на машине каждого из пользователей, что обуславливает высокие требования к аппаратному обеспечению \cite{holodeck_website}. В настоящий момент Bunsen и Holodeck находятся в стадии бета-тестирования. Тем не менее, одновременное появление двух программных продуктов от крупных компаний показывает востребованность интеграционных решений, ориентированных на новые возможности и удобство пользователя, о чём мы говорили в начале статьи.
+The Holodeck platform which is being developed by Nvidia \cite{holodeck_gtc, holodeck_gtcdc} and is currently in a beta-test stage can be thought of as an analogue Bunsen. Holodeck is a virual reality platform for collaborative design based on the Unreal Engine (just like Bunsen) and integrated with several Nvidia's proprietary technologies - PhysX, VRWorks, DesignWorks. The platform makes use of plugin mechanism to import digital content from 3ds Max and Maya (at the beta test stage) - models, materials and textures are first exported into specific file format and then imported to Holodeck. For content creation it is necessary to use Iray proprietary rendering system and materials in MDL (material definition language) from the vMaterials library \cite{holodeck_website}.
 
-\subsection{Резюме по существующим решениям}
+Users interaction mechanism utilizes client-server architecture available in Unreal Engine - one of the users acts as a host and others connect to a host as clients. Users' actions which modify the scene are synchronized with the server. The rendering process itself runs separately on users' computers, this fact accounts for quite high hardware requirements\cite{holodeck_website}. The simultaneous appearance of two software products (Bunsen and Holodeck) from large companies shows the demand for integration solutions that are oriented towards new features and user convenience, as we discussed at the beginning of this paper.
 
-В заключении обзора следует сказать, что все рассмотренные выше методы и технологии призваны в той или иной мере решать проблему <<разных форматов>> или <<разного представления>> данных, которую в некотором смысле можно назвать фундаментальной. 
+\subsection{Conclusion on existiong solutions}
 
-Фундамент этой проблемы заключается в том, что большинство операции экспорта контента из редактора в рендер-систему долгие и ресурсоёмкие по определению. Поэтому ускорить или как-то упростить эти операции затруднительно. Например, загрузка большой текстуры с диска будет долгой практически при любых возможных оптимизациях, а преобразование сплайновых поверхностей в полигональную сетку требует времени и памяти, и является необходимым этапом экспорта т.к. большинство рендер-систем не умеют работать со сплайновыми поверхностями напрямую. 
+In conclusion it should be said that all the methods and technologies discussed above are designed to some extent solve the problem of <<different formats>> or <<different representations>> of data, which in a sense can be called a fundamental problem.
 
-Очевидное решение заключается в том, чтобы не экспортировать повторно то, что уже было экспортировано хотя бы раз, а во время длительных процессов экспорта стараться не блокировать вызывающую программу редактора. Чтобы это было возможно, все изменения вносимые в визуализируемую сцену должны быть: \textbf{(1) явными}, \textbf{(2) чётко выделенными} и \textbf{(3) асинхронными} (чтобы редактор мог реагировать на действия пользователя во время экспорта).
+The basis of this problem holds in the fact that most content export operations from DCCS to rendering system are time and resource consuming by definition. Therefore, it's difficult to somehow simplify or accelerate these operations. For example, loading a large texture from disk will be slow with any possible optimizations, and the creation of meshes from spline surfaces requires time and memory and is an often necessary in the process of export since most rendering systems can't work with spline surfaces directly. 
+
+The obvious solution is to not re-export something that has already been exported at least once, and during long export processes try not to block the editor's calling program. To make this possible, all the changes to the rendered scene must be: \ textbf {(1) explicit}, \ textbf {(2) clearly marked} and \ textbf {(3) asynchronous} (so that the editor can respond to user actions during export).
 
 \section{Suggested approach}
 
-Our concept can be thought of as a hybrid of object oriented database and a version control system, (like Git or Subversion) with no-overwrite strategy of making changes. We believe that between the Editor and the rendering engine should exist special API. This API needs to fulfil the requirements listed in the beginning of the article in a simple and transparent manner (Fig. \ref{svn1}). 
+Our concept can be thought of as a hybrid of object oriented database and a version control system, (like Git or Subversion) with no-overwrite strategy of making changes. We believe that between the Editor and the rendering engine should exist special API. This API needs to fulfill the requirements listed in the beginning of the article in a simple and transparent manner (Fig. \ref{svn1}). 
 
 \begin{figure}[h]
 	\centering{\includegraphics[width=1.0\linewidth]{svn1.png}}
@@ -176,43 +177,43 @@ We can say that if the current state of the object is stored in the file <<state
 
 Finally, the Editor calls $Commit$ to pass the new scene state to the renderer engine. The $Commit$ operation creates file <<state\_002.xml>> in which old objects from <<state\_001.xml>> are replaced by their copies from <<change\_001.xml>>. It should be clarified that during the execution of the $Commit$ operation, only new, modified objects and their XML nodes will be passed to the renderer to update their states inside render engine. Thus, the new render state will be consistent with file <<state\_002.xml>>, however, the state file itself is not analyzed. It should be mentioned that it does not matter in which order user changes objects. After $Commit$ operation has been called, the API will pass all changes to the render in a fixed, well-known order. Thus the rendering engine developers may rely on fixed and \textit{well-known} sequence of calls from our API. 
 
-\paragraph{Упорядоченная передача изменений.}
+\paragraph{Ordered transfer of changes}
 
-Необходимо отметить, что наш интеграционный слой (API) передаёт в рендер все изменения всегда в одном и том же, строго определённом порядке, - независимо от того в каком порядке они были сделаны пользователем до операции $Commit$. Благодаря этому, непосредственная реализация рендера в значительной мере упрощается, т. к. она может полагаться на известную и заранее предопределённую последовательность вызовов от верхнего уровня (интеграционного слоя) независимо от того, в каком порядке <<дёргаются>> вызовы API в прикладном приложении (упрощённая иллюстрация данного процесса изображена на рис. \ref{calls}). 
+It should be noted that our integration layer (API) transmits to the renderer all the changes always in the same, strictly defined order, regardless of the order in which they were made by the user before the $Commit$ call. Due to this, the implementation of the renderer is greatly simplified, since it can rely on a known and predetermined sequence of calls from the top layer (integration layer), regardless of the order in which API calls are invoked in the application (aA simplified illustration of this process is shown in fig. \ref{calls}).
 
 \begin{figure}[h]
 	\centering{\includegraphics[width=1.0\linewidth]{calls.png}}
-	\caption{Пример переупорядочивания вызовов промежуточным слоем. Обратите внимание на 2 момента: (1) объект №1 передаётся в рендер раньше чем объект №2, несмотря на то, что объект №2 был изменён пользоватем первым; (2) До вызова функции $GetImage$ объект №3 не был передан в рендер, т.к. после обновления объекта №3 не была вызвана операция $Commit$. В результате итоговое изображение не будет содержать изменений третьего объекта, но именно это и позволяет нам не блокировать редактор. }
+	\caption{An example of reordering calls by an intermediate layer. Take note of 2 points: (1) object #1 is transmitted to renderer earlier than object #2, despite the fact that object #2 was changed by user first; (2) before the function $GetImage$ was called, the object # 3 was not sent to the renderer because after updating the object #3, the $Commit$ operation was not called. Consequently, the resulting image will not contain changes to the third object, but this is what allows us to not block the editor. }
 	\label{calls}
 \end{figure}
 
-Таким образом, для <<подключения>> конкретной реализации рендера к интеграционному слою, рендеру необходимо определить свою реализацию определенного в API интерфейса. Методы интерфейса, называемого в API <<рендер-драйвером>>, как было уже сказано, имеют четко определенную последовательность вызовов. Список методов включает в себя: загрузку и обновления компонентов библиотеки сцены (меши, материалы, текстуры, источники света, камера), обновление настроек рендера, инстанцирование мешей и источников света, отрисовку сцены, передачу рендером на верхний уровень картинки, а также <<подготовительные>> методы, вызываемые непосредственно перед и после инстанцирования и обновления библиотеки. При этом рендер может определить только те методы, которые отвечают поддерживаемым им возможностям.
+Thus, to <<connect>> a specific rendering implementation to the integration layer, the renderer needs to define its implementation of the interface specified by the API. The methods of the interface, called <<Render Driver>>, as already mentioned, have a well-defined sequence of calls. The list of methods includes: loading and updating the components of the scene library (meshes, materials, textures, light sources, camera), updating the render settings, instantiating meshes and light sources, rendering the scene, transfering the image to the upper level (the user application, DCCS), and <<preparatory>> methods called directly before and after the instantiating objects and library updates. The renderer can Define only those methods that correspond to the capabilities it supports.
 
-\paragraph{Тестирование.}
+\paragraph{Testing}
 
-Подобный подход дает облегчает отладку и тестирование. Разработчики рендер-системы не обязаны знать о прикладном приложении верхнего уровня. Для них важна только последовательность вызовов, передаваемых из промежуточного слоя в рендер. Аналогичный подход широко используется при отладке драйверов OpenGL, DirectX, Vulkan и др. \cite{apitrace}. Однако следует отметить, что при отладке програм с использовом упомянутых API их вызовы просто записываются, а затем воспроизводятся \cite{apitrace}. Никакого упорядочивания не происходит. В этом проявляется отличие от разработанной нами технологии, т.к. благодаря упорядочиванию мы имеем возможность создавать раздельный набор тестов для интеграционного слоя и рендер-движков, тестируя <<вход>> (функциональность самого API) и <<выход>> (функциональность рендер-движка) раздельно, что невозможно в традиционных графических API.
+This approach makes debugging and testing easier. The developers of the rendering system do not need to know about the top level application. For them, only the sequence of calls transmitted from the intermediate layer to the render is important. A similar approach is widely used when debugging OpenGL, DirectX and Vulkan drivers \cite{apitrace}. However, it should be noted that when debugging a program using the mentioned API, the sequence calls is simply written, and then \cite{apitrace} played back - so, there is no ordering. This is different in our API - because of ordering, we are able to create a separate set of tests for the integration layer and render engines, testing the <<input>> (the functionality of the API itself) and the <<output>> (the functionality of the render engine) separately, which is impossible with traditional graphics APIs.
 
-Мы хотели бы отметить что описанный подход к тестированию отличается от традиционных подходов тестирования систем компьютерной графики благодаря наличию промежуточного слоя. Например, в работе \cite{testing} в целях тестирования записываются и воспроизводятся действия пользователя в конкретном прикладном ПО. В протиповоложность этого разработанная нами технология записывает только <<вход>>, поступающий из прикладного ПО в наш API и позволяет тестировать рендер-движок без привязки к конкретному ПО. 
+We would like to note that the described approach to testing differs from traditional approaches for testing computer graphics systems due to the presence of an intermediate layer. For example, in \cite {testing} for testing purposes, user actions are recorded and played back in a specific application software. In the opposite of this, our API records only the <<input>> coming from the application software into our API and allows testing the render engine without binding it to a specific software.
 
 
-\paragraph{Многопоточный экспорт.}
+\paragraph{Multithreaded export}
 
-Следует отметить, что предложенная нами концепция легко позволяет сделать процесс экспорта контента из 3D редактора многопоточным. Для этого:
+It should be noted that the proposed concept easily allows us to make the process of exporting content from DCCS multithreaded:
 
 \begin{enumerate}
   
-  \item при создании объекта методом $Create$ необходимо использовать операцию атомарного инкремента $atomic\_add(pCounter,1)$ чтобы получить идентификатор нового объекта;
+  \item when creating an object using the $Create$ method, you need to use the atomic increment operation $atomic\_add(pCounter, 1)$ to get the ID of the new object;
   
-  \item на каждый объект необходимо завести уникальный мьютекс или спин-блокировку;
+  \item create a unique mutex or spin-lock for each object;
   
-  \item при вызове метода $Open$ мьютекс блокирует доступ к тому-же самому объекту из других потоков;
-
-  \item при вызове метода $Close$ блокировка мьютекса освобождается;
-
-  \item при добавлении объекта в виртуальный буфер для вычисления адреса в буфере необходимо использовать операцию атомарного сложения $atomic\_add(pAddr,sizeof(obj))$;
-
-  \item при выделении памяти для динамических структур данных (например тех, что использует pugixml) необходимо использовать аналогичный предыдущему пункту механизм на основе атомарных операций.
-
+  \item when calling the $Open$ method, the mutex blocks access to the same object from other threads;
+  
+  \item when the $Close$ method is called, the mutex lock is released;
+  
+  \item when adding an object to the virtual buffer to calculate the address in the buffer, you must use the atomic addition operation $atomic\_add(pAddr, sizeof (obj))$;
+  
+  \item when allocating memory for dynamic data structures (for example, those using pugixml), it is necessary to use a mechanism similar to the previous point based on atomic operations.
+  
 \end{enumerate}
 
 \paragraph{Virtual Buffer}\label{virtualbuffer}
