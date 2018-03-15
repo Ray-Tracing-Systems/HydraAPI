@@ -100,26 +100,26 @@ def test01_render_cubes(report_file, inBG):
 
   light = hy.hrLightCreate("my_area_light")
 
-  hy.hrLightOpen(light, hy.HR_WRITE_DISCARD);
-  lightNode = hy.hrLightParamNode(light);
-  lightNode.attribute("type").set_value("area");
-  lightNode.attribute("shape").set_value("rect");
-  lightNode.attribute("distribution").set_value("diffuse");
+  hy.hrLightOpen(light, hy.HR_WRITE_DISCARD)
+  lightNode = hy.hrLightParamNode(light)
+  lightNode.attribute("type").set_value("area")
+  lightNode.attribute("shape").set_value("rect")
+  lightNode.attribute("distribution").set_value("diffuse")
 
   sizeNode = lightNode.append_child("size")
 
-  sizeNode.append_attribute("half_length").set_value(1.0);
-  sizeNode.append_attribute("half_width").set_value(1.0);
+  sizeNode.append_attribute("half_length").set_value(1.0)
+  sizeNode.append_attribute("half_width").set_value(1.0)
 
-  intensityNode = lightNode.append_child("intensity");
+  intensityNode = lightNode.append_child("intensity")
 
-  intensityNode.append_child("color").text().set("1 1 1");
-  intensityNode.append_child("multiplier").text().set("10.0");
-  hy.hrLightClose(light);
+  intensityNode.append_child("color").text().set("1 1 1")
+  intensityNode.append_child("multiplier").text().set("10.0")
+  hy.hrLightClose(light)
 
 
   renderRef = hy.hrRenderCreate("HydraModern")
-  hy.hrRenderEnableDevice(renderRef, 0, True);
+  hy.hrRenderEnableDevice(renderRef, 0, True)
   hy.hrRenderOpen(renderRef, hy.HR_WRITE_DISCARD)
   node = hy.hrRenderParamNode(renderRef)
   node.force_child("width").text().set(1024)
@@ -144,7 +144,7 @@ def test01_render_cubes(report_file, inBG):
   hy.hrMeshInstance(scnRef, cubeRef, matrixT.flatten())
   hy.hrMeshInstance(scnRef, cubeRef, matrixT3.flatten())
   hy.hrMeshInstance(scnRef, planeRef, matrixT4.flatten())
-  hy.hrLightInstance(scnRef, light, matrixT2.flatten());
+  hy.hrLightInstance(scnRef, light, matrixT2.flatten())
   hy.hrSceneClose(scnRef)
   hy.hrFlush(scnRef, renderRef, camRef)
 
@@ -180,8 +180,8 @@ def test02_mesh_from_vsgf(report_file, inBG):
   refl.append_attribute("brdf_type").set_value("phong")
   refl.append_child("color").text().set("1.0 1.0 1.0")
   refl.append_child("glossiness").text().set("0.99")
-  refl.append_child("fresnel_IOR").text().set("1.85");
-  refl.append_child("fresnel").text().set("1");
+  refl.append_child("fresnel_IOR").text().set("1.85")
+  refl.append_child("fresnel").text().set("1")
   hy.hrTextureBind(testTex, refl)
   hy.hrMaterialClose(mat0)
   
@@ -195,8 +195,8 @@ def test02_mesh_from_vsgf(report_file, inBG):
   refl.append_attribute("brdf_type").set_value("phong")
   refl.append_child("color").text().set("0.1 0.1 0.1")
   refl.append_child("glossiness").text().set("1.0")
-  refl.append_child("fresnel_IOR").text().set("1.3");
-  refl.append_child("fresnel").text().set("0");
+  refl.append_child("fresnel_IOR").text().set("1.3")
+  refl.append_child("fresnel").text().set("0")
   hy.hrMaterialClose(mat1)
   
   planeRef = createPlaneRef("plane", 4.0, mat0.id)
@@ -214,26 +214,26 @@ def test02_mesh_from_vsgf(report_file, inBG):
 
   light = hy.hrLightCreate("my_area_light")
 
-  hy.hrLightOpen(light, hy.HR_WRITE_DISCARD);
-  lightNode = hy.hrLightParamNode(light);
-  lightNode.attribute("type").set_value("area");
-  lightNode.attribute("shape").set_value("rect");
-  lightNode.attribute("distribution").set_value("diffuse");
+  hy.hrLightOpen(light, hy.HR_WRITE_DISCARD)
+  lightNode = hy.hrLightParamNode(light)
+  lightNode.attribute("type").set_value("area")
+  lightNode.attribute("shape").set_value("rect")
+  lightNode.attribute("distribution").set_value("diffuse")
 
   sizeNode = lightNode.append_child("size")
 
-  sizeNode.append_attribute("half_length").set_value(1.0);
-  sizeNode.append_attribute("half_width").set_value(1.0);
+  sizeNode.append_attribute("half_length").set_value(1.0)
+  sizeNode.append_attribute("half_width").set_value(1.0)
 
-  intensityNode = lightNode.append_child("intensity");
+  intensityNode = lightNode.append_child("intensity")
 
-  intensityNode.append_child("color").text().set("1 1 1");
-  intensityNode.append_child("multiplier").text().set("10.0");
-  hy.hrLightClose(light);
+  intensityNode.append_child("color").text().set("1 1 1")
+  intensityNode.append_child("multiplier").text().set("10.0")
+  hy.hrLightClose(light)
 
 
   renderRef = hy.hrRenderCreate("HydraModern")
-  hy.hrRenderEnableDevice(renderRef, 0, True);
+  hy.hrRenderEnableDevice(renderRef, 0, True)
   hy.hrRenderOpen(renderRef, hy.HR_WRITE_DISCARD)
   node = hy.hrRenderParamNode(renderRef)
   node.force_child("width").text().set(1024)
@@ -266,7 +266,7 @@ def test02_mesh_from_vsgf(report_file, inBG):
   hy.hrMeshInstance(scnRef, myMeshRef, matrixT_4.flatten())
   hy.hrMeshInstance(scnRef, myMeshRef, matrixT_5.flatten())
   hy.hrMeshInstance(scnRef, planeRef, matrixT_plane.flatten())
-  hy.hrLightInstance(scnRef, light, matrixT_light.flatten());
+  hy.hrLightInstance(scnRef, light, matrixT_light.flatten())
   hy.hrSceneClose(scnRef)
   hy.hrFlush(scnRef, renderRef, camRef)
   
@@ -306,8 +306,8 @@ def test03_cornell_box(report_file, inBG):
   refl.append_attribute("brdf_type").set_value("phong")
   refl.append_child("color").text().set("0.367059 0.345882 0")
   refl.append_child("glossiness").text().set("0.5")
-  refl.append_child("fresnel_IOR").text().set("14");
-  refl.append_child("fresnel").text().set("1");
+  refl.append_child("fresnel_IOR").text().set("14")
+  refl.append_child("fresnel").text().set("1")
   hy.hrMaterialClose(matTeapot)
   
   matR = hy.hrMaterialCreate("mRed")
@@ -327,7 +327,7 @@ def test03_cornell_box(report_file, inBG):
   hy.hrMaterialClose(matG)
 
 
-  cubeOpenRef = createCornellCubeOpenRef("cornellBox", 4.0, matR.id, matG.id, matW.id);
+  cubeOpenRef = createCornellCubeOpenRef("cornellBox", 4.0, matR.id, matG.id, matW.id)
   teapotRef = hy.hrMeshCreateFromFileDL("../../main/data/meshes/teapot.vsgf")
 
   camRef = hy.hrCameraCreate("my camera")
@@ -344,23 +344,23 @@ def test03_cornell_box(report_file, inBG):
 
   light = hy.hrLightCreate("my_area_light")
 
-  hy.hrLightOpen(light, hy.HR_WRITE_DISCARD);
-  lightNode = hy.hrLightParamNode(light);
-  lightNode.attribute("type").set_value("area");
-  lightNode.attribute("shape").set_value("rect");
-  lightNode.attribute("distribution").set_value("diffuse");
+  hy.hrLightOpen(light, hy.HR_WRITE_DISCARD)
+  lightNode = hy.hrLightParamNode(light)
+  lightNode.attribute("type").set_value("area")
+  lightNode.attribute("shape").set_value("rect")
+  lightNode.attribute("distribution").set_value("diffuse")
 
   sizeNode = lightNode.append_child("size")
-  sizeNode.append_attribute("half_length").set_value(1.0);
-  sizeNode.append_attribute("half_width").set_value(1.0);
+  sizeNode.append_attribute("half_length").set_value(1.0)
+  sizeNode.append_attribute("half_width").set_value(1.0)
 
-  intensityNode = lightNode.append_child("intensity");
-  intensityNode.append_child("color").text().set("1 1 1");
-  intensityNode.append_child("multiplier").text().set("10.0");
-  hy.hrLightClose(light);
+  intensityNode = lightNode.append_child("intensity")
+  intensityNode.append_child("color").text().set("1 1 1")
+  intensityNode.append_child("multiplier").text().set("10.0")
+  hy.hrLightClose(light)
 
   renderRef = hy.hrRenderCreate("HydraModern")
-  hy.hrRenderEnableDevice(renderRef, 0, True);
+  hy.hrRenderEnableDevice(renderRef, 0, True)
   hy.hrRenderOpen(renderRef, hy.HR_WRITE_DISCARD)
   node = hy.hrRenderParamNode(renderRef)
   node.force_child("width").text().set(1024)
@@ -383,7 +383,7 @@ def test03_cornell_box(report_file, inBG):
   hy.hrSceneOpen(scnRef, hy.HR_WRITE_DISCARD)
   hy.hrMeshInstance(scnRef, teapotRef, matrixT_1.flatten())
   hy.hrMeshInstance(scnRef, cubeOpenRef, matrixT_2.flatten())
-  hy.hrLightInstance(scnRef, light, matrixT_light.flatten());
+  hy.hrLightInstance(scnRef, light, matrixT_light.flatten())
   hy.hrSceneClose(scnRef)
   hy.hrFlush(scnRef, renderRef, camRef)
   
@@ -406,14 +406,14 @@ def test04_instancing(report_file, inBG):
   
   texPattern = hy.hrTexture2DCreateFromFile("../../main/data/meshes/bigleaf3.tga")
   
-  matGray = hy.hrMaterialCreate("matGray");
-  matTrunk = hy.hrMaterialCreate("Trunk");
-  matWigglers = hy.hrMaterialCreate("Wigglers");
-  matBranches = hy.hrMaterialCreate("Branches");
-  matPllarRts = hy.hrMaterialCreate("PillarRoots");
-  matLeaves = hy.hrMaterialCreate("Leaves");
-  matCanopy = hy.hrMaterialCreate("Canopy");
-  matCube = hy.hrMaterialCreate("CubeMap");
+  matGray = hy.hrMaterialCreate("matGray")
+  matTrunk = hy.hrMaterialCreate("Trunk")
+  matWigglers = hy.hrMaterialCreate("Wigglers")
+  matBranches = hy.hrMaterialCreate("Branches")
+  matPllarRts = hy.hrMaterialCreate("PillarRoots")
+  matLeaves = hy.hrMaterialCreate("Leaves")
+  matCanopy = hy.hrMaterialCreate("Canopy")
+  matCube = hy.hrMaterialCreate("CubeMap")
   
   hy.hrMaterialOpen(matCube, hy.HR_WRITE_DISCARD)
   matNode = hy.hrMaterialParamNode(matCube)
@@ -475,21 +475,21 @@ def test04_instancing(report_file, inBG):
   hy.hrMaterialClose(matCanopy)
   
 
-  cubeR = createCubeRef("cube", 2.0, matCube.id);
-  planeRef = createPlaneRef("plane", 10000.0, matGray.id);
+  cubeR = createCubeRef("cube", 2.0, matCube.id)
+  planeRef = createPlaneRef("plane", 10000.0, matGray.id)
   treeRef = hy.hrMeshCreateFromFileDL("../../main/data/meshes/bigtree.vsgf")
   
   sky = hy.hrLightCreate("sky")
   sun = hy.hrLightCreate("sun")
 
-  hy.hrLightOpen(sky, hy.HR_WRITE_DISCARD);
-  lightNode = hy.hrLightParamNode(sky);
-  lightNode.attribute("type").set_value("sky");
-  lightNode.attribute("distribution").set_value("perez");
+  hy.hrLightOpen(sky, hy.HR_WRITE_DISCARD)
+  lightNode = hy.hrLightParamNode(sky)
+  lightNode.attribute("type").set_value("sky")
+  lightNode.attribute("distribution").set_value("perez")
 
-  intensityNode = lightNode.append_child("intensity");
-  intensityNode.append_child("color").text().set("1 1 1");
-  intensityNode.append_child("multiplier").text().set("1.0");
+  intensityNode = lightNode.append_child("intensity")
+  intensityNode.append_child("color").text().set("1 1 1")
+  intensityNode.append_child("multiplier").text().set("1.0")
   
   sunModel = lightNode.append_child("perez")
   sunModel.append_attribute("sun_id").set_value(sun.id)
@@ -498,23 +498,23 @@ def test04_instancing(report_file, inBG):
   hy.hrLightClose(sky)
   
   
-  hy.hrLightOpen(sun, hy.HR_WRITE_DISCARD);
-  lightNode = hy.hrLightParamNode(sun);
+  hy.hrLightOpen(sun, hy.HR_WRITE_DISCARD)
+  lightNode = hy.hrLightParamNode(sun)
   lightNode.attribute("type").set_value("directional")
   lightNode.attribute("shape").set_value("point")
   lightNode.attribute("distribution").set_value("directional")
   
   sizeNode = lightNode.append_child("size")
-  sizeNode.append_attribute("inner_radius").set_value(0.0);
-  sizeNode.append_attribute("outer_radius").set_value(10000.0);
+  sizeNode.append_attribute("inner_radius").set_value(0.0)
+  sizeNode.append_attribute("outer_radius").set_value(10000.0)
 
-  intensityNode = lightNode.append_child("intensity");
+  intensityNode = lightNode.append_child("intensity")
 
-  intensityNode.append_child("color").text().set("1.0 0.85 0.64");
-  intensityNode.append_child("multiplier").text().set("2.0");
+  intensityNode.append_child("color").text().set("1.0 0.85 0.64")
+  intensityNode.append_child("multiplier").text().set("2.0")
   
   lightNode.append_child("shadow_softness").append_attribute("val").set_value(1.0)
-  hy.hrLightClose(sky);
+  hy.hrLightClose(sky)
   
 
   camRef = hy.hrCameraCreate("my camera")
@@ -530,7 +530,7 @@ def test04_instancing(report_file, inBG):
 
 
   renderRef = hy.hrRenderCreate("HydraModern")
-  hy.hrRenderEnableDevice(renderRef, 0, True);
+  hy.hrRenderEnableDevice(renderRef, 0, True)
   hy.hrRenderOpen(renderRef, hy.HR_WRITE_DISCARD)
   node = hy.hrRenderParamNode(renderRef)
   node.force_child("width").text().set(1024)
@@ -565,9 +565,9 @@ def test04_instancing(report_file, inBG):
     for j in range(-SQUARESIZE1, SQUARESIZE1):
       (x_offset, y_offset) = random.uniform(-1.0, 1.0), random.uniform(-1.0, 1.0)
       pos = dist1 * np.array([float(i), 0.0, float(j)]) + dist1 * np.array([x_offset, 0.0, y_offset])
-      mTranslate = translateM4x4(np.array([pos[0], 1.0, pos[2]]));
-      mRot = rotateYM4x4(random.uniform(-180.0*DEG_TO_RAD, +180.0*DEG_TO_RAD));
-      mRes = np.dot(mTranslate, mRot);
+      mTranslate = translateM4x4(np.array([pos[0], 1.0, pos[2]]))
+      mRot = rotateYM4x4(random.uniform(-180.0*DEG_TO_RAD, +180.0*DEG_TO_RAD))
+      mRes = np.dot(mTranslate, mRot)
 
       hy.hrMeshInstance(scnRef, cubeR, mRes.flatten())
 
@@ -575,9 +575,9 @@ def test04_instancing(report_file, inBG):
     for j in range(-SQUARESIZE1, SQUARESIZE1):
       (x_offset, y_offset) = random.uniform(-1.0, 1.0), random.uniform(-1.0, 1.0)
       pos = dist1 * np.array([float(i), 0.0, float(j)]) + dist1 * np.array([x_offset, 0.0, y_offset])
-      mTranslate = translateM4x4(np.array([pos[0], 1.0, pos[2]]));
+      mTranslate = translateM4x4(np.array([pos[0], 1.0, pos[2]]))
       mScale = scaleM4x4(np.array([5.0, 5.0, 5.0]))
-      mRot = rotateYM4x4(random.uniform(-180.0*DEG_TO_RAD, +180.0*DEG_TO_RAD));
+      mRot = rotateYM4x4(random.uniform(-180.0*DEG_TO_RAD, +180.0*DEG_TO_RAD))
       mRes = np.dot(mTranslate, np.dot(mRot, mScale))
 
       if(random.uniform(0.0, 1.0) > 0.8):
@@ -586,13 +586,13 @@ def test04_instancing(report_file, inBG):
   mRes = identityM4x4()
   hy.hrLightInstance(scnRef, sky, mRes.flatten())
   
-  mTranslate = translateM4x4(np.array([200.0, 200.0, -100.0]));
+  mTranslate = translateM4x4(np.array([200.0, 200.0, -100.0]))
   mRot  = rotateXM4x4(10.0*DEG_TO_RAD)
   mRot2 = rotateZM4x4(30.*DEG_TO_RAD)
   mRes  = np.dot(mRot2, mRot)
   mRes  = np.dot(mTranslate, mRes)
   
-  hy.hrLightInstance(scnRef, sun, mRes.flatten());
+  hy.hrLightInstance(scnRef, sun, mRes.flatten())
   hy.hrSceneClose(scnRef)
   hy.hrFlush(scnRef, renderRef, camRef)
   
@@ -655,180 +655,180 @@ def test06_blend_simple(report_file, inBG):
   texChecker = hy.hrTexture2DCreateFromFile("../../main/data/textures/chess_white.bmp")
   texYinYang = hy.hrTexture2DCreateFromFile("../../main/data/textures/yinyang.png")
   
-  hy.hrMaterialOpen(matGold, hy.HR_WRITE_DISCARD);
-  matNode = hy.hrMaterialParamNode(matGold);
-  diff = matNode.append_child("diffuse");
-  diff.append_attribute("brdf_type").set_value("lambert");
-  diff.append_child("color").append_attribute("val").set_value("0.88 0.61 0.05");
-  refl = matNode.append_child("reflectivity");
-  refl.append_attribute("brdf_type").set_value("torranse_sparrow");
-  refl.append_child("color").append_attribute("val").set_value("0.88 0.61 0.05");
-  refl.append_child("glossiness").append_attribute("val").set_value("0.98");
-  refl.append_child("extrusion").append_attribute("val").set_value("maxcolor");
-  refl.append_child("fresnel").append_attribute("val").set_value(1);
-  refl.append_child("fresnel_IOR").append_attribute("val").set_value(8.0);
-  hy.hrMaterialClose(matGold);
+  hy.hrMaterialOpen(matGold, hy.HR_WRITE_DISCARD)
+  matNode = hy.hrMaterialParamNode(matGold)
+  diff = matNode.append_child("diffuse")
+  diff.append_attribute("brdf_type").set_value("lambert")
+  diff.append_child("color").append_attribute("val").set_value("0.88 0.61 0.05")
+  refl = matNode.append_child("reflectivity")
+  refl.append_attribute("brdf_type").set_value("torranse_sparrow")
+  refl.append_child("color").append_attribute("val").set_value("0.88 0.61 0.05")
+  refl.append_child("glossiness").append_attribute("val").set_value("0.98")
+  refl.append_child("extrusion").append_attribute("val").set_value("maxcolor")
+  refl.append_child("fresnel").append_attribute("val").set_value(1)
+  refl.append_child("fresnel_IOR").append_attribute("val").set_value(8.0)
+  hy.hrMaterialClose(matGold)
   
-  hy.hrMaterialOpen(matSilver, hy.HR_WRITE_DISCARD);
-  matNode = hy.hrMaterialParamNode(matSilver);
-  diff = matNode.append_child("diffuse");
-  diff.append_attribute("brdf_type").set_value("lambert");
-  diff.append_child("color").append_attribute("val").set_value("0.8 0.8 0.8");
-  refl = matNode.append_child("reflectivity");
-  refl.append_attribute("brdf_type").set_value("torranse_sparrow");
-  refl.append_child("color").append_attribute("val").set_value("0.8 0.8 0.8");
-  refl.append_child("glossiness").append_attribute("val").set_value("0.98");
-  refl.append_child("extrusion").append_attribute("val").set_value("maxcolor");
-  refl.append_child("fresnel").append_attribute("val").set_value(1);
-  refl.append_child("fresnel_IOR").append_attribute("val").set_value(8.0);
-  hy.hrMaterialClose(matSilver);
+  hy.hrMaterialOpen(matSilver, hy.HR_WRITE_DISCARD)
+  matNode = hy.hrMaterialParamNode(matSilver)
+  diff = matNode.append_child("diffuse")
+  diff.append_attribute("brdf_type").set_value("lambert")
+  diff.append_child("color").append_attribute("val").set_value("0.8 0.8 0.8")
+  refl = matNode.append_child("reflectivity")
+  refl.append_attribute("brdf_type").set_value("torranse_sparrow")
+  refl.append_child("color").append_attribute("val").set_value("0.8 0.8 0.8")
+  refl.append_child("glossiness").append_attribute("val").set_value("0.98")
+  refl.append_child("extrusion").append_attribute("val").set_value("maxcolor")
+  refl.append_child("fresnel").append_attribute("val").set_value(1)
+  refl.append_child("fresnel_IOR").append_attribute("val").set_value(8.0)
+  hy.hrMaterialClose(matSilver)
   
-  hy.hrMaterialOpen(matLacquer, hy.HR_WRITE_DISCARD);
-  matNode = hy.hrMaterialParamNode(matLacquer);
-  diff = matNode.append_child("diffuse");
-  diff.append_attribute("brdf_type").set_value("lambert");
-  diff.append_child("color").append_attribute("val").set_value("0.05 0.05 0.05");
-  refl = matNode.append_child("reflectivity");
-  refl.append_attribute("brdf_type").set_value("phong");
-  refl.append_child("color").append_attribute("val").set_value("0.5 0.5 0.5");
-  refl.append_child("glossiness").append_attribute("val").set_value("1.0");
-  refl.append_child("extrusion").append_attribute("val").set_value("maxcolor");
-  refl.append_child("fresnel").append_attribute("val").set_value(1);
-  refl.append_child("fresnel_IOR").append_attribute("val").set_value(1.5);
-  hy.hrMaterialClose(matLacquer);
+  hy.hrMaterialOpen(matLacquer, hy.HR_WRITE_DISCARD)
+  matNode = hy.hrMaterialParamNode(matLacquer)
+  diff = matNode.append_child("diffuse")
+  diff.append_attribute("brdf_type").set_value("lambert")
+  diff.append_child("color").append_attribute("val").set_value("0.05 0.05 0.05")
+  refl = matNode.append_child("reflectivity")
+  refl.append_attribute("brdf_type").set_value("phong")
+  refl.append_child("color").append_attribute("val").set_value("0.5 0.5 0.5")
+  refl.append_child("glossiness").append_attribute("val").set_value("1.0")
+  refl.append_child("extrusion").append_attribute("val").set_value("maxcolor")
+  refl.append_child("fresnel").append_attribute("val").set_value(1)
+  refl.append_child("fresnel_IOR").append_attribute("val").set_value(1.5)
+  hy.hrMaterialClose(matLacquer)
   
-  hy.hrMaterialOpen(matGlass, hy.HR_WRITE_DISCARD);
-  matNode = hy.hrMaterialParamNode(matGlass);
-  refl = matNode.append_child("reflectivity");
-  refl.append_attribute("brdf_type").set_value("phong");
-  refl.append_child("color").append_attribute("val").set_value("0.1 0.1 0.1 ");
-  refl.append_child("glossiness").append_attribute("val").set_value(1.0);
-  refl.append_child("extrusion").append_attribute("val").set_value("maxcolor");
-  refl.append_child("fresnel").append_attribute("val").set_value(1);
-  refl.append_child("fresnel_IOR").append_attribute("val").set_value(1.5);
-  transp = matNode.append_child("transparency");
-  transp.append_attribute("brdf_type").set_value("phong");
-  transp.append_child("color").append_attribute("val").set_value("1.0 1.0 1.0");
-  transp.append_child("glossiness").append_attribute("val").set_value(1.0);
-  transp.append_child("thin_walled").append_attribute("val").set_value(0);
-  transp.append_child("fog_color").append_attribute("val").set_value("0.9 0.9 1.0");
-  transp.append_child("fog_multiplier").append_attribute("val").set_value(1.0);
-  transp.append_child("IOR").append_attribute("val").set_value(1.5);
-  hy.hrMaterialClose(matGlass);
+  hy.hrMaterialOpen(matGlass, hy.HR_WRITE_DISCARD)
+  matNode = hy.hrMaterialParamNode(matGlass)
+  refl = matNode.append_child("reflectivity")
+  refl.append_attribute("brdf_type").set_value("phong")
+  refl.append_child("color").append_attribute("val").set_value("0.1 0.1 0.1 ")
+  refl.append_child("glossiness").append_attribute("val").set_value(1.0)
+  refl.append_child("extrusion").append_attribute("val").set_value("maxcolor")
+  refl.append_child("fresnel").append_attribute("val").set_value(1)
+  refl.append_child("fresnel_IOR").append_attribute("val").set_value(1.5)
+  transp = matNode.append_child("transparency")
+  transp.append_attribute("brdf_type").set_value("phong")
+  transp.append_child("color").append_attribute("val").set_value("1.0 1.0 1.0")
+  transp.append_child("glossiness").append_attribute("val").set_value(1.0)
+  transp.append_child("thin_walled").append_attribute("val").set_value(0)
+  transp.append_child("fog_color").append_attribute("val").set_value("0.9 0.9 1.0")
+  transp.append_child("fog_multiplier").append_attribute("val").set_value(1.0)
+  transp.append_child("IOR").append_attribute("val").set_value(1.5)
+  hy.hrMaterialClose(matGlass)
   
-  hy.hrMaterialOpen(matBricks1, hy.HR_WRITE_DISCARD);
-  matNode = hy.hrMaterialParamNode(matBricks1);
-  diff = matNode.append_child("diffuse");
-  diff.append_attribute("brdf_type").set_value("lambert");
-  color = diff.append_child("color");
-  color.append_attribute("val").set_value("0.2 0.2 0.75");
-  color.append_attribute("tex_apply_mode ").set_value("multiply");
-  texNode = hy.hrTextureBind(texChecker, diff.child("color"));
-  texNode.append_attribute("matrix");
+  hy.hrMaterialOpen(matBricks1, hy.HR_WRITE_DISCARD)
+  matNode = hy.hrMaterialParamNode(matBricks1)
+  diff = matNode.append_child("diffuse")
+  diff.append_attribute("brdf_type").set_value("lambert")
+  color = diff.append_child("color")
+  color.append_attribute("val").set_value("0.2 0.2 0.75")
+  color.append_attribute("tex_apply_mode ").set_value("multiply")
+  texNode = hy.hrTextureBind(texChecker, diff.child("color"))
+  texNode.append_attribute("matrix")
   samplerMatrix = np.array([ 16,  0, 0, 0,
                               0, 16, 0, 0,
                               0,  0, 1, 0,
                               0,  0, 0, 1], dtype = np.float32)
-  texNode.append_attribute("addressing_mode_u").set_value("wrap");
-  texNode.append_attribute("addressing_mode_v").set_value("wrap");
-  texNode.append_attribute("input_gamma").set_value(2.2);
-  texNode.append_attribute("input_alpha").set_value("rgb");
-  hy.WriteMatrix4x4(texNode, "matrix", samplerMatrix);
+  texNode.append_attribute("addressing_mode_u").set_value("wrap")
+  texNode.append_attribute("addressing_mode_v").set_value("wrap")
+  texNode.append_attribute("input_gamma").set_value(2.2)
+  texNode.append_attribute("input_alpha").set_value("rgb")
+  hy.WriteMatrix4x4(texNode, "matrix", samplerMatrix)
   hy.hrMaterialClose(matBricks1)
   
   
-  hy.hrMaterialOpen(matBricks2, hy.HR_WRITE_DISCARD);
-  matNode = hy.hrMaterialParamNode(matBricks2);
-  diff = matNode.append_child("diffuse");
-  diff.append_attribute("brdf_type").set_value("lambert");
-  color = diff.append_child("color");
-  color.append_attribute("val").set_value("0.1 0.1 0.1");
-  color.append_attribute("tex_apply_mode ").set_value("multiply");
-  texNode = hy.hrTextureBind(texChecker, diff.child("color"));
-  texNode.append_attribute("matrix");
+  hy.hrMaterialOpen(matBricks2, hy.HR_WRITE_DISCARD)
+  matNode = hy.hrMaterialParamNode(matBricks2)
+  diff = matNode.append_child("diffuse")
+  diff.append_attribute("brdf_type").set_value("lambert")
+  color = diff.append_child("color")
+  color.append_attribute("val").set_value("0.1 0.1 0.1")
+  color.append_attribute("tex_apply_mode ").set_value("multiply")
+  texNode = hy.hrTextureBind(texChecker, diff.child("color"))
+  texNode.append_attribute("matrix")
   samplerMatrix2 = np.array([ 8,  0, 0, 0,
                               0,  8, 0, 0,
                               0,  0, 1, 0,
                               0,  0, 0, 1], dtype = np.float32)
-  texNode.append_attribute("addressing_mode_u").set_value("wrap");
-  texNode.append_attribute("addressing_mode_v").set_value("wrap");
-  texNode.append_attribute("input_gamma").set_value(2.2);
-  texNode.append_attribute("input_alpha").set_value("rgb");
-  hy.WriteMatrix4x4(texNode, "matrix", samplerMatrix2);
-  refl = matNode.append_child("reflectivity");
-  refl.append_attribute("brdf_type").set_value("phong");
-  refl.append_child("color").append_attribute("val").set_value("0.9 0.9 0.9");
-  refl.append_child("glossiness").append_attribute("val").set_value("1.0");
-  refl.append_child("extrusion").append_attribute("val").set_value("maxcolor");
-  refl.append_child("fresnel").append_attribute("val").set_value(1);
-  refl.append_child("fresnel_IOR").append_attribute("val").set_value(1.5);
-  hy.hrMaterialClose(matBricks2);
+  texNode.append_attribute("addressing_mode_u").set_value("wrap")
+  texNode.append_attribute("addressing_mode_v").set_value("wrap")
+  texNode.append_attribute("input_gamma").set_value(2.2)
+  texNode.append_attribute("input_alpha").set_value("rgb")
+  hy.WriteMatrix4x4(texNode, "matrix", samplerMatrix2)
+  refl = matNode.append_child("reflectivity")
+  refl.append_attribute("brdf_type").set_value("phong")
+  refl.append_child("color").append_attribute("val").set_value("0.9 0.9 0.9")
+  refl.append_child("glossiness").append_attribute("val").set_value("1.0")
+  refl.append_child("extrusion").append_attribute("val").set_value("maxcolor")
+  refl.append_child("fresnel").append_attribute("val").set_value(1)
+  refl.append_child("fresnel_IOR").append_attribute("val").set_value(1.5)
+  hy.hrMaterialClose(matBricks2)
 
-  hy.hrMaterialOpen(matGray, hy.HR_WRITE_DISCARD);
-  matNode = hy.hrMaterialParamNode(matGray);
-  diff = matNode.append_child("diffuse");
-  diff.append_attribute("brdf_type").set_value("lambert");
-  diff.append_child("color").append_attribute("val").set_value("0.5 0.5 0.5");
-  hy.hrMaterialClose(matGray);
+  hy.hrMaterialOpen(matGray, hy.HR_WRITE_DISCARD)
+  matNode = hy.hrMaterialParamNode(matGray)
+  diff = matNode.append_child("diffuse")
+  diff.append_attribute("brdf_type").set_value("lambert")
+  diff.append_child("color").append_attribute("val").set_value("0.5 0.5 0.5")
+  hy.hrMaterialClose(matGray)
   
-  matBlend1 = hy.hrMaterialCreateBlend("matBlend1", matGold, matSilver);
-  matBlend2 = hy.hrMaterialCreateBlend("matBlend2", matLacquer, matGlass);
-  matBlend3 = hy.hrMaterialCreateBlend("matBlend3", matBricks1, matBricks2);
+  matBlend1 = hy.hrMaterialCreateBlend("matBlend1", matGold, matSilver)
+  matBlend2 = hy.hrMaterialCreateBlend("matBlend2", matLacquer, matGlass)
+  matBlend3 = hy.hrMaterialCreateBlend("matBlend3", matBricks1, matBricks2)
     
     
-  hy.hrMaterialOpen(matBlend1, hy.HR_WRITE_DISCARD);
-  matNode = hy.hrMaterialParamNode(matBlend1);
-  blend = matNode.append_child("blend");
-  blend.append_attribute("type").set_value("mask_blend");
-  mask = blend.append_child("mask");
-  mask.append_attribute("val").set_value(1.0);
-  texNode = mask.append_child("texture");
-  texNode.append_attribute("matrix");
+  hy.hrMaterialOpen(matBlend1, hy.HR_WRITE_DISCARD)
+  matNode = hy.hrMaterialParamNode(matBlend1)
+  blend = matNode.append_child("blend")
+  blend.append_attribute("type").set_value("mask_blend")
+  mask = blend.append_child("mask")
+  mask.append_attribute("val").set_value(1.0)
+  texNode = mask.append_child("texture")
+  texNode.append_attribute("matrix")
   samplerMatrix3 = np.array([ 4,  0, 0, 0,
                               0,  4, 0, 0,
                               0,  0, 1, 0,
                               0,  0, 0, 1], dtype = np.float32)
-  texNode.append_attribute("addressing_mode_u").set_value("wrap");
-  texNode.append_attribute("addressing_mode_v").set_value("wrap");
-  texNode.append_attribute("input_gamma").set_value(2.2);
-  texNode.append_attribute("input_alpha").set_value("rgb");
-  hy.WriteMatrix4x4(texNode, "matrix", samplerMatrix3);
-  hy.hrTextureBind(texChecker, mask);
-  hy.hrMaterialClose(matBlend1);
+  texNode.append_attribute("addressing_mode_u").set_value("wrap")
+  texNode.append_attribute("addressing_mode_v").set_value("wrap")
+  texNode.append_attribute("input_gamma").set_value(2.2)
+  texNode.append_attribute("input_alpha").set_value("rgb")
+  hy.WriteMatrix4x4(texNode, "matrix", samplerMatrix3)
+  hy.hrTextureBind(texChecker, mask)
+  hy.hrMaterialClose(matBlend1)
   
-  hy.hrMaterialOpen(matBlend2, hy.HR_WRITE_DISCARD);
-  matNode = hy.hrMaterialParamNode(matBlend2);
-  blend = matNode.append_child("blend");
-  blend.append_attribute("type").set_value("mask_blend");
-  mask = blend.append_child("mask");
-  mask.append_attribute("val").set_value(1.0);
-  texNode = mask.append_child("texture");
-  texNode.append_attribute("matrix");
-  texNode.append_attribute("addressing_mode_u").set_value("wrap");
-  texNode.append_attribute("addressing_mode_v").set_value("wrap");
-  texNode.append_attribute("input_gamma").set_value(2.2);
-  texNode.append_attribute("input_alpha").set_value("rgb");
-  hy.WriteMatrix4x4(texNode, "matrix", samplerMatrix3);
-  hy.hrTextureBind(texYinYang, mask);
-  hy.hrMaterialClose(matBlend2);
+  hy.hrMaterialOpen(matBlend2, hy.HR_WRITE_DISCARD)
+  matNode = hy.hrMaterialParamNode(matBlend2)
+  blend = matNode.append_child("blend")
+  blend.append_attribute("type").set_value("mask_blend")
+  mask = blend.append_child("mask")
+  mask.append_attribute("val").set_value(1.0)
+  texNode = mask.append_child("texture")
+  texNode.append_attribute("matrix")
+  texNode.append_attribute("addressing_mode_u").set_value("wrap")
+  texNode.append_attribute("addressing_mode_v").set_value("wrap")
+  texNode.append_attribute("input_gamma").set_value(2.2)
+  texNode.append_attribute("input_alpha").set_value("rgb")
+  hy.WriteMatrix4x4(texNode, "matrix", samplerMatrix3)
+  hy.hrTextureBind(texYinYang, mask)
+  hy.hrMaterialClose(matBlend2)
   
-  hy.hrMaterialOpen(matBlend3, hy.HR_WRITE_DISCARD);
-  matNode = hy.hrMaterialParamNode(matBlend3);
-  blend = matNode.append_child("blend");
-  blend.append_attribute("type").set_value("mask_blend");
-  mask = blend.append_child("mask");
-  mask.append_attribute("val").set_value(1.0);
-  texNode = mask.append_child("texture");
-  texNode.append_attribute("matrix");
-  texNode.append_attribute("addressing_mode_u").set_value("wrap");
-  texNode.append_attribute("addressing_mode_v").set_value("wrap");
-  texNode.append_attribute("input_gamma").set_value(2.2);
-  texNode.append_attribute("input_alpha").set_value("rgb");
-  hy.WriteMatrix4x4(texNode, "matrix", samplerMatrix3);
-  hy.hrTextureBind(texChecker, mask);
-  hy.hrMaterialClose(matBlend3);
+  hy.hrMaterialOpen(matBlend3, hy.HR_WRITE_DISCARD)
+  matNode = hy.hrMaterialParamNode(matBlend3)
+  blend = matNode.append_child("blend")
+  blend.append_attribute("type").set_value("mask_blend")
+  mask = blend.append_child("mask")
+  mask.append_attribute("val").set_value(1.0)
+  texNode = mask.append_child("texture")
+  texNode.append_attribute("matrix")
+  texNode.append_attribute("addressing_mode_u").set_value("wrap")
+  texNode.append_attribute("addressing_mode_v").set_value("wrap")
+  texNode.append_attribute("input_gamma").set_value(2.2)
+  texNode.append_attribute("input_alpha").set_value("rgb")
+  hy.WriteMatrix4x4(texNode, "matrix", samplerMatrix3)
+  hy.hrTextureBind(texChecker, mask)
+  hy.hrMaterialClose(matBlend3)
 
-  cubeOpenRef = createCubeOpenRef("box", 18.0, matGray.id);
+  cubeOpenRef = createCubeOpenRef("box", 18.0, matGray.id)
   teapotRef1 = hy.hrMeshCreateFromFileDL("../../main/data/meshes/teapot.vsgf")
   teapotRef2 = hy.hrMeshCreateFromFileDL("../../main/data/meshes/teapot.vsgf")
   teapotRef3 = hy.hrMeshCreateFromFileDL("../../main/data/meshes/teapot.vsgf")
@@ -859,23 +859,23 @@ def test06_blend_simple(report_file, inBG):
 
   light = hy.hrLightCreate("my_area_light")
 
-  hy.hrLightOpen(light, hy.HR_WRITE_DISCARD);
-  lightNode = hy.hrLightParamNode(light);
-  lightNode.attribute("type").set_value("area");
-  lightNode.attribute("shape").set_value("rect");
-  lightNode.attribute("distribution").set_value("diffuse");
+  hy.hrLightOpen(light, hy.HR_WRITE_DISCARD)
+  lightNode = hy.hrLightParamNode(light)
+  lightNode.attribute("type").set_value("area")
+  lightNode.attribute("shape").set_value("rect")
+  lightNode.attribute("distribution").set_value("diffuse")
 
   sizeNode = lightNode.append_child("size")
-  sizeNode.append_attribute("half_length").set_value(1.0);
-  sizeNode.append_attribute("half_width").set_value(1.0);
+  sizeNode.append_attribute("half_length").set_value(1.0)
+  sizeNode.append_attribute("half_width").set_value(1.0)
 
-  intensityNode = lightNode.append_child("intensity");
-  intensityNode.append_child("color").text().set("1 1 1");
-  intensityNode.append_child("multiplier").text().set("10.0");
-  hy.hrLightClose(light);
+  intensityNode = lightNode.append_child("intensity")
+  intensityNode.append_child("color").text().set("1 1 1")
+  intensityNode.append_child("multiplier").text().set("10.0")
+  hy.hrLightClose(light)
 
   renderRef = hy.hrRenderCreate("HydraModern")
-  hy.hrRenderEnableDevice(renderRef, 0, True);
+  hy.hrRenderEnableDevice(renderRef, 0, True)
   hy.hrRenderOpen(renderRef, hy.HR_WRITE_DISCARD)
   node = hy.hrRenderParamNode(renderRef)
   node.force_child("width").text().set(1024)
@@ -902,7 +902,7 @@ def test06_blend_simple(report_file, inBG):
   hy.hrMeshInstance(scnRef, teapotRef2, matrixTeapot_2.flatten())
   hy.hrMeshInstance(scnRef, teapotRef3, matrixTeapot_3.flatten())
   hy.hrMeshInstance(scnRef, cubeOpenRef, matrixT_2.flatten())
-  hy.hrLightInstance(scnRef, light, matrixT_light.flatten());
+  hy.hrLightInstance(scnRef, light, matrixT_light.flatten())
   hy.hrSceneClose(scnRef)
   hy.hrFlush(scnRef, renderRef, camRef)
   
@@ -923,11 +923,11 @@ def test07_sky_hdr_rotate(report_file, inBG):
   test_name = "test07_sky_hdr_rotate"
   hy.hrSceneLibraryOpen("tests/" + test_name, hy.HR_WRITE_DISCARD)
   
-  matGray = hy.hrMaterialCreate("matGray");
-  matChecker = hy.hrMaterialCreate("matChecker");
-  matRefl = hy.hrMaterialCreate("matRefl");
-  texEnv = hy.hrTexture2DCreateFromFile("../../main/data/textures/23_antwerp_night.hdr");
-  texCheck = hy.hrTexture2DCreateFromFile("../../main/data/textures/chess_white.bmp");
+  matGray = hy.hrMaterialCreate("matGray")
+  matChecker = hy.hrMaterialCreate("matChecker")
+  matRefl = hy.hrMaterialCreate("matRefl")
+  texEnv = hy.hrTexture2DCreateFromFile("../../main/data/textures/23_antwerp_night.hdr")
+  texCheck = hy.hrTexture2DCreateFromFile("../../main/data/textures/chess_white.bmp")
   
   hy.hrMaterialOpen(matGray, hy.HR_WRITE_DISCARD)
   matNode = hy.hrMaterialParamNode(matGray)
@@ -941,16 +941,16 @@ def test07_sky_hdr_rotate(report_file, inBG):
   diff = matNode.append_child("diffuse")
   diff.append_attribute("brdf_type").set_value("lambert")
   diff.append_child("color").text().set("0.5 0.5 0.5")
-  texNode = hy.hrTextureBind(texCheck, diff.child("color"));
-  texNode.append_attribute("matrix");
+  texNode = hy.hrTextureBind(texCheck, diff.child("color"))
+  texNode.append_attribute("matrix")
   samplerMatrix = np.array([8, 0, 0, 0,
                             0, 8, 0, 0,
                             0, 0, 1, 0,
                             0, 0, 0, 1], dtype = np.float32)
 
-  texNode.append_attribute("addressing_mode_u").set_value("repeat");
-  texNode.append_attribute("addressing_mode_v").set_value("repeat");
-  hy.WriteMatrix4x4(texNode, "matrix", samplerMatrix); 
+  texNode.append_attribute("addressing_mode_u").set_value("repeat")
+  texNode.append_attribute("addressing_mode_v").set_value("repeat")
+  hy.WriteMatrix4x4(texNode, "matrix", samplerMatrix) 
   hy.hrMaterialClose(matChecker)
   
   
@@ -961,12 +961,12 @@ def test07_sky_hdr_rotate(report_file, inBG):
   refl.append_child("color").text().set("0.8 0.8 0.8")
   refl.append_child("glossiness").text().set("0.98")
   refl.append_child("extrusion").append_attribute("val").set_value("maxcolor")
-  refl.append_child("fresnel_IOR").text().set("8");
-  refl.append_child("fresnel").text().set("1");
+  refl.append_child("fresnel_IOR").text().set("8")
+  refl.append_child("fresnel").text().set("1")
   hy.hrMaterialClose(matRefl)
   
 
-  cubeRef = createCubeRef("cube", 2.0, matGray.id);
+  cubeRef = createCubeRef("cube", 2.0, matGray.id)
   planeRef = createPlaneRef("plane", 15.0, matChecker.id)
   teapotRef = hy.hrMeshCreateFromFileDL("../../main/data/meshes/teapot.vsgf")
   
@@ -988,28 +988,28 @@ def test07_sky_hdr_rotate(report_file, inBG):
 
   light = hy.hrLightCreate("sky")
 
-  hy.hrLightOpen(light, hy.HR_WRITE_DISCARD);
-  lightNode = hy.hrLightParamNode(light);
-  lightNode.attribute("type").set_value("sky");
-  lightNode.attribute("distribution").set_value("map");
+  hy.hrLightOpen(light, hy.HR_WRITE_DISCARD)
+  lightNode = hy.hrLightParamNode(light)
+  lightNode.attribute("type").set_value("sky")
+  lightNode.attribute("distribution").set_value("map")
 
-  intensityNode = lightNode.append_child("intensity");
-  intensityNode.append_child("color").text().set("1 1 1");
-  intensityNode.append_child("multiplier").text().set("1.0");
-  texNode = hy.hrTextureBind(texEnv, intensityNode.child("color"));
-  texNode.append_attribute("matrix");
+  intensityNode = lightNode.append_child("intensity")
+  intensityNode.append_child("color").text().set("1 1 1")
+  intensityNode.append_child("multiplier").text().set("1.0")
+  texNode = hy.hrTextureBind(texEnv, intensityNode.child("color"))
+  texNode.append_attribute("matrix")
   samplerMatrix2 = np.array([1, 0, 0, -0.4,
                             0, 1, 0, 0,
                             0, 0, 1, 0,
                             0, 0, 0, 1], dtype = np.float32)
 
-  texNode.append_attribute("addressing_mode_u").set_value("wrap");
-  texNode.append_attribute("addressing_mode_v").set_value("wrap");
-  hy.WriteMatrix4x4(texNode, "matrix", samplerMatrix2); 
-  hy.hrLightClose(light);
+  texNode.append_attribute("addressing_mode_u").set_value("wrap")
+  texNode.append_attribute("addressing_mode_v").set_value("wrap")
+  hy.WriteMatrix4x4(texNode, "matrix", samplerMatrix2) 
+  hy.hrLightClose(light)
 
   renderRef = hy.hrRenderCreate("HydraModern")
-  hy.hrRenderEnableDevice(renderRef, 0, True);
+  hy.hrRenderEnableDevice(renderRef, 0, True)
   hy.hrRenderOpen(renderRef, hy.HR_WRITE_DISCARD)
   node = hy.hrRenderParamNode(renderRef)
   node.force_child("width").text().set(1024)
@@ -1036,7 +1036,7 @@ def test07_sky_hdr_rotate(report_file, inBG):
   hy.hrMeshInstance(scnRef, teapotRef, matrixT_Teapot2.flatten())
   hy.hrMeshInstance(scnRef, cubeRef, matrixT_Cube.flatten())
   hy.hrMeshInstance(scnRef, planeRef, matrixT_Plane.flatten())
-  hy.hrLightInstance(scnRef, light, matrixT_light.flatten());
+  hy.hrLightInstance(scnRef, light, matrixT_light.flatten())
   hy.hrSceneClose(scnRef)
   hy.hrFlush(scnRef, renderRef, camRef)
   
@@ -1056,11 +1056,11 @@ def test08_shadow_catcher(report_file, inBG):
   test_name = "test08_shadow_catcher"
   hy.hrSceneLibraryOpen("tests/" + test_name, hy.HR_WRITE_DISCARD)
   
-  matGray = hy.hrMaterialCreate("matGray");
-  matChecker = hy.hrMaterialCreate("matChecker");
-  matCatcher = hy.hrMaterialCreate("matCatcher");
-  texEnv = hy.hrTexture2DCreateFromFile("../../main/data/textures/23_antwerp_night.hdr");
-  texCheck = hy.hrTexture2DCreateFromFile("../../main/data/textures/chess_white.bmp");
+  matGray = hy.hrMaterialCreate("matGray")
+  matChecker = hy.hrMaterialCreate("matChecker")
+  matCatcher = hy.hrMaterialCreate("matCatcher")
+  texEnv = hy.hrTexture2DCreateFromFile("../../main/data/textures/23_antwerp_night.hdr")
+  texCheck = hy.hrTexture2DCreateFromFile("../../main/data/textures/chess_white.bmp")
   
   hy.hrMaterialOpen(matGray, hy.HR_WRITE_DISCARD)
   matNode = hy.hrMaterialParamNode(matGray)
@@ -1074,26 +1074,26 @@ def test08_shadow_catcher(report_file, inBG):
   diff = matNode.append_child("diffuse")
   diff.append_attribute("brdf_type").set_value("lambert")
   diff.append_child("color").text().set("0.5 0.5 0.5")
-  texNode = hy.hrTextureBind(texCheck, diff.child("color"));
-  texNode.append_attribute("matrix");
+  texNode = hy.hrTextureBind(texCheck, diff.child("color"))
+  texNode.append_attribute("matrix")
   samplerMatrix = np.array([2, 0, 0, 0,
                             0, 2, 0, 0,
                             0, 0, 1, 0,
                             0, 0, 0, 1], dtype = np.float32)
 
-  texNode.append_attribute("addressing_mode_u").set_value("repeat");
-  texNode.append_attribute("addressing_mode_v").set_value("repeat");
-  hy.WriteMatrix4x4(texNode, "matrix", samplerMatrix); 
+  texNode.append_attribute("addressing_mode_u").set_value("repeat")
+  texNode.append_attribute("addressing_mode_v").set_value("repeat")
+  hy.WriteMatrix4x4(texNode, "matrix", samplerMatrix) 
   hy.hrMaterialClose(matChecker)
   
   
   hy.hrMaterialOpen(matCatcher, hy.HR_WRITE_DISCARD)
   matNode = hy.hrMaterialParamNode(matCatcher)
-  matNode.attribute("type").set_value("shadow_catcher");
+  matNode.attribute("type").set_value("shadow_catcher")
   hy.hrMaterialClose(matCatcher)
   
 
-  cubeRef = createCubeRef("cube", 2.0, matGray.id);
+  cubeRef = createCubeRef("cube", 2.0, matGray.id)
   planeRef = createPlaneRef("plane", 15.0, matCatcher.id)
   teapotRef = hy.hrMeshCreateFromFileDL("../../main/data/meshes/teapot.vsgf")
   
@@ -1115,19 +1115,19 @@ def test08_shadow_catcher(report_file, inBG):
 
   light = hy.hrLightCreate("sky")
 
-  hy.hrLightOpen(light, hy.HR_WRITE_DISCARD);
-  lightNode = hy.hrLightParamNode(light);
-  lightNode.attribute("type").set_value("sky");
-  lightNode.attribute("distribution").set_value("map");
+  hy.hrLightOpen(light, hy.HR_WRITE_DISCARD)
+  lightNode = hy.hrLightParamNode(light)
+  lightNode.attribute("type").set_value("sky")
+  lightNode.attribute("distribution").set_value("map")
 
-  intensityNode = lightNode.append_child("intensity");
-  intensityNode.append_child("color").text().set("1 1 1");
-  intensityNode.append_child("multiplier").text().set("1.0");
-  texNode = hy.hrTextureBind(texEnv, intensityNode.child("color"));
-  hy.hrLightClose(light);
+  intensityNode = lightNode.append_child("intensity")
+  intensityNode.append_child("color").text().set("1 1 1")
+  intensityNode.append_child("multiplier").text().set("1.0")
+  texNode = hy.hrTextureBind(texEnv, intensityNode.child("color"))
+  hy.hrLightClose(light)
 
   renderRef = hy.hrRenderCreate("HydraModern")
-  hy.hrRenderEnableDevice(renderRef, 0, True);
+  hy.hrRenderEnableDevice(renderRef, 0, True)
   hy.hrRenderOpen(renderRef, hy.HR_WRITE_DISCARD)
   node = hy.hrRenderParamNode(renderRef)
   node.force_child("width").text().set(1024)
@@ -1152,7 +1152,7 @@ def test08_shadow_catcher(report_file, inBG):
   hy.hrMeshInstance(scnRef, teapotRef, matrixT_Teapot.flatten())
   hy.hrMeshInstance(scnRef, cubeRef, matrixT_Cube.flatten())
   hy.hrMeshInstance(scnRef, planeRef, matrixT_Plane.flatten())
-  hy.hrLightInstance(scnRef, light, matrixT_light.flatten());
+  hy.hrLightInstance(scnRef, light, matrixT_light.flatten())
   hy.hrSceneClose(scnRef)
   hy.hrFlush(scnRef, renderRef, camRef)
   
@@ -1200,8 +1200,8 @@ def test10_sky_sun_physical(report_file, inBG):
   test_name = "test10_sky_sun_physical"
   hy.hrSceneLibraryOpen("tests/" + test_name, hy.HR_WRITE_DISCARD)
   
-  matGray = hy.hrMaterialCreate("matGray");
-  matRefl = hy.hrMaterialCreate("matRefl");
+  matGray = hy.hrMaterialCreate("matGray")
+  matRefl = hy.hrMaterialCreate("matRefl")
   
   hy.hrMaterialOpen(matGray, hy.HR_WRITE_DISCARD)
   matNode = hy.hrMaterialParamNode(matGray)
@@ -1217,13 +1217,13 @@ def test10_sky_sun_physical(report_file, inBG):
   refl.append_child("color").text().set("0.8 0.8 0.8")
   refl.append_child("glossiness").text().set("0.98")
   refl.append_child("extrusion").append_attribute("val").set_value("maxcolor")
-  refl.append_child("fresnel_IOR").text().set("8");
-  refl.append_child("fresnel").text().set("1");
+  refl.append_child("fresnel_IOR").text().set("8")
+  refl.append_child("fresnel").text().set("1")
   hy.hrMaterialClose(matRefl)
   
 
-  cubeRef = createCubeRef("cube", 2.0, matGray.id);
-  pillarRef = createCubeRef("pillar", 1.0, matGray.id);
+  cubeRef = createCubeRef("cube", 2.0, matGray.id)
+  pillarRef = createCubeRef("pillar", 1.0, matGray.id)
   planeRef = createPlaneRef("plane", 150.0, matGray.id)
   teapotRef = hy.hrMeshCreateFromFileDL("../../main/data/meshes/teapot.vsgf")
   
@@ -1246,14 +1246,14 @@ def test10_sky_sun_physical(report_file, inBG):
   sky = hy.hrLightCreate("sky")
   sun = hy.hrLightCreate("sun")
 
-  hy.hrLightOpen(sky, hy.HR_WRITE_DISCARD);
-  lightNode = hy.hrLightParamNode(sky);
-  lightNode.attribute("type").set_value("sky");
-  lightNode.attribute("distribution").set_value("perez");
+  hy.hrLightOpen(sky, hy.HR_WRITE_DISCARD)
+  lightNode = hy.hrLightParamNode(sky)
+  lightNode.attribute("type").set_value("sky")
+  lightNode.attribute("distribution").set_value("perez")
 
-  intensityNode = lightNode.append_child("intensity");
-  intensityNode.append_child("color").text().set("1 1 1");
-  intensityNode.append_child("multiplier").text().set("1.0");
+  intensityNode = lightNode.append_child("intensity")
+  intensityNode.append_child("color").text().set("1 1 1")
+  intensityNode.append_child("multiplier").text().set("1.0")
   
   sunModel = lightNode.append_child("perez")
   sunModel.append_attribute("sun_id").set_value(sun.id)
@@ -1261,26 +1261,26 @@ def test10_sky_sun_physical(report_file, inBG):
   
   hy.hrLightClose(sky)
   
-  hy.hrLightOpen(sun, hy.HR_WRITE_DISCARD);
-  lightNode = hy.hrLightParamNode(sun);
+  hy.hrLightOpen(sun, hy.HR_WRITE_DISCARD)
+  lightNode = hy.hrLightParamNode(sun)
   lightNode.attribute("type").set_value("directional")
   lightNode.attribute("shape").set_value("point")
   lightNode.attribute("distribution").set_value("directional")
   
   sizeNode = lightNode.append_child("size")
-  sizeNode.append_attribute("inner_radius").set_value(0.0);
-  sizeNode.append_attribute("outer_radius").set_value(1000.0);
+  sizeNode.append_attribute("inner_radius").set_value(0.0)
+  sizeNode.append_attribute("outer_radius").set_value(1000.0)
 
-  intensityNode = lightNode.append_child("intensity");
+  intensityNode = lightNode.append_child("intensity")
 
-  intensityNode.append_child("color").text().set("1.0 0.85 0.64");
-  intensityNode.append_child("multiplier").text().set("3.0");
+  intensityNode.append_child("color").text().set("1.0 0.85 0.64")
+  intensityNode.append_child("multiplier").text().set("3.0")
   
   lightNode.append_child("angle_radius").append_attribute("val").set_value(0.5)
-  hy.hrLightClose(sun);
+  hy.hrLightClose(sun)
 
   renderRef = hy.hrRenderCreate("HydraModern")
-  hy.hrRenderEnableDevice(renderRef, 0, True);
+  hy.hrRenderEnableDevice(renderRef, 0, True)
   hy.hrRenderOpen(renderRef, hy.HR_WRITE_DISCARD)
   node = hy.hrRenderParamNode(renderRef)
   node.force_child("width").text().set(1024)
@@ -1310,8 +1310,8 @@ def test10_sky_sun_physical(report_file, inBG):
   hy.hrMeshInstance(scnRef, teapotRef, matrixT_Teapot2.flatten())
   hy.hrMeshInstance(scnRef, cubeRef, matrixT_Cube.flatten())
   hy.hrMeshInstance(scnRef, planeRef, matrixT_Plane.flatten())
-  hy.hrLightInstance(scnRef, sun, matrixT_light.flatten());
-  hy.hrLightInstance(scnRef, sky, mI.flatten());
+  hy.hrLightInstance(scnRef, sun, matrixT_light.flatten())
+  hy.hrLightInstance(scnRef, sky, mI.flatten())
   hy.hrSceneClose(scnRef)
   hy.hrFlush(scnRef, renderRef, camRef)
   
@@ -1335,37 +1335,37 @@ def test11_load_car_and_change_env(library_path, report_file, inBG):
   scnRef = hy.HRSceneInstRef()
   scnRef.id = 0
   
-  hy.hrCommit(scnRef);
+  hy.hrCommit(scnRef)
 
-  texEnv = hy.hrTexture2DCreateFromFile("../../main/data/textures/Factory_Catwalk_2k_BLUR.exr");
+  texEnv = hy.hrTexture2DCreateFromFile("../../main/data/textures/Factory_Catwalk_2k_BLUR.exr")
   
   matBGRef = hy.hrFindMaterialByName("ground")
   hy.hrMaterialOpen(matBGRef, hy.HR_WRITE_DISCARD)
   matNode = hy.hrMaterialParamNode(matBGRef)
-  matNode.attribute("type").set_value("shadow_catcher");
+  matNode.attribute("type").set_value("shadow_catcher")
   hy.hrMaterialClose(matBGRef)
   
   light = hy.hrFindLightByName("environment")
   
-  hy.hrLightOpen(light, hy.HR_WRITE_DISCARD);
-  lightNode = hy.hrLightParamNode(light);
-  lightNode.attribute("type").set_value("sky");
-  lightNode.attribute("distribution").set_value("map");
+  hy.hrLightOpen(light, hy.HR_WRITE_DISCARD)
+  lightNode = hy.hrLightParamNode(light)
+  lightNode.attribute("type").set_value("sky")
+  lightNode.attribute("distribution").set_value("map")
 
-  intensityNode = lightNode.append_child("intensity");
-  intensityNode.append_child("color").text().set("1 1 1");
-  intensityNode.append_child("multiplier").text().set("1.0");
-  texNode = hy.hrTextureBind(texEnv, intensityNode.child("color"));
-  texNode.append_attribute("matrix");
+  intensityNode = lightNode.append_child("intensity")
+  intensityNode.append_child("color").text().set("1 1 1")
+  intensityNode.append_child("multiplier").text().set("1.0")
+  texNode = hy.hrTextureBind(texEnv, intensityNode.child("color"))
+  texNode.append_attribute("matrix")
   samplerMatrix2 = np.array([1, 0, 0, -0.4,
                             0, 1, 0, 0,
                             0, 0, 1, 0,
                             0, 0, 0, 1], dtype = np.float32)
 
-  texNode.append_attribute("addressing_mode_u").set_value("wrap");
-  texNode.append_attribute("addressing_mode_v").set_value("wrap");
-  hy.WriteMatrix4x4(texNode, "matrix", samplerMatrix2); 
-  hy.hrLightClose(light);
+  texNode.append_attribute("addressing_mode_u").set_value("wrap")
+  texNode.append_attribute("addressing_mode_v").set_value("wrap")
+  hy.WriteMatrix4x4(texNode, "matrix", samplerMatrix2) 
+  hy.hrLightClose(light)
   
   camRef = hy.hrFindCameraByName("PhysCamera001")
   renderRef = hy.HRRenderRef()
@@ -1393,7 +1393,7 @@ def test12_cornell_box_gbuffer(report_file, inBG):
   scnRef = hy.HRSceneInstRef()
   scnRef.id = 0
   
-  hy.hrCommit(scnRef);
+  hy.hrCommit(scnRef)
 
   camRef = hy.hrFindCameraByName("PhysCamera001")
   renderRef = hy.HRRenderRef()
@@ -1424,7 +1424,7 @@ def test13_transform_instances(report_file, inBG):
   scnRef = hy.HRSceneInstRef()
   scnRef.id = 0
   
-  hy.hrCommit(scnRef);
+  hy.hrCommit(scnRef)
  
   matrix = rotateYM4x4(45 * DEG_TO_RAD)
   
@@ -1466,7 +1466,7 @@ def test14_merge_scenes(report_file, inBG):
   hy.hrCameraClose(camRef)
    
   renderRef = hy.hrRenderCreate("HydraModern")
-  hy.hrRenderEnableDevice(renderRef, 0, True);
+  hy.hrRenderEnableDevice(renderRef, 0, True)
   hy.hrRenderOpen(renderRef, hy.HR_WRITE_DISCARD)
   node = hy.hrRenderParamNode(renderRef)
   node.force_child("width").text().set(1024)
@@ -1519,7 +1519,7 @@ def test15_merge_one_object(report_file, inBG):
   hy.hrCameraClose(camRef)
    
   renderRef = hy.hrRenderCreate("HydraModern")
-  hy.hrRenderEnableDevice(renderRef, 0, True);
+  hy.hrRenderEnableDevice(renderRef, 0, True)
   hy.hrRenderOpen(renderRef, hy.HR_WRITE_DISCARD)
   node = hy.hrRenderParamNode(renderRef)
   node.force_child("width").text().set(1024)
@@ -1534,7 +1534,7 @@ def test15_merge_one_object(report_file, inBG):
   mergedTex = hy.MergeOneTextureIntoLibrary("tests/test01_render_cubes", "../../main/data/textures/texture1.bmp")
   mergedMat = hy.MergeOneMaterialIntoLibrary("tests/test01_render_cubes", "plane")
   mergedMesh = hy.MergeOneMeshIntoLibrary("tests/test02_mesh_form_vsgf", "../../main/data/meshes/lucy.vsgf")
-  mergedLight = hy.MergeOneLightIntoLibrary("tests/test02_mesh_form_vsgf", "my_area_light");
+  mergedLight = hy.MergeOneLightIntoLibrary("tests/test02_mesh_form_vsgf", "my_area_light")
 
   print("mesh = {}".format(mergedMesh.id))
   print("light = {}".format(mergedLight.id))
@@ -1550,15 +1550,15 @@ def test15_merge_one_object(report_file, inBG):
   refl = matNode.append_child("reflectivity")
   refl.append_attribute("brdf_type").set_value("torrance_sparrow")
   refl.append_child("color").text().set("0.367059 0.345882 0")
-  texNode = hy.hrTextureBind(mergedTex, diff.child("color"));
-  texNode.append_attribute("matrix");
+  texNode = hy.hrTextureBind(mergedTex, diff.child("color"))
+  texNode.append_attribute("matrix")
   samplerMatrix = np.array([8, 0, 0, 0,
                             0, 8, 0, 0,
                             0, 0, 1, 0,
                             0, 0, 0, 1], dtype = np.float32)
 
-  texNode.append_attribute("addressing_mode_u").set_value("wrap");
-  texNode.append_attribute("addressing_mode_v").set_value("wrap");
+  texNode.append_attribute("addressing_mode_u").set_value("wrap")
+  texNode.append_attribute("addressing_mode_v").set_value("wrap")
   hy.WriteMatrix4x4(texNode, "matrix", samplerMatrix)
   refl.append_child("glossiness").text().set("0.5")
   refl.append_child("fresnel_IOR").text().set("14")
@@ -1572,15 +1572,15 @@ def test15_merge_one_object(report_file, inBG):
   hy.hrMeshClose(mergedMesh)
 
   light = hy.hrLightCreate("sky")
-  hy.hrLightOpen(light, hy.HR_WRITE_DISCARD);
-  lightNode = hy.hrLightParamNode(light);
-  lightNode.attribute("type").set_value("sky");
-  lightNode.attribute("distribution").set_value("map");
+  hy.hrLightOpen(light, hy.HR_WRITE_DISCARD)
+  lightNode = hy.hrLightParamNode(light)
+  lightNode.attribute("type").set_value("sky")
+  lightNode.attribute("distribution").set_value("map")
 
-  intensityNode = lightNode.append_child("intensity");
-  intensityNode.append_child("color").text().set("0.1 0.2 .7");
-  intensityNode.append_child("multiplier").text().set("1.0");
-  hy.hrLightClose(light);
+  intensityNode = lightNode.append_child("intensity")
+  intensityNode.append_child("color").text().set("0.1 0.2 .7")
+  intensityNode.append_child("multiplier").text().set("1.0")
+  hy.hrLightClose(light)
 
   scnRef = hy.hrSceneCreate("my scene")
   hy.hrSceneOpen(scnRef, hy.HR_OPEN_EXISTING)
@@ -1627,7 +1627,7 @@ def test16_print_matlib_map(report_file, inBG):
   hy.hrCameraClose(camRef)
    
   renderRef = hy.hrRenderCreate("HydraModern")
-  hy.hrRenderEnableDevice(renderRef, 0, True);
+  hy.hrRenderEnableDevice(renderRef, 0, True)
   hy.hrRenderOpen(renderRef, hy.HR_WRITE_DISCARD)
   node = hy.hrRenderParamNode(renderRef)
   node.force_child("width").text().set(1024)
@@ -1666,8 +1666,8 @@ def test16_print_matlib_map(report_file, inBG):
   refl.append_attribute("brdf_type").set_value("cook_torrance")
   refl.append_child("color").text().set("0.5 0.5 0.5")
   refl.append_child("glossiness").text().set("1.0")
-  refl.append_child("fresnel_IOR").text().set("14");
-  refl.append_child("fresnel").text().set("1");
+  refl.append_child("fresnel_IOR").text().set("14")
+  refl.append_child("fresnel").text().set("1")
   hy.hrMaterialClose(mat2)
 
   mat3 = hy.hrMaterialCreate("matGreen")
@@ -1741,13 +1741,13 @@ def test17_material_remap_lists(report_file, inBG):
   refl.append_attribute("brdf_type").set_value("phong")
   refl.append_child("color").text().set("0.1 0.1 0.1")
   refl.append_child("glossiness").text().set("1.0")
-  refl.append_child("fresnel_IOR").text().set("1.3");
-  refl.append_child("fresnel").text().set("0");
+  refl.append_child("fresnel_IOR").text().set("1.3")
+  refl.append_child("fresnel").text().set("0")
   hy.hrMaterialClose(mat1)
   
   planeRef = createPlaneRef("plane", 4.0, mat0.id)
   
-  cubeOpenRef = createCornellCubeOpenRef("openBox", 0.35, mat0.id, mat0.id, mat1.id);
+  cubeOpenRef = createCornellCubeOpenRef("openBox", 0.35, mat0.id, mat0.id, mat1.id)
 
   camRef = hy.hrCameraCreate("my camera")
   hy.hrCameraOpen(camRef, hy.HR_WRITE_DISCARD)
@@ -1762,25 +1762,25 @@ def test17_material_remap_lists(report_file, inBG):
 
   light = hy.hrLightCreate("my_area_light")
 
-  hy.hrLightOpen(light, hy.HR_WRITE_DISCARD);
-  lightNode = hy.hrLightParamNode(light);
-  lightNode.attribute("type").set_value("area");
-  lightNode.attribute("shape").set_value("rect");
-  lightNode.attribute("distribution").set_value("diffuse");
+  hy.hrLightOpen(light, hy.HR_WRITE_DISCARD)
+  lightNode = hy.hrLightParamNode(light)
+  lightNode.attribute("type").set_value("area")
+  lightNode.attribute("shape").set_value("rect")
+  lightNode.attribute("distribution").set_value("diffuse")
 
   sizeNode = lightNode.append_child("size")
 
-  sizeNode.append_attribute("half_length").set_value(1.0);
-  sizeNode.append_attribute("half_width").set_value(1.0);
+  sizeNode.append_attribute("half_length").set_value(1.0)
+  sizeNode.append_attribute("half_width").set_value(1.0)
 
-  intensityNode = lightNode.append_child("intensity");
+  intensityNode = lightNode.append_child("intensity")
 
-  intensityNode.append_child("color").text().set("1 1 1");
-  intensityNode.append_child("multiplier").text().set("10.0");
-  hy.hrLightClose(light);
+  intensityNode.append_child("color").text().set("1 1 1")
+  intensityNode.append_child("multiplier").text().set("10.0")
+  hy.hrLightClose(light)
 
   renderRef = hy.hrRenderCreate("HydraModern")
-  hy.hrRenderEnableDevice(renderRef, 0, True);
+  hy.hrRenderEnableDevice(renderRef, 0, True)
   hy.hrRenderOpen(renderRef, hy.HR_WRITE_DISCARD)
   node = hy.hrRenderParamNode(renderRef)
   node.force_child("width").text().set(1024)
@@ -1812,7 +1812,7 @@ def test17_material_remap_lists(report_file, inBG):
   hy.hrMeshInstance(scnRef, myMeshRef, matrixT_5.flatten())
   hy.hrMeshInstance(scnRef, planeRef, matrixT_plane.flatten())
   hy.hrMeshInstance(scnRef, cubeOpenRef, matrixT_6.flatten())
-  hy.hrLightInstance(scnRef, light, matrixT_light.flatten());
+  hy.hrLightInstance(scnRef, light, matrixT_light.flatten())
   hy.hrSceneClose(scnRef)
   
   hy.hrFlush(scnRef)
@@ -1832,7 +1832,7 @@ def test17_material_remap_lists(report_file, inBG):
   hy.hrMeshInstance(scnRef, myMeshRef, matrixT_5.flatten())
   hy.hrMeshInstance(scnRef, planeRef, matrixT_plane.flatten())
   hy.hrMeshInstanceRemap(scnRef, cubeOpenRef, matrixT_6.flatten(), remapList3, remapList3.size)
-  hy.hrLightInstance(scnRef, light, matrixT_light.flatten());
+  hy.hrLightInstance(scnRef, light, matrixT_light.flatten())
   hy.hrSceneClose(scnRef)
   
   hy.hrFlush(scnRef, renderRef, camRef)
