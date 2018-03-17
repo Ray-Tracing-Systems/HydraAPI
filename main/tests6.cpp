@@ -1479,21 +1479,16 @@ bool test39_mesh_from_vsgf()
   {
     xml_node matNode = hrMaterialParamNode(mat1);
 
-    xml_node diff = matNode.append_child(L"diffuse");
+    xml_node diff    = matNode.append_child(L"diffuse");
 
     diff.append_attribute(L"brdf_type").set_value(L"lambert");
     diff.append_child(L"color").text().set(L"0.207843 0.188235 0");
-
-    // hrTextureBind(testTex2, diff);
 
     xml_node refl = matNode.append_child(L"reflectivity");
 
     refl.append_attribute(L"brdf_type").set_value(L"phong");
     refl.append_child(L"color").text().set(L"0.367059 0.345882 0");
     refl.append_child(L"glossiness").text().set(L"0.5");
-    //refl.append_child(L"fresnel_IOR").text().set(L"1.5");
-    //refl.append_child(L"fresnel").text().set(L"1");
-
   }
   hrMaterialClose(mat1);
 
