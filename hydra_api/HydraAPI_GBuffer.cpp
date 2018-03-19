@@ -38,10 +38,10 @@ HAPI void hrRenderGetGBufferLine(const HRRenderRef a_pRender, int32_t a_lineNumb
 
 static inline int RealColorToUint32(const float real_color[4])
 {
-  float  r = real_color[0] * 255.0f;
-  float  g = real_color[1] * 255.0f;
-  float  b = real_color[2] * 255.0f;
-  float  a = real_color[3] * 255.0f;
+  float  r = fminf(real_color[0] * 255.0f, 255.0f);
+  float  g = fminf(real_color[1] * 255.0f, 255.0f);
+  float  b = fminf(real_color[2] * 255.0f, 255.0f);
+  float  a = fminf(real_color[3] * 255.0f, 255.0f);
 
   unsigned char red   = (unsigned char)r;
   unsigned char green = (unsigned char)g;
