@@ -130,7 +130,7 @@ int main(int argc, const char** argv)
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
     //GEO_TESTS::test_005_instancing();
     //MTL_TESTS::test_120_opacity_shadow_matte();
-    //LGHT_TESTS::test_211_sky_and_sun_perez();
+    //LGHT_TESTS::test_224_rotated_area_light2();
     
     //PP_TESTS::test305_fbi_from_render();    
     //PP_TESTS::test312_2_post_process_hydra1_whitePointColor();

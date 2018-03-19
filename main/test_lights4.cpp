@@ -1513,7 +1513,7 @@ namespace LGHT_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_241/z_out.png");
 
-    return check_images("test_241", 1, 35.0f);
+    return check_images("test_241", 1, 42.0f);
   }
 
 
