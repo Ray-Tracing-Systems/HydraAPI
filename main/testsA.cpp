@@ -4675,15 +4675,15 @@ bool test77_save_gbuffer_layers()
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  auto pList = hrRenderGetDeviceList(renderRef);
-
-  while (pList != nullptr)
-  {
-    std::wcout << L"device id = " << pList->id << L", name = " << pList->name << L", driver = " << pList->driver << std::endl;
-    pList = pList->next;
-  }
-
-  std::cout << "using device id = " << CURR_RENDER_DEVICE << std::endl;
+  // auto pList = hrRenderGetDeviceList(renderRef);
+  // 
+  // while (pList != nullptr)
+  // {
+  //   std::wcout << L"device id = " << pList->id << L", name = " << pList->name << L", driver = " << pList->driver << std::endl;
+  //   pList = pList->next;
+  // }
+  // 
+  // std::cout << "using device id = " << CURR_RENDER_DEVICE << std::endl;
 
   //hrRenderEnableDevice(renderRef, 0, true);
   hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
@@ -4801,7 +4801,7 @@ bool test77_save_gbuffer_layers()
 
   hrRenderSaveGBufferLayerLDR(renderRef, L"tests_images/test_77/z_out11.png", L"coverage");
 
-  return check_images("test_77", 11, 20.0f);
+  return check_images("test_77", 11, 25.0f);
 }
 
 bool test78_material_remap_list1()
