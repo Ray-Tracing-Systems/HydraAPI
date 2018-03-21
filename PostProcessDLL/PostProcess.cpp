@@ -92,10 +92,10 @@ bool PostProcessHydra1::Eval()
     return false;
   }
 
-  if (exposure > 4.0f)
+  if (exposure > 10.0f)
   {
-    wcsncpy_s(m_msg, L"post_process_hydra1; exposure should be in the range 0 - 4. Default 1. This will be limited to 4.", ERR_MSG_SIZE);
-    exposure = 4.0f;
+    wcsncpy_s(m_msg, L"post_process_hydra1; exposure should be in the range 0 - 10. Default 1. This will be limited to 10.", ERR_MSG_SIZE);
+    exposure = 10.0f;
   }
   if (compress > 1.0f)
   {
