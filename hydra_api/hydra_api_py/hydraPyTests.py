@@ -113,8 +113,8 @@ def test01_render_cubes(report_file, inBG):
 
   intensityNode = lightNode.append_child("intensity")
 
-  intensityNode.append_child("color").text().set("1 1 1")
-  intensityNode.append_child("multiplier").text().set("10.0")
+  intensityNode.append_child("color").append_attribute("val").set_value("1 1 1")
+  intensityNode.append_child("multiplier").append_attribute("val").set_value("10.0")
   hy.hrLightClose(light)
 
 
@@ -227,8 +227,8 @@ def test02_mesh_from_vsgf(report_file, inBG):
 
   intensityNode = lightNode.append_child("intensity")
 
-  intensityNode.append_child("color").text().set("1 1 1")
-  intensityNode.append_child("multiplier").text().set("10.0")
+  intensityNode.append_child("color").append_attribute("val").set_value("1 1 1")
+  intensityNode.append_child("multiplier").append_attribute("val").set_value("10.0")
   hy.hrLightClose(light)
 
 
@@ -355,8 +355,8 @@ def test03_cornell_box(report_file, inBG):
   sizeNode.append_attribute("half_width").set_value(1.0)
 
   intensityNode = lightNode.append_child("intensity")
-  intensityNode.append_child("color").text().set("1 1 1")
-  intensityNode.append_child("multiplier").text().set("10.0")
+  intensityNode.append_child("color").append_attribute("val").set_value("1 1 1")
+  intensityNode.append_child("multiplier").append_attribute("val").set_value("10.0")
   hy.hrLightClose(light)
 
   renderRef = hy.hrRenderCreate("HydraModern")
@@ -488,8 +488,8 @@ def test04_instancing(report_file, inBG):
   lightNode.attribute("distribution").set_value("perez")
 
   intensityNode = lightNode.append_child("intensity")
-  intensityNode.append_child("color").text().set("1 1 1")
-  intensityNode.append_child("multiplier").text().set("1.0")
+  intensityNode.append_child("color").append_attribute("val").set_value("1 1 1")
+  intensityNode.append_child("multiplier").append_attribute("val").set_value("1.0")
   
   sunModel = lightNode.append_child("perez")
   sunModel.append_attribute("sun_id").set_value(sun.id)
@@ -510,8 +510,8 @@ def test04_instancing(report_file, inBG):
 
   intensityNode = lightNode.append_child("intensity")
 
-  intensityNode.append_child("color").text().set("1.0 0.85 0.64")
-  intensityNode.append_child("multiplier").text().set("2.0")
+  intensityNode.append_child("color").append_attribute("val").set_value("1.0 0.85 0.64")
+  intensityNode.append_child("multiplier").append_attribute("val").set_value("2.0")
   
   lightNode.append_child("shadow_softness").append_attribute("val").set_value(1.0)
   hy.hrLightClose(sky)
@@ -870,8 +870,8 @@ def test06_blend_simple(report_file, inBG):
   sizeNode.append_attribute("half_width").set_value(1.0)
 
   intensityNode = lightNode.append_child("intensity")
-  intensityNode.append_child("color").text().set("1 1 1")
-  intensityNode.append_child("multiplier").text().set("10.0")
+  intensityNode.append_child("color").append_attribute("val").set_value("1 1 1")
+  intensityNode.append_child("multiplier").append_attribute("val").set_value("10.0")
   hy.hrLightClose(light)
 
   renderRef = hy.hrRenderCreate("HydraModern")
@@ -994,8 +994,8 @@ def test07_sky_hdr_rotate(report_file, inBG):
   lightNode.attribute("distribution").set_value("map")
 
   intensityNode = lightNode.append_child("intensity")
-  intensityNode.append_child("color").text().set("1 1 1")
-  intensityNode.append_child("multiplier").text().set("1.0")
+  intensityNode.append_child("color").append_attribute("val").set_value("1 1 1")
+  intensityNode.append_child("multiplier").append_attribute("val").set_value("1.0")
   texNode = hy.hrTextureBind(texEnv, intensityNode.child("color"))
   texNode.append_attribute("matrix")
   samplerMatrix2 = np.array([1, 0, 0, -0.4,
@@ -1121,8 +1121,8 @@ def test08_shadow_catcher(report_file, inBG):
   lightNode.attribute("distribution").set_value("map")
 
   intensityNode = lightNode.append_child("intensity")
-  intensityNode.append_child("color").text().set("1 1 1")
-  intensityNode.append_child("multiplier").text().set("1.0")
+  intensityNode.append_child("color").append_attribute("val").set_value("1 1 1")
+  intensityNode.append_child("multiplier").append_attribute("val").set_value("1.0")
   texNode = hy.hrTextureBind(texEnv, intensityNode.child("color"))
   hy.hrLightClose(light)
 
@@ -1252,8 +1252,8 @@ def test10_sky_sun_physical(report_file, inBG):
   lightNode.attribute("distribution").set_value("perez")
 
   intensityNode = lightNode.append_child("intensity")
-  intensityNode.append_child("color").text().set("1 1 1")
-  intensityNode.append_child("multiplier").text().set("1.0")
+  intensityNode.append_child("color").append_attribute("val").set_value("1 1 1")
+  intensityNode.append_child("multiplier").append_attribute("val").set_value("1.0")
   
   sunModel = lightNode.append_child("perez")
   sunModel.append_attribute("sun_id").set_value(sun.id)
@@ -1273,8 +1273,8 @@ def test10_sky_sun_physical(report_file, inBG):
 
   intensityNode = lightNode.append_child("intensity")
 
-  intensityNode.append_child("color").text().set("1.0 0.85 0.64")
-  intensityNode.append_child("multiplier").text().set("3.0")
+  intensityNode.append_child("color").append_attribute("val").set_value("1.0 0.85 0.64")
+  intensityNode.append_child("multiplier").append_attribute("val").set_value("3.0")
   
   lightNode.append_child("angle_radius").append_attribute("val").set_value(0.5)
   hy.hrLightClose(sun)
@@ -1353,8 +1353,8 @@ def test11_load_car_and_change_env(library_path, report_file, inBG):
   lightNode.attribute("distribution").set_value("map")
 
   intensityNode = lightNode.append_child("intensity")
-  intensityNode.append_child("color").text().set("1 1 1")
-  intensityNode.append_child("multiplier").text().set("1.0")
+  intensityNode.append_child("color").append_attribute("val").set_value("1 1 1")
+  intensityNode.append_child("multiplier").append_attribute("val").set_value("1.0")
   texNode = hy.hrTextureBind(texEnv, intensityNode.child("color"))
   texNode.append_attribute("matrix")
   samplerMatrix2 = np.array([1, 0, 0, -0.4,
@@ -1578,8 +1578,8 @@ def test15_merge_one_object(report_file, inBG):
   lightNode.attribute("distribution").set_value("map")
 
   intensityNode = lightNode.append_child("intensity")
-  intensityNode.append_child("color").text().set("0.1 0.2 .7")
-  intensityNode.append_child("multiplier").text().set("1.0")
+  intensityNode.append_child("color").append_attribute("val").set_value("0.1 0.2 .7")
+  intensityNode.append_child("multiplier").append_attribute("val").set_value("1.0")
   hy.hrLightClose(light)
 
   scnRef = hy.hrSceneCreate("my scene")
@@ -1775,8 +1775,8 @@ def test17_material_remap_lists(report_file, inBG):
 
   intensityNode = lightNode.append_child("intensity")
 
-  intensityNode.append_child("color").text().set("1 1 1")
-  intensityNode.append_child("multiplier").text().set("10.0")
+  intensityNode.append_child("color").append_attribute("val").set_value("1 1 1")
+  intensityNode.append_child("multiplier").append_attribute("val").set_value("10.0")
   hy.hrLightClose(light)
 
   renderRef = hy.hrRenderCreate("HydraModern")
