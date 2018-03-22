@@ -635,7 +635,57 @@ HAPI void hrMeshAppendTriangles3(HRMeshRef a_mesh, int indNum, const int* indice
       pMesh->m_input.verticesTexCoord.push_back(0.0f);
       pMesh->m_input.verticesTexCoord.push_back(0.0f);
     }
+
   }
+
+  // add custom attributes 
+  //
+  for (auto ptrs : pMesh->m_inputPointers.customVertPointers) // #TODO: refactor this code
+  {
+    {
+      HRMesh::InputTriMesh::CustArray arr;
+      arr.name = ptrs.name;
+      pMesh->m_input.customArrays.push_back(arr);
+    }
+
+    auto& custArray = pMesh->m_input.customArrays[pMesh->m_input.customArrays.size() - 1];
+
+    custArray.depth = (ptrs.stride == 3) ? 4 : ptrs.stride;
+
+    switch (ptrs.ptype)
+    {
+    case HRMesh::InputTriMeshPointers::CUST_POINTER_FLOAT:
+
+      if (ptrs.stride == 3)
+      {
+        const float* input = ptrs.fdata;
+        const int stride   = ptrs.stride;
+
+        for (int i = 0; i <= maxVertexId; i++)
+        {
+          custArray.fdata.push_back(input[3 * i + 0]);
+          custArray.fdata.push_back(input[3 * i + 1]);
+          custArray.fdata.push_back(input[3 * i + 2]);
+          custArray.fdata.push_back(0.0f);
+        }
+      }
+      else
+      {
+        const float* input = ptrs.fdata;
+        const int stride   = ptrs.stride;
+
+        for (int i = 0; i <= maxVertexId; i++)
+          for (int k = 0; k < stride; k++)
+            custArray.fdata.push_back(input[stride*i + k]);
+      }
+      break;
+    
+    // we don't have CUST_POINTER_INT per vertex attributes because we can not interpolate them !
+    default:
+      break;
+    }
+  }
+
 
 	// now append triangle indices ...
 	//

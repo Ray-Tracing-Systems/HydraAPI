@@ -87,8 +87,8 @@ bool test81_custom_attributes()
   }
   hrMeshClose(cubeRef);
 
-  HRMeshRef torRef = hrMeshCreate(L"my_torus");
 
+  HRMeshRef torRef = hrMeshCreate(L"my_torus");
 
   std::vector<float> torusDarkness(torusMeshData.vPos.size() / 4);
   for (size_t i = 0; i < torusDarkness.size(); i++)

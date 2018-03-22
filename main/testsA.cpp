@@ -199,8 +199,8 @@ bool test62_bad_textures()
   mat4x4_mul(mRes, mTranslate, mRot1);
   mat4x4_transpose(matrixT4, mRes); // this fucking math library swap rows and columns
 
-                                    // draw scene
-                                    //
+  // draw scene
+  //
   hrSceneOpen(scnRef, HR_WRITE_DISCARD);
   {
     hrMeshInstance(scnRef, cubeRef, &matrixT[0][0]);

@@ -137,6 +137,7 @@ struct HRMesh : public HRObject<IHRMesh>
       verticesTangent.clear();
       triIndices.clear();
       matIndices.clear();
+      customArrays.clear();
     }
 
     void freeMem()
@@ -146,6 +147,7 @@ struct HRMesh : public HRObject<IHRMesh>
       verticesTexCoord = std::vector<float>();
       triIndices       = std::vector<uint32_t>();
       matIndices       = std::vector<uint32_t>();
+      customArrays.clear();                       /// its a vector of vectors
     }
 
     void reserve(size_t vNum, size_t indNum)
@@ -156,6 +158,12 @@ struct HRMesh : public HRObject<IHRMesh>
       verticesTexCoord.reserve(vNum * 2 + 10);
       triIndices.reserve(indNum + 10);
       matIndices.reserve(indNum / 3 + 10);
+
+      for (auto& arr : customArrays)
+      {
+        arr.idata.reserve(1*vNum);
+        arr.fdata.reserve(4*vNum);
+      }
     }
 
     std::vector<float>    verticesPos;       ///< float4
@@ -164,6 +172,16 @@ struct HRMesh : public HRObject<IHRMesh>
     std::vector<float>    verticesTangent;   ///< float4
     std::vector<uint32_t> triIndices;        ///< size of 3*triNum
     std::vector<uint32_t> matIndices;        ///< size of 1*triNum
+
+    struct CustArray
+    {
+      std::vector<int>   idata;
+      std::vector<float> fdata;
+      std::wstring       name;
+      int depth;
+    };
+
+    std::vector<CustArray> customArrays;
   };
 
   struct InputTriMeshPointers
