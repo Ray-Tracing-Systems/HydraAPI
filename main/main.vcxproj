@@ -161,6 +161,7 @@
     <ClCompile Include="tests8.cpp" />
     <ClCompile Include="tests9.cpp" />
     <ClCompile Include="testsA.cpp" />
+    <ClCompile Include="testsB.cpp" />
     <ClCompile Include="tests_lights2.cpp" />
     <ClCompile Include="tests_mtl2.cpp" />
     <ClCompile Include="tests_mtl3.cpp" />
