@@ -178,6 +178,9 @@ struct HRMesh : public HRObject<IHRMesh>
       texCoords = nullptr;
       tangents  = nullptr;
       mindices  = nullptr;
+
+      customVertPointers.clear();
+      customPrimPointers.clear();
     }
 
     const float* pos;
@@ -187,6 +190,23 @@ struct HRMesh : public HRObject<IHRMesh>
     int posStride;
     int normStride;
     int tangStride;
+
+    enum POINTER_TYPES {CUST_POINTER_FLOAT = 1, CUST_POINTER_INT = 2};
+
+    struct CustPointer
+    {
+      union 
+      {
+        const int*   idata;
+        const float* fdata;
+      };
+      int           stride;
+      POINTER_TYPES ptype;
+      std::wstring  name;
+    };
+
+    std::vector<CustPointer> customVertPointers;
+    std::vector<CustPointer> customPrimPointers;
 
     const int* mindices;
   };

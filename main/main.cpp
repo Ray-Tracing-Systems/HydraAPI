@@ -98,6 +98,7 @@ int main(int argc, const char** argv)
     //run_all_ipp_tests();
 
     //test42_load_library_basic();
+    test81_custom_attributes();
 
     //test1000_loadlibrary_and_edit();
     //test1001_loadlibrary_and_add_textures();
@@ -120,8 +121,8 @@ int main(int argc, const char** argv)
     //std::cout << test1016_merge_scene_remap_override() << std::endl;
 
     //std::cout << test39_mesh_from_vsgf() << std::endl;
-    std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
-    std::cout << test77_save_gbuffer_layers() << std::endl;
+    //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
+    //std::cout << test77_save_gbuffer_layers() << std::endl;
     //std::cout << test59_cornell_water_mlt() << std::endl;
     //std::cout << test70_area_lights16() << std::endl;
     //std::cout << test78_material_remap_list1() << std::endl;
@@ -153,7 +154,7 @@ int main(int argc, const char** argv)
     //window_main_free_look(L"D:/PROG/HydraCore/hydra_app/tests/test_42", L"opengl1DrawRays");
     //test_gl32_002();
     //window_main_free_look(L"tests/test_gl32_002", L"opengl32Deferred");
-    //window_main_free_look(L"tests_f/test_235", L"opengl1");
+    //window_main_free_look(L"tests/test_42", L"opengl1Debug");
 
     //_hrDebugPrintVSGF(L"D:/temp/TestRenderFromPhil/data/chunk_00022.vsgf",   L"z_mesh_phil.txt");
     //_hrDebugPrintVSGF(L"D:/temp/TestRenderFromSergey/data/chunk_00022.vsgf", L"z_mesh_serg.txt");

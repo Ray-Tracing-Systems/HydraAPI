@@ -93,7 +93,7 @@ HAPI HRMeshRef _hrMeshCreateFromNode(pugi::xml_node a_node)
 
   HRMesh mesh;
   mesh.name = std::wstring(a_objectName);
-  mesh.id = ref.id;
+  mesh.id   = ref.id;
   g_objManager.scnData.meshes.push_back(mesh);
 
   g_objManager.scnData.meshes[ref.id].update_this(a_node);

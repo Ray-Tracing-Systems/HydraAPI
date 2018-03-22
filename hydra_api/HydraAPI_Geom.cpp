@@ -43,9 +43,29 @@ struct VSGFChunkInfo
   uint64_t offsetMInd;
 };
 
-void FillXMLFromVSGFInfo(pugi::xml_node nodeXml, VSGFChunkInfo info, std::wstring a_fileName, bool dlLoad)
+void FillXMLFromMeshImpl(pugi::xml_node nodeXml, std::shared_ptr<IHRMesh> a_pImpl, bool dlLoad)
 {
-  std::wstring location = a_fileName;
+
+  auto pImpl = a_pImpl;
+
+  ////
+  //
+  size_t       chunkId  = pImpl->chunkId();
+  ChunkPointer chunk    = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
+  std::wstring location = ChunkName(chunk);
+
+
+  VSGFChunkInfo info;
+
+  info.vertNum    = pImpl->vertNum();
+  info.indNum     = pImpl->indNum();
+  info.offsetPos  = pImpl->offset(L"pos");
+  info.offsetNorm = pImpl->offset(L"norm");
+  info.offsetTexc = pImpl->offset(L"texc");
+  info.offsetTang = pImpl->offset(L"tan");
+  info.offsetInd  = pImpl->offset(L"ind");
+  info.offsetMInd = pImpl->offset(L"mind");
+  info.dataBytes  = chunk.sizeInBytes;
 
   clear_node_childs(nodeXml);
 
@@ -102,35 +122,6 @@ void FillXMLFromVSGFInfo(pugi::xml_node nodeXml, VSGFChunkInfo info, std::wstrin
   }
 }
 
-void ReadInfoFromVSGFHeaderToXML(const wchar_t* a_fileName, pugi::xml_node nodeXml, bool dlLoad)
-{
-#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
-  std::wstring s1(a_fileName);
-  std::string  s2(s1.begin(), s1.end());
-  std::ifstream fin(s2.c_str(), std::ios::binary);
-#elif defined WIN32
-  std::ifstream fin(a_fileName, std::ios::binary);
-#endif
-  HydraGeomData::Header header;
-  fin.read((char*)&header, sizeof(HydraGeomData::Header));
-
-  ////
-  //
-  VSGFChunkInfo info;
-
-  info.vertNum    = header.verticesNum;
-  info.indNum     = header.indicesNum;
-  info.dataBytes  = header.fileSizeInBytes;
-
-  info.offsetPos  = sizeof(HydraGeomData::Header);
-  info.offsetNorm = info.offsetPos  + info.vertNum*sizeof(float4);
-  info.offsetTang = -1; // info.offsetNorm + info.vertNum * sizeof(float4); // #TODO: fix deffered mesh load
-  info.offsetTexc = info.offsetNorm + info.vertNum*sizeof(float4);
-  info.offsetInd  = info.offsetTexc + info.vertNum*sizeof(float2);
-  info.offsetMInd = info.offsetInd  + info.indNum*sizeof(int);
-
-  FillXMLFromVSGFInfo(nodeXml, info, a_fileName, dlLoad);
-}
 
 HAPI HRMeshRef hrMeshCreate(const wchar_t* a_objectName)
 {
@@ -172,19 +163,7 @@ HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName)
   if (a_fileName == nullptr || std::wstring(a_fileName) == L"")
     return HRMeshRef();
   
-  // (1) this implementation is old, we create the new one later
-  // 
-  // HRMeshRef ref = hrMeshCreate(a_fileName);
-  // pugi::xml_node nodeXml = g_objManager.scnData.meshes[ref.id].xml_node_immediate();
-  // nodeXml.attribute(L"dl").set_value(L"1");
-  // nodeXml.attribute(L"path").set_value(a_fileName);
-  // 
-  // ReadInfoFromVSGFHeaderToXML(a_fileName, nodeXml, true);
-  // 
-  // HRMesh* pMesh = &g_objManager.scnData.meshes[ref.id];
-  // pMesh->pImpl  = g_objManager.m_pFactory->CreateVSGFFromFile(pMesh, a_fileName);
-
-  // (2) to have this function works, we temporary convert it via common mesh that placed in memory, not really DelayedLoad (!!!)
+  // (1) to have this function works, we temporary convert it via common mesh that placed in memory, not really DelayedLoad (!!!)
   //
   HydraGeomData data;
   data.read(a_fileName);
@@ -399,26 +378,7 @@ HAPI void hrMeshClose(HRMeshRef a_mesh)
   auto nodeXml = pMesh->xml_node_next();
   auto pImpl   = pMesh->pImpl;
 
-  ////
-  //
-  size_t       chunkId  = pImpl->chunkId();
-  ChunkPointer chunk    = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
-  std::wstring location = ChunkName(chunk);
-
-
-  VSGFChunkInfo info;
-
-  info.vertNum    = pImpl->vertNum();
-  info.indNum     = pImpl->indNum();
-  info.offsetPos  = pImpl->offset(L"pos");
-  info.offsetNorm = pImpl->offset(L"norm");
-  info.offsetTexc = pImpl->offset(L"texc");
-  info.offsetTang = pImpl->offset(L"tan");
-  info.offsetInd  = pImpl->offset(L"ind");
-  info.offsetMInd = pImpl->offset(L"mind");
-  info.dataBytes  = chunk.sizeInBytes;
-
-  FillXMLFromVSGFInfo(nodeXml, info, location, false);
+  FillXMLFromMeshImpl(nodeXml, pImpl, false); 
 
   pMesh->m_input.freeMem();
   pMesh->m_inputPointers.clear();
@@ -439,6 +399,14 @@ HAPI void hrMeshVertexAttribPointer1f(HRMeshRef a_mesh, const wchar_t* a_name, c
     return;
   }
 
+  HRMesh::InputTriMeshPointers::CustPointer custPointer;
+
+  custPointer.ptype  = HRMesh::InputTriMeshPointers::CUST_POINTER_FLOAT;
+  custPointer.stride = 1; // (a_stride <= 0) ? 1 : a_stride;
+  custPointer.fdata  = a_pointer;
+  custPointer.name   = a_name;
+
+  pMesh->m_inputPointers.customVertPointers.push_back(custPointer);
 
 }
 
@@ -455,6 +423,17 @@ HAPI void hrMeshVertexAttribPointer2f(HRMeshRef a_mesh, const wchar_t* a_name, c
   //
   if (std::wstring(a_name) == L"tex" || std::wstring(a_name) == L"texcoord")
     pMesh->m_inputPointers.texCoords = a_pointer;
+  else
+  {
+    HRMesh::InputTriMeshPointers::CustPointer custPointer;
+
+    custPointer.ptype  = HRMesh::InputTriMeshPointers::CUST_POINTER_FLOAT;
+    custPointer.stride = 2; // (a_stride <= 0) ? 2 : a_stride;
+    custPointer.fdata  = a_pointer;
+    custPointer.name   = a_name;
+
+    pMesh->m_inputPointers.customVertPointers.push_back(custPointer);
+  }
 }
 
 HAPI void hrMeshVertexAttribPointer3f(HRMeshRef a_mesh, const wchar_t* a_name, const float* a_pointer, int a_stride)
@@ -470,13 +449,24 @@ HAPI void hrMeshVertexAttribPointer3f(HRMeshRef a_mesh, const wchar_t* a_name, c
   //
   if (std::wstring(a_name) == L"pos" || std::wstring(a_name) == L"positions")
   {
-    pMesh->m_inputPointers.pos = a_pointer;
+    pMesh->m_inputPointers.pos       = a_pointer;
     pMesh->m_inputPointers.posStride = 3;
   }
   else if (std::wstring(a_name) == L"norm" || std::wstring(a_name) == L"normals")
   {
-    pMesh->m_inputPointers.normals = a_pointer;
+    pMesh->m_inputPointers.normals    = a_pointer;
     pMesh->m_inputPointers.normStride = 3;
+  }
+  else
+  {
+    HRMesh::InputTriMeshPointers::CustPointer custPointer;
+
+    custPointer.ptype  = HRMesh::InputTriMeshPointers::CUST_POINTER_FLOAT;
+    custPointer.stride = 3; // (a_stride <= 0) ? 2 : a_stride;
+    custPointer.fdata  = a_pointer;
+    custPointer.name   = a_name;
+
+    pMesh->m_inputPointers.customVertPointers.push_back(custPointer);
   }
 
 
@@ -508,6 +498,17 @@ HAPI void hrMeshVertexAttribPointer4f(HRMeshRef a_mesh, const wchar_t* a_name, c
     pMesh->m_inputPointers.tangents   = a_pointer;
     pMesh->m_inputPointers.tangStride = 4;
   }
+  else
+  {
+    HRMesh::InputTriMeshPointers::CustPointer custPointer;
+
+    custPointer.ptype  = HRMesh::InputTriMeshPointers::CUST_POINTER_FLOAT;
+    custPointer.stride = 4; // (a_stride <= 0) ? 2 : a_stride;
+    custPointer.fdata  = a_pointer;
+    custPointer.name   = a_name;
+
+    pMesh->m_inputPointers.customVertPointers.push_back(custPointer);
+  }
 
 }
 
@@ -523,6 +524,17 @@ HAPI void hrMeshPrimitiveAttribPointer1i(HRMeshRef a_mesh, const wchar_t* a_name
   if (std::wstring(a_name) == L"mind")
   {
     pMesh->m_inputPointers.mindices = a_pointer;
+  }
+  else
+  {
+    HRMesh::InputTriMeshPointers::CustPointer custPointer;
+
+    custPointer.ptype  = HRMesh::InputTriMeshPointers::CUST_POINTER_INT;
+    custPointer.stride = 1; // (a_stride <= 0) ? 2 : a_stride;
+    custPointer.idata  = a_pointer;
+    custPointer.name   = a_name;
+
+    pMesh->m_inputPointers.customPrimPointers.push_back(custPointer);
   }
 }
 
