@@ -146,3 +146,15 @@ protected:
   float m_axisArrorLen;
   float m_axisArrorThickness;
 };
+
+
+struct RD_OGL1_ShowCustomAttr : public RD_OGL1_Plain
+{
+  RD_OGL1_ShowCustomAttr(){}
+
+  bool UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode, const HRMeshDriverInput& a_input, const HRBatchInfo* a_batchList, int32_t listSize);
+
+protected:
+  
+};
+

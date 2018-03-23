@@ -179,6 +179,7 @@ struct HRMesh : public HRObject<IHRMesh>
       std::vector<float> fdata;
       std::wstring       name;
       int depth;
+      int apply;
     };
 
     std::vector<CustArray> customArrays;

@@ -11,6 +11,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include <iostream>
 #include <memory>
 
@@ -69,7 +70,7 @@ struct IHRMesh : public IHRObject ///< Not empty Data (reimplement DataSerialize
   virtual uint64_t indNum() const { return 0; }
 
   virtual const std::vector<HRBatchInfo>& MList() const = 0;
-
+  virtual const std::unordered_map<std::wstring, std::tuple<std::wstring, size_t, size_t, int> >& GetOffsAndSizeForAttrs() const = 0;
 };
 
 struct HRLight;
@@ -142,7 +143,7 @@ struct IHydraFactory
   virtual std::shared_ptr<IHRTextureNode> CreateTextureInfoFromChunkFile(HRTextureNode* pSysObj, const wchar_t* a_chunkFileName)       = 0;
 
   virtual std::shared_ptr<IHRMesh>        CreateVSGFFromSimpleInputMesh(HRMesh* pSysObj)                                               = 0;
-  virtual std::shared_ptr<IHRMesh>        CreateVSGFFromFile(HRMesh* pSysObj, const std::wstring& a_fileName)                          = 0;
+  virtual std::shared_ptr<IHRMesh>        CreateVSGFFromFile(HRMesh* pSysObj, const std::wstring& a_fileName, pugi::xml_node a_node)   = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

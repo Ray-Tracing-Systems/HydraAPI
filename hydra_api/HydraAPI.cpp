@@ -599,6 +599,7 @@ IHRRenderDriver* CreateOpenGL1DrawBVH_RenderDriver();   // debug drivers
 IHRRenderDriver* CreateOpenGL1TestSplit_RenderDriver();
 IHRRenderDriver* CreateDebugPrint_RenderDriver();
 IHRRenderDriver* CreateOpenGL1DrawRays_RenderDriver();
+IHRRenderDriver* CreateOpenGL1Debug_TestCustomAttributes();
 
 std::unique_ptr<IHRRenderDriver> CreateRenderFromString(const wchar_t *a_className, const wchar_t *a_options)
 {
@@ -612,6 +613,8 @@ std::unique_ptr<IHRRenderDriver> CreateRenderFromString(const wchar_t *a_classNa
     return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1_DelayedLoad_RenderDriver(false));
   else if (!wcscmp(a_className, L"opengl1DelayedLoad2"))
     return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1_DelayedLoad_RenderDriver(true));
+  else if (!wcscmp(a_className, L"opengl1TestCustomAttributes"))
+    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1Debug_TestCustomAttributes());
   else if (!wcscmp(a_className, L"opengl1DrawBvh"))
     return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1DrawBVH_RenderDriver());
   else if (!wcscmp(a_className, L"opengl1DrawRays"))

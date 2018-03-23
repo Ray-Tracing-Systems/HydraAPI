@@ -184,6 +184,7 @@
     <ClCompile Include="RenderDriverHydraConnection.cpp" />
     <ClCompile Include="RenderDriverOpenGL1.cpp" />
     <ClCompile Include="RenderDriverOpenGL1Debug.cpp" />
+    <ClCompile Include="RenderDriverOpenGL1_TestCustomAttributes.cpp" />
     <ClCompile Include="RenderDriverOpenGL1_TestSplit.cpp" />
     <ClCompile Include="RenderDriverOpenGL1_DelayedLoad.cpp" />
     <ClCompile Include="RenderDriverOpenGL1_DrawBvhLevels.cpp" />
