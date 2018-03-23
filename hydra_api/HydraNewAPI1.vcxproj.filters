@@ -156,6 +156,9 @@
     <ClCompile Include="HydraXMLHelpers.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="RenderDriverOpenGL1_TestCustomAttributes.cpp">
+      <Filter>Source\RenderDrivers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LiteMath.h">

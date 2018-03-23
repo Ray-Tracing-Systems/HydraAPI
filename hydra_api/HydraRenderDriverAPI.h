@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <memory>
 #include <unordered_set>
+#include <unordered_map>
 
 #include "pugixml.hpp"
 #include "HydraAPI.h"
@@ -97,6 +98,20 @@ struct HRMeshDriverInput
   float* tan4f;
   int*   indices;
   int*   triMatIndices;
+
+  struct CustomPointer
+  {
+    std::wstring name;
+    std::wstring type;
+    union
+    {
+      float* fdata;
+      int*   idata;
+    };
+  };
+
+  std::unordered_map<std::wstring, CustomPointer > customVertexf;    
+  std::unordered_map<std::wstring, CustomPointer > customPrimitivei; 
 };
 
 /** \brief Batch is a sequence of triangles withe the same id.

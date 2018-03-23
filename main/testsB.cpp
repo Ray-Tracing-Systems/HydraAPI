@@ -71,7 +71,7 @@ bool test81_custom_attributes()
   for (size_t i = 0; i < cubeColors.size(); i++)
     cubeColors[i] = float3(1, 1, 1);
 
-  for (size_t i = 0; i < cubeColors.size()/2; i++)
+  for (size_t i = 0; i < cubeColors.size()/2 + 1; i++)
     cubeColors[i] = float3(1, 0, 0);
   
   hrMeshOpen(cubeRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
@@ -92,7 +92,7 @@ bool test81_custom_attributes()
 
   std::vector<float> torusDarkness(torusMeshData.vPos.size() / 4);
   for (size_t i = 0; i < torusDarkness.size(); i++)
-    torusDarkness[i] = sinf(  10.0f*float(i)/float(torusDarkness.size())  );
+    torusDarkness[i] = sinf(  100.0f*float(i)/float(torusDarkness.size())  );
 
   hrMeshOpen(torRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
   {
@@ -178,12 +178,12 @@ bool test81_custom_attributes()
 
   // set up render settings
   //
-  settingsRef = hrRenderCreate(L"opengl1");
+  settingsRef = hrRenderCreate(L"opengl1TestCustomAttributes");
 
   hrRenderOpen(settingsRef, HR_WRITE_DISCARD);
   {
     pugi::xml_node node = hrRenderParamNode(settingsRef);
-    node.append_child(L"width").text() = 1024;
+    node.append_child(L"width").text()  = 1024;
     node.append_child(L"height").text() = 768;
   }
   hrRenderClose(settingsRef);
@@ -210,7 +210,7 @@ bool test81_custom_attributes()
 
   mat4x4_translate(mTranslate, 0.0f, 0.25f, -5.0f);
   mat4x4_rotate_X(mRot1, mRot1, -rquad * DEG_TO_RAD);
-  mat4x4_rotate_Y(mRot1, mRot1, -rquad * DEG_TO_RAD*0.5f);
+  mat4x4_rotate_Y(mRot1, mRot1, +rquad * DEG_TO_RAD*0.5f);
   mat4x4_mul(mRes, mTranslate, mRot1);
   mat4x4_transpose(matrixT, mRes); // this fucking math library swap rows and columns
 
@@ -236,8 +236,8 @@ bool test81_custom_attributes()
   mat4x4_mul(mRes, mTranslate, mRot1);
   mat4x4_transpose(matrixT4, mRes); // this fucking math library swap rows and columns
 
-                                    // draw scene
-                                    //
+  // draw scene
+  //
   hrSceneOpen(scnRef, HR_WRITE_DISCARD);
   {
     hrMeshInstance(scnRef, cubeRef, &matrixT[0][0]);

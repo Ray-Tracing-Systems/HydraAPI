@@ -100,7 +100,7 @@ HAPI HRMeshRef _hrMeshCreateFromNode(pugi::xml_node a_node)
   g_objManager.scnData.meshes[ref.id].id = ref.id;
 
   HRMesh* pMesh = &g_objManager.scnData.meshes[ref.id];
-  pMesh->pImpl  = g_objManager.m_pFactory->CreateVSGFFromFile(pMesh, a_fileName);
+  pMesh->pImpl  = g_objManager.m_pFactory->CreateVSGFFromFile(pMesh, a_fileName, a_node); //#TODO: load custom attributes somewhere inside
 
   if (pMesh->pImpl == nullptr)
     HrError(L"LoadExistingLibrary, _hrMeshCreateFromNode can't load mesh from location = ", a_fileName);

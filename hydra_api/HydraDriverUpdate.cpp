@@ -590,7 +590,7 @@ HRMeshDriverInput HR_GetMeshDataPointers(size_t a_meshId)
   input.vertNum = int(mesh.pImpl->vertNum());
   input.triNum  = int(mesh.pImpl->indNum()/3);
 
-  auto chunkId        = mesh.pImpl->chunkId();
+  auto chunkId  = mesh.pImpl->chunkId();
 
   if (chunkId == uint64_t(-1))
     return input;
@@ -623,6 +623,23 @@ HRMeshDriverInput HR_GetMeshDataPointers(size_t a_meshId)
     input.tan4f         = (float*)(dataPtr + offsetTang);
     input.indices       = (int*)  (dataPtr + offsetInd);
     input.triMatIndices = (int*)  (dataPtr + offsetMInd);
+
+    auto pImpl          = mesh.pImpl;
+    auto customAttribs  = pImpl->GetOffsAndSizeForAttrs();
+
+    for (const auto& arr : customAttribs)
+    {
+      const std::wstring& name = arr.first; // std::tuple<std::wstring, size_t, size_t, int>(type, currOffset, currSize, arr.apply);
+      
+      if (std::get<3>(arr.second) == 0) // per vertex attribute
+      {
+        HRMeshDriverInput::CustomPointer attr;
+        attr.name  = name;
+        attr.fdata = (float*)(dataPtr + std::get<1>(arr.second));
+        attr.type  = std::get<0>(arr.second);
+        input.customVertexf[name] = attr;
+      }
+    }
   }
 
   return input;

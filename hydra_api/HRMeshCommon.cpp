@@ -5,6 +5,7 @@
 
 #include <sstream>
 #include <unordered_set>
+#include <unordered_map>
 #include <algorithm>
 
 extern HRObjectManager g_objManager;
@@ -21,7 +22,9 @@ struct MeshVSGF : public IHRMesh
 
   size_t   DataSizeInBytes() const { return m_sizeInBytes; }
   
-  const std::vector<HRBatchInfo>& MList() const { return m_matDrawList; }
+  const std::vector<HRBatchInfo>& MList() const override { return m_matDrawList; }
+
+  const std::unordered_map<std::wstring, std::tuple<std::wstring, size_t, size_t, int> >& GetOffsAndSizeForAttrs() const override { return m_custAttrOffsAndSize; }
 
   size_t   m_sizeInBytes;
   size_t   m_chunkId;
@@ -30,6 +33,8 @@ struct MeshVSGF : public IHRMesh
   size_t   m_indNum;
 
   std::vector<HRBatchInfo> m_matDrawList;
+
+  std::unordered_map<std::wstring, std::tuple<std::wstring, size_t, size_t, int> > m_custAttrOffsAndSize;
 };
 
 
@@ -116,9 +121,6 @@ std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndi
 
 std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMesh* pSysObj)
 {
-  //if (pSysObj->id == 1)
-    //return nullptr;
-
   const auto& input = pSysObj->m_input;
 
   if (input.matIndices.size() == 0)
@@ -167,10 +169,26 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
     matIndices = &sortedMatIndices[0];
   }
 
+  // (1) common mesh attributes
+  //
   data.setData(uint32_t(totalVertNumber), &input.verticesPos[0], &input.verticesNorm[0], &input.verticesTangent[0], &input.verticesTexCoord[0],
                uint32_t(totalMeshTriIndices), triIndices, matIndices);
 
-  const size_t totalByteSize = data.sizeInBytes();
+  const size_t totalByteSizeCommon = data.sizeInBytes();
+
+  // (2) custom mesh attributes
+  //
+  size_t totalByteSizeCustom = 0;
+
+  for (auto& arr : pSysObj->m_input.customArrays)
+  {
+    if (arr.fdata.size() > 0)
+      totalByteSizeCustom += arr.fdata.size() * sizeof(float);
+    else
+      totalByteSizeCustom += arr.idata.size() * sizeof(int);
+  }
+
+  const size_t totalByteSize = totalByteSizeCommon + totalByteSizeCustom;
 
   const size_t chunkId = g_objManager.scnData.m_vbCache.AllocChunk(totalByteSize, pSysObj->id);
   auto& chunk          = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
@@ -189,28 +207,63 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
     return nullptr;
   }
 
+  std::shared_ptr<MeshVSGF> pMeshImpl = std::make_shared<MeshVSGF>(totalByteSize, chunkId);
+
+  // (1) common mesh attributes
+  //
   data.writeToMemory(memory);
 
-  std::shared_ptr<MeshVSGF> pMeshImpl = std::make_shared<MeshVSGF>(totalByteSize, chunkId);
+  // (2) custom mesh attributes
+  //
+  size_t currOffset = totalByteSizeCommon;
+  for (const auto& arr : pSysObj->m_input.customArrays)
+  {
+    std::wstring type = L"";
+
+    size_t currSize = 0;
+    if (arr.fdata.size() > 0)
+    {
+      currSize = arr.fdata.size() * sizeof(float);
+      memcpy(memory + currOffset, &arr.fdata[0], currSize);
+
+      if (arr.depth == 4)
+        type = L"array4f";
+      else if(arr.depth == 2)
+        type = L"array2f";
+      else
+        type = L"array1f";
+    }
+    else
+    {
+      currSize = arr.idata.size() * sizeof(int);
+      memcpy(memory + currOffset, &arr.idata[0], currSize);
+
+      if (arr.depth == 4)
+        type = L"array4i";
+      else if (arr.depth == 2)
+        type = L"array2i";
+      else
+        type = L"array1i";
+    }
+
+    pMeshImpl->m_custAttrOffsAndSize[arr.name] = std::tuple<std::wstring, size_t, size_t, int>(type, currOffset, currSize, arr.apply);
+    currOffset += currSize;
+  }
 
   pMeshImpl->m_vertNum     = totalVertNumber;
   pMeshImpl->m_indNum      = totalMeshTriIndices;
 
   if (g_objManager.m_sortTriIndices)
-  {
     pMeshImpl->m_matDrawList = FormMatDrawListRLE(sortedMatIndices);
-  }
   else
-  {
     pMeshImpl->m_matDrawList = FormMatDrawListRLE(input.matIndices);
-  }
 
   return pMeshImpl;
 }
 
-std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromFile(HRMesh* pSysObj, const std::wstring& a_fileName)
+std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromFile(HRMesh* pSysObj, const std::wstring& a_fileName, pugi::xml_node a_node)
 {
-  // put this all to linear memory chunk
+  // (1) put this all to linear memory chunk
   //
   HydraGeomData data;
   data.read(a_fileName);
@@ -225,6 +278,9 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromFile(HRMesh* pSysObj,
   pMeshImpl->m_vertNum     = data.getVerticesNumber();
   pMeshImpl->m_indNum      = data.getIndicesNumber();
   pMeshImpl->m_matDrawList = FormMatDrawListRLE(mindices);
+
+  // (2) #TODO: set custom attributes
+  //
 
   return pMeshImpl;
 }
