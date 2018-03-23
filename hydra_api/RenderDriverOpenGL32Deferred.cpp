@@ -120,7 +120,8 @@ HRDriverAllocInfo RD_OGL32_Deferred::AllocAll(HRDriverAllocInfo a_info)
 
   glGenTextures(1, &m_whiteTex);
   CreatePlaceholderWhiteTexture(m_whiteTex);
-  m_lightBoundingSphere = CreateSphere(1.0f, 16, 0, -1, -1, 4, 3, boundingSphereIndices, m_lightBoundingSphereInstVBO, m_lightBoundingSphereColorVBO);
+  m_lightBoundingSphere = CreateSphere(1.0f, 16, 0, -1, -1, 4, 3, boundingSphereIndices, m_lightBoundingSphereInstVBO,
+                                       m_lightBoundingSphereColorVBO);
 
   CreateMaterialsUBO(a_info.matNum);
   CreateMatricesUBO();
@@ -393,9 +394,9 @@ bool RD_OGL32_Deferred::UpdateCamera(pugi::xml_node a_camNode)
   if (a_camNode == nullptr)
     return true;
 
-  const wchar_t* camPosStr = a_camNode.child(L"position").text().as_string();
-  const wchar_t* camLAtStr = a_camNode.child(L"look_at").text().as_string();
-  const wchar_t* camUpStr  = a_camNode.child(L"up").text().as_string();
+  const std::wstring camPosStr = a_camNode.child(L"position").text().as_string();
+  const std::wstring camLAtStr = a_camNode.child(L"look_at").text().as_string();
+  const std::wstring camUpStr  = a_camNode.child(L"up").text().as_string();
 
   if (!a_camNode.child(L"fov").text().empty())
     camFov = a_camNode.child(L"fov").text().as_float();
@@ -406,24 +407,23 @@ bool RD_OGL32_Deferred::UpdateCamera(pugi::xml_node a_camNode)
   if (!a_camNode.child(L"farClipPlane").text().empty())
     camFarPlane = 1000000.0f;//a_camNode.child(L"farClipPlane").text().as_float();
 
-  if (std::wstring(camPosStr) != L"")
+  if (!camPosStr.empty())
   {
     std::wstringstream input(camPosStr);
     input >> camPos[0] >> camPos[1] >> camPos[2];
   }
 
-  if (std::wstring(camLAtStr) != L"")
+  if (!camLAtStr.empty())
   {
     std::wstringstream input(camLAtStr);
     input >> camLookAt[0] >> camLookAt[1] >> camLookAt[2];
   }
 
-  if (std::wstring(camUpStr) != L"")
+  if (!camUpStr.empty())
   {
     std::wstringstream input(camUpStr);
     input >> camUp[0] >> camUp[1] >> camUp[2];
   }
-
   return true;
 }
 
@@ -490,8 +490,8 @@ void RD_OGL32_Deferred::BeginScene(pugi::xml_node a_sceneNode)
   std::vector<float4x4> matrices{lookAt , projection };
 
   glBindBuffer(GL_UNIFORM_BUFFER, m_matricesUBO);
-  glBufferData(GL_UNIFORM_BUFFER, 32 * sizeof(GL_FLOAT), &matrices[0], GL_STATIC_DRAW);
-  //glBufferSubData(GL_UNIFORM_BUFFER, 0, 32 * sizeof(GL_FLOAT), &matrices[0]);
+  glBufferData(GL_UNIFORM_BUFFER, 32 * sizeof(GLfloat), &matrices[0], GL_STATIC_DRAW);
+  //glBufferSubData(GL_UNIFORM_BUFFER, 0, 32 * sizeof(GLfloat), &matrices[0]);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
@@ -727,7 +727,8 @@ void RD_OGL32_Deferred::InstanceMeshes(int32_t a_mesh_id, const float *a_matrice
 }
 
 
-void RD_OGL32_Deferred::InstanceLights(int32_t a_light_id, const float *a_matrix, pugi::xml_node* a_custAttrArray, int32_t a_instNum, int32_t a_lightGroupId)
+void RD_OGL32_Deferred::InstanceLights(int32_t a_light_id, const float *a_matrix, pugi::xml_node* a_custAttrArray,
+                                       int32_t a_instNum, int32_t a_lightGroupId)
 {
   //m_gBufferProgram.StopUseShader();
  
@@ -798,7 +799,7 @@ void RD_OGL32_Deferred::DrawLightGeoInstances(GLuint &vao, GLuint &vboMat, GLuin
   glVertexAttribDivisor(6, 1);
   glVertexAttribDivisor(7, 1);
 
-  glDrawElementsInstanced(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, 0, m_lightsMatrices.size());
+  glDrawElementsInstanced(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, 0, GLsizei(m_lightsMatrices.size()));
 
   glBindVertexArray(0);
  

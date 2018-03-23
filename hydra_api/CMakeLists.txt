@@ -47,6 +47,8 @@ set(SOURCE_FILES
         RenderDriverOpenGL1_TestSplit.cpp
         RenderDriverOpenGL1Debug.cpp
         RenderDriverOpenGL1DebugDrawRays.cpp
+        RenderDriverOpenGL3_Utility.h
+        RenderDriverOpenGL3_Utility.cpp
         RenderDriverHydraConnection.cpp
         ssemath.cpp
         ssemath.h

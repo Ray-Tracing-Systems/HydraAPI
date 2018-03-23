@@ -188,6 +188,40 @@ namespace GL_RENDER_DRIVER_UTILS {
       GLuint frameBufferObject;
   };
 
+
+  struct LODBuffer
+  {
+      enum LODBUF_TEXTURE_TYPE
+      {
+          LODBUF_TEX_1, //emission, diffuse, reflection, reflection glossiness
+          LODBUF_TEX_2, //transparency, opacity, translucence, bump
+          LODBUF_NUM_TEXTURES
+      };
+
+      virtual ~LODBuffer();
+
+      LODBuffer(GLsizei width, GLsizei height);
+
+      GLuint GetTextureId(LODBUF_TEXTURE_TYPE type);
+
+      GLuint GetFrameBuffer() { return frameBufferObject; }
+
+      void FrameInit();
+
+      void StartRendering();
+
+      void EndRendering();
+
+      void ResizeAttachments(GLsizei width, GLsizei height);
+
+  protected:
+      GLsizei width;
+      GLsizei height;
+      GLuint renderTextures[LODBUF_NUM_TEXTURES];
+      GLuint depthTex;
+      GLuint frameBufferObject;
+  };
+
   struct SSAOBuffer
   {
     enum SSAO_TEXTURE_TYPE
@@ -256,13 +290,13 @@ namespace GL_RENDER_DRIVER_UTILS {
       GLuint vertexArrayObject;
   };
 
-  GLuint CreateEmptyTex(GLint internalFormat, GLenum format, GLsizei width, GLsizei height, bool isFloat = true);
+  GLuint CreateEmptyTex(GLenum internalFormat, GLenum format, GLsizei width, GLsizei height, GLenum type = GL_FLOAT);
 
   void bindTexture(const ShaderProgram &program, int unit, const std::string &name, RenderTexture2D &texture);
 
   void bindTexture(const ShaderProgram &program, int unit, const std::string &name, GLuint textureId);
 
-  void bindTextureBuffer(const ShaderProgram &program, int unit, const std::string &name, GLuint tbo, GLuint textureId);
+  void bindTextureBuffer(const ShaderProgram &program, int unit, const std::string &name, GLuint tbo, GLuint textureId, GLenum format = GL_R32F);
 
   void CreatePlaceholderWhiteTexture(GLuint &a_whiteTex);
 

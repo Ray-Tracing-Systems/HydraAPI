@@ -323,6 +323,8 @@ IHRRenderDriver* CreateOpenGL1_DelayedLoad_RenderDriver(bool a_canLoadMeshes);
 IHRRenderDriver* CreateOpenGL32Forward_RenderDriver();
 IHRRenderDriver* CreateOpenGL32Deferred_RenderDriver();
 
+IHRRenderDriver* CreateOpenGL3_Utilty_RenderDriver();
+
 static constexpr bool LEGACY_DRIVER_DEBUG = false;
 
 /**

@@ -61,11 +61,11 @@ namespace GL_RENDER_DRIVER_UTILS
     program.SetUniform(name, unit);
   }
 
-  void bindTextureBuffer(const ShaderProgram &program, int unit, const std::string &name, GLuint tbo, GLuint textureId)
+  void bindTextureBuffer(const ShaderProgram &program, int unit, const std::string &name, GLuint tbo, GLuint textureId, GLenum format)
   {
     glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(GL_TEXTURE_BUFFER, textureId);
-    glTexBuffer(GL_TEXTURE_BUFFER, GL_R32F, tbo);
+    glTexBuffer(GL_TEXTURE_BUFFER, format, tbo);
 
     program.SetUniform(name, unit);
   }
@@ -1143,7 +1143,7 @@ namespace GL_RENDER_DRIVER_UTILS
 
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
-  GLuint CreateEmptyTex(GLint format, GLenum internalFormat, GLsizei width, GLsizei height, bool isFloat)
+  GLuint CreateEmptyTex(GLenum format, GLenum internalFormat, GLsizei width, GLsizei height, GLenum type)
   {
     GLuint texture;
 
@@ -1156,14 +1156,7 @@ namespace GL_RENDER_DRIVER_UTILS
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    if (isFloat)
-    {
-      glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_FLOAT, NULL);
-    } 
-    else
-    {
-      glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, NULL);
-    }
+    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, NULL);
 
     return texture;
   }
@@ -1186,7 +1179,7 @@ namespace GL_RENDER_DRIVER_UTILS
       glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, renderTextures[i], 0);
     }
 
-    depthTex = CreateEmptyTex(GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, width, height);
+    depthTex = CreateEmptyTex(GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, width, height, GL_UNSIGNED_BYTE);
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTex, 0);
 
     GLenum fboStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -1212,6 +1205,7 @@ namespace GL_RENDER_DRIVER_UTILS
   RenderTexture2D::~RenderTexture2D()
   {
     glDeleteTextures(RTEX_NUM_TEXTURES, renderTextures);
+    glDeleteTextures(1, &depthTex);
     for (int i = 0; i < RTEX_NUM_TEXTURES; ++i)
       renderTextures[i] = -1;
 
@@ -1296,6 +1290,7 @@ namespace GL_RENDER_DRIVER_UTILS
   GBuffer::~GBuffer()
   {
     glDeleteTextures(GBUF_NUM_TEXTURES, renderTextures);
+    glDeleteTextures(1, &depthTex);
     for (int i = 0; i < GBUF_NUM_TEXTURES; ++i)
       renderTextures[i] = -1;
 
@@ -1341,6 +1336,90 @@ namespace GL_RENDER_DRIVER_UTILS
 
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
+
+
+  LODBuffer::LODBuffer(GLsizei width, GLsizei height) : width(width), height(height)
+  {
+    glGenFramebuffers(1, &frameBufferObject);
+    glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObject);
+
+    for (int i = 0; i < LODBUF_NUM_TEXTURES; ++i)
+    {
+      renderTextures[i] = CreateEmptyTex(GL_RGBA_INTEGER, GL_RGBA32I, width, height, GL_INT);//GL_RGBA32I
+      glFramebufferTexture(GL_FRAMEBUFFER, GLenum(GL_COLOR_ATTACHMENT0 + i), renderTextures[i], 0);
+    }
+
+    depthTex = CreateEmptyTex(GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, width, height, GL_UNSIGNED_BYTE);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTex, 0);
+
+    GLenum fboStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
+      std::cout << "(LODBuffer) Framebuffer is not complete" << std::endl;
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  }
+
+  void LODBuffer::ResizeAttachments(GLsizei width, GLsizei height)
+  {
+    for (int i = 0; i < LODBUF_NUM_TEXTURES; ++i)
+    {
+      glBindTexture(GL_TEXTURE_2D, renderTextures[i]);
+
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32I, width, height, 0, GL_RGBA, GL_INT, NULL);
+    }
+    glBindTexture(GL_TEXTURE_2D, depthTex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
+  }
+
+
+  void LODBuffer::FrameInit()
+  {
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frameBufferObject);
+    glClear(GL_COLOR_BUFFER_BIT);
+  }
+
+  LODBuffer::~LODBuffer()
+  {
+    glDeleteTextures(LODBUF_NUM_TEXTURES, renderTextures);
+    glDeleteTextures(1, &depthTex);
+    for (int i = 0; i < LODBUF_NUM_TEXTURES; ++i)
+      renderTextures[i] = -1;
+
+    glDeleteFramebuffers(1, &frameBufferObject);
+  }
+
+  void LODBuffer::StartRendering()
+  {
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frameBufferObject);
+
+    GLenum attachments[LODBUF_NUM_TEXTURES];
+
+    for (int i = 0; i < LODBUF_NUM_TEXTURES; ++i)
+      attachments[i] = GLenum(GL_COLOR_ATTACHMENT0 + i);
+
+    glDrawBuffers(LODBUF_NUM_TEXTURES, attachments);
+  }
+
+
+  void LODBuffer::EndRendering()
+  {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  }
+
+  GLuint LODBuffer::GetTextureId(LODBUF_TEXTURE_TYPE type)
+  {
+    if (type == LODBUF_NUM_TEXTURES)
+      return -1;
+    else
+      return renderTextures[type];
+  }
+
+
+//////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+
+
+
 
   SSAOBuffer::SSAOBuffer(GLsizei width, GLsizei height, int samples, float radius) : width(width), height(height), numSamples(samples), radius(radius)
   {
