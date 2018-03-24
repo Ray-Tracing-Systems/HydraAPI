@@ -159,6 +159,9 @@
     <ClCompile Include="RenderDriverOpenGL1_TestCustomAttributes.cpp">
       <Filter>Source\RenderDrivers</Filter>
     </ClCompile>
+    <ClCompile Include="RenderDriverOpenGL3_Utility.cpp">
+      <Filter>Source\RenderDrivers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LiteMath.h">
@@ -232,6 +235,9 @@
     </ClInclude>
     <ClInclude Include="HydraLegacyUtils.h">
       <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderDriverOpenGL3_Utility.h">
+      <Filter>Source\RenderDrivers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -191,6 +191,7 @@
     <ClCompile Include="RenderDriverOpenGL1DebugDrawRays.cpp" />
     <ClCompile Include="RenderDriverOpenGL32Deferred.cpp" />
     <ClCompile Include="RenderDriverOpenGL32Forward.cpp" />
+    <ClCompile Include="RenderDriverOpenGL3_Utility.cpp" />
     <ClCompile Include="ssemath.cpp" />
     <ClCompile Include="SystemWin.cpp" />
     <ClCompile Include="VirtualBuffer.cpp" />
@@ -218,6 +219,7 @@
     <ClInclude Include="RenderDriverOpenGL1.h" />
     <ClInclude Include="RenderDriverOpenGL32Deferred.h" />
     <ClInclude Include="RenderDriverOpenGL32Forward.h" />
+    <ClInclude Include="RenderDriverOpenGL3_Utility.h" />
     <ClInclude Include="RenderDriverOpenGLCoreProfile.h" />
     <ClInclude Include="ssemath.h" />
     <ClInclude Include="xxhash.h" />
