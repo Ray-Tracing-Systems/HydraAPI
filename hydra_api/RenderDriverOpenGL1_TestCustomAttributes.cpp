@@ -14,17 +14,21 @@ bool RD_OGL1_ShowCustomAttr::UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshN
 
   bool invalidMaterial    = (m_diffTexId.size() == 0);
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////// get custom aatrib pointers 
+  
   const float* color4f    = nullptr;
   const float* darkness1f = nullptr;
 
-  auto p1 = a_input.customVertexf.find(L"color");
-  auto p2 = a_input.customVertexf.find(L"darkness");
-
-  if (p1 != a_input.customVertexf.end() && p1->second.type == L"array4f")
-    color4f = p1->second.fdata;
-
-  if (p2 != a_input.customVertexf.end() && p2->second.type == L"array1f")
-    darkness1f = p2->second.fdata;
+  pugi::xml_node colorNode = a_meshNode.child(L"color");
+  pugi::xml_node darkNode  = a_meshNode.child(L"darkness");
+   
+  if (colorNode != nullptr)
+    color4f = (float*)(a_input.allData + colorNode.attribute(L"offset").as_int());
+  
+  if(darkNode != nullptr)
+    darkness1f = (float*)(a_input.allData + darkNode.attribute(L"offset").as_int());
+  
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   glNewList(m_displayLists + GLuint(a_meshId), GL_COMPILE);
 
