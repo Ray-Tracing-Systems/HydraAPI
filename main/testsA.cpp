@@ -4539,10 +4539,11 @@ bool test77_save_gbuffer_layers()
   hrMaterialOpen(mat8, HR_WRITE_DISCARD);
   {
     xml_node matNode = hrMaterialParamNode(mat8);
-    xml_node diff = matNode.append_child(L"diffuse");
+    matNode.attribute(L"type").set_value(L"shadow_catcher");
+    /*xml_node diff = matNode.append_child(L"diffuse");
 
     diff.append_attribute(L"brdf_type").set_value(L"lambert");
-    diff.append_child(L"color").text().set(L"0.5 0.5 0.5");
+    diff.append_child(L"color").text().set(L"0.5 0.5 0.5");*/
   }
   hrMaterialClose(mat8);
 
@@ -4700,7 +4701,7 @@ bool test77_save_gbuffer_layers()
     node.append_child(L"method_primary").text()   = L"pathtracing"; // L"pathtracing"; // L"lighttracing"; // IBPT
     node.append_child(L"trace_depth").text()      = 5;
     node.append_child(L"diff_trace_depth").text() = 3;
-    node.append_child(L"maxRaysPerPixel").text()  = 1024;
+    node.append_child(L"maxRaysPerPixel").text()  = 512;
     node.append_child(L"evalgbuffer").text()      = 1;
   }
   hrRenderClose(renderRef);
@@ -4789,6 +4790,7 @@ bool test77_save_gbuffer_layers()
   hrRenderSaveGBufferLayerLDR(renderRef, L"tests_images/test_77/z_out6.png", L"alpha");
   hrRenderSaveGBufferLayerLDR(renderRef, L"tests_images/test_77/z_out7.png", L"shadow");
 
+
   const unsigned int palette[20] = { 0xffff0000, 0xff00ff00, 0xff0000ff, 0xff0082c8,
                                      0xfff58231, 0xff911eb4, 0xff46f0f0, 0xfff032e6,
                                      0xffd2f53c, 0xfffabebe, 0xff008080, 0xffe6beff,
@@ -4800,8 +4802,9 @@ bool test77_save_gbuffer_layers()
   hrRenderSaveGBufferLayerLDR(renderRef, L"tests_images/test_77/z_out10.png", L"instid", (const int32_t*)palette, 20);
 
   hrRenderSaveGBufferLayerLDR(renderRef, L"tests_images/test_77/z_out11.png", L"coverage");
+  hrRenderSaveGBufferLayerLDR(renderRef, L"tests_images/test_77/z_out12.png", L"catcher");
 
-  return check_images("test_77", 11, 25.0f);
+  return check_images("test_77", 12, 25.0f);
 }
 
 bool test78_material_remap_list1()
