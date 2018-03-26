@@ -431,9 +431,9 @@ void test02_draw(void)
     pugi::xml_node node = hrRenderParamNode(renderRef);
 
     node.force_child(L"draw_solid").text()    = 1;
-    node.force_child(L"draw_wire").text()     = 1;
+    node.force_child(L"draw_wire").text()     = 0;
     node.force_child(L"draw_normals").text()  = 1;
-    node.force_child(L"draw_tangents").text() = 0;
+    node.force_child(L"draw_tangents").text() = 1;
     node.force_child(L"draw_length").text()   = 0.01f;
 
     node.force_child(L"draw_axis").text()            = 0;

@@ -91,14 +91,14 @@ int main(int argc, const char** argv)
 
   try
   {
-	  //run_all_geo_tests();
-    //run_all_mtl_tests();
-    //run_all_lgt_tests();
-    //run_all_api_tests();
-    //run_all_ipp_tests();
+	  run_all_geo_tests();
+    run_all_mtl_tests();
+    run_all_lgt_tests();
+    run_all_api_tests();
+    run_all_ipp_tests();
 
     //test42_load_library_basic();
-    test81_custom_attributes();
+    //test81_custom_attributes();
 
     //test1000_loadlibrary_and_edit();
     //test1001_loadlibrary_and_add_textures();
