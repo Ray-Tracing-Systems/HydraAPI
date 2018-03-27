@@ -290,7 +290,7 @@ HAPI bool hrRenderSaveGBufferLayerLDR(const HRRenderRef a_pRender, const wchar_t
       ExtractAlphaLine(&gbufferLine[0], &imageLDR[y*width], width);
     else if (lname == L"shadow")
       ExtractShadowLine(&gbufferLine[0], &imageLDR[y*width], width);
-    else if (lname == L"matid" || lname == L"mid")
+    else if (lname == L"matid" || lname == L"mid" || lname == L"catcher")
       ExtractMaterialId(&gbufferLine[0], &imageLDR[y*width], width);
     else if (lname == L"objid")
       ExtractObjId(&gbufferLine[0], &imageLDR[y*width], width);
@@ -299,7 +299,7 @@ HAPI bool hrRenderSaveGBufferLayerLDR(const HRRenderRef a_pRender, const wchar_t
     else if (lname == L"coverage")
       ExtractCoverage(&gbufferLine[0], &imageLDR[y*width], width);
 
-    if (lname == L"matid" || lname == L"mid" || lname == L"objid" || lname == L"instid")
+    if (lname == L"matid" || lname == L"mid" || lname == L"objid" || lname == L"instid" )
     {
       unsigned int* line = (unsigned int*)&imageLDR[y*width];
       for (int x = 0; x < width; x++)
@@ -310,6 +310,21 @@ HAPI bool hrRenderSaveGBufferLayerLDR(const HRRenderRef a_pRender, const wchar_t
         else
           line[x] = palette[index % paletteSize];
       }
+    }
+
+    if(lname == L"catcher")
+    {
+      unsigned int* line = (unsigned int*)&imageLDR[y*width];
+      for (int x = 0; x < width; x++)
+      {
+        const int index = gbufferLine[x].matId;// & 0x00FFFFFF;
+
+        if (g_objManager.scnData.m_shadowCatchers.find(index) != g_objManager.scnData.m_shadowCatchers.end())
+          line[x] = 0x00FFFFFF;
+        else
+          line[x] = 0;
+      }
+
     }
   }
 
