@@ -433,7 +433,7 @@ The first example is "faloff" - a blend of 2 textures depends on dot(viewVector,
 Next, a "dirt" which use ambient occlusion approximation but can further can go to any material stot.
 
 The internal implementation of "faloff", "dirt" and other is very different from traditional approaches and can be changed in future.
-For example, "faloff" is transformed to BRDF Blend when constructing BRDF tree from HydraMaterial.
+For example, "faloff" can be transformed to BRDF Blend when constructing BRDF tree from HydraMaterial.
 
 */
 
@@ -443,9 +443,10 @@ HAPI HRTextureNodeRef  hrTextureCreateAdvanced(const wchar_t* a_texType, const w
 /**
 \brief open node to change it's parameters. Usually this is needed for "Advanced Texture" HRTextureNode or any other complex node type can be opened and changed
 \param a_pResource - a pointer to advanced texture
+\param a_openMode  - open mode
 
 */
-HAPI void              hrTextureNodeOpen(HRTextureNodeRef a_pResource);
+HAPI void              hrTextureNodeOpen(HRTextureNodeRef a_pResource, HR_OPEN_MODE a_openMode);
 
 /**
 \brief close node

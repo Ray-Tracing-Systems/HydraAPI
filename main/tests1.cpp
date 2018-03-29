@@ -1316,7 +1316,7 @@ bool test17_falloff()
 		HRTextureNodeRef testTex = hrTextureCreateAdvanced(L"falloff", L"fu_1");
 		hrTextureBind(testTex, diff);
 
-		hrTextureNodeOpen(testTex);
+		hrTextureNodeOpen(testTex, HR_WRITE_DISCARD);
 		{
 			xml_node texNode = hrTextureParamNode(testTex);
 
@@ -1343,7 +1343,7 @@ bool test17_falloff()
 		HRTextureNodeRef testTex = hrTextureCreateAdvanced(L"falloff", L"fu_1");
 		hrTextureBind(testTex, diff);
 
-		hrTextureNodeOpen(testTex);
+		hrTextureNodeOpen(testTex, HR_WRITE_DISCARD);
 		{
 			xml_node texNode = hrTextureParamNode(testTex);
 
