@@ -22,10 +22,17 @@ vec3 colorMap(float f)
 }
 
 
+const int texIdBits = 0x00FFFFFF;
+const int mipLevelBits = 0xFF000000;
+
+
 void main(void)
 {
   ivec4 val = texture(debugTex, fragmentTexCoord);
 
+  int diffuseMipLevel = val.g >> 24;
+  int diffuseTexId = val.g & texIdBits;
+
   //fragColor = vec4(colorMap(color.x/10.0f), 1.0f);
-  fragColor = vec4(colorMap(val.g/10.0f), 1.0f); //color.rgb
+  fragColor = vec4(colorMap(diffuseMipLevel/10.0f), 1.0f); //color.rgb
 }
