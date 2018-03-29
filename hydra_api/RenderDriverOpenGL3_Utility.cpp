@@ -49,19 +49,19 @@ HRDriverAllocInfo RD_OGL32_Utility::AllocAll(HRDriverAllocInfo a_info)
   m_lodBufferProgram = ShaderProgram(lodBufferShaders);
 
   std::unordered_map<GLenum, std::string> quadShaders;
-  quadShaders[GL_VERTEX_SHADER] = "../glsl/vQuad.glsl";
-  quadShaders[GL_FRAGMENT_SHADER] = "../glsl/fQuad.glsl";
+  quadShaders[GL_VERTEX_SHADER] = "../glsl/vQuad.vert";
+  quadShaders[GL_FRAGMENT_SHADER] = "../glsl/fQuadDebug.frag";
   m_quadProgram = ShaderProgram(quadShaders);
 
 
-  m_materials_pt1.resize(a_info.matNum);
-  m_materials_pt2.resize(a_info.matNum);
+  m_materials_pt1.resize(a_info.matNum, int4(-1, -1, -1, -1));
+  m_materials_pt2.resize(a_info.matNum, int4(-1, -1, -1, -1));
+
 
   glGenTextures(1, &m_whiteTex);
   CreatePlaceholderWhiteTexture(m_whiteTex);
 
-  glGenBuffers(2, m_materialsTBOs);
-  glGenTextures(2, m_materialsTBOTexIds);
+  CreateMaterialsTBO();
   CreateMatricesUBO();
 
   return a_info;
@@ -139,15 +139,16 @@ bool RD_OGL32_Utility::UpdateMaterial(int32_t a_matId, pugi::xml_node a_material
   if (bumpTex  != nullptr)
     bumpTexId = bumpTex.attribute(L"id").as_int();
 
-/*
+
   int4 mat_pt1 = int4(emissionTexId, diffuseTexId, reflectTexId, reflectGlossTexId);
   int4 mat_pt2 = int4(transparencyTexId, opacityTexId, translucencyTexId, bumpTexId);
-*/
-  int4 mat_pt1 = int4(3, 3, 3, 3);
-  int4 mat_pt2 = int4(4, 4, 4, 4);
+
+//  int4 mat_pt1 = int4(3, 4, 5, 6);
+//  int4 mat_pt2 = int4(7, 8, 9, 10);
 
   m_materials_pt1.at(mat_id) = mat_pt1;
   m_materials_pt2.at(mat_id) = mat_pt2;
+
 
   return true;
 }
@@ -325,7 +326,6 @@ void RD_OGL32_Utility::BeginScene(pugi::xml_node a_sceneNode)
   glViewport(0, 0, (GLint)m_width, (GLint)m_height);
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-  m_lodBuffer->FrameInit();
   m_lodBufferProgram.StartUseShader();
   m_lodBuffer->StartRendering();
 
@@ -345,8 +345,8 @@ void RD_OGL32_Utility::BeginScene(pugi::xml_node a_sceneNode)
   std::vector<float4x4> matrices{lookAt , projection };
 
   glBindBuffer(GL_UNIFORM_BUFFER, m_matricesUBO);
-  glBufferData(GL_UNIFORM_BUFFER, 32 * sizeof(GLfloat), &matrices[0], GL_STATIC_DRAW);
-  //glBufferSubData(GL_UNIFORM_BUFFER, 0, 32 * sizeof(GL_FLOAT), &matrices[0]);
+  //glBufferData(GL_UNIFORM_BUFFER, 32 * sizeof(GLfloat), &matrices[0], GL_STATIC_DRAW);
+  glBufferSubData(GL_UNIFORM_BUFFER, 0, 32 * sizeof(GL_FLOAT), &matrices[0]);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
   SetMaterialsTBO();
@@ -357,7 +357,6 @@ void RD_OGL32_Utility::BeginScene(pugi::xml_node a_sceneNode)
 void RD_OGL32_Utility::EndScene()
 {
 
-  std::cout << "EndScene" <<std::endl;
   m_lodBuffer->EndRendering();
 
   std::vector<int> texture_data(m_width * m_height * 4);
@@ -365,12 +364,12 @@ void RD_OGL32_Utility::EndScene()
   glBindTexture(GL_TEXTURE_2D, m_lodBuffer->GetTextureId(LODBuffer::LODBUF_TEX_1));
   glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA_INTEGER, GL_INT, &texture_data[0]);
 
+  m_quadProgram.StartUseShader();
+  bindTexture(m_quadProgram, 0, "debugTex", m_lodBuffer->GetTextureId(LODBuffer::LODBUF_TEX_1));
 
- /* m_quadProgram.SetUniform("exposure", 2.0f);
-  //bindTexture(m_quadProgram, 0, "colorTexture", m_ssaoBuffer->GetTextureId(SSAOBuffer::SSAO_BLUR));
-  bindTexture(m_quadProgram, 0, "colorTexture", m_lodBuffer->GetTextureId(LODBuffer::LODBUF_TEX_1));
+  m_quad->Draw();
 
-  m_quad->Draw();*/
+  //m_quadProgram.StopUseShader();
 
   /* Direct copy of render texture to the default framebuffer */
   /*
@@ -386,6 +385,7 @@ void RD_OGL32_Utility::InstanceMeshes(int32_t a_mesh_id, const float *a_matrices
                                        const int *a_lightInstId, const int* a_remapId)
 {
   // std::cout << "InstanceMeshes" <<std::endl;
+
   for (int32_t i = 0; i < a_instNum; i++)
   {
     float modelM[16];
@@ -418,22 +418,37 @@ void RD_OGL32_Utility::InstanceLights(int32_t a_light_id, const float *a_matrix,
 
 }
 
+void RD_OGL32_Utility::CreateMaterialsTBO()
+{
+  glGenBuffers(2, m_materialsTBOs);
+
+  glBindBuffer(GL_TEXTURE_BUFFER, m_materialsTBOs[0]);
+  glBufferData(GL_TEXTURE_BUFFER, sizeof(int32_t) * 4 * m_materials_pt1.size(), nullptr, GL_STATIC_DRAW);
+  glGenTextures(1, &m_materialsTBOTexIds[0]);
+
+  glBindBuffer(GL_TEXTURE_BUFFER, m_materialsTBOs[1]);
+  glBufferData(GL_TEXTURE_BUFFER, sizeof(int32_t) * 4 * m_materials_pt2.size(), nullptr, GL_STATIC_DRAW);
+  glGenTextures(1, &m_materialsTBOTexIds[1]);
+
+  glBindBuffer(GL_TEXTURE_BUFFER, 0);
+}
+
 void RD_OGL32_Utility::SetMaterialsTBO()
 {
   glBindBuffer(GL_TEXTURE_BUFFER, m_materialsTBOs[0]);
-  glBufferData(GL_TEXTURE_BUFFER, sizeof(int) * 4 * m_materials_pt1.size(), &m_materials_pt1[0], GL_STATIC_DRAW);
+  glBufferSubData(GL_TEXTURE_BUFFER, 0,  sizeof(int) * 4 * m_materials_pt1.size(), &m_materials_pt1[0]);
 
   glBindBuffer(GL_TEXTURE_BUFFER, m_materialsTBOs[1]);
-  glBufferData(GL_TEXTURE_BUFFER, sizeof(int) * 4 * m_materials_pt2.size(), &m_materials_pt2[0], GL_STATIC_DRAW);
+  glBufferSubData(GL_TEXTURE_BUFFER, 0,  sizeof(int) * 4 * m_materials_pt2.size(), &m_materials_pt2[0]);
 
   glBindBuffer(GL_TEXTURE_BUFFER, 0);
 }
 
 void RD_OGL32_Utility::CreateMatricesUBO()
 {
-  GLuint uboIndexGBuffer   = glGetUniformBlockIndex(m_lodBufferProgram.GetProgram(), "matrixBuffer");
+  GLuint uboIndexLODBuffer   = glGetUniformBlockIndex(m_lodBufferProgram.GetProgram(), "matrixBuffer");
 
-  glUniformBlockBinding(m_lodBufferProgram.GetProgram(),    uboIndexGBuffer,   m_matricesUBOBindingPoint);
+  glUniformBlockBinding(m_lodBufferProgram.GetProgram(),    uboIndexLODBuffer,   m_matricesUBOBindingPoint);
 
   GLsizei matricesUBOSize = 32 * sizeof(GLfloat);
 

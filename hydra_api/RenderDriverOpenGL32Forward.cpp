@@ -42,15 +42,15 @@ HRDriverAllocInfo RD_OGL32_Forward::AllocAll(HRDriverAllocInfo a_info)
   std::cout << getexepath();
 
   std::unordered_map<GLenum, std::string> simpleRender;
-  simpleRender[GL_VERTEX_SHADER] = "../glsl/vSimple.glsl";
-  simpleRender[GL_FRAGMENT_SHADER] = "../glsl/fSimple.glsl";
+  simpleRender[GL_VERTEX_SHADER] = "../glsl/vSimple.vert";
+  simpleRender[GL_FRAGMENT_SHADER] = "../glsl/fSimple.frag";
 
   m_matProgram = ShaderProgram(simpleRender);
 
 
   std::unordered_map<GLenum, std::string> quadShaders;
-  quadShaders[GL_VERTEX_SHADER] = "../glsl/vQuad.glsl";
-  quadShaders[GL_FRAGMENT_SHADER] = "../glsl/fQuad.glsl";
+  quadShaders[GL_VERTEX_SHADER] = "../glsl/vQuad.vert";
+  quadShaders[GL_FRAGMENT_SHADER] = "../glsl/fQuad.frag";
 
   m_quadProgram = ShaderProgram(quadShaders);
 

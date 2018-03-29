@@ -64,28 +64,28 @@ HRDriverAllocInfo RD_OGL32_Deferred::AllocAll(HRDriverAllocInfo a_info)
   m_libPath = std::wstring(a_info.libraryPath);
 
   std::unordered_map<GLenum, std::string> gBufferShaders;
-  gBufferShaders[GL_VERTEX_SHADER] = "../glsl/vGBuffer.glsl";
-  gBufferShaders[GL_FRAGMENT_SHADER] = "../glsl/fGBuffer.glsl";
+  gBufferShaders[GL_VERTEX_SHADER] = "../glsl/vGBuffer.vert";
+  gBufferShaders[GL_FRAGMENT_SHADER] = "../glsl/fGBuffer.frag";
   m_gBufferProgram = ShaderProgram(gBufferShaders);
 
   std::unordered_map<GLenum, std::string> defferedShaders;
-  defferedShaders[GL_VERTEX_SHADER] = "../glsl/vDeferredShading.glsl";
-  defferedShaders[GL_FRAGMENT_SHADER] = "../glsl/fDeferredShading.glsl";
+  defferedShaders[GL_VERTEX_SHADER] = "../glsl/vDeferredShading.vert";
+  defferedShaders[GL_FRAGMENT_SHADER] = "../glsl/fDeferredShading.frag";
   m_lightPassProgram = ShaderProgram(defferedShaders);
 
   std::unordered_map<GLenum, std::string> stencilShaders;
-  stencilShaders[GL_VERTEX_SHADER] = "../glsl/vNothing.glsl";
-  stencilShaders[GL_FRAGMENT_SHADER] = "../glsl/fNothing.glsl";
+  stencilShaders[GL_VERTEX_SHADER] = "../glsl/vNothing.vert";
+  stencilShaders[GL_FRAGMENT_SHADER] = "../glsl/fNothing.frag";
   m_stencilProgram = ShaderProgram(stencilShaders);
 
   std::unordered_map<GLenum, std::string> quadShaders;
-  quadShaders[GL_VERTEX_SHADER] = "../glsl/vQuad.glsl";
-  quadShaders[GL_FRAGMENT_SHADER] = "../glsl/fQuad.glsl";
+  quadShaders[GL_VERTEX_SHADER] = "../glsl/vQuad.vert";
+  quadShaders[GL_FRAGMENT_SHADER] = "../glsl/fQuad.frag";
   m_quadProgram = ShaderProgram(quadShaders);
 
   std::unordered_map<GLenum, std::string> lightShaders;
-  lightShaders[GL_VERTEX_SHADER] = "../glsl/vLights.glsl";
-  lightShaders[GL_FRAGMENT_SHADER] = "../glsl/fLights.glsl";
+  lightShaders[GL_VERTEX_SHADER] = "../glsl/vLights.vert";
+  lightShaders[GL_FRAGMENT_SHADER] = "../glsl/fLights.frag";
   m_lightsProgram = ShaderProgram(lightShaders);
 /*  std::unordered_map<GLenum, std::string> ssaoShaders;
   ssaoShaders[GL_VERTEX_SHADER] = "../glsl/vSSAO.glsl";
@@ -490,8 +490,8 @@ void RD_OGL32_Deferred::BeginScene(pugi::xml_node a_sceneNode)
   std::vector<float4x4> matrices{lookAt , projection };
 
   glBindBuffer(GL_UNIFORM_BUFFER, m_matricesUBO);
-  glBufferData(GL_UNIFORM_BUFFER, 32 * sizeof(GLfloat), &matrices[0], GL_STATIC_DRAW);
-  //glBufferSubData(GL_UNIFORM_BUFFER, 0, 32 * sizeof(GLfloat), &matrices[0]);
+  //glBufferData(GL_UNIFORM_BUFFER, 32 * sizeof(GLfloat), &matrices[0], GL_STATIC_DRAW);
+  glBufferSubData(GL_UNIFORM_BUFFER, 0, 32 * sizeof(GLfloat), &matrices[0]);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 

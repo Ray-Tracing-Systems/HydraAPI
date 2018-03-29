@@ -28,8 +28,8 @@ using namespace HydraXMLHelpers;
 
 GLFWwindow* g_window = nullptr;
 Input g_input;
-int   g_width  = 1600;
-int   g_height = 900;
+int   g_width  = 1024;
+int   g_height = 1024;
 int   g_ssao = 1;
 int   g_lightgeo = 0;
 static int g_filling = 0;
@@ -475,7 +475,7 @@ void window_main_free_look(const wchar_t* a_libPath, const wchar_t* a_renderName
 /*
  * comment this for better performance when not debugging
  * */
- /* if(!wcscmp(a_renderName, L"opengl32Forward") || !wcscmp(a_renderName, L"opengl32Deferred"))
+  if(!wcscmp(a_renderName, L"opengl32Forward") || !wcscmp(a_renderName, L"opengl32Deferred") || !wcscmp(a_renderName, L"opengl3Utility"))
   {
     GLint flags = 0;
     glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
@@ -487,7 +487,7 @@ void window_main_free_look(const wchar_t* a_libPath, const wchar_t* a_renderName
       glDebugMessageCallback(glDebugOutput, nullptr);
       glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
     }
-  }*/
+  }
 /*
  *
  * */
