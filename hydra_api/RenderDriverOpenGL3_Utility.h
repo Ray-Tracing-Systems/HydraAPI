@@ -56,6 +56,7 @@ protected:
 
     void SetMaterialsTBO();
     void CreateMatricesUBO();
+    void CreateMaterialsTBO();
 
     std::wstring m_libPath;
 

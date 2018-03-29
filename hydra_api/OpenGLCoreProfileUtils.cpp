@@ -1372,12 +1372,6 @@ namespace GL_RENDER_DRIVER_UTILS
   }
 
 
-  void LODBuffer::FrameInit()
-  {
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frameBufferObject);
-    glClear(GL_COLOR_BUFFER_BIT);
-  }
-
   LODBuffer::~LODBuffer()
   {
     glDeleteTextures(LODBUF_NUM_TEXTURES, renderTextures);
@@ -1391,6 +1385,7 @@ namespace GL_RENDER_DRIVER_UTILS
   void LODBuffer::StartRendering()
   {
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frameBufferObject);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     GLenum attachments[LODBUF_NUM_TEXTURES];
 
@@ -1404,6 +1399,7 @@ namespace GL_RENDER_DRIVER_UTILS
   void LODBuffer::EndRendering()
   {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
 
   GLuint LODBuffer::GetTextureId(LODBUF_TEXTURE_TYPE type)
@@ -1425,13 +1421,13 @@ namespace GL_RENDER_DRIVER_UTILS
   {
 
     std::unordered_map<GLenum, std::string> ssaoShaders;
-    ssaoShaders[GL_VERTEX_SHADER] = "../glsl/vSSAO.glsl";
-    ssaoShaders[GL_FRAGMENT_SHADER] = "../glsl/fSSAO.glsl";
+    ssaoShaders[GL_VERTEX_SHADER] = "../glsl/vSSAO.vert";
+    ssaoShaders[GL_FRAGMENT_SHADER] = "../glsl/fSSAO.frag";
     ssaoProgram = ShaderProgram(ssaoShaders);
 
     std::unordered_map<GLenum, std::string> ssaoBlurShaders;
-    ssaoBlurShaders[GL_VERTEX_SHADER] = "../glsl/vSSAOBlur.glsl";
-    ssaoBlurShaders[GL_FRAGMENT_SHADER] = "../glsl/fSSAOBlur.glsl";
+    ssaoBlurShaders[GL_VERTEX_SHADER] = "../glsl/vSSAOBlur.vert";
+    ssaoBlurShaders[GL_FRAGMENT_SHADER] = "../glsl/fSSAOBlur.frag";
     ssaoBlurProgram = ShaderProgram(ssaoBlurShaders);
 
     glGenFramebuffers(1, &fbo);

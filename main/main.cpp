@@ -106,11 +106,11 @@ int main(int argc, const char** argv)
     //test1003_get_light_by_name_and_edit();
     //test1004_get_camera_by_name_and_edit();
 
-    std::cout << MTL_TESTS::test_126_bump_amount() << std::endl;
-    std::cout << MTL_TESTS::test_127_normal_map_height() << std::endl;
-    std::cout << MTL_TESTS::test_128_bump_radius() << std::endl;
-    std::cout << MTL_TESTS::test_130_bump_invert_normalY() << std::endl;
-    std::cout << MTL_TESTS::test_139_glass_and_bump() << std::endl;
+//    std::cout << MTL_TESTS::test_126_bump_amount() << std::endl;
+//    std::cout << MTL_TESTS::test_127_normal_map_height() << std::endl;
+//    std::cout << MTL_TESTS::test_128_bump_radius() << std::endl;
+//    std::cout << MTL_TESTS::test_130_bump_invert_normalY() << std::endl;
+//    std::cout << MTL_TESTS::test_139_glass_and_bump() << std::endl;
 
     //std::cout << test1015_merge_scene_with_remaps() << std::endl;
     //std::cout << test1016_merge_scene_remap_override() << std::endl;
@@ -144,7 +144,8 @@ int main(int argc, const char** argv)
 
     //window_main_free_look(L"tests/test_gl32_002_", L"opengl32Deferred", &test_gl32_002_init, &test_gl32_002_draw);
     //window_main_free_look(L"tests/lucy_deferred", L"opengl32Deferred", &test_gl32_001_init, &test_gl32_001_draw);
-    //window_main_free_look(L"tests/lucy_deferred", L"opengl3Utility", &test_gl32_001_init, &test_gl32_001_draw);
+    window_main_free_look(L"tests/lucy_deferred", L"opengl3Utility", &test_gl32_001_init, &test_gl32_001_draw);
+    //window_main_free_look(L"tests/test_gl32_002_", L"opengl3Utility", &test_gl32_002_init, &test_gl32_002_draw);
     //window_main_free_look(L"tests/zgl1_test_cube", L"opengl32Deferred", &test02_init, &test02_draw);
     //window_main_free_look(L"C:/[Hydra]/pluginFiles/scenelib", L"opengl1Debug", nullptr, &test02_draw);
     //window_main_free_look(L"tests/zgl1_test_cube", L"opengl32Forward", &test_gl32_001_init, &test_gl32_001_draw);
