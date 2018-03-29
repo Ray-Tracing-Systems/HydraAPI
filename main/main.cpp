@@ -117,7 +117,7 @@ int main(int argc, const char** argv)
     //std::cout << test78_material_remap_list1() << std::endl;
     //std::cout << test79_material_remap_list2() << std::endl;
     //std::cout << test77_save_gbuffer_layers() << std::endl;
-    test82_proc_texture();
+    //test82_proc_texture();
 
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
     //GEO_TESTS::test_005_instancing();
@@ -139,7 +139,7 @@ int main(int argc, const char** argv)
 
     //window_main_free_look(L"tests/test_gl32_002_", L"opengl32Deferred", &test_gl32_002_init, &test_gl32_002_draw);
     //window_main_free_look(L"tests/lucy_deferred", L"opengl32Deferred", &test_gl32_001_init, &test_gl32_001_draw);
-    //window_main_free_look(L"tests/lucy_deferred", L"opengl3Utility", &test_gl32_001_init, &test_gl32_001_draw);
+    window_main_free_look(L"tests/lucy_deferred", L"opengl3Utility", &test_gl32_001_init, &test_gl32_001_draw);
     //window_main_free_look(L"tests/zgl1_test_cube", L"opengl32Deferred", &test02_init, &test02_draw);
     //window_main_free_look(L"C:/[Hydra]/pluginFiles/scenelib", L"opengl1Debug", nullptr, &test02_draw);
     //window_main_free_look(L"tests/zgl1_test_cube", L"opengl32Forward", &test_gl32_001_init, &test_gl32_001_draw);

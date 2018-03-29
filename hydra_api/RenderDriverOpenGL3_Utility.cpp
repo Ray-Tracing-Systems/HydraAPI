@@ -350,6 +350,8 @@ void RD_OGL32_Utility::BeginScene(pugi::xml_node a_sceneNode)
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
   SetMaterialsTBO();
+
+  m_lodBufferProgram.SetUniform("window_res", int2(m_width, m_height));
 }
 
 
