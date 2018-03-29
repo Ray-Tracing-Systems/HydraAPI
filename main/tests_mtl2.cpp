@@ -1581,7 +1581,7 @@ namespace MTL_TESTS
       HRTextureNodeRef testTex = hrTextureCreateAdvanced(L"falloff", L"fu_1");
       hrTextureBind(testTex, emission);
 
-      hrTextureNodeOpen(testTex);
+      hrTextureNodeOpen(testTex, HR_WRITE_DISCARD);
       {
         xml_node texNode = hrTextureParamNode(testTex);
 
@@ -1590,6 +1590,7 @@ namespace MTL_TESTS
 
         texNode.append_child(L"some_param1").text().set(L"some_value");
       }
+      hrTextureNodeClose(testTex);
 
       VERIFY_XML(matNode);
     }

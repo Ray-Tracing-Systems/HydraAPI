@@ -162,6 +162,7 @@ bool test78_material_remap_list1();
 bool test79_material_remap_list2();
 bool test80_lt_rect_image();
 bool test81_custom_attributes();
+bool test82_proc_texture();
 
 bool test90_check_xml_fail_lights();
 bool test91_check_xml_fail_lights();

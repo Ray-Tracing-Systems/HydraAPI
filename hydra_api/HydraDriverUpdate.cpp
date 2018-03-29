@@ -432,6 +432,8 @@ void UpdateImageFromFileOrChunk(int32_t a_id, HRTextureNode& img, IHRRenderDrive
       a_pDriver->UpdateImage(a_id, w, h, bpp, data + dataOffset, node);
       fin.close();
     }
+    else
+      a_pDriver->UpdateImage(a_id, w, h, bpp, nullptr, node);
   }
 
 }
