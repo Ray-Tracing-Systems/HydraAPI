@@ -629,7 +629,7 @@ HRMeshDriverInput HR_GetMeshDataPointers(size_t a_meshId)
   return input;
 }
 
-void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, const std::vector<HRBatchInfo>& a_batches, IHRRenderDriver* a_pDriver, const wchar_t* path)
+void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, const std::vector<HRBatchInfo>& a_batches, IHRRenderDriver* a_pDriver, const wchar_t* path, int64_t a_byteSize)
 {
   pugi::xml_node nodeXML    = mesh.xml_node_immediate();
   uint64_t       dataOffset = nodeXML.attribute(L"offset").as_ullong();
@@ -644,8 +644,6 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, const std::vector<HRBatchIn
   char* dataPtr = nullptr;
   auto chunkId  = mesh.pImpl->chunkId();
 
-  uint64_t offsetFix = 0;
-
   if (chunkId != uint64_t(-1))
   {
     ChunkPointer chunk = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
@@ -654,31 +652,25 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, const std::vector<HRBatchIn
     dataPtr = (char*)&g_objManager.m_tempBuffer[0];
 
     fin.read(dataPtr, chunk.sizeInBytes);
-    offsetFix = 0;
   }
   else
   {
-    HydraGeomData::Header header;
-    fin.read((char*)&header, sizeof(HydraGeomData::Header));
-
-    g_objManager.m_tempBuffer.resize(header.fileSizeInBytes / uint64_t(sizeof(int)) + uint64_t(sizeof(int) * 16));
+    g_objManager.m_tempBuffer.resize(a_byteSize / sizeof(int) + sizeof(int) * 16);
     dataPtr = (char*)&g_objManager.m_tempBuffer[0];
-    
-    fin.read(dataPtr, header.fileSizeInBytes);
-    offsetFix = sizeof(HydraGeomData::Header);
+    fin.read(dataPtr, a_byteSize);
   }
 
   HRMeshDriverInput input;
 
-  uint64_t offsetPos  = mesh.pImpl->offset(L"pos")  - offsetFix;
-  uint64_t offsetNorm = mesh.pImpl->offset(L"norm") - offsetFix;
-  uint64_t offsetTexc = mesh.pImpl->offset(L"texc") - offsetFix;
-  uint64_t offsetTang = mesh.pImpl->offset(L"tan") - offsetFix;
-  uint64_t offsetInd  = mesh.pImpl->offset(L"ind")  - offsetFix;
-  uint64_t offsetMInd = mesh.pImpl->offset(L"mind") - offsetFix;
+  uint64_t offsetPos  = mesh.pImpl->offset(L"pos");
+  uint64_t offsetNorm = mesh.pImpl->offset(L"norm");
+  uint64_t offsetTexc = mesh.pImpl->offset(L"texc");
+  uint64_t offsetTang = mesh.pImpl->offset(L"tan");
+  uint64_t offsetInd  = mesh.pImpl->offset(L"ind");
+  uint64_t offsetMInd = mesh.pImpl->offset(L"mind");
 
-  input.vertNum = nodeXML.attribute(L"vertNum").as_int();
-  input.triNum  = nodeXML.attribute(L"triNum").as_int();
+  input.vertNum       = nodeXML.attribute(L"vertNum").as_int();
+  input.triNum        = nodeXML.attribute(L"triNum").as_int();
 
   input.pos4f         = (float*)(dataPtr + offsetPos);
   input.norm4f        = (float*)(dataPtr + offsetNorm);
@@ -686,6 +678,7 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, const std::vector<HRBatchIn
   input.texcoord2f    = (float*)(dataPtr + offsetTexc);
   input.indices       = (int*)  (dataPtr + offsetInd);
   input.triMatIndices = (int*)  (dataPtr + offsetMInd);
+  input.allData       = dataPtr;
 
   a_pDriver->UpdateMesh(a_id, nodeXML, input, &a_batches[0], int32_t(a_batches.size()));
 
@@ -735,7 +728,10 @@ int32_t HR_DriverUpdateMeshes(HRSceneInst& scn, ChangeList& objList, IHRRenderDr
         else
         {
           scn.meshUsedByDrv.insert(*p);
-          UpdateMeshFromChunk(int32_t(*p), mesh, mlist, a_pDriver, path);
+
+          int64_t byteSize = meshNode.attribute(L"bytesize").as_llong();
+
+          UpdateMeshFromChunk(int32_t(*p), mesh, mlist, a_pDriver, path, byteSize);
         }
       }
       else

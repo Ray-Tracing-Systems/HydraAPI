@@ -4,6 +4,7 @@
 #include "HydraVSGFExport.h"
 
 #include <sstream>
+#include <fstream>
 #include <unordered_set>
 #include <unordered_map>
 #include <algorithm>
@@ -263,24 +264,35 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
 
 std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromFile(HRMesh* pSysObj, const std::wstring& a_fileName, pugi::xml_node a_node)
 {
-  // (1) put this all to linear memory chunk
-  //
-  HydraGeomData data;
-  data.read(a_fileName);
+  int64_t totalByteSize = a_node.attribute(L"bytesize").as_llong();
 
-  if (data.getVerticesNumber() == 0)
+  if(totalByteSize <= 0)
     return nullptr;
 
-  std::shared_ptr<MeshVSGF> pMeshImpl = std::make_shared<MeshVSGF>(data.sizeInBytes(), -1);
+  std::shared_ptr<MeshVSGF> pMeshImpl = std::make_shared<MeshVSGF>(totalByteSize, -1);
 
-  std::vector<uint32_t> mindices(data.getTriangleMaterialIndicesArray(), data.getTriangleMaterialIndicesArray() + data.getIndicesNumber() / 3);
+  pugi::xml_node mindicesNode = a_node.child(L"matindices");
+  if(mindicesNode == nullptr)
+    mindicesNode = a_node.child(L"mindices");
 
-  pMeshImpl->m_vertNum     = data.getVerticesNumber();
-  pMeshImpl->m_indNum      = data.getIndicesNumber();
+  int64_t moffset = mindicesNode.attribute(L"offset").as_llong();
+  int64_t msize   = mindicesNode.attribute(L"bytesize").as_llong();
+
+  std::vector<uint32_t> mindices(a_node.attribute(L"triNum").as_int());
+
+#ifdef WIN32
+  std::ifstream fin(a_fileName.c_str(), std::ios::binary);   
+#else
+  std::string fileIn(a_fileName.begin(), a_fileName.end());
+  std::ifstream fin(fileIn.c_str(), std::ios::binary);
+#endif
+  fin.seekg(moffset);
+  fin.read((char*)&mindices[0], msize);
+  fin.close();
+
+  pMeshImpl->m_vertNum     = a_node.attribute(L"vertNum").as_int();
+  pMeshImpl->m_indNum      = a_node.attribute(L"triNum").as_int()*3;
   pMeshImpl->m_matDrawList = FormMatDrawListRLE(mindices);
-
-  // (2) #TODO: set custom attributes
-  //
 
   return pMeshImpl;
 }
