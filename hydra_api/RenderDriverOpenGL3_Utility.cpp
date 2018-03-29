@@ -358,13 +358,9 @@ void RD_OGL32_Utility::BeginScene(pugi::xml_node a_sceneNode)
 
 void RD_OGL32_Utility::EndScene()
 {
-
   m_lodBuffer->EndRendering();
 
-  std::vector<int> texture_data(m_width * m_height * 4);
-
-  glBindTexture(GL_TEXTURE_2D, m_lodBuffer->GetTextureId(LODBuffer::LODBUF_TEX_1));
-  glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA_INTEGER, GL_INT, &texture_data[0]);
+  GetTexIdsMipLevels();
 
   m_quadProgram.StartUseShader();
   bindTexture(m_quadProgram, 0, "debugTex", m_lodBuffer->GetTextureId(LODBuffer::LODBUF_TEX_1));
@@ -467,6 +463,40 @@ void RD_OGL32_Utility::CreateMatricesUBO()
 void RD_OGL32_Utility::Draw()
 {
   //std::cout << "Draw" << std::endl;
+}
+
+std::unordered_map<int32_t, int32_t> RD_OGL32_Utility::GetTexIdsMipLevels()
+{
+  std::vector<int> texture_data1((unsigned long)(m_width * m_height * 4));
+  std::vector<int> texture_data2((unsigned long)(m_width * m_height * 4));
+
+  glBindTexture(GL_TEXTURE_2D, m_lodBuffer->GetTextureId(LODBuffer::LODBUF_TEX_1));
+  glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA_INTEGER, GL_INT, &texture_data1[0]);
+
+  glBindTexture(GL_TEXTURE_2D, m_lodBuffer->GetTextureId(LODBuffer::LODBUF_TEX_2));
+  glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA_INTEGER, GL_INT, &texture_data2[0]);
+
+  const int texIdBits = 0x00FFFFFF;
+  const int mipLevelBits = 0xFF000000;
+
+  std::unordered_map<int32_t, int32_t> dict;
+ /*
+  for(auto pix : texture_data1)
+  {
+    int mipLevel = pix >> 24;
+    int texId = pix & texIdBits;
+
+    if(dict.find(texId) != dict.end())
+    {
+
+    }
+
+    dict[texId] = mipLevel;
+
+  }
+*/
+  //int diffuseMipLevel = val.g >> 24;
+  //int diffuseTexId = val.g & texIdBits;
 }
 
 HRRenderUpdateInfo RD_OGL32_Utility::HaveUpdateNow(int a_maxRaysPerPixel)

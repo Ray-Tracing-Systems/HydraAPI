@@ -52,6 +52,8 @@ struct RD_OGL32_Utility : IHRRenderDriver
     const HRRenderDeviceInfoListElem* DeviceList() const override { return nullptr; }
     bool EnableDevice(int32_t id, bool a_enable) override { return true; }
 
+    std::unordered_map<int32_t, int32_t> GetTexIdsMipLevels();
+
 protected:
 
     void SetMaterialsTBO();
