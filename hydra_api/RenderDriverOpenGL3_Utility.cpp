@@ -18,6 +18,8 @@ RD_OGL32_Utility::RD_OGL32_Utility()
   m_width  = 1024;
   m_height = 1024;
 
+  m_texNum = 0;
+
   m_quad = std::make_unique<FullScreenQuad>();
   //m_fullScreenTexture = std::make_unique<RenderTexture2D>(GL_RGBA, GL_RGBA32F, m_width, m_height);
   m_lodBuffer = std::make_unique<LODBuffer>(m_width, m_height);
@@ -53,6 +55,7 @@ HRDriverAllocInfo RD_OGL32_Utility::AllocAll(HRDriverAllocInfo a_info)
   quadShaders[GL_FRAGMENT_SHADER] = "../glsl/fQuadDebug.frag";
   m_quadProgram = ShaderProgram(quadShaders);
 
+  m_texNum = (unsigned int)a_info.imgNum;
 
   m_materials_pt1.resize((unsigned long)(a_info.matNum), int4(-1, -1, -1, -1));
   m_materials_pt2.resize((unsigned long)(a_info.matNum), int4(-1, -1, -1, -1));
@@ -361,7 +364,7 @@ void RD_OGL32_Utility::EndScene()
 {
   m_lodBuffer->EndRendering();
 
- // GetTexIdsMipLevels();
+  FillMipLevelsDict();
 
   m_quadProgram.StartUseShader();
   bindTexture(m_quadProgram, 0, "debugTex", m_lodBuffer->GetTextureId(LODBuffer::LODBUF_TEX_1));
@@ -375,6 +378,9 @@ void RD_OGL32_Utility::EndScene()
   m_gBuffer->StartFinalPass(0);
   glBlitFramebuffer(0, 0, m_width, m_height, 0, 0, m_width, m_height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
   */
+
+  /*for (std::pair<int32_t, int32_t> elem : dict)
+    std::cout << " " << elem.first << ":" << elem.second << std::endl;*/
 
   glFlush();
 }
@@ -466,38 +472,37 @@ void RD_OGL32_Utility::Draw()
   //std::cout << "Draw" << std::endl;
 }
 
-std::unordered_map<int32_t, int32_t> RD_OGL32_Utility::GetTexIdsMipLevels()
+void RD_OGL32_Utility::FillMipLevelsDict()
 {
-  std::vector<unsigned int> texture_data1((unsigned long)(m_width * m_height * 4));
-  std::vector<unsigned int> texture_data2((unsigned long)(m_width * m_height * 4));
+  std::vector<unsigned int> texture_data((unsigned long)(m_width * m_height * 4 * 2), 0);
 
   glBindTexture(GL_TEXTURE_2D, m_lodBuffer->GetTextureId(LODBuffer::LODBUF_TEX_1));
-  glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA_INTEGER, GL_UNSIGNED_INT, &texture_data1[0]);
+  glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA_INTEGER, GL_UNSIGNED_INT, &texture_data[0]);
 
   glBindTexture(GL_TEXTURE_2D, m_lodBuffer->GetTextureId(LODBuffer::LODBUF_TEX_2));
-  glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA_INTEGER, GL_UNSIGNED_INT, &texture_data2[0]);
+  glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA_INTEGER, GL_UNSIGNED_INT, &texture_data[m_width * m_height * 4]);
 
-  const int texIdBits = 0x00FFFFFF;
-  const int mipLevelBits = 0xFF000000;
+  const unsigned int texIdBits    = 0x00FFFFFFu;
+  const unsigned int mipLevelBits = 0xFF000000u;
 
-  std::unordered_map<int32_t, int32_t> dict;
-/*
-  for(auto pix : texture_data1)
+  m_mipLevelDict.clear();
+
+  
+  for(auto pix : texture_data)
   {
-    int32_t mipLevel = pix >> 24;
-    int32_t texId = pix & texIdBits;
+    uint32_t mipLevel = pix >> 24u;
+    uint32_t texId    = pix & texIdBits;
 
-    if(dict.find(texId) != dict.end())
+    if(texId < m_texNum)
     {
-
+      if (m_mipLevelDict.find(texId) != m_mipLevelDict.end())
+      {
+        if (m_mipLevelDict[texId] > mipLevel)
+          m_mipLevelDict[texId] = mipLevel;
+      } else
+        m_mipLevelDict[texId] = mipLevel;
     }
-
-    dict[texId] = mipLevel;
-
-  }*/
-
-  //int diffuseMipLevel = val.g >> 24;
-  //int diffuseTexId = val.g & texIdBits;
+  }
 }
 
 HRRenderUpdateInfo RD_OGL32_Utility::HaveUpdateNow(int a_maxRaysPerPixel)

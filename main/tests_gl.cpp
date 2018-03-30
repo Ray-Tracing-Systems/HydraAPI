@@ -481,6 +481,7 @@ void test_gl32_001_init(void)
   hrSceneLibraryOpen(L"tests_f/test_gl32_001", HR_WRITE_DISCARD);
 
   HRTextureNodeRef texChecker = hrTexture2DCreateFromFile(L"data/textures/checker_8x8.gif");
+  HRTextureNodeRef texOrn = hrTexture2DCreateFromFile(L"data/textures/yinyang.png");
   HRTextureNodeRef normalMap = hrTexture2DCreateFromFile(L"data/textures/normal_map.jpg");
   
   //the mesh we're going to load has material id attribute set to 1
@@ -498,8 +499,22 @@ void test_gl32_001_init(void)
     diff.append_attribute(L"brdf_type").set_value(L"lambert");
 
     auto color = diff.append_child(L"color");
-    color.append_attribute(L"val").set_value(L"0.3 0.3 0.85");
+    color.append_attribute(L"val").set_value(L"0.3 0.9 0.05");
+    color.append_attribute(L"tex_apply_mode").set_value(L"multiply");
+    hrTextureBind(texOrn, color);
+    auto texNode = color.child(L"texture");
+    texNode.append_attribute(L"matrix");
+    float samplerMatrix[16] = { 5, 0, 0, 0,
+                                0, 5, 0, 0,
+                                0, 0, 1, 0,
+                                0, 0, 0, 1 };
 
+    texNode.append_attribute(L"addressing_mode_u").set_value(L"clamp");
+    texNode.append_attribute(L"addressing_mode_v").set_value(L"clamp");
+    texNode.append_attribute(L"input_gamma").set_value(2.2f);
+    texNode.append_attribute(L"input_alpha").set_value(L"rgb");
+
+    HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
 
     auto refl = matNode.append_child(L"reflectivity");
     refl.append_attribute(L"brdf_type").set_value(L"phong");
@@ -547,8 +562,6 @@ void test_gl32_001_init(void)
     refl.append_child(L"fresnel_ior").append_attribute(L"val").set_value(1.5);
 
 
-
-
     VERIFY_XML(matNode);
   }
   hrMaterialClose(matPlastic);
@@ -587,9 +600,9 @@ void test_gl32_001_init(void)
 
     texNode2.append_attribute(L"matrix");
     float samplerMatrix2[16] = { 4, 0, 0, 0,
-      0, 4, 0, 0,
-      0, 0, 1, 0,
-      0, 0, 0, 1 };
+                                0, 4, 0, 0,
+                                0, 0, 1, 0,
+                                0, 0, 0, 1 };
 
     texNode2.append_attribute(L"addressing_mode_u").set_value(L"wrap");
     texNode2.append_attribute(L"addressing_mode_v").set_value(L"wrap");

@@ -52,13 +52,14 @@ struct RD_OGL32_Utility : IHRRenderDriver
     const HRRenderDeviceInfoListElem* DeviceList() const override { return nullptr; }
     bool EnableDevice(int32_t id, bool a_enable) override { return true; }
 
-    std::unordered_map<int32_t, int32_t> GetTexIdsMipLevels();
+
 
 protected:
 
     void SetMaterialsTBO();
     void CreateMatricesUBO();
     void CreateMaterialsTBO();
+    void FillMipLevelsDict();
 
     std::wstring m_libPath;
 
@@ -75,11 +76,15 @@ protected:
     std::vector<int4> m_materials_pt1;
     std::vector<int4> m_materials_pt2;
 
+    std::unordered_map<uint32_t, uint32_t> m_mipLevelDict; //texId -> mipLevel
+
     GLuint m_materialsTBOs[2];
     GLuint m_materialsTBOTexIds[2];
 
     GLuint m_matricesUBO;
     GLuint m_matricesUBOBindingPoint;
+
+    unsigned int m_texNum;
 
     //std::vector<float4x4> m_texMatrices;
 
