@@ -54,8 +54,8 @@ HRDriverAllocInfo RD_OGL32_Utility::AllocAll(HRDriverAllocInfo a_info)
   m_quadProgram = ShaderProgram(quadShaders);
 
 
-  m_materials_pt1.resize(a_info.matNum, int4(-1, -1, -1, -1));
-  m_materials_pt2.resize(a_info.matNum, int4(-1, -1, -1, -1));
+  m_materials_pt1.resize((unsigned long)(a_info.matNum), int4(-1, -1, -1, -1));
+  m_materials_pt2.resize((unsigned long)(a_info.matNum), int4(-1, -1, -1, -1));
 
 
   glGenTextures(1, &m_whiteTex);
@@ -295,7 +295,8 @@ bool RD_OGL32_Utility::UpdateCamera(pugi::xml_node a_camNode)
 
 bool RD_OGL32_Utility::UpdateSettings(pugi::xml_node a_settingsNode)
 {
-  int new_w, new_h;
+  int new_w = m_width;
+  int new_h = m_height;
   if (a_settingsNode.child(L"width") != nullptr)
     new_w = a_settingsNode.child(L"width").text().as_int();
 
@@ -346,7 +347,7 @@ void RD_OGL32_Utility::BeginScene(pugi::xml_node a_sceneNode)
 
   glBindBuffer(GL_UNIFORM_BUFFER, m_matricesUBO);
   //glBufferData(GL_UNIFORM_BUFFER, 32 * sizeof(GLfloat), &matrices[0], GL_STATIC_DRAW);
-  glBufferSubData(GL_UNIFORM_BUFFER, 0, 32 * sizeof(GL_FLOAT), &matrices[0]);
+  glBufferSubData(GL_UNIFORM_BUFFER, 0, 32 * sizeof(GLfloat), &matrices[0]);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
   SetMaterialsTBO();
@@ -360,7 +361,7 @@ void RD_OGL32_Utility::EndScene()
 {
   m_lodBuffer->EndRendering();
 
-  GetTexIdsMipLevels();
+ // GetTexIdsMipLevels();
 
   m_quadProgram.StartUseShader();
   bindTexture(m_quadProgram, 0, "debugTex", m_lodBuffer->GetTextureId(LODBuffer::LODBUF_TEX_1));
@@ -453,7 +454,7 @@ void RD_OGL32_Utility::CreateMatricesUBO()
   glGenBuffers(1, &m_matricesUBO);
 
   glBindBuffer(GL_UNIFORM_BUFFER, m_matricesUBO);
-  glBufferData(GL_UNIFORM_BUFFER, matricesUBOSize, NULL, GL_STATIC_DRAW);
+  glBufferData(GL_UNIFORM_BUFFER, matricesUBOSize, nullptr, GL_STATIC_DRAW);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
   glBindBufferRange(GL_UNIFORM_BUFFER, m_matricesUBOBindingPoint, m_matricesUBO, 0, matricesUBOSize);
@@ -467,24 +468,24 @@ void RD_OGL32_Utility::Draw()
 
 std::unordered_map<int32_t, int32_t> RD_OGL32_Utility::GetTexIdsMipLevels()
 {
-  std::vector<int> texture_data1((unsigned long)(m_width * m_height * 4));
-  std::vector<int> texture_data2((unsigned long)(m_width * m_height * 4));
+  std::vector<unsigned int> texture_data1((unsigned long)(m_width * m_height * 4));
+  std::vector<unsigned int> texture_data2((unsigned long)(m_width * m_height * 4));
 
   glBindTexture(GL_TEXTURE_2D, m_lodBuffer->GetTextureId(LODBuffer::LODBUF_TEX_1));
-  glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA_INTEGER, GL_INT, &texture_data1[0]);
+  glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA_INTEGER, GL_UNSIGNED_INT, &texture_data1[0]);
 
   glBindTexture(GL_TEXTURE_2D, m_lodBuffer->GetTextureId(LODBuffer::LODBUF_TEX_2));
-  glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA_INTEGER, GL_INT, &texture_data2[0]);
+  glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA_INTEGER, GL_UNSIGNED_INT, &texture_data2[0]);
 
   const int texIdBits = 0x00FFFFFF;
   const int mipLevelBits = 0xFF000000;
 
   std::unordered_map<int32_t, int32_t> dict;
- /*
+/*
   for(auto pix : texture_data1)
   {
-    int mipLevel = pix >> 24;
-    int texId = pix & texIdBits;
+    int32_t mipLevel = pix >> 24;
+    int32_t texId = pix & texIdBits;
 
     if(dict.find(texId) != dict.end())
     {
@@ -493,8 +494,8 @@ std::unordered_map<int32_t, int32_t> RD_OGL32_Utility::GetTexIdsMipLevels()
 
     dict[texId] = mipLevel;
 
-  }
-*/
+  }*/
+
   //int diffuseMipLevel = val.g >> 24;
   //int diffuseTexId = val.g & texIdBits;
 }

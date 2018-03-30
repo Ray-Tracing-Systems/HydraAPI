@@ -372,8 +372,9 @@ namespace GL_RENDER_DRIVER_UTILS {
   void CreateTextureFromData(GLuint &texId, int32_t w, int32_t h, int32_t bpp, const void *a_data,
                              GLenum interpolation = GL_NEAREST);
 
-  GLuint CreateSphere(float radius, int numberSlices, int posLocation, int normLocation,
-                      int texLocation, int instanceMatLocation, int colorLocation, int &boundingSphereIndices, GLuint &instanceVBO, GLuint &colorVBO);
+  GLuint CreateSphere(float radius, int numberSlices, int posLocation, int normLocation, int texLocation,
+                      int instanceMatLocation, int colorLocation, int &boundingSphereIndices, GLuint &instanceVBO,
+                      GLuint &colorVBO);
 
   int CreateGLSphereMapFromIES(std::string filename, GLuint &texId);
 

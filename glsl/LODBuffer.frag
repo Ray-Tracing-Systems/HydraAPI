@@ -1,6 +1,6 @@
 #version 330 core
-layout (location = 0) out ivec4 lodbuf_1;
-layout (location = 1) out ivec4 lodbuf_2;
+layout (location = 0) out uvec4 lodbuf_1;
+layout (location = 1) out uvec4 lodbuf_2;
 
 
 in VS_OUT
@@ -11,8 +11,8 @@ in VS_OUT
 } fs_in;
 
 
-uniform isamplerBuffer materials1;
-uniform isamplerBuffer materials2;
+uniform usamplerBuffer materials1;
+uniform usamplerBuffer materials2;
 
 uniform int matID;
 uniform ivec2 window_res;
@@ -33,19 +33,19 @@ float mip_map_level(vec2 texture_coordinate)
 }
 
 
-const int texIdBits = 0x00FFFFFF;
-const int mipLevelBits = 0xFF000000;
+const uint texIdBits    = 0x00FFFFFFu;
+const uint mipLevelBits = 0xFF000000u;
 
 
 void main()
 {     
 
-  ivec4 texIds1 = ivec4(0, 0, 0, 0);
-  ivec4 texIds2 = ivec4(0, 0, 0, 0);
+  uvec4 texIds1 = uvec4(0, 0, 0, 0);
+  uvec4 texIds2 = uvec4(0, 0, 0, 0);
 
   if(matID >= 0)
   {
-    int mipLevel = int(floor(mip_map_level(fs_in.TexCoords)));
+    uint mipLevel = uint(floor(mip_map_level(fs_in.TexCoords)));
 
     texIds1 = texelFetch(materials1, matID);
     texIds2 = texelFetch(materials2, matID);
