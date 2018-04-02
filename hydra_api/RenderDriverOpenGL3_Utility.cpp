@@ -298,7 +298,7 @@ bool RD_OGL32_Utility::UpdateCamera(pugi::xml_node a_camNode)
 
 bool RD_OGL32_Utility::UpdateSettings(pugi::xml_node a_settingsNode)
 {
-  int new_w = m_width;
+/*  int new_w = m_width;
   int new_h = m_height;
   if (a_settingsNode.child(L"width") != nullptr)
     new_w = a_settingsNode.child(L"width").text().as_int();
@@ -320,7 +320,7 @@ bool RD_OGL32_Utility::UpdateSettings(pugi::xml_node a_settingsNode)
     m_lodBuffer->ResizeAttachments(m_width, m_height);
     //m_fullScreenTexture->ResizeAttachments(m_width, m_height);
   }
-
+*/
   return true;
 }
 
@@ -470,6 +470,7 @@ void RD_OGL32_Utility::CreateMatricesUBO()
 void RD_OGL32_Utility::Draw()
 {
   //std::cout << "Draw" << std::endl;
+
 }
 
 void RD_OGL32_Utility::FillMipLevelsDict()
@@ -487,7 +488,7 @@ void RD_OGL32_Utility::FillMipLevelsDict()
 
   m_mipLevelDict.clear();
 
-  
+
   for(auto pix : texture_data)
   {
     uint32_t mipLevel = pix >> 24u;

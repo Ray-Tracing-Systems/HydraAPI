@@ -12,12 +12,16 @@
 #else
 #include <FreeImage.h>
 #include <algorithm>
+#include <GLFW/glfw3.h>
 
 #endif
 
 #include "HydraVSGFExport.h"
+#include "RenderDriverOpenGL3_Utility.h"
+
 
 extern HRObjectManager g_objManager;
+extern HR_INFO_CALLBACK  g_pInfoCallback;
 
 struct ChangeList
 {
@@ -997,5 +1001,107 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 void HR_DriverDraw(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 {
   a_pDriver->Draw();
+}
+
+
+bool _init_GL_for_utility_driver(GLFWwindow* offscreen_context)
+{
+  if (!glfwInit())
+  {
+    HrError(L"Failed to initialize GLFW for Utility driver");
+    return false;
+  }
+
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+
+  offscreen_context = glfwCreateWindow(1024, 1024, "", NULL, NULL);
+  glfwMakeContextCurrent(offscreen_context);
+
+  if (!offscreen_context)
+  {
+    HrError(L"Failed to create GLFW offscreen context for Utility driver");
+    glfwTerminate();
+    return false;
+  }
+
+  gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+
+}
+
+
+void HR_UtilityDriverStart(const wchar_t* state_path)
+{
+  if (state_path == L"" || state_path == nullptr)
+  {
+    HrError(L"No state for Utility driver at location: ", state_path);
+    return;
+  }
+
+  pugi::xml_document stateToProcess;
+
+  auto loadResult = stateToProcess.load_file(state_path);
+
+  if (!loadResult)
+  {
+    HrError(L"MergeLibraryIntoLibrary, pugixml load: ", loadResult.description());
+    return;
+  }
+
+
+  GLFWwindow *offscreen_context = nullptr;
+
+  //bool init_result = _init_GL_for_utility_driver(offscreen_context);
+
+  if (!glfwInit())
+  {
+    HrError(L"Failed to initialize GLFW for Utility driver");
+    return;
+  }
+
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+
+  offscreen_context = glfwCreateWindow(1024, 1024, "", NULL, NULL);
+  glfwMakeContextCurrent(offscreen_context);
+
+  if (!offscreen_context)
+  {
+    HrError(L"Failed to create GLFW offscreen context for Utility driver");
+    glfwTerminate();
+    return;
+  }
+
+  gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+
+  std::unique_ptr<IHRRenderDriver> utilityDriver = CreateRenderFromString(L"opengl3Utility", L"");
+  RD_OGL32_Utility &utilityDrvRef = *(dynamic_cast<RD_OGL32_Utility *>(utilityDriver.get()));
+
+  utilityDriver->SetInfoCallBack(g_pInfoCallback);
+
+  glfwPollEvents();
+
+  //TODO: replace HR_DriverUpdate with utility driver specific function
+  HR_DriverUpdate(g_objManager.scnInst[g_objManager.m_currSceneId], utilityDriver.get());
+
+  glfwSwapBuffers(offscreen_context);
+
+  auto mipLevelsDict = utilityDrvRef.GetMipLevelsDict();
+
+  /*
+  for (std::pair<int32_t, int32_t> elem : mipLevelsDict)
+    std::cout << " " << elem.first << ":" << elem.second << std::endl;
+  */
+
+  HR_DriverDraw(g_objManager.scnInst[g_objManager.m_currSceneId], utilityDriver.get());
+
+  glfwSetWindowShouldClose(offscreen_context, GL_TRUE);
+
+  glfwTerminate();
+
 }
 

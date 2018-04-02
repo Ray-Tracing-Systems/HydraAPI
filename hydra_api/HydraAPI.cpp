@@ -15,11 +15,11 @@
 #include "HydraObjectManager.h"
 
 #include "xxhash.h"
-#include <locale.h>
+#include <clocale>
 #include "LiteMath.h"
 #include "HydraXMLHelpers.h"
 
-#pragma warning(disable:4996) // MS shoild kill theirself with " 'wcsncpy': This function or variable may be unsafe. Consider using wcsncpy_s instead."
+#pragma warning(disable:4996) // Visual Studio " 'wcsncpy': This function or variable may be unsafe. Consider using wcsncpy_s instead."
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -29,6 +29,7 @@ extern std::wstring      g_lastErrorCallerPlace;
 extern HR_ERROR_CALLBACK g_pErrorCallback;
 extern HR_INFO_CALLBACK  g_pInfoCallback;
 extern HRObjectManager   g_objManager;
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -949,6 +950,16 @@ HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pC
   g_objManager.scnData.m_vbCache.FlushToDisc();
 
   HRRender* pSettings = g_objManager.PtrById(a_pRender);
+
+
+  //////////////
+  ////////////// Call utility render driver here
+/*
+#ifdef IN_DEBUG
+  HR_UtilityDriverStart(newPath.c_str());
+#endif
+*/
+  //////////////
 
   if (pSettings != nullptr && pSettings->m_pDriver != nullptr)
     pSettings->m_pDriver->EndFlush();

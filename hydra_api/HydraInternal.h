@@ -9,6 +9,7 @@
 #include "HydraAPI.h"
 #include "HydraRenderDriverAPI.h"
 
+
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -25,6 +26,7 @@
 #endif
 
 namespace std_fs = std::experimental::filesystem; // change to std::filesystem for C++17
+
 
 /**
 \brief Abstract HydraObjectImplementation
@@ -330,8 +332,12 @@ std::wstring ChunkName(const ChunkPointer& a_chunk);
 struct HRSceneInst;
 struct IHRRenderDriver;
 
+std::unique_ptr<IHRRenderDriver> CreateRenderFromString(const wchar_t *a_className, const wchar_t *a_options);
+
 void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver);
 void HR_DriverDraw(HRSceneInst& scn, IHRRenderDriver* a_pDriver);
+
+void HR_UtilityDriverStart(const wchar_t* state_path);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

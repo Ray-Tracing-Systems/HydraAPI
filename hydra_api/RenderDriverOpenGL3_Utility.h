@@ -52,7 +52,7 @@ struct RD_OGL32_Utility : IHRRenderDriver
     const HRRenderDeviceInfoListElem* DeviceList() const override { return nullptr; }
     bool EnableDevice(int32_t id, bool a_enable) override { return true; }
 
-
+    std::unordered_map<uint32_t, uint32_t> GetMipLevelsDict() { return m_mipLevelDict; };
 
 protected:
 

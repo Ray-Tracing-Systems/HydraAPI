@@ -219,9 +219,7 @@ HAPI void _hrLightInstanceFromNode(HRSceneInstRef a_pScn, pugi::xml_node a_node)
   pScn->drawListLights.push_back(model);
 }
 
-std::unique_ptr<IHRRenderDriver> CreateRenderFromString(const wchar_t *a_className, const wchar_t *a_options);
-
-HRRenderRef _hrRendeSettingsFromNode(pugi::xml_node a_node)
+HRRenderRef _hrRenderSettingsFromNode(pugi::xml_node a_node)
 {
   const wchar_t* a_className = a_node.attribute(L"type").as_string();
 
@@ -411,7 +409,7 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int32_t a_stateId)
   // (9) load render settings
   //
   pugi::xml_node renderSettings = g_objManager.scnData.m_settingsNode.first_child();
-  _hrRendeSettingsFromNode(renderSettings);
+  _hrRenderSettingsFromNode(renderSettings);
 
 
   // (10) load empty chunks to have correct chunk id for new objects

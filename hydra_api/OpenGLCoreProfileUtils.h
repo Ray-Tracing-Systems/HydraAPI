@@ -5,7 +5,6 @@
 #pragma once
 
 #include <iostream>
-#include <glad/glad.h>
 #include <unordered_map>
 #include <fstream>
 #include <sstream>
