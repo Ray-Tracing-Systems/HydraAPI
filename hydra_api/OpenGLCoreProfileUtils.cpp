@@ -18,7 +18,7 @@ namespace oldies
 
 #ifndef WIN32
 #include <unistd.h>
-#include <limits.h>
+#include <climits>
 
 std::string getexepath()
 {
@@ -187,8 +187,9 @@ namespace GL_RENDER_DRIVER_UTILS
   }
   */
 
-  GLuint CreateSphere(float radius, int numberSlices, int posLocation, int normLocation,
-    int texLocation, int instanceMatLocation, int colorLocation, int &boundingSphereIndices, GLuint &instanceVBO, GLuint &colorVBO)
+  GLuint CreateSphere(float radius, int numberSlices, int posLocation, int normLocation, int texLocation,
+                      int instanceMatLocation, int colorLocation, int &boundingSphereIndices, GLuint &instanceVBO,
+                      GLuint &colorVBO)
   {
     int i, j;
 
@@ -265,8 +266,8 @@ namespace GL_RENDER_DRIVER_UTILS
     {
       glGenBuffers(1, &vboVertices);
       glBindBuffer(GL_ARRAY_BUFFER, vboVertices);
-      glBufferData(GL_ARRAY_BUFFER, pos.size() * sizeof(GL_FLOAT), &pos[0], GL_STATIC_DRAW);
-      glVertexAttribPointer(posLocation, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GL_FLOAT), (GLvoid *) 0);
+      glBufferData(GL_ARRAY_BUFFER, pos.size() * sizeof(GLfloat), &pos[0], GL_STATIC_DRAW);
+      glVertexAttribPointer(posLocation, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid *) 0);
       glEnableVertexAttribArray(posLocation);
     }
 
@@ -274,8 +275,8 @@ namespace GL_RENDER_DRIVER_UTILS
     {
       glGenBuffers(1, &vboNormals);
       glBindBuffer(GL_ARRAY_BUFFER, vboNormals);
-      glBufferData(GL_ARRAY_BUFFER, norm.size() * sizeof(GL_FLOAT), &norm[0], GL_STATIC_DRAW);
-      glVertexAttribPointer(normLocation, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GL_FLOAT), (GLvoid *) 0);
+      glBufferData(GL_ARRAY_BUFFER, norm.size() * sizeof(GLfloat), &norm[0], GL_STATIC_DRAW);
+      glVertexAttribPointer(normLocation, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid *) 0);
       glEnableVertexAttribArray(normLocation);
     }
 
@@ -283,8 +284,8 @@ namespace GL_RENDER_DRIVER_UTILS
     {
       glGenBuffers(1, &vboTexCoords);
       glBindBuffer(GL_ARRAY_BUFFER, vboTexCoords);
-      glBufferData(GL_ARRAY_BUFFER, texcoords.size() * sizeof(GL_FLOAT), &texcoords[0], GL_STATIC_DRAW);
-      glVertexAttribPointer(texLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GL_FLOAT), (GLvoid *) 0);
+      glBufferData(GL_ARRAY_BUFFER, texcoords.size() * sizeof(GLfloat), &texcoords[0], GL_STATIC_DRAW);
+      glVertexAttribPointer(texLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid *) 0);
       glEnableVertexAttribArray(texLocation);
     }
 
@@ -323,7 +324,7 @@ namespace GL_RENDER_DRIVER_UTILS
       else
         str = node.text().as_string();
 
-      if (std::wstring(str) != L"")
+      if (!std::wstring(str).empty())
       {
         std::wstringstream input(str);
         input >> color.x >> color.y >> color.z;
@@ -345,7 +346,7 @@ namespace GL_RENDER_DRIVER_UTILS
       else
         str = node.text().as_string();
 
-      if (std::wstring(str) != L"")
+      if (!std::wstring(str).empty())
       {
         std::wstringstream input(str);
         input >> color.x >> color.y >> color.z;
@@ -367,7 +368,7 @@ namespace GL_RENDER_DRIVER_UTILS
       else
         str = node.text().as_string();
 
-      if (std::wstring(str) != L"")
+      if (!std::wstring(str).empty())
       {
         std::wstringstream input(str);
         input >> mat[0] >> mat[1] >> mat[2] >> mat[3] >>
@@ -398,7 +399,7 @@ namespace GL_RENDER_DRIVER_UTILS
       else
         str = node.text().as_string();
 
-      if (std::wstring(str) != L"")
+      if (!std::wstring(str).empty())
       {
         value = std::stof(str);
 
@@ -428,12 +429,12 @@ namespace GL_RENDER_DRIVER_UTILS
       float xPos = xdist(rng);
       float yPos = ydist(rng);
       float zPos = zdist(rng);
-      pos.push_back(float3(xPos, yPos, zPos));
+      pos.emplace_back(float3(xPos, yPos, zPos));
 
       float r = colorDistrib(rng);
       float g = colorDistrib(rng);
       float b = colorDistrib(rng);
-      color.push_back(float3(r, g, b));
+      color.emplace_back(float3(r, g, b));
     }
   }
 
@@ -1164,7 +1165,7 @@ namespace GL_RENDER_DRIVER_UTILS
   RenderTexture2D::RenderTexture2D() : frameBufferObject(-1), width(0), height(0)
   {
     for (int i = 0; i < RTEX_NUM_TEXTURES; ++i)
-      renderTextures[i] = -1;
+      renderTextures[i] = GLuint(-1);
   }
 
   RenderTexture2D::RenderTexture2D(GLenum format, GLenum internal_format, GLsizei width, GLsizei height) : width(
@@ -1207,7 +1208,7 @@ namespace GL_RENDER_DRIVER_UTILS
     glDeleteTextures(RTEX_NUM_TEXTURES, renderTextures);
     glDeleteTextures(1, &depthTex);
     for (int i = 0; i < RTEX_NUM_TEXTURES; ++i)
-      renderTextures[i] = -1;
+      renderTextures[i] = GLuint(-1);
 
     glDeleteFramebuffers(1, &frameBufferObject);
   }
@@ -1292,7 +1293,7 @@ namespace GL_RENDER_DRIVER_UTILS
     glDeleteTextures(GBUF_NUM_TEXTURES, renderTextures);
     glDeleteTextures(1, &depthTex);
     for (int i = 0; i < GBUF_NUM_TEXTURES; ++i)
-      renderTextures[i] = -1;
+      renderTextures[i] = GLuint(-1);
 
     glDeleteFramebuffers(1, &frameBufferObject);
   }
@@ -1345,7 +1346,7 @@ namespace GL_RENDER_DRIVER_UTILS
 
     for (int i = 0; i < LODBUF_NUM_TEXTURES; ++i)
     {
-      renderTextures[i] = CreateEmptyTex(GL_RGBA_INTEGER, GL_RGBA32I, width, height, GL_INT);//GL_RGBA32I
+      renderTextures[i] = CreateEmptyTex(GL_RGBA_INTEGER, GL_RGBA32UI, width, height, GL_UNSIGNED_INT);//GL_RGBA32I
       glFramebufferTexture(GL_FRAMEBUFFER, GLenum(GL_COLOR_ATTACHMENT0 + i), renderTextures[i], 0);
     }
 
@@ -1365,7 +1366,7 @@ namespace GL_RENDER_DRIVER_UTILS
     {
       glBindTexture(GL_TEXTURE_2D, renderTextures[i]);
 
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32I, width, height, 0, GL_RGBA, GL_INT, NULL);
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32UI, width, height, 0, GL_RGBA, GL_UNSIGNED_INT, NULL);
     }
     glBindTexture(GL_TEXTURE_2D, depthTex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
@@ -1377,7 +1378,7 @@ namespace GL_RENDER_DRIVER_UTILS
     glDeleteTextures(LODBUF_NUM_TEXTURES, renderTextures);
     glDeleteTextures(1, &depthTex);
     for (int i = 0; i < LODBUF_NUM_TEXTURES; ++i)
-      renderTextures[i] = -1;
+      renderTextures[i] = GLuint(-1);
 
     glDeleteFramebuffers(1, &frameBufferObject);
   }
@@ -1405,7 +1406,7 @@ namespace GL_RENDER_DRIVER_UTILS
   GLuint LODBuffer::GetTextureId(LODBUF_TEXTURE_TYPE type)
   {
     if (type == LODBUF_NUM_TEXTURES)
-      return -1;
+      return GLuint(-1);
     else
       return renderTextures[type];
   }
@@ -1493,13 +1494,13 @@ namespace GL_RENDER_DRIVER_UTILS
   {
     glDeleteTextures(SSAO_NUM_TEXTURES, renderTextures);
     for (int i = 0; i < SSAO_NUM_TEXTURES; ++i)
-      renderTextures[i] = -1;
+      renderTextures[i] = GLuint(-1);
 
     glDeleteTextures(1, &samplesTexture);
-    samplesTexture = -1;
+    samplesTexture = GLuint(-1);
 
     glDeleteTextures(1, &rotTexture);
-    rotTexture = -1;
+    rotTexture = GLuint(-1);
 
     glDeleteFramebuffers(1, &fbo);
     glDeleteFramebuffers(1, &fboBlur);
@@ -1560,7 +1561,7 @@ namespace GL_RENDER_DRIVER_UTILS
     int2 screenSize(width, height);
 
     glBindBuffer(GL_UNIFORM_BUFFER, settingsUBO);
-    glBufferSubData(GL_UNIFORM_BUFFER,0, 2 * sizeof(GL_INT), &screenSize);
+    glBufferSubData(GL_UNIFORM_BUFFER,0, 2 * sizeof(GLint), &screenSize);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
   }
 

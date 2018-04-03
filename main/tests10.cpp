@@ -23,7 +23,6 @@
 #include <sstream>
 #include <fstream>
 
-#include "../hydra_api/HydraObjectManager.h"
 #include "../hydra_api/HydraXMLHelpers.h"
 #include "../hydra_api/HR_HDRImageTool.h"
 

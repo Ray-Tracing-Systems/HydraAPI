@@ -26,6 +26,7 @@ set(SOURCE_FILES
         tests9.cpp
         tests10.cpp
         testsA.cpp
+        testsB.cpp
         tests_geo.cpp
         tests_gl.cpp
         tests_lights.cpp
