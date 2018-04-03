@@ -1003,6 +1003,7 @@ void HR_DriverDraw(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
   a_pDriver->Draw();
 }
 
+#ifndef WIN32
 
 bool _init_GL_for_utility_driver(GLFWwindow* offscreen_context)
 {
@@ -1105,3 +1106,4 @@ void HR_UtilityDriverStart(const wchar_t* state_path)
 
 }
 
+#endif

@@ -26,6 +26,10 @@ std::string getexepath()
   ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
   return std::string(result, (count > 0) ? count : 0);
 }
+
+#undef min
+#undef max
+
 #else
 std::string getexepath()
 {
@@ -642,7 +646,7 @@ namespace GL_RENDER_DRIVER_UTILS
     std::vector<unsigned char> convertedData(resultData.size(), 0);
 
     for (int i = 0; i < resultData.size(); ++i)
-      convertedData.at(i) = (unsigned char) (std::min(float(1), resultData.at(i)) * 255);
+      convertedData.at(i) = (unsigned char) (std::min<float>(float(1), resultData.at(i)) * 255);
 
 
     CreateTextureFromData(texId, w, h, 1, &convertedData[0], GL_LINEAR);
