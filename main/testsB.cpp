@@ -284,6 +284,7 @@ bool test82_proc_texture()
     xml_node texNode = hrTextureParamNode(texProc);
     xml_node p1      = texNode.append_child(L"input1");
     xml_node p2      = texNode.append_child(L"input2");
+    xml_node r1      = texNode.append_child(L"return");
 
     p1.append_attribute(L"name") = L"texId1";
     p1.append_attribute(L"type") = L"int";
@@ -292,6 +293,8 @@ bool test82_proc_texture()
     p2.append_attribute(L"name") = L"texId2";
     p2.append_attribute(L"type") = L"int";
     p2.append_attribute(L"val")  = texBitmap2.id;
+
+    r1.append_attribute(L"type") = L"float4";
 
     texNode.append_child(L"code").append_attribute(L"val") = L"my_custom_faloff.c";
   }
