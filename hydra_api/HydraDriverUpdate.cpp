@@ -549,6 +549,32 @@ int32_t HR_DriverUpdateMaterials(HRSceneInst& scn, ChangeList& objList, IHRRende
   return updatedMaterials;
 }
 
+int32_t _hr_UtilityDriverUpdateMaterials(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
+{
+  a_pDriver->BeginMaterialUpdate();
+
+  if (g_objManager.scnData.materials.size() == 0)
+    return 0;
+
+  int32_t updatedMaterials = 0;
+
+  for(auto matId : scn.matUsedByDrv)
+  {
+    if (matId < g_objManager.scnData.materials.size())
+    {
+      pugi::xml_node node = g_objManager.scnData.materials[matId].xml_node_immediate();
+      a_pDriver->UpdateMaterial(matId, node);
+      updatedMaterials++;
+    }
+    else
+      g_objManager.BadMaterialId(matId);
+  }
+
+  a_pDriver->EndMaterialUpdate();
+
+  return updatedMaterials;
+}
+
 /////
 //
 int32_t HR_DriverUpdateLight(HRSceneInst& scn, ChangeList& objList, IHRRenderDriver* a_pDriver)
@@ -754,7 +780,56 @@ int32_t HR_DriverUpdateMeshes(HRSceneInst& scn, ChangeList& objList, IHRRenderDr
   return updatedMeshes;
 }
 
-void HR_DriverUpdateCamera(HRSceneInst& scn, ChangeList& objList, IHRRenderDriver* a_pDriver)
+int32_t _hr_UtilityDriverUpdateMeshes(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
+{
+  a_pDriver->BeginGeomUpdate();
+
+  HRDriverInfo info = a_pDriver->Info();
+
+
+  int32_t updatedMeshes = 0;
+
+
+  for(auto p : scn.meshUsedByDrv)
+  {
+    HRMesh& mesh            = g_objManager.scnData.meshes[p];
+    HRMeshDriverInput input = HR_GetMeshDataPointers(p);
+    pugi::xml_node meshNode = mesh.xml_node_immediate();
+
+    const std::wstring delayedLoad = meshNode.attribute(L"dl").as_string();
+    const std::wstring locStr      = g_objManager.GetLoc(meshNode);
+    const wchar_t* path = (delayedLoad == L"1") ? meshNode.attribute(L"path").as_string() : locStr.c_str();
+
+    if (mesh.pImpl != nullptr)
+    {
+      const auto& mlist = mesh.pImpl->MList();
+
+      if (input.pos4f == nullptr)
+      {
+        if (info.supportMeshLoadFromInternalFormat)
+        {
+          a_pDriver->UpdateMeshFromFile(p, meshNode, path);
+        }
+        else
+        {
+          int64_t byteSize = meshNode.attribute(L"bytesize").as_llong();
+          UpdateMeshFromChunk(p, mesh, mlist, a_pDriver, path, byteSize);
+        }
+      }
+      else
+      {
+        a_pDriver->UpdateMesh(p, meshNode, input, &mlist[0], int32_t(mlist.size()));
+      }
+      updatedMeshes++;
+    }
+  }
+
+  a_pDriver->EndGeomUpdate();
+
+  return updatedMeshes;
+}
+
+void HR_DriverUpdateCamera(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 {
   if (g_objManager.m_currCamId >= g_objManager.scnData.cameras.size())
     return;
@@ -764,7 +839,7 @@ void HR_DriverUpdateCamera(HRSceneInst& scn, ChangeList& objList, IHRRenderDrive
   a_pDriver->UpdateCamera(cam.xml_node_immediate());
 }
 
-void HR_DriverUpdateSettings(HRSceneInst& scn, ChangeList& objList, IHRRenderDriver* a_pDriver)
+void HR_DriverUpdateSettings(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 {
   if (g_objManager.renderSettings.size() == 0)
     return;
@@ -929,7 +1004,7 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
                             &allocInfo.lightsWithIESNum, 
                             &allocInfo.envLightTexSize);
 
-    HR_DriverUpdateSettings(scn, objList, a_pDriver);
+    HR_DriverUpdateSettings(scn, a_pDriver);
 
     allocInfo = a_pDriver->AllocAll(allocInfo);
 
@@ -954,8 +1029,8 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 
   g_objManager.m_badMaterialId.clear();
 
-  HR_DriverUpdateCamera(scn, objList, a_pDriver);
-  HR_DriverUpdateSettings(scn, objList, a_pDriver); 
+  HR_DriverUpdateCamera(scn, a_pDriver);
+  HR_DriverUpdateSettings(scn, a_pDriver);
 
   int32_t updatedTextures  = HR_DriverUpdateTextures (scn, objList, a_pDriver);
   int32_t updatedMaterials = HR_DriverUpdateMaterials(scn, objList, a_pDriver);
@@ -1001,8 +1076,90 @@ void HR_DriverDraw(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
   a_pDriver->Draw();
 }
 
-#ifndef WIN32
 
+void _hr_UtilityDriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
+{
+  if (a_pDriver == nullptr)
+    return;
+
+  //ChangeList objList = FindChangedObjects(scn, a_pDriver);
+
+
+  HRDriverAllocInfo allocInfo;
+
+  const size_t geomNum  = scn.meshUsedByDrv.size();
+  const size_t imgNum   = scn.texturesUsedByDrv.size();
+  const size_t matNum   = scn.matUsedByDrv.size();
+  const size_t lightNum = scn.lightUsedByDrv.size();
+
+  allocInfo.geomNum     = int32_t(geomNum  + geomNum/3  + 100);
+  allocInfo.imgNum      = int32_t(imgNum   + imgNum/3   + 100);
+  allocInfo.matNum      = int32_t(matNum   + matNum/3   + 100);
+  allocInfo.lightNum    = int32_t(lightNum + lightNum/3 + 100);
+
+  allocInfo.libraryPath = g_objManager.scnData.m_path.c_str();
+
+  allocInfo = a_pDriver->AllocAll(allocInfo);
+
+  HR_DriverUpdateCamera(scn, a_pDriver);
+  HR_DriverUpdateSettings(scn, a_pDriver);
+
+  int32_t updatedMaterials = _hr_UtilityDriverUpdateMaterials(scn, a_pDriver);
+  int32_t updatedMeshes    = _hr_UtilityDriverUpdateMeshes   (scn, a_pDriver);
+
+
+  const auto dInfo = a_pDriver->DependencyInfo();
+
+
+  ///////////////////////////////
+  //Temporary duplicate instance list creation from FindNewObjects
+  //TODO: somehow reuse the old list
+
+  struct InstancesInfo
+  {
+      std::vector<float>    matrices;
+      std::vector<int32_t>  linstid;
+      std::vector<int32_t>  remapid;
+  };
+  std::unordered_map<int32_t, InstancesInfo > drawSeq;
+
+  for (size_t i = 0; i < scn.drawList.size(); i++)
+  {
+    auto instance = scn.drawList[i];
+    if (instance.meshId >= g_objManager.scnData.meshes.size())
+      continue;
+
+    // form draw sequence for each mesh
+    //
+    auto p = drawSeq.find(instance.meshId);
+    if (p == drawSeq.end())
+    {
+      drawSeq[instance.meshId].matrices = std::vector<float>  (instance.m, instance.m + 16);
+      drawSeq[instance.meshId].linstid  = std::vector<int32_t>(&instance.lightInstId, &instance.lightInstId + 1);
+      drawSeq[instance.meshId].remapid  = std::vector<int32_t>(&instance.remapListId, &instance.remapListId + 1);
+    }
+    else
+    {
+      std::vector<float> data(instance.m, instance.m + 16);
+      p->second.matrices.insert(p->second.matrices.end(), data.begin(), data.end());
+      p->second.linstid.push_back(instance.lightInstId);
+      p->second.remapid.push_back(instance.remapListId);
+    }
+  }
+
+  ////////////////////////
+  a_pDriver->BeginScene(scn.xml_node_immediate());
+  {
+    // draw/add instances to scene
+    for (auto p = drawSeq.begin(); p != drawSeq.end(); p++)
+    {
+      const auto& seq = p->second;
+      a_pDriver->InstanceMeshes(p->first, &seq.matrices[0], int32_t(seq.matrices.size() / 16), &seq.linstid[0], &seq.remapid[0]);
+    }
+  }
+  a_pDriver->EndScene();
+
+}
 
 void HR_UtilityDriverStart(const wchar_t* state_path)
 {
@@ -1033,23 +1190,22 @@ void HR_UtilityDriverStart(const wchar_t* state_path)
   glfwPollEvents();
 
   //TODO: replace HR_DriverUpdate with utility driver specific function
-  HR_DriverUpdate(g_objManager.scnInst[g_objManager.m_currSceneId], utilityDriver.get());
+  _hr_UtilityDriverUpdate(g_objManager.scnInst[g_objManager.m_currSceneId], utilityDriver.get());
+  //HR_DriverUpdate(g_objManager.scnInst[g_objManager.m_currSceneId], utilityDriver.get());
 
   glfwSwapBuffers(offscreen_context);
 
   auto mipLevelsDict = utilityDrvRef.GetMipLevelsDict();
 
-  /*
+
   for (std::pair<int32_t, int32_t> elem : mipLevelsDict)
     std::cout << " " << elem.first << ":" << elem.second << std::endl;
-  */
+
 
   HR_DriverDraw(g_objManager.scnInst[g_objManager.m_currSceneId], utilityDriver.get());
 
   glfwSetWindowShouldClose(offscreen_context, GL_TRUE);
 
-  glfwTerminate();
+  //glfwTerminate();
 
 }
-
-#endif

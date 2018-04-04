@@ -115,13 +115,13 @@ int main(int argc, const char** argv)
     //std::cout << test59_cornell_water_mlt() << std::endl;
     //std::cout << test70_area_lights16() << std::endl;
     //std::cout << test78_material_remap_list1() << std::endl;
-    std::cout << test79_material_remap_list2() << std::endl;
+    //std::cout << test79_material_remap_list2() << std::endl;
     //std::cout << test77_save_gbuffer_layers() << std::endl;
     //test82_proc_texture();
 
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
     //GEO_TESTS::test_005_instancing();
-    //MTL_TESTS::test_120_opacity_shadow_matte();
+    MTL_TESTS::test_103_diffuse_texture();
     //LGHT_TESTS::test_224_rotated_area_light2();
     
     //PP_TESTS::test305_fbi_from_render();    
