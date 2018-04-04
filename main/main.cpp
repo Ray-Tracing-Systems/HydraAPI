@@ -115,7 +115,7 @@ int main(int argc, const char** argv)
     //std::cout << test59_cornell_water_mlt() << std::endl;
     //std::cout << test70_area_lights16() << std::endl;
     //std::cout << test78_material_remap_list1() << std::endl;
-    //std::cout << test79_material_remap_list2() << std::endl;
+    std::cout << test79_material_remap_list2() << std::endl;
     //std::cout << test77_save_gbuffer_layers() << std::endl;
     //test82_proc_texture();
 
@@ -133,7 +133,7 @@ int main(int argc, const char** argv)
 
     //std::cout << PP_TESTS::test301_resample() << std::endl;
    
-    test39_mesh_from_vsgf();
+    //test42_load_library_basic();
 
     //test100_dummy_hydra_exec();
 

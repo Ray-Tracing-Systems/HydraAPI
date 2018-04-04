@@ -220,7 +220,6 @@
     <ClInclude Include="RenderDriverOpenGL32Deferred.h" />
     <ClInclude Include="RenderDriverOpenGL32Forward.h" />
     <ClInclude Include="RenderDriverOpenGL3_Utility.h" />
-    <ClInclude Include="RenderDriverOpenGLCoreProfile.h" />
     <ClInclude Include="ssemath.h" />
     <ClInclude Include="xxhash.h" />
   </ItemGroup>

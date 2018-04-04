@@ -5,6 +5,7 @@
 #pragma once
 
 #include "RenderDriverOpenGL32Forward.h"
+#include "OpenGLCoreProfileUtils.h"    
 
 using namespace GL_RENDER_DRIVER_UTILS;
 

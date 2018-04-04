@@ -9,7 +9,6 @@
 #include <cstdint>
 #include <memory>
 #include <unordered_set>
-#include <glad/glad.h>
 
 #include "pugixml.hpp"
 #include "HydraAPI.h"

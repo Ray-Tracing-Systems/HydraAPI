@@ -13,6 +13,7 @@
 #include "LiteMath.h"
 #include "pugixml.hpp"
 #include "HydraRenderDriverAPI.h"
+#include "glad/glad.h" 
 
 using namespace HydraLiteMath;
 

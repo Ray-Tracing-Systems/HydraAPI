@@ -218,9 +218,6 @@
     <ClInclude Include="HydraPostProcessSpecial.h">
       <Filter>Headers\PostProcessHeaders</Filter>
     </ClInclude>
-    <ClInclude Include="RenderDriverOpenGLCoreProfile.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
     <ClInclude Include="RenderDriverOpenGL32Deferred.h">
       <Filter>Source\RenderDrivers</Filter>
     </ClInclude>
