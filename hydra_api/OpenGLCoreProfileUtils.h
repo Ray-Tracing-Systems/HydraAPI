@@ -2,18 +2,23 @@
 // Created by hikawa on 18.08.17.
 //
 
-#pragma once
+#ifndef HYDRAAPI_COREPROFILEUTILS_H
+#define HYDRAAPI_COREPROFILEUTILS_H
 
 #include <iostream>
 #include <unordered_map>
 #include <fstream>
 #include <sstream>
 
+#include "glad/glad.h"
+#include "GLFW/glfw3.h"
+
 
 #include "LiteMath.h"
 #include "pugixml.hpp"
 #include "HydraRenderDriverAPI.h"
-#include "glad/glad.h" 
+
+
 
 using namespace HydraLiteMath;
 
@@ -382,3 +387,5 @@ namespace GL_RENDER_DRIVER_UTILS {
 
   void CreateRandomSamplesTBO(int numSamples, GLuint &texId, GLuint &tbo);
 }
+
+#endif

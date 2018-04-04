@@ -6,7 +6,7 @@
 #define HYDRAAPI_EX_RENDERDRIVEROPENGL3_UTILITY_H
 
 #include "HydraRenderDriverAPI.h"
-#include "OpenGLCoreProfileUtils.h"
+#include "RenderDriverOpenGL32Forward.h"
 
 
 using namespace HydraLiteMath;
@@ -106,6 +106,7 @@ protected:
     int   m_height;
 };
 
+GLFWwindow * InitGLForUtilityDriver();
 
 
 #endif //HYDRAAPI_EX_RENDERDRIVEROPENGL3_UTILITY_H

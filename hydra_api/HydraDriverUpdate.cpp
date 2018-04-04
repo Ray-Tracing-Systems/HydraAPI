@@ -12,8 +12,6 @@
 #else
 #include <FreeImage.h>
 #include <algorithm>
-#include <GLFW/glfw3.h>
-
 #endif
 
 #include "HydraVSGFExport.h"
@@ -1005,33 +1003,6 @@ void HR_DriverDraw(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 
 #ifndef WIN32
 
-bool _init_GL_for_utility_driver(GLFWwindow* offscreen_context)
-{
-  if (!glfwInit())
-  {
-    HrError(L"Failed to initialize GLFW for Utility driver");
-    return false;
-  }
-
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-
-  offscreen_context = glfwCreateWindow(1024, 1024, "", NULL, NULL);
-  glfwMakeContextCurrent(offscreen_context);
-
-  if (!offscreen_context)
-  {
-    HrError(L"Failed to create GLFW offscreen context for Utility driver");
-    glfwTerminate();
-    return false;
-  }
-
-  gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-
-}
-
 
 void HR_UtilityDriverStart(const wchar_t* state_path)
 {
@@ -1052,32 +1023,7 @@ void HR_UtilityDriverStart(const wchar_t* state_path)
   }
 
 
-  GLFWwindow *offscreen_context = nullptr;
-
-  //bool init_result = _init_GL_for_utility_driver(offscreen_context);
-
-  if (!glfwInit())
-  {
-    HrError(L"Failed to initialize GLFW for Utility driver");
-    return;
-  }
-
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-
-  offscreen_context = glfwCreateWindow(1024, 1024, "", NULL, NULL);
-  glfwMakeContextCurrent(offscreen_context);
-
-  if (!offscreen_context)
-  {
-    HrError(L"Failed to create GLFW offscreen context for Utility driver");
-    glfwTerminate();
-    return;
-  }
-
-  gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+  auto offscreen_context = InitGLForUtilityDriver();
 
   std::unique_ptr<IHRRenderDriver> utilityDriver = CreateRenderFromString(L"opengl3Utility", L"");
   RD_OGL32_Utility &utilityDrvRef = *(dynamic_cast<RD_OGL32_Utility *>(utilityDriver.get()));

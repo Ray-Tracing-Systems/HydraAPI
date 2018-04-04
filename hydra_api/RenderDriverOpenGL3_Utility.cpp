@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include "RenderDriverOpenGL3_Utility.h"
+#include "HydraObjectManager.h"
 
 
 RD_OGL32_Utility::RD_OGL32_Utility()
@@ -531,3 +532,35 @@ IHRRenderDriver* CreateOpenGL3_Utilty_RenderDriver()
   return new RD_OGL32_Utility;
 }
 
+
+GLFWwindow * InitGLForUtilityDriver()
+{
+  GLFWwindow *offscreen_context = nullptr;
+
+  //bool init_result = _init_GL_for_utility_driver(offscreen_context);
+
+  if (!glfwInit())
+  {
+    HrError(L"Failed to initialize GLFW for Utility driver");
+    return nullptr;
+  }
+
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+
+  offscreen_context = glfwCreateWindow(1024, 1024, "", NULL, NULL);
+  glfwMakeContextCurrent(offscreen_context);
+
+  if (!offscreen_context)
+  {
+    HrError(L"Failed to create GLFW offscreen context for Utility driver");
+    glfwTerminate();
+    return nullptr;
+  }
+
+  gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+
+  return offscreen_context;
+}
