@@ -247,6 +247,8 @@ namespace MTL_TESTS
   bool test_151_gloss_mirror_cos_div2();
   bool test_152_texture_color_replace_mode();
   bool test_153_opacity_shadow_matte_opacity();
+
+  bool test_154_proc_checker_precomp();
 }
 
 namespace LGHT_TESTS

@@ -99,7 +99,7 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFile(const wchar_t* a_fileName, int w
     return ref2;
   }
 
-  int byteSize = size_t(w)*size_t(h)*size_t(bpp);
+  auto byteSize = int32_t(size_t(w)*size_t(h)*size_t(bpp));
 
   // form tex name
   //
@@ -233,7 +233,7 @@ HAPI HRTextureNodeRef hrTexture2DUpdateFromFile(HRTextureNodeRef currentRef, con
 		return currentRef;
 	}
 
-	int byteSize = size_t(w)*size_t(h)*size_t(bpp);
+	auto byteSize = int32_t(size_t(w)*size_t(h)*size_t(bpp));
 
 	// form tex name
 	//
@@ -292,7 +292,7 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromMemory(int w, int h, int bpp, const v
 
   pugi::xml_node texNodeXml = g_objManager.textures_lib_append_child();
 
-  int byteSize = size_t(w)*size_t(h)*size_t(bpp);
+  auto byteSize = size_t(w)*size_t(h)*size_t(bpp);
 
   if (pTextureImpl != nullptr)
   {
@@ -350,7 +350,7 @@ HAPI HRTextureNodeRef hrTexture2DUpdateFromMemory(HRTextureNodeRef currentRef, i
 
 	pugi::xml_node texNodeXml = g_objManager.textures_lib_append_child();
 
-	int byteSize = size_t(w)*size_t(h)*size_t(bpp);
+	auto byteSize = size_t(w)*size_t(h)*size_t(bpp);
 
 	ChunkPointer chunk = g_objManager.scnData.m_vbCache.chunk_at(pTextureImpl->chunkId());
 
@@ -526,29 +526,77 @@ HAPI pugi::xml_node hrTextureBind(HRTextureNodeRef a_pTexNode, pugi::xml_node a_
 }
 
 
-HAPI HRTextureNodeRef  hrTexture2DCreateFromProcLDR(HR_TEXTURE2D_PROC_LDR_CALLBACK a_proc, void* a_customData, int w, int h)
+HAPI HRTextureNodeRef  hrTexture2DCreateFromProcLDR(HR_TEXTURE2D_PROC_LDR_CALLBACK a_proc, void* a_customData,
+                                                    int customDataSize, int w, int h)
 {
-	int bpp = 4;
 
-	//#TODO : determine resolution
-  if ((w == -1) && (h == -1))
+  if (a_proc == nullptr || (a_customData == nullptr && customDataSize > 0))
   {
-    w = 32;
-    h = 32;
+    HrPrint(HR_SEVERITY_WARNING, L"hrTexture2DCreateFromProcLDR, invalid input");
+    HRTextureNodeRef ref2; // dummy white texture
+    ref2.id = 0;
+    return ref2;
   }
 
-	unsigned char* imageData = new unsigned char[w*h*bpp];
+  if ((w != -1) && (h != -1)) //user specified resolution - can create texture immediately
+  {
+    int bpp = 4;
 
-	a_proc(imageData, w, h, a_customData);
+    auto* imageData = new unsigned char[w * h * bpp];
 
-	HRTextureNodeRef procTex = hrTexture2DCreateFromMemory(w, h, 4, imageData);
+    a_proc(imageData, w, h, a_customData);
 
-	delete [] imageData;
-	
-	return procTex;
+    HRTextureNodeRef procTex = hrTexture2DCreateFromMemory(w, h, bpp, imageData);
+
+    delete [] imageData;
+
+    return procTex;
+  }
+  else
+  {
+    std::wstringstream outStr;
+    outStr << L"texture2d_" << g_objManager.scnData.textures.size();
+
+    HRTextureNode texRes; // int w, int h, int bpp, const void* a_data
+    texRes.name = outStr.str();
+    texRes.id   = int32_t(g_objManager.scnData.textures.size());
+    texRes.customData = malloc(customDataSize);
+    memcpy(texRes.customData, a_customData, size_t(customDataSize));
+    texRes.ldrCallback = a_proc;
+    texRes.customDataSize = customDataSize;
+
+    g_objManager.scnData.textures.push_back(texRes);
+
+    HRTextureNodeRef ref;
+    ref.id = texRes.id;
+
+    pugi::xml_node texNodeXml = g_objManager.textures_lib_append_child();
+
+    auto byteSize = 0;
+
+    std::wstringstream namestr;
+    namestr << L"Map#" << ref.id;
+    std::wstring texName = namestr.str();
+    std::wstring id = ToWString(ref.id);
+    std::wstring bytesize = ToWString(byteSize);
+
+    texNodeXml.append_attribute(L"id").set_value(id.c_str());
+    texNodeXml.append_attribute(L"name").set_value(texName.c_str());
+    texNodeXml.append_attribute(L"loc").set_value(L"");
+    texNodeXml.append_attribute(L"offset").set_value(L"8");
+    texNodeXml.append_attribute(L"bytesize").set_value(bytesize.c_str());
+    texNodeXml.append_attribute(L"width") = w;
+    texNodeXml.append_attribute(L"height") = h;
+    texNodeXml.append_attribute(L"dl").set_value(L"0");
+
+    g_objManager.scnData.textures[ref.id].update_next(texNodeXml);
+
+    return ref;
+  }
 }
 
-HAPI HRTextureNodeRef  hrTexture2DCreateFromProcHDR(HR_TEXTURE2D_PROC_HDR_CALLBACK a_proc, void* a_customData, int w, int h)
+HAPI HRTextureNodeRef  hrTexture2DCreateFromProcHDR(HR_TEXTURE2D_PROC_HDR_CALLBACK a_proc, void* a_customData,
+                                                    int customDataSize, int w, int h)
 {
 	int bpp = sizeof(float)*4;
 
@@ -559,7 +607,7 @@ HAPI HRTextureNodeRef  hrTexture2DCreateFromProcHDR(HR_TEXTURE2D_PROC_HDR_CALLBA
     h = 32;
   }
 
-	float* imageData = new float[w*h*bpp/sizeof(float)];
+	auto* imageData = new float[w*h*bpp/sizeof(float)];
 
 	a_proc(imageData, w, h, a_customData);
 
@@ -570,7 +618,8 @@ HAPI HRTextureNodeRef  hrTexture2DCreateFromProcHDR(HR_TEXTURE2D_PROC_HDR_CALLBA
 	return procTex;
 }
 
-HAPI HRTextureNodeRef  hrTexture2DUpdateFromProcLDR(HRTextureNodeRef currentRef, HR_TEXTURE2D_PROC_LDR_CALLBACK a_proc, void* a_customData, int w, int h)
+HAPI HRTextureNodeRef  hrTexture2DUpdateFromProcLDR(HRTextureNodeRef currentRef, HR_TEXTURE2D_PROC_LDR_CALLBACK a_proc,
+                                                    void* a_customData, int customDataSize, int w, int h)
 {
   int bpp = 4;
 
@@ -581,7 +630,7 @@ HAPI HRTextureNodeRef  hrTexture2DUpdateFromProcLDR(HRTextureNodeRef currentRef,
     h = 32;
   }
 
-  unsigned char* imageData = new unsigned char[w*h*bpp];
+  auto* imageData = new unsigned char[w*h*bpp];
 
   a_proc(imageData, w, h, a_customData);
 
@@ -592,7 +641,8 @@ HAPI HRTextureNodeRef  hrTexture2DUpdateFromProcLDR(HRTextureNodeRef currentRef,
   return procTex;
 }
 
-HAPI HRTextureNodeRef  hrTexture2DUpdateFromProcHDR(HRTextureNodeRef currentRef, HR_TEXTURE2D_PROC_HDR_CALLBACK a_proc, void* a_customData, int w, int h)
+HAPI HRTextureNodeRef  hrTexture2DUpdateFromProcHDR(HRTextureNodeRef currentRef, HR_TEXTURE2D_PROC_HDR_CALLBACK a_proc,
+                                                    void* a_customData, int customDataSize, int w, int h)
 {
   int bpp = sizeof(float) * 4;
 
@@ -603,7 +653,7 @@ HAPI HRTextureNodeRef  hrTexture2DUpdateFromProcHDR(HRTextureNodeRef currentRef,
     h = 32;
   }
 
-  float* imageData = new float[w*h*bpp / sizeof(float)];
+  auto* imageData = new float[w*h*bpp / sizeof(float)];
 
   a_proc(imageData, w, h, a_customData);
 

@@ -29,6 +29,13 @@ struct HRObject
 {
   HRObject() : name(L""), id(0), opened(false), openMode(HR_WRITE_DISCARD), inMemory(true), changeId(0), wasChanged(false) {}
 
+  HRObject(const HRObject& other) : name(other.name), id(other.id), opened(other.opened), openMode(other.openMode),
+                                    inMemory(other.inMemory), changeId(other.changeId), wasChanged(other.wasChanged)
+  {
+    m_xmlNode = other.m_xmlNode;
+    m_xmlNodeNext = other.m_xmlNodeNext;
+  }
+
   //////////////////////////////////////////////////
 
   std::wstring name;     ///< object name that user usually have to specify
@@ -117,8 +124,8 @@ struct HRMesh : public HRObject<IHRMesh>
 
   std::shared_ptr<IHRMesh> pImpl;
 
-  pugi::xml_node copy_node(pugi::xml_node a_node, bool a_lite);
-  pugi::xml_node copy_node_back(pugi::xml_node a_node);
+  pugi::xml_node copy_node(pugi::xml_node a_node, bool a_lite) override;
+  pugi::xml_node copy_node_back(pugi::xml_node a_node) override;
 
 //protected:
 
@@ -239,8 +246,8 @@ struct HRLight : public HRObject<IHRLight>
 {
   HRLight(){}
 
-  pugi::xml_node copy_node(pugi::xml_node a_node, bool a_lite);
-  pugi::xml_node copy_node_back(pugi::xml_node a_node);
+  pugi::xml_node copy_node(pugi::xml_node a_node, bool a_lite) override;
+  pugi::xml_node copy_node_back(pugi::xml_node a_node) override;
 };
 
 struct HRMaterial : public HRObject<IHRMat>
@@ -249,8 +256,8 @@ struct HRMaterial : public HRObject<IHRMat>
 
   std::shared_ptr<IHRMat> pImpl;
 
-  pugi::xml_node copy_node(pugi::xml_node a_node, bool a_lite);
-  pugi::xml_node copy_node_back(pugi::xml_node a_node);
+  pugi::xml_node copy_node(pugi::xml_node a_node, bool a_lite) override;
+  pugi::xml_node copy_node_back(pugi::xml_node a_node) override;
 };
 
 struct HRCamera : public HRObject<IHRCam>
@@ -259,37 +266,53 @@ struct HRCamera : public HRObject<IHRCam>
 
   std::shared_ptr<IHRCam> pImpl;
 
-  pugi::xml_node copy_node(pugi::xml_node a_node, bool a_lite);
-  pugi::xml_node copy_node_back(pugi::xml_node a_node);
+  pugi::xml_node copy_node(pugi::xml_node a_node, bool a_lite) override;
+  pugi::xml_node copy_node_back(pugi::xml_node a_node) override;
 };
 
 /**
 \brief Nodes are render textures, pretty much like any other nodes used in 3D modeling software.
 
-A common 3D modeling software, like 3ds Max, Blender and espetially Houdiny uses concept called Nodes.
+A common 3D modeling software, like 3ds Max, Blender and especially Houdini uses concept called Nodes.
 
-Nodes are fixed function or programmible units, like a functions - take some from input and put some other to output.
+Nodes are fixed function or programmable units, like a functions - take some from input and put some other to output.
 Nodes usually can be bind to some material slots (or light slots). Users will build a trees from nodes to do some complex stuff.
 
 The simplest node is a Bitmap, created with hrTexture2D. Bitmaps are simple 2D images. Just a 2D array of values.
 Their input is a texture coordinates, output - texture color. Texture can be bound to material slot.
 
-The more complex example is 'Faloff' node - a blend for 2 textures based of angle between view vector and surface normal.
-Faloff is a fixed function node with predefined parameters.
+The more complex example is 'Falloff' node - a blend for 2 textures based of angle between view vector and surface normal.
+Falloff is a fixed function node with predefined parameters.
 
-Any parameters (for fixed function or programmible nodes) can be set via sequence of HRTextureNodeOpen(node), hrParameter(node,...), HRTextureNodeClose(node);
+Any parameters (for fixed function or programmable nodes) can be set via sequence of HRTextureNodeOpen(node), hrParameter(node,...), HRTextureNodeClose(node);
 
 */
 struct HRTextureNode : public HRObject<IHRTextureNode>
 {
-  HRTextureNode() : pImpl(nullptr), m_loadedFromFile(false)  {}
+  HRTextureNode() : pImpl(nullptr), m_loadedFromFile(false), customData(nullptr), customDataSize(0),
+                    ldrCallback(nullptr), hdrCallback(nullptr) {}
+
+  ~HRTextureNode() {free(customData);}
+
+  HRTextureNode(const HRTextureNode& other) : HRObject(other), m_loadedFromFile(other.m_loadedFromFile), ldrCallback(other.ldrCallback),
+                                        hdrCallback(other.hdrCallback), customDataSize(other.customDataSize)
+  {
+      customData = malloc(customDataSize);
+      memcpy(customData, other.customData, customDataSize);
+  }
 
   std::shared_ptr<IHRTextureNode> pImpl;
 
-  pugi::xml_node copy_node(pugi::xml_node a_node, bool a_lite);
-  pugi::xml_node copy_node_back(pugi::xml_node a_node);
+  pugi::xml_node copy_node(pugi::xml_node a_node, bool a_lite) override;
+  pugi::xml_node copy_node_back(pugi::xml_node a_node) override;
 
   bool m_loadedFromFile;
+
+  void *customData;
+  int32_t customDataSize;
+
+  HR_TEXTURE2D_PROC_LDR_CALLBACK ldrCallback;
+  HR_TEXTURE2D_PROC_HDR_CALLBACK hdrCallback;
 };
 
 
@@ -309,8 +332,8 @@ struct HRSceneData : public HRObject<IHRSceneData>
 
   std::shared_ptr<IHRSceneData> pImpl;
 
-  pugi::xml_node copy_node(pugi::xml_node a_node, bool a_lite);
-  pugi::xml_node copy_node_back(pugi::xml_node a_node);
+  pugi::xml_node copy_node(pugi::xml_node a_node, bool a_lite) override;
+  pugi::xml_node copy_node_back(pugi::xml_node a_node) override;
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
   std::vector<HRMesh>        meshes;
@@ -539,8 +562,8 @@ struct HRRender : public HRObject<IHRRender>
 
   std::shared_ptr<IHRRenderDriver> m_pDriver;
 
-  pugi::xml_node copy_node(pugi::xml_node a_node, bool a_lite);
-  pugi::xml_node copy_node_back(pugi::xml_node a_node);
+  pugi::xml_node copy_node(pugi::xml_node a_node, bool a_lite) override;
+  pugi::xml_node copy_node_back(pugi::xml_node a_node) override;
 
   int maxRaysPerPixel;
 

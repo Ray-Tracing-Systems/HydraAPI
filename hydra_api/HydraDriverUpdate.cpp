@@ -21,6 +21,8 @@
 extern HRObjectManager g_objManager;
 extern HR_INFO_CALLBACK  g_pInfoCallback;
 
+using resolution_dict = std::unordered_map<uint32_t, std::pair<uint32_t, uint32_t> >;
+
 struct ChangeList
 {
   ChangeList() {}
@@ -487,6 +489,7 @@ int32_t HR_DriverUpdateTextures(HRSceneInst& scn, ChangeList& objList, IHRRender
     pugi::xml_node texNodeXML  = texNode.xml_node_immediate();
     uint64_t       dataOffset  = texNodeXML.attribute(L"offset").as_ullong(); //#SAFETY: check dataOffset for too big value ?
     bool           delayedLoad = (texNodeXML.attribute(L"dl").as_int() == 1);
+    bool isProc = texNodeXML.attribute(L"loc").as_string() == L"";
 
     if (dataPtr == nullptr)
     {
@@ -500,6 +503,10 @@ int32_t HR_DriverUpdateTextures(HRSceneInst& scn, ChangeList& objList, IHRRender
       {
         const std::wstring path = g_objManager.GetLoc(texNodeXML);
         a_pDriver->UpdateImageFromFile(int32_t(*p), path.c_str(), texNodeXML);
+      }
+      else if(isProc)
+      {
+        scn.texturesUsedByDrv.insert(*p);
       }
       else
         UpdateImageFromFileOrChunk(int32_t(*p), texNode, a_pDriver);
@@ -1150,8 +1157,74 @@ void _hr_UtilityDriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 
 }
 
-void InsertMipLevelInfoIntoXML(pugi::xml_document &stateToProcess, const std::unordered_map<uint32_t, uint32_t> &dict)
+void CreatePrecompProcTex(pugi::xml_document &doc, resolution_dict &dict)
 {
+  if (g_objManager.scnData.textures.size() == 0)
+    return;
+
+  auto scn = g_objManager.scnInst[g_objManager.m_currSceneId];
+
+  int32_t texturesUpdated = 0;
+
+  for (auto texIdRes : dict)
+  {
+    auto texRefId = texIdRes.first;
+    auto w = texIdRes.second.first;
+    auto h = texIdRes.second.second;
+
+    HRTextureNode &texture = g_objManager.scnData.textures[texIdRes.first];
+
+    int bpp = 4;
+    bool isProc = false;
+    if (texture.hdrCallback != nullptr)
+    {
+      bpp = sizeof(float) * 4;
+      auto *imageData = new float[w * h * bpp / sizeof(float)];
+
+      texture.hdrCallback(imageData, w, h, texture.customData);
+
+      auto pTextureImpl = g_objManager.m_pFactory->CreateTexture2DFromMemory(&texture, w, h, bpp, imageData);
+      texture.pImpl = pTextureImpl;
+
+      delete[] imageData;
+
+      isProc = true;
+    } else if (texture.ldrCallback != nullptr)
+    {
+      auto *imageData = new unsigned char[w * h * bpp];
+
+      texture.ldrCallback(imageData, w, h, texture.customData);
+
+      auto pTextureImpl = g_objManager.m_pFactory->CreateTexture2DFromMemory(&texture, w, h, bpp, imageData);
+      texture.pImpl = pTextureImpl;
+
+      delete[] imageData;
+
+      isProc = true;
+    }
+
+    if (isProc)
+    {
+      auto texIdStr = ToWString(texRefId);
+      auto texNode = doc.child(L"textures_lib").find_child_by_attribute(L"texture", L"id", texIdStr.c_str());
+      auto byteSize = size_t(w) * size_t(h) * size_t(bpp);
+
+      ChunkPointer chunk = g_objManager.scnData.m_vbCache.chunk_at(texture.pImpl->chunkId());
+      std::wstring location = ChunkName(chunk);
+
+      std::wstring bytesize = ToWString(byteSize);
+      g_objManager.SetLoc(texNode, location);
+      texNode.force_attribute(L"offset").set_value(L"8");
+      texNode.force_attribute(L"bytesize").set_value(bytesize.c_str());
+      texNode.force_attribute(L"width") = w;
+      texNode.force_attribute(L"height") = h;
+    }
+  }
+}
+
+resolution_dict InsertMipLevelInfoIntoXML(pugi::xml_document &stateToProcess, const std::unordered_map<uint32_t, uint32_t> &dict)
+{
+  resolution_dict resDict;
   for (std::pair<int32_t, int32_t> elem : dict)
   {
     std::wstringstream tmp;
@@ -1164,8 +1237,8 @@ void InsertMipLevelInfoIntoXML(pugi::xml_document &stateToProcess, const std::un
       int currW = texNode.attribute(L"width").as_int();
       int currH = texNode.attribute(L"height").as_int();
 
-      int newW = MAX_TEXTURE_RESOLUTION;
-      int newH = MAX_TEXTURE_RESOLUTION;
+      uint32_t newW = MAX_TEXTURE_RESOLUTION;
+      uint32_t newH = MAX_TEXTURE_RESOLUTION;
 
       for(int i = 0; i < elem.second; ++i)
       {
@@ -1178,9 +1251,15 @@ void InsertMipLevelInfoIntoXML(pugi::xml_document &stateToProcess, const std::un
 
       texNode.force_attribute(L"r_width").set_value(newW);
       texNode.force_attribute(L"r_height").set_value(newH);
+
+      resDict[elem.first] = std::pair<uint32_t, uint32_t>(newW, newH);
     }
   }
+
+  return resDict;
 }
+
+
 
 std::wstring SaveFixedStateXML(pugi::xml_document &doc, const std::wstring &oldPath, const std::wstring &suffix)
 {
@@ -1192,6 +1271,7 @@ std::wstring SaveFixedStateXML(pugi::xml_document &doc, const std::wstring &oldP
 
   return new_state_path;
 }
+
 
 std::wstring HR_UtilityDriverStart(const wchar_t* state_path)
 {
@@ -1222,7 +1302,8 @@ std::wstring HR_UtilityDriverStart(const wchar_t* state_path)
 
   auto mipLevelsDict = getMipLevelsFromUtilityDriver(utilityDriver.get(), offscreen_context);
 
-  InsertMipLevelInfoIntoXML(stateToProcess, mipLevelsDict);
+  auto resDict = InsertMipLevelInfoIntoXML(stateToProcess, mipLevelsDict);
+  CreatePrecompProcTex(stateToProcess, resDict);
 
   return SaveFixedStateXML(stateToProcess, state_path, L"_fixed");
 }
