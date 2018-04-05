@@ -112,7 +112,7 @@ void AddInstanceToDrawSequence(const HRSceneInst::Instance &instance,
     p->second.linstid.push_back(instance.lightInstId);
     p->second.remapid.push_back(instance.remapListId);
   }
-  
+
 }
 
 void FindNewObjects(ChangeList& objects, HRSceneInst& scn)
@@ -1120,11 +1120,11 @@ void _hr_UtilityDriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 
 
   ///////////////////////////////
-  
+
   std::unordered_map<int32_t, ChangeList::InstancesInfo > drawSeq;
 
-  
-  
+
+
   for (size_t i = 0; i < scn.drawList.size(); i++)
   {
     auto instance = scn.drawList[i];
@@ -1150,12 +1150,41 @@ void _hr_UtilityDriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 
 }
 
-void HR_UtilityDriverStart(const wchar_t* state_path)
+void InsertMipLevelInfoIntoXML(pugi::xml_document &stateToProcess, const std::unordered_map<uint32_t, uint32_t> &dict)
 {
+  for (std::pair<int32_t, int32_t> elem : dict)
+  {
+    std::wstringstream tmp;
+    tmp << elem.first;
+    auto texIdStr = tmp.str();
+    auto texNode = stateToProcess.child(L"textures_lib").find_child_by_attribute(L"texture", L"id", texIdStr.c_str());
+
+    if(texNode != nullptr)
+    {
+      texNode.force_attribute(L"mip").set_value(elem.second);
+    }
+  }
+}
+
+std::wstring SaveFixedStateXML(pugi::xml_document &doc, const std::wstring &oldPath, const std::wstring &suffix)
+{
+  std::wstringstream ss;
+  ss << std::wstring(oldPath.begin(), oldPath.end() - 4) << suffix << L".xml"; //cut ".xml" from initial path and append new suffix
+  std::wstring new_state_path = ss.str();
+
+  doc.save_file(new_state_path.c_str());
+
+  return new_state_path;
+}
+
+std::wstring HR_UtilityDriverStart(const wchar_t* state_path)
+{
+  std::wstring new_state_path(L"");
+
   if (state_path == L"" || state_path == nullptr)
   {
     HrError(L"No state for Utility driver at location: ", state_path);
-    return;
+    return new_state_path;
   }
 
   pugi::xml_document stateToProcess;
@@ -1165,36 +1194,19 @@ void HR_UtilityDriverStart(const wchar_t* state_path)
   if (!loadResult)
   {
     HrError(L"MergeLibraryIntoLibrary, pugixml load: ", loadResult.description());
-    return;
+    return new_state_path;
   }
-
 
   auto offscreen_context = InitGLForUtilityDriver();
 
   std::unique_ptr<IHRRenderDriver> utilityDriver = CreateRenderFromString(L"opengl3Utility", L"");
-  RD_OGL32_Utility &utilityDrvRef = *(dynamic_cast<RD_OGL32_Utility *>(utilityDriver.get()));
-
   utilityDriver->SetInfoCallBack(g_pInfoCallback);
 
-  glfwPollEvents();
-
-  //TODO: replace HR_DriverUpdate with utility driver specific function
   _hr_UtilityDriverUpdate(g_objManager.scnInst[g_objManager.m_currSceneId], utilityDriver.get());
-  //HR_DriverUpdate(g_objManager.scnInst[g_objManager.m_currSceneId], utilityDriver.get());
 
-  glfwSwapBuffers(offscreen_context);
+  auto mipLevelsDict = getMipLevelsFromUtilityDriver(utilityDriver.get(), offscreen_context);
 
-  auto mipLevelsDict = utilityDrvRef.GetMipLevelsDict();
+  InsertMipLevelInfoIntoXML(stateToProcess, mipLevelsDict);
 
-
-  for (std::pair<int32_t, int32_t> elem : mipLevelsDict)
-    std::cout << " " << elem.first << ":" << elem.second << std::endl;
-
-
-  HR_DriverDraw(g_objManager.scnInst[g_objManager.m_currSceneId], utilityDriver.get());
-
-  glfwSetWindowShouldClose(offscreen_context, GL_TRUE);
-
-  //glfwTerminate();
-
+  return SaveFixedStateXML(stateToProcess, state_path, L"_mip");
 }
