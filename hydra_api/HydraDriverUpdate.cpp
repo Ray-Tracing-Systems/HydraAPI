@@ -1161,7 +1161,23 @@ void InsertMipLevelInfoIntoXML(pugi::xml_document &stateToProcess, const std::un
 
     if(texNode != nullptr)
     {
-      texNode.force_attribute(L"mip").set_value(elem.second);
+      int currW = texNode.attribute(L"width").as_int();
+      int currH = texNode.attribute(L"height").as_int();
+
+      int newW = MAX_TEXTURE_RESOLUTION;
+      int newH = MAX_TEXTURE_RESOLUTION;
+
+      for(int i = 0; i < elem.second; ++i)
+      {
+        newW /= 2;
+        newH /= 2;
+      }
+
+      newW = newW > currW ? currW : newW;
+      newH = newH > currH ? currH : newH;
+
+      texNode.force_attribute(L"r_width").set_value(newW);
+      texNode.force_attribute(L"r_height").set_value(newH);
     }
   }
 }
@@ -1208,5 +1224,5 @@ std::wstring HR_UtilityDriverStart(const wchar_t* state_path)
 
   InsertMipLevelInfoIntoXML(stateToProcess, mipLevelsDict);
 
-  return SaveFixedStateXML(stateToProcess, state_path, L"_mip");
+  return SaveFixedStateXML(stateToProcess, state_path, L"_fixed");
 }

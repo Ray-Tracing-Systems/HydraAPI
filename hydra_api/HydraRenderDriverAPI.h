@@ -329,6 +329,8 @@ IHRRenderDriver* CreateOpenGL3_Utilty_RenderDriver();
 
 static constexpr bool LEGACY_DRIVER_DEBUG = false;
 
+static constexpr int MAX_TEXTURE_RESOLUTION = 4096;
+
 /**
 \brief use this function to create your own render drivers.
 \param a_className - just a render name
