@@ -954,11 +954,11 @@ HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pC
 
   //////////////
   ////////////// Call utility render driver here
-/*
+
 #ifdef IN_DEBUG
   HR_UtilityDriverStart(newPath.c_str());
 #endif
-*/
+
   //////////////
 
   if (pSettings != nullptr && pSettings->m_pDriver != nullptr)

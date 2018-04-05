@@ -354,6 +354,7 @@ void RD_OGL32_Utility::BeginScene(pugi::xml_node a_sceneNode)
   glBufferSubData(GL_UNIFORM_BUFFER, 0, 32 * sizeof(GLfloat), &matrices[0]);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
+
   SetMaterialsTBO();
 
   m_lodBufferProgram.SetUniform("window_res", int2(m_width, m_height));
@@ -495,7 +496,7 @@ void RD_OGL32_Utility::FillMipLevelsDict()
     uint32_t mipLevel = pix >> 24u;
     uint32_t texId    = pix & texIdBits;
 
-    if(texId < m_texNum)
+    if(texId <= m_texNum)
     {
       if (m_mipLevelDict.find(texId) != m_mipLevelDict.end())
       {

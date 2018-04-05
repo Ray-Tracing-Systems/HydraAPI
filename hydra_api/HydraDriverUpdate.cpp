@@ -94,6 +94,27 @@ void AddUsedMaterialChildrenRecursive(ChangeList& objects, int32_t matId)
   }
 }
 
+void AddInstanceToDrawSequence(const HRSceneInst::Instance &instance,
+                               std::unordered_map<int32_t, ChangeList::InstancesInfo> &drawSeq)
+{
+
+  auto p = drawSeq.find(instance.meshId);
+  if (p == drawSeq.end())
+  {
+    drawSeq[instance.meshId].matrices = std::vector<float>  (instance.m, instance.m + 16);
+    drawSeq[instance.meshId].linstid  = std::vector<int32_t>(&instance.lightInstId, &instance.lightInstId + 1);
+    drawSeq[instance.meshId].remapid  = std::vector<int32_t>(&instance.remapListId, &instance.remapListId + 1);
+  }
+  else
+  {
+    std::vector<float> data(instance.m, instance.m + 16);
+    p->second.matrices.insert(p->second.matrices.end(), data.begin(), data.end());
+    p->second.linstid.push_back(instance.lightInstId);
+    p->second.remapid.push_back(instance.remapListId);
+  }
+  
+}
+
 void FindNewObjects(ChangeList& objects, HRSceneInst& scn)
 {
   // (1.1) loop through all scene instances to define what meshes used in scene  --> ~ok
@@ -116,20 +137,7 @@ void FindNewObjects(ChangeList& objects, HRSceneInst& scn)
     
     // form draw sequence for each mesh
     //
-    auto p = objects.drawSeq.find(instance.meshId);
-    if (p == objects.drawSeq.end())
-    {
-      objects.drawSeq[instance.meshId].matrices = std::vector<float>  (instance.m, instance.m + 16);
-      objects.drawSeq[instance.meshId].linstid  = std::vector<int32_t>(&instance.lightInstId, &instance.lightInstId + 1);
-      objects.drawSeq[instance.meshId].remapid  = std::vector<int32_t>(&instance.remapListId, &instance.remapListId + 1);
-    }
-    else
-    {
-      std::vector<float> data(instance.m, instance.m + 16);
-      p->second.matrices.insert(p->second.matrices.end(), data.begin(), data.end());
-      p->second.linstid.push_back(instance.lightInstId);
-      p->second.remapid.push_back(instance.remapListId);
-    }
+    AddInstanceToDrawSequence(instance, objects.drawSeq);
   }
 
   for (size_t i = 0; i < scn.drawListLights.size(); i++)
@@ -1092,10 +1100,10 @@ void _hr_UtilityDriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
   const size_t matNum   = scn.matUsedByDrv.size();
   const size_t lightNum = scn.lightUsedByDrv.size();
 
-  allocInfo.geomNum     = int32_t(geomNum  + geomNum/3  + 100);
-  allocInfo.imgNum      = int32_t(imgNum   + imgNum/3   + 100);
-  allocInfo.matNum      = int32_t(matNum   + matNum/3   + 100);
-  allocInfo.lightNum    = int32_t(lightNum + lightNum/3 + 100);
+  allocInfo.geomNum     = int32_t(geomNum);
+  allocInfo.imgNum      = int32_t(imgNum);
+  allocInfo.matNum      = int32_t(matNum);
+  allocInfo.lightNum    = int32_t(lightNum);
 
   allocInfo.libraryPath = g_objManager.scnData.m_path.c_str();
 
@@ -1112,17 +1120,11 @@ void _hr_UtilityDriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 
 
   ///////////////////////////////
-  //Temporary duplicate instance list creation from FindNewObjects
-  //TODO: somehow reuse the old list
+  
+  std::unordered_map<int32_t, ChangeList::InstancesInfo > drawSeq;
 
-  struct InstancesInfo
-  {
-      std::vector<float>    matrices;
-      std::vector<int32_t>  linstid;
-      std::vector<int32_t>  remapid;
-  };
-  std::unordered_map<int32_t, InstancesInfo > drawSeq;
-
+  
+  
   for (size_t i = 0; i < scn.drawList.size(); i++)
   {
     auto instance = scn.drawList[i];
@@ -1131,20 +1133,7 @@ void _hr_UtilityDriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 
     // form draw sequence for each mesh
     //
-    auto p = drawSeq.find(instance.meshId);
-    if (p == drawSeq.end())
-    {
-      drawSeq[instance.meshId].matrices = std::vector<float>  (instance.m, instance.m + 16);
-      drawSeq[instance.meshId].linstid  = std::vector<int32_t>(&instance.lightInstId, &instance.lightInstId + 1);
-      drawSeq[instance.meshId].remapid  = std::vector<int32_t>(&instance.remapListId, &instance.remapListId + 1);
-    }
-    else
-    {
-      std::vector<float> data(instance.m, instance.m + 16);
-      p->second.matrices.insert(p->second.matrices.end(), data.begin(), data.end());
-      p->second.linstid.push_back(instance.lightInstId);
-      p->second.remapid.push_back(instance.remapListId);
-    }
+    AddInstanceToDrawSequence(instance, drawSeq);
   }
 
   ////////////////////////
