@@ -912,51 +912,51 @@ void RD_HydraConnection::GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_
 
     // kill borders alpha for pixels that are neighbours to background 
     //
-    if (a_lineData[x].rgba[3] < 0.85f && a_lineData[x].coverage < 0.85f)
-    {
-      // set up search window
-      //
-      constexpr int WINDOW_SIZE = 2;
+    //if (a_lineData[x].rgba[3] < 0.85f && a_lineData[x].coverage < 0.85f)
+    //{
+    //  // set up search window
+    //  //
+    //  constexpr int WINDOW_SIZE = 2;
 
-      int minY = a_lineNumber - WINDOW_SIZE;
-      int maxY = a_lineNumber + WINDOW_SIZE;
+    //  int minY = a_lineNumber - WINDOW_SIZE;
+    //  int maxY = a_lineNumber + WINDOW_SIZE;
 
-      int minX = x - WINDOW_SIZE;
-      int maxX = x + WINDOW_SIZE;
-      
-      if (minY < 0) 
-        minY = 0;
-      if (maxY >= m_height)
-        maxY = m_height - 1;
+    //  int minX = x - WINDOW_SIZE;
+    //  int maxX = x + WINDOW_SIZE;
+    //  
+    //  if (minY < 0) 
+    //    minY = 0;
+    //  if (maxY >= m_height)
+    //    maxY = m_height - 1;
 
-      if (minX < 0)
-        minX = 0;
-      if (maxX >= m_width)
-        maxX = m_width - 1;
+    //  if (minX < 0)
+    //    minX = 0;
+    //  if (maxX >= m_width)
+    //    maxX = m_width - 1;
 
-      // locate background in nearby pixels
-      //
-      bool foundBack = false;
-      for (int y1 = minY; y1 <= maxY; y1++)
-      {
-        for (int x1 = minX; x1 <= maxX; x1++)
-        {
-          //const int instId = as_int(data2[(y1*m_width + x1) * 4 + 3]);
-          const int matId = as_int(data1[(y1*m_width + x1) * 4 + 2])& 0x00FFFFFF;
-          if (matId < 0 || matId >= int(0x00FFFFFF) || a_shadowCatchers.find(matId) != a_shadowCatchers.end())
-          {
-            foundBack = true;
-            goto BREAK_BOTH;
-          }
-        }
-      }
-      BREAK_BOTH:
-      
-      // now finally kill alpha
-      //
-      if (foundBack)
-        a_lineData[x].rgba[3] = 0.0f;
-    }
+    //  // locate background in nearby pixels
+    //  //
+    //  bool foundBack = false;
+    //  for (int y1 = minY; y1 <= maxY; y1++)
+    //  {
+    //    for (int x1 = minX; x1 <= maxX; x1++)
+    //    {
+    //      //const int instId = as_int(data2[(y1*m_width + x1) * 4 + 3]);
+    //      const int matId = as_int(data1[(y1*m_width + x1) * 4 + 2])& 0x00FFFFFF;
+    //      if (matId < 0 || matId >= int(0x00FFFFFF) || a_shadowCatchers.find(matId) != a_shadowCatchers.end())
+    //      {
+    //        foundBack = true;
+    //        goto BREAK_BOTH;
+    //      }
+    //    }
+    //  }
+    //  BREAK_BOTH:
+    //  
+    //  // now finally kill alpha
+    //  //
+    //  if (foundBack)
+    //    a_lineData[x].rgba[3] = 0.0f;
+    //}
 
   }
 
