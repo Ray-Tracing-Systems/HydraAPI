@@ -489,7 +489,7 @@ int32_t HR_DriverUpdateTextures(HRSceneInst& scn, ChangeList& objList, IHRRender
     pugi::xml_node texNodeXML  = texNode.xml_node_immediate();
     uint64_t       dataOffset  = texNodeXML.attribute(L"offset").as_ullong(); //#SAFETY: check dataOffset for too big value ?
     bool           delayedLoad = (texNodeXML.attribute(L"dl").as_int() == 1);
-    bool isProc = texNodeXML.attribute(L"loc").as_string() == L"";
+    bool isProc = (texNodeXML.attribute(L"loc").as_string() == L"" && !delayedLoad);
 
     if (dataPtr == nullptr)
     {

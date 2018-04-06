@@ -29,12 +29,12 @@ struct HRObject
 {
   HRObject() : name(L""), id(0), opened(false), openMode(HR_WRITE_DISCARD), inMemory(true), changeId(0), wasChanged(false) {}
 
-  HRObject(const HRObject& other) : name(other.name), id(other.id), opened(other.opened), openMode(other.openMode),
+ /* HRObject(const HRObject& other) : name(other.name), id(other.id), opened(other.opened), openMode(other.openMode),
                                     inMemory(other.inMemory), changeId(other.changeId), wasChanged(other.wasChanged)
   {
     m_xmlNode = other.m_xmlNode;
     m_xmlNodeNext = other.m_xmlNodeNext;
-  }
+  }*/
 
   //////////////////////////////////////////////////
 
@@ -295,7 +295,7 @@ struct HRTextureNode : public HRObject<IHRTextureNode>
   ~HRTextureNode() {free(customData);}
 
   HRTextureNode(const HRTextureNode& other) : HRObject(other), m_loadedFromFile(other.m_loadedFromFile), ldrCallback(other.ldrCallback),
-                                        hdrCallback(other.hdrCallback), customDataSize(other.customDataSize)
+                                        hdrCallback(other.hdrCallback), customDataSize(other.customDataSize), pImpl(other.pImpl)
   {
       customData = malloc(customDataSize);
       memcpy(customData, other.customData, customDataSize);
