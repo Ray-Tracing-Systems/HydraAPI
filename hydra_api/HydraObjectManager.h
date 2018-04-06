@@ -152,6 +152,7 @@ struct HRMesh : public HRObject<IHRMesh>
       verticesPos      = std::vector<float>();
       verticesNorm     = std::vector<float>();
       verticesTexCoord = std::vector<float>();
+      verticesTangent  = std::vector<float>();
       triIndices       = std::vector<uint32_t>();
       matIndices       = std::vector<uint32_t>();
       customArrays.clear();                       /// its a vector of vectors

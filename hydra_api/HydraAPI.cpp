@@ -166,6 +166,7 @@ HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMod
   g_objManager.renderSettings.clear();
 
   g_objManager.scnData.clear();
+  g_objManager.m_tempBuffer = std::vector<int>();
 
   if (g_objManager.m_pDriver != nullptr)
   {

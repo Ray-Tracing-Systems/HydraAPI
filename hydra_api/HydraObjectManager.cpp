@@ -108,6 +108,9 @@ void HRObjectManager::destroy()
 	scnData.m_geometryLibChanges	 = pugi::xml_node();
 	scnData.m_settingsNodeChanges = pugi::xml_node();
 	scnData.m_sceneNodeChanges		 = pugi::xml_node();
+
+	scnData.m_vbCache.Destroy();
+
 }
 
 const std::wstring HRObjectManager::GetLoc(const pugi::xml_node a_node) const
