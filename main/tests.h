@@ -249,6 +249,8 @@ namespace MTL_TESTS
   bool test_153_opacity_shadow_matte_opacity();
 
   bool test_154_proc_checker_precomp();
+  bool test_155_proc_checker_HDR_precomp();
+  bool test_156_proc_checker_precomp_update();
 }
 
 namespace LGHT_TESTS
