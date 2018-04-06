@@ -947,7 +947,7 @@ HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pC
   g_objManager.scnData.m_commitId++;
 
   g_objManager.scnData.m_xmlDoc.save_file(newPath.c_str(), L"  ");
-  g_objManager.scnData.m_vbCache.FlushToDisc();
+
 
   HRRender* pSettings = g_objManager.PtrById(a_pRender);
 
@@ -960,6 +960,8 @@ HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pC
 #endif
 
   //////////////
+
+  g_objManager.scnData.m_vbCache.FlushToDisc();
 
   if (pSettings != nullptr && pSettings->m_pDriver != nullptr)
     pSettings->m_pDriver->EndFlush();
