@@ -39,6 +39,7 @@ extern GLFWwindow* g_window;
 bool test41_load_library_basic()
 {
   initGLIfNeeded();
+  hrErrorCallerPlace(L"test41");
 
   hrSceneLibraryOpen(L"tests/test_41", HR_OPEN_EXISTING);
 
@@ -61,8 +62,8 @@ bool test41_load_library_basic()
 bool test42_load_library_basic()
 {
   initGLIfNeeded();
-
-  hrSceneLibraryOpen(L"C:/[Hydra]/pluginFiles/scenelib", HR_OPEN_EXISTING);
+  hrErrorCallerPlace(L"test42");
+  hrSceneLibraryOpen(L"tests/test_42", HR_OPEN_EXISTING);
 
   /////////////////////////////////////////////////////////
   HRRenderRef renderRef;

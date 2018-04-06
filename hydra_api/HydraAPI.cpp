@@ -955,9 +955,10 @@ HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pC
   //////////////
   ////////////// Call utility render driver here
 
-#ifdef IN_DEBUG
-  auto fixed_state = HR_UtilityDriverStart(newPath.c_str());
-#endif
+//#ifdef IN_DEBUG
+  if(g_objManager.m_pDriver != nullptr && g_objManager.m_pDriver->Info().supportUtilityPrepass)
+    auto fixed_state = HR_UtilityDriverStart(newPath.c_str());
+//#endif
 
   //////////////
 

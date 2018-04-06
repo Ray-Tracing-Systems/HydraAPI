@@ -1107,10 +1107,11 @@ void _hr_UtilityDriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
   const size_t matNum   = scn.matUsedByDrv.size();
   const size_t lightNum = scn.lightUsedByDrv.size();
 
-  allocInfo.geomNum     = int32_t(geomNum);
-  allocInfo.imgNum      = int32_t(imgNum);
-  allocInfo.matNum      = int32_t(matNum);
-  allocInfo.lightNum    = int32_t(lightNum);
+  allocInfo.geomNum     = int32_t(geomNum  + geomNum/3  + 100);
+  allocInfo.imgNum      = int32_t(imgNum   + imgNum/3   + 100);
+  allocInfo.matNum      = int32_t(matNum   + matNum/3   + 100);
+  allocInfo.lightNum    = int32_t(lightNum + lightNum/3 + 100);
+
 
   allocInfo.libraryPath = g_objManager.scnData.m_path.c_str();
 
@@ -1296,14 +1297,17 @@ std::wstring HR_UtilityDriverStart(const wchar_t* state_path)
   auto offscreen_context = InitGLForUtilityDriver();
 
   std::unique_ptr<IHRRenderDriver> utilityDriver = CreateRenderFromString(L"opengl3Utility", L"");
-  utilityDriver->SetInfoCallBack(g_pInfoCallback);
 
-  _hr_UtilityDriverUpdate(g_objManager.scnInst[g_objManager.m_currSceneId], utilityDriver.get());
+  if (utilityDriver != nullptr && g_objManager.m_currSceneId < g_objManager.scnInst.size())
+  {
+    utilityDriver->SetInfoCallBack(g_pInfoCallback);
 
-  auto mipLevelsDict = getMipLevelsFromUtilityDriver(utilityDriver.get(), offscreen_context);
+    _hr_UtilityDriverUpdate(g_objManager.scnInst[g_objManager.m_currSceneId], utilityDriver.get());
 
-  auto resDict = InsertMipLevelInfoIntoXML(stateToProcess, mipLevelsDict);
-  CreatePrecompProcTex(stateToProcess, resDict);
+    auto mipLevelsDict = getMipLevelsFromUtilityDriver(utilityDriver.get(), offscreen_context);
 
+    auto resDict = InsertMipLevelInfoIntoXML(stateToProcess, mipLevelsDict);
+    CreatePrecompProcTex(stateToProcess, resDict);
+  }
   return SaveFixedStateXML(stateToProcess, state_path, L"_fixed");
 }
