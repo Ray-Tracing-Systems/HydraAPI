@@ -13,7 +13,7 @@
 #include "Camera.h"
 #include "Timer.h"
 //#include "glad/glad.h"
-#include "OpenGLCoreProfileUtils.h"
+#include "../hydra_api/OpenGLCoreProfileUtils.h"
 
 #if defined(WIN32)
 #include <GLFW/glfw3.h>

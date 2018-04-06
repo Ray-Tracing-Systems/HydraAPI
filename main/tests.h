@@ -106,8 +106,8 @@ bool test27_many_textures_big_data_from_mem();
 bool test28_compute_normals();
 bool test29_many_textures_and_meshes();
 bool test30_many_textures_and_meshes();
-bool test31_procedural_texture_LDR();
-bool test32_procedural_texture_HDR();
+bool test31_procedural_texture_LDR(); //doesn't work because opengl1 render doesn't support utilityPrepass
+bool test32_procedural_texture_HDR(); //doesn't work because opengl1 render doesn't support utilityPrepass
 bool test33_update_from_file();
 bool test34_delayed_textures_does_not_exists();
 bool test35_cornell_with_light();
@@ -247,6 +247,10 @@ namespace MTL_TESTS
   bool test_151_gloss_mirror_cos_div2();
   bool test_152_texture_color_replace_mode();
   bool test_153_opacity_shadow_matte_opacity();
+
+  bool test_154_proc_checker_precomp();
+  bool test_155_proc_checker_HDR_precomp();
+  bool test_156_proc_checker_precomp_update();
 }
 
 namespace LGHT_TESTS

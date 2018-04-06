@@ -43,8 +43,9 @@ struct HRDriverAllocInfo
 struct HRDriverInfo
 {
   HRDriverInfo() : supportMultiMaterialInstance(false), supportHDRFrameBuffer(false), supportHDRTextures(false),
-                   supportImageLoadFromInternalFormat(false), supportImageLoadFromExternalFormat(false), supportMeshLoadFromInternalFormat(false),
-                   supportLighting(false), createsLightGeometryItself(false), memTotal(0), supportGetFrameBufferLine(false) {}
+                   supportImageLoadFromInternalFormat(false), supportImageLoadFromExternalFormat(false),
+                   supportMeshLoadFromInternalFormat(false), supportLighting(false), createsLightGeometryItself(false),
+                   memTotal(0), supportGetFrameBufferLine(false), supportUtilityPrepass(false) {}
 
 
   bool supportMultiMaterialInstance;
@@ -56,6 +57,7 @@ struct HRDriverInfo
   bool supportLighting;
   bool createsLightGeometryItself;
   bool supportGetFrameBufferLine;
+  bool supportUtilityPrepass;
   int64_t memTotal;
 };
 
@@ -328,6 +330,8 @@ IHRRenderDriver* CreateOpenGL32Deferred_RenderDriver();
 IHRRenderDriver* CreateOpenGL3_Utilty_RenderDriver();
 
 static constexpr bool LEGACY_DRIVER_DEBUG = false;
+
+static constexpr uint32_t MAX_TEXTURE_RESOLUTION = 4096;
 
 /**
 \brief use this function to create your own render drivers.

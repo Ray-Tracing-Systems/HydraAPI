@@ -15,7 +15,7 @@
 
 #include <math.h>
 
-static const bool gDebugMode = false;
+static const bool gDebugMode = true;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -97,7 +97,7 @@ bool VirtualBuffer::Init(uint64_t a_sizeInBytes, const char* a_shmemName)
   }
   else
   {
-    m_fileDescriptor = shm_open(a_shmemName, O_CREAT | O_RDWR, 0777);
+    m_fileDescriptor = shm_open(a_shmemName, O_CREAT | O_RDWR | O_TRUNC, 0777);
     ftruncate(m_fileDescriptor, a_sizeInBytes);
 
     m_data = mmap(nullptr, a_sizeInBytes, PROT_READ | PROT_WRITE, MAP_SHARED, m_fileDescriptor, 0);
@@ -135,10 +135,15 @@ void VirtualBuffer::Destroy()
     CloseHandle(m_fileHandle);  m_fileHandle = NULL;
   }
 #else
-  munmap(m_data, m_totalSizeAllocated);
-  shm_unlink(shmemName.c_str());
-  close(m_fileDescriptor);
+  if (!gDebugMode)
+  {
+    munmap(m_data, m_totalSizeAllocated);
+    shm_unlink(shmemName.c_str());
+    close(m_fileDescriptor);
+  }
 #endif
+
+  m_data = nullptr;
 }
 
 void VirtualBuffer::Clear()

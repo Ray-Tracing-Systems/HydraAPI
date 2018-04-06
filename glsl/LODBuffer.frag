@@ -26,10 +26,10 @@ float mip_map_level(vec2 texture_coordinate)
   vec2  dy_vtc        = dFdy(4 * window_res.y * texture_coordinate);
   float delta_max_sqr = max(dot(dx_vtc, dx_vtc), dot(dy_vtc, dy_vtc));
 
-  const float maxClamp = pow(2, MAX_MIP_LEVEL * 2);
-  delta_max_sqr = clamp(delta_max_sqr, 0.0, maxClamp);
+  const float maxClamp = pow(2.0f, MAX_MIP_LEVEL * 2.0f);
+  delta_max_sqr = clamp(delta_max_sqr, 0.0f, maxClamp);
 
-  return 0.5 * log2(delta_max_sqr);
+  return 0.5f * log2(delta_max_sqr);
 }
 
 
