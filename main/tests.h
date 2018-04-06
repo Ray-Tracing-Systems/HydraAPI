@@ -106,8 +106,8 @@ bool test27_many_textures_big_data_from_mem();
 bool test28_compute_normals();
 bool test29_many_textures_and_meshes();
 bool test30_many_textures_and_meshes();
-bool test31_procedural_texture_LDR();
-bool test32_procedural_texture_HDR();
+bool test31_procedural_texture_LDR(); //doesn't work because opengl1 render doesn't support utilityPrepass
+bool test32_procedural_texture_HDR(); //doesn't work because opengl1 render doesn't support utilityPrepass
 bool test33_update_from_file();
 bool test34_delayed_textures_does_not_exists();
 bool test35_cornell_with_light();

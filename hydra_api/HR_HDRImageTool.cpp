@@ -227,6 +227,9 @@ namespace HydraRender
     w = width;
     h = height;
 
+    FreeImage_Unload(dib);
+    FreeImage_Unload(converted);
+
   }
 
 
@@ -309,6 +312,9 @@ namespace HydraRender
     w = width;
     h = height;
 
+
+    FreeImage_Unload(dib);
+    FreeImage_Unload(converted);
   }
 
 
