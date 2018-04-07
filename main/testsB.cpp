@@ -296,7 +296,9 @@ bool test82_proc_texture()
 
     r1.append_attribute(L"type") = L"float4";
 
-    texNode.append_child(L"code").append_attribute(L"val") = L"my_custom_faloff.c";
+    xml_node code_node = texNode.append_child(L"code");
+    code_node.append_attribute(L"file") = L"my_custom_faloff.c";
+    code_node.append_attribute(L"main") = "userProc";
   }
   hrTextureNodeClose(texProc);
 
@@ -345,6 +347,7 @@ bool test82_proc_texture()
     auto colorNode = diff.append_child(L"color");
 
     colorNode.append_attribute(L"val") = L"0.5 0.0 0.0";
+    colorNode.append_attribute(L"tex_apply_mode") = L"replace";
 
     auto texNode = hrTextureBind(texProc, colorNode);
 

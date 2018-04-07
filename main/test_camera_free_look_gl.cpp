@@ -7,13 +7,14 @@
 
 #include "../hydra_api/HydraAPI.h"
 #include "../hydra_api/HydraXMLHelpers.h"
+#include "../hydra_api/OpenGLCoreProfileUtils.h"
+
 #include "tests.h"
 
 #include "input.h"
 #include "Camera.h"
 #include "Timer.h"
-//#include "glad/glad.h"
-#include "OpenGLCoreProfileUtils.h"
+
 
 #if defined(WIN32)
 #include <GLFW/glfw3.h>
