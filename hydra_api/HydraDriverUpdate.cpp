@@ -21,6 +21,8 @@
 extern HRObjectManager g_objManager;
 extern HR_INFO_CALLBACK  g_pInfoCallback;
 
+using resolution_dict = std::unordered_map<uint32_t, std::pair<uint32_t, uint32_t> >;
+
 struct ChangeList
 {
   ChangeList() {}
@@ -94,6 +96,27 @@ void AddUsedMaterialChildrenRecursive(ChangeList& objects, int32_t matId)
   }
 }
 
+void AddInstanceToDrawSequence(const HRSceneInst::Instance &instance,
+                               std::unordered_map<int32_t, ChangeList::InstancesInfo> &drawSeq)
+{
+
+  auto p = drawSeq.find(instance.meshId);
+  if (p == drawSeq.end())
+  {
+    drawSeq[instance.meshId].matrices = std::vector<float>  (instance.m, instance.m + 16);
+    drawSeq[instance.meshId].linstid  = std::vector<int32_t>(&instance.lightInstId, &instance.lightInstId + 1);
+    drawSeq[instance.meshId].remapid  = std::vector<int32_t>(&instance.remapListId, &instance.remapListId + 1);
+  }
+  else
+  {
+    std::vector<float> data(instance.m, instance.m + 16);
+    p->second.matrices.insert(p->second.matrices.end(), data.begin(), data.end());
+    p->second.linstid.push_back(instance.lightInstId);
+    p->second.remapid.push_back(instance.remapListId);
+  }
+
+}
+
 void FindNewObjects(ChangeList& objects, HRSceneInst& scn)
 {
   // (1.1) loop through all scene instances to define what meshes used in scene  --> ~ok
@@ -116,20 +139,7 @@ void FindNewObjects(ChangeList& objects, HRSceneInst& scn)
     
     // form draw sequence for each mesh
     //
-    auto p = objects.drawSeq.find(instance.meshId);
-    if (p == objects.drawSeq.end())
-    {
-      objects.drawSeq[instance.meshId].matrices = std::vector<float>  (instance.m, instance.m + 16);
-      objects.drawSeq[instance.meshId].linstid  = std::vector<int32_t>(&instance.lightInstId, &instance.lightInstId + 1);
-      objects.drawSeq[instance.meshId].remapid  = std::vector<int32_t>(&instance.remapListId, &instance.remapListId + 1);
-    }
-    else
-    {
-      std::vector<float> data(instance.m, instance.m + 16);
-      p->second.matrices.insert(p->second.matrices.end(), data.begin(), data.end());
-      p->second.linstid.push_back(instance.lightInstId);
-      p->second.remapid.push_back(instance.remapListId);
-    }
+    AddInstanceToDrawSequence(instance, objects.drawSeq);
   }
 
   for (size_t i = 0; i < scn.drawListLights.size(); i++)
@@ -479,6 +489,7 @@ int32_t HR_DriverUpdateTextures(HRSceneInst& scn, ChangeList& objList, IHRRender
     pugi::xml_node texNodeXML  = texNode.xml_node_immediate();
     uint64_t       dataOffset  = texNodeXML.attribute(L"offset").as_ullong(); //#SAFETY: check dataOffset for too big value ?
     bool           delayedLoad = (texNodeXML.attribute(L"dl").as_int() == 1);
+    bool isProc = (texNodeXML.attribute(L"loc").as_string() == L"" && !delayedLoad);
 
     if (dataPtr == nullptr)
     {
@@ -492,6 +503,10 @@ int32_t HR_DriverUpdateTextures(HRSceneInst& scn, ChangeList& objList, IHRRender
       {
         const std::wstring path = g_objManager.GetLoc(texNodeXML);
         a_pDriver->UpdateImageFromFile(int32_t(*p), path.c_str(), texNodeXML);
+      }
+      else if(isProc)
+      {
+        scn.texturesUsedByDrv.insert(*p);
       }
       else
         UpdateImageFromFileOrChunk(int32_t(*p), texNode, a_pDriver);
@@ -538,6 +553,32 @@ int32_t HR_DriverUpdateMaterials(HRSceneInst& scn, ChangeList& objList, IHRRende
       a_pDriver->UpdateMaterial(int32_t(*p), node);
       if (std::wstring(L"shadow_catcher") == node.attribute(L"type").as_string())
         g_objManager.scnData.m_shadowCatchers.insert(matId);
+      updatedMaterials++;
+    }
+    else
+      g_objManager.BadMaterialId(matId);
+  }
+
+  a_pDriver->EndMaterialUpdate();
+
+  return updatedMaterials;
+}
+
+int32_t _hr_UtilityDriverUpdateMaterials(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
+{
+  a_pDriver->BeginMaterialUpdate();
+
+  if (g_objManager.scnData.materials.size() == 0)
+    return 0;
+
+  int32_t updatedMaterials = 0;
+
+  for(auto matId : scn.matUsedByDrv)
+  {
+    if (matId < g_objManager.scnData.materials.size())
+    {
+      pugi::xml_node node = g_objManager.scnData.materials[matId].xml_node_immediate();
+      a_pDriver->UpdateMaterial(matId, node);
       updatedMaterials++;
     }
     else
@@ -754,7 +795,56 @@ int32_t HR_DriverUpdateMeshes(HRSceneInst& scn, ChangeList& objList, IHRRenderDr
   return updatedMeshes;
 }
 
-void HR_DriverUpdateCamera(HRSceneInst& scn, ChangeList& objList, IHRRenderDriver* a_pDriver)
+int32_t _hr_UtilityDriverUpdateMeshes(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
+{
+  a_pDriver->BeginGeomUpdate();
+
+  HRDriverInfo info = a_pDriver->Info();
+
+
+  int32_t updatedMeshes = 0;
+
+
+  for(auto p : scn.meshUsedByDrv)
+  {
+    HRMesh& mesh            = g_objManager.scnData.meshes[p];
+    HRMeshDriverInput input = HR_GetMeshDataPointers(p);
+    pugi::xml_node meshNode = mesh.xml_node_immediate();
+
+    const std::wstring delayedLoad = meshNode.attribute(L"dl").as_string();
+    const std::wstring locStr      = g_objManager.GetLoc(meshNode);
+    const wchar_t* path = (delayedLoad == L"1") ? meshNode.attribute(L"path").as_string() : locStr.c_str();
+
+    if (mesh.pImpl != nullptr)
+    {
+      const auto& mlist = mesh.pImpl->MList();
+
+      if (input.pos4f == nullptr)
+      {
+        if (info.supportMeshLoadFromInternalFormat)
+        {
+          a_pDriver->UpdateMeshFromFile(p, meshNode, path);
+        }
+        else
+        {
+          int64_t byteSize = meshNode.attribute(L"bytesize").as_llong();
+          UpdateMeshFromChunk(p, mesh, mlist, a_pDriver, path, byteSize);
+        }
+      }
+      else
+      {
+        a_pDriver->UpdateMesh(p, meshNode, input, &mlist[0], int32_t(mlist.size()));
+      }
+      updatedMeshes++;
+    }
+  }
+
+  a_pDriver->EndGeomUpdate();
+
+  return updatedMeshes;
+}
+
+void HR_DriverUpdateCamera(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 {
   if (g_objManager.m_currCamId >= g_objManager.scnData.cameras.size())
     return;
@@ -764,7 +854,7 @@ void HR_DriverUpdateCamera(HRSceneInst& scn, ChangeList& objList, IHRRenderDrive
   a_pDriver->UpdateCamera(cam.xml_node_immediate());
 }
 
-void HR_DriverUpdateSettings(HRSceneInst& scn, ChangeList& objList, IHRRenderDriver* a_pDriver)
+void HR_DriverUpdateSettings(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 {
   if (g_objManager.renderSettings.size() == 0)
     return;
@@ -929,7 +1019,7 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
                             &allocInfo.lightsWithIESNum, 
                             &allocInfo.envLightTexSize);
 
-    HR_DriverUpdateSettings(scn, objList, a_pDriver);
+    HR_DriverUpdateSettings(scn, a_pDriver);
 
     allocInfo = a_pDriver->AllocAll(allocInfo);
 
@@ -954,8 +1044,8 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 
   g_objManager.m_badMaterialId.clear();
 
-  HR_DriverUpdateCamera(scn, objList, a_pDriver);
-  HR_DriverUpdateSettings(scn, objList, a_pDriver); 
+  HR_DriverUpdateCamera(scn, a_pDriver);
+  HR_DriverUpdateSettings(scn, a_pDriver);
 
   int32_t updatedTextures  = HR_DriverUpdateTextures (scn, objList, a_pDriver);
   int32_t updatedMaterials = HR_DriverUpdateMaterials(scn, objList, a_pDriver);
@@ -1001,15 +1091,197 @@ void HR_DriverDraw(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
   a_pDriver->Draw();
 }
 
-#ifndef WIN32
 
-
-void HR_UtilityDriverStart(const wchar_t* state_path)
+void _hr_UtilityDriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 {
+  if (a_pDriver == nullptr)
+    return;
+
+  //ChangeList objList = FindChangedObjects(scn, a_pDriver);
+
+
+  HRDriverAllocInfo allocInfo;
+
+  const size_t geomNum  = scn.meshUsedByDrv.size();
+  const size_t imgNum   = scn.texturesUsedByDrv.size();
+  const size_t matNum   = scn.matUsedByDrv.size();
+  const size_t lightNum = scn.lightUsedByDrv.size();
+
+  allocInfo.geomNum     = int32_t(geomNum  + geomNum/3  + 100);
+  allocInfo.imgNum      = int32_t(imgNum   + imgNum/3   + 100);
+  allocInfo.matNum      = int32_t(matNum   + matNum/3   + 100);
+  allocInfo.lightNum    = int32_t(lightNum + lightNum/3 + 100);
+
+
+  allocInfo.libraryPath = g_objManager.scnData.m_path.c_str();
+
+  allocInfo = a_pDriver->AllocAll(allocInfo);
+
+  HR_DriverUpdateCamera(scn, a_pDriver);
+  HR_DriverUpdateSettings(scn, a_pDriver);
+
+  int32_t updatedMaterials = _hr_UtilityDriverUpdateMaterials(scn, a_pDriver);
+  int32_t updatedMeshes    = _hr_UtilityDriverUpdateMeshes   (scn, a_pDriver);
+
+
+  const auto dInfo = a_pDriver->DependencyInfo();
+
+
+  ///////////////////////////////
+
+  std::unordered_map<int32_t, ChangeList::InstancesInfo > drawSeq;
+
+
+
+  for (size_t i = 0; i < scn.drawList.size(); i++)
+  {
+    auto instance = scn.drawList[i];
+    if (instance.meshId >= g_objManager.scnData.meshes.size())
+      continue;
+
+    // form draw sequence for each mesh
+    //
+    AddInstanceToDrawSequence(instance, drawSeq);
+  }
+
+  ////////////////////////
+  a_pDriver->BeginScene(scn.xml_node_immediate());
+  {
+    // draw/add instances to scene
+    for (auto p = drawSeq.begin(); p != drawSeq.end(); p++)
+    {
+      const auto& seq = p->second;
+      a_pDriver->InstanceMeshes(p->first, &seq.matrices[0], int32_t(seq.matrices.size() / 16), &seq.linstid[0], &seq.remapid[0]);
+    }
+  }
+  a_pDriver->EndScene();
+
+}
+
+void CreatePrecompProcTex(pugi::xml_document &doc, resolution_dict &dict)
+{
+  if (g_objManager.scnData.textures.size() == 0)
+    return;
+
+  auto scn = g_objManager.scnInst[g_objManager.m_currSceneId];
+
+  int32_t texturesUpdated = 0;
+
+  for (auto texIdRes : dict)
+  {
+    auto texRefId = texIdRes.first;
+    auto w = texIdRes.second.first;
+    auto h = texIdRes.second.second;
+
+    HRTextureNode &texture = g_objManager.scnData.textures[texIdRes.first];
+
+    int bpp = 4;
+    bool isProc = false;
+    if (texture.hdrCallback != nullptr)
+    {
+      bpp = sizeof(float) * 4;
+      auto *imageData = new float[w * h * bpp / sizeof(float)];
+
+      texture.hdrCallback(imageData, w, h, texture.customData);
+
+      auto pTextureImpl = g_objManager.m_pFactory->CreateTexture2DFromMemory(&texture, w, h, bpp, imageData);
+      texture.pImpl = pTextureImpl;
+
+      delete[] imageData;
+
+      isProc = true;
+    } else if (texture.ldrCallback != nullptr)
+    {
+      auto *imageData = new unsigned char[w * h * bpp];
+
+      texture.ldrCallback(imageData, w, h, texture.customData);
+
+      auto pTextureImpl = g_objManager.m_pFactory->CreateTexture2DFromMemory(&texture, w, h, bpp, imageData);
+      texture.pImpl = pTextureImpl;
+
+      delete[] imageData;
+
+      isProc = true;
+    }
+
+    if (isProc)
+    {
+      auto texIdStr = ToWString(texRefId);
+      auto texNode = doc.child(L"textures_lib").find_child_by_attribute(L"texture", L"id", texIdStr.c_str());
+      auto byteSize = size_t(w) * size_t(h) * size_t(bpp);
+
+      ChunkPointer chunk = g_objManager.scnData.m_vbCache.chunk_at(texture.pImpl->chunkId());
+      std::wstring location = ChunkName(chunk);
+
+      std::wstring bytesize = ToWString(byteSize);
+      g_objManager.SetLoc(texNode, location);
+      texNode.force_attribute(L"offset").set_value(L"8");
+      texNode.force_attribute(L"bytesize").set_value(bytesize.c_str());
+      texNode.force_attribute(L"width") = w;
+      texNode.force_attribute(L"height") = h;
+    }
+  }
+}
+
+resolution_dict InsertMipLevelInfoIntoXML(pugi::xml_document &stateToProcess, const std::unordered_map<uint32_t, uint32_t> &dict)
+{
+  resolution_dict resDict;
+  for (std::pair<int32_t, int32_t> elem : dict)
+  {
+    std::wstringstream tmp;
+    tmp << elem.first;
+    auto texIdStr = tmp.str();
+    auto texNode = stateToProcess.child(L"textures_lib").find_child_by_attribute(L"texture", L"id", texIdStr.c_str());
+
+    if(texNode != nullptr)
+    {
+      int currW = texNode.attribute(L"width").as_int();
+      int currH = texNode.attribute(L"height").as_int();
+
+      uint32_t newW = MAX_TEXTURE_RESOLUTION;
+      uint32_t newH = MAX_TEXTURE_RESOLUTION;
+
+      for(int i = 0; i < elem.second; ++i)
+      {
+        newW /= 2;
+        newH /= 2;
+      }
+
+      newW = newW > currW ? currW : newW;
+      newH = newH > currH ? currH : newH;
+
+      texNode.force_attribute(L"r_width").set_value(newW);
+      texNode.force_attribute(L"r_height").set_value(newH);
+
+      resDict[elem.first] = std::pair<uint32_t, uint32_t>(newW, newH);
+    }
+  }
+
+  return resDict;
+}
+
+
+
+std::wstring SaveFixedStateXML(pugi::xml_document &doc, const std::wstring &oldPath, const std::wstring &suffix)
+{
+  std::wstringstream ss;
+  ss << std::wstring(oldPath.begin(), oldPath.end() - 4) << suffix << L".xml"; //cut ".xml" from initial path and append new suffix
+  std::wstring new_state_path = ss.str();
+
+  doc.save_file(new_state_path.c_str());
+
+  return new_state_path;
+}
+
+
+std::wstring HR_UtilityDriverStart(const wchar_t* state_path)
+{
+  std::wstring new_state_path(L"");
+
   if (state_path == L"" || state_path == nullptr)
   {
     HrError(L"No state for Utility driver at location: ", state_path);
-    return;
+    return new_state_path;
   }
 
   pugi::xml_document stateToProcess;
@@ -1019,37 +1291,23 @@ void HR_UtilityDriverStart(const wchar_t* state_path)
   if (!loadResult)
   {
     HrError(L"MergeLibraryIntoLibrary, pugixml load: ", loadResult.description());
-    return;
+    return new_state_path;
   }
-
 
   auto offscreen_context = InitGLForUtilityDriver();
 
   std::unique_ptr<IHRRenderDriver> utilityDriver = CreateRenderFromString(L"opengl3Utility", L"");
-  RD_OGL32_Utility &utilityDrvRef = *(dynamic_cast<RD_OGL32_Utility *>(utilityDriver.get()));
 
-  utilityDriver->SetInfoCallBack(g_pInfoCallback);
+  if (utilityDriver != nullptr && g_objManager.m_currSceneId < g_objManager.scnInst.size())
+  {
+    utilityDriver->SetInfoCallBack(g_pInfoCallback);
 
-  glfwPollEvents();
+    _hr_UtilityDriverUpdate(g_objManager.scnInst[g_objManager.m_currSceneId], utilityDriver.get());
 
-  //TODO: replace HR_DriverUpdate with utility driver specific function
-  HR_DriverUpdate(g_objManager.scnInst[g_objManager.m_currSceneId], utilityDriver.get());
+    auto mipLevelsDict = getMipLevelsFromUtilityDriver(utilityDriver.get(), offscreen_context);
 
-  glfwSwapBuffers(offscreen_context);
-
-  auto mipLevelsDict = utilityDrvRef.GetMipLevelsDict();
-
-  /*
-  for (std::pair<int32_t, int32_t> elem : mipLevelsDict)
-    std::cout << " " << elem.first << ":" << elem.second << std::endl;
-  */
-
-  HR_DriverDraw(g_objManager.scnInst[g_objManager.m_currSceneId], utilityDriver.get());
-
-  glfwSetWindowShouldClose(offscreen_context, GL_TRUE);
-
-  glfwTerminate();
-
+    auto resDict = InsertMipLevelInfoIntoXML(stateToProcess, mipLevelsDict);
+    CreatePrecompProcTex(stateToProcess, resDict);
+  }
+  return SaveFixedStateXML(stateToProcess, state_path, L"_fixed");
 }
-
-#endif

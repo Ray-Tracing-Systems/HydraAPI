@@ -354,6 +354,7 @@ void RD_OGL32_Utility::BeginScene(pugi::xml_node a_sceneNode)
   glBufferSubData(GL_UNIFORM_BUFFER, 0, 32 * sizeof(GLfloat), &matrices[0]);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
+
   SetMaterialsTBO();
 
   m_lodBufferProgram.SetUniform("window_res", int2(m_width, m_height));
@@ -495,7 +496,7 @@ void RD_OGL32_Utility::FillMipLevelsDict()
     uint32_t mipLevel = pix >> 24u;
     uint32_t texId    = pix & texIdBits;
 
-    if(texId < m_texNum)
+    if(texId <= m_texNum)
     {
       if (m_mipLevelDict.find(texId) != m_mipLevelDict.end())
       {
@@ -564,3 +565,20 @@ GLFWwindow * InitGLForUtilityDriver()
 
   return offscreen_context;
 }
+
+
+std::unordered_map<uint32_t, uint32_t> getMipLevelsFromUtilityDriver(IHRRenderDriver *driver, GLFWwindow* context)
+{
+  glfwPollEvents();
+  RD_OGL32_Utility &utilityDrvRef = *(dynamic_cast<RD_OGL32_Utility *>(driver));
+  glfwSwapBuffers(context);
+
+  auto mipLevelsDict = utilityDrvRef.GetMipLevelsDict();
+
+  /*for (std::pair<int32_t, int32_t> elem : mipLevelsDict)
+    std::cout << " " << elem.first << ":" << elem.second << std::endl;*/
+
+  glfwSetWindowShouldClose(context, GL_TRUE);
+
+  return mipLevelsDict;
+};

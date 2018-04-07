@@ -166,6 +166,7 @@ HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMod
   g_objManager.renderSettings.clear();
 
   g_objManager.scnData.clear();
+  g_objManager.m_tempBuffer = std::vector<int>();
 
   if (g_objManager.m_pDriver != nullptr)
   {
@@ -947,19 +948,22 @@ HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pC
   g_objManager.scnData.m_commitId++;
 
   g_objManager.scnData.m_xmlDoc.save_file(newPath.c_str(), L"  ");
-  g_objManager.scnData.m_vbCache.FlushToDisc();
+
 
   HRRender* pSettings = g_objManager.PtrById(a_pRender);
 
 
   //////////////
   ////////////// Call utility render driver here
-/*
-#ifdef IN_DEBUG
-  HR_UtilityDriverStart(newPath.c_str());
-#endif
-*/
+
+//#ifdef IN_DEBUG
+  if(g_objManager.m_pDriver != nullptr && g_objManager.m_pDriver->Info().supportUtilityPrepass)
+    auto fixed_state = HR_UtilityDriverStart(newPath.c_str());
+//#endif
+
   //////////////
+
+  g_objManager.scnData.m_vbCache.FlushToDisc();
 
   if (pSettings != nullptr && pSettings->m_pDriver != nullptr)
     pSettings->m_pDriver->EndFlush();

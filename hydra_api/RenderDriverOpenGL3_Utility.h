@@ -107,6 +107,6 @@ protected:
 };
 
 GLFWwindow * InitGLForUtilityDriver();
-
+std::unordered_map<uint32_t, uint32_t> getMipLevelsFromUtilityDriver(IHRRenderDriver *driver, GLFWwindow* context);
 
 #endif //HYDRAAPI_EX_RENDERDRIVEROPENGL3_UTILITY_H
