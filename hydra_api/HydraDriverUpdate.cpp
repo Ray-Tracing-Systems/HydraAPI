@@ -859,10 +859,12 @@ void HR_DriverUpdateSettings(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
   if (g_objManager.renderSettings.size() == 0)
     return;
 
+
   auto& settings = g_objManager.renderSettings[g_objManager.m_currRenderId];
 
   a_pDriver->UpdateSettings(settings.xml_node_immediate());
 }
+
 
 void HR_CheckCommitErrors(HRSceneInst& scn, ChangeList& objList)
 {
@@ -1132,7 +1134,6 @@ void _hr_UtilityDriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
   std::unordered_map<int32_t, ChangeList::InstancesInfo > drawSeq;
 
 
-
   for (size_t i = 0; i < scn.drawList.size(); i++)
   {
     auto instance = scn.drawList[i];
@@ -1238,8 +1239,16 @@ resolution_dict InsertMipLevelInfoIntoXML(pugi::xml_document &stateToProcess, co
       int currW = texNode.attribute(L"width").as_int();
       int currH = texNode.attribute(L"height").as_int();
 
+      auto settingsNode = stateToProcess.child(L"render_lib").child(L"render_settings");
+
       uint32_t newW = MAX_TEXTURE_RESOLUTION;
       uint32_t newH = MAX_TEXTURE_RESOLUTION;
+
+      if(settingsNode != nullptr)
+      {
+        newW = std::min(settingsNode.child(L"width").text().as_uint(), newW);
+        newH = std::min(settingsNode.child(L"height").text().as_uint(), newH);
+      }
 
       for(int i = 0; i < elem.second; ++i)
       {

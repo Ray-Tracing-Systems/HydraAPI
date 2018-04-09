@@ -299,29 +299,12 @@ bool RD_OGL32_Utility::UpdateCamera(pugi::xml_node a_camNode)
 
 bool RD_OGL32_Utility::UpdateSettings(pugi::xml_node a_settingsNode)
 {
-/*  int new_w = m_width;
-  int new_h = m_height;
   if (a_settingsNode.child(L"width") != nullptr)
-    new_w = a_settingsNode.child(L"width").text().as_int();
+    m_settingsWidth = min(a_settingsNode.child(L"width").text().as_int(), MAX_TEXTURE_RESOLUTION);
 
   if (a_settingsNode.child(L"height") != nullptr)
-    new_h = a_settingsNode.child(L"height").text().as_int();
+    m_settingsHeight = min(a_settingsNode.child(L"height").text().as_int(), MAX_TEXTURE_RESOLUTION);
 
-  if (new_w < 0 || new_h < 0)
-  {
-    if (m_pInfoCallBack != nullptr)
-      m_pInfoCallBack(L"bad input resolution", L"RD_OGL32_Utility::UpdateSettings", HR_SEVERITY_ERROR);
-    return false;
-  }
-
-  if(new_w != m_width || new_h != m_height)
-  {
-    m_width = new_w;
-    m_height = new_h;
-    m_lodBuffer->ResizeAttachments(m_width, m_height);
-    //m_fullScreenTexture->ResizeAttachments(m_width, m_height);
-  }
-*/
   return true;
 }
 
@@ -357,7 +340,8 @@ void RD_OGL32_Utility::BeginScene(pugi::xml_node a_sceneNode)
 
   SetMaterialsTBO();
 
-  m_lodBufferProgram.SetUniform("window_res", int2(m_width, m_height));
+  //m_lodBufferProgram.SetUniform("window_res", int2(m_width, m_height));
+  m_lodBufferProgram.SetUniform("window_res", int2(m_settingsWidth, m_settingsHeight));
 }
 
 
