@@ -96,7 +96,8 @@ int main(int argc, const char** argv)
     //run_all_lgt_tests();
     run_all_api_tests();
     //run_all_ipp_tests();
-
+  
+    //test24_many_textures_big_data();
     //test25_many_textures_big_data();
 
     //test35_cornell_with_light();
@@ -112,7 +113,7 @@ int main(int argc, const char** argv)
     //std::cout << test1015_merge_scene_with_remaps() << std::endl;
     //std::cout << test1016_merge_scene_remap_override() << std::endl;
 
-    std::cout << test39_mesh_from_vsgf() << std::endl;
+    //std::cout << test39_mesh_from_vsgf() << std::endl;
     //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
     //std::cout << test77_save_gbuffer_layers() << std::endl;
     //std::cout << test59_cornell_water_mlt() << std::endl;

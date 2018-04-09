@@ -2,11 +2,16 @@
 #include "LiteMath.h"
 using namespace HydraLiteMath;
 
+#include <iostream>
+
 void RD_OGL1_Plain::ClearAll()
 {
   if (m_displayLists != -1)
     glDeleteLists(m_displayLists, m_listNum);
 
+  if(m_texturesList.size() > 0)
+    glDeleteTextures(m_texturesList.size(), m_texturesList.data());
+  
   m_displayLists = -1;
   m_listNum      = 0;
 
@@ -119,10 +124,10 @@ bool RD_OGL1_Plain::UpdateImage(int32_t a_texId, int32_t w, int32_t h, int32_t b
 	if (bpp > 4)
 		gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, w, h, GL_RGBA, GL_UNSIGNED_BYTE, convertedData);
 	else
-		gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, w, h, GL_RGBA, GL_UNSIGNED_BYTE, a_data);
-
+    gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, w, h, GL_RGBA, GL_UNSIGNED_BYTE, a_data);
+  
 	if (bpp > 4) 
-    delete convertedData;
+    delete [] convertedData;
 
   return true;
 }

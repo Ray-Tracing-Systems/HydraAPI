@@ -94,6 +94,7 @@ bool VirtualBuffer::Init(uint64_t a_sizeInBytes, const char* a_shmemName)
   if (gDebugMode)
   {
     m_data = malloc(size_t(a_sizeInBytes));
+    memset(m_data, 0, size_t(a_sizeInBytes));
   }
   else
   {
