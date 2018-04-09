@@ -91,10 +91,10 @@ int main(int argc, const char** argv)
 
   try
   {
-	  //run_all_geo_tests();
+	//run_all_geo_tests();
     //run_all_mtl_tests();
     //run_all_lgt_tests();
-    run_all_api_tests();
+    //run_all_api_tests();
     //run_all_ipp_tests();
   
     //test24_many_textures_big_data();
@@ -121,14 +121,14 @@ int main(int argc, const char** argv)
     //std::cout << test78_material_remap_list1() << std::endl;
     //std::cout << test79_material_remap_list2() << std::endl;
     //std::cout << test77_save_gbuffer_layers() << std::endl;
-    //test82_proc_texture();
+    test82_proc_texture();
 
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
     //GEO_TESTS::test_005_instancing();
     //MTL_TESTS::test_103_diffuse_texture();
     //MTL_TESTS::test_154_proc_checker_precomp();
-//    MTL_TESTS::test_155_proc_checker_HDR_precomp();
-//    MTL_TESTS::test_156_proc_checker_precomp_update();
+    //MTL_TESTS::test_155_proc_checker_HDR_precomp();
+    //MTL_TESTS::test_156_proc_checker_precomp_update();
 //    MTL_TESTS::test_103_diffuse_texture();
     //LGHT_TESTS::test_224_rotated_area_light2();
     
@@ -140,8 +140,6 @@ int main(int argc, const char** argv)
     //window_main_free_look(L"tests_f/test_241", L"opengl1Debug");
 
     //std::cout << PP_TESTS::test301_resample() << std::endl;
-   
-    //test42_load_library_basic();
 
     //test100_dummy_hydra_exec();
 

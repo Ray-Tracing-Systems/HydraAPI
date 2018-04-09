@@ -168,6 +168,7 @@
     <ClCompile Include="HydraAPI_LoadExistingLibrary.cpp" />
     <ClCompile Include="HydraAPI_Material.cpp" />
     <ClCompile Include="HydraAPI_Texture.cpp" />
+    <ClCompile Include="HydraAPI_TextureProcLex.cpp" />
     <ClCompile Include="HydraDriverUpdate.cpp" />
     <ClCompile Include="HydraLaunchProcessWin32.cpp" />
     <ClCompile Include="HydraLegacyUtils.cpp" />

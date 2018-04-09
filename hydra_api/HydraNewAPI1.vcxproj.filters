@@ -162,6 +162,9 @@
     <ClCompile Include="RenderDriverOpenGL3_Utility.cpp">
       <Filter>Source\RenderDrivers</Filter>
     </ClCompile>
+    <ClCompile Include="HydraAPI_TextureProcLex.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LiteMath.h">

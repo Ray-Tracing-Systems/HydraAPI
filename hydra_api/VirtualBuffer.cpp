@@ -327,6 +327,11 @@ void* ChunkPointer::GetMemoryNow()
 
 extern HRObjectManager g_objManager;
 
+std::wstring LocalDataPathOfCurrentSceneLibrary()
+{
+  return g_objManager.scnData.m_path + L"/data/";
+}
+
 std::wstring ChunkName(const ChunkPointer& a_chunk)
 {
   std::wstringstream namestream;

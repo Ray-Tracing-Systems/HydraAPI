@@ -282,23 +282,23 @@ bool test82_proc_texture()
   hrTextureNodeOpen(texProc, HR_WRITE_DISCARD);
   {
     xml_node texNode = hrTextureParamNode(texProc);
-    xml_node p1      = texNode.append_child(L"input1");
-    xml_node p2      = texNode.append_child(L"input2");
-    xml_node r1      = texNode.append_child(L"return");
-
-    p1.append_attribute(L"name") = L"texId1";
-    p1.append_attribute(L"type") = L"int";
-    p1.append_attribute(L"val")  = texBitmap1.id;
-
-    p2.append_attribute(L"name") = L"texId2";
-    p2.append_attribute(L"type") = L"int";
-    p2.append_attribute(L"val")  = texBitmap2.id;
-
-    r1.append_attribute(L"type") = L"float4";
+    // xml_node p1      = texNode.append_child(L"input1");
+    // xml_node p2      = texNode.append_child(L"input2");
+    // xml_node r1      = texNode.append_child(L"return");
+    // 
+    // p1.append_attribute(L"name") = L"texId1";
+    // p1.append_attribute(L"type") = L"int";
+    // p1.append_attribute(L"val")  = texBitmap1.id;
+    // 
+    // p2.append_attribute(L"name") = L"texId2";
+    // p2.append_attribute(L"type") = L"int";
+    // p2.append_attribute(L"val")  = texBitmap2.id;
+    // 
+    // r1.append_attribute(L"type") = L"float4";
 
     xml_node code_node = texNode.append_child(L"code");
-    code_node.append_attribute(L"file") = L"my_custom_faloff.c";
-    code_node.append_attribute(L"main") = "userProc";
+    code_node.append_attribute(L"file") = L"data/code/mul_tex_coord.c";
+    code_node.append_attribute(L"main") = L"userProc";
   }
   hrTextureNodeClose(texProc);
 

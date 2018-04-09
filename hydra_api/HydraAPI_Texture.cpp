@@ -487,6 +487,12 @@ HAPI void hrTextureNodeOpen(HRTextureNodeRef a_pNode, HR_OPEN_MODE a_openMode)
 
 }
 
+
+void ProcessProcTexFile(const std::wstring& in_file, const std::wstring& out_file, const std::wstring& mainName, const std::wstring& prefix, 
+                        pugi::xml_node a_node);
+
+std::wstring LocalDataPathOfCurrentSceneLibrary();
+
 HAPI void hrTextureNodeClose(HRTextureNodeRef a_pNode)
 {
   HRTextureNode* pData = g_objManager.PtrById(a_pNode);
@@ -497,8 +503,31 @@ HAPI void hrTextureNodeClose(HRTextureNodeRef a_pNode)
     return;
   }
 
+  pugi::xml_node texNode = pData->xml_node_immediate();
+
+  if (std::wstring(texNode.attribute(L"type").as_string()) == L"proc")
+  {
+    const wchar_t* filePath = texNode.child(L"code").attribute(L"file").as_string();
+    const wchar_t* mainName = texNode.child(L"code").attribute(L"main").as_string();
+
+    std::wstringstream namestream;
+    namestream << std::fixed << LocalDataPathOfCurrentSceneLibrary() << L"proctex_" << std::setfill(L"0"[0]) << std::setw(5) << texNode.attribute(L"id").as_string() << L".c";
+    std::wstring locName = namestream.str();
+
+    if (texNode.child(L"code") != nullptr)
+    {
+      texNode.child(L"code").force_attribute(L"loc") = locName.c_str();
+
+      pugi::xml_node generatedNode = texNode.child(L"code").force_child(L"generated");
+      clear_node_childs(generatedNode);
+
+      ProcessProcTexFile(filePath, locName, mainName, texNode.attribute(L"id").as_string(),
+                         generatedNode);
+    }
+  }
+
   pData->opened = false;
-  pData->pImpl = nullptr;
+  pData->pImpl  = nullptr;
 }
 
 
