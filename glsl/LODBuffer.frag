@@ -22,8 +22,8 @@ uniform ivec2 window_res;
 
 float mip_map_level(vec2 texture_coordinate)
 {
-  vec2  dx_vtc        = dFdx(4 * window_res.x * texture_coordinate);
-  vec2  dy_vtc        = dFdy(4 * window_res.y * texture_coordinate);
+  vec2  dx_vtc        = dFdx(window_res.x * texture_coordinate);
+  vec2  dy_vtc        = dFdy(window_res.y * texture_coordinate);
   float delta_max_sqr = max(dot(dx_vtc, dx_vtc), dot(dy_vtc, dy_vtc));
 
   const float maxClamp = pow(2.0f, MAX_MIP_LEVEL * 2.0f);

@@ -104,6 +104,8 @@ protected:
     float camFarPlane;
     int   m_width;
     int   m_height;
+    int   m_settingsWidth;
+    int   m_settingsHeight;
 };
 
 GLFWwindow * InitGLForUtilityDriver();
