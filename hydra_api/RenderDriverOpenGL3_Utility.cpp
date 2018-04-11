@@ -34,10 +34,25 @@ void RD_OGL32_Utility::ClearAll()
   m_lodBufferProgram.Release();
   m_quadProgram.Release();
 
+  for(auto& vbo : m_allVBOs)
+  {
+    glDeleteBuffers(1, &vbo);
+  }
+
+  m_allVBOs.clear();
+
+  for(auto& obj : m_objects)
+  {
+    for(auto& batch : obj.second)
+      glDeleteVertexArrays(1, &batch.second.first);
+  }
+
   m_objects.clear();
 
   m_materials_pt1.clear();
   m_materials_pt2.clear();
+  m_remapLists.clear();
+
 }
 
 HRDriverAllocInfo RD_OGL32_Utility::AllocAll(HRDriverAllocInfo a_info)
@@ -178,7 +193,6 @@ bool RD_OGL32_Utility::UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode, c
 
     GLuint vertexPosBufferObject;
     GLuint vertexNormBufferObject;
-    GLuint vertexTangentBufferObject;
     GLuint vertexTexCoordsBufferObject;
     //   GLuint matIDBufferObject;
 
@@ -220,6 +234,9 @@ bool RD_OGL32_Utility::UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode, c
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, batchIndices.size() * sizeof(GLuint), &batchIndices[0], GL_STATIC_DRAW);
 
+    m_allVBOs.push_back(vertexPosBufferObject);
+    m_allVBOs.push_back(vertexNormBufferObject);
+    m_allVBOs.push_back(vertexTexCoordsBufferObject);
 
     glGenVertexArrays(1, &vertexArrayObject);
     glBindVertexArray(vertexArrayObject);
@@ -311,6 +328,33 @@ bool RD_OGL32_Utility::UpdateSettings(pugi::xml_node a_settingsNode)
 void RD_OGL32_Utility::BeginScene(pugi::xml_node a_sceneNode)
 {
   // std::cout << "BeginScene" <<std::endl;
+
+  if(a_sceneNode.child(L"remap_lists") != nullptr)
+  {
+    for(auto listNode = a_sceneNode.child(L"remap_lists").first_child(); listNode != nullptr; listNode = listNode.next_sibling())
+    {
+      int listSize = listNode.attribute(L"size").as_int();
+
+      std::unordered_map<uint32_t, uint32_t> remapList;
+      const wchar_t* listStr = listNode.attribute(L"val").as_string();
+      if(listStr != nullptr)
+      {
+        std::wstringstream inputStream(listStr);
+        for(int i = 0; i < listSize; i += 2)
+        {
+          uint32_t a = 0;
+          uint32_t b = 0;
+
+          inputStream >> a;
+          inputStream >> b;
+
+          remapList[a] = b;
+        }
+      }
+      m_remapLists.emplace_back(remapList);
+    }
+  }
+
   glViewport(0, 0, (GLint)m_width, (GLint)m_height);
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -387,6 +431,9 @@ void RD_OGL32_Utility::InstanceMeshes(int32_t a_mesh_id, const float *a_matrices
     for(auto batch : m_objects[a_mesh_id])
     {
       int matId = batch.first;
+
+      if(*a_remapId != -1)
+        matId = m_remapLists.at(*a_remapId)[matId];
 
       m_lodBufferProgram.SetUniform("matID", matId);
 

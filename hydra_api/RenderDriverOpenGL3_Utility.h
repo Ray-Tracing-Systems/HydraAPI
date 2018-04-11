@@ -63,9 +63,12 @@ protected:
 
     std::wstring m_libPath;
 
+    std::vector<std::unordered_map<uint32_t, uint32_t> > m_remapLists;
+
     using meshData = std::unordered_map<int, std::pair<GLuint, int>>;
 
     std::unordered_map<int32_t, meshData> m_objects; //meshId -> {matId -> vao, indicesNum}
+    std::vector<GLuint> m_allVBOs;
     ShaderProgram m_lodBufferProgram;
     ShaderProgram m_quadProgram;
 
