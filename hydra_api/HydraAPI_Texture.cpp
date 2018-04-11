@@ -487,11 +487,10 @@ HAPI void hrTextureNodeOpen(HRTextureNodeRef a_pNode, HR_OPEN_MODE a_openMode)
 
 }
 
+std::wstring LocalDataPathOfCurrentSceneLibrary();
 
 void ProcessProcTexFile(const std::wstring& in_file, const std::wstring& out_file, const std::wstring& mainName, const std::wstring& prefix, 
                         pugi::xml_node a_node);
-
-std::wstring LocalDataPathOfCurrentSceneLibrary();
 
 HAPI void hrTextureNodeClose(HRTextureNodeRef a_pNode)
 {
@@ -510,9 +509,15 @@ HAPI void hrTextureNodeClose(HRTextureNodeRef a_pNode)
     const wchar_t* filePath = texNode.child(L"code").attribute(L"file").as_string();
     const wchar_t* mainName = texNode.child(L"code").attribute(L"main").as_string();
 
-    std::wstringstream namestream;
-    namestream << std::fixed << LocalDataPathOfCurrentSceneLibrary() << L"proctex_" << std::setfill(L"0"[0]) << std::setw(5) << texNode.attribute(L"id").as_string() << L".c";
-    std::wstring locName = namestream.str();
+    // shitty code; #TODO: refactor it
+    //
+    std::wstring dapaFolderPath = LocalDataPathOfCurrentSceneLibrary();
+
+    std::wstringstream namestream, namestream2;
+    namestream  << std::fixed << L"data/"               << L"proctex_" << std::setfill(L"0"[0]) << std::setw(5) << texNode.attribute(L"id").as_string() << L".c";
+    namestream2 << std::fixed << dapaFolderPath.c_str() << L"proctex_" << std::setfill(L"0"[0]) << std::setw(5) << texNode.attribute(L"id").as_string() << L".c";
+    std::wstring locName  = namestream.str();
+    std::wstring locName2 = namestream2.str();
 
     if (texNode.child(L"code") != nullptr)
     {
@@ -521,7 +526,7 @@ HAPI void hrTextureNodeClose(HRTextureNodeRef a_pNode)
       pugi::xml_node generatedNode = texNode.child(L"code").force_child(L"generated");
       clear_node_childs(generatedNode);
 
-      ProcessProcTexFile(filePath, locName, mainName, texNode.attribute(L"id").as_string(),
+      ProcessProcTexFile(filePath, locName2, mainName, texNode.attribute(L"id").as_string(),
                          generatedNode);
     }
   }

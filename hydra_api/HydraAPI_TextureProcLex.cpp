@@ -197,7 +197,7 @@ void ProcessProcTexFile(const std::wstring& in_file, const std::wstring& out_fil
 
   std::string allString;
   allString.assign((std::istreambuf_iterator<char>(fin)), std::istreambuf_iterator<char>());
-  fin.seekg(0, std::ios::beg);
+  fin.close();
 
   // first we will find all functions names and include files
   //
@@ -207,12 +207,27 @@ void ProcessProcTexFile(const std::wstring& in_file, const std::wstring& out_fil
   auto args            = ParseProcMainArgs   (fname.c_str(), allString);
   std::wstring retType = s2ws(ParseProcMainRetType(fname.c_str(), allString));
 
+
+  // replace main function proto
+  //
+  std::smatch matchMain;
+  std::regex funcDelc(FunctionDeclRegex(fname));
+  std::regex_search(allString, matchMain, funcDelc);
+  
+  if (matchMain.size() >= 5)
+  {
+    std::string replacedFunc = matchMain[1].str() + " " + prefix + fname + "(" + matchMain[3].str() + ", _PROCTEXTAILTAG_)\n{";
+    allString = std::regex_replace(allString, std::regex(FunctionDeclRegex(fname)), replacedFunc.c_str());
+  }
+
+  std::stringstream inStream(allString);
+
   try
   {
     // transform code
     //
     std::string line;
-    while (std::getline(fin, line))
+    while (std::getline(inStream, line))
     {
       std::string line2 = std::regex_replace(line, std::regex("\\bsampler2D\\b"), "const int");
 
@@ -291,12 +306,13 @@ void ProcessProcTexFile(const std::wstring& in_file, const std::wstring& out_fil
         }
       }
 
-      if (i != args.size() - 1)
-        genStream << ", ";
-      else
-        genStream << ")";
-
+      
+      genStream << ", ";
     }
+
+    //genStream << "in_texStorage1, in_globals)";
+    genStream << "_PROCTEXTAILTAG_)";
+    
 
     a_node.append_child(L"return").append_attribute(L"type") = retType.c_str();
 
