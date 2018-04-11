@@ -165,6 +165,14 @@ std::vector<Arg> ParseProcMainArgs(const std::string& fname, const std::string& 
   return res;
 }
 
+std::string ParseProcMainRetType(const std::string& fname, const std::string& allString)
+{
+  std::smatch m;
+  std::regex funcDelc(FunctionDeclRegex(fname));
+  std::regex_search(allString, m, funcDelc);
+  return m[1].str();
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -176,7 +184,7 @@ void ProcessProcTexFile(const std::wstring& in_file, const std::wstring& out_fil
   const std::string in_fileS  = ws2s(in_file);
   const std::string out_fileS = ws2s(out_file);
   const std::string fname     = ws2s(mainName);
-  const std::string prefix    = "prtex_" + ws2s(a_prefix);
+  const std::string prefix    = "prtex" + ws2s(a_prefix) + "_";
 
   std::ifstream fin(in_fileS.c_str());
   std::ofstream fout(out_fileS.c_str());
@@ -196,13 +204,8 @@ void ProcessProcTexFile(const std::wstring& in_file, const std::wstring& out_fil
   std::vector<std::string> funNames = ExtractElementsByRegex(allString, FunctionDeclRegex(), 3);
   std::vector<std::string> incFiles = ExtractElementsByRegex(allString, IncludeRegex(), 2);
 
-  auto args = ParseProcMainArgs(fname.c_str(), allString);
-
-  // next we have to read inputs from XML
-  //
-
-  for (auto f : funNames)
-    std::cout << f.c_str() << std::endl;
+  auto args            = ParseProcMainArgs   (fname.c_str(), allString);
+  std::wstring retType = s2ws(ParseProcMainRetType(fname.c_str(), allString));
 
   try
   {
@@ -221,11 +224,6 @@ void ProcessProcTexFile(const std::wstring& in_file, const std::wstring& out_fil
         line2 = std::regex_replace(line2, e, prefix + f);
       }
 
-      //std::regex inclDelc(IncludeRegex());
-      //std::regex_search(line2, m, inclDelc);
-      //if (m.size() > 2)
-      //  std::cout << m[2] << std::endl;
-      //
       fout << line2.c_str() << std::endl;
     }
 
@@ -256,39 +254,39 @@ void ProcessProcTexFile(const std::wstring& in_file, const std::wstring& out_fil
 
       if (args[i].size > 1)
       {
-        genStream << "(__global " << args[i].type.c_str() << "*" << ")(pMat->data + " << currOffset << ")";
+        genStream << "(__global " << args[i].type.c_str() << "*" << ")(stack + " << currOffset << ")";
         currOffset += args[i].size;
       }
       else
       {
         if (args[i].type == "float4")
         {
-          genStream << "make_float4(pMat->data[" << currOffset + 0 << "], " \
-                                << "pMat->data[" << currOffset + 1 << "], " \
-                                << "pMat->data[" << currOffset + 2 << "], " \
-                                << "pMat->data[" << currOffset + 3 << "]" << ")";
+          genStream << "make_float4(stack[" << currOffset + 0 << "], " \
+                                << "stack[" << currOffset + 1 << "], " \
+                                << "stack[" << currOffset + 2 << "], " \
+                                << "stack[" << currOffset + 3 << "]" << ")";
           currOffset += 4;
         }
         else if (args[i].type == "float3")
         {
-          genStream << "make_float3(pMat->data[" << currOffset + 0 << "], " \
-                                << "pMat->data[" << currOffset + 1 << "], " \
-                                << "pMat->data[" << currOffset + 2 << "]" << ")";
+          genStream << "make_float3(stack[" << currOffset + 0 << "], " \
+                                << "stack[" << currOffset + 1 << "], " \
+                                << "stack[" << currOffset + 2 << "]" << ")";
           currOffset += 3;
         }
         else if (args[i].type == "float2")
         {
-          genStream << "make_float2(pMat->data[" << currOffset + 0 << "], " << "pMat->data[" << currOffset + 1 << "]" << ")";
+          genStream << "make_float2(stack[" << currOffset + 0 << "], " << "stack[" << currOffset + 1 << "]" << ")";
           currOffset += 2;
         }
         else if (args[i].type == "int" || args[i].type == "sampler2D")
         {
-          genStream << "as_int(pMat->data[" << currOffset << "])";
+          genStream << "as_int(stack[" << currOffset << "])";
           currOffset++;
         }
         else
         {
-          genStream << "pMat->data[" << currOffset << "]";
+          genStream << "stack[" << currOffset << "]";
           currOffset++;
         }
       }
@@ -296,10 +294,11 @@ void ProcessProcTexFile(const std::wstring& in_file, const std::wstring& out_fil
       if (i != args.size() - 1)
         genStream << ", ";
       else
-        genStream << ");";
+        genStream << ")";
 
     }
 
+    a_node.append_child(L"return").append_attribute(L"type") = retType.c_str();
 
     std::wstring fnCall = s2ws(genStream.str());
     a_node.append_child(L"call").text() = fnCall.c_str();

@@ -59,13 +59,23 @@ struct ChangeList
 
 };
 
-
 void ScanXmlNodeRecursiveAndAppendTexture(pugi::xml_node a_node, std::unordered_set<int32_t>& a_outSet)
 {
   if (std::wstring(a_node.name()) == L"texture")
   {
     int32_t id = a_node.attribute(L"id").as_int();
     a_outSet.insert(id);
+    
+    // list all bitmaps which we depend of
+    //
+    if (std::wstring(a_node.attribute(L"type").as_string()) == L"texref_proc")
+    {
+      for (pugi::xml_node arg : a_node.children())
+      {
+        if (std::wstring(arg.name()) == L"arg" && std::wstring(arg.attribute(L"type").as_string()) == L"sampler2D")
+          a_outSet.insert(arg.attribute(L"val").as_int());
+      }
+    }
   }
   else
   {
@@ -463,9 +473,13 @@ int32_t HR_DriverUpdateTextures(HRSceneInst& scn, ChangeList& objList, IHRRender
 
   HRDriverInfo info = a_pDriver->Info();
 
-  for (auto p = objList.texturesUsed.begin(); p != objList.texturesUsed.end(); ++p)
+  std::vector<int32_t> texturesUsed;
+  texturesUsed.assign(objList.texturesUsed.begin(), objList.texturesUsed.end());
+  std::sort(texturesUsed.begin(), texturesUsed.end());
+
+  for (auto texId : texturesUsed)
   {
-    HRTextureNode& texNode = g_objManager.scnData.textures[(*p)];
+    HRTextureNode& texNode = g_objManager.scnData.textures[texId];
 
     int32_t w     = 0;
     int32_t h     = 0;
@@ -497,24 +511,25 @@ int32_t HR_DriverUpdateTextures(HRSceneInst& scn, ChangeList& objList, IHRRender
       if (info.supportImageLoadFromExternalFormat && texNode.m_loadedFromFile)
       {
         const wchar_t* path = texNodeXML.attribute(L"path").as_string();
-        a_pDriver->UpdateImageFromFile(int32_t(*p), path, texNodeXML);
+        a_pDriver->UpdateImageFromFile(texId, path, texNodeXML);
       }
       else if (info.supportImageLoadFromInternalFormat && !delayedLoad)
       {
         const std::wstring path = g_objManager.GetLoc(texNodeXML);
-        a_pDriver->UpdateImageFromFile(int32_t(*p), path.c_str(), texNodeXML);
+        a_pDriver->UpdateImageFromFile(texId, path.c_str(), texNodeXML);
       }
       else if(isProc)
       {
-        scn.texturesUsedByDrv.insert(*p);
+        scn.texturesUsedByDrv.insert(texId);
+        a_pDriver->UpdateImage(texId, -1, -1, 4, nullptr, texNodeXML);
       }
       else
-        UpdateImageFromFileOrChunk(int32_t(*p), texNode, a_pDriver);
+        UpdateImageFromFileOrChunk(texId, texNode, a_pDriver);
     }
     else
     {
-      scn.texturesUsedByDrv.insert(*p);
-      a_pDriver->UpdateImage(int32_t(*p), w, h, bpp, dataPtr + dataOffset, texNodeXML);
+      scn.texturesUsedByDrv.insert(texId);
+      a_pDriver->UpdateImage(texId, w, h, bpp, dataPtr + dataOffset, texNodeXML);
     }
 
     texturesUpdated++;

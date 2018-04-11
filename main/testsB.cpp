@@ -282,20 +282,7 @@ bool test82_proc_texture()
   hrTextureNodeOpen(texProc, HR_WRITE_DISCARD);
   {
     xml_node texNode = hrTextureParamNode(texProc);
-    // xml_node p1      = texNode.append_child(L"input1");
-    // xml_node p2      = texNode.append_child(L"input2");
-    // xml_node r1      = texNode.append_child(L"return");
-    // 
-    // p1.append_attribute(L"name") = L"texId1";
-    // p1.append_attribute(L"type") = L"int";
-    // p1.append_attribute(L"val")  = texBitmap1.id;
-    // 
-    // p2.append_attribute(L"name") = L"texId2";
-    // p2.append_attribute(L"type") = L"int";
-    // p2.append_attribute(L"val")  = texBitmap2.id;
-    // 
-    // r1.append_attribute(L"type") = L"float4";
-
+   
     xml_node code_node = texNode.append_child(L"code");
     code_node.append_attribute(L"file") = L"data/code/mul_tex_coord.c";
     code_node.append_attribute(L"main") = L"userProc";
@@ -351,6 +338,8 @@ bool test82_proc_texture()
 
     auto texNode = hrTextureBind(texProc, colorNode);
 
+    // not used currently
+    //
     texNode.append_attribute(L"matrix");
     float samplerMatrix[16] = { 1, 0, 0, 0,
                                 0, 1, 0, 0,
@@ -363,6 +352,36 @@ bool test82_proc_texture()
     texNode.append_attribute(L"input_alpha").set_value(L"rgb");
     
     HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
+
+
+    // proc texture sampler settings
+    //
+    texNode.attribute(L"type") = L"texref_proc";
+
+    xml_node p1 = texNode.append_child(L"arg"); 
+    xml_node p2 = texNode.append_child(L"arg");
+    xml_node p3 = texNode.append_child(L"arg");
+    xml_node p4 = texNode.append_child(L"arg");
+   
+    p1.append_attribute(L"id")   = 0;
+    p1.append_attribute(L"name") = L"texId1";
+    p1.append_attribute(L"type") = L"sampler2D";
+    p1.append_attribute(L"val")  = texBitmap1.id;
+     
+    p2.append_attribute(L"id")   = 1;
+    p2.append_attribute(L"name") = L"texId2";
+    p2.append_attribute(L"type") = L"sampler2D";
+    p2.append_attribute(L"val")  = texBitmap2.id;
+
+    p3.append_attribute(L"id")   = 3;
+    p3.append_attribute(L"name") = L"offset";
+    p3.append_attribute(L"type") = L"float2";
+    p3.append_attribute(L"val")  = L"0 0";
+
+    p4.append_attribute(L"id")   = 4;
+    p4.append_attribute(L"name") = L"color";
+    p4.append_attribute(L"type") = L"float4";
+    p4.append_attribute(L"val")  = L"1 1 1 1";
   }
   hrMaterialClose(mat1);
 
