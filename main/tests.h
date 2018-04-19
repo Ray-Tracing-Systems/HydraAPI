@@ -361,6 +361,7 @@ bool test1014_print_matlib_map();
 
 bool test1015_merge_scene_with_remaps();
 bool test1016_merge_scene_remap_override();
+bool test1017_merge_scene_scene_id_mask();
 
 
 void run_all_api_tests(const int startTestId = 0);

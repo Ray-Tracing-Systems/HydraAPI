@@ -190,7 +190,7 @@ def test02_mesh_from_vsgf(report_file, inBG):
   matNode = hy.hrMaterialParamNode(mat1)
   diff = matNode.append_child("diffuse")
   diff.append_attribute("brdf_type").set_value("lambert")
-  diff.append_child("color").text().set("0.05 0.01 0.75")
+  diff.append_child("color").text().set("0.89 0.0 0.13")
   refl = matNode.append_child("reflectivity")
   refl.append_attribute("brdf_type").set_value("phong")
   refl.append_child("color").text().set("0.1 0.1 0.1")
@@ -1855,7 +1855,7 @@ def run_tests():
 
   with open("test_report.txt", "w") as report_file:
 #    test01_render_cubes(report_file, False)
-#    test02_mesh_from_vsgf(report_file, False)    
+    test02_mesh_from_vsgf(report_file, False)    
 #    test03_cornell_box(report_file, False)    
 #    test04_instancing(report_file, False) 
 #    test05_load_existing(report_file, False)
@@ -1863,7 +1863,7 @@ def run_tests():
 #    test07_sky_hdr_rotate(report_file, False)
 #    test08_shadow_catcher(report_file, False)
 #    test09_load_car("tests/test09_load_car", report_file, False)
-    test10_sky_sun_physical(report_file, False)
+#    test10_sky_sun_physical(report_file, False)
 #    test11_load_car_and_change_env("tests/test11_load_car_and_change_env", report_file, False)
 #    test12_cornell_box_gbuffer(report_file, False)
 #    test13_transform_instances(report_file, False)
