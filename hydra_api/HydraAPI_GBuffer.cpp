@@ -204,6 +204,7 @@ static void ExtractInstId(const HRGBufferPixel* a_inLine, int32_t* a_outLine, in
 }
 
 
+
 static void ExtractCoverage(const HRGBufferPixel* a_inLine, int32_t* a_outLine, int a_width)
 {
   for (int x = 0; x < a_width; x++)
@@ -273,6 +274,21 @@ HAPI bool hrRenderSaveGBufferLayerLDR(const HRRenderRef a_pRender, const wchar_t
     paletteSize = a_paletteSize;
   }
 
+  HRSceneInstRef scnRef;
+  scnRef.id = g_objManager.m_currSceneId;
+  HRSceneInst *pScn = g_objManager.PtrById(scnRef);
+  auto scnNode = pScn->xml_node_immediate();
+
+  std::vector <int32_t> instanceIdToScnId(pScn->drawList.size(), 0);
+
+
+  if(lname == L"scnid")
+  {
+    for (auto node = scnNode.first_child(); node != nullptr; node = node.next_sibling())
+      if (std::wstring(node.name()) == L"instance")
+        instanceIdToScnId[node.attribute(L"id").as_int()] = node.attribute(L"scn_id").as_int();
+  }
+
 
   for (int y = 0; y < height; y++)
   {
@@ -294,14 +310,15 @@ HAPI bool hrRenderSaveGBufferLayerLDR(const HRRenderRef a_pRender, const wchar_t
       ExtractMaterialId(&gbufferLine[0], &imageLDR[y*width], width);
     else if (lname == L"objid")
       ExtractObjId(&gbufferLine[0], &imageLDR[y*width], width);
-    else if (lname == L"instid")
+    else if (lname == L"instid" || lname == L"scnid")
       ExtractInstId(&gbufferLine[0], &imageLDR[y*width], width);
     else if (lname == L"coverage")
       ExtractCoverage(&gbufferLine[0], &imageLDR[y*width], width);
 
-    if (lname == L"matid" || lname == L"mid" || lname == L"objid" || lname == L"instid" )
+
+    if (lname == L"matid" || lname == L"mid" || lname == L"objid" || lname == L"instid")
     {
-      unsigned int* line = (unsigned int*)&imageLDR[y*width];
+      auto* line = (unsigned int*)&imageLDR[y*width];
       for (int x = 0; x < width; x++)
       {
         const int index = line[x];
@@ -312,9 +329,24 @@ HAPI bool hrRenderSaveGBufferLayerLDR(const HRRenderRef a_pRender, const wchar_t
       }
     }
 
-    if(lname == L"catcher")
+    else if (lname == L"scnid" )
     {
-      unsigned int* line = (unsigned int*)&imageLDR[y*width];
+      auto* line = (unsigned int*)&imageLDR[y*width];
+      for (int x = 0; x < width; x++)
+      {
+        const int index = line[x];
+        if (index < 0)
+          line[x] = 0;
+        else
+        {
+          int new_index = instanceIdToScnId.at(index);
+          line[x] = palette[new_index % paletteSize];
+        }
+      }
+    }
+    else if(lname == L"catcher")
+    {
+      auto* line = (unsigned int*)&imageLDR[y*width];
       for (int x = 0; x < width; x++)
       {
         const int index = gbufferLine[x].matId;// & 0x00FFFFFF;
@@ -324,7 +356,6 @@ HAPI bool hrRenderSaveGBufferLayerLDR(const HRRenderRef a_pRender, const wchar_t
         else
           line[x] = 0;
       }
-
     }
   }
 

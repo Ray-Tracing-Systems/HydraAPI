@@ -535,6 +535,7 @@ struct HRSceneInst : public HRObject<IHRSceneInst>
     int32_t  meshId;
     int32_t  remapListId;
     int32_t  lightGroupInstId;
+    int32_t  scene_id;
     pugi::xml_node node;
   };
 
