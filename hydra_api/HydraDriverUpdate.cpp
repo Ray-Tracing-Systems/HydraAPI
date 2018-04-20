@@ -1082,10 +1082,21 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
     //
     a_pDriver->BeginScene(scn.xml_node_immediate());
 
-    for (auto p = objList.drawSeq.begin(); p != objList.drawSeq.end(); p++)
+    if (dInfo.allowInstanceReorder)
     {
-      const auto& seq = p->second;
-      a_pDriver->InstanceMeshes(p->first, &seq.matrices[0], int32_t(seq.matrices.size() / 16), &seq.linstid[0], &seq.remapid[0]);
+      for (auto p = objList.drawSeq.begin(); p != objList.drawSeq.end(); p++)
+      {
+        const auto& seq = p->second;
+        a_pDriver->InstanceMeshes(p->first, &seq.matrices[0], int32_t(seq.matrices.size() / 16), &seq.linstid[0], &seq.remapid[0]);
+      }
+    }
+    else
+    {
+      for (size_t i = 0; i < scn.drawList.size(); i++)
+      {
+        auto& instance = scn.drawList[i];
+        a_pDriver->InstanceMeshes(instance.meshId, instance.m, 1, &instance.lightInstId, &instance.remapListId);
+      }
     }
 
     for (size_t i = 0; i < scn.drawListLights.size(); i++) // #NOTE: this loop can be optimized

@@ -70,7 +70,7 @@ struct HRDriverDependencyInfo
 {
   HRDriverDependencyInfo() : materialDependsOfTexture(false), meshDependsOfMaterial(true), lightDependsOfMesh(true), 
                              sceneDependsOfMesh(true), sceneDependsOfLight(true),
-                             needRedrawWhenCameraChanges(true) {}
+                             needRedrawWhenCameraChanges(true), allowInstanceReorder(true) {}
 
   bool materialDependsOfTexture;
   bool meshDependsOfMaterial;
@@ -79,6 +79,7 @@ struct HRDriverDependencyInfo
   bool sceneDependsOfLight;
   
   bool needRedrawWhenCameraChanges; ///< OpenGL renderers 'redraw' scene each frame, tracers don't need to 'redraw' scene, just change camera
+  bool allowInstanceReorder;
 
 };
 
