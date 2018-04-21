@@ -951,7 +951,7 @@ bool test84_proc_texture2()
     xml_node texNode = hrTextureParamNode(texProc2);
 
     xml_node code_node = texNode.append_child(L"code");
-    code_node.append_attribute(L"file") = L"data/code/simplex_noise.c";
+    code_node.append_attribute(L"file") = L"data/code/noise3D.c";
     code_node.append_attribute(L"main") = L"main";
   }
   hrTextureNodeClose(texProc2);
