@@ -441,7 +441,7 @@ void RD_OGL1_Plain::Draw()
 }
 
 
-void RD_OGL1_Plain::InstanceMeshes(int32_t a_mesh_id, const float* a_matrices, int32_t a_instNum, const int* a_lightInstId, const int* a_remapId)
+void RD_OGL1_Plain::InstanceMeshes(int32_t a_mesh_id, const float* a_matrices, int32_t a_instNum, const int* a_lightInstId, const int* a_remapId, const int* a_realInstId)
 {
   for (int32_t i = 0; i < a_instNum; i++)
   {

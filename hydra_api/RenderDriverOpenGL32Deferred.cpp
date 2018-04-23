@@ -676,7 +676,7 @@ void RD_OGL32_Deferred::EndScene()
 
 
 void RD_OGL32_Deferred::InstanceMeshes(int32_t a_mesh_id, const float *a_matrices, int32_t a_instNum,
-                                      const int *a_lightInstId, const int* a_remapId)
+                                      const int *a_lightInstId, const int* a_remapId, const int* a_realInstId)
 {
  // std::cout << "InstanceMeshes" <<std::endl;
   for (int32_t i = 0; i < a_instNum; i++)

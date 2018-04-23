@@ -229,7 +229,7 @@ struct IHRRenderDriver
   /param a_remapId     - points array of (remapId || -1)
 
   */
-  virtual void    InstanceMeshes(int32_t a_mesh_id, const float* a_matrix, int32_t a_instNum, const int* a_lightInstId, const int* a_remapId)  = 0;
+  virtual void    InstanceMeshes(int32_t a_mesh_id, const float* a_matrix, int32_t a_instNum, const int* a_lightInstId, const int* a_remapId, const int* a_realInstId)  = 0;
 
   /**
   \brief add (and draw) all light instances of target light

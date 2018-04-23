@@ -53,6 +53,7 @@ struct ChangeList
     std::vector<float>    matrices;
     std::vector<int32_t>  linstid;
     std::vector<int32_t>  remapid;
+    std::vector<int32_t>  instIdReal;
   };
 
   std::unordered_map<int32_t, InstancesInfo > drawSeq;
@@ -107,15 +108,24 @@ void AddUsedMaterialChildrenRecursive(ChangeList& objects, int32_t matId)
 }
 
 void AddInstanceToDrawSequence(const HRSceneInst::Instance &instance,
-                               std::unordered_map<int32_t, ChangeList::InstancesInfo> &drawSeq)
+                               std::unordered_map<int32_t, ChangeList::InstancesInfo> &drawSeq, int a_instId)
 {
 
   auto p = drawSeq.find(instance.meshId);
   if (p == drawSeq.end())
   {
-    drawSeq[instance.meshId].matrices = std::vector<float>  (instance.m, instance.m + 16);
-    drawSeq[instance.meshId].linstid  = std::vector<int32_t>(&instance.lightInstId, &instance.lightInstId + 1);
-    drawSeq[instance.meshId].remapid  = std::vector<int32_t>(&instance.remapListId, &instance.remapListId + 1);
+    drawSeq[instance.meshId].matrices   = std::vector<float>  (instance.m, instance.m + 16);
+    drawSeq[instance.meshId].linstid    = std::vector<int32_t>(&instance.lightInstId, &instance.lightInstId + 1);
+    drawSeq[instance.meshId].remapid    = std::vector<int32_t>(&instance.remapListId, &instance.remapListId + 1);
+    drawSeq[instance.meshId].instIdReal = std::vector<int32_t>(&a_instId, &a_instId + 1);
+
+    const int RESERVE_SIZE = 100;
+
+    drawSeq[instance.meshId].matrices.reserve(RESERVE_SIZE);
+    drawSeq[instance.meshId].linstid.reserve(RESERVE_SIZE);
+    drawSeq[instance.meshId].remapid.reserve(RESERVE_SIZE);
+    drawSeq[instance.meshId].instIdReal.reserve(RESERVE_SIZE);
+
   }
   else
   {
@@ -123,6 +133,7 @@ void AddInstanceToDrawSequence(const HRSceneInst::Instance &instance,
     p->second.matrices.insert(p->second.matrices.end(), data.begin(), data.end());
     p->second.linstid.push_back(instance.lightInstId);
     p->second.remapid.push_back(instance.remapListId);
+    p->second.instIdReal.push_back(a_instId);
   }
 
 }
@@ -149,7 +160,7 @@ void FindNewObjects(ChangeList& objects, HRSceneInst& scn)
     
     // form draw sequence for each mesh
     //
-    AddInstanceToDrawSequence(instance, objects.drawSeq);
+    AddInstanceToDrawSequence(instance, objects.drawSeq, i);
   }
 
   for (size_t i = 0; i < scn.drawListLights.size(); i++)
@@ -1082,21 +1093,10 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
     //
     a_pDriver->BeginScene(scn.xml_node_immediate());
 
-    if (dInfo.allowInstanceReorder)
+    for (auto p = objList.drawSeq.begin(); p != objList.drawSeq.end(); p++)
     {
-      for (auto p = objList.drawSeq.begin(); p != objList.drawSeq.end(); p++)
-      {
-        const auto& seq = p->second;
-        a_pDriver->InstanceMeshes(p->first, &seq.matrices[0], int32_t(seq.matrices.size() / 16), &seq.linstid[0], &seq.remapid[0]);
-      }
-    }
-    else
-    {
-      for (size_t i = 0; i < scn.drawList.size(); i++)
-      {
-        auto& instance = scn.drawList[i];
-        a_pDriver->InstanceMeshes(instance.meshId, instance.m, 1, &instance.lightInstId, &instance.remapListId);
-      }
+      const auto& seq = p->second;
+      a_pDriver->InstanceMeshes(p->first, &seq.matrices[0], int32_t(seq.matrices.size() / 16), &seq.linstid[0], &seq.remapid[0], &seq.instIdReal[0]);
     }
 
     for (size_t i = 0; i < scn.drawListLights.size(); i++) // #NOTE: this loop can be optimized
@@ -1168,7 +1168,7 @@ void _hr_UtilityDriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 
     // form draw sequence for each mesh
     //
-    AddInstanceToDrawSequence(instance, drawSeq);
+    AddInstanceToDrawSequence(instance, drawSeq, i);
   }
 
   ////////////////////////
@@ -1178,7 +1178,7 @@ void _hr_UtilityDriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
     for (auto p = drawSeq.begin(); p != drawSeq.end(); p++)
     {
       const auto& seq = p->second;
-      a_pDriver->InstanceMeshes(p->first, &seq.matrices[0], int32_t(seq.matrices.size() / 16), &seq.linstid[0], &seq.remapid[0]);
+      a_pDriver->InstanceMeshes(p->first, &seq.matrices[0], int32_t(seq.matrices.size() / 16), &seq.linstid[0], &seq.remapid[0], &seq.instIdReal[0]);
     }
   }
   a_pDriver->EndScene();

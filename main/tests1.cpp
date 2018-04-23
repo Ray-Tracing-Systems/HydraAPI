@@ -1655,6 +1655,10 @@ void run_all_api_tests(const int startTestId)
                        &test78_material_remap_list1,
                        &test79_material_remap_list2,
                        &test80_lt_rect_image,
+                       &test81_custom_attributes,
+                       &test82_proc_texture,
+                       &test83_proc_texture2,
+                       &test84_proc_texture2,
   };
 
 
