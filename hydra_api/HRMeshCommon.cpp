@@ -2,6 +2,7 @@
 #include "HydraObjectManager.h"
 
 #include "HydraVSGFExport.h"
+#include "HydraXMLHelpers.h"
 
 #include <sstream>
 #include <fstream>
@@ -11,17 +12,119 @@
 
 extern HRObjectManager g_objManager;
 
+
+std::vector< HydraLiteMath::float3> BBox::getVertices() const
+{
+  std::vector< HydraLiteMath::float3> verts;
+
+  verts.emplace_back(HydraLiteMath::float3(x_min, y_min, z_min));
+  verts.emplace_back(HydraLiteMath::float3(x_min, y_min, z_max));
+  verts.emplace_back(HydraLiteMath::float3(x_min, y_max, z_max));
+  verts.emplace_back(HydraLiteMath::float3(x_min, y_max, z_min));
+
+  verts.emplace_back(HydraLiteMath::float3(x_max, y_min, z_min));
+  verts.emplace_back(HydraLiteMath::float3(x_max, y_min, z_max));
+  verts.emplace_back(HydraLiteMath::float3(x_max, y_max, z_max));
+  verts.emplace_back(HydraLiteMath::float3(x_max, y_max, z_min));
+
+  return verts;
+}
+
+BBox::BBox(const std::vector<HydraLiteMath::float3> &a_verts)
+{
+  x_min = std::numeric_limits<float>::max();
+  x_max = std::numeric_limits<float>::min();
+  y_min = std::numeric_limits<float>::max();
+  y_max = std::numeric_limits<float>::min();
+  z_min = std::numeric_limits<float>::max();
+  z_max = std::numeric_limits<float>::min();
+
+  for (int i = 0; i < a_verts.size(); ++i)
+  {
+    float x = a_verts[i].x;
+    float y = a_verts[i].y;
+    float z = a_verts[i].z;
+
+    x_min = x < x_min ? x : x_min;
+    x_max = x > x_max ? x : x_max;
+
+    y_min = y < y_min ? y : y_min;
+    y_max = y > y_max ? y : y_max;
+
+    z_min = z < z_min ? z : z_min;
+    z_max = z > z_max ? z : z_max;
+  }
+}
+
+BBox::BBox(const std::vector<float> &a_verts, int stride)
+{
+  x_min = std::numeric_limits<float>::max();
+  x_max = std::numeric_limits<float>::min();
+  y_min = std::numeric_limits<float>::max();
+  y_max = std::numeric_limits<float>::min();
+  z_min = std::numeric_limits<float>::max();
+  z_max = std::numeric_limits<float>::min();
+
+  for (int i = 0; i < a_verts.size(); i += stride)
+  {
+    float x = a_verts[i + 0];
+    float y = a_verts[i + 1];
+    float z = a_verts[i + 2];
+
+    x_min = x < x_min ? x : x_min;
+    x_max = x > x_max ? x : x_max;
+
+    y_min = y < y_min ? y : y_min;
+    y_max = y > y_max ? y : y_max;
+
+    z_min = z < z_min ? z : z_min;
+    z_max = z > z_max ? z : z_max;
+  }
+}
+
+BBox transformBBox(const BBox &a_bbox, const HydraLiteMath::float4x4 &m)
+{
+  auto verts = a_bbox.getVertices();
+
+  for(auto& v : verts)
+  {
+    v = HydraLiteMath::mul(m, v);
+  }
+
+  return BBox(verts);
+}
+
+BBox mergeBBoxes(const BBox &A, const BBox &B)
+{
+  BBox C;
+  
+  C.x_min = A.x_min < B.x_min ? A.x_min : B.x_min;
+  C.x_max = A.x_max > B.x_max ? A.x_max : B.x_max;
+
+  C.y_min = A.y_min < B.y_min ? A.y_min : B.y_min;
+  C.y_max = A.y_max > B.y_max ? A.y_max : B.y_max;
+
+  C.z_min = A.z_min < B.z_min ? A.z_min : B.z_min;
+  C.z_max = A.z_max > B.z_max ? A.z_max : B.z_max;
+
+  return C;
+}
+
+
 struct MeshVSGF : public IHRMesh
 {
-  MeshVSGF(size_t a_sz, size_t a_chId) : m_sizeInBytes(a_sz), m_chunkId(a_chId), m_vertNum(0), m_indNum(0) { m_matDrawList.reserve(100); }
+  MeshVSGF(size_t a_sz, size_t a_chId) : m_sizeInBytes(a_sz), m_chunkId(a_chId), m_vertNum(0),
+                                                      m_indNum(0), m_bbox() { m_matDrawList.reserve(100); }
 
-  uint64_t chunkId() const { return uint64_t(m_chunkId); }
-  uint64_t offset(const wchar_t* a_arrayname) const;
+  uint64_t chunkId() const override { return uint64_t(m_chunkId); }
+  uint64_t offset (const wchar_t* a_arrayname) const override;
 
-  uint64_t vertNum() const { return m_vertNum; }
-  uint64_t indNum()  const { return m_indNum;  }
+  uint64_t vertNum() const override { return m_vertNum; }
+  uint64_t indNum()  const override { return m_indNum;  }
 
-  size_t   DataSizeInBytes() const { return m_sizeInBytes; }
+  size_t   DataSizeInBytes() const override { return m_sizeInBytes; }
+
+  BBox getBBox() const override { return m_bbox;}
   
   const std::vector<HRBatchInfo>& MList() const override { return m_matDrawList; }
 
@@ -34,6 +137,8 @@ struct MeshVSGF : public IHRMesh
   size_t   m_indNum;
 
   std::vector<HRBatchInfo> m_matDrawList;
+
+  BBox m_bbox;
 
   std::unordered_map<std::wstring, std::tuple<std::wstring, size_t, size_t, int> > m_custAttrOffsAndSize;
 };
@@ -170,6 +275,7 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
     matIndices = &sortedMatIndices[0];
   }
 
+
   // (1) common mesh attributes
   //
   data.setData(uint32_t(totalVertNumber), &input.verticesPos[0], &input.verticesNorm[0], &input.verticesTangent[0], &input.verticesTexCoord[0],
@@ -207,6 +313,7 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
     HrError(L"HydraFactoryCommon::CreateVSGFFromSimpleInputMesh, out of memory unknown error");
     return nullptr;
   }
+
 
   std::shared_ptr<MeshVSGF> pMeshImpl = std::make_shared<MeshVSGF>(totalByteSize, chunkId);
 
@@ -254,6 +361,35 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
   pMeshImpl->m_vertNum     = totalVertNumber;
   pMeshImpl->m_indNum      = totalMeshTriIndices;
 
+  //compute bbox
+  if (g_objManager.m_computeBBoxes)
+  {
+    BBox box;
+    box.x_min = std::numeric_limits<float>::max();
+    box.x_max = std::numeric_limits<float>::min();
+    box.y_min = std::numeric_limits<float>::max();
+    box.y_max = std::numeric_limits<float>::min();
+    box.z_min = std::numeric_limits<float>::max();
+    box.z_max = std::numeric_limits<float>::min();
+    for (int i = 0; i < input.verticesPos.size(); i += 4)
+    {
+      float x = input.verticesPos[i + 0];
+      float y = input.verticesPos[i + 1];
+      float z = input.verticesPos[i + 2];
+
+      box.x_min = x < box.x_min ? x : box.x_min;
+      box.x_max = x > box.x_max ? x : box.x_max;
+
+      box.y_min = y < box.y_min ? y : box.y_min;
+      box.y_max = y > box.y_max ? y : box.y_max;
+
+      box.z_min = z < box.z_min ? z : box.z_min;
+      box.z_max = z > box.z_max ? z : box.z_max;
+    }
+    pMeshImpl->m_bbox = box;
+  }
+
+
   if (g_objManager.m_sortTriIndices)
     pMeshImpl->m_matDrawList = FormMatDrawListRLE(sortedMatIndices);
   else
@@ -293,6 +429,10 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromFile(HRMesh* pSysObj,
   pMeshImpl->m_vertNum     = a_node.attribute(L"vertNum").as_int();
   pMeshImpl->m_indNum      = a_node.attribute(L"triNum").as_int()*3;
   pMeshImpl->m_matDrawList = FormMatDrawListRLE(mindices);
+
+  BBox bbox;
+  HydraXMLHelpers::ReadBBox(a_node, bbox);
+  pMeshImpl->m_bbox = bbox;
 
   return pMeshImpl;
 }

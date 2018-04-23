@@ -344,6 +344,7 @@ HAPI void hrSceneOpen(HRSceneInstRef a_pScn, HR_OPEN_MODE a_mode)
     pScn->drawBeginLight    = 0;
     pScn->drawBegin         = 0;
     pScn->lightGroupCounter = 0;
+    pScn->instancedScenesCounter = 0;
 
     pScn->drawList.clear();
     pScn->drawListLights.clear();
@@ -382,6 +383,8 @@ HAPI void hrSceneClose(HRSceneInstRef a_pScn)
 
   pugi::xml_node sceneNode = pScn->xml_node_next(pScn->openMode);
 
+  HydraXMLHelpers::WriteBBox(sceneNode, pScn->m_bbox);
+
   //// add remap list
   //
   if (!pScn->m_remapCache.empty())
@@ -414,10 +417,11 @@ HAPI void hrSceneClose(HRSceneInstRef a_pScn)
     
     auto& elem = pScn->drawList[i];
 
-    std::wstring id     = ToWString(i);
-    std::wstring mod_id = ToWString(elem.meshId);
-    std::wstring mat_id = ToWString(elem.remapListId);
-    std::wstring scn_id = ToWString(elem.scene_id);
+    std::wstring id      = ToWString(i);
+    std::wstring mod_id  = ToWString(elem.meshId);
+    std::wstring mat_id  = ToWString(elem.remapListId);
+    std::wstring scn_id  = ToWString(elem.scene_id);
+    std::wstring scn_sid = ToWString(elem.scene_sid);
 
     std::wstringstream outMat;
     for (int j = 0; j < 16;j++)
@@ -429,6 +433,7 @@ HAPI void hrSceneClose(HRSceneInstRef a_pScn)
     nodeXML.append_attribute(L"mesh_id").set_value(mod_id.c_str());
     nodeXML.append_attribute(L"rmap_id").set_value(mat_id.c_str());
     nodeXML.append_attribute(L"scn_id").set_value(scn_id.c_str());
+    nodeXML.append_attribute(L"scn_sid").set_value(scn_sid.c_str());
     nodeXML.append_attribute(L"matrix").set_value(mstr.c_str());
   }
 
@@ -537,7 +542,17 @@ HAPI void hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh,
   model.remapListId = mmId;                
   memcpy(model.m, a_mat, 16 * sizeof(float));
   model.scene_id = a_pScn.id;
+  model.scene_sid = pScn->instancedScenesCounter;
   pScn->drawList.push_back(model);
+
+  if(g_objManager.m_computeBBoxes)
+  {
+    HRMesh *pMesh = g_objManager.PtrById(a_pMesh);
+    auto inst_bbox = transformBBox(pMesh->pImpl->getBBox(), HydraLiteMath::float4x4(a_mat));
+
+    pScn->m_bbox = mergeBBoxes(pScn->m_bbox, inst_bbox);
+  }
+
 }
 
 static void _hrLightInstance(HRSceneInstRef a_pScn, HRLightRef a_pLight, float a_mat[16], int32_t a_lightGroupInstanceId, const wchar_t* a_customAttribs)

@@ -3255,7 +3255,7 @@ bool test1017_merge_scene_scene_id_mask()
   // Render settings
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 32, 128);
+  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 32, 512);
   hrRenderOpen(renderRef, HR_OPEN_EXISTING);
   {
     auto node = hrRenderParamNode(renderRef);
@@ -3329,6 +3329,11 @@ bool test1017_merge_scene_scene_id_mask()
   mRes = mul(mTranslate, mScale);
   HRUtils::InstanceSceneIntoScene(scnRef3, scnRef, mRes.L(), false);
 
+  mTranslate = translate4x4(float3(0.0f, -4.0f, 0.0f));
+  mScale = scale4x4(float3(3.0f, 3.0f, 3.0f));
+  mRes = mul(mTranslate, mScale);
+  HRUtils::InstanceSceneIntoScene(scnRef3, scnRef, mRes.L(), false);
+
   hrFlush(scnRef, renderRef, camRef);
 
   glViewport(0, 0, 1024, 768);
@@ -3360,9 +3365,10 @@ bool test1017_merge_scene_scene_id_mask()
   }
 
   hrRenderSaveFrameBufferLDR(renderRef,  L"tests_images/test_1017/z_out.png");
-  hrRenderSaveGBufferLayerLDR(renderRef, L"tests_images/test_1017/z_scnid.png", L"scnid");
-  hrRenderSaveGBufferLayerLDR(renderRef, L"tests_images/test_1017/z_instid.png", L"instid");
-  hrRenderSaveGBufferLayerLDR(renderRef, L"tests_images/test_1017/z_objid.png", L"objid");
+  hrRenderSaveGBufferLayerLDR(renderRef, L"tests_images/test_1017/z_out2.png", L"scnid");
+  hrRenderSaveGBufferLayerLDR(renderRef, L"tests_images/test_1017/z_out3.png", L"scnsid");
+  hrRenderSaveGBufferLayerLDR(renderRef, L"tests_images/test_1017/z_out4.png", L"instid");
+  hrRenderSaveGBufferLayerLDR(renderRef, L"tests_images/test_1017/z_out5.png", L"objid");
 
 
   return check_images("test_1017", 1, 60);

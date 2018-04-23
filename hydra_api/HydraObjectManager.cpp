@@ -48,6 +48,7 @@ void HRObjectManager::init(const wchar_t* a_className)
   m_copyTexFilesToLocalStorage = false;
   m_sortTriIndices             = false;
   m_emptyVB                    = false;
+  m_computeBBoxes              = false;
 
 
   std::wistringstream instr(a_className);
@@ -67,6 +68,8 @@ void HRObjectManager::init(const wchar_t* a_className)
       m_sortTriIndices = true;
     else if (std::wstring(name) == L"-emptyvirtualbuffer" && val != 0)
       m_emptyVB = true;
+    else if (std::wstring(name) == L"-compute_bboxes" && val != 0)
+      m_computeBBoxes = true;
   }
 
   m_pFactory = new HydraFactoryCommon;

@@ -984,6 +984,9 @@ void HRUtils::InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_
     mode = HR_OPEN_EXISTING;
 
   hrSceneOpen(a_scnTo, mode);
+
+  pScn2->instancedScenesCounter++;
+
   for (auto light : backupListLights)
   {
     HRLightRef tmp;
@@ -1019,8 +1022,9 @@ void HRUtils::InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_
         hrMeshInstance(a_scnTo, tmp, mRes.L(), &backupListRemapLists.at((unsigned long)remapListId)[0],
                        int32_t(backupListRemapLists.at((unsigned long)remapListId).size()));
 
-      //change scene_id attribute to the actual source scene
-      pScn2->drawList.back().scene_id = a_scnFrom.id;
+
+      pScn2->drawList.back().scene_id  = a_scnFrom.id; //actual source scene id
+      pScn2->drawList.back().scene_sid = pScn2->instancedScenesCounter; //sequential "scene instance" id
     }
   }
 

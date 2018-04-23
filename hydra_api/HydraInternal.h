@@ -8,7 +8,7 @@
 
 #include "HydraAPI.h"
 #include "HydraRenderDriverAPI.h"
-
+#include "LiteMath.h"
 
 #include <string>
 #include <vector>
@@ -61,6 +61,29 @@ protected:
 
 };
 
+struct BBox
+{
+    float x_min;
+    float x_max;
+
+    float y_min;
+    float y_max;
+
+    float z_min;
+    float z_max;
+
+    BBox(): x_min(0.0f), x_max(0.0f), y_min(0.0f), y_max(0.0f), z_min(0.0f), z_max(0.0f) {}
+    explicit BBox(const std::vector<HydraLiteMath::float3> &a_verts);
+    explicit BBox(const std::vector<float> &a_verts, int stride = 4);
+
+    std::vector< HydraLiteMath::float3> getVertices() const;
+};
+
+BBox transformBBox(const BBox &a_bbox, const HydraLiteMath::float4x4 &m);
+BBox mergeBBoxes(const BBox &A, const BBox &B);
+
+
+
 struct IHRMesh : public IHRObject ///< Not empty Data (reimplement DataSerialize/DataDeserialize)
 {
   IHRMesh() {}
@@ -70,6 +93,8 @@ struct IHRMesh : public IHRObject ///< Not empty Data (reimplement DataSerialize
   virtual uint64_t offset(const wchar_t* a_arrayname) const { return uint64_t(-1); }
   virtual uint64_t vertNum() const { return 0; }
   virtual uint64_t indNum() const { return 0; }
+
+  virtual BBox getBBox() const { return BBox();}
 
   virtual const std::vector<HRBatchInfo>& MList() const = 0;
   virtual const std::unordered_map<std::wstring, std::tuple<std::wstring, size_t, size_t, int> >& GetOffsAndSizeForAttrs() const = 0;
@@ -384,3 +409,4 @@ struct IHRSharedAccumImage
 };
 
 IHRSharedAccumImage* CreateImageAccum();
+

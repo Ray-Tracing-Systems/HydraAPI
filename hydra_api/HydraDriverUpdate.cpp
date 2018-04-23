@@ -514,7 +514,7 @@ int32_t HR_DriverUpdateTextures(HRSceneInst& scn, ChangeList& objList, IHRRender
     pugi::xml_node texNodeXML  = texNode.xml_node_immediate();
     uint64_t       dataOffset  = texNodeXML.attribute(L"offset").as_ullong(); //#SAFETY: check dataOffset for too big value ?
     bool           delayedLoad = (texNodeXML.attribute(L"dl").as_int() == 1);
-    bool isProc = (texNodeXML.attribute(L"loc").as_string() == L"" && !delayedLoad);
+    bool isProc = (texNodeXML.attribute(L"loc").as_string() == std::wstring(L"") && !delayedLoad);
 
     if (dataPtr == nullptr)
     {
@@ -1313,7 +1313,7 @@ std::wstring HR_UtilityDriverStart(const wchar_t* state_path)
 {
   std::wstring new_state_path(L"");
 
-  if (state_path == L"" || state_path == nullptr)
+  if (state_path == std::wstring(L"") || state_path == nullptr)
   {
     HrError(L"No state for Utility driver at location: ", state_path);
     return new_state_path;
