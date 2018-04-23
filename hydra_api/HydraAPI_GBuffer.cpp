@@ -282,7 +282,13 @@ HAPI bool hrRenderSaveGBufferLayerLDR(const HRRenderRef a_pRender, const wchar_t
   std::vector <int32_t> instanceIdToScnId(pScn->drawList.size(), 0);
 
 
-  if(lname == L"scnid")
+  if(lname == L"scnsid")
+  {
+    for (auto node = scnNode.first_child(); node != nullptr; node = node.next_sibling())
+      if (std::wstring(node.name()) == L"instance")
+        instanceIdToScnId[node.attribute(L"id").as_int()] = node.attribute(L"scn_sid").as_int();
+  }
+  else if(lname == L"scnid")
   {
     for (auto node = scnNode.first_child(); node != nullptr; node = node.next_sibling())
       if (std::wstring(node.name()) == L"instance")
@@ -310,7 +316,7 @@ HAPI bool hrRenderSaveGBufferLayerLDR(const HRRenderRef a_pRender, const wchar_t
       ExtractMaterialId(&gbufferLine[0], &imageLDR[y*width], width);
     else if (lname == L"objid")
       ExtractObjId(&gbufferLine[0], &imageLDR[y*width], width);
-    else if (lname == L"instid" || lname == L"scnid")
+    else if (lname == L"instid" || lname == L"scnsid" || lname == L"scnid")
       ExtractInstId(&gbufferLine[0], &imageLDR[y*width], width);
     else if (lname == L"coverage")
       ExtractCoverage(&gbufferLine[0], &imageLDR[y*width], width);
@@ -329,7 +335,7 @@ HAPI bool hrRenderSaveGBufferLayerLDR(const HRRenderRef a_pRender, const wchar_t
       }
     }
 
-    else if (lname == L"scnid" )
+    else if (lname == L"scnsid" || lname == L"scnid")
     {
       auto* line = (unsigned int*)&imageLDR[y*width];
       for (int x = 0; x < width; x++)

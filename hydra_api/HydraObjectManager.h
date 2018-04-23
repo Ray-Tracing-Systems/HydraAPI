@@ -511,6 +511,7 @@ struct HRSceneInst : public HRObject<IHRSceneInst>
     drawBegin      = 0;
     driverDirtyFlag = true;
     lightGroupCounter = 0;
+    instancedScenesCounter = 0;
   }
 
   std::shared_ptr<IHRSceneInst> pImpl;
@@ -521,7 +522,8 @@ struct HRSceneInst : public HRObject<IHRSceneInst>
 
   struct Instance
   {
-    Instance() : lightInstId(-1), lightId(-1), meshId(-1), remapListId(-1), lightGroupInstId(-1)
+    Instance() : lightInstId(-1), lightId(-1), meshId(-1), remapListId(-1), lightGroupInstId(-1), scene_id(-1),
+                 scene_sid(0)
     {
       m[0] = 1; m[1] = 0; m[2] = 0; m[3] = 0;
       m[4] = 0; m[5] = 1; m[6] = 0; m[7] = 0;
@@ -536,6 +538,7 @@ struct HRSceneInst : public HRObject<IHRSceneInst>
     int32_t  remapListId;
     int32_t  lightGroupInstId;
     int32_t  scene_id;
+    int32_t  scene_sid;
     pugi::xml_node node;
   };
 
@@ -556,6 +559,7 @@ struct HRSceneInst : public HRObject<IHRSceneInst>
 
   bool driverDirtyFlag;  // if true, driver need to Update this scene.
   int32_t lightGroupCounter;
+  int32_t instancedScenesCounter;
 };
 
 struct HRRender : public HRObject<IHRRender>
