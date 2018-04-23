@@ -91,11 +91,11 @@ int main(int argc, const char** argv)
 
   try
   {
-	  run_all_geo_tests();
-    run_all_lgt_tests();
-    run_all_mtl_tests();
-    run_all_api_tests();
-    run_all_ipp_tests();
+	  //run_all_geo_tests();
+    //run_all_lgt_tests();
+    //run_all_mtl_tests();
+    //run_all_api_tests();
+    //run_all_ipp_tests();
   
     //test24_many_textures_big_data();
     //test25_many_textures_big_data();
@@ -121,7 +121,7 @@ int main(int argc, const char** argv)
     //std::cout << test1015_merge_scene_with_remaps() << std::endl;
     //std::cout << test1016_merge_scene_remap_override() << std::endl;
     //std::cout << test1017_merge_scene_scene_id_mask() << std::endl;
-    //test77_save_gbuffer_layers();
+    test77_save_gbuffer_layers();
 
     //std::cout << test39_mesh_from_vsgf() << std::endl;
     //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
