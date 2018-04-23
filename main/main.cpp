@@ -62,7 +62,7 @@ void _hrDebugPrintVSGF(const wchar_t* a_fileNameIn, const wchar_t* a_fileNameOut
 
 int main(int argc, const char** argv)
 {
-  hrInit(L"-copy_textures_to_local_folder 0 -local_data_path 1 -sort_indices 1");
+  hrInit(L"-copy_textures_to_local_folder 0 -local_data_path 1 -sort_indices 1 -compute_bboxes 1");
   hrInfoCallback(&InfoCallBack);
 
   hrErrorCallerPlace(L"main");  // for debug needs only

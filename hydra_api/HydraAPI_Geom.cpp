@@ -18,6 +18,7 @@ using namespace HydraLiteMath;
 
 #include "HydraObjectManager.h"
 #include "HydraVSGFExport.h"
+#include "HydraXMLHelpers.h"
 
 extern std::wstring      g_lastError;
 extern std::wstring      g_lastErrorCallerPlace;
@@ -54,7 +55,6 @@ void FillXMLFromMeshImpl(pugi::xml_node nodeXml, std::shared_ptr<IHRMesh> a_pImp
   ChunkPointer chunk    = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
   std::wstring location = ChunkName(chunk);
 
-
   VSGFChunkInfo info;
 
   info.vertNum    = pImpl->vertNum();
@@ -75,6 +75,8 @@ void FillXMLFromMeshImpl(pugi::xml_node nodeXml, std::shared_ptr<IHRMesh> a_pImp
   nodeXml.attribute(L"offset").set_value(L"0");
   nodeXml.attribute(L"vertNum").set_value(info.vertNum);
   nodeXml.attribute(L"triNum").set_value(info.indNum / 3);
+
+  HydraXMLHelpers::WriteBBox(nodeXml, pImpl->getBBox());
 
   // (1) fill common attributes
   //

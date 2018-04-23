@@ -1,9 +1,11 @@
 #pragma once
 
 #include <sstream>
+#include <iomanip>
 #include "pugixml.hpp"
 #include "LiteMath.h"
 #include "HydraAPI.h"
+#include "HydraInternal.h"
 
 namespace HydraXMLHelpers
 {
@@ -93,6 +95,22 @@ namespace HydraXMLHelpers
     }
   }
 
+  static inline void ReadBBox(pugi::xml_node a_node, BBox &a_bbox)
+  {
+    const wchar_t* bboxStr = a_node.attribute(L"bbox").as_string();
+    if(bboxStr != nullptr)
+    {
+      std::wstringstream inputStream(bboxStr);
+      inputStream >> a_bbox.x_min >> a_bbox.x_max
+                  >> a_bbox.y_min >> a_bbox.y_max
+                  >> a_bbox.z_min >> a_bbox.z_max;
+    }
+    else
+    {
+      a_bbox = BBox();
+    }
+  }
+
   static inline void WriteFloat(pugi::xml_node a_node, float a_value)
   {
     std::wstringstream outStream;
@@ -137,6 +155,18 @@ namespace HydraXMLHelpers
               << a_value[12] << L" " << a_value[13] << L" " << a_value[14] << L" " << a_value[15];
 
     a_node.attribute(a_attrib_name).set_value(outStream.str().c_str());
+  }
+
+  static inline void WriteBBox(pugi::xml_node a_node, const BBox &a_bbox)
+  {
+    std::wstringstream outStream;
+    outStream << std::setw(6)
+              << a_bbox.x_min << L" " << a_bbox.x_max << L" "
+              << a_bbox.y_min << L" " << a_bbox.y_max << L" "
+              << a_bbox.z_min << L" " << a_bbox.z_max;
+
+    a_node.force_attribute(L"bbox").set_value(outStream.str().c_str());
+
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -262,5 +292,6 @@ namespace HydraXMLHelpers
   std::vector<std::pair<std::string, int> > GetMaterialNameToIdMap();
 
   std::vector<std::vector<int> > ReadRemapLists(pugi::xml_node a_node);
+
  
 };

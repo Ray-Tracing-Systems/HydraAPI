@@ -383,6 +383,8 @@ HAPI void hrSceneClose(HRSceneInstRef a_pScn)
 
   pugi::xml_node sceneNode = pScn->xml_node_next(pScn->openMode);
 
+  HydraXMLHelpers::WriteBBox(sceneNode, pScn->m_bbox);
+
   //// add remap list
   //
   if (!pScn->m_remapCache.empty())
@@ -540,8 +542,17 @@ HAPI void hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh,
   model.remapListId = mmId;                
   memcpy(model.m, a_mat, 16 * sizeof(float));
   model.scene_id = a_pScn.id;
-  model.scene_id = pScn->instancedScenesCounter;
+  model.scene_sid = pScn->instancedScenesCounter;
   pScn->drawList.push_back(model);
+
+  if(g_objManager.m_computeBBoxes)
+  {
+    HRMesh *pMesh = g_objManager.PtrById(a_pMesh);
+    auto inst_bbox = transformBBox(pMesh->pImpl->getBBox(), HydraLiteMath::float4x4(a_mat));
+
+    pScn->m_bbox = mergeBBoxes(pScn->m_bbox, inst_bbox);
+  }
+
 }
 
 static void _hrLightInstance(HRSceneInstRef a_pScn, HRLightRef a_pLight, float a_mat[16], int32_t a_lightGroupInstanceId, const wchar_t* a_customAttribs)

@@ -512,6 +512,7 @@ struct HRSceneInst : public HRObject<IHRSceneInst>
     driverDirtyFlag = true;
     lightGroupCounter = 0;
     instancedScenesCounter = 0;
+    m_bbox = BBox();
   }
 
   std::shared_ptr<IHRSceneInst> pImpl;
@@ -556,6 +557,8 @@ struct HRSceneInst : public HRObject<IHRSceneInst>
 
   std::vector< std::vector<int32_t> >   m_remapList;
   std::unordered_map<uint64_t, int32_t> m_remapCache;
+
+  BBox m_bbox;
 
   bool driverDirtyFlag;  // if true, driver need to Update this scene.
   int32_t lightGroupCounter;
@@ -647,6 +650,7 @@ struct HRObjectManager
   bool m_useLocalPath;
   bool m_sortTriIndices;
   bool m_emptyVB;
+  bool m_computeBBoxes;
 };
 
 void HrError(std::wstring a_str);
