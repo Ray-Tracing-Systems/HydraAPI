@@ -9,6 +9,8 @@
 #if defined(WIN32)
 #include "FreeImage.h"
 #pragma comment(lib, "FreeImage.lib")
+#undef min
+#undef max
 #else
 #include <FreeImage.h>
 #include <algorithm>

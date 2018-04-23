@@ -12,6 +12,10 @@
 
 extern HRObjectManager g_objManager;
 
+#ifdef WIN32
+#undef min
+#undef max
+#endif
 
 std::vector< HydraLiteMath::float3> BBox::getVertices() const
 {
