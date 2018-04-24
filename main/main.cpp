@@ -91,11 +91,11 @@ int main(int argc, const char** argv)
 
   try
   {
-	  //run_all_geo_tests();
-    //run_all_lgt_tests();
-    //run_all_mtl_tests();
-    //run_all_api_tests();
-    //run_all_ipp_tests();
+	  run_all_geo_tests();
+    run_all_lgt_tests();
+    run_all_mtl_tests();
+    run_all_api_tests();
+    run_all_ipp_tests();
   
     //test24_many_textures_big_data();
     //test25_many_textures_big_data();
@@ -121,7 +121,7 @@ int main(int argc, const char** argv)
     //std::cout << test1015_merge_scene_with_remaps() << std::endl;
     //std::cout << test1016_merge_scene_remap_override() << std::endl;
     //std::cout << test1017_merge_scene_scene_id_mask() << std::endl;
-    test77_save_gbuffer_layers();
+    //test77_save_gbuffer_layers();
 
     //std::cout << test39_mesh_from_vsgf() << std::endl;
     //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
@@ -137,13 +137,8 @@ int main(int argc, const char** argv)
 
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
     //GEO_TESTS::test_005_instancing();
-    //MTL_TESTS::test_103_diffuse_texture();
-    //MTL_TESTS::test_154_proc_checker_precomp();
-    //MTL_TESTS::test_155_proc_checker_HDR_precomp();
-    //MTL_TESTS::test_156_proc_checker_precomp_update();
-    //MTL_TESTS::test_157_proc_checker_precomp_remap();
-//    MTL_TESTS::test_103_diffuse_texture();
-    //LGHT_TESTS::test_224_rotated_area_light2();
+    //MTL_TESTS::test_134_diff_refl_transp();
+    //LGHT_TESTS::test_223_rotated_area_light();
     
     //PP_TESTS::test305_fbi_from_render();    
     //PP_TESTS::test312_2_post_process_hydra1_whitePointColor();

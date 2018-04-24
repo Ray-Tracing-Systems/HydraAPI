@@ -162,7 +162,7 @@ void FindNewObjects(ChangeList& objects, HRSceneInst& scn)
     
     // form draw sequence for each mesh
     //
-    AddInstanceToDrawSequence(instance, objects.drawSeq, i);
+    AddInstanceToDrawSequence(instance, objects.drawSeq, int(i));
   }
 
   for (size_t i = 0; i < scn.drawListLights.size(); i++)
@@ -931,7 +931,7 @@ int64_t EstimateGeometryMem(const ChangeList& a_objList)
     pugi::xml_node node   = meshObj.xml_node_immediate();
     const size_t byteSize = node.attribute(L"bytesize").as_llong();
 
-    const int trisNum     = (node.child(L"indices").attribute(L"bytesize").as_llong()/(sizeof(int)*3)); // aux per poly shadow ray offsets
+    const int trisNum     = int(node.child(L"indices").attribute(L"bytesize").as_llong()/(sizeof(int)*3)); // aux per poly shadow ray offsets
 
     memAmount += (byteSize + trisNum*sizeof(float));
   }
@@ -1170,7 +1170,7 @@ void _hr_UtilityDriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 
     // form draw sequence for each mesh
     //
-    AddInstanceToDrawSequence(instance, drawSeq, i);
+    AddInstanceToDrawSequence(instance, drawSeq, int(i));
   }
 
   ////////////////////////
@@ -1284,8 +1284,8 @@ resolution_dict InsertMipLevelInfoIntoXML(pugi::xml_document &stateToProcess, co
         newH /= 2;
       }
 
-      newW = newW > currW ? currW : newW;
-      newH = newH > currH ? currH : newH;
+      newW = int(newW) > currW ? currW : newW;
+      newH = int(newH) > currH ? currH : newH;
 
       texNode.force_attribute(L"r_width").set_value(newW);
       texNode.force_attribute(L"r_height").set_value(newH);

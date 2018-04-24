@@ -1521,10 +1521,7 @@ namespace LGHT_TESTS
 
       node.append_child(L"trace_depth").text()      = L"6";
       node.append_child(L"diff_trace_depth").text() = L"3";
-
-      node.append_child(L"pt_error").text() = L"1";
-      node.append_child(L"minRaysPerPixel").text() = L"256";
-      node.append_child(L"maxRaysPerPixel").text() = L"4096";
+      node.append_child(L"maxRaysPerPixel").text()  = 4096;
     }
     hrRenderClose(renderRef);
 
@@ -1922,18 +1919,15 @@ namespace LGHT_TESTS
       node.append_child(L"width").text()  = TEST_SCREEN_SIZE;
       node.append_child(L"height").text() = TEST_SCREEN_SIZE;
 
-      node.append_child(L"method_primary").text()   = L"pathtracing";
-      node.append_child(L"method_secondary").text() = L"pathtracing";
-      node.append_child(L"method_tertiary").text()  = L"pathtracing";
-      node.append_child(L"method_caustic").text()   = L"pathtracing";
+      node.append_child(L"method_primary").text()   = L"IBPT";
+      node.append_child(L"method_secondary").text() = L"IBPT";
+      node.append_child(L"method_tertiary").text()  = L"IBPT";
+      node.append_child(L"method_caustic").text()   = L"IBPT";
       node.append_child(L"shadows").text() = L"1";
 
       node.append_child(L"trace_depth").text()      = L"6";
       node.append_child(L"diff_trace_depth").text() = L"3";
-
-      node.append_child(L"pt_error").text() = L"1";
-      node.append_child(L"minRaysPerPixel").text() = L"256";
-      node.append_child(L"maxRaysPerPixel").text() = L"4096";
+      node.append_child(L"maxRaysPerPixel").text()  = 2048;
     }
     hrRenderClose(renderRef);
 
