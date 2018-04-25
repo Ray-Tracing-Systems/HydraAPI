@@ -161,20 +161,21 @@ void WriteMatrix4x4Py(pugi::xml_node a_node, const wchar_t* a_attrib_name, py::a
   HydraXMLHelpers::WriteMatrix4x4(a_node, a_attrib_name, mat.mutable_data(0));
 }
 
-void InstanceSceneIntoScenePy(HRSceneInstRef a_scnFrom, HRSceneInstRef a_scnTo, py::array_t<float> &a_mat, bool origin = true)
+HRUtils::BBox InstanceSceneIntoScenePy(HRSceneInstRef a_scnFrom, HRSceneInstRef a_scnTo, py::array_t<float> &a_mat, bool origin = true)
 {
   auto mat = a_mat.mutable_unchecked<1>();
 
-  HRUtils::InstanceSceneIntoScene(a_scnFrom, a_scnTo,  mat.mutable_data(0), origin, nullptr, 0);
+  return HRUtils::InstanceSceneIntoScene(a_scnFrom, a_scnTo,  mat.mutable_data(0), origin, nullptr, 0);
 }
 
-void InstanceSceneIntoSceneRemapOverridePy(HRSceneInstRef a_scnFrom, HRSceneInstRef a_scnTo, py::array_t<float> &a_mat,
-                              bool origin = true, py::array_t<int32_t> *remap_override = nullptr)
+HRUtils::BBox InstanceSceneIntoSceneRemapOverridePy(HRSceneInstRef a_scnFrom, HRSceneInstRef a_scnTo, py::array_t<float> &a_mat,
+                                           bool origin = true, py::array_t<int32_t> *remap_override = nullptr)
 {
   auto mat = a_mat.mutable_unchecked<1>();
   auto remap_list = remap_override->unchecked<1>();
 
-  HRUtils::InstanceSceneIntoScene(a_scnFrom, a_scnTo,  mat.mutable_data(0), origin, remap_list.data(0), int32_t(remap_list.size()));
+  return HRUtils::InstanceSceneIntoScene(a_scnFrom, a_scnTo,  mat.mutable_data(0), origin, remap_list.data(0),
+                                  int32_t(remap_list.size()));
 }
 
 
@@ -237,6 +238,14 @@ PYBIND11_MODULE(hydraPy, m)
           .def_readonly("norm", &HRGBufferPixel::norm)
           .def_readonly("rgba", &HRGBufferPixel::rgba)
           .def_readonly("matId", &HRGBufferPixel::matId);
+
+  py::class_<HRUtils::BBox>(m, "BBox")
+          .def_readonly("x_min", &HRUtils::BBox::x_min)
+          .def_readonly("x_max", &HRUtils::BBox::x_max)
+          .def_readonly("y_min", &HRUtils::BBox::y_min)
+          .def_readonly("y_max", &HRUtils::BBox::y_max)
+          .def_readonly("z_min", &HRUtils::BBox::z_min)
+          .def_readonly("z_max", &HRUtils::BBox::z_max);
 
   py::class_<HROpenedMeshInfo>(m, "HROpenedMeshInfo")
           .def_readonly("vertNum", &HROpenedMeshInfo::vertNum)
@@ -360,8 +369,8 @@ PYBIND11_MODULE(hydraPy, m)
 
   m.def("InstanceSceneIntoScene", &InstanceSceneIntoScenePy, py::arg("a_scnFrom"), py::arg("a_scnTo"), py::arg("a_mat").noconvert(),
         py::arg("origin") = true);
-  m.def("InstanceSceneIntoSceneRemapOverride", &InstanceSceneIntoSceneRemapOverridePy, py::arg("a_scnFrom"), py::arg("a_scnTo"), py::arg("a_mat").noconvert(),
-        py::arg("origin") = true, py::arg("remap_override").noconvert() = (py::array_t<int32_t>*)nullptr);
+  m.def("InstanceSceneIntoSceneRemapOverride", &InstanceSceneIntoSceneRemapOverridePy, py::arg("a_scnFrom"), py::arg("a_scnTo"),
+        py::arg("a_mat").noconvert(), py::arg("origin") = true, py::arg("remap_override").noconvert() = (py::array_t<int32_t>*)nullptr);
 
 
   m.def("MergeLibraryIntoLibrary", &HRUtils::MergeLibraryIntoLibrary, py::arg("a_libPath"), py::arg("mergeLights") = false, py::arg("copyScene") = false);

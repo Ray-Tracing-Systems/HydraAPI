@@ -3321,7 +3321,8 @@ bool test1017_merge_scene_scene_id_mask()
   mTranslate = translate4x4(float3(-6.0f, -2.0f, 0.0f));
   mScale = scale4x4(float3(3.0f, 3.0f, 3.0f));
   mRes = mul(mTranslate, mScale);
-  HRUtils::InstanceSceneIntoScene(scnRef2, scnRef, mRes.L(), false);
+  auto box = HRUtils::InstanceSceneIntoScene(scnRef2, scnRef, mRes.L(), false);
+
 
   HRSceneInstRef scnRef3 = HRUtils::MergeLibraryIntoLibrary(L"tests/test_1015_lib_to_merge", false, true);
   mTranslate = translate4x4(float3(6.0f, -2.0f, 0.0f));

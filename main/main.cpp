@@ -62,7 +62,7 @@ void _hrDebugPrintVSGF(const wchar_t* a_fileNameIn, const wchar_t* a_fileNameOut
 
 int main(int argc, const char** argv)
 {
-  hrInit(L"-copy_textures_to_local_folder 0 -local_data_path 1 -sort_indices 1");
+  hrInit(L"-copy_textures_to_local_folder 0 -local_data_path 1 -sort_indices 1 -compute_bboxes 1");
   hrInfoCallback(&InfoCallBack);
 
   hrErrorCallerPlace(L"main");  // for debug needs only
@@ -120,7 +120,7 @@ int main(int argc, const char** argv)
 
     //std::cout << test1015_merge_scene_with_remaps() << std::endl;
     //std::cout << test1016_merge_scene_remap_override() << std::endl;
-    //std::cout << test1017_merge_scene_scene_id_mask() << std::endl;
+    std::cout << test1017_merge_scene_scene_id_mask() << std::endl;
     //test77_save_gbuffer_layers();
 
     //std::cout << test39_mesh_from_vsgf() << std::endl;
@@ -133,7 +133,7 @@ int main(int argc, const char** argv)
     //std::cout << test77_save_gbuffer_layers() << std::endl;
     //test82_proc_texture();
     //test83_proc_texture2();
-    test84_proc_texture2();
+    //test84_proc_texture2();
 
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
     //GEO_TESTS::test_005_instancing();

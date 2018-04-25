@@ -61,26 +61,13 @@ protected:
 
 };
 
-struct BBox
-{
-    float x_min;
-    float x_max;
-
-    float y_min;
-    float y_max;
-
-    float z_min;
-    float z_max;
-
-    BBox(): x_min(0.0f), x_max(0.0f), y_min(0.0f), y_max(0.0f), z_min(0.0f), z_max(0.0f) {}
-    explicit BBox(const std::vector<HydraLiteMath::float3> &a_verts);
-    explicit BBox(const std::vector<float> &a_verts, int stride = 4);
-
-    std::vector< HydraLiteMath::float3> getVertices() const;
-};
+using namespace HRUtils;
 
 BBox transformBBox(const BBox &a_bbox, const HydraLiteMath::float4x4 &m);
 BBox mergeBBoxes(const BBox &A, const BBox &B);
+BBox createBBoxFromFloat4V(const std::vector<HydraLiteMath::float4> &a_verts);
+BBox createBBoxFromFloatV(const std::vector<float> &a_verts, int stride = 4);
+std::vector< HydraLiteMath::float4> getVerticesFromBBox(const BBox &a_bbox);
 
 
 
