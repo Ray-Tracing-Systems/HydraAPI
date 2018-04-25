@@ -21,13 +21,6 @@
 #include <cstring>
 #endif
 
-#ifdef WIN32
-#include <filesystem>
-#endif
-
-namespace std_fs = std::experimental::filesystem; // change to std::filesystem for C++17
-
-
 /**
 \brief Abstract HydraObjectImplementation
 
@@ -337,6 +330,8 @@ std::wstring ChunkName(const ChunkPointer& a_chunk);
   int  hr_mkdir(const wchar_t* a_folder);
   void hr_cleardir(const wchar_t* a_folder);
 #endif
+
+  void hr_copy_file(const wchar_t* a_file1, const wchar_t* a_file2); //#TODO: implement this on Linux!!!
 
 //#TODO: hr_mutex ? (or do that via connection class)
 //#TODO: hr_shmem ?

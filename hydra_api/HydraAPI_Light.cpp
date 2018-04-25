@@ -154,7 +154,7 @@ HAPI void hrLightClose(HRLightRef a_pLight)
       auto p = g_objManager.scnData.m_iesCache.find(iesFilePath); //#TODO: add some test for check m_iesCache in work!!!
       if (p == g_objManager.scnData.m_iesCache.end())
       {
-        std_fs::copy_file(iesFilePath, fullPath.c_str(), std_fs::copy_options::overwrite_existing);
+        hr_copy_file(iesFilePath, fullPath.c_str());
         g_objManager.scnData.m_iesCache[iesFilePath] = newFileName;
       }
       else

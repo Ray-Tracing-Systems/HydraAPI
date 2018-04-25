@@ -64,3 +64,7 @@ std::vector<std::wstring> hr_listfiles(const wchar_t* a_folder)
 	return result;
 }
 
+void hr_copy_file(const wchar_t* a_file1, const wchar_t* a_file2)
+{
+  CopyFileW(a_file1, a_file2, FALSE);
+}

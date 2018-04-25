@@ -13,8 +13,9 @@
 #undef max
 #else
 #include <FreeImage.h>
-#include <algorithm>
 #endif
+
+#include <algorithm>
 
 #include "HydraVSGFExport.h"
 #include "RenderDriverOpenGL3_Utility.h"

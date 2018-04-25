@@ -165,6 +165,7 @@ bool test81_custom_attributes();
 bool test82_proc_texture();
 bool test83_proc_texture2();
 bool test84_proc_texture2();
+bool test85_proc_texture_ao();
 
 bool test90_check_xml_fail_lights();
 bool test91_check_xml_fail_lights();
