@@ -1036,10 +1036,26 @@ namespace HRUtils
   \brief Convert LDR cube map to LDR spheremap
 
   */
+
+  struct BBox
+  {
+      float x_min;
+      float x_max;
+
+      float y_min;
+      float y_max;
+
+      float z_min;
+      float z_max;
+
+      BBox(): x_min(0.0f), x_max(0.0f), y_min(0.0f), y_max(0.0f), z_min(0.0f), z_max(0.0f) {}
+  };
+
+
   HRTextureNodeRef Cube2SphereLDR(HRTextureNodeRef a_cube[6]);
 
-  void InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_scnTo, float a_mat[16],
-                                bool origin = true, const int32_t* remapListOverride = nullptr, int32_t remapListSize = 0);
+  BBox InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_scnTo, float a_mat[16], bool origin = true,
+                              const int32_t* remapListOverride = nullptr, int32_t remapListSize = 0);
 
   HRSceneInstRef MergeLibraryIntoLibrary(const wchar_t* a_libPath, bool mergeLights = false, bool copyScene = false);
 

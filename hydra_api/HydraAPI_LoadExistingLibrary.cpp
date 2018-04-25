@@ -945,7 +945,7 @@ HRLightRef HRUtils::MergeOneLightIntoLibrary(const wchar_t* a_libPath, const wch
   return ref;
 }
 
-void HRUtils::InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_scnTo, float a_mat[16],
+BBox HRUtils::InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_scnTo, float a_mat[16],
                             bool origin, const int32_t* remapListOverride, int32_t remapListSize)
 {
   HRSceneInst *pScn = g_objManager.PtrById(a_scnFrom);
@@ -954,7 +954,7 @@ void HRUtils::InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_
   if (pScn == nullptr || pScn2 == nullptr)
   {
     HrError(L"HRUtils::InstanceSceneIntoScene: one of the scenes is nullptr");
-    return;
+    return BBox();
   }
 
   if (pScn->opened)
@@ -966,6 +966,23 @@ void HRUtils::InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_
     hrSceneClose(a_scnTo);
   }
 
+ /* std::cout << "pScn->m_bbox of loaded scene: " << pScn->m_bbox.x_min << " " << pScn->m_bbox.x_max << " " <<
+            pScn->m_bbox.y_min << " " << pScn->m_bbox.y_max << " " <<
+            pScn->m_bbox.z_min << " " << pScn->m_bbox.z_max << std::endl;
+
+  std::cout << "matrix: ";
+  for(int i = 0; i < 16; ++i)
+  {
+    std::cout << a_mat[i] << " ";
+  }
+  std::cout << std::endl;
+*/
+  BBox bbox(transformBBox(pScn->m_bbox, HydraLiteMath::float4x4(a_mat)));
+/*
+  std::cout << "bbox of transformed scene: " << bbox.x_min << " " << bbox.x_max << " "
+                                             << bbox.y_min << " " << bbox.y_max << " "
+                                             << bbox.z_min << " " << bbox.z_max << std::endl;
+*/
   hrSceneOpen(a_scnFrom, HR_OPEN_READ_ONLY);
 
   std::vector<HRSceneInst::Instance> backupListMeshes(pScn->drawList);
@@ -1029,6 +1046,6 @@ void HRUtils::InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_
   }
 
   hrSceneClose(a_scnTo);
-
+  return bbox;
 }
 

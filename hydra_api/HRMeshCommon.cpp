@@ -17,85 +17,94 @@ extern HRObjectManager g_objManager;
 #undef max
 #endif
 
-std::vector< HydraLiteMath::float3> BBox::getVertices() const
+
+
+std::vector< HydraLiteMath::float4> getVerticesFromBBox(const BBox &a_bbox)
 {
-  std::vector< HydraLiteMath::float3> verts;
+  std::vector< HydraLiteMath::float4> verts;
 
-  verts.emplace_back(HydraLiteMath::float3(x_min, y_min, z_min));
-  verts.emplace_back(HydraLiteMath::float3(x_min, y_min, z_max));
-  verts.emplace_back(HydraLiteMath::float3(x_min, y_max, z_max));
-  verts.emplace_back(HydraLiteMath::float3(x_min, y_max, z_min));
+  verts.emplace_back(HydraLiteMath::float4(a_bbox.x_min, a_bbox.y_min, a_bbox.z_min, 1.0f));
+  verts.emplace_back(HydraLiteMath::float4(a_bbox.x_min, a_bbox.y_min, a_bbox.z_max, 1.0f));
+  verts.emplace_back(HydraLiteMath::float4(a_bbox.x_min, a_bbox.y_max, a_bbox.z_max, 1.0f));
+  verts.emplace_back(HydraLiteMath::float4(a_bbox.x_min, a_bbox.y_max, a_bbox.z_min, 1.0f));
 
-  verts.emplace_back(HydraLiteMath::float3(x_max, y_min, z_min));
-  verts.emplace_back(HydraLiteMath::float3(x_max, y_min, z_max));
-  verts.emplace_back(HydraLiteMath::float3(x_max, y_max, z_max));
-  verts.emplace_back(HydraLiteMath::float3(x_max, y_max, z_min));
+  verts.emplace_back(HydraLiteMath::float4(a_bbox.x_max, a_bbox.y_min, a_bbox.z_min, 1.0f));
+  verts.emplace_back(HydraLiteMath::float4(a_bbox.x_max, a_bbox.y_min, a_bbox.z_max, 1.0f));
+  verts.emplace_back(HydraLiteMath::float4(a_bbox.x_max, a_bbox.y_max, a_bbox.z_max, 1.0f));
+  verts.emplace_back(HydraLiteMath::float4(a_bbox.x_max, a_bbox.y_max, a_bbox.z_min, 1.0f));
 
   return verts;
 }
 
-BBox::BBox(const std::vector<HydraLiteMath::float3> &a_verts)
+BBox createBBoxFromFloat4V(const std::vector<HydraLiteMath::float4> &a_verts)
 {
-  x_min = std::numeric_limits<float>::max();
-  x_max = std::numeric_limits<float>::min();
-  y_min = std::numeric_limits<float>::max();
-  y_max = std::numeric_limits<float>::min();
-  z_min = std::numeric_limits<float>::max();
-  z_max = std::numeric_limits<float>::min();
+  BBox box;
 
-  for (int i = 0; i < a_verts.size(); ++i)
+  box.x_min = a_verts[0].x;
+  box.x_max = a_verts[0].x;
+  box.y_min = a_verts[0].y;
+  box.y_max = a_verts[0].y;
+  box.z_min = a_verts[0].z;
+  box.z_max = a_verts[0].z;
+
+  for (int i = 1; i < a_verts.size(); ++i)
   {
     float x = a_verts[i].x;
     float y = a_verts[i].y;
     float z = a_verts[i].z;
 
-    x_min = x < x_min ? x : x_min;
-    x_max = x > x_max ? x : x_max;
+    box.x_min = x < box.x_min ? x : box.x_min;
+    box.x_max = x > box.x_max ? x : box.x_max;
 
-    y_min = y < y_min ? y : y_min;
-    y_max = y > y_max ? y : y_max;
+    box.y_min = y < box.y_min ? y : box.y_min;
+    box.y_max = y > box.y_max ? y : box.y_max;
 
-    z_min = z < z_min ? z : z_min;
-    z_max = z > z_max ? z : z_max;
+    box.z_min = z < box.z_min ? z : box.z_min;
+    box.z_max = z > box.z_max ? z : box.z_max;
   }
+
+  return box;
 }
 
-BBox::BBox(const std::vector<float> &a_verts, int stride)
+BBox createBBoxFromFloatV(const std::vector<float> &a_verts, int stride)
 {
-  x_min = std::numeric_limits<float>::max();
-  x_max = std::numeric_limits<float>::min();
-  y_min = std::numeric_limits<float>::max();
-  y_max = std::numeric_limits<float>::min();
-  z_min = std::numeric_limits<float>::max();
-  z_max = std::numeric_limits<float>::min();
+  BBox box;
 
-  for (int i = 0; i < a_verts.size(); i += stride)
+  box.x_min = a_verts[0];
+  box.x_max = a_verts[0];
+  box.y_min = a_verts[1];
+  box.y_max = a_verts[1];
+  box.z_min = a_verts[2];
+  box.z_max = a_verts[2];
+
+  for (int i = 4; i < a_verts.size(); i += stride)
   {
     float x = a_verts[i + 0];
     float y = a_verts[i + 1];
     float z = a_verts[i + 2];
 
-    x_min = x < x_min ? x : x_min;
-    x_max = x > x_max ? x : x_max;
+    box.x_min = x < box.x_min ? x : box.x_min;
+    box.x_max = x > box.x_max ? x : box.x_max;
 
-    y_min = y < y_min ? y : y_min;
-    y_max = y > y_max ? y : y_max;
+    box.y_min = y < box.y_min ? y : box.y_min;
+    box.y_max = y > box.y_max ? y : box.y_max;
 
-    z_min = z < z_min ? z : z_min;
-    z_max = z > z_max ? z : z_max;
+    box.z_min = z < box.z_min ? z : box.z_min;
+    box.z_max = z > box.z_max ? z : box.z_max;
   }
+
+  return box;
 }
 
 BBox transformBBox(const BBox &a_bbox, const HydraLiteMath::float4x4 &m)
 {
-  auto verts = a_bbox.getVertices();
+  auto verts = getVerticesFromBBox(a_bbox);
 
   for(auto& v : verts)
-  {
     v = HydraLiteMath::mul(m, v);
-  }
 
-  return BBox(verts);
+
+  return createBBoxFromFloat4V(verts);
 }
 
 BBox mergeBBoxes(const BBox &A, const BBox &B)
