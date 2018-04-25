@@ -91,11 +91,11 @@ int main(int argc, const char** argv)
 
   try
   {
-	  run_all_geo_tests();
-    run_all_lgt_tests();
-    run_all_mtl_tests();
-    run_all_api_tests();
-    run_all_ipp_tests();
+	  //run_all_geo_tests();
+    //run_all_lgt_tests();
+    //run_all_mtl_tests();
+    //run_all_api_tests();
+    //run_all_ipp_tests();
   
     //test24_many_textures_big_data();
     //test25_many_textures_big_data();
@@ -133,7 +133,7 @@ int main(int argc, const char** argv)
     //std::cout << test77_save_gbuffer_layers() << std::endl;
     //test82_proc_texture();
     //test83_proc_texture2();
-    //test84_proc_texture2();
+    test84_proc_texture2();
 
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
     //GEO_TESTS::test_005_instancing();
