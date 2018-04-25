@@ -1348,22 +1348,6 @@ bool test85_proc_texture_ao()
     colorNode.append_attribute(L"tex_apply_mode") = L"replace";
 
     auto texNode = hrTextureBind(texProc2, colorNode);
-
-    // not used currently #TODO: figure out what of theese we needed!
-    //
-    texNode.append_attribute(L"matrix");
-    float samplerMatrix[16] = { 1, 0, 0, 0,
-                                0, 1, 0, 0,
-                                0, 0, 1, 0,
-                                0, 0, 0, 1 };
-
-    texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
-    texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
-    texNode.append_attribute(L"input_gamma").set_value(2.2f);
-    texNode.append_attribute(L"input_alpha").set_value(L"rgb");
-
-    HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
-
     texNode.attribute(L"type") = L"texref_proc";
   }
   hrMaterialClose(mat0);
@@ -1448,7 +1432,13 @@ bool test85_proc_texture_ao()
     xml_node diff = matNode.append_child(L"diffuse");
 
     diff.append_attribute(L"brdf_type").set_value(L"lambert");
-    diff.append_child(L"color").append_attribute(L"val").set_value(L"0.5 0.5 0.5");
+
+    auto colorNode = diff.append_child(L"color");
+
+    colorNode.append_attribute(L"val").set_value(L"0.5 0.5 0.5");
+
+    auto texNode = hrTextureBind(texProc3, colorNode);
+    texNode.attribute(L"type") = L"texref_proc";
   }
   hrMaterialClose(mat3);
 
@@ -1458,8 +1448,8 @@ bool test85_proc_texture_ao()
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   HRMeshRef cubeOpenRef = hrMeshCreate(L"my_box");
-  HRMeshRef planeRef = hrMeshCreate(L"my_plane");
-  HRMeshRef sphereRef = hrMeshCreate(L"my_sphere");
+  HRMeshRef planeRef    = hrMeshCreate(L"my_plane");
+  HRMeshRef sphereRef   = hrMeshCreate(L"my_sphere");
 
   hrMeshOpen(cubeOpenRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
   {
