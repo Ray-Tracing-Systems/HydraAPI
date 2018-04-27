@@ -8,13 +8,20 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <stdio.h>
+#include <cstdio>
 #include <ftw.h>
 #include <unistd.h>
-
+#include <dirent.h>
+#include <sys/sendfile.h>
+#include <fcntl.h>
+#include <ctime>
 
 #include <map>
-#include <dirent.h>
+#include <experimental/filesystem>
+
+namespace std_fs = std::experimental::filesystem;
+
+
 
 
 int hr_mkdir(const char* a_folder)
@@ -78,4 +85,20 @@ std::vector<std::string> hr_listfiles(const std::string &a_folder)
   closedir(dir);
 
   return result;
+}
+
+void hr_copy_file(const wchar_t* a_file1, const wchar_t* a_file2)
+{
+/*  int source = open(a_file1, O_RDONLY, 0);
+  int dest = open(a_file2, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+
+  struct stat stat_source;
+  fstat(source, &stat_source);
+
+  sendfile(dest, source, 0, stat_source.st_size);
+
+  close(source);
+  close(dest);*/
+
+  std_fs::copy_file(a_file1, a_file2, std_fs::copy_options::overwrite_existing);
 }
