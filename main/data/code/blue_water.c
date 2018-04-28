@@ -72,8 +72,5 @@ float4 main(const SurfaceInfo* sHit)
   float4 a  = make_float4(0.20f, 0.4f, 1.0f, 1.0f);
   float4 b  = make_float4(0.85f, 0.9f, 1.0f, 1.0f);
   
-  //float4 a  = make_float4(0.10f, 0.1f, 0.2f, 1.0f);
-  //float4 b  = make_float4(0.85f, 0.9f, 1.0f, 1.0f);
-  
   return mix(a, b, smoothstep(0.0f, 0.35f, ov(pos.xy, pos.z)));
 }

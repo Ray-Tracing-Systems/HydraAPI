@@ -136,7 +136,8 @@ int main(int argc, const char** argv)
     //test84_proc_texture2();
     //test85_proc_texture_ao();
     //test86_proc_texture_ao_dirt();
-    test87_proc_texture_reflect();
+    //test87_proc_texture_reflect();
+    test88_proc_texture_convex_rust();
 
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
     //GEO_TESTS::test_005_instancing();
