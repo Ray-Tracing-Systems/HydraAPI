@@ -65,7 +65,9 @@ bool MTL_TESTS::test_158_proc_dirt1()
   // textures
   //
   HRTextureNodeRef texBitmap1 = hrTexture2DCreateFromFile(L"data/textures/texture1.bmp");
-  HRTextureNodeRef texBitmap2 = hrTexture2DCreateFromFile(L"data/textures/300px-Bump2.jpg");
+  HRTextureNodeRef texBitmap2 = hrTexture2DCreateFromFile(L"data/textures/300px-Bump2.jpg"); 
+  HRTextureNodeRef texBitmap3 = hrTexture2DCreateFromFile(L"data/textures/checker_16x16.bmp");
+
   HRTextureNodeRef texProc    = hrTextureCreateAdvanced(L"proc", L"my_custom_faloff");
   HRTextureNodeRef texProc2   = hrTextureCreateAdvanced(L"proc", L"my_show_normals");
   HRTextureNodeRef texProc3   = hrTextureCreateAdvanced(L"proc", L"my_ao_test");
@@ -144,18 +146,6 @@ bool MTL_TESTS::test_158_proc_dirt1()
     xml_node code_node = texNode.append_child(L"code");
     code_node.append_attribute(L"file") = L"data/code/voronoi.c";
     code_node.append_attribute(L"main") = L"main";
-
-    xml_node aoNode = texNode.append_child(L"ao");
-
-    aoNode.append_attribute(L"length") = 0.5f;
-
-    // Distribution: Corner/Up, Edge/Down, Both/Both(Corner and Edge).
-    //
-    aoNode.append_attribute(L"hemisphere") = L"down";
-
-    // Only for this object(on / off) - работает только для этого объекта.
-    //
-    aoNode.append_attribute(L"local") = 1;
   }
   hrTextureNodeClose(texProc5);
 
@@ -355,6 +345,11 @@ bool MTL_TESTS::test_158_proc_dirt1()
     p5.append_attribute(L"size") = 1;
     p5.append_attribute(L"val")  = 2.0f;
 
+    xml_node aoNode = texNode.append_child(L"ao");
+
+    aoNode.append_attribute(L"length")     = 1.0f;
+    aoNode.append_attribute(L"hemisphere") = L"up";
+    aoNode.append_attribute(L"local")      = 0;
   }
   hrMaterialClose(mat4);
 
@@ -406,6 +401,12 @@ bool MTL_TESTS::test_158_proc_dirt1()
     p5.append_attribute(L"type") = L"float";
     p5.append_attribute(L"size") = 1;
     p5.append_attribute(L"val")  = 1.0f;
+
+    xml_node aoNode = texNode.append_child(L"ao");
+
+    aoNode.append_attribute(L"length")     = 0.25f;
+    aoNode.append_attribute(L"hemisphere") = L"down";
+    aoNode.append_attribute(L"local")      = 0;
   }
   hrMaterialClose(mat5);
 
@@ -415,9 +416,54 @@ bool MTL_TESTS::test_158_proc_dirt1()
     xml_node diff = matNode.append_child(L"diffuse");
 
     diff.append_attribute(L"brdf_type").set_value(L"lambert");
+    
     auto colorNode = diff.append_child(L"color");
     colorNode.append_attribute(L"val").set_value(L"1 1 1");
 
+    auto texNode = hrTextureBind(texProc6, colorNode);
+    texNode.append_attribute(L"input_gamma") = 2.2f;
+
+    xml_node p1 = texNode.append_child(L"arg");
+    xml_node p2 = texNode.append_child(L"arg");
+    xml_node p3 = texNode.append_child(L"arg");
+    xml_node p4 = texNode.append_child(L"arg");
+    xml_node p5 = texNode.append_child(L"arg");
+
+    p1.append_attribute(L"id")   = 0;
+    p1.append_attribute(L"name") = L"colorHit";
+    p1.append_attribute(L"type") = L"float3";
+    p1.append_attribute(L"size") = 1;
+    p1.append_attribute(L"val")  = L"1 1 1";
+
+    p2.append_attribute(L"id")   = 1;
+    p2.append_attribute(L"name") = L"texHit";
+    p2.append_attribute(L"type") = L"sampler2D";
+    p2.append_attribute(L"size") = 1;
+    p2.append_attribute(L"val")  = texBitmap1.id;
+
+    p3.append_attribute(L"id")   = 2;
+    p3.append_attribute(L"name") = L"colorMiss";
+    p3.append_attribute(L"type") = L"float3";
+    p3.append_attribute(L"size") = 1;
+    p3.append_attribute(L"val")  = L"1 1 1";
+
+    p4.append_attribute(L"id")   = 3;
+    p4.append_attribute(L"name") = L"texMiss";
+    p4.append_attribute(L"type") = L"sampler2D";
+    p4.append_attribute(L"size") = 1;
+    p4.append_attribute(L"val")  = texBitmap3.id;
+
+    p5.append_attribute(L"id")   = 4;
+    p5.append_attribute(L"name") = L"faloffPower";
+    p5.append_attribute(L"type") = L"float";
+    p5.append_attribute(L"size") = 1;
+    p5.append_attribute(L"val")  = 2.0f;
+
+    xml_node aoNode = texNode.append_child(L"ao");
+
+    aoNode.append_attribute(L"length")     = 0.5f;
+    aoNode.append_attribute(L"hemisphere") = L"down";
+    aoNode.append_attribute(L"local")      = 0;
     
   }
   hrMaterialClose(mat6);
