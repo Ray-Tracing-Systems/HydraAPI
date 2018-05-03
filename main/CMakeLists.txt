@@ -36,6 +36,7 @@ set(SOURCE_FILES
         tests_mtl.cpp
         tests_mtl2.cpp
         tests_mtl3.cpp
+        tests_mtl4.cpp
         tests_pp.cpp
         Timer.cpp
         Timer.h
