@@ -170,6 +170,7 @@ bool test85_proc_texture_ao();
 bool test86_proc_texture_ao_dirt();
 bool test87_proc_texture_reflect();
 bool test88_proc_texture_convex_rust();
+bool test89_proc_texture_dirty();
 
 bool test90_check_xml_fail_lights();
 bool test91_check_xml_fail_lights();
@@ -376,7 +377,7 @@ void run_all_lgt_tests(int a_start = 0);
 void run_all_ipp_tests(int a_start = 0);
 void terminate_opengl();
 
-static const int CURR_RENDER_DEVICE = 1;
+static const int CURR_RENDER_DEVICE = 0;
 
 //void image_p_sandbox();
 
