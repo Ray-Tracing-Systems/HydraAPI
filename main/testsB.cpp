@@ -356,8 +356,6 @@ bool test82_proc_texture()
 
     // proc texture sampler settings
     //
-    texNode.attribute(L"type") = L"texref_proc";
-
     xml_node p1 = texNode.append_child(L"arg"); 
     xml_node p2 = texNode.append_child(L"arg");
     xml_node p3 = texNode.append_child(L"arg");
@@ -656,8 +654,6 @@ bool test83_proc_texture2()
     texNode.append_attribute(L"input_alpha").set_value(L"rgb");
 
     HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
-
-    texNode.attribute(L"type") = L"texref_proc";
   }
   hrMaterialClose(mat0);
 
@@ -692,8 +688,6 @@ bool test83_proc_texture2()
 
     // proc texture sampler settings
     //
-    texNode.attribute(L"type") = L"texref_proc";
-
     xml_node p1 = texNode.append_child(L"arg");
     xml_node p2 = texNode.append_child(L"arg");
     xml_node p3 = texNode.append_child(L"arg");
@@ -991,8 +985,6 @@ bool test84_proc_texture2()
     texNode.append_attribute(L"input_alpha").set_value(L"rgb");
 
     HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
-
-    texNode.attribute(L"type") = L"texref_proc";
   }
   hrMaterialClose(mat0);
 
@@ -1027,8 +1019,6 @@ bool test84_proc_texture2()
 
     // proc texture sampler settings
     //
-    texNode.attribute(L"type") = L"texref_proc";
-
     xml_node p1 = texNode.append_child(L"arg");
     xml_node p2 = texNode.append_child(L"arg");
     xml_node p3 = texNode.append_child(L"arg");
@@ -1348,7 +1338,6 @@ bool test85_proc_texture_ao()
     colorNode.append_attribute(L"tex_apply_mode") = L"replace";
 
     auto texNode = hrTextureBind(texProc2, colorNode);
-    texNode.attribute(L"type") = L"texref_proc";
   }
   hrMaterialClose(mat0);
 
@@ -1383,8 +1372,6 @@ bool test85_proc_texture_ao()
 
     // proc texture sampler settings
     //
-    texNode.attribute(L"type") = L"texref_proc";
-
     xml_node p1 = texNode.append_child(L"arg");
     xml_node p2 = texNode.append_child(L"arg");
     xml_node p3 = texNode.append_child(L"arg");
@@ -1438,7 +1425,6 @@ bool test85_proc_texture_ao()
     colorNode.append_attribute(L"val").set_value(L"0.5 0.5 0.5");
 
     auto texNode = hrTextureBind(texProc3, colorNode);
-    texNode.attribute(L"type") = L"texref_proc";
     texNode.append_attribute(L"input_gamma") = 1.0f;
   }
   hrMaterialClose(mat3);
@@ -1711,8 +1697,6 @@ bool test86_proc_texture_ao_dirt()
     colorNode.append_attribute(L"tex_apply_mode") = L"replace";
 
     auto texNode = hrTextureBind(texProc2, colorNode);
-    texNode.attribute(L"type") = L"texref_proc";
-
     // xml_node p1 = texNode.append_child(L"arg");
     // xml_node p2 = texNode.append_child(L"arg");
     // xml_node p3 = texNode.append_child(L"arg");
@@ -1769,8 +1753,6 @@ bool test86_proc_texture_ao_dirt()
 
     // proc texture sampler settings
     //
-    texNode.attribute(L"type") = L"texref_proc";
-
     xml_node p1 = texNode.append_child(L"arg");
     xml_node p2 = texNode.append_child(L"arg");
     xml_node p3 = texNode.append_child(L"arg");
@@ -1824,7 +1806,6 @@ bool test86_proc_texture_ao_dirt()
     colorNode.append_attribute(L"val").set_value(L"0.5 0.5 0.5");
 
     auto texNode = hrTextureBind(texProc3, colorNode);
-    texNode.attribute(L"type") = L"texref_proc";
     texNode.append_attribute(L"input_gamma") = 1.0f;
   }
   hrMaterialClose(mat3);
@@ -2108,7 +2089,6 @@ bool test87_proc_texture_reflect()
     colorNode.append_attribute(L"tex_apply_mode") = L"replace";
 
     auto texNode = hrTextureBind(texProc4, colorNode); 
-    texNode.attribute(L"type") = L"texref_proc";
     texNode.append_attribute(L"input_gamma") = 1.0f;
 
     auto refl = matNode.append_child(L"reflectivity");
@@ -2123,9 +2103,6 @@ bool test87_proc_texture_reflect()
     reflColor.append_attribute(L"val").set_value(L"0.5 0.5 0.5");
 
     auto texNodeR = hrTextureBind(texProc2, reflColor);
-    texNodeR.attribute(L"type") = L"texref_proc";
-    //texNodeR.append_attribute(L"input_gamma") = 1.0f;
-
   }
   hrMaterialClose(mat0);
 
@@ -2160,8 +2137,6 @@ bool test87_proc_texture_reflect()
 
     // proc texture sampler settings
     //
-    texNode.attribute(L"type") = L"texref_proc";
-
     xml_node p1 = texNode.append_child(L"arg");
     xml_node p2 = texNode.append_child(L"arg");
     xml_node p3 = texNode.append_child(L"arg");
@@ -2215,7 +2190,6 @@ bool test87_proc_texture_reflect()
     colorNode.append_attribute(L"val").set_value(L"0.5 0.5 0.5");
 
     // auto texNode = hrTextureBind(texProc3, colorNode);
-    // texNode.attribute(L"type") = L"texref_proc";
     // texNode.append_attribute(L"input_gamma") = 1.0f;
   }
   hrMaterialClose(mat3);
@@ -2527,7 +2501,6 @@ bool test88_proc_texture_convex_rust()
     colorNode.append_attribute(L"tex_apply_mode") = L"replace";
 
     auto texNode = hrTextureBind(texProc4, colorNode); 
-    texNode.attribute(L"type") = L"texref_proc";
     texNode.append_attribute(L"input_gamma") = 1.0f;
 
     auto refl = matNode.append_child(L"reflectivity");
@@ -2542,9 +2515,7 @@ bool test88_proc_texture_convex_rust()
     reflColor.append_attribute(L"val").set_value(L"0.5 0.5 0.5");
 
     auto texNodeR = hrTextureBind(texProc2, reflColor);
-    texNodeR.attribute(L"type") = L"texref_proc";
     //texNodeR.append_attribute(L"input_gamma") = 1.0f;
-
   }
   hrMaterialClose(mat0);
 
@@ -2579,8 +2550,6 @@ bool test88_proc_texture_convex_rust()
 
     // proc texture sampler settings
     //
-    texNode.attribute(L"type") = L"texref_proc";
-
     xml_node p1 = texNode.append_child(L"arg");
     xml_node p2 = texNode.append_child(L"arg");
     xml_node p3 = texNode.append_child(L"arg");
@@ -2634,7 +2603,6 @@ bool test88_proc_texture_convex_rust()
     colorNode.append_attribute(L"val").set_value(L"0.5 0.5 0.5");
 
     auto texNode = hrTextureBind(texProc3, colorNode);
-    texNode.attribute(L"type") = L"texref_proc";
     texNode.append_attribute(L"input_gamma") = 1.0f;
   }
   hrMaterialClose(mat3);
@@ -2651,7 +2619,6 @@ bool test88_proc_texture_convex_rust()
     colorNode.append_attribute(L"val").set_value(L"0.5 0.5 0.5");
 
     auto texNode = hrTextureBind(texProc5, colorNode);
-    texNode.attribute(L"type")               = L"texref_proc";
     texNode.append_attribute(L"input_gamma") = 1.0f;
 
     xml_node p1 = texNode.append_child(L"arg");
