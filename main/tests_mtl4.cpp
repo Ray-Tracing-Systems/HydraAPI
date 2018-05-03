@@ -68,11 +68,11 @@ bool MTL_TESTS::test_158_proc_dirt1()
   HRTextureNodeRef texBitmap2 = hrTexture2DCreateFromFile(L"data/textures/300px-Bump2.jpg"); 
   HRTextureNodeRef texBitmap3 = hrTexture2DCreateFromFile(L"data/textures/checker_16x16.bmp");
 
-  HRTextureNodeRef texProc    = hrTextureCreateAdvanced(L"proc", L"my_custom_faloff");
-  HRTextureNodeRef texProc2   = hrTextureCreateAdvanced(L"proc", L"my_show_normals");
+  HRTextureNodeRef texProc    = hrTextureCreateAdvanced(L"proc", L"my_mul_tex_coord");
+  HRTextureNodeRef texProc2   = hrTextureCreateAdvanced(L"proc", L"my_noise3D");
   HRTextureNodeRef texProc3   = hrTextureCreateAdvanced(L"proc", L"my_ao_test");
-  HRTextureNodeRef texProc4   = hrTextureCreateAdvanced(L"proc", L"my_voronoi_test");
-  HRTextureNodeRef texProc5   = hrTextureCreateAdvanced(L"proc", L"my_cavity_test");
+  HRTextureNodeRef texProc4   = hrTextureCreateAdvanced(L"proc", L"my_blue_water_test");
+  HRTextureNodeRef texProc5   = hrTextureCreateAdvanced(L"proc", L"my_voronoi_test");
   HRTextureNodeRef texProc6   = hrTextureCreateAdvanced(L"proc", L"my_dirt");
 
   hrTextureNodeOpen(texProc, HR_WRITE_DISCARD);
