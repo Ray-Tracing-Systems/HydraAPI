@@ -98,33 +98,9 @@ bool MTL_TESTS::test_158_proc_dirt1()
   hrTextureNodeOpen(texProc3, HR_WRITE_DISCARD);
   {
     xml_node texNode = hrTextureParamNode(texProc3);
-
-    // Occluded color(с текстурой).       // put them in source code later! this test is only for AO.
-    // Unoccluded color(с текстурой).     // put them in source code later! this test is only for AO.
-    // Falloff(0.1f - 10.0f) - гамма.     // put them in source code later! this test is only for AO.
-    // 
     xml_node code_node = texNode.append_child(L"code");
     code_node.append_attribute(L"file") = L"data/code/noise3D_mul_ao.c";
     code_node.append_attribute(L"main") = L"main";
-
-    xml_node aoNode = texNode.append_child(L"ao");
-
-    // Distribution: Corner, Edge, Both(Corner and Edge).
-    //
-    aoNode.append_attribute(L"length") = 1.25f;
-
-    auto texAoLengthNode = hrTextureBind(texBitmap1, aoNode);
-    {
-      // set ao length texture params
-    }
-
-    // Distribution: Corner/Up, Edge/Down, Both/Both(Corner and Edge).
-    //
-    aoNode.append_attribute(L"hemisphere") = L"up";
-
-    // Only for this object(on / off) - работает только для этого объекта.
-    //
-    aoNode.append_attribute(L"local") = 1;
   }
   hrTextureNodeClose(texProc3);
 
