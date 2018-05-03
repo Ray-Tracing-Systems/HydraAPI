@@ -542,7 +542,7 @@ HAPI pugi::xml_node hrTextureBind(HRTextureNodeRef a_pTexNode, pugi::xml_node a_
   HRTextureNode* pData = g_objManager.PtrById(a_pTexNode);
   if (pData == nullptr)
   {
-    pugi::xml_node texNode = a_node.child(L"texture"); // delet texture
+    pugi::xml_node texNode = a_node.child(L"texture"); // delete texture
     texNode.parent().remove_child(texNode);
     return pugi::xml_node();
   }
@@ -553,8 +553,14 @@ HAPI pugi::xml_node hrTextureBind(HRTextureNodeRef a_pTexNode, pugi::xml_node a_
   if (texNode == nullptr)
     texNode = a_node.append_child(L"texture");
 
-  my_force_attrib(texNode, L"id").set_value(a_pTexNode.id);
-  my_force_attrib(texNode, L"type").set_value(L"texref");
+  pugi::xml_node texNodeOrigin = pData->xml_node_immediate();
+
+  texNode.force_attribute(L"id").set_value(a_pTexNode.id);
+  texNode.force_attribute(L"type").set_value(L"texref");
+
+  const std::wstring texT = texNodeOrigin.attribute(L"type").as_string();
+  if(texT == L"proc")
+    texNode.force_attribute(L"type").set_value(L"texref_proc");
 
 	return texNode;
 }
@@ -804,7 +810,7 @@ HAPI HRTextureNodeRef hrTextureCreateAdvanced(const wchar_t* a_texType, const wc
 
 	pugi::xml_node texNodeXml = g_objManager.textures_lib_append_child();
 
-	std::wstring id = ToWString(ref.id);
+	std::wstring id   = ToWString(ref.id);
 	std::wstring type = a_texType;
 
 
