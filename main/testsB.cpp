@@ -2925,7 +2925,6 @@ bool test89_proc_texture_dirty()
     colorNode.append_attribute(L"tex_apply_mode") = L"replace";
 
     auto texNode = hrTextureBind(texProc2, colorNode);
-    texNode.attribute(L"type") = L"texref_proc";
     texNode.append_attribute(L"input_gamma") = 1.0f;
 
     xml_node p1 = texNode.append_child(L"arg");
@@ -2955,7 +2954,6 @@ bool test89_proc_texture_dirty()
     reflColor.append_attribute(L"val").set_value(L"0.5 0.5 0.5");
 
     auto texNodeR = hrTextureBind(texProc2, reflColor);
-    texNodeR.attribute(L"type") = L"texref_proc";
 
     p1 = texNodeR.append_child(L"arg");
     p2 = texNodeR.append_child(L"arg");
@@ -3021,7 +3019,6 @@ bool test89_proc_texture_dirty()
     mask.append_attribute(L"val").set_value(1.0f);
 
     auto texNodeR = hrTextureBind(texProc2, mask);
-    texNodeR.attribute(L"type") = L"texref_proc";
 
     auto p1 = texNodeR.append_child(L"arg");
     auto p2 = texNodeR.append_child(L"arg");
