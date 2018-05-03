@@ -170,6 +170,7 @@ bool test85_proc_texture_ao();
 bool test86_proc_texture_ao_dirt();
 bool test87_proc_texture_reflect();
 bool test88_proc_texture_convex_rust();
+bool test89_proc_texture_dirty();
 
 bool test90_check_xml_fail_lights();
 bool test91_check_xml_fail_lights();

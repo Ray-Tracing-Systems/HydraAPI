@@ -595,9 +595,26 @@ void ExecutePostProcessHydra1(
     #pragma omp parallel for
     for (int i = 0; i < sizeImage; ++i)
     {
+      const float meanRGBsource = (image4out[i].x + image4out[i].y + image4out[i].z) / 3.0f;
+      const float meanRGB_UC = (rgbArray[i] + rgbArray[i + sizeImage] + rgbArray[i + sizeImage * 2]) / 3.0f;
+
+      float diff = meanRGB_UC / (meanRGBsource + 0.0001f);
+      float3 rgbDiff;
+      rgbDiff.x = image4out[i].x;
+      rgbDiff.y = image4out[i].y;
+      rgbDiff.z = image4out[i].z;
+
+      Blend(rgbDiff.x, image4out[i].x * diff, a_uniformContrast);
+      Blend(rgbDiff.y, image4out[i].y * diff, a_uniformContrast);
+      Blend(rgbDiff.z, image4out[i].z * diff, a_uniformContrast);
+
       Blend(image4out[i].x, rgbArray[i], a_uniformContrast);
       Blend(image4out[i].y, rgbArray[i + sizeImage], a_uniformContrast);
       Blend(image4out[i].z, rgbArray[i + sizeImage * 2], a_uniformContrast);
+
+      Blend(image4out[i].x, rgbDiff.x, 0.5f);
+      Blend(image4out[i].y, rgbDiff.y, 0.5f);
+      Blend(image4out[i].z, rgbDiff.z, 0.5f);
     }
   }
 

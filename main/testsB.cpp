@@ -1288,9 +1288,9 @@ bool test85_proc_texture_ao()
   {
     xml_node texNode = hrTextureParamNode(texProc3);
 
-    // Occluded color(с текстурой).       // put them in source code later! this test is only for AO.
-    // Unoccluded color(с текстурой).     // put them in source code later! this test is only for AO.
-    // Falloff(0.1f - 10.0f) - гамма.     // put them in source code later! this test is only for AO.
+    // Occluded color().       // put them in source code later! this test is only for AO.
+    // Unoccluded color().     // put them in source code later! this test is only for AO.
+    // Falloff(0.1f - 10.0f) -.     // put them in source code later! this test is only for AO.
     // 
 
     xml_node code_node = texNode.append_child(L"code");
@@ -1648,9 +1648,9 @@ bool test86_proc_texture_ao_dirt()
   {
     xml_node texNode = hrTextureParamNode(texProc3);
 
-    // Occluded color(с текстурой).       // put them in source code later! this test is only for AO.
-    // Unoccluded color(с текстурой).     // put them in source code later! this test is only for AO.
-    // Falloff(0.1f - 10.0f) - гамма.     // put them in source code later! this test is only for AO.
+    // Occluded color().       // put them in source code later! this test is only for AO.
+    // Unoccluded color().     // put them in source code later! this test is only for AO.
+    // Falloff(0.1f - 10.0f).     // put them in source code later! this test is only for AO.
     // 
     xml_node code_node = texNode.append_child(L"code");
     code_node.append_attribute(L"file") = L"data/code/noise3D_mul_ao.c";
@@ -2030,20 +2030,15 @@ bool test87_proc_texture_reflect()
   {
     xml_node texNode = hrTextureParamNode(texProc3);
 
-    // Occluded color(с текстурой).       // put them in source code later! this test is only for AO.
-    // Unoccluded color(с текстурой).     // put them in source code later! this test is only for AO.
-    // Falloff(0.1f - 10.0f) - гамма.     // put them in source code later! this test is only for AO.
+    // Occluded color().       // put them in source code later! this test is only for AO.
+    // Unoccluded color().     // put them in source code later! this test is only for AO.
+    // Falloff(0.1f - 10.0f).     // put them in source code later! this test is only for AO.
     // 
     xml_node code_node = texNode.append_child(L"code");
     code_node.append_attribute(L"file") = L"data/code/noise3D_mul_ao.c";
     code_node.append_attribute(L"main") = L"main";
 
     xml_node aoNode = texNode.append_child(L"ao");
-
-    // aoNode.append_attribute(L"length") = 1.25f; 
-    // auto texAoLengthNode = hrTextureBind(texBitmap1, aoNode);
-    // aoNode.append_attribute(L"hemisphere") = L"up"; 
-    // aoNode.append_attribute(L"local") = 0;
   }
   hrTextureNodeClose(texProc3);
 
@@ -2401,9 +2396,9 @@ bool test88_proc_texture_convex_rust()
   {
     xml_node texNode = hrTextureParamNode(texProc3);
 
-    // Occluded color(с текстурой).       // put them in source code later! this test is only for AO.
-    // Unoccluded color(с текстурой).     // put them in source code later! this test is only for AO.
-    // Falloff(0.1f - 10.0f) - гамма.     // put them in source code later! this test is only for AO.
+    // Occluded color().       // put them in source code later! this test is only for AO.
+    // Unoccluded color().     // put them in source code later! this test is only for AO.
+    // Falloff(0.1f - 10.0f) -.     // put them in source code later! this test is only for AO.
     // 
     xml_node code_node = texNode.append_child(L"code");
     code_node.append_attribute(L"file") = L"data/code/noise3D_mul_ao.c";
@@ -2440,7 +2435,7 @@ bool test88_proc_texture_convex_rust()
     //
     aoNode.append_attribute(L"hemisphere") = L"down";
 
-    // Only for this object(on / off) - работает только для этого объекта.
+    // Only for this object(on / off) -
     //
     aoNode.append_attribute(L"local") = 1;
   }
@@ -2808,5 +2803,379 @@ bool test88_proc_texture_convex_rust()
   return check_images("test_88", 1, 10);
 }
 
+
+bool test89_proc_texture_dirty()
+{
+  initGLIfNeeded();
+
+  hrErrorCallerPlace(L"test_89");
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  hrSceneLibraryOpen(L"tests/test_89", HR_WRITE_DISCARD);
+
+  SimpleMesh sphere   = CreateSphere(2.0f, 128);
+  SimpleMesh cubeOpen = CreateCubeOpen(4.0f);
+  SimpleMesh cube     = CreateCube(1.0f);
+
+  // textures
+  //
+  HRTextureNodeRef texProc2 = hrTextureCreateAdvanced(L"proc", L"noise_test");
+  HRTextureNodeRef texProc4 = hrTextureCreateAdvanced(L"proc", L"my_voronoi_test");
+
+
+  hrTextureNodeOpen(texProc2, HR_WRITE_DISCARD);
+  {
+    xml_node texNode = hrTextureParamNode(texProc2);
+
+    xml_node code_node = texNode.append_child(L"code");
+    code_node.append_attribute(L"file") = L"data/code/noise_v2.c";
+    code_node.append_attribute(L"main") = L"main";
+
+    xml_node p1 = texNode.append_child(L"arg");
+    xml_node p2 = texNode.append_child(L"arg");
+
+    p1.append_attribute(L"id")   = 0;
+    p1.append_attribute(L"name") = L"color1";
+    p1.append_attribute(L"type") = L"float3";
+    p1.append_attribute(L"size") = 1;
+    p1.append_attribute(L"val")  = L"0.2 0.4 1.0";
+
+    p2.append_attribute(L"id")   = 1;
+    p2.append_attribute(L"name") = L"color2";
+    p2.append_attribute(L"type") = L"float3";
+    p2.append_attribute(L"size") = 1;
+    p2.append_attribute(L"val")  = L"0.65 0.33 0.0";
+  }
+  hrTextureNodeClose(texProc2);
+
+  hrTextureNodeOpen(texProc4, HR_WRITE_DISCARD);
+  {
+    xml_node texNode = hrTextureParamNode(texProc4);
+
+    xml_node code_node = texNode.append_child(L"code");
+    code_node.append_attribute(L"file") = L"data/code/blue_water.c";
+    code_node.append_attribute(L"main") = L"main";
+  }
+  hrTextureNodeClose(texProc4);
+
+
+  // other as usual in this test
+  //
+  HRMaterialRef mat0 = hrMaterialCreate(L"mysimplemat");
+  HRMaterialRef mat1 = hrMaterialCreate(L"proc");
+
+  HRMaterialRef matA = hrMaterialCreate(L"matA");
+  HRMaterialRef matB = hrMaterialCreate(L"matB");
+  HRMaterialRef matBlend = hrMaterialCreateBlend(L"blend", matB, matA);
+
+  hrMaterialOpen(mat0, HR_WRITE_DISCARD);
+  {
+    xml_node matNode = hrMaterialParamNode(mat0);
+    xml_node diff = matNode.append_child(L"diffuse");
+
+    diff.append_attribute(L"brdf_type").set_value(L"lambert");
+    auto colorNode = diff.append_child(L"color");
+
+    colorNode.append_attribute(L"val") = L"0.5 0.5 0.5";
+    colorNode.append_attribute(L"tex_apply_mode") = L"replace";
+  }
+  hrMaterialClose(mat0);
+
+  hrMaterialOpen(mat1, HR_WRITE_DISCARD);
+  {
+    xml_node matNode = hrMaterialParamNode(mat1);
+    xml_node diff = matNode.append_child(L"diffuse");
+
+    diff.append_attribute(L"brdf_type").set_value(L"lambert");
+    auto colorNode = diff.append_child(L"color");
+
+    colorNode.append_attribute(L"val") = L"0.5 0.5 0.5";
+    colorNode.append_attribute(L"tex_apply_mode") = L"replace";
+
+    auto texNode = hrTextureBind(texProc2, colorNode);
+    texNode.append_attribute(L"input_gamma") = 1.0f;
+
+    xml_node p1 = texNode.append_child(L"arg");
+    xml_node p2 = texNode.append_child(L"arg");
+
+    p1.append_attribute(L"id")   = 0;
+    p1.append_attribute(L"name") = L"color1";
+    p1.append_attribute(L"type") = L"float3";
+    p1.append_attribute(L"size") = 1;
+    p1.append_attribute(L"val")  = L"0.2 0.4 1.0";
+
+    p2.append_attribute(L"id")   = 1;
+    p2.append_attribute(L"name") = L"color2";
+    p2.append_attribute(L"type") = L"float3";
+    p2.append_attribute(L"size") = 1;
+    p2.append_attribute(L"val")  = L"0.32 0.17 0.0";
+
+    auto refl = matNode.append_child(L"reflectivity");
+    refl.append_attribute(L"brdf_type").set_value(L"phong");
+
+    refl.append_child(L"glossiness").append_attribute(L"val").set_value(L"1.0");
+    refl.append_child(L"extrusion").append_attribute(L"val").set_value(L"maxcolor");
+    refl.append_child(L"fresnel").append_attribute(L"val").set_value(1);
+    refl.append_child(L"fresnel_ior").append_attribute(L"val").set_value(8.0f);
+
+    auto reflColor = refl.append_child(L"color");
+    reflColor.append_attribute(L"val").set_value(L"0.5 0.5 0.5");
+
+    auto texNodeR = hrTextureBind(texProc2, reflColor);
+
+    p1 = texNodeR.append_child(L"arg");
+    p2 = texNodeR.append_child(L"arg");
+
+    p1.append_attribute(L"id")   = 0;
+    p1.append_attribute(L"name") = L"color1";
+    p1.append_attribute(L"type") = L"float3";
+    p1.append_attribute(L"size") = 1;
+    p1.append_attribute(L"val")  = L"1.0 1.0 1.0";
+
+    p2.append_attribute(L"id")   = 1;
+    p2.append_attribute(L"name") = L"color2";
+    p2.append_attribute(L"type") = L"float3";
+    p2.append_attribute(L"size") = 1;
+    p2.append_attribute(L"val")  = L"0.0 0.0 0.0";
+  }
+  hrMaterialClose(mat1);
+
+  hrMaterialOpen(matA, HR_WRITE_DISCARD);
+  {
+    xml_node matNode = hrMaterialParamNode(matA);
+    xml_node diff = matNode.append_child(L"diffuse");
+
+    diff.append_attribute(L"brdf_type").set_value(L"lambert");
+    auto colorNode = diff.append_child(L"color");
+
+    colorNode.append_attribute(L"val") = L"0.32 0.17 0.0";
+  }
+  hrMaterialClose(matA);
+
+  hrMaterialOpen(matB, HR_WRITE_DISCARD);
+  {
+    xml_node matNode = hrMaterialParamNode(matB);
+    xml_node diff = matNode.append_child(L"diffuse");
+
+    diff.append_attribute(L"brdf_type").set_value(L"lambert");
+    auto colorNode = diff.append_child(L"color");
+
+    colorNode.append_attribute(L"val") = L"0.2 0.4 1.0";
+
+    auto refl = matNode.append_child(L"reflectivity");
+    refl.append_attribute(L"brdf_type").set_value(L"phong");
+
+    refl.append_child(L"glossiness").append_attribute(L"val").set_value(L"1.0");
+    refl.append_child(L"extrusion").append_attribute(L"val").set_value(L"maxcolor");
+    refl.append_child(L"fresnel").append_attribute(L"val").set_value(1);
+    refl.append_child(L"fresnel_ior").append_attribute(L"val").set_value(8.0f);
+
+    auto reflColor = refl.append_child(L"color");
+    reflColor.append_attribute(L"val").set_value(L"0.2 0.4 1.0");
+  }
+  hrMaterialClose(matB);
+
+
+  hrMaterialOpen(matBlend, HR_WRITE_DISCARD);
+  {
+    auto matNode = hrMaterialParamNode(matBlend);
+
+    auto blend = matNode.append_child(L"blend");
+    blend.append_attribute(L"type").set_value(L"mask_blend");
+
+    auto mask = blend.append_child(L"mask");
+    mask.append_attribute(L"val").set_value(1.0f);
+
+    auto texNodeR = hrTextureBind(texProc2, mask);
+
+    auto p1 = texNodeR.append_child(L"arg");
+    auto p2 = texNodeR.append_child(L"arg");
+
+    p1.append_attribute(L"id")   = 0;
+    p1.append_attribute(L"name") = L"color1";
+    p1.append_attribute(L"type") = L"float3";
+    p1.append_attribute(L"size") = 1;
+    p1.append_attribute(L"val")  = L"1.0 1.0 1.0";
+
+    p2.append_attribute(L"id")   = 1;
+    p2.append_attribute(L"name") = L"color2";
+    p2.append_attribute(L"type") = L"float3";
+    p2.append_attribute(L"size") = 1;
+    p2.append_attribute(L"val")  = L"0.0 0.0 0.0";
+  }
+  hrMaterialClose(matBlend);
+
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  HRMeshRef planeRef = hrMeshCreate(L"my_plane");
+  HRMeshRef lucyRef  = hrMeshCreateFromFileDL(L"data/meshes/lucy.vsgf");
+
+  SimpleMesh plane    = CreatePlane(10.0f);
+  hrMeshOpen(planeRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
+  {
+    hrMeshVertexAttribPointer4f(planeRef, L"pos", &plane.vPos[0]);
+    hrMeshVertexAttribPointer4f(planeRef, L"norm", &plane.vNorm[0]);
+    hrMeshVertexAttribPointer2f(planeRef, L"texcoord", &plane.vTexCoord[0]);
+
+    hrMeshMaterialId(planeRef, mat0.id);
+    hrMeshAppendTriangles3(planeRef, int32_t(plane.triIndices.size()), &plane.triIndices[0]);
+  }
+  hrMeshClose(planeRef);
+
+  hrMeshOpen(lucyRef, HR_TRIANGLE_IND3, HR_OPEN_EXISTING);
+  {
+    hrMeshMaterialId(lucyRef, matBlend.id);
+    //hrMeshMaterialId(lucyRef, mat1.id);
+  }
+  hrMeshClose(lucyRef);
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  HRLightRef rectLight = hrLightCreate(L"my_area_light");
+
+  hrLightOpen(rectLight, HR_WRITE_DISCARD);
+  {
+    pugi::xml_node lightNode = hrLightParamNode(rectLight);
+
+    lightNode.attribute(L"type").set_value(L"area");
+    lightNode.attribute(L"shape").set_value(L"rect");
+    lightNode.attribute(L"distribution").set_value(L"diffuse");
+
+    pugi::xml_node sizeNode = lightNode.append_child(L"size");
+
+    sizeNode.append_attribute(L"half_length") = 1.0f;
+    sizeNode.append_attribute(L"half_width") = 1.0f;
+
+    pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
+
+    intensityNode.append_child(L"color").text().set(L"1 1 1");
+    intensityNode.append_child(L"multiplier").text().set(L"2.0");
+  }
+  hrLightClose(rectLight);
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // camera
+  //
+  HRCameraRef camRef = hrCameraCreate(L"my camera");
+
+  hrCameraOpen(camRef, HR_WRITE_DISCARD);
+  {
+    xml_node camNode = hrCameraParamNode(camRef);
+
+    camNode.append_child(L"fov").text().set(L"30");
+    camNode.append_child(L"nearClipPlane").text().set(L"0.01");
+    camNode.append_child(L"farClipPlane").text().set(L"100.0");
+
+    camNode.append_child(L"up").text().set(L"0 1 0");
+    camNode.append_child(L"position").text().set(L"0 1 4");
+    camNode.append_child(L"look_at").text().set(L"0 1 0");
+  }
+  hrCameraClose(camRef);
+
+  // set up render settings
+  //
+  HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1
+  hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
+  hrRenderLogDir(renderRef, L"/tmp/hydra_logs", true);
+
+
+  hrRenderOpen(renderRef, HR_WRITE_DISCARD);
+  {
+    pugi::xml_node node = hrRenderParamNode(renderRef);
+
+    node.append_child(L"width").text() = L"1024";
+    node.append_child(L"height").text() = L"1024";
+
+    node.append_child(L"method_primary").text() = L"pathtracing";
+    node.append_child(L"method_secondary").text() = L"pathtracing";
+    node.append_child(L"method_tertiary").text() = L"pathtracing";
+    node.append_child(L"method_caustic").text() = L"pathtracing";
+    node.append_child(L"shadows").text() = L"1";
+
+    node.append_child(L"trace_depth").text() = L"8";
+    node.append_child(L"diff_trace_depth").text() = L"4";
+    node.append_child(L"pt_error").text() = L"2.0";
+    node.append_child(L"minRaysPerPixel").text() = L"256";
+    node.append_child(L"maxRaysPerPixel").text() = L"1024";
+  }
+  hrRenderClose(renderRef);
+
+  // create scene
+  //
+  HRSceneInstRef scnRef = hrSceneCreate(L"my scene");
+
+  const float DEG_TO_RAD = float(3.14159265358979323846f) / 180.0f;
+
+  hrSceneOpen(scnRef, HR_WRITE_DISCARD);
+  {
+    // instance sphere and cornell box
+    //
+    auto mscale     = hlm::scale4x4(float3(0.25f, 0.25f, 0.25f));
+    //auto mrot1      = hlm::rotate_Y_4x4(-25.0f*DEG_TO_RAD);
+    //auto mtranslate = hlm::translate4x4(hlm::float3(0, -2.5f, 1));
+   // auto mtransform = mul(mtranslate, mul(mrot1, mscale));
+
+    hrMeshInstance(scnRef, lucyRef, mscale.L());
+
+    //auto mrot = hlm::rotate_Y_4x4(180.0f*DEG_TO_RAD);
+    hrMeshInstance(scnRef, planeRef, hlm::float4x4().L());
+
+    //// instance light (!!!)
+    //
+    auto mtranslate = hlm::translate4x4(hlm::float3(0, 3.5f, 0));
+    hrLightInstance(scnRef, rectLight, mtranslate.L());
+  }
+  hrSceneClose(scnRef);
+
+  hrFlush(scnRef, renderRef, camRef);
+
+
+  int w = 1024;
+  int h = 1024;
+
+  glViewport(0, 0, w , h);
+  std::vector<int32_t> image(w * h);
+
+  while (true)
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+    HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
+
+    if (info.haveUpdateFB)
+    {
+      hrRenderGetFrameBufferLDR1i(renderRef, w,h , &image[0]);
+
+      glDisable(GL_TEXTURE_2D);
+      glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+
+      auto pres = std::cout.precision(2);
+      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout.precision(pres);
+
+      glfwSwapBuffers(g_window);
+      glfwPollEvents();
+    }
+
+    if (info.finalUpdate)
+      break;
+  }
+
+  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_89/z_out.png");
+
+  return check_images("test_89", 1, 10);
+}
 
 
