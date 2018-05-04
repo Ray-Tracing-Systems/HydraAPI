@@ -1050,6 +1050,43 @@ bool MTL_TESTS::test_159_proc_dirt2()
   }
   hrMaterialClose(mat6);
 
+  HRMaterialRef mat7 = hrMaterialCreateBlend(L"matBlend3", mat6, mat3);
+
+  hrMaterialOpen(mat7, HR_WRITE_DISCARD);
+  {
+    auto matNode = hrMaterialParamNode(mat7);
+
+    auto blend = matNode.append_child(L"blend");
+    blend.append_attribute(L"type").set_value(L"mask_blend");
+
+    auto mask = blend.append_child(L"mask");
+    mask.append_attribute(L"val").set_value(1.0f);
+
+    auto texNode = mask.append_child(L"texture");
+    texNode.append_attribute(L"matrix");
+    float samplerMatrix[16] = { 1, 0, 0, 0,
+                                0, 1, 0, 0,
+                                0, 0, 1, 0,
+                                0, 0, 0, 1 };
+    texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
+    texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
+    texNode.append_attribute(L"input_gamma").set_value(2.2f);
+    texNode.append_attribute(L"input_alpha").set_value(L"rgb");
+
+    HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
+
+    hrTextureBind(texGrad, mask);
+
+    xml_node aoNode = matNode.append_child(L"ao");
+
+    aoNode.append_attribute(L"length")     = 0.5f;
+    aoNode.append_attribute(L"hemisphere") = L"down";
+    aoNode.append_attribute(L"local")      = 0;
+
+    VERIFY_XML(matNode);
+  }
+  hrMaterialClose(mat7);
+
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1196,7 +1233,8 @@ bool MTL_TESTS::test_159_proc_dirt2()
     mtransform = mul(mtranslate, mul(mrot1, mscale));
     hrMeshInstance(scnRef, cubeRef, mtransform.L(), remapList1, sizeof(remapList1) / sizeof(int32_t));
 
-    int32_t remapList2[2] = { mat4.id, mat6.id };
+    //int32_t remapList2[2] = { mat4.id, mat6.id };
+    int32_t remapList2[2] = { mat4.id, mat7.id };
     mscale     = hlm::scale4x4(float3(1.0f, 1.0f, 1.0f));
     mrot1      = hlm::rotate_Y_4x4(+15.0f*DEG_TO_RAD);
     mtranslate = hlm::translate4x4(hlm::float3(+2.5f, -3.0f, 2.0));
