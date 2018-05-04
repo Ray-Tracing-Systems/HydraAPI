@@ -1423,7 +1423,7 @@ bool test85_proc_texture_ao()
     //
     aoNode.append_attribute(L"hemisphere") = L"up";
 
-    // Only for this object(on / off) - работает только для этого объекта.
+    // Only for this object(on / off) - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
     //
     aoNode.append_attribute(L"local") = 0;
   }
@@ -1804,7 +1804,7 @@ bool test86_proc_texture_ao_dirt()
     //
     aoNode.append_attribute(L"hemisphere") = L"up";
 
-    // Only for this object(on / off) - работает только для этого объекта.
+    // Only for this object(on / off) - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
     //
     aoNode.append_attribute(L"local") = 1;
   }
