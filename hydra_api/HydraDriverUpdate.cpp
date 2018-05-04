@@ -493,6 +493,9 @@ int32_t HR_DriverUpdateTextures(HRSceneInst& scn, ChangeList& objList, IHRRender
 
   for (auto texId : texturesUsed)
   {
+    if (texId < 0)
+      continue;
+
     HRTextureNode& texNode = g_objManager.scnData.textures[texId];
 
     int32_t w     = 0;
@@ -946,6 +949,9 @@ int64_t EstimateTexturesMem(const ChangeList& a_objList)
 
   for (auto texId : a_objList.texturesUsed)
   {
+    if (texId < 0)
+      continue;
+
     auto texObj           = g_objManager.scnData.textures[texId];
     pugi::xml_node node   = texObj.xml_node_immediate();
     const size_t byteSize = node.attribute(L"bytesize").as_llong();

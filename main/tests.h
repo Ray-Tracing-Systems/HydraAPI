@@ -260,6 +260,8 @@ namespace MTL_TESTS
   bool test_155_proc_checker_HDR_precomp();
   bool test_156_proc_checker_precomp_update();
   bool test_157_proc_checker_precomp_remap();
+
+  bool test_158_proc_dirt1();
 }
 
 namespace LGHT_TESTS

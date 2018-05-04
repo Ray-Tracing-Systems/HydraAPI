@@ -5659,9 +5659,9 @@ bool test79_material_remap_list2()
 
   // now apply remap lists
   //
-  int32_t remapList1[4] = { mat3.id, mat5.id }; // 3 --> 5;
-  int32_t remapList2[4] = { mat1.id, mat0.id }; // 1 --> 0;
-  int32_t remapList3[4] = { mat1.id, mat5.id }; // 1 --> 5;
+  int32_t remapList1[2] = { mat3.id, mat5.id }; // 3 --> 5;
+  int32_t remapList2[2] = { mat1.id, mat0.id }; // 1 --> 0;
+  int32_t remapList3[2] = { mat1.id, mat5.id }; // 1 --> 5;
   int32_t remapList4[8] = { mat4.id, mat0.id,   // 4 --> 0;
                             mat3.id, mat0.id,   // 3 --> 0;
                             mat2.id, mat0.id,   // 2 --> 0;

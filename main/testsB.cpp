@@ -1296,25 +1296,6 @@ bool test85_proc_texture_ao()
     xml_node code_node = texNode.append_child(L"code");
     code_node.append_attribute(L"file") = L"data/code/show_ao.c";
     code_node.append_attribute(L"main") = L"main";
-
-    xml_node aoNode = texNode.append_child(L"ao");
-
-    // Distribution: Corner, Edge, Both(Corner and Edge).
-    //
-    aoNode.append_attribute(L"length") = 1.25f; 
-
-    auto texAoLengthNode = hrTextureBind(texBitmap1, aoNode);
-    {
-      // set ao length texture params
-    }
-
-    // Distribution: Corner/Up, Edge/Down, Both/Both(Corner and Edge).
-    //
-    aoNode.append_attribute(L"hemisphere") = L"up"; 
-
-    // Only for this object(on / off) -
-    //
-    aoNode.append_attribute(L"local") = 0;
   }
   hrTextureNodeClose(texProc3);
 
@@ -1426,6 +1407,25 @@ bool test85_proc_texture_ao()
 
     auto texNode = hrTextureBind(texProc3, colorNode);
     texNode.append_attribute(L"input_gamma") = 1.0f;
+
+    xml_node aoNode = texNode.append_child(L"ao");
+
+    // Distribution: Corner, Edge, Both(Corner and Edge).
+    //
+    aoNode.append_attribute(L"length") = 1.25f;
+
+    auto texAoLengthNode = hrTextureBind(texBitmap1, aoNode);
+    {
+      // set ao length texture params
+    }
+
+    // Distribution: Corner/Up, Edge/Down, Both/Both(Corner and Edge).
+    //
+    aoNode.append_attribute(L"hemisphere") = L"up";
+
+    // Only for this object(on / off) - работает только для этого объекта.
+    //
+    aoNode.append_attribute(L"local") = 0;
   }
   hrMaterialClose(mat3);
 
@@ -1655,25 +1655,6 @@ bool test86_proc_texture_ao_dirt()
     xml_node code_node = texNode.append_child(L"code");
     code_node.append_attribute(L"file") = L"data/code/noise3D_mul_ao.c";
     code_node.append_attribute(L"main") = L"main";
-
-    xml_node aoNode = texNode.append_child(L"ao");
-
-    // Distribution: Corner, Edge, Both(Corner and Edge).
-    //
-    aoNode.append_attribute(L"length") = 1.25f; 
-
-    auto texAoLengthNode = hrTextureBind(texBitmap1, aoNode);
-    {
-      // set ao length texture params
-    }
-
-    // Distribution: Corner/Up, Edge/Down, Both/Both(Corner and Edge).
-    //
-    aoNode.append_attribute(L"hemisphere") = L"up"; 
-
-    // Only for this object(on / off)
-    //
-    aoNode.append_attribute(L"local") = 1;
   }
   hrTextureNodeClose(texProc3);
 
@@ -1807,6 +1788,25 @@ bool test86_proc_texture_ao_dirt()
 
     auto texNode = hrTextureBind(texProc3, colorNode);
     texNode.append_attribute(L"input_gamma") = 1.0f;
+
+    xml_node aoNode = texNode.append_child(L"ao");
+
+    // Distribution: Corner, Edge, Both(Corner and Edge).
+    //
+    aoNode.append_attribute(L"length") = 1.25f;
+
+    auto texAoLengthNode = hrTextureBind(texBitmap1, aoNode);
+    {
+      // set ao length texture params
+    }
+
+    // Distribution: Corner/Up, Edge/Down, Both/Both(Corner and Edge).
+    //
+    aoNode.append_attribute(L"hemisphere") = L"up";
+
+    // Only for this object(on / off) - работает только для этого объекта.
+    //
+    aoNode.append_attribute(L"local") = 1;
   }
   hrMaterialClose(mat3);
 
@@ -2039,23 +2039,6 @@ bool test87_proc_texture_reflect()
     code_node.append_attribute(L"main") = L"main";
 
     xml_node aoNode = texNode.append_child(L"ao");
-
-    // Distribution: Corner, Edge, Both(Corner and Edge).
-    //
-    aoNode.append_attribute(L"length") = 1.25f; 
-
-    auto texAoLengthNode = hrTextureBind(texBitmap1, aoNode);
-    {
-      // set ao length texture params
-    }
-
-    // Distribution: Corner/Up, Edge/Down, Both/Both(Corner and Edge).
-    //
-    aoNode.append_attribute(L"hemisphere") = L"up"; 
-
-    // Only for this object(on / off) -
-    //
-    aoNode.append_attribute(L"local") = 0;
   }
   hrTextureNodeClose(texProc3);
 
@@ -2188,9 +2171,6 @@ bool test87_proc_texture_reflect()
     auto colorNode = diff.append_child(L"color");
 
     colorNode.append_attribute(L"val").set_value(L"0.5 0.5 0.5");
-
-    // auto texNode = hrTextureBind(texProc3, colorNode);
-    // texNode.append_attribute(L"input_gamma") = 1.0f;
   }
   hrMaterialClose(mat3);
 
@@ -2423,25 +2403,6 @@ bool test88_proc_texture_convex_rust()
     xml_node code_node = texNode.append_child(L"code");
     code_node.append_attribute(L"file") = L"data/code/noise3D_mul_ao.c";
     code_node.append_attribute(L"main") = L"main";
-
-    xml_node aoNode = texNode.append_child(L"ao");
-
-    // Distribution: Corner, Edge, Both(Corner and Edge).
-    //
-    aoNode.append_attribute(L"length") = 1.25f; 
-
-    auto texAoLengthNode = hrTextureBind(texBitmap1, aoNode);
-    {
-      // set ao length texture params
-    }
-
-    // Distribution: Corner/Up, Edge/Down, Both/Both(Corner and Edge).
-    //
-    aoNode.append_attribute(L"hemisphere") = L"up"; 
-
-    // Only for this object(on / off) - .
-    //
-    aoNode.append_attribute(L"local") = 1;
   }
   hrTextureNodeClose(texProc3);
 
@@ -2604,6 +2565,16 @@ bool test88_proc_texture_convex_rust()
 
     auto texNode = hrTextureBind(texProc3, colorNode);
     texNode.append_attribute(L"input_gamma") = 1.0f;
+
+    xml_node aoNode = texNode.append_child(L"ao");
+
+    aoNode.append_attribute(L"length") = 1.25f;
+    auto texAoLengthNode = hrTextureBind(texBitmap1, aoNode);
+    {
+      // set ao length texture params
+    }
+    aoNode.append_attribute(L"hemisphere") = L"up";
+    aoNode.append_attribute(L"local") = 1;
   }
   hrMaterialClose(mat3);
 

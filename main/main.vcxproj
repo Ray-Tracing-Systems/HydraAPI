@@ -165,6 +165,7 @@
     <ClCompile Include="tests_lights2.cpp" />
     <ClCompile Include="tests_mtl2.cpp" />
     <ClCompile Include="tests_mtl3.cpp" />
+    <ClCompile Include="tests_mtl4.cpp" />
     <ClCompile Include="tests_pp.cpp" />
     <ClCompile Include="test_camera_free_look_gl.cpp" />
     <ClCompile Include="main.cpp" />
