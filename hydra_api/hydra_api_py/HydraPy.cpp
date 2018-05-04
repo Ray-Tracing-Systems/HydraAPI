@@ -288,7 +288,7 @@ PYBIND11_MODULE(hydraPy, m)
   //m.def("hrArray1DCreateFromMemory", &hrArray1DCreateFromMemory);
   //m.def("hrTexture2DCreateFromProcHDR", &hrTexture2DCreateFromProcHDR);
   //m.def("hrTexture2DCreateFromProcLDR", &hrTexture2DCreateFromProcLDR);
-  //m.def("hrTextureCreateAdvanced", &hrTextureCreateAdvanced);
+  m.def("hrTextureCreateAdvanced", &hrTextureCreateAdvanced);
   m.def("hrTextureNodeOpen", &hrTextureNodeOpen);
   m.def("hrTextureNodeClose", &hrTextureNodeClose);
   m.def("hrTextureBind", &hrTextureBind);
