@@ -2993,6 +2993,7 @@ bool test89_proc_texture_dirty()
 
     auto p1 = texNodeR.append_child(L"arg");
     auto p2 = texNodeR.append_child(L"arg");
+    texNodeR.append_attribute(L"input_gamma") = 1.0f;
 
     p1.append_attribute(L"id")   = 0;
     p1.append_attribute(L"name") = L"color1";
