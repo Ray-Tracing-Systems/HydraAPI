@@ -262,6 +262,7 @@ namespace MTL_TESTS
   bool test_157_proc_checker_precomp_remap();
 
   bool test_158_proc_dirt1();
+  bool test_159_proc_dirt2();
 }
 
 namespace LGHT_TESTS
@@ -379,7 +380,7 @@ void run_all_lgt_tests(int a_start = 0);
 void run_all_ipp_tests(int a_start = 0);
 void terminate_opengl();
 
-static const int CURR_RENDER_DEVICE = 0;
+static const int CURR_RENDER_DEVICE = 1;
 
 //void image_p_sandbox();
 

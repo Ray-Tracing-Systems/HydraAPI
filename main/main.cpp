@@ -142,7 +142,7 @@ int main(int argc, const char** argv)
 
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
     //GEO_TESTS::test_005_instancing();
-    MTL_TESTS::test_158_proc_dirt1();
+    MTL_TESTS::test_159_proc_dirt2();
     //LGHT_TESTS::test_223_rotated_area_light();
     
     //PP_TESTS::test305_fbi_from_render();    

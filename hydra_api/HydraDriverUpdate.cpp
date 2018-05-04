@@ -81,11 +81,10 @@ void ScanXmlNodeRecursiveAndAppendTexture(pugi::xml_node a_node, std::unordered_
       }
     }
   }
-  else
-  {
-    for (pugi::xml_node child = a_node.first_child(); child != nullptr; child = child.next_sibling())
-      ScanXmlNodeRecursiveAndAppendTexture(child, a_outSet);
-  }
+  
+  for (pugi::xml_node child = a_node.first_child(); child != nullptr; child = child.next_sibling())
+    ScanXmlNodeRecursiveAndAppendTexture(child, a_outSet);
+  
 }
 
 void AddUsedMaterialChildrenRecursive(ChangeList& objects, int32_t matId)
