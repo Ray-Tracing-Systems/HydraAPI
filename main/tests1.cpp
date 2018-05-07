@@ -1612,7 +1612,7 @@ void run_all_api_tests(const int startTestId)
                        &test35_cornell_with_light,
 											 &test36_update_from_memory,
                        &dummy_test,                                      // &test37_cornell_with_light_different_image_layers,
-                       &dummy_test,                                      // &test38_mlt_images,
+                       &test38_licence_plate,                                      // &test38_mlt_images,
                        &test39_mesh_from_vsgf,
                        &test40_several_changes,
                        &test41_load_library_basic,
