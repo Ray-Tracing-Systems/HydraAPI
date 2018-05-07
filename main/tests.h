@@ -113,7 +113,8 @@ bool test34_delayed_textures_does_not_exists();
 bool test35_cornell_with_light();
 bool test36_update_from_memory();
 bool test37_cornell_with_light_different_image_layers();
-bool test38_test_for_mlt();
+//bool test38_test_for_mlt();
+bool test38_licence_plate();
 bool test39_mesh_from_vsgf();
 bool test40_several_changes();
 
