@@ -34,11 +34,18 @@ std::string ReplaceAttr(std::string a_line)
 {
   a_line = std::regex_replace(a_line, std::regex("readAttr\\(sHit\\,\\s*\"TexCoord0\"\\)"), "readAttr_TexCoord0(sHit)");
   a_line = std::regex_replace(a_line, std::regex("readAttr\\(sHit\\,\\s*\"TexCoord1\"\\)"), "readAttr_TexCoord1(sHit)");
+
   a_line = std::regex_replace(a_line, std::regex("readAttr\\(sHit\\,\\s*\"WorldPos\"\\)"),  "readAttr_WorldPos(sHit)");
+  a_line = std::regex_replace(a_line, std::regex("readAttr\\(sHit\\,\\s*\"LocalPos\"\\)"),  "readAttr_LocalPos(sHit)");
+  a_line = std::regex_replace(a_line, std::regex("readAttr\\(sHit\\,\\s*\"ModelPos\"\\)"),  "readAttr_LocalPos(sHit)");
+  
   a_line = std::regex_replace(a_line, std::regex("readAttr\\(sHit\\,\\s*\"ShadeNorm\"\\)"), "readAttr_ShadeNorm(sHit)");
   a_line = std::regex_replace(a_line, std::regex("readAttr\\(sHit\\,\\s*\"Normal\"\\)"),    "readAttr_ShadeNorm(sHit)");
   a_line = std::regex_replace(a_line, std::regex("readAttr\\(sHit\\,\\s*\"Norm\"\\)"),      "readAttr_ShadeNorm(sHit)");
+
   a_line = std::regex_replace(a_line, std::regex("readAttr\\(sHit\\,\\s*\"AO\"\\)"),        "readAttr_AO(sHit)");
+  a_line = std::regex_replace(a_line, std::regex("readAttr\\(sHit\\,\\s*\"AO0\"\\)"),       "readAttr_AO(sHit)");
+  a_line = std::regex_replace(a_line, std::regex("readAttr\\(sHit\\,\\s*\"AO1\"\\)"),       "readAttr_AO1(sHit)");
 
   a_line = std::regex_replace(a_line, std::regex("readAttr\\(sHit\\,\\s*\"(.*)\"\\)"), "readAttr_Custom(0)"); // #TODO: insert xxhash32 here.
 
