@@ -217,6 +217,13 @@ void ProcessProcTexFile(const std::wstring& in_file, const std::wstring& out_fil
   auto args            = ParseProcMainArgs   (fname.c_str(), allString);
   std::wstring retType = s2ws(ParseProcMainRetType(fname.c_str(), allString));
 
+  // filter
+  //
+  std::vector<std::string> funNamesFiltered;
+  std::copy_if(funNames.begin(), funNames.end(), std::back_inserter(funNamesFiltered),
+               [&](std::string s) { return (s != "if") && (s != "while"); });
+
+  funNames = funNamesFiltered;
 
   // replace main function proto
   //

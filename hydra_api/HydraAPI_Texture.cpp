@@ -93,10 +93,7 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFile(const wchar_t* a_fileName, int w
   else
   {
     HrPrint(HR_SEVERITY_WARNING, L"hrTexture2DCreateFromFile can't open file ", a_fileName);
-    g_objManager.scnData.textures.pop_back();
-    HRTextureNodeRef ref2; // dummy white texture
-    ref2.id = 0;
-    return ref2;
+    return ref;
   }
 
   auto byteSize = int32_t(size_t(w)*size_t(h)*size_t(bpp));

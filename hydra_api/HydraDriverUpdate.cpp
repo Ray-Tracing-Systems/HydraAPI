@@ -948,7 +948,7 @@ int64_t EstimateTexturesMem(const ChangeList& a_objList)
 
   for (auto texId : a_objList.texturesUsed)
   {
-    if (texId < 0)
+    if (texId < 0 || texId >= g_objManager.scnData.textures.size())
       continue;
 
     auto texObj           = g_objManager.scnData.textures[texId];
