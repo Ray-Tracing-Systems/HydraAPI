@@ -877,9 +877,6 @@ bool MTL_TESTS::test_159_proc_dirt2()
     auto colorNode = diff.append_child(L"color");
 
     colorNode.append_attribute(L"val").set_value(L"0.5 0.5 0.5");
-
-    auto texNode = hrTextureBind(texProc3, colorNode);
-    texNode.append_attribute(L"input_gamma") = 1.0f;
   }
   hrMaterialClose(mat3);
 
@@ -1529,6 +1526,11 @@ bool MTL_TESTS::test_160_proc_dirt3()
 
     auto texNode = hrTextureBind(texProc3, colorNode);
     texNode.append_attribute(L"input_gamma") = 1.0f;
+
+    xml_node aoNode1 = texNode.append_child(L"ao");
+    aoNode1.append_attribute(L"length")     = 1.0f;
+    aoNode1.append_attribute(L"hemisphere") = L"up";
+    aoNode1.append_attribute(L"local")      = 1;
   }
   hrMaterialClose(mat3);
 
@@ -1681,6 +1683,18 @@ bool MTL_TESTS::test_160_proc_dirt3()
   hrMaterialOpen(mat6, HR_WRITE_DISCARD);
   {
     xml_node matNode = hrMaterialParamNode(mat6);
+
+    xml_node aoNode1 = matNode.append_child(L"ao");
+    xml_node aoNode2 = matNode.append_child(L"ao");
+
+    aoNode1.append_attribute(L"length")     = 1.0f;
+    aoNode1.append_attribute(L"hemisphere") = L"up";
+    aoNode1.append_attribute(L"local")      = 0;
+
+    aoNode2.append_attribute(L"length")     = 0.5f;
+    aoNode2.append_attribute(L"hemisphere") = L"down";
+    aoNode2.append_attribute(L"local")      = 1;
+
     xml_node diff = matNode.append_child(L"diffuse");
 
     diff.append_attribute(L"brdf_type").set_value(L"lambert");
@@ -1688,7 +1702,7 @@ bool MTL_TESTS::test_160_proc_dirt3()
     auto colorNode = diff.append_child(L"color");
     colorNode.append_attribute(L"val").set_value(L"1 1 1");
 
-    auto texNode = hrTextureBind(texProc6, colorNode);
+    auto texNode = hrTextureBind(texProc7, colorNode);
     texNode.append_attribute(L"input_gamma") = 2.2f;
 
     xml_node p1 = texNode.append_child(L"arg");
@@ -1726,13 +1740,6 @@ bool MTL_TESTS::test_160_proc_dirt3()
     p5.append_attribute(L"type") = L"float";
     p5.append_attribute(L"size") = 1;
     p5.append_attribute(L"val") = 2.0f;
-
-    xml_node aoNode = texNode.append_child(L"ao");
-
-    aoNode.append_attribute(L"length") = 0.5f;
-    aoNode.append_attribute(L"hemisphere") = L"down";
-    aoNode.append_attribute(L"local") = 0;
-
   }
   hrMaterialClose(mat6);
 
@@ -1763,11 +1770,11 @@ bool MTL_TESTS::test_160_proc_dirt3()
 
     hrTextureBind(texGrad, mask);
 
-    xml_node aoNode = matNode.append_child(L"ao");
-
-    aoNode.append_attribute(L"length") = 0.5f;
-    aoNode.append_attribute(L"hemisphere") = L"down";
-    aoNode.append_attribute(L"local") = 0;
+    // xml_node aoNode = matNode.append_child(L"ao");
+    // 
+    // aoNode.append_attribute(L"length") = 0.5f;
+    // aoNode.append_attribute(L"hemisphere") = L"down";
+    // aoNode.append_attribute(L"local") = 0;
 
     VERIFY_XML(matNode);
   }
