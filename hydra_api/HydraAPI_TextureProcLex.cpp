@@ -246,11 +246,9 @@ void ProcessProcTexFile(const std::wstring& in_file, const std::wstring& out_fil
     std::string line;
     while (std::getline(inStream, line))
     {
-      std::string line2 = std::regex_replace(line, std::regex("\\bsampler2D\\b"), "const int");
+      std::string line2 = ReplaceAttr(line);
 
-      line2 = ReplaceAttr(line2);
-
-      for (auto f : funNames)
+      for (auto f : funNames) // rename functions
       {
         std::regex e("\\b" + f + "\\b");
         line2 = std::regex_replace(line2, e, prefix + f);

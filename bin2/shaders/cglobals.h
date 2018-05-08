@@ -2408,10 +2408,11 @@ enum PLAIN_MAT_FLAGS{
   PLAIN_MATERIAL_INVIS_LIGHT          = 16384,
   PLAIN_MATERIAL_CAN_SAMPLE_REFL_ONLY = 32768,
   PLAIN_MATERIAL_HAVE_PROC_TEXTURES   = 32768*2,
-  PLAIN_MATERIAL_LOCAL_AO             = 32768*4,
+  PLAIN_MATERIAL_LOCAL_AO1            = 32768*4,
+  PLAIN_MATERIAL_LOCAL_AO2            = 32768*8,
 };
 
-#define PLAIN_MATERIAL_DATA_SIZE        128
+#define PLAIN_MATERIAL_DATA_SIZE        144
 #define PLAIN_MATERIAL_CUSTOM_DATA_SIZE 64
 #define MIX_TREE_MAX_DEEP               16
 
@@ -2459,6 +2460,12 @@ typedef struct PlainMaterialT PlainMaterial;
 #define PROC_TEXMATRIX_ID            (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+53)
 #define PROC_TEX_AO_LENGTH           (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+54)
 
+#define PROC_TEX_AO_TYPE2            (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+55)
+#define PROC_TEX_AO_SAMPLER2         (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+56)
+#define PROC_TEX_TEX_ID2             (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+68)
+#define PROC_TEXMATRIX_ID2           (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+69)
+#define PROC_TEX_AO_LENGTH2          (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+70)
+
 enum AO_TYPES { AO_TYPE_NONE = 0, AO_TYPE_UP = 1, AO_TYPE_DOWN = 2, AO_TYPE_BOTH = 4 };
 
 
@@ -2477,11 +2484,11 @@ static inline bool materialIsInvisLight    (__global const PlainMaterial* a_pMat
 
 static inline void PutProcTexturesIdListToMaterialHead(const ProcTextureList* a_pData, PlainMaterial* a_pMat)
 {
-  ((int*)(a_pMat->data))[PROC_TEX4_F4_HEAD_OFFSET + 0] = a_pData->id_f4[0];
-  ((int*)(a_pMat->data))[PROC_TEX4_F4_HEAD_OFFSET + 1] = a_pData->id_f4[1];
-  ((int*)(a_pMat->data))[PROC_TEX4_F4_HEAD_OFFSET + 2] = a_pData->id_f4[2];
-  ((int*)(a_pMat->data))[PROC_TEX4_F4_HEAD_OFFSET + 3] = a_pData->id_f4[3];
-  ((int*)(a_pMat->data))[PROC_TEX5_F4_HEAD_OFFSET + 4] = a_pData->id_f4[4];
+  ((int*)(a_pMat->data))[PROC_TEX1_F4_HEAD_OFFSET] = a_pData->id_f4[0];
+  ((int*)(a_pMat->data))[PROC_TEX2_F4_HEAD_OFFSET] = a_pData->id_f4[1];
+  ((int*)(a_pMat->data))[PROC_TEX3_F4_HEAD_OFFSET] = a_pData->id_f4[2];
+  ((int*)(a_pMat->data))[PROC_TEX4_F4_HEAD_OFFSET] = a_pData->id_f4[3];
+  ((int*)(a_pMat->data))[PROC_TEX5_F4_HEAD_OFFSET] = a_pData->id_f4[4];
 }
 
 static inline void GetProcTexturesIdListFromMaterialHead(__global const PlainMaterial* a_pMat, __private ProcTextureList* a_pData)
@@ -2512,10 +2519,11 @@ static inline bool MaterialHaveAO(__global const PlainMaterial* a_pMat)
   return as_int(a_pMat->data[PROC_TEX_AO_TYPE]) != AO_TYPE_NONE;
 }
 
-static inline int MaterialAOType(__global const PlainMaterial* a_pMat)
+static inline bool MaterialHaveAO2(__global const PlainMaterial* a_pMat)
 {
-  return as_int(a_pMat->data[PROC_TEX_AO_TYPE]);
+  return as_int(a_pMat->data[PROC_TEX_AO_TYPE]) != AO_TYPE_NONE && as_int(a_pMat->data[PROC_TEX_AO_TYPE2]) != AO_TYPE_NONE;
 }
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2707,6 +2715,9 @@ static inline int remapMaterialId(int a_mId, int a_instId,
   else
     return a_mId;
 }
+
+
+#define AO_RAYS_PACKED 4
 
 
 #endif

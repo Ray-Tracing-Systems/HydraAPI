@@ -268,6 +268,12 @@ bool MTL_TESTS::test_158_proc_dirt1()
 
     auto texNode = hrTextureBind(texProc3, colorNode);
     texNode.append_attribute(L"input_gamma") = 1.0f;
+
+    xml_node aoNode1 = texNode.append_child(L"ao");
+ 
+    aoNode1.append_attribute(L"length")     = 1.0f;
+    aoNode1.append_attribute(L"hemisphere") = L"up";
+    aoNode1.append_attribute(L"local")      = 1;
   }
   hrMaterialClose(mat3);
 

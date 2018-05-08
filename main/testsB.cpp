@@ -930,7 +930,7 @@ bool test83_proc_texture2()
     xml_node texNode = hrTextureParamNode(texProc);
 
     xml_node code_node = texNode.append_child(L"code");
-    code_node.append_attribute(L"file") = L"data/code/mul_tex_coord.c";
+    code_node.append_attribute(L"file") = L"data/code/test_tex_array.c"; 
     code_node.append_attribute(L"main") = L"userProc";
   }
   hrTextureNodeClose(texProc);
@@ -1011,7 +1011,6 @@ bool test83_proc_texture2()
 
     HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
 
-
     // proc texture sampler settings
     //
     xml_node p1 = texNode.append_child(L"arg");
@@ -1019,29 +1018,21 @@ bool test83_proc_texture2()
     xml_node p3 = texNode.append_child(L"arg");
     xml_node p4 = texNode.append_child(L"arg");
 
-    p1.append_attribute(L"id") = 0;
+    std::wstringstream strOut;
+    strOut << texBitmap1.id << L" " << texBitmap2.id;
+    auto val = strOut.str();
+
+    p1.append_attribute(L"id")   = 0;
     p1.append_attribute(L"name") = L"texId1";
     p1.append_attribute(L"type") = L"sampler2D";
-    p1.append_attribute(L"size") = 1;
-    p1.append_attribute(L"val") = texBitmap1.id;
+    p1.append_attribute(L"size") = 2;
+    p1.append_attribute(L"val")  = val.c_str();
 
-    p2.append_attribute(L"id") = 1;
-    p2.append_attribute(L"name") = L"texId2";
-    p2.append_attribute(L"type") = L"sampler2D";
-    p2.append_attribute(L"size") = 1;
-    p2.append_attribute(L"val") = texBitmap2.id;
-
-    p3.append_attribute(L"id") = 3;
-    p3.append_attribute(L"name") = L"offset";
-    p3.append_attribute(L"type") = L"float2";
-    p3.append_attribute(L"size") = 1;
-    p3.append_attribute(L"val") = L"0 0";
-
-    p4.append_attribute(L"id") = 4;
+    p4.append_attribute(L"id")   = 1;
     p4.append_attribute(L"name") = L"color";
     p4.append_attribute(L"type") = L"float4";
     p4.append_attribute(L"size") = 1;
-    p4.append_attribute(L"val") = L"1 1 1 1";
+    p4.append_attribute(L"val")  = L"1 1 1 1";
   }
   hrMaterialClose(mat1);
 
@@ -1154,6 +1145,7 @@ bool test83_proc_texture2()
   //
   HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1
   hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
+  hrRenderLogDir(renderRef, L"C:/[Hydra]/logs/", false);
 
   hrRenderOpen(renderRef, HR_WRITE_DISCARD);
   {
@@ -2123,11 +2115,6 @@ bool test86_proc_texture_ao_dirt()
     //
     aoNode.append_attribute(L"length") = 1.25f;
 
-    auto texAoLengthNode = hrTextureBind(texBitmap1, aoNode);
-    {
-      // set ao length texture params
-    }
-
     // Distribution: Corner/Up, Edge/Down, Both/Both(Corner and Edge).
     //
     aoNode.append_attribute(L"hemisphere") = L"up";
@@ -2896,13 +2883,9 @@ bool test88_proc_texture_convex_rust()
 
     xml_node aoNode = texNode.append_child(L"ao");
 
-    aoNode.append_attribute(L"length") = 1.25f;
-    auto texAoLengthNode = hrTextureBind(texBitmap1, aoNode);
-    {
-      // set ao length texture params
-    }
+    aoNode.append_attribute(L"length")     = 1.25f;
     aoNode.append_attribute(L"hemisphere") = L"up";
-    aoNode.append_attribute(L"local") = 1;
+    aoNode.append_attribute(L"local")      = 1;
   }
   hrMaterialClose(mat3);
 

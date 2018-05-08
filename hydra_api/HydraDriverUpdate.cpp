@@ -77,7 +77,22 @@ void ScanXmlNodeRecursiveAndAppendTexture(pugi::xml_node a_node, std::unordered_
       for (pugi::xml_node arg : a_node.children())
       {
         if (std::wstring(arg.name()) == L"arg" && std::wstring(arg.attribute(L"type").as_string()) == L"sampler2D")
-          a_outSet.insert(arg.attribute(L"val").as_int());
+        {
+          int size = arg.attribute(L"size").as_int();
+          if(size <= 1)
+            a_outSet.insert(arg.attribute(L"val").as_int());
+          else
+          {
+            const wchar_t* value = arg.attribute(L"val").as_string();
+            std::wstringstream strIn(value);
+            for (int i = 0; i < size; i++)
+            {
+              int texId = 0;
+              strIn >> texId;
+              a_outSet.insert(texId);
+            }
+          }
+        }
       }
     }
   }
