@@ -132,7 +132,7 @@ int main(int argc, const char** argv)
     //std::cout << test79_material_remap_list2() << std::endl;
     //std::cout << test77_save_gbuffer_layers() << std::endl;
     //test38_licence_plate();
-    //test82_proc_texture();
+    test82_proc_texture();
     //test83_proc_texture2(); 
     //test84_proc_texture2();
     //test85_proc_texture_ao();
@@ -145,7 +145,7 @@ int main(int argc, const char** argv)
     //GEO_TESTS::test_005_instancing();
     //MTL_TESTS::test_158_proc_dirt1();
     //MTL_TESTS::test_159_proc_dirt2();
-    MTL_TESTS::test_160_proc_dirt3();
+    //MTL_TESTS::test_160_proc_dirt3();
     //LGHT_TESTS::test_223_rotated_area_light();
     
     //PP_TESTS::test305_fbi_from_render();    

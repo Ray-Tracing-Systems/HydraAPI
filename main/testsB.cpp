@@ -604,6 +604,7 @@ bool test82_proc_texture()
   HRTextureNodeRef texBitmap1 = hrTexture2DCreateFromFile(L"data/textures/texture1.bmp");
   HRTextureNodeRef texBitmap2 = hrTexture2DCreateFromFile(L"data/textures/300px-Bump2.jpg");
   HRTextureNodeRef texProc    = hrTextureCreateAdvanced(L"proc", L"my_custom_faloff"); 
+  HRTextureNodeRef texProc2   = hrTextureCreateAdvanced(L"proc", L"my_custom_faloff");
 
   hrTextureNodeOpen(texProc, HR_WRITE_DISCARD);
   {
@@ -614,6 +615,16 @@ bool test82_proc_texture()
     code_node.append_attribute(L"main") = L"userProc";
   }
   hrTextureNodeClose(texProc);
+
+  hrTextureNodeOpen(texProc2, HR_WRITE_DISCARD);
+  {
+    xml_node texNode = hrTextureParamNode(texProc2);
+
+    xml_node code_node = texNode.append_child(L"code");
+    code_node.append_attribute(L"file") = L"data/code/blue_water.c";
+    code_node.append_attribute(L"main") = L"main";
+  }
+  hrTextureNodeClose(texProc2);
 
 
   // other as usual in this test
@@ -626,27 +637,40 @@ bool test82_proc_texture()
   hrMaterialOpen(mat0, HR_WRITE_DISCARD);
   {
     xml_node matNode = hrMaterialParamNode(mat0);
+
+    auto emission = matNode.append_child(L"emission");
+    {
+      emission.append_child(L"multiplier").append_attribute(L"val").set_value(1.0f);
+
+      auto color = emission.append_child(L"color");
+      color.append_attribute(L"val").set_value(L"0.25 0.25 0.25");
+      color.append_attribute(L"tex_apply_mode ").set_value(L"multiply");
+
+      auto texNode = hrTextureBind(texProc2, color);
+    }
+
     xml_node diff = matNode.append_child(L"diffuse");
+    {
+      diff.append_attribute(L"brdf_type").set_value(L"lambert");
+      auto colorNode = diff.append_child(L"color");
 
-    diff.append_attribute(L"brdf_type").set_value(L"lambert");
-    auto colorNode = diff.append_child(L"color");
+      colorNode.append_attribute(L"val") = L"0.5 0.5 0.5";
 
-    colorNode.append_attribute(L"val") = L"0.5 0.5 0.5";
+      auto texNode = hrTextureBind(texBitmap1, colorNode);
 
-    auto texNode = hrTextureBind(texBitmap1, colorNode);
+      texNode.append_attribute(L"matrix");
+      float samplerMatrix[16] = { 1, 0, 0, 0,
+                                  0, 1, 0, 0,
+                                  0, 0, 1, 0,
+                                  0, 0, 0, 1 };
 
-    texNode.append_attribute(L"matrix");
-    float samplerMatrix[16] = { 1, 0, 0, 0,
-                                0, 1, 0, 0,
-                                0, 0, 1, 0,
-                                0, 0, 0, 1 };
-    
-    texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
-    texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
-    texNode.append_attribute(L"input_gamma").set_value(2.2f);
-    texNode.append_attribute(L"input_alpha").set_value(L"rgb");
-    
-    HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
+      texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
+      texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
+      texNode.append_attribute(L"input_gamma").set_value(2.2f);
+      texNode.append_attribute(L"input_alpha").set_value(L"rgb");
+
+      HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
+    }
 
   }
   hrMaterialClose(mat0);
