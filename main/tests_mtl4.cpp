@@ -1742,11 +1742,11 @@ bool MTL_TESTS::test_160_proc_dirt3()
     p5.append_attribute(L"size") = 1;
     p5.append_attribute(L"val")  = 2.0f;
 
-    p5.append_attribute(L"id")   = 5;
-    p5.append_attribute(L"name") = L"useDownAO";
-    p5.append_attribute(L"type") = L"int";
-    p5.append_attribute(L"size") = 1;
-    p5.append_attribute(L"val")  = 1;
+    p6.append_attribute(L"id")   = 5;
+    p6.append_attribute(L"name") = L"useDownAO";
+    p6.append_attribute(L"type") = L"int";
+    p6.append_attribute(L"size") = 1;
+    p6.append_attribute(L"val")  = 1;
   }
   hrMaterialClose(mat6);
 
