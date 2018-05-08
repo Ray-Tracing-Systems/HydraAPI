@@ -1710,36 +1710,43 @@ bool MTL_TESTS::test_160_proc_dirt3()
     xml_node p3 = texNode.append_child(L"arg");
     xml_node p4 = texNode.append_child(L"arg");
     xml_node p5 = texNode.append_child(L"arg");
+    xml_node p6 = texNode.append_child(L"arg");
 
-    p1.append_attribute(L"id") = 0;
+    p1.append_attribute(L"id")   = 0;
     p1.append_attribute(L"name") = L"colorHit";
     p1.append_attribute(L"type") = L"float3";
     p1.append_attribute(L"size") = 1;
-    p1.append_attribute(L"val") = L"1 1 1";
+    p1.append_attribute(L"val")  = L"1 1 1";
 
-    p2.append_attribute(L"id") = 1;
+    p2.append_attribute(L"id")   = 1;
     p2.append_attribute(L"name") = L"texHit";
     p2.append_attribute(L"type") = L"sampler2D";
     p2.append_attribute(L"size") = 1;
-    p2.append_attribute(L"val") = texBitmap1.id;
+    p2.append_attribute(L"val")  = texBitmap1.id;
 
-    p3.append_attribute(L"id") = 2;
+    p3.append_attribute(L"id")   = 2;
     p3.append_attribute(L"name") = L"colorMiss";
     p3.append_attribute(L"type") = L"float3";
     p3.append_attribute(L"size") = 1;
-    p3.append_attribute(L"val") = L"1 1 1";
+    p3.append_attribute(L"val")  = L"1 1 1";
 
-    p4.append_attribute(L"id") = 3;
+    p4.append_attribute(L"id")   = 3;
     p4.append_attribute(L"name") = L"texMiss";
     p4.append_attribute(L"type") = L"sampler2D";
     p4.append_attribute(L"size") = 1;
-    p4.append_attribute(L"val") = texBitmap3.id;
+    p4.append_attribute(L"val")  = texBitmap3.id;
 
-    p5.append_attribute(L"id") = 4;
-    p5.append_attribute(L"name") = L"faloffPower";
+    p5.append_attribute(L"id")   = 4;
+    p5.append_attribute(L"name") = L"faloffPower"; 
     p5.append_attribute(L"type") = L"float";
     p5.append_attribute(L"size") = 1;
-    p5.append_attribute(L"val") = 2.0f;
+    p5.append_attribute(L"val")  = 2.0f;
+
+    p5.append_attribute(L"id")   = 5;
+    p5.append_attribute(L"name") = L"useDownAO";
+    p5.append_attribute(L"type") = L"int";
+    p5.append_attribute(L"size") = 1;
+    p5.append_attribute(L"val")  = 1;
   }
   hrMaterialClose(mat6);
 
@@ -1748,6 +1755,17 @@ bool MTL_TESTS::test_160_proc_dirt3()
   hrMaterialOpen(mat7, HR_WRITE_DISCARD);
   {
     auto matNode = hrMaterialParamNode(mat7);
+
+    xml_node aoNode1 = matNode.append_child(L"ao");
+    xml_node aoNode2 = matNode.append_child(L"ao");
+
+    aoNode1.append_attribute(L"length")     = 1.0f;
+    aoNode1.append_attribute(L"hemisphere") = L"up";
+    aoNode1.append_attribute(L"local")      = 0;
+
+    aoNode2.append_attribute(L"length")     = 0.5f;
+    aoNode2.append_attribute(L"hemisphere") = L"down";
+    aoNode2.append_attribute(L"local")      = 1;
 
     auto blend = matNode.append_child(L"blend");
     blend.append_attribute(L"type").set_value(L"mask_blend");
@@ -1769,12 +1787,6 @@ bool MTL_TESTS::test_160_proc_dirt3()
     HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
 
     hrTextureBind(texGrad, mask);
-
-    // xml_node aoNode = matNode.append_child(L"ao");
-    // 
-    // aoNode.append_attribute(L"length") = 0.5f;
-    // aoNode.append_attribute(L"hemisphere") = L"down";
-    // aoNode.append_attribute(L"local") = 0;
 
     VERIFY_XML(matNode);
   }
