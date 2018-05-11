@@ -15,12 +15,15 @@ static inline float4 InternalFetch(int a_texId, const float2 texCoord, const int
 
 #define texture2D(texName, texCoord, flags) InternalFetch((texName), (texCoord), (flags), in_texStorage1, in_globals)
 
+typedef int sampler2D;
+
 typedef struct SurfaceInfoT
 {
   float3 wp;
   float3 n;
   float2 tc0;
   float  ao;
+  float  ao2;
 
   //#TODO: add custom attributes
 
@@ -30,6 +33,7 @@ typedef struct SurfaceInfoT
 #define readAttr_ShadeNorm(sHit) (sHit->n)
 #define readAttr_TexCoord0(sHit) (sHit->tc0)
 #define readAttr_AO(sHit) (sHit->ao)
+#define readAttr_AO1(sHit) (sHit->ao2)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -79,8 +83,9 @@ __kernel void ProcTexExec(__global       uint*          restrict a_flags,
                           __global const float2*        restrict in_hitTexCoord,
                           __global const HitMatRef*     restrict in_matData,
                           __global const float4*        restrict in_normalsFull,
-                          __global const uchar*         restrict in_shadowAOCompressed,
-                                                        
+                          __global const uchar*         restrict in_shadowAOCompressed1,
+                          __global const uchar*         restrict in_shadowAOCompressed2,
+                                                         
                           __global       float4*        restrict out_procTexData,
                                                         
                           __global const float4*        restrict in_texStorage1,
@@ -104,15 +109,21 @@ __kernel void ProcTexExec(__global       uint*          restrict a_flags,
   {
     // (1) read common attributes to 'surfaceHit'
     //
+    float shadow1 = 1.0f;
+    float shadow2 = 1.0f;
 
-    //const float3 shadow = decompressShadow(in_shadowAO[tid]);
-    const float shadow = ((float)in_shadowAOCompressed[tid]) / 255.0f;
+    if(in_shadowAOCompressed1 != 0)
+      shadow1 = ((float)in_shadowAOCompressed1[tid]) / 255.0f;
+
+    if(in_shadowAOCompressed2 != 0 )
+      shadow2 = ((float)in_shadowAOCompressed2[tid]) / 255.0f;
 
     SurfaceInfo surfHit;
     surfHit.wp  = to_float3(in_hitPosNorm[tid]);
     surfHit.n   = to_float3(in_normalsFull[tid]); // normalize(decodeNormal(as_int(data.w)));
     surfHit.tc0 = in_hitTexCoord[tid];
-    surfHit.ao  = shadow; // 0.333334f*(shadow.x + shadow.y + shadow.z);
+    surfHit.ao  = shadow1; 
+    surfHit.ao2 = shadow2;
     __private const SurfaceInfo* sHit = &surfHit;
 
     // (2) read custom attributes to 'surfHit' if target mesh have them.

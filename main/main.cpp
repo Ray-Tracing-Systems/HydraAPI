@@ -133,7 +133,7 @@ int main(int argc, const char** argv)
     //std::cout << test77_save_gbuffer_layers() << std::endl;
     //test38_licence_plate();
     test82_proc_texture();
-    //test83_proc_texture2(); 
+    //test83_proc_texture2();
     //test84_proc_texture2();
     //test85_proc_texture_ao();
     //test86_proc_texture_ao_dirt();
