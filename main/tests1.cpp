@@ -1906,10 +1906,10 @@ void run_all_lgt_tests(int a_start)
 
 }
 #ifdef WIN32
-void run_all_ipp_tests(int a_start)
+void run_all_ipp_tests(int a_start) 
 {
   TestFunc tests[] = {                 
-    &PP_TESTS::test301_resample,
+    &PP_TESTS::test301_resample, 
     &PP_TESTS::test302_median,
     &PP_TESTS::test303_median_in_place,
     &PP_TESTS::test304_obsolete_tone_mapping,
