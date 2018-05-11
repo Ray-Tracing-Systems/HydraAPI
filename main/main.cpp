@@ -132,11 +132,11 @@ int main(int argc, const char** argv)
     //std::cout << test79_material_remap_list2() << std::endl;
     //std::cout << test77_save_gbuffer_layers() << std::endl;
     //test38_licence_plate();
-    test82_proc_texture();
+    //test82_proc_texture();
     //test83_proc_texture2(); 
-    //test84_proc_texture2();
+    test84_proc_texture2();
     //test85_proc_texture_ao();
-    //test86_proc_texture_ao_dirt();
+    //test86_proc_texture_ao_dirt(); 
     //test87_proc_texture_reflect();
     //test88_proc_texture_convex_rust();
     //test89_proc_texture_dirty();

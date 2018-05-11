@@ -851,20 +851,20 @@ bool test82_proc_texture()
   {
     pugi::xml_node node = hrRenderParamNode(renderRef);
 
-    node.append_child(L"width").text() = L"512";
+    node.append_child(L"width").text()  = L"512";
     node.append_child(L"height").text() = L"512";
 
-    node.append_child(L"method_primary").text() = L"pathtracing";
+    node.append_child(L"method_primary").text()   = L"pathtracing";
     node.append_child(L"method_secondary").text() = L"pathtracing";
-    node.append_child(L"method_tertiary").text() = L"pathtracing";
-    node.append_child(L"method_caustic").text() = L"pathtracing";
-    node.append_child(L"shadows").text() = L"1";
+    node.append_child(L"method_tertiary").text()  = L"pathtracing";
+    node.append_child(L"method_caustic").text()   = L"pathtracing";
+    node.append_child(L"shadows").text()          = L"1";
 
-    node.append_child(L"trace_depth").text() = L"8";
+    node.append_child(L"trace_depth").text()      = L"8";
     node.append_child(L"diff_trace_depth").text() = L"4";
-    node.append_child(L"pt_error").text() = L"2.0";
-    node.append_child(L"minRaysPerPixel").text() = L"256";
-    node.append_child(L"maxRaysPerPixel").text() = L"2048";
+    node.append_child(L"maxRaysPerPixel").text()  = L"2048";
+
+    node.append_child(L"evalgbuffer").text() = 1;
   }
   hrRenderClose(renderRef);
 
@@ -922,6 +922,7 @@ bool test82_proc_texture()
   }
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_82/z_out.png");
+  hrRenderSaveGBufferLayerLDR(renderRef, L"tests_images/test_82/z_out2.png", L"diffcolor");
 
   return check_images("test_82", 1, 10);
 }
@@ -1288,7 +1289,7 @@ bool test84_proc_texture2()
     xml_node texNode = hrTextureParamNode(texProc2);
 
     xml_node code_node = texNode.append_child(L"code");
-    code_node.append_attribute(L"file") = L"data/code/noise3D.c";
+    code_node.append_attribute(L"file") = L"data/code/faloff_example.c";
     code_node.append_attribute(L"main") = L"main";
   }
   hrTextureNodeClose(texProc2);
@@ -1313,6 +1314,22 @@ bool test84_proc_texture2()
     colorNode.append_attribute(L"tex_apply_mode") = L"replace";
 
     auto texNode = hrTextureBind(texProc2, colorNode);
+    {
+      xml_node p1 = texNode.append_child(L"arg");
+      xml_node p2 = texNode.append_child(L"arg");
+
+      p1.append_attribute(L"id") = 0;
+      p1.append_attribute(L"name") = L"color1";
+      p1.append_attribute(L"type") = L"float4";
+      p1.append_attribute(L"size") = 1;
+      p1.append_attribute(L"val") = L"1 0 0 0";
+
+      p2.append_attribute(L"id") = 1;
+      p2.append_attribute(L"name") = L"color2";
+      p2.append_attribute(L"type") = L"float4";
+      p2.append_attribute(L"size") = 1;
+      p2.append_attribute(L"val") = L"0 0 1 0";
+    }
 
     // not used currently #TODO: figure out what of theese we needed!
     //
@@ -1589,7 +1606,7 @@ bool test85_proc_texture_ao()
 {
   initGLIfNeeded();
 
-  hrErrorCallerPlace(L"test_85");
+  hrErrorCallerPlace(L"test_85"); 
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1602,7 +1619,7 @@ bool test85_proc_texture_ao()
 
   // textures
   //
-  HRTextureNodeRef texBitmap1 = hrTexture2DCreateFromFile(L"data/textures/texture1.bmp");
+  HRTextureNodeRef texBitmap1 = hrTexture2DCreateFromFile(L"data/textures/texture1.bmp"); 
   HRTextureNodeRef texBitmap2 = hrTexture2DCreateFromFile(L"data/textures/300px-Bump2.jpg");
   HRTextureNodeRef texProc    = hrTextureCreateAdvanced(L"proc", L"my_custom_faloff");
   HRTextureNodeRef texProc2   = hrTextureCreateAdvanced(L"proc", L"my_show_normals");
@@ -1949,7 +1966,7 @@ bool test86_proc_texture_ao_dirt()
 {
   initGLIfNeeded();
 
-  hrErrorCallerPlace(L"test_86");
+  hrErrorCallerPlace(L"test_86"); 
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1957,7 +1974,7 @@ bool test86_proc_texture_ao_dirt()
 
   hrSceneLibraryOpen(L"tests/test_86", HR_WRITE_DISCARD);
 
-  SimpleMesh sphere   = CreateSphere(2.0f, 128);
+  SimpleMesh sphere   = CreateSphere(1.25f, 128);
   SimpleMesh cubeOpen = CreateCubeOpen(4.0f);
 
   // textures
@@ -1983,7 +2000,7 @@ bool test86_proc_texture_ao_dirt()
     xml_node texNode = hrTextureParamNode(texProc2);
 
     xml_node code_node = texNode.append_child(L"code");
-    code_node.append_attribute(L"file") = L"data/code/blue_water.c";
+    code_node.append_attribute(L"file") = L"data/code/blue_water2.c";
     code_node.append_attribute(L"main") = L"main";
   }
   hrTextureNodeClose(texProc2);
@@ -2022,28 +2039,6 @@ bool test86_proc_texture_ao_dirt()
     colorNode.append_attribute(L"tex_apply_mode") = L"replace";
 
     auto texNode = hrTextureBind(texProc2, colorNode);
-    // xml_node p1 = texNode.append_child(L"arg");
-    // xml_node p2 = texNode.append_child(L"arg");
-    // xml_node p3 = texNode.append_child(L"arg");
-    // 
-    // p1.append_attribute(L"id")   = 0;
-    // p1.append_attribute(L"name") = L"a";
-    // p1.append_attribute(L"type") = L"float4";
-    // p1.append_attribute(L"size") = 1;
-    // p1.append_attribute(L"val")  = L"0.2 0.4 1.0 1.0";
-    // 
-    // p2.append_attribute(L"id")   = 1;
-    // p2.append_attribute(L"name") = L"b";
-    // p2.append_attribute(L"type") = L"float4";
-    // p2.append_attribute(L"size") = 1;
-    // p2.append_attribute(L"val")  = L"0.85 0.9 1.0 1.0";
-    // 
-    // p3.append_attribute(L"id")   = 2;
-    // p3.append_attribute(L"name") = L"power";
-    // p3.append_attribute(L"type") = L"float";
-    // p3.append_attribute(L"size") = 1;
-    // p3.append_attribute(L"val")  = 0.35;
-
   }
   hrMaterialClose(mat0);
 
@@ -2055,7 +2050,7 @@ bool test86_proc_texture_ao_dirt()
     diff.append_attribute(L"brdf_type").set_value(L"lambert");
     auto colorNode = diff.append_child(L"color");
 
-    colorNode.append_attribute(L"val") = L"0.5 0.0 0.0";
+    colorNode.append_attribute(L"val")            = L"0.5 0.0 0.0";
     colorNode.append_attribute(L"tex_apply_mode") = L"replace";
 
     auto texNode = hrTextureBind(texProc, colorNode);
@@ -2272,8 +2267,11 @@ bool test86_proc_texture_ao_dirt()
   {
     // instance sphere and cornell box
     //
-    auto mtranslate = hlm::translate4x4(hlm::float3(0, -2, 1));
+    auto mtranslate = hlm::translate4x4(hlm::float3(1.5f, -2, 1)); 
     hrMeshInstance(scnRef, sphereRef, mtranslate.L());
+
+    auto mtranslate2 = hlm::translate4x4(hlm::float3(-1.5f, -2, 1)); 
+    hrMeshInstance(scnRef, sphereRef, mtranslate2.L());
 
     auto mrot = hlm::rotate_Y_4x4(180.0f*DEG_TO_RAD);
     hrMeshInstance(scnRef, cubeOpenRef, mrot.L());
