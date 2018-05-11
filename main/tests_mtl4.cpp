@@ -1990,3 +1990,345 @@ bool MTL_TESTS::test_160_proc_dirt3()
 
   return check_images("test_160", 1, 10);
 }
+
+
+static HRMeshRef createTriStrip(int rows, int cols, float size)
+{
+  int numIndices = 2 * cols*(rows - 1) + rows - 1;
+
+  std::vector<float> vertices_vec; //вектор атрибута координат вершин
+  vertices_vec.reserve(rows * cols * 3);
+
+  std::vector<float> normals_vec; //вектор атрибута нормалей к вершинам
+  normals_vec.reserve(rows * cols * 3);
+
+  std::vector<float> texcoords_vec; //вектор атрибут текстурных координат вершин
+  texcoords_vec.reserve(rows * cols * 2);
+
+  std::vector<float3> normals_vec_tmp(rows * cols, float3(0.0f, 0.0f, 0.0f)); //временный вектор нормалей, используемый для расчетов
+
+  std::vector<HydraLiteMath::int3> faces;         //вектор граней (треугольников), каждая грань - три индекса вершин, её составляющих; используется для удобства расчета нормалей
+  faces.reserve(numIndices / 3);
+
+  std::vector<int> indices_vec; //вектор индексов вершин для передачи шейдерной программе
+  indices_vec.reserve(numIndices);
+
+  std::vector<int> mind_vec; //вектор индексов вершин для передачи шейдерной программе
+
+
+  for (int z = 0; z < rows; ++z)
+  {
+    for (int x = 0; x < cols; ++x)
+    {
+      //вычисляем координаты каждой из вершин
+      float xx = -size / 2 + x*size / cols;
+      float zz = -size / 2 + z*size / rows;
+      // float yy = -1.0f;
+      float r = sqrt(xx*xx + zz*zz);
+      float yy = 5.0f * (r != 0.0f ? sin(r) / r : 1.0f);
+
+      vertices_vec.push_back(xx);
+      vertices_vec.push_back(yy);
+      vertices_vec.push_back(zz);
+
+      texcoords_vec.push_back(x / float(cols - 1)); // вычисляем первую текстурную координату u, для плоскости это просто относительное положение вершины
+      texcoords_vec.push_back(z / float(rows - 1)); // аналогично вычисляем вторую текстурную координату v
+    }
+  }
+
+
+  for (int x = 0; x < cols - 1; ++x)
+  {
+    for (int z = 0; z < rows - 1; ++z)
+    {
+      int offset = x*cols + z;
+
+      indices_vec.push_back(offset + 0);
+      indices_vec.push_back(offset + rows);
+      indices_vec.push_back(offset + 1);
+      indices_vec.push_back(offset + rows);
+      indices_vec.push_back(offset + rows + 1);
+      indices_vec.push_back(offset + 1);
+    }
+  }
+
+
+  int currFace = 1;
+  for (int i = 0; i < indices_vec.size() - 2; ++i)
+  {
+    HydraLiteMath::int3 face;
+
+    int index0 = indices_vec.at(i);
+    int index1 = indices_vec.at(i + 1);
+    int index2 = indices_vec.at(i + 2);
+
+    if (currFace % 2 != 0) //если это нечетный треугольник, то индексы и так в правильном порядке обхода - против часовой стрелки
+    {
+      face.x = indices_vec.at(i);
+      face.y = indices_vec.at(i + 1);
+      face.z = indices_vec.at(i + 2);
+
+      currFace++;
+    }
+    else //если треугольник четный, то нужно поменять местами 2-й и 3-й индекс;
+    {    //при отрисовке opengl делает это за нас, но при расчете нормалей нам нужно это сделать самостоятельно
+      face.x = indices_vec.at(i);
+      face.y = indices_vec.at(i + 2);
+      face.z = indices_vec.at(i + 1);
+
+      currFace++;
+    }
+    faces.push_back(face);
+    if(i % 2 == 0)
+      mind_vec.push_back(1);
+    else
+      mind_vec.push_back(0);
+  }
+
+  ///////////////////////
+  //расчет нормалей
+ /*for (int i = 0; i < faces.size(); ++i)
+  {
+    //получаем из вектора вершин координаты каждой из вершин одного треугольника
+    float3 A(vertices_vec.at(3 * faces.at(i).x + 0), vertices_vec.at(3 * faces.at(i).x + 1), vertices_vec.at(3 * faces.at(i).x + 2));
+    float3 B(vertices_vec.at(3 * faces.at(i).y + 0), vertices_vec.at(3 * faces.at(i).y + 1), vertices_vec.at(3 * faces.at(i).y + 2));
+    float3 C(vertices_vec.at(3 * faces.at(i).z + 0), vertices_vec.at(3 * faces.at(i).z + 1), vertices_vec.at(3 * faces.at(i).z + 2));
+
+    //получаем векторы для ребер треугольника из каждой из 3-х вершин
+    float3 edge1A(normalize(B - A));
+    float3 edge2A(normalize(C - A));
+
+    float3 edge1B(normalize(A - B));
+    float3 edge2B(normalize(C - B));
+
+    float3 edge1C(normalize(A - C));
+    float3 edge2C(normalize(B - C));
+
+    //нормаль к треугольнику - векторное произведение любой пары векторов из одной вершины
+    float3 face_normal = cross(edge1A, edge2A);
+
+    //простой подход: нормаль к вершине = средняя по треугольникам, к которым принадлежит вершина
+    normals_vec_tmp.at(faces.at(i).x) += face_normal;
+    normals_vec_tmp.at(faces.at(i).y) += face_normal;
+    normals_vec_tmp.at(faces.at(i).z) += face_normal;
+  }
+
+  for (int i = 0; i < normals_vec_tmp.size(); ++i)
+  {
+    float3 N = normalize(normals_vec_tmp.at(i));
+
+    normals_vec.push_back(N.x);
+    normals_vec.push_back(N.y);
+    normals_vec.push_back(N.z);
+  }*/
+
+  HRMeshRef meshRef = hrMeshCreate(L"tri_strip");
+
+  hrMeshOpen(meshRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
+  {
+    hrMeshVertexAttribPointer4f(meshRef, L"pos", &vertices_vec[0]);
+    //hrMeshVertexAttribPointer4f(meshRef, L"norm", &normals_vec[0]);
+    hrMeshVertexAttribPointer2f(meshRef, L"texcoord", &texcoords_vec[0]);
+
+    //hrMeshMaterialId(cubeRef, 0);
+    hrMeshPrimitiveAttribPointer1i(meshRef, L"mind", &mind_vec[0]);
+    hrMeshAppendTriangles3(meshRef, int(indices_vec.size()), &indices_vec[0]);
+  }
+  hrMeshClose(meshRef);
+
+  return meshRef;
+}
+
+
+bool MTL_TESTS::test_161_simple_displacement()
+{
+  initGLIfNeeded();
+
+  hrErrorCallerPlace(L"test_161");
+
+  hrSceneLibraryOpen(L"tests_f/test_161", HR_WRITE_DISCARD);
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Materials
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  HRMaterialRef mat1 = hrMaterialCreate(L"mat1");
+  HRMaterialRef mat2 = hrMaterialCreate(L"mat2");
+  HRMaterialRef mat3 = hrMaterialCreate(L"mat3");
+  HRMaterialRef mat4 = hrMaterialCreate(L"mat4");
+
+  //HRTextureNodeRef texChecker = hrTexture2DCreateFromFile(L"data/textures/chess_white.bmp");
+  //HRTextureNodeRef tex = hrTexture2DCreateFromFile(L"data/textures/ornament.jpg");
+
+  hrMaterialOpen(mat1, HR_WRITE_DISCARD);
+  {
+    auto matNode = hrMaterialParamNode(mat1);
+
+    auto diffuse = matNode.append_child(L"diffuse");
+    diffuse.append_child(L"color").append_attribute(L"val").set_value(L"0.0 1.0 0.0");
+
+  }
+  hrMaterialClose(mat1);
+
+  hrMaterialOpen(mat2, HR_WRITE_DISCARD);
+  {
+    auto matNode = hrMaterialParamNode(mat2);
+
+    auto diffuse = matNode.append_child(L"diffuse");
+    diffuse.append_child(L"color").append_attribute(L"val").set_value(L"0.0 0.0 1.0");
+
+  }
+  hrMaterialClose(mat2);
+
+  hrMaterialOpen(mat3, HR_WRITE_DISCARD);
+  {
+    auto matNode = hrMaterialParamNode(mat3);
+
+    auto diffuse = matNode.append_child(L"diffuse");
+    diffuse.append_child(L"color").append_attribute(L"val").set_value(L"0.0 1.0 1.0");
+
+    auto displacement = matNode.append_child(L"displacement");
+    auto heightNode   = displacement.append_child(L"height_map");
+
+    displacement.append_attribute(L"type").set_value(L"true_displacement");
+    heightNode.append_attribute(L"amount").set_value(0.5f);
+
+  }
+  hrMaterialClose(mat3);
+
+
+  hrMaterialOpen(mat4, HR_WRITE_DISCARD);
+  {
+    auto matNode = hrMaterialParamNode(mat4);
+
+    auto diffuse = matNode.append_child(L"diffuse");
+    diffuse.append_child(L"color").append_attribute(L"val").set_value(L"1.0 1.0 0.0");
+
+  }
+  hrMaterialClose(mat4);
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Meshes
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  HRMeshRef tess = hrMeshCreateFromFileDL(L"data/meshes/tesselated_plane.vsgf");
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Light
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  HRLightRef sky = hrLightCreate(L"sky");
+
+  hrLightOpen(sky, HR_WRITE_DISCARD);
+  {
+    auto lightNode = hrLightParamNode(sky);
+
+    lightNode.attribute(L"type").set_value(L"sky");
+
+    auto intensityNode = lightNode.append_child(L"intensity");
+
+    intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"0.75 0.75 1");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(1.0f);
+
+    VERIFY_XML(lightNode);
+  }
+  hrLightClose(sky);
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Camera
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  HRCameraRef camRef = hrCameraCreate(L"my camera");
+
+  hrCameraOpen(camRef, HR_WRITE_DISCARD);
+  {
+    auto camNode = hrCameraParamNode(camRef);
+
+    camNode.append_child(L"fov").text().set(L"45");
+    camNode.append_child(L"nearClipPlane").text().set(L"0.01");
+    camNode.append_child(L"farClipPlane").text().set(L"100.0");
+
+    camNode.append_child(L"up").text().set(L"0 1 0");
+    camNode.append_child(L"position").text().set(L"0 50 150");
+    camNode.append_child(L"look_at").text().set(L"0 0 0");
+  }
+  hrCameraClose(camRef);
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Render settings
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 256, 1024);
+
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Create scene
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  HRSceneInstRef scnRef = hrSceneCreate(L"my scene");
+
+  using namespace HydraLiteMath;
+
+  float4x4 mRot;
+  float4x4 mTranslate;
+  float4x4 mScale;
+  float4x4 mRes;
+
+  hrSceneOpen(scnRef, HR_WRITE_DISCARD);
+
+  ///////////
+  mTranslate.identity();
+  mRes.identity();
+
+  mTranslate = translate4x4(float3(0.0f, -1.0f, 0.0f));
+  mScale = scale4x4(float3(1000.01f, 1000.01f, 1000.01f));
+  mRes = mul(mTranslate, mScale);
+
+  hrMeshInstance(scnRef, tess, mRes.L());
+
+  ///////////
+
+  mTranslate.identity();
+  mRes.identity();
+
+  mTranslate = translate4x4(float3(0, 0.0f, 0.0));
+  mRes = mul(mTranslate, mRes);
+
+  hrLightInstance(scnRef, sky, mRes.L());
+
+  ///////////
+
+  hrSceneClose(scnRef);
+
+  hrFlush(scnRef, renderRef);
+
+  glViewport(0, 0, 1024, 768);
+  std::vector<int32_t> image(1024 * 768);
+
+  while (true)
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+    HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
+
+    if (info.haveUpdateFB)
+    {
+      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+
+      glDisable(GL_TEXTURE_2D);
+      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+
+      auto pres = std::cout.precision(2);
+      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout.precision(pres);
+
+      glfwSwapBuffers(g_window);
+      glfwPollEvents();
+    }
+
+    if (info.finalUpdate)
+      break;
+  }
+
+  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_161/z_out.png");
+
+  return check_images("test_161", 1, 30);
+}
