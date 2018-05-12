@@ -1659,6 +1659,11 @@ void run_all_api_tests(const int startTestId)
                        &test82_proc_texture,
                        &test83_proc_texture2,
                        &test84_proc_texture2,
+                       &test85_proc_texture_ao,
+                       &test86_proc_texture_ao_dirt,
+                       &test87_proc_texture_reflect,
+                       &test88_proc_texture_convex_rust,
+                       &test89_proc_texture_dirty,
   };
 
 
@@ -1783,8 +1788,28 @@ void run_all_mtl_tests(int a_start)
                        &test_139_glass_and_bump,
                        &test_140_blend_emission,
                        &test_141_opacity_smooth,
+                       &dummy_test,               // 142
+                       &dummy_test,               // 143
+                       &dummy_test,               // 144
+                       &dummy_test,               // 145
+                       &dummy_test,               // 146
+                       &dummy_test,               // 147
+                       &dummy_test,               // 148
+                       &dummy_test,               // 149
                        &test_150_gloss_mirror_cos_div,
-                       &test_151_gloss_mirror_cos_div2
+                       &test_151_gloss_mirror_cos_div2,
+
+                       &test_152_texture_color_replace_mode,
+                       &test_153_opacity_shadow_matte_opacity,
+
+                       &test_154_proc_checker_precomp,
+                       &test_155_proc_checker_HDR_precomp,
+                       &test_156_proc_checker_precomp_update,
+                       &test_157_proc_checker_precomp_remap,
+                       
+                       &test_158_proc_dirt1,
+                       &test_159_proc_dirt2,
+                       &test_160_proc_dirt3,
 	                   };
 
 

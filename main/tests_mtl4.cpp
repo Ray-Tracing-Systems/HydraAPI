@@ -650,7 +650,7 @@ bool MTL_TESTS::test_158_proc_dirt1()
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_158/z_out.png");
 
-  return check_images("test_158", 1, 10);
+  return check_images("test_158", 1, 25);
 }
 
 
@@ -1291,7 +1291,7 @@ bool MTL_TESTS::test_159_proc_dirt2()
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_159/z_out.png");
 
-  return check_images("test_159", 1, 10);
+  return check_images("test_159", 1, 25);
 }
 
 
@@ -1988,5 +1988,5 @@ bool MTL_TESTS::test_160_proc_dirt3()
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_160/z_out.png");
 
-  return check_images("test_160", 1, 10);
+  return check_images("test_160", 1, 25);
 }
