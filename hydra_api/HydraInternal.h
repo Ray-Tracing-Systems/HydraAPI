@@ -64,6 +64,7 @@ std::vector< HydraLiteMath::float4> getVerticesFromBBox(const BBox &a_bbox);
 
 
 
+
 struct IHRMesh : public IHRObject ///< Not empty Data (reimplement DataSerialize/DataDeserialize)
 {
   IHRMesh() {}

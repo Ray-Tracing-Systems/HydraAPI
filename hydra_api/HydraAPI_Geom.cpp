@@ -12,6 +12,7 @@
 #include <sstream>
 #include <iomanip>
 #include <complex>
+#include <set>
 
 #include "LiteMath.h"
 using namespace HydraLiteMath;
@@ -577,6 +578,7 @@ HAPI void hrMeshPrimitiveAttribPointer1i(HRMeshRef a_mesh, const wchar_t* a_name
 
 HAPI void hrMeshComputeNormals(HRMeshRef a_mesh, const int indexNum, bool useFaceNormals = false);
 HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, const int indexNum);
+void hrMeshDisplace(HRMeshRef a_mesh);
 
 static void AddCommonAttributesFromPointers(HRMesh* pMesh, int maxVertexId)
 {
@@ -846,6 +848,10 @@ HAPI void hrMeshAppendTriangles3(HRMeshRef a_mesh, int indNum, const int* indice
     for (int i = 0; i < (indNum / 3); i++)
       pMesh->m_input.matIndices.push_back(matId);
   }
+
+  hrMeshDisplace(a_mesh);
+
+  std::cout << "debug" << std::endl;
 
 }
 
@@ -1129,4 +1135,95 @@ HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, const int indexNum)
   
   delete[] tan1;
   
+}
+
+void doRefinement();
+void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::vector<float3> &triangleList);
+
+void hrMeshDisplace(HRMeshRef a_mesh)
+{
+  HRMesh *pMesh = g_objManager.PtrById(a_mesh);
+  if (pMesh == nullptr)
+  {
+    HrError(L"hrMeshComputeNormals: nullptr input");
+    return;
+  }
+
+  HRMesh::InputTriMesh &mesh = pMesh->m_input;
+
+  const int vertexCount = int(mesh.verticesPos.size() / 4);
+  const int triangleCount = int(mesh.triIndices.size() / 3);
+
+  std::set<int32_t> uniqueMatIndices;
+  std::unordered_map<int32_t, pugi::xml_node> matsWithDisplacement;
+  std::unordered_map<int, std::pair<pugi::xml_node, std::vector<float3> > > dMatToTriangles;
+  for(unsigned int i = 0; i < mesh.matIndices.size(); ++i)
+  {
+    int mI = mesh.matIndices.at(i);
+    auto ins = uniqueMatIndices.insert(mI);
+    if(ins.second)
+    {
+      HRMaterialRef tmpRef;
+      tmpRef.id = mI;
+      auto mat = g_objManager.PtrById(tmpRef);
+      auto d_node = mat->xml_node_next().child(L"displacement");
+
+      if (d_node != nullptr &&
+          std::wstring(d_node.attribute(L"type").as_string()) == std::wstring(L"true_displacement"))
+      {
+        matsWithDisplacement[mI] = d_node;
+      }
+    }
+    auto mat = matsWithDisplacement.find(mI);
+    if(mat != matsWithDisplacement.end())
+    {
+      float3 triangle = float3(mesh.triIndices.at(i * 3 + 0),
+                               mesh.triIndices.at(i * 3 + 1),
+                               mesh.triIndices.at(i * 3 + 2));
+
+      if (dMatToTriangles.find(mI) == dMatToTriangles.end())
+      {
+        std::vector<float3> tmp;
+        tmp.push_back(triangle);
+        dMatToTriangles[mI] = std::pair<pugi::xml_node, std::vector<float3> >(mat->second, tmp);
+      } else
+      {
+        dMatToTriangles[mI].second.push_back(triangle);
+      }
+    }
+  }
+
+  for(auto& dTris : dMatToTriangles)
+  {
+    std::cout << "id : " << dTris.first << " triangles : " << dTris.second.second.size() <<std::endl;
+  }
+
+  for(auto& dTris : dMatToTriangles)
+  {
+    doDisplacement(pMesh, dTris.second.first, dTris.second.second);
+  }
+}
+
+void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::vector<float3> &triangleList)
+{
+  HRMesh::InputTriMesh &mesh = pMesh->m_input;
+
+  float mult = 0.005f;
+  for(auto& tri : triangleList)
+  {
+    mesh.verticesPos.at(tri.x * 4 + 0) += mesh.verticesNorm.at(tri.x * 4 + 0) * mult;
+    mesh.verticesPos.at(tri.x * 4 + 1) += mesh.verticesNorm.at(tri.x * 4 + 1) * mult;
+    mesh.verticesPos.at(tri.x * 4 + 2) += mesh.verticesNorm.at(tri.x * 4 + 2) * mult;
+
+    mesh.verticesPos.at(tri.y * 4 + 0) += mesh.verticesNorm.at(tri.y * 4 + 0) * mult;
+    mesh.verticesPos.at(tri.y * 4 + 1) += mesh.verticesNorm.at(tri.y * 4 + 1) * mult;
+    mesh.verticesPos.at(tri.y * 4 + 2) += mesh.verticesNorm.at(tri.y * 4 + 2) * mult;
+
+    mesh.verticesPos.at(tri.z * 4 + 0) += mesh.verticesNorm.at(tri.z * 4 + 0) * mult;
+    mesh.verticesPos.at(tri.z * 4 + 1) += mesh.verticesNorm.at(tri.z * 4 + 1) * mult;
+    mesh.verticesPos.at(tri.z * 4 + 2) += mesh.verticesNorm.at(tri.z * 4 + 2) * mult;
+
+
+  }
+
 }

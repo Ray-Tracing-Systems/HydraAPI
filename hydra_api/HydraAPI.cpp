@@ -980,10 +980,11 @@ HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pC
     if (settings.child(L"scenePrepass") != nullptr)
       doPrepass = settings.child(L"scenePrepass").text().as_bool();
 
-
-//#ifdef IN_DEBUG
     if (g_objManager.m_pDriver->Info().supportUtilityPrepass && doPrepass)
       auto fixed_state = HR_UtilityDriverStart(newPath.c_str());
+
+//#ifdef IN_DEBUG
+
 //#endif
   }
 

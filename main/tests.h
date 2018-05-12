@@ -265,6 +265,8 @@ namespace MTL_TESTS
   bool test_158_proc_dirt1();
   bool test_159_proc_dirt2();
   bool test_160_proc_dirt3();
+
+  bool test_161_simple_displacement();
 }
 
 namespace LGHT_TESTS

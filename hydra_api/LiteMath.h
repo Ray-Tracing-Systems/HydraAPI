@@ -99,6 +99,14 @@ namespace HydraLiteMath
     int x, y, z, w;
   };
 
+  struct int3
+  {
+      int3() :x(0), y(0), z(0) {}
+      int3(int a, int b, int c) : x(a), y(b), z(c) {}
+
+      int x, y, z;
+  };
+
   static inline int4 make_int4(int a, int b, int c, int d) { int4 res; res.x = a; res.y = b; res.z = c; res.w = d; return res; }
 
   struct ushort2
