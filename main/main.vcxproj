@@ -183,6 +183,7 @@
     <ClCompile Include="test_image_processing.cpp" />
     <ClCompile Include="test_lights3.cpp" />
     <ClCompile Include="test_lights4.cpp" />
+    <ClCompile Include="test_mtl5.cpp" />
     <ClCompile Include="test_mtl_adv.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="utils.cpp" />

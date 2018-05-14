@@ -267,6 +267,7 @@ namespace MTL_TESTS
   bool test_160_proc_dirt3();
 
   bool test_161_simple_displacement();
+  bool test_162_shadow_matte_back1();
 }
 
 namespace LGHT_TESTS
