@@ -93,7 +93,7 @@ int main(int argc, const char** argv)
   {
 	  //run_all_geo_tests();
     //run_all_lgt_tests();
-    //run_all_mtl_tests();
+    //run_all_mtl_tests(); 
     //run_all_api_tests();
     //run_all_ipp_tests();
   
@@ -142,7 +142,7 @@ int main(int argc, const char** argv)
     //test89_proc_texture_dirty();
 
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
-    //GEO_TESTS::test_005_instancing();
+    GEO_TESTS::test_005_instancing();
     //MTL_TESTS::test_158_proc_dirt1();
     //MTL_TESTS::test_159_proc_dirt2();
     //MTL_TESTS::test_160_proc_dirt3();
