@@ -285,8 +285,8 @@ bool test38_licence_plate()
     hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_A.png"),
     hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_B.png"),
     hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_C.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_D.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_E.png") };
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_E.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_H.png") };
 
 
   hrTextureNodeOpen(texProc, HR_WRITE_DISCARD);
