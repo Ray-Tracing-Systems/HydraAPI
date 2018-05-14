@@ -279,14 +279,14 @@ bool test38_licence_plate()
   // textures
   //
   HRTextureNodeRef texProc = hrTextureCreateAdvanced(L"proc", L"my_licence_plate");
-  HRTextureNodeRef texBitmap1 = hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/RusLicensePlate2digitRegionTemplate.png");
+  HRTextureNodeRef texBitmap1 = hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/RusLicensePlate2digitRegionBase.png");
   //HRTextureNodeRef texBitmap2 = hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_A.png");
   HRTextureNodeRef texBitmap2[5] = {
     hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_A.png"),
     hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_B.png"),
     hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_C.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_D.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_E.png") };
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_E.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_H.png") };
 
 
   hrTextureNodeOpen(texProc, HR_WRITE_DISCARD);
@@ -354,15 +354,23 @@ bool test38_licence_plate()
     p2.append_attribute(L"type") = L"sampler2D";
     p2.append_attribute(L"size") = 5;
     //p2.append_attribute(L"val") = texBitmap2.id;
-    p2.append_attribute(L"val") = L"2 3 4 5 6";
+    p2.append_attribute(L"val") = L"3 4 5 6 7";
+    //std::wstringstream strOut;
+    //for (int i = 0; i < 5; i++)
+    //{
+    //  strOut << L" " << texBitmap2[i].id;  
+    //}
+    //auto val = strOut.str();
+    //p2.append_attribute(L"val") = val.c_str();
 
-    p3.append_attribute(L"id") = 3;
+
+    p3.append_attribute(L"id") = 2;
     p3.append_attribute(L"name") = L"offset";
     p3.append_attribute(L"type") = L"float2";
     p3.append_attribute(L"size") = 1;
     p3.append_attribute(L"val") = L"0 0";
 
-    p4.append_attribute(L"id") = 4;
+    p4.append_attribute(L"id") = 3;
     p4.append_attribute(L"name") = L"color";
     p4.append_attribute(L"type") = L"float4";
     p4.append_attribute(L"size") = 1;
