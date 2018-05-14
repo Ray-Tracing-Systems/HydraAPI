@@ -57,7 +57,7 @@ set(SOURCE_FILES
         VirtualBuffer.cpp
         xxhash.c
         xxhash.h
-        HydraXMLHelpers.cpp)
+        HydraXMLHelpers.cpp HydraTextureUtils.cpp HydraTextureUtils.h)
 
 
 if (WIN32)

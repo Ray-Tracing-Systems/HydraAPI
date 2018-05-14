@@ -837,3 +837,4 @@ HAPI pugi::xml_node hrTextureParamNode(HRTextureNodeRef a_texRef)
 
 	return pTex->xml_node_next(pTex->openMode);
 }
+

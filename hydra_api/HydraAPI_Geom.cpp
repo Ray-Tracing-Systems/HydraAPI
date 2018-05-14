@@ -1166,12 +1166,15 @@ void hrMeshDisplace(HRMeshRef a_mesh)
       HRMaterialRef tmpRef;
       tmpRef.id = mI;
       auto mat = g_objManager.PtrById(tmpRef);
-      auto d_node = mat->xml_node_next().child(L"displacement");
-
-      if (d_node != nullptr &&
-          std::wstring(d_node.attribute(L"type").as_string()) == std::wstring(L"true_displacement"))
+      if(mat != nullptr)
       {
-        matsWithDisplacement[mI] = d_node;
+        auto d_node = mat->xml_node_next().child(L"displacement");
+
+        if (d_node != nullptr &&
+            std::wstring(d_node.attribute(L"type").as_string()) == std::wstring(L"true_displacement"))
+        {
+          matsWithDisplacement[mI] = d_node;
+        }
       }
     }
     auto mat = matsWithDisplacement.find(mI);
@@ -1208,7 +1211,13 @@ void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::v
 {
   HRMesh::InputTriMesh &mesh = pMesh->m_input;
 
-  float mult = 0.005f;
+  auto heightNode = displaceXMLNode.child(L"height_map");
+
+  float mult = 1.0f;
+  if(heightNode != nullptr)
+    mult = heightNode.attribute(L"amount").as_float();
+
+
   for(auto& tri : triangleList)
   {
     mesh.verticesPos.at(tri.x * 4 + 0) += mesh.verticesNorm.at(tri.x * 4 + 0) * mult;
