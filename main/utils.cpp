@@ -4,11 +4,13 @@
 #include <vector>
 #include <string.h>
 #include <sstream>
+#include "LiteMath.h"
 
 #include "../hydra_api/HR_HDRImageTool.h"
 using HDRImage4f = HydraRender::HDRImage4f;
 using HydraRender::LoadImageFromFile;
 using HydraRender::SaveImageToFile;
+using namespace HydraLiteMath;
 
 #pragma warning(disable:4838)
 
@@ -453,5 +455,120 @@ namespace TEST_UTILS
     return renderRef;
   }
 
+
+  HRMeshRef CreateTriStrip(int rows, int cols, float size)
+  {
+    //int numIndices = 2 * cols*(rows - 1) + rows - 1;
+
+    std::vector<float> vertices_vec;
+    vertices_vec.reserve(rows * cols * 4);
+
+    std::vector<float> normals_vec;
+    normals_vec.reserve(rows * cols * 4);
+
+    std::vector<float> texcoords_vec;
+    texcoords_vec.reserve(rows * cols * 2);
+
+    std::vector<float3> normals_vec_tmp(rows * cols, float3(0.0f, 0.0f, 0.0f));
+
+    std::vector<int> indices_vec;
+    std::vector<int> mind_vec;
+
+    for (int z = 0; z < rows; ++z)
+    {
+      for (int x = 0; x < cols; ++x)
+      {
+        float xx = -size / 2 + x*size / cols;
+        float zz = -size / 2 + z*size / rows;
+        float yy = 0.0f;
+        //float r = sqrt(xx*xx + zz*zz);
+        //float yy = 5.0f * (r != 0.0f ? sin(r) / r : 1.0f);
+
+        vertices_vec.push_back(xx);
+        vertices_vec.push_back(yy);
+        vertices_vec.push_back(zz);
+        vertices_vec.push_back(1.0f);
+
+        texcoords_vec.push_back(x / float(cols - 1));
+        texcoords_vec.push_back(z / float(rows - 1));
+      }
+    }
+
+    int numTris = 0;
+    for (int x = 0; x < cols - 1; ++x)
+    {
+      for (int z = 0; z < rows - 1; ++z)
+      {
+        unsigned int offset = x*cols + z;
+
+        indices_vec.push_back(offset + 0);
+        indices_vec.push_back(offset + rows);
+        indices_vec.push_back(offset + 1);
+        indices_vec.push_back(offset + rows);
+        indices_vec.push_back(offset + rows + 1);
+        indices_vec.push_back(offset + 1);
+
+        float3 A(vertices_vec.at(4 * offset + 0), vertices_vec.at(4 * offset + 1),
+                 vertices_vec.at(4 * offset + 2));
+        float3 B(vertices_vec.at(4 * (offset + rows) + 0), vertices_vec.at(4 * (offset + rows) + 1),
+                 vertices_vec.at(4 * (offset + rows) + 2));
+        float3 C(vertices_vec.at(4 * (offset + 1) + 0), vertices_vec.at(4 * (offset + 1) + 1),
+                 vertices_vec.at(4 * (offset + 1) + 2));
+        float3 D(vertices_vec.at(4 * (offset + rows + 1) + 0), vertices_vec.at(4 * (offset + rows + 1) + 1),
+                 vertices_vec.at(4 * (offset + rows + 1) + 2));
+
+        float3 edge1B(normalize(B - A));
+        float3 edge1C(normalize(C - A));
+
+        float3 face_normal1 = cross(edge1B, edge1C);
+
+        float3 edge2D(normalize(D - B));
+        float3 edge2C(normalize(C - B));
+
+        float3 face_normal2 = cross(edge2D, edge2C);
+
+        normals_vec_tmp.at(offset) += face_normal1;
+        normals_vec_tmp.at(offset + rows) += face_normal1 + face_normal2;
+        normals_vec_tmp.at(offset + 1) += face_normal1 + face_normal2;
+        normals_vec_tmp.at(offset + rows + 1) += face_normal2;
+
+        numTris += 2;
+      }
+    }
+
+
+    ///////////////////////
+    for (auto& N : normals_vec_tmp)
+    {
+      N = normalize(N);
+      normals_vec.push_back(N.x);
+      normals_vec.push_back(N.y);
+      normals_vec.push_back(N.z);
+      normals_vec.push_back(1.0f);
+    }
+
+    ///////////////////////
+    for(int i = 0; i < indices_vec.size() / 3; ++i)
+    {
+      mind_vec.push_back(i % 5 == 0 ? 0 : 1);
+    }
+
+
+    HRMeshRef meshRef = hrMeshCreate(L"tri_strip");
+
+    hrMeshOpen(meshRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
+    {
+      hrMeshVertexAttribPointer4f(meshRef, L"pos", &vertices_vec[0]);
+      hrMeshVertexAttribPointer4f(meshRef, L"norm", &normals_vec[0]);
+      hrMeshVertexAttribPointer2f(meshRef, L"texcoord", &texcoords_vec[0]);
+
+      //hrMeshMaterialId(cubeRef, 0);
+      hrMeshPrimitiveAttribPointer1i(meshRef, L"mind", &mind_vec[0]);
+      hrMeshAppendTriangles3(meshRef, int(indices_vec.size()), &indices_vec[0]);
+    }
+    hrMeshClose(meshRef);
+
+    return meshRef;
+  }
 
 }

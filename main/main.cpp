@@ -134,7 +134,7 @@ int main(int argc, const char** argv)
     //test38_licence_plate();
     //test82_proc_texture();
     //test83_proc_texture2(); 
-    test84_proc_texture2();
+    //test84_proc_texture2();
     //test85_proc_texture_ao();
     //test86_proc_texture_ao_dirt(); 
     //test87_proc_texture_reflect();
@@ -146,6 +146,8 @@ int main(int argc, const char** argv)
     //MTL_TESTS::test_158_proc_dirt1();
     //MTL_TESTS::test_159_proc_dirt2();
     //MTL_TESTS::test_160_proc_dirt3();
+    //MTL_TESTS::test_161_simple_displacement();
+    MTL_TESTS::test_154_proc_checker_precomp();
     //LGHT_TESTS::test_223_rotated_area_light();
     
     //PP_TESTS::test305_fbi_from_render();    

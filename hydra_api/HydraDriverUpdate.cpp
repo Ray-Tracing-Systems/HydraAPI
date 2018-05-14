@@ -1290,13 +1290,13 @@ resolution_dict InsertMipLevelInfoIntoXML(pugi::xml_document &stateToProcess, co
 
       auto settingsNode = stateToProcess.child(L"render_lib").child(L"render_settings");
 
-      uint32_t newW = MAX_TEXTURE_RESOLUTION;
-      uint32_t newH = MAX_TEXTURE_RESOLUTION;
+      int32_t newW = MAX_TEXTURE_RESOLUTION;
+      int32_t newH = MAX_TEXTURE_RESOLUTION;
 
       if(settingsNode != nullptr)
       {
-        newW = std::min(settingsNode.child(L"width").text().as_uint(), newW);
-        newH = std::min(settingsNode.child(L"height").text().as_uint(), newH);
+        newW = std::min(settingsNode.child(L"width").text().as_int(), newW);
+        newH = std::min(settingsNode.child(L"height").text().as_int(), newH);
       }
 
       for(int i = 0; i < elem.second; ++i)
@@ -1305,8 +1305,11 @@ resolution_dict InsertMipLevelInfoIntoXML(pugi::xml_document &stateToProcess, co
         newH /= 2;
       }
 
-      newW = int(newW) > currW ? currW : newW;
-      newH = int(newH) > currH ? currH : newH;
+      if(currW >= 0 && newW > currW)
+        newW = currW;
+
+      if(currH >= 0 && newH > currH)
+        newH = currH;
 
       texNode.force_attribute(L"r_width").set_value(newW);
       texNode.force_attribute(L"r_height").set_value(newH);
