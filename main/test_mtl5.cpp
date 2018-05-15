@@ -78,6 +78,14 @@ bool MTL_TESTS::test_162_shadow_matte_back1()
 
     diff.append_child(L"color").append_attribute(L"val").set_value(L"0.5 0.15 0.15");
 
+    auto refl = matNode.append_child(L"reflectivity");
+    refl.append_attribute(L"brdf_type").set_value(L"phong");
+    refl.append_child(L"color").append_attribute(L"val").set_value(L"0.4 0.4 0.4");
+    refl.append_child(L"glossiness").append_attribute(L"val").set_value(L"1.0");
+    refl.append_child(L"extrusion").append_attribute(L"val").set_value(L"maxcolor");
+    refl.append_child(L"fresnel").append_attribute(L"val").set_value(0);
+    refl.append_child(L"fresnel_ior").append_attribute(L"val").set_value(1.5);
+
     VERIFY_XML(matNode);
   }
   hrMaterialClose(matR);
@@ -91,8 +99,13 @@ bool MTL_TESTS::test_162_shadow_matte_back1()
     opacity.append_child(L"skip_shadow").append_attribute(L"val").set_value(1);
 
     auto back = matNode.append_child(L"back");
+    back.append_attribute(L"reflection") = 1;
+
     auto texNode = hrTextureBind(texBack, back);
     texNode.append_attribute(L"input_gamma") = 2.2f;
+
+    auto shadow = matNode.append_child(L"shadow");
+    shadow.append_child(L"color").append_attribute(L"val").set_value(L"0.0 0.0 0.5");
 
     VERIFY_XML(matNode);
   }
@@ -174,7 +187,7 @@ bool MTL_TESTS::test_162_shadow_matte_back1()
   HRMeshRef sph3 = HRMeshFromSimpleMesh(L"sph3", CreateSphere(1.0f, 64), matR.id);
   HRMeshRef boxBG = HRMeshFromSimpleMesh(L"boxBG", CreateCube(1.0f), matBG.id);
   HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane", CreatePlane(20.0f), matGray.id);
-  HRMeshRef planeRef2 = HRMeshFromSimpleMesh(L"my_plane2", CreatePlane(4.0f), matG.id);
+  HRMeshRef planeRef2 = HRMeshFromSimpleMesh(L"my_plane2", CreatePlane(20.0f), matG.id);
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Light
@@ -235,8 +248,8 @@ bool MTL_TESTS::test_162_shadow_matte_back1()
     camNode.append_child(L"farClipPlane").text().set(L"100.0");
 
     camNode.append_child(L"up").text().set(L"0 1 0");
-    camNode.append_child(L"position").text().set(L"0 1 11");
-    camNode.append_child(L"look_at").text().set(L"0 -0.5 0");
+    camNode.append_child(L"position").text().set(L"0 2.25 6"); 
+    camNode.append_child(L"look_at").text().set(L"0 0 0");
   }
   hrCameraClose(camRef);
 
@@ -274,11 +287,11 @@ bool MTL_TESTS::test_162_shadow_matte_back1()
   //mTranslate = translate4x4(float3(0.0f, -1.0f, 0.0f));
   //hrMeshInstance(scnRef, planeRef, mTranslate.L());
 
-  mTranslate = translate4x4(float3(0.0f, -3.75f, -6.0f)); 
+  mTranslate = translate4x4(float3(0.0f, -1.75f, 0.0f)); 
   hrMeshInstance(scnRef, planeRef2, mTranslate.L());
 
   mTranslate.identity();
-  mTranslate = translate4x4(float3(0.0f, -2.75f, -6.0f)); 
+  mTranslate = translate4x4(float3(0.0f, -0.75f, 0.0f)); 
   hrMeshInstance(scnRef, sph2, mTranslate.L());
 
   ///////////
@@ -286,11 +299,11 @@ bool MTL_TESTS::test_162_shadow_matte_back1()
   mTranslate.identity();
   mRes.identity();
 
-  mTranslate = translate4x4(float3(0, 10.0f, -5.0));
+  mTranslate = translate4x4(float3(0, 10.0f, -5.0)); 
   mRes = mul(mTranslate, mRes);
 
   hrLightInstance(scnRef, rectLight, mRes.L());
-  hrLightInstance(scnRef, sky, mRes.L());
+  hrLightInstance(scnRef, sky, mRes.L(), L"prob_mult = \"0.25\"");
 
   ///////////
 

@@ -131,7 +131,7 @@ int main(int argc, const char** argv)
     //std::cout << test78_material_remap_list1() << std::endl;
     //std::cout << test79_material_remap_list2() << std::endl;
     //std::cout << test77_save_gbuffer_layers() << std::endl;
-    test38_licence_plate();
+    //test38_licence_plate();
     //test82_proc_texture();
     //test83_proc_texture2(); 
     //test84_proc_texture2();
@@ -143,10 +143,8 @@ int main(int argc, const char** argv)
 
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
     //GEO_TESTS::test_005_instancing();
-    //MTL_TESTS::test_158_proc_dirt1();
-    //MTL_TESTS::test_159_proc_dirt2();
     //MTL_TESTS::test_160_proc_dirt3();
-    //MTL_TESTS::test_161_simple_displacement();
+    MTL_TESTS::test_162_shadow_matte_back1();
     //MTL_TESTS::test_154_proc_checker_precomp();
     //LGHT_TESTS::test_223_rotated_area_light();
     
