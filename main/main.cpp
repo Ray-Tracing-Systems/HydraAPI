@@ -143,10 +143,11 @@ int main(int argc, const char** argv)
 
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
     //GEO_TESTS::test_005_instancing();
-    //MTL_TESTS::test_158_proc_dirt1();
-    //MTL_TESTS::test_159_proc_dirt2();
     //MTL_TESTS::test_160_proc_dirt3();
-    MTL_TESTS::test_161_simple_displacement();
+
+    //MTL_TESTS::test_161_simple_displacement();
+
+    MTL_TESTS::test_162_shadow_matte_back1();
     //MTL_TESTS::test_154_proc_checker_precomp();
     //LGHT_TESTS::test_223_rotated_area_light();
     
