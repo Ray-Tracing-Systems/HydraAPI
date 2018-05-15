@@ -984,7 +984,7 @@ HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pC
       auto fixed_state = HR_UtilityDriverStart(newPath.c_str());
 
 //#ifdef IN_DEBUG
-
+    auto fixed_state2 = HR_PrepocessMeshes(newPath.c_str());
 //#endif
   }
 

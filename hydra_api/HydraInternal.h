@@ -346,6 +346,10 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver);
 void HR_DriverDraw(HRSceneInst& scn, IHRRenderDriver* a_pDriver);
 
 std::wstring HR_UtilityDriverStart(const wchar_t* state_path);
+std::wstring HR_PrepocessMeshes(const wchar_t* state_path);
+std::wstring SaveFixedStateXML(pugi::xml_document &doc, const std::wstring &oldPath, const std::wstring &suffix);
+
+HRMeshDriverInput HR_GetMeshDataPointers(size_t a_meshId);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

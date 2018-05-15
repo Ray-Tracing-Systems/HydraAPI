@@ -1351,7 +1351,7 @@ std::wstring HR_UtilityDriverStart(const wchar_t* state_path)
 
   if (!loadResult)
   {
-    HrError(L"MergeLibraryIntoLibrary, pugixml load: ", loadResult.description());
+    HrError(L"HR_UtilityDriverStart, pugixml load: ", loadResult.description());
     return new_state_path;
   }
 
