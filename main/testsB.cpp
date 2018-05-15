@@ -353,15 +353,12 @@ bool test38_licence_plate()
     p2.append_attribute(L"name") = L"texId2";
     p2.append_attribute(L"type") = L"sampler2D";
     p2.append_attribute(L"size") = 5;
-    //p2.append_attribute(L"val") = texBitmap2.id;
-    p2.append_attribute(L"val") = L"3 4 5 6 7";
-    //std::wstringstream strOut;
-    //for (int i = 0; i < 5; i++)
-    //{
-    //  strOut << L" " << texBitmap2[i].id;  
-    //}
-    //auto val = strOut.str();
-    //p2.append_attribute(L"val") = val.c_str();
+    //p2.append_attribute(L"val") = L"3 4 5 6 7";
+    std::wstringstream strOut;
+    for (int i = 0; i < 5; i++)
+      strOut << L" " << texBitmap2[i].id;  
+    auto val = strOut.str();
+    p2.append_attribute(L"val") = val.c_str();
 
 
     p3.append_attribute(L"id") = 2;

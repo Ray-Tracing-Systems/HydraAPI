@@ -4,7 +4,7 @@
 #include <vector>
 #include <string.h>
 #include <sstream>
-#include "LiteMath.h"
+#include "../hydra_api/LiteMath.h"
 
 #include "../hydra_api/HR_HDRImageTool.h"
 using HDRImage4f = HydraRender::HDRImage4f;

@@ -56,7 +56,7 @@ float4 userProc(const SurfaceInfo* sHit, sampler2D tex1, __global sampler2D tex2
    // texColorLayout = make_float4(1.0, 0.5, 0.5, 0);
   //}
   
-  float4 texColorFont = texture2D(2, texCoord, TEX_CLAMP_U | TEX_CLAMP_V);
+  float4 texColorFont = texture2D(tex2[0], texCoord, TEX_CLAMP_U | TEX_CLAMP_V);
 
   const float4 texColorOut = texColorFont; //texColorBase * texColorFont * texColorLayout;
   return texColorOut;
