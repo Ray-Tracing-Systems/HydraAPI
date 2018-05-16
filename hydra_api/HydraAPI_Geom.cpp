@@ -397,7 +397,7 @@ HAPI void hrMeshClose(HRMeshRef a_mesh)
 
   if (pMesh->openMode == HR_OPEN_READ_ONLY)
   {
-    pMesh->pImpl  = nullptr;
+    //pMesh->pImpl  = nullptr;
     pMesh->opened = false;
     return;
   }
