@@ -2010,6 +2010,7 @@ bool MTL_TESTS::test_161_simple_displacement()
 
   //HRTextureNodeRef texChecker = hrTexture2DCreateFromFile(L"data/textures/chess_white.bmp");
   //HRTextureNodeRef tex = hrTexture2DCreateFromFile(L"data/textures/ornament.jpg");
+  HRTextureNodeRef tex = hrTexture2DCreateFromFile(L"data/textures/height_map1.png");
 
   hrMaterialOpen(mat1, HR_WRITE_DISCARD);
   {
@@ -2022,7 +2023,20 @@ bool MTL_TESTS::test_161_simple_displacement()
     auto heightNode   = displacement.append_child(L"height_map");
 
     displacement.append_attribute(L"type").set_value(L"true_displacement");
-    heightNode.append_attribute(L"amount").set_value(-1.5f);
+    heightNode.append_attribute(L"amount").set_value(3.0f);
+
+    auto texNode = hrTextureBind(tex, heightNode);
+
+    texNode.append_attribute(L"matrix");
+    float samplerMatrix[16] = { 1, 0, 0, 0,
+                                0, 1, 0, 0,
+                                0, 0, 1, 0,
+                                0, 0, 0, 1 };
+
+    texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
+    texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
+    texNode.append_attribute(L"input_gamma").set_value(1.0f);
+    texNode.append_attribute(L"input_alpha").set_value(L"rgb");
 
   }
   hrMaterialClose(mat1);
@@ -2057,7 +2071,7 @@ bool MTL_TESTS::test_161_simple_displacement()
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Meshes
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  HRMeshRef tess = CreateTriStrip(50, 50, 100);//hrMeshCreateFromFileDL(L"data/meshes/tesselated_plane.vsgf");
+  HRMeshRef tess = CreateTriStrip(2048, 2048, 100);//hrMeshCreateFromFileDL(L"data/meshes/tesselated_plane.vsgf");
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Light
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2092,7 +2106,7 @@ bool MTL_TESTS::test_161_simple_displacement()
 
     auto intensityNode = lightNode.append_child(L"intensity");
     intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"10.0");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"6.0");
 
     auto sizeNode = lightNode.append_child(L"size").append_attribute(L"radius").set_value(5.5f);
   }
@@ -2161,7 +2175,7 @@ bool MTL_TESTS::test_161_simple_displacement()
 
   //hrLightInstance(scnRef, sky, mRes.L());
 
-  mTranslate = translate4x4(float3(0, 30.0f, 0.0));
+  mTranslate = translate4x4(float3(0, 40.0f, 0.0));
   hrLightInstance(scnRef, sphereLight, mTranslate.L());
 
   ///////////

@@ -120,7 +120,7 @@ protected:
   IHydraNetPluginAPI*                  m_pConnection;
   IHRSharedAccumImage*                 m_pSharedImage;
 
-  std::vector<HydaRenderDevice>           m_devList;
+  std::vector<HydraRenderDevice>           m_devList;
   std::vector<HRRenderDeviceInfoListElem> m_devList2;
 
   float m_progressVal;
@@ -216,7 +216,7 @@ void RD_HydraConnection::InitBothDeviceList()
     m_clewInitRes = clewInit(L"opencl.dll");
     if (m_clewInitRes == -1)
     {
-      // HydaRenderDevice cpuDev; #TODO: add CPU "-1" dev when it will work
+      // HydraRenderDevice cpuDev; #TODO: add CPU "-1" dev when it will work
       m_devList.resize(0);
       m_devList2.resize(0);
       return;
@@ -252,7 +252,7 @@ void RD_HydraConnection::InitBothDeviceList()
   m_devList2.resize(m_devList.size()); 
   for (size_t i = 0; i < m_devList2.size(); i++)
   {
-    const HydaRenderDevice&       devInfo = m_devList[i];
+    const HydraRenderDevice&       devInfo = m_devList[i];
     HRRenderDeviceInfoListElem* pListElem = &m_devList2[i];
   
     pListElem->id        = (int32_t)(i);

@@ -16,7 +16,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-struct HydaRenderDevice
+struct HydraRenderDevice
 {
   std::wstring name;
   std::wstring driverName;
@@ -46,7 +46,7 @@ struct IHydraNetPluginAPI
 
   virtual bool hasConnection() const = 0;
 
-  virtual void runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydaRenderDevice>& a_devList) = 0;
+  virtual void runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydraRenderDevice>& a_devList) = 0;
   virtual void stopAllRenderProcesses() = 0;
 };
 
@@ -59,8 +59,8 @@ struct SharedBufferDataInfo
 };
 
 
-bool isTargetDevIdACPU(int a_devId, const std::vector<HydaRenderDevice>& a_devList);
-bool isTargetDevIdAHydraCPU(int a_devId, const std::vector<HydaRenderDevice>& a_devList);
+bool isTargetDevIdACPU(int a_devId, const std::vector<HydraRenderDevice>& a_devList);
+bool isTargetDevIdAHydraCPU(int a_devId, const std::vector<HydraRenderDevice>& a_devList);
 
 IHydraNetPluginAPI* CreateHydraServerConnection(int renderWidth, int renderHeight, bool inMatEditor, const std::vector<int>& a_devList);
 

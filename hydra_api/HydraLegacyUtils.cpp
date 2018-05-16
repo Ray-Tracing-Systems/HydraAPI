@@ -90,7 +90,7 @@ const int GUI_FILE_SIZE = 32768;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-bool isTargetDevIdACPU(int a_devId, const std::vector<HydaRenderDevice>& a_devList)
+bool isTargetDevIdACPU(int a_devId, const std::vector<HydraRenderDevice>& a_devList)
 {
   bool res = false;
 
@@ -107,7 +107,7 @@ bool isTargetDevIdACPU(int a_devId, const std::vector<HydaRenderDevice>& a_devLi
 }
 
 
-bool isTargetDevIdAHydraCPU(int a_devId, const std::vector<HydaRenderDevice>& a_devList)
+bool isTargetDevIdAHydraCPU(int a_devId, const std::vector<HydraRenderDevice>& a_devList)
 {
   bool res = false;
 

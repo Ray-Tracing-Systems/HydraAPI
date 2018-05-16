@@ -20,6 +20,7 @@ using namespace HydraLiteMath;
 #include "HydraObjectManager.h"
 #include "HydraVSGFExport.h"
 #include "HydraXMLHelpers.h"
+#include "HydraTextureUtils.h"
 
 extern std::wstring      g_lastError;
 extern std::wstring      g_lastErrorCallerPlace;
@@ -1133,7 +1134,7 @@ HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, const int indexNum)
 }
 
 void doRefinement();
-void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::vector<float3> &triangleList);
+void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::vector<uint3> &triangleList);
 
 
 bool meshHasDisplacementMat(HRMeshRef a_mesh)
@@ -1148,6 +1149,7 @@ bool meshHasDisplacementMat(HRMeshRef a_mesh)
   HRMesh::InputTriMesh &mesh = pMesh->m_input;
 
   std::set<int32_t> uniqueMatIndices;
+#pragma omp parallel for
   for(auto& mI : mesh.matIndices)
   {
     auto ins = uniqueMatIndices.insert(mI);
@@ -1188,7 +1190,7 @@ void hrMeshDisplace(HRMeshRef a_mesh)
 
   std::set<int32_t> uniqueMatIndices;
   std::unordered_map<int32_t, pugi::xml_node> matsWithDisplacement;
-  std::unordered_map<int, std::pair<pugi::xml_node, std::vector<float3> > > dMatToTriangles;
+  std::unordered_map<int, std::pair<pugi::xml_node, std::vector<uint3> > > dMatToTriangles;
   for(unsigned int i = 0; i < mesh.matIndices.size(); ++i)
   {
     int mI = mesh.matIndices.at(i);
@@ -1212,15 +1214,15 @@ void hrMeshDisplace(HRMeshRef a_mesh)
     auto mat = matsWithDisplacement.find(mI);
     if(mat != matsWithDisplacement.end())
     {
-      float3 triangle = float3(mesh.triIndices.at(i * 3 + 0),
-                               mesh.triIndices.at(i * 3 + 1),
-                               mesh.triIndices.at(i * 3 + 2));
+      uint3 triangle = uint3(mesh.triIndices.at(i * 3 + 0),
+                             mesh.triIndices.at(i * 3 + 1),
+                             mesh.triIndices.at(i * 3 + 2));
 
       if (dMatToTriangles.find(mI) == dMatToTriangles.end())
       {
-        std::vector<float3> tmp;
+        std::vector<uint3> tmp;
         tmp.push_back(triangle);
-        dMatToTriangles[mI] = std::pair<pugi::xml_node, std::vector<float3> >(mat->second, tmp);
+        dMatToTriangles[mI] = std::pair<pugi::xml_node, std::vector<uint3> >(mat->second, tmp);
       } else
       {
         dMatToTriangles[mI].second.push_back(triangle);
@@ -1228,11 +1230,12 @@ void hrMeshDisplace(HRMeshRef a_mesh)
     }
   }
 
-  for(auto& dTris : dMatToTriangles)
+  /*for(auto& dTris : dMatToTriangles)
   {
     std::cout << "id : " << dTris.first << " triangles : " << dTris.second.second.size() <<std::endl;
-  }
+  }*/
 
+#pragma omp parallel for
   for(auto& dTris : dMatToTriangles)
   {
     doDisplacement(pMesh, dTris.second.first, dTris.second.second);
@@ -1240,7 +1243,7 @@ void hrMeshDisplace(HRMeshRef a_mesh)
 }
 
 
-void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::vector<float3> &triangleList)
+void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::vector<uint3> &triangleList)
 {
   HRMesh::InputTriMesh &mesh = pMesh->m_input;
 
@@ -1250,21 +1253,65 @@ void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::v
   if(heightNode != nullptr)
     mult = heightNode.attribute(L"amount").as_float();
 
+  auto texNode = heightNode.child(L"texture");
+  pugi::xml_node texLibNode;
+  if(texNode != nullptr)
+  {
+    auto id = texNode.attribute(L"id").as_string();
+    texLibNode = g_objManager.scnData.m_texturesLib.find_child_by_attribute(L"id", id);
+  }
 
+  int w = 0;
+  int h = 0;
+  bool sampleTexture = false;
+  std::vector<int> imageData;
+  auto location = texLibNode.attribute(L"loc").as_string();
+  if(location != L"")
+  {
+    int bpp = 0;
+
+    HRTextureNodeRef texRef;
+    texRef.id = texNode.attribute(L"id").as_int();
+
+    hrTexture2DGetSize(texRef, &w, &h, &bpp);
+    imageData.resize(w * h);
+
+    hrTextureNodeOpen(texRef, HR_OPEN_READ_ONLY);
+    {
+      hrTexture2DGetDataLDR(texRef, &w, &h, &imageData[0]);
+    }
+    hrTextureNodeClose(texRef);
+
+    sampleTexture = true;
+  }
+    //
+
+#pragma omp parallel for
   for(auto& tri : triangleList)
   {
-    mesh.verticesPos.at(tri.x * 4 + 0) += mesh.verticesNorm.at(tri.x * 4 + 0) * mult;
-    mesh.verticesPos.at(tri.x * 4 + 1) += mesh.verticesNorm.at(tri.x * 4 + 1) * mult;
-    mesh.verticesPos.at(tri.x * 4 + 2) += mesh.verticesNorm.at(tri.x * 4 + 2) * mult;
+    float3 texHeight(1.0f, 1.0f, 1.0f);
+    float2 uv1(mesh.verticesTexCoord.at(tri.x * 2 + 0), mesh.verticesTexCoord.at(tri.x * 2 + 1));
+    float2 uv2(mesh.verticesTexCoord.at(tri.y * 2 + 0), mesh.verticesTexCoord.at(tri.y * 2 + 1));
+    float2 uv3(mesh.verticesTexCoord.at(tri.z * 2 + 0), mesh.verticesTexCoord.at(tri.z * 2 + 1));
 
-    mesh.verticesPos.at(tri.y * 4 + 0) += mesh.verticesNorm.at(tri.y * 4 + 0) * mult;
-    mesh.verticesPos.at(tri.y * 4 + 1) += mesh.verticesNorm.at(tri.y * 4 + 1) * mult;
-    mesh.verticesPos.at(tri.y * 4 + 2) += mesh.verticesNorm.at(tri.y * 4 + 2) * mult;
+    if(sampleTexture)
+    {
+      texHeight.x = sampleGrayscaleTextureLDR(imageData, w, h, uv1);
+      texHeight.y = sampleGrayscaleTextureLDR(imageData, w, h, uv2);
+      texHeight.z = sampleGrayscaleTextureLDR(imageData, w, h, uv3);
+    }
 
-    mesh.verticesPos.at(tri.z * 4 + 0) += mesh.verticesNorm.at(tri.z * 4 + 0) * mult;
-    mesh.verticesPos.at(tri.z * 4 + 1) += mesh.verticesNorm.at(tri.z * 4 + 1) * mult;
-    mesh.verticesPos.at(tri.z * 4 + 2) += mesh.verticesNorm.at(tri.z * 4 + 2) * mult;
+    mesh.verticesPos.at(tri.x * 4 + 0) += mesh.verticesNorm.at(tri.x * 4 + 0) * mult * texHeight.x;
+    mesh.verticesPos.at(tri.x * 4 + 1) += mesh.verticesNorm.at(tri.x * 4 + 1) * mult * texHeight.x;
+    mesh.verticesPos.at(tri.x * 4 + 2) += mesh.verticesNorm.at(tri.x * 4 + 2) * mult * texHeight.x;
 
+    mesh.verticesPos.at(tri.y * 4 + 0) += mesh.verticesNorm.at(tri.y * 4 + 0) * mult * texHeight.y;
+    mesh.verticesPos.at(tri.y * 4 + 1) += mesh.verticesNorm.at(tri.y * 4 + 1) * mult * texHeight.y;
+    mesh.verticesPos.at(tri.y * 4 + 2) += mesh.verticesNorm.at(tri.y * 4 + 2) * mult * texHeight.y;
+
+    mesh.verticesPos.at(tri.z * 4 + 0) += mesh.verticesNorm.at(tri.z * 4 + 0) * mult * texHeight.z;
+    mesh.verticesPos.at(tri.z * 4 + 1) += mesh.verticesNorm.at(tri.z * 4 + 1) * mult * texHeight.z;
+    mesh.verticesPos.at(tri.z * 4 + 2) += mesh.verticesNorm.at(tri.z * 4 + 2) * mult * texHeight.z;
 
   }
 
@@ -1366,5 +1413,5 @@ std::wstring HR_PrepocessMeshes(const wchar_t* state_path)
   }
 
 
-  return SaveFixedStateXML(stateToProcess, state_path, L"_fixed_meshes");
+  return SaveFixedStateXML(stateToProcess, state_path, L"_meshes");
 }
