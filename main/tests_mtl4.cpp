@@ -2221,9 +2221,9 @@ bool MTL_TESTS::test_164_simple_displacement_proctex()
 {
   initGLIfNeeded();
 
-  hrErrorCallerPlace(L"test_161");
+  hrErrorCallerPlace(L"test_164");
 
-  hrSceneLibraryOpen(L"tests_f/test_161", HR_WRITE_DISCARD);
+  hrSceneLibraryOpen(L"tests_f/test_164", HR_WRITE_DISCARD);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Materials
