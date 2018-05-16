@@ -94,7 +94,7 @@ int main(int argc, const char** argv)
 	  //run_all_geo_tests();
     //run_all_lgt_tests();
     //run_all_mtl_tests(); 
-    //run_all_api_tests();
+    run_all_api_tests();
     //run_all_ipp_tests();
   
     //test24_many_textures_big_data();
@@ -148,7 +148,7 @@ int main(int argc, const char** argv)
     //GEO_TESTS::test_003_compute_normals();
 
 //    MTL_TESTS::test_161_simple_displacement();
-    MTL_TESTS::test_164_simple_displacement_proctex();
+    //MTL_TESTS::test_164_simple_displacement_proctex();
 
     //MTL_TESTS::test_162_shadow_matte_back1();
     //MTL_TESTS::test_154_proc_checker_precomp();
