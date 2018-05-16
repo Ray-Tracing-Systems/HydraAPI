@@ -550,7 +550,7 @@ namespace TEST_UTILS
     ///////////////////////
     for(int i = 0; i < indices_vec.size() / 3; ++i)
     {
-      mind_vec.push_back(i % 5 == 0 ? 0 : 1);
+      mind_vec.push_back(0/*i % 5 == 0 ? 0 : 1*/);
     }
 
 

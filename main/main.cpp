@@ -145,10 +145,12 @@ int main(int argc, const char** argv)
     //GEO_TESTS::test_005_instancing();
     //MTL_TESTS::test_160_proc_dirt3();
 
-    //MTL_TESTS::test_161_simple_displacement();
+    //GEO_TESTS::test_003_compute_normals();
+
+    MTL_TESTS::test_161_simple_displacement();
 
     //MTL_TESTS::test_162_shadow_matte_back1();
-    MTL_TESTS::test_154_proc_checker_precomp();
+    //MTL_TESTS::test_154_proc_checker_precomp();
     //LGHT_TESTS::test_223_rotated_area_light();
     
     //PP_TESTS::test305_fbi_from_render();    
@@ -172,6 +174,7 @@ int main(int argc, const char** argv)
     //test_gl32_002();
     //window_main_free_look(L"tests/test_gl32_002", L"opengl32Deferred");
     //window_main_free_look(L"tests/test_42", L"opengl1Debug");
+    //window_main_free_look(L"tests_f/test_161", L"opengl1Debug");
 
     //_hrDebugPrintVSGF(L"D:/temp/TestRenderFromPhil/data/chunk_00022.vsgf",   L"z_mesh_phil.txt");
     //_hrDebugPrintVSGF(L"D:/temp/TestRenderFromSergey/data/chunk_00022.vsgf", L"z_mesh_serg.txt");

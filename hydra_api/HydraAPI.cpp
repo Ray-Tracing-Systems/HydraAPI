@@ -980,7 +980,7 @@ HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pC
     if (settings.child(L"scenePrepass") != nullptr)
       doPrepass = settings.child(L"scenePrepass").text().as_bool();
 
-    std::wstring fixed_state;
+    std::wstring fixed_state = newPath;
     if (g_objManager.m_pDriver->Info().supportUtilityPrepass && doPrepass)
       fixed_state = HR_UtilityDriverStart(newPath.c_str());
 

@@ -14,7 +14,7 @@ struct HydraProcessLauncher : IHydraNetPluginAPI
 
   bool hasConnection() const override;
 
-  void runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydaRenderDevice>& a_devList) override;
+  void runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydraRenderDevice>& a_devList) override;
   void stopAllRenderProcesses() override;
 
 protected:
@@ -103,7 +103,7 @@ void CreateProcessUnix(const char* exePath, const char* allArgs, const bool a_de
   std::string command = std::string(exePath) + " " + std::string(allArgs) + " &";
   system(command.c_str());
 }
-void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydaRenderDevice>& a_devList)
+void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydraRenderDevice>& a_devList)
 {
   const char* imageFileName = m_imageFileName.c_str();
 

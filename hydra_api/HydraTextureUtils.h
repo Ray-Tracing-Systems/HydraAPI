@@ -10,8 +10,8 @@
 
 using namespace HydraLiteMath;
 
-char   sampleTextureLDR(pugi::xml_node textureNode, float2 uv);
-float4 sampleTextureHDR(pugi::xml_node textureNode, float2 uv);
+float sampleGrayscaleTextureLDR(const std::vector<int> &imageData, int w, int h, float2 uv);
+float  sampleTextureHDR(pugi::xml_node textureNode, float2 uv);
 
 
 #endif //HYDRAAPI_EX_HYDRATEXTUREUTILS_H
