@@ -147,7 +147,8 @@ int main(int argc, const char** argv)
 
     //GEO_TESTS::test_003_compute_normals();
 
-    MTL_TESTS::test_161_simple_displacement();
+//    MTL_TESTS::test_161_simple_displacement();
+    MTL_TESTS::test_164_simple_displacement_proctex();
 
     //MTL_TESTS::test_162_shadow_matte_back1();
     //MTL_TESTS::test_154_proc_checker_precomp();
