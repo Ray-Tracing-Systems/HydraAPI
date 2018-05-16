@@ -45,7 +45,7 @@ struct HRDriverInfo
   HRDriverInfo() : supportMultiMaterialInstance(false), supportHDRFrameBuffer(false), supportHDRTextures(false),
                    supportImageLoadFromInternalFormat(false), supportImageLoadFromExternalFormat(false),
                    supportMeshLoadFromInternalFormat(false), supportLighting(false), createsLightGeometryItself(false),
-                   memTotal(0), supportGetFrameBufferLine(false), supportUtilityPrepass(false) {}
+                   memTotal(0), supportGetFrameBufferLine(false), supportUtilityPrepass(false), supportDisplacement(false) {}
 
 
   bool supportMultiMaterialInstance;
@@ -58,6 +58,7 @@ struct HRDriverInfo
   bool createsLightGeometryItself;
   bool supportGetFrameBufferLine;
   bool supportUtilityPrepass;
+  bool supportDisplacement;
   int64_t memTotal;
 };
 

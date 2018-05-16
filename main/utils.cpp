@@ -114,6 +114,7 @@ namespace TEST_UTILS
 
   static inline float clamp(float u, float a, float b) { return fminf(fmaxf(a, u), b); }
 
+
   void procTexCheckerLDR(unsigned char* a_buffer, int w, int h, void* a_repeat)
   {
     if (a_repeat == nullptr)
