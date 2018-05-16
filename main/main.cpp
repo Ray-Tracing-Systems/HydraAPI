@@ -145,10 +145,10 @@ int main(int argc, const char** argv)
     //GEO_TESTS::test_005_instancing();
     //MTL_TESTS::test_160_proc_dirt3();
 
-    MTL_TESTS::test_161_simple_displacement();
+    //MTL_TESTS::test_161_simple_displacement();
 
     //MTL_TESTS::test_162_shadow_matte_back1();
-    //MTL_TESTS::test_154_proc_checker_precomp();
+    MTL_TESTS::test_154_proc_checker_precomp();
     //LGHT_TESTS::test_223_rotated_area_light();
     
     //PP_TESTS::test305_fbi_from_render();    

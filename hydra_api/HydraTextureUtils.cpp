@@ -3,28 +3,40 @@
 //
 
 #include "HydraTextureUtils.h"
+#include "HydraAPI.h"
 
-char   sampleTextureLDR(pugi::xml_node textureNode, float2 uv)
+char sampleTextureLDR(pugi::xml_node textureNode, float2 uv)
 {
- /* auto texId = textureNode.attribute(L"id").as_int();
+  auto texId = textureNode.attribute(L"id").as_int();
   auto location = textureNode.attribute(L"loc").as_string();
   auto w = textureNode.attribute(L"width").as_int();
   auto h = textureNode.attribute(L"height").as_int();
   auto bpp = textureNode.attribute(L"offset").as_int() / 2;
 
-  auto *imageData = new unsigned char[w * h * bpp];
+  if(location != L"")
+  {
+    auto *imageData = new int[w * h];
 
-  if()
+    HRTextureNodeRef texRef;
+    texRef.id = texId;
 
-  texture.ldrCallback(imageData, w, h, texture.customData);
+    hrTextureNodeOpen(texRef, HR_OPEN_READ_ONLY);
+    {
+      hrTexture2DGetDataLDR(texRef, &w, &h, imageData);
+    }
+    hrTextureNodeClose(texRef);
 
-  auto pTextureImpl = g_objManager.m_pFactory->CreateTexture2DFromMemory(&texture, w, h, bpp, imageData);
-  texture.pImpl = pTextureImpl;
+    int val = imageData[int(uv.y * w + uv.x)];
+    unsigned char ch1 = (val & 0x00FF0000) >> 16;
+    unsigned char ch2 = (val & 0x0000FF00) >> 8;
+    unsigned char ch3 = (val & 0x000000FF);
 
-  delete[] imageData;
+    float gray = 0.2126f * (ch3 / 255.0f) + 0.7152f * (ch2 / 255.0f) + 0.0722f * (ch1 / 255.0f);
 
-  isProc = true;*/
 
+    delete[] imageData;
+
+  }
 }
 
 float4 sampleTextureHDR(pugi::xml_node textureNode, float2 uv)

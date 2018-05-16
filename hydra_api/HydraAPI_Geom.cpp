@@ -1302,7 +1302,7 @@ void InsertFixedMeshesInfoIntoXML(pugi::xml_document &stateToProcess, std::unord
 
 std::wstring HR_PrepocessMeshes(const wchar_t* state_path)
 {
-  std::wstring new_state_path(L"");
+  std::wstring new_state_path;
 
   if (state_path == std::wstring(L"") || state_path == nullptr)
   {
