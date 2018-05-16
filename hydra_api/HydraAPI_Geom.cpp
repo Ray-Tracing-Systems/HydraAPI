@@ -1149,9 +1149,9 @@ bool meshHasDisplacementMat(HRMeshRef a_mesh)
   HRMesh::InputTriMesh &mesh = pMesh->m_input;
 
   std::set<int32_t> uniqueMatIndices;
-#pragma omp parallel for
-  for(auto& mI : mesh.matIndices)
+  for(int i=0;i<mesh.matIndices.size();i++)
   {
+    auto mI  = mesh.matIndices[i];
     auto ins = uniqueMatIndices.insert(mI);
     if (ins.second)
     {
@@ -1161,12 +1161,9 @@ bool meshHasDisplacementMat(HRMeshRef a_mesh)
       if (mat != nullptr)
       {
         auto d_node = mat->xml_node_next().child(L"displacement");
-
-        if (d_node != nullptr &&
-            std::wstring(d_node.attribute(L"type").as_string()) == std::wstring(L"true_displacement"))
-        {
+        
+        if (d_node.attribute(L"type").as_string() == std::wstring(L"true_displacement"))
           return true;
-        }
       }
     }
   }
@@ -1235,7 +1232,7 @@ void hrMeshDisplace(HRMeshRef a_mesh)
     std::cout << "id : " << dTris.first << " triangles : " << dTris.second.second.size() <<std::endl;
   }*/
 
-#pragma omp parallel for
+  //#pragma omp parallel for
   for(auto& dTris : dMatToTriangles)
   {
     doDisplacement(pMesh, dTris.second.first, dTris.second.second);
@@ -1286,9 +1283,10 @@ void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::v
   }
     //
 
-#pragma omp parallel for
-  for(auto& tri : triangleList)
+  #pragma omp parallel for
+  for(int i=0;i<triangleList.size();i++)
   {
+    const auto& tri = triangleList[i];
     float3 texHeight(1.0f, 1.0f, 1.0f);
     float2 uv1(mesh.verticesTexCoord.at(tri.x * 2 + 0), mesh.verticesTexCoord.at(tri.x * 2 + 1));
     float2 uv2(mesh.verticesTexCoord.at(tri.y * 2 + 0), mesh.verticesTexCoord.at(tri.y * 2 + 1));

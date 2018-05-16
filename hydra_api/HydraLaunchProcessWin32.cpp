@@ -17,7 +17,7 @@ struct PluginShmemPipe : public IHydraNetPluginAPI
   virtual ~PluginShmemPipe();
   bool hasConnection() const;
 
-  void runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydaRenderDevice>& a_devList);
+  void runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydraRenderDevice>& a_devList);
   void stopAllRenderProcesses();
 
   HANDLE getMtlRenderHProcess() const { return g_materialProcessInfo.hProcess; }
@@ -152,7 +152,7 @@ void PluginShmemPipe::CreateConnectionMainType(const char* imageFileName, const 
 
 
 
-void PluginShmemPipe::runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydaRenderDevice>& a_devList)
+void PluginShmemPipe::runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydraRenderDevice>& a_devList)
 {
   std::ostream* outp = m_pLog;
 
