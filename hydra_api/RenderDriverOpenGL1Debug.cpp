@@ -315,7 +315,7 @@ bool RD_OGL1_Debug::UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode, cons
 }
 
 
-void RD_OGL1_Debug::InstanceMeshes(int32_t a_mesh_id, const float* a_matrices, int32_t a_instNum, const int* a_lightInstId, const int* a_remapId)
+void RD_OGL1_Debug::InstanceMeshes(int32_t a_mesh_id, const float* a_matrices, int32_t a_instNum, const int* a_lightInstId, const int* a_remapId, const int* a_realInstId)
 {
   glDepthFunc(GL_LEQUAL); // for drawing wire frame correctly
 

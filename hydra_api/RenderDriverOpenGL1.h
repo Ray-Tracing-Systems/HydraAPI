@@ -129,7 +129,7 @@ struct RD_OGL1_Debug : public RD_OGL1_Plain
 
   /////////////////////////////////////////////////////////////////////////////////////////////
 
-  void     InstanceMeshes(int32_t a_mesh_id, const float* a_matrices, int32_t a_instNum, const int* a_lightInstId, const int* a_remapId);
+  void     InstanceMeshes(int32_t a_mesh_id, const float* a_matrices, int32_t a_instNum, const int* a_lightInstId, const int* a_remapId, const int* a_realInstId) override;
 
   void     EndScene();
 

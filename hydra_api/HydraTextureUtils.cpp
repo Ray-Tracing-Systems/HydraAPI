@@ -31,5 +31,5 @@ float sampleGrayscaleTextureLDR(const std::vector<int> &imageData, int w, int h,
 
 float sampleTextureHDR(pugi::xml_node textureNode, float2 uv)
 {
-
+  return 0.0f;
 }
