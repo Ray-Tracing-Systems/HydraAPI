@@ -278,13 +278,26 @@ bool test38_licence_plate()
 
   // textures
   //
-  int stateLicPlate = -1;
-  enum { RusLicPlate2digitReg, RusLicPlate3digitReg };
+  srand(time(NULL));
+  int stateLicPlate = rand() % 2;
+  enum { RusLicPlate2digitReg, RusLicPlate3digitReg, GerLicPlate };
+
+  const int sizeTexBitmap2 = 9;
 
   HRTextureNodeRef texProc; 
   HRTextureNodeRef texBitmap1Base;  
-  HRTextureNodeRef texBitmap2[9];
-  HRTextureNodeRef texBitmapFont[22] = {
+  HRTextureNodeRef texBitmap2[sizeTexBitmap2];
+  HRTextureNodeRef texBitmapRusFont[22] = {
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_0.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_1.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_2.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_3.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_4.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_5.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_6.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_7.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_8.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_9.png"),
     hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_A.png"),
     hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_B.png"),
     hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_C.png"),
@@ -296,39 +309,104 @@ bool test38_licence_plate()
     hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_P.png"),
     hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_T.png"),
     hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_X.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_Y.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_0.png"), 
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_1.png"), 
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_2.png"), 
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_3.png"), 
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_4.png"), 
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_5.png"), 
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_6.png"), 
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_7.png"), 
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_8.png"), 
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_9.png") };
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_Y.png") };
 
-  srand(time(NULL));
+  HRTextureNodeRef texBitmapGerFont[36] = {
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Digits/GerFontLicensePlate_0.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Digits/GerFontLicensePlate_1.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Digits/GerFontLicensePlate_2.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Digits/GerFontLicensePlate_3.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Digits/GerFontLicensePlate_4.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Digits/GerFontLicensePlate_5.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Digits/GerFontLicensePlate_6.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Digits/GerFontLicensePlate_7.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Digits/GerFontLicensePlate_8.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Digits/GerFontLicensePlate_9.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_A.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_B.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_C.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_D.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_E.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_F.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_G.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_H.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_I.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_J.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_K.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_L.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_M.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_N.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_O.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_P.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_Q.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_R.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_S.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_T.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_U.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_V.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_W.png"),    
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_X.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_Y.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_Z.png") };
 
-  if ((rand()%2) != 1)
+  switch (stateLicPlate)
   {
-    stateLicPlate = RusLicPlate2digitReg;
+  case(RusLicPlate2digitReg):
+  {
     texProc = hrTextureCreateAdvanced(L"proc", L"RusLicPlate2digitReg");
     texBitmap1Base = hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/RusLicensePlate2digitRegionBase.png");
+    break;
   }
-  else
+  case(RusLicPlate3digitReg):
   {
-    stateLicPlate = RusLicPlate3digitReg;
     texProc = hrTextureCreateAdvanced(L"proc", L"RusLicPlate3digitReg");
     texBitmap1Base = hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/RusLicensePlate3digitRegionBase.png");
+    break;
+  }
+  case(GerLicPlate):
+  {
+    texProc = hrTextureCreateAdvanced(L"proc", L"GerLicPlate");
+    texBitmap1Base = hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/GerLicensePlateTemplate.png");
+    break;
+  }
+  default:
+    break;
   }
 
 
-  for (int i = 0; i < 3; i++)  // Letters
-    texBitmap2[i] = texBitmapFont[rand() % 12];
-  
-  for (int i = 3; i < 9; i++) // Digits
-    texBitmap2[i] = texBitmapFont[(rand() % 10) + 12];
+  switch (stateLicPlate)
+  {
+  case(RusLicPlate2digitReg):
+  {
+    for (int i = 0; i < 5; i++) // Digits
+      texBitmap2[i] = texBitmapRusFont[rand() % 10];
+
+    for (int i = 5; i < sizeTexBitmap2; i++)  // Letters
+      texBitmap2[i] = texBitmapRusFont[(rand() % 12) + 10];
+    break;
+  }
+  case(RusLicPlate3digitReg):
+  {
+    for (int i = 0; i < 6; i++) // Digits
+      texBitmap2[i] = texBitmapRusFont[rand() % 10];
+
+    for (int i = 6; i < sizeTexBitmap2; i++)  // Letters
+      texBitmap2[i] = texBitmapRusFont[(rand() % 12) + 10];
+    break;
+  }
+  case(GerLicPlate):
+  {
+    for (int i = 0; i < 6; i++) // Digits
+      texBitmap2[i] = texBitmapGerFont[rand() % 10];
+
+    for (int i = 6; i < sizeTexBitmap2; i++)  // Letters
+      texBitmap2[i] = texBitmapGerFont[(rand() % 12) + 10];
+    break;
+  }
+  default:
+    break;
+  }
+
     
 
 
@@ -337,10 +415,28 @@ bool test38_licence_plate()
     xml_node texNode = hrTextureParamNode(texProc);
 
     xml_node code_node = texNode.append_child(L"code");
-    if (stateLicPlate == RusLicPlate2digitReg)
+
+
+    switch (stateLicPlate)
+    {
+    case(RusLicPlate2digitReg):
+    {
       code_node.append_attribute(L"file") = L"data/code/RusLicPlate2digitReg.c";
-    else
+      break;
+    }
+    case(RusLicPlate3digitReg):
+    {
       code_node.append_attribute(L"file") = L"data/code/RusLicPlate3digitReg.c";
+      break;
+    }
+    case(GerLicPlate):
+    {
+      code_node.append_attribute(L"file") = L"data/code/GerLicPlate.c";
+      break;
+    }
+    default:
+      break;
+    }      
     
     code_node.append_attribute(L"main") = L"userProc";
   }
@@ -399,10 +495,10 @@ bool test38_licence_plate()
     p2.append_attribute(L"id") = 1;
     p2.append_attribute(L"name") = L"texId2";
     p2.append_attribute(L"type") = L"sampler2D";
-    p2.append_attribute(L"size") = 9;
+    p2.append_attribute(L"size") = sizeTexBitmap2;
 
     std::wstringstream strOut;
-    for (int i = 0; i < 9; i++)
+    for (int i = 0; i < sizeTexBitmap2; i++)
       strOut << L" " << texBitmap2[i].id;  
     auto val = strOut.str();
     p2.append_attribute(L"val") = val.c_str();

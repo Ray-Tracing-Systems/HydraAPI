@@ -16,7 +16,7 @@ float4 userProc(const SurfaceInfo* sHit, sampler2D tex1, __global sampler2D tex2
   {
     offsetX = -0.062f;
     offsetY = -0.17f;
-    texColorFont = texture2D(tex2[0], make_float2((texCoord.x + offsetX) * 10.52f, (texCoord.y + offsetY) * 2.0f), TEX_CLAMP_U | TEX_CLAMP_V);
+    texColorFont = texture2D(tex2[6], make_float2((texCoord.x + offsetX) * 10.52f, (texCoord.y + offsetY) * 2.0f), TEX_CLAMP_U | TEX_CLAMP_V);
     
     // texColorLayout = make_float4(1.0, 0.5, 0.5, 0);
   }
@@ -24,7 +24,7 @@ float4 userProc(const SurfaceInfo* sHit, sampler2D tex1, __global sampler2D tex2
   {
     offsetX = -0.17f;
     offsetY = -0.17f;
-    texColorFont = texture2D(tex2[3], make_float2((texCoord.x + offsetX) * 11.36f, (texCoord.y + offsetY) * 1.5625f), TEX_CLAMP_U | TEX_CLAMP_V);
+    texColorFont = texture2D(tex2[0], make_float2((texCoord.x + offsetX) * 11.36f, (texCoord.y + offsetY) * 1.5625f), TEX_CLAMP_U | TEX_CLAMP_V);
 
     // texColorLayout = make_float4(1.0, 0.5, 0.5, 0);
   }
@@ -32,7 +32,7 @@ float4 userProc(const SurfaceInfo* sHit, sampler2D tex1, __global sampler2D tex2
   {
     offsetX = -0.279f;
     offsetY = -0.17f;
-    texColorFont = texture2D(tex2[4], make_float2((texCoord.x + offsetX) * 11.36f, (texCoord.y + offsetY) * 1.5625f), TEX_CLAMP_U | TEX_CLAMP_V);
+    texColorFont = texture2D(tex2[1], make_float2((texCoord.x + offsetX) * 11.36f, (texCoord.y + offsetY) * 1.5625f), TEX_CLAMP_U | TEX_CLAMP_V);
 
     // texColorLayout = make_float4(1.0, 0.5, 0.5, 0);
   }
@@ -40,7 +40,7 @@ float4 userProc(const SurfaceInfo* sHit, sampler2D tex1, __global sampler2D tex2
   {
     offsetX = -0.388f;
     offsetY = -0.17f;
-    texColorFont = texture2D(tex2[5], make_float2((texCoord.x + offsetX) * 11.36f, (texCoord.y + offsetY) * 1.5625f), TEX_CLAMP_U | TEX_CLAMP_V);
+    texColorFont = texture2D(tex2[2], make_float2((texCoord.x + offsetX) * 11.36f, (texCoord.y + offsetY) * 1.5625f), TEX_CLAMP_U | TEX_CLAMP_V);
 
     // texColorLayout = make_float4(1.0, 0.5, 0.5, 0);
   }
@@ -48,7 +48,7 @@ float4 userProc(const SurfaceInfo* sHit, sampler2D tex1, __global sampler2D tex2
   {
     offsetX = -0.49f;
     offsetY = -0.17f;
-    texColorFont = texture2D(tex2[1], make_float2((texCoord.x + offsetX) * 10.52, (texCoord.y + offsetY) * 2), TEX_CLAMP_U | TEX_CLAMP_V);
+    texColorFont = texture2D(tex2[7], make_float2((texCoord.x + offsetX) * 10.52, (texCoord.y + offsetY) * 2), TEX_CLAMP_U | TEX_CLAMP_V);
     
     // texColorLayout = make_float4(1.0, 0.5, 0.5, 0);
   }
@@ -56,7 +56,7 @@ float4 userProc(const SurfaceInfo* sHit, sampler2D tex1, __global sampler2D tex2
   {
     offsetX = -0.597f;
     offsetY = -0.17f;
-    texColorFont = texture2D(tex2[2], make_float2((texCoord.x + offsetX) * 10.52, (texCoord.y + offsetY) * 2), TEX_CLAMP_U | TEX_CLAMP_V);
+    texColorFont = texture2D(tex2[8], make_float2((texCoord.x + offsetX) * 10.52, (texCoord.y + offsetY) * 2), TEX_CLAMP_U | TEX_CLAMP_V);
     
     // texColorLayout = make_float4(1.0, 0.5, 0.5, 0);
   }
@@ -64,7 +64,7 @@ float4 userProc(const SurfaceInfo* sHit, sampler2D tex1, __global sampler2D tex2
   {
     offsetX = -0.72f;
     offsetY = -0.365f;
-    texColorFont = texture2D(tex2[6], make_float2((texCoord.x + offsetX) * 13.88f, (texCoord.y + offsetY) * 1.98f), TEX_CLAMP_U | TEX_CLAMP_V);
+    texColorFont = texture2D(tex2[3], make_float2((texCoord.x + offsetX) * 13.88f, (texCoord.y + offsetY) * 1.98f), TEX_CLAMP_U | TEX_CLAMP_V);
 
     // texColorLayout = make_float4(1.0, 0.5, 0.5, 0);
   }
@@ -72,7 +72,7 @@ float4 userProc(const SurfaceInfo* sHit, sampler2D tex1, __global sampler2D tex2
   {
     offsetX = -0.797f;
     offsetY = -0.365f;
-    texColorFont = texture2D(tex2[7], make_float2((texCoord.x + offsetX) * 13.88f, (texCoord.y + offsetY) * 1.98f), TEX_CLAMP_U | TEX_CLAMP_V);
+    texColorFont = texture2D(tex2[4], make_float2((texCoord.x + offsetX) * 13.88f, (texCoord.y + offsetY) * 1.98f), TEX_CLAMP_U | TEX_CLAMP_V);
 
     // texColorLayout = make_float4(1.0, 0.5, 0.5, 0);
   }
@@ -80,7 +80,7 @@ float4 userProc(const SurfaceInfo* sHit, sampler2D tex1, __global sampler2D tex2
   {
     offsetX = -0.875f;
     offsetY = -0.365f;
-    texColorFont = texture2D(tex2[8], make_float2((texCoord.x + offsetX) * 13.88f, (texCoord.y + offsetY) * 1.98f), TEX_CLAMP_U | TEX_CLAMP_V);
+    texColorFont = texture2D(tex2[5], make_float2((texCoord.x + offsetX) * 13.88f, (texCoord.y + offsetY) * 1.98f), TEX_CLAMP_U | TEX_CLAMP_V);
 
     // texColorLayout = make_float4(1.0, 0.5, 0.5, 0);
   }
