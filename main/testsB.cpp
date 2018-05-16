@@ -278,15 +278,58 @@ bool test38_licence_plate()
 
   // textures
   //
-  HRTextureNodeRef texProc = hrTextureCreateAdvanced(L"proc", L"my_licence_plate");
-  HRTextureNodeRef texBitmap1 = hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/RusLicensePlate2digitRegionBase.png");
-  //HRTextureNodeRef texBitmap2 = hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_A.png");
-  HRTextureNodeRef texBitmap2[5] = {
+  int stateLicPlate = -1;
+  enum { RusLicPlate2digitReg, RusLicPlate3digitReg };
+
+  HRTextureNodeRef texProc; 
+  HRTextureNodeRef texBitmap1Base;  
+  HRTextureNodeRef texBitmap2[9];
+  HRTextureNodeRef texBitmapFont[22] = {
     hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_A.png"),
     hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_B.png"),
     hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_C.png"),
     hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_E.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_H.png") };
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_H.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_K.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_M.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_O.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_P.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_T.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_X.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_Y.png"),
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_0.png"), 
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_1.png"), 
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_2.png"), 
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_3.png"), 
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_4.png"), 
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_5.png"), 
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_6.png"), 
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_7.png"), 
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_8.png"), 
+    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_9.png") };
+
+  srand(time(NULL));
+
+  if ((rand()%2) != 1)
+  {
+    stateLicPlate = RusLicPlate2digitReg;
+    texProc = hrTextureCreateAdvanced(L"proc", L"RusLicPlate2digitReg");
+    texBitmap1Base = hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/RusLicensePlate2digitRegionBase.png");
+  }
+  else
+  {
+    stateLicPlate = RusLicPlate3digitReg;
+    texProc = hrTextureCreateAdvanced(L"proc", L"RusLicPlate3digitReg");
+    texBitmap1Base = hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/RusLicensePlate3digitRegionBase.png");
+  }
+
+
+  for (int i = 0; i < 3; i++)  // Letters
+    texBitmap2[i] = texBitmapFont[rand() % 12];
+  
+  for (int i = 3; i < 9; i++) // Digits
+    texBitmap2[i] = texBitmapFont[(rand() % 10) + 12];
+    
 
 
   hrTextureNodeOpen(texProc, HR_WRITE_DISCARD);
@@ -294,7 +337,11 @@ bool test38_licence_plate()
     xml_node texNode = hrTextureParamNode(texProc);
 
     xml_node code_node = texNode.append_child(L"code");
-    code_node.append_attribute(L"file") = L"data/code/licence_plate.c";
+    if (stateLicPlate == RusLicPlate2digitReg)
+      code_node.append_attribute(L"file") = L"data/code/RusLicPlate2digitReg.c";
+    else
+      code_node.append_attribute(L"file") = L"data/code/RusLicPlate3digitReg.c";
+    
     code_node.append_attribute(L"main") = L"userProc";
   }
   hrTextureNodeClose(texProc);
@@ -347,15 +394,15 @@ bool test38_licence_plate()
     p1.append_attribute(L"name") = L"texId1";
     p1.append_attribute(L"type") = L"sampler2D";
     p1.append_attribute(L"size") = 1;
-    p1.append_attribute(L"val") = texBitmap1.id;
+    p1.append_attribute(L"val") = texBitmap1Base.id;
 
     p2.append_attribute(L"id") = 1;
     p2.append_attribute(L"name") = L"texId2";
     p2.append_attribute(L"type") = L"sampler2D";
-    p2.append_attribute(L"size") = 5;
-    //p2.append_attribute(L"val") = L"3 4 5 6 7";
+    p2.append_attribute(L"size") = 9;
+
     std::wstringstream strOut;
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 9; i++)
       strOut << L" " << texBitmap2[i].id;  
     auto val = strOut.str();
     p2.append_attribute(L"val") = val.c_str();
