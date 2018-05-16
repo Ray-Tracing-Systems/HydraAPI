@@ -1134,7 +1134,43 @@ HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, const int indexNum)
 
 void doRefinement();
 void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::vector<float3> &triangleList);
-void doDisplacement(HRMesh &a_mesh, const pugi::xml_node &displaceXMLNode, std::vector<float3> &triangleList);
+
+
+bool meshHasDisplacementMat(HRMeshRef a_mesh)
+{
+  HRMesh *pMesh = g_objManager.PtrById(a_mesh);
+  if (pMesh == nullptr)
+  {
+    HrError(L"hrMeshComputeNormals: nullptr input");
+    return false;
+  }
+
+  HRMesh::InputTriMesh &mesh = pMesh->m_input;
+
+  std::set<int32_t> uniqueMatIndices;
+  for(auto& mI : mesh.matIndices)
+  {
+    auto ins = uniqueMatIndices.insert(mI);
+    if (ins.second)
+    {
+      HRMaterialRef tmpRef;
+      tmpRef.id = mI;
+      auto mat = g_objManager.PtrById(tmpRef);
+      if (mat != nullptr)
+      {
+        auto d_node = mat->xml_node_next().child(L"displacement");
+
+        if (d_node != nullptr &&
+            std::wstring(d_node.attribute(L"type").as_string()) == std::wstring(L"true_displacement"))
+        {
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
+}
 
 void hrMeshDisplace(HRMeshRef a_mesh)
 {
@@ -1204,68 +1240,6 @@ void hrMeshDisplace(HRMeshRef a_mesh)
 }
 
 
-void hrMeshDisplace(HRMesh &a_mesh)
-{
-  HRMesh::InputTriMesh &mesh = a_mesh.m_input;
-
-  const int vertexCount = int(mesh.verticesPos.size() / 4);
-  const int triangleCount = int(mesh.triIndices.size() / 3);
-
-  std::set<int32_t> uniqueMatIndices;
-  std::unordered_map<int32_t, pugi::xml_node> matsWithDisplacement;
-  std::unordered_map<int, std::pair<pugi::xml_node, std::vector<float3> > > dMatToTriangles;
-  for (unsigned int i = 0; i < mesh.matIndices.size(); ++i)
-  {
-    int mI = mesh.matIndices.at(i);
-    auto ins = uniqueMatIndices.insert(mI);
-    if (ins.second)
-    {
-      HRMaterialRef tmpRef;
-      tmpRef.id = mI;
-      auto mat = g_objManager.PtrById(tmpRef);
-      if (mat != nullptr)
-      {
-        auto d_node = mat->xml_node_next().child(L"displacement");
-
-        if (d_node != nullptr &&
-          std::wstring(d_node.attribute(L"type").as_string()) == std::wstring(L"true_displacement"))
-        {
-          matsWithDisplacement[mI] = d_node;
-        }
-      }
-    }
-    auto mat = matsWithDisplacement.find(mI);
-    if (mat != matsWithDisplacement.end())
-    {
-      float3 triangle = float3(mesh.triIndices.at(i * 3 + 0),
-        mesh.triIndices.at(i * 3 + 1),
-        mesh.triIndices.at(i * 3 + 2));
-
-      if (dMatToTriangles.find(mI) == dMatToTriangles.end())
-      {
-        std::vector<float3> tmp;
-        tmp.push_back(triangle);
-        dMatToTriangles[mI] = std::pair<pugi::xml_node, std::vector<float3> >(mat->second, tmp);
-      }
-      else
-      {
-        dMatToTriangles[mI].second.push_back(triangle);
-      }
-    }
-  }
-
-  for (auto& dTris : dMatToTriangles)
-  {
-    std::cout << "id : " << dTris.first << " triangles : " << dTris.second.second.size() << std::endl;
-  }
-
-  for (auto& dTris : dMatToTriangles)
-  {
-    doDisplacement(a_mesh, dTris.second.first, dTris.second.second);
-  }
-}
-
-
 void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::vector<float3> &triangleList)
 {
   HRMesh::InputTriMesh &mesh = pMesh->m_input;
@@ -1296,35 +1270,6 @@ void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::v
 
 }
 
-void doDisplacement(HRMesh &a_mesh, const pugi::xml_node &displaceXMLNode, std::vector<float3> &triangleList)
-{
-  HRMesh::InputTriMesh &mesh = a_mesh.m_input;
-
-  auto heightNode = displaceXMLNode.child(L"height_map");
-
-  float mult = 1.0f;
-  if (heightNode != nullptr)
-    mult = heightNode.attribute(L"amount").as_float();
-
-
-  for (auto& tri : triangleList)
-  {
-    mesh.verticesPos.at(tri.x * 4 + 0) += mesh.verticesNorm.at(tri.x * 4 + 0) * mult;
-    mesh.verticesPos.at(tri.x * 4 + 1) += mesh.verticesNorm.at(tri.x * 4 + 1) * mult;
-    mesh.verticesPos.at(tri.x * 4 + 2) += mesh.verticesNorm.at(tri.x * 4 + 2) * mult;
-
-    mesh.verticesPos.at(tri.y * 4 + 0) += mesh.verticesNorm.at(tri.y * 4 + 0) * mult;
-    mesh.verticesPos.at(tri.y * 4 + 1) += mesh.verticesNorm.at(tri.y * 4 + 1) * mult;
-    mesh.verticesPos.at(tri.y * 4 + 2) += mesh.verticesNorm.at(tri.y * 4 + 2) * mult;
-
-    mesh.verticesPos.at(tri.z * 4 + 0) += mesh.verticesNorm.at(tri.z * 4 + 0) * mult;
-    mesh.verticesPos.at(tri.z * 4 + 1) += mesh.verticesNorm.at(tri.z * 4 + 1) * mult;
-    mesh.verticesPos.at(tri.z * 4 + 2) += mesh.verticesNorm.at(tri.z * 4 + 2) * mult;
-
-
-  }
-
-}
 
 
 void InsertFixedMeshesInfoIntoXML(pugi::xml_document &stateToProcess, std::unordered_map<uint32_t, uint32_t> &meshTofixedMesh)
@@ -1385,29 +1330,37 @@ std::wstring HR_PrepocessMeshes(const wchar_t* state_path)
       mesh_ref.id = p;
 
       hrMeshOpen(mesh_ref, HR_TRIANGLE_IND3, HR_OPEN_READ_ONLY);
-      HRMesh& mesh = g_objManager.scnData.meshes[p];
-      std::vector<float>    verticesPos(mesh.m_input.verticesPos);       ///< float4
-      std::vector<float>    verticesNorm(mesh.m_input.verticesNorm);      ///< float4
-      std::vector<float>    verticesTexCoord(mesh.m_input.verticesTexCoord);  ///< float2
-      std::vector<float>    verticesTangent(mesh.m_input.verticesTangent);   ///< float4
-      std::vector<uint32_t> triIndices(mesh.m_input.triIndices);        ///< size of 3*triNum
-      std::vector<uint32_t> matIndices(mesh.m_input.matIndices);        ///< size of 1*triNum
-      auto mesh_name = mesh.name;
-      hrMeshClose(mesh_ref);
+      if (meshHasDisplacementMat(mesh_ref))
+      {
+        HRMesh& mesh = g_objManager.scnData.meshes[p];
+        std::vector<float> verticesPos(mesh.m_input.verticesPos);       ///< float4
+        std::vector<float> verticesNorm(mesh.m_input.verticesNorm);      ///< float4
+        std::vector<float> verticesTexCoord(mesh.m_input.verticesTexCoord);  ///< float2
+        std::vector<float> verticesTangent(mesh.m_input.verticesTangent);   ///< float4
+        std::vector<uint32_t> triIndices(mesh.m_input.triIndices);        ///< size of 3*triNum
+        std::vector<uint32_t> matIndices(mesh.m_input.matIndices);        ///< size of 1*triNum
+        auto mesh_name = mesh.name;
+        hrMeshClose(mesh_ref);
 
-      HRMeshRef mesh_ref_new = hrMeshCreate(std::wstring(mesh_name + L"_fixed").c_str());
-      hrMeshOpen(mesh_ref_new, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
-      hrMeshVertexAttribPointer4f(mesh_ref_new, L"pos", &verticesPos[0]);
-      hrMeshVertexAttribPointer4f(mesh_ref_new, L"norm", &verticesNorm[0]);
-      hrMeshVertexAttribPointer2f(mesh_ref_new, L"texcoord", &verticesTexCoord[0]);
-      hrMeshPrimitiveAttribPointer1i(mesh_ref_new, L"mind", (int*)(&matIndices[0]));
-      hrMeshAppendTriangles3(mesh_ref_new, int(triIndices.size()), (int*)(&triIndices[0]));
-      hrMeshDisplace(mesh_ref_new);
-      hrMeshClose(mesh_ref_new);
+        HRMeshRef mesh_ref_new = hrMeshCreate(std::wstring(mesh_name + L"_fixed").c_str());
+        hrMeshOpen(mesh_ref_new, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
+        hrMeshVertexAttribPointer4f(mesh_ref_new, L"pos", &verticesPos[0]);
+        hrMeshVertexAttribPointer4f(mesh_ref_new, L"norm", &verticesNorm[0]);
+        hrMeshVertexAttribPointer2f(mesh_ref_new, L"texcoord", &verticesTexCoord[0]);
+        hrMeshPrimitiveAttribPointer1i(mesh_ref_new, L"mind", (int *) (&matIndices[0]));
+        hrMeshAppendTriangles3(mesh_ref_new, int(triIndices.size()), (int *) (&triIndices[0]));
 
-      HRMesh *pMesh = g_objManager.PtrById(mesh_ref_new);
+        hrMeshDisplace(mesh_ref_new);
+        hrMeshClose(mesh_ref_new);
 
-      meshTofixedMesh[p] = mesh_ref_new.id;
+        HRMesh *pMesh = g_objManager.PtrById(mesh_ref_new);
+
+        meshTofixedMesh[p] = mesh_ref_new.id;
+      }
+      else
+      {
+        hrMeshClose(mesh_ref);
+      }
     }
     InsertFixedMeshesInfoIntoXML(stateToProcess, meshTofixedMesh);
   }
