@@ -57,6 +57,7 @@ namespace HydraRender
     void resampleTo(HDRImage4f& a_outImage);
 
     void convertToLDR(float a_gamma, std::vector<unsigned int>& outData);
+    void convertFromLDR(float a_gamma, const unsigned int* inData, int a_size);
 
     void medianFilterInPlace(float a_thresholdValue, float avgB);
     void gaussBlur(const int BLUR_RADIUS2, float a_sigma);

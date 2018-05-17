@@ -557,12 +557,12 @@ namespace HydraRender
 
 
 
-  unsigned int HR_HDRImage4f_RealColorToUint32(float a_r, float a_g, float a_b)
+  unsigned int HR_HDRImage4f_RealColorToUint32(float a_r, float a_g, float a_b, float a_alpha)
   {
     float  r = clamp(a_r*255.0f, 0.0f, 255.0f);
     float  g = clamp(a_g*255.0f, 0.0f, 255.0f);
     float  b = clamp(a_b*255.0f, 0.0f, 255.0f);
-    float  a = 0.0f;
+    float  a = clamp(a_alpha*255.0f, 0.0f, 255.0f);
 
     unsigned char red = (unsigned char)r;
     unsigned char green = (unsigned char)g;
@@ -577,17 +577,20 @@ namespace HydraRender
   {
     const float power = 1.0f / a_gamma;
 
-    for (size_t i = 0; i < dataLDR.size(); i++)
+    #pragma omp parallel for
+    for (int i = 0; i < int(dataLDR.size()); i++)
     {
       float r = dataPtr[i * 4 + 0];
       float g = dataPtr[i * 4 + 1];
       float b = dataPtr[i * 4 + 2];
+      float a = dataPtr[i * 4 + 3];
 
       r = pow(r, power);
       g = pow(g, power);
       b = pow(b, power);
+      a = pow(a, power);
 
-      dataLDR[i] = HR_HDRImage4f_RealColorToUint32(r, g, b);
+      dataLDR[i] = HR_HDRImage4f_RealColorToUint32(r, g, b, a);
     }
   }
 
@@ -599,6 +602,43 @@ namespace HydraRender
 
     convertFloat4ToLDR2(data(), outData, a_gamma);
   }
+
+
+  static inline float4 unpackColor(unsigned int rgba)
+  {
+    const float mulInv = (1.0f / 255.0f);
+
+    float4 res;
+    res.x = ( rgba & 0x000000FF)       *mulInv;
+    res.y = ((rgba & 0x0000FF00) >> 8) *mulInv;
+    res.z = ((rgba & 0x00FF0000) >> 16)*mulInv;
+    res.w = ((rgba & 0xFF000000) >> 24)*mulInv;
+    return res;
+  }
+
+  void HDRImage4f::convertFromLDR(float a_gamma, const unsigned int* dataLDR, int a_size)
+  {
+    const float power = a_gamma;
+
+    float* out = data();
+
+    #pragma omp parallel for
+    for (int i = 0; i < a_size; i++)
+    {
+      float4 color = unpackColor(dataLDR[i]);
+      color.x = pow(color.x, power);
+      color.y = pow(color.y, power);
+      color.z = pow(color.z, power);
+      color.w = pow(color.w, power);
+
+      out[i * 4 + 0] = color.x;
+      out[i * 4 + 1] = color.y;
+      out[i * 4 + 2] = color.z;
+      out[i * 4 + 3] = color.w;
+    }
+
+  }
+
 
 };
 
