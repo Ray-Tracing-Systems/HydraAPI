@@ -1,5 +1,8 @@
 #include "HR_HDRImage.h"
 
+#include "ssemath.h"
+
+
 #include <vector>
 #include <string>
 #include <iostream>
@@ -250,6 +253,7 @@ namespace HydraRender
       const __m128 oneQuater = _mm_set_ps(0.25f, 0.25f, 0.25f, 0.25f);
       float* dataOld = pInputImage->data();
 
+      #pragma omp parallel for
       for (int j = 0; j < h; ++j)
       {
         const int offsetY = j*w * 4;
@@ -279,7 +283,7 @@ namespace HydraRender
     }
     else // general case
     {
-
+      #pragma omp parallel for
       for (int j = 0; j < h; ++j)
       {
         float texCoordY = (float(j) + 0.5f)*fhInv;
@@ -616,25 +620,29 @@ namespace HydraRender
     return res;
   }
 
-  void HDRImage4f::convertFromLDR(float a_gamma, const unsigned int* dataLDR, int a_size)
+  static inline __m128 unpackColor(unsigned int rgba, const __m128& a_mulInv)
   {
-    const float power = a_gamma;
+    const __m128i intData = _mm_set_epi32((rgba & 0xFF000000) >> 24,
+                                          (rgba & 0x00FF0000) >> 16, 
+                                          (rgba & 0x0000FF00) >> 8, 
+                                           rgba & 0x000000FF
+                                         );
+    return _mm_mul_ps(_mm_cvtepi32_ps(intData), a_mulInv);
+  }
+
+  void HDRImage4f::convertFromLDR(float a_gamma, const unsigned int* dataLDR, int a_size) //#TODO: accelerate with SSE !!!
+  {
+    const __m128 powps  = _mm_set_ps(a_gamma, a_gamma, a_gamma, a_gamma);
+    const __m128 mulInv = _mm_set_ps((1.0f / 255.0f), (1.0f / 255.0f), (1.0f / 255.0f), (1.0f / 255.0f));
 
     float* out = data();
 
     #pragma omp parallel for
     for (int i = 0; i < a_size; i++)
     {
-      float4 color = unpackColor(dataLDR[i]);
-      color.x = pow(color.x, power);
-      color.y = pow(color.y, power);
-      color.z = pow(color.z, power);
-      color.w = pow(color.w, power);
-
-      out[i * 4 + 0] = color.x;
-      out[i * 4 + 1] = color.y;
-      out[i * 4 + 2] = color.z;
-      out[i * 4 + 3] = color.w;
+      const __m128 colorps  = unpackColor(dataLDR[i], mulInv);
+      const __m128 colorps2 = HydraSSE::powf4(colorps, powps);
+      _mm_store_ps(out + i*4, colorps2);
     }
 
   }
