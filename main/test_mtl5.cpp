@@ -586,7 +586,7 @@ bool MTL_TESTS::test_163_diffuse_texture_recommended_res()
   // Render settings
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 2048);
+  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 1024);
 
   hrRenderOpen(renderRef, HR_OPEN_EXISTING);
   auto node = hrRenderParamNode(renderRef);

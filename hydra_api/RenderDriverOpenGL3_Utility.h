@@ -76,13 +76,15 @@ protected:
     std::unique_ptr<LODBuffer> m_lodBuffer;
     std::unique_ptr<FullScreenQuad>  m_quad;
 
-    std::vector<int4> m_materials_pt1;
-    std::vector<int4> m_materials_pt2;
+    std::vector<int4>   m_materials_pt1;
+    std::vector<int4>   m_materials_pt2;
+    std::vector<float4> m_materials_matrix;
+
 
     std::unordered_map<uint32_t, uint32_t> m_mipLevelDict; //texId -> mipLevel
 
-    GLuint m_materialsTBOs[2];
-    GLuint m_materialsTBOTexIds[2];
+    GLuint m_materialsTBOs[3];
+    GLuint m_materialsTBOTexIds[3];
 
     GLuint m_matricesUBO;
     GLuint m_matricesUBOBindingPoint;

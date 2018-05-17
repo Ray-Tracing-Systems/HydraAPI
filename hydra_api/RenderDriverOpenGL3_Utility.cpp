@@ -5,6 +5,7 @@
 #include <cmath>
 #include "RenderDriverOpenGL3_Utility.h"
 #include "HydraObjectManager.h"
+#include "HydraXMLHelpers.h"
 
 
 RD_OGL32_Utility::RD_OGL32_Utility()
@@ -51,6 +52,7 @@ void RD_OGL32_Utility::ClearAll()
 
   m_materials_pt1.clear();
   m_materials_pt2.clear();
+  m_materials_matrix.clear();
   m_remapLists.clear();
 
 }
@@ -75,6 +77,7 @@ HRDriverAllocInfo RD_OGL32_Utility::AllocAll(HRDriverAllocInfo a_info)
 
   m_materials_pt1.resize((unsigned long)(a_info.matNum), int4(-1, -1, -1, -1));
   m_materials_pt2.resize((unsigned long)(a_info.matNum), int4(-1, -1, -1, -1));
+  m_materials_matrix.resize((unsigned long)(a_info.matNum * 8), float4(1.0f, 0.0f, 0.0f, 1.0f));
 
 
   glGenTextures(1, &m_whiteTex);
@@ -125,38 +128,72 @@ bool RD_OGL32_Utility::UpdateMaterial(int32_t a_matId, pugi::xml_node a_material
   int32_t translucencyTexId = -1;
   int32_t bumpTexId = -1;
 
+  float emissionTexMat[4] = {1.0f, 0.0f, 0.0f, 1.0f};
+  float diffuseTexMat[4] = {1.0f, 0.0f, 0.0f, 1.0f};
+  float reflectTexMat[4] = {1.0f, 0.0f, 0.0f, 1.0f};
+  float reflectGlossTexMat[4] = {1.0f, 0.0f, 0.0f, 1.0f};
+
+  float transparencyTexMat[4] = {1.0f, 0.0f, 0.0f, 1.0f};
+  float opacityTexMat[4] = {1.0f, 0.0f, 0.0f, 1.0f};
+  float translucencyTexMat[4] = {1.0f, 0.0f, 0.0f, 1.0f};
+  float bumpTexMat[4] = {1.0f, 0.0f, 0.0f, 1.0f};
+
   auto emissionTex = a_materialNode.child(L"emission").child(L"color").child(L"texture");
   if (emissionTex  != nullptr)
+  {
     emissionTexId = emissionTex.attribute(L"id").as_int();
+    HydraXMLHelpers::ReadMatrix2x2From4x4(emissionTex, L"matrix", emissionTexMat);
+  }
 
   auto diffuseTex = a_materialNode.child(L"diffuse").child(L"color").child(L"texture");
   if (diffuseTex  != nullptr)
+  {
     diffuseTexId = diffuseTex.attribute(L"id").as_int();
+    HydraXMLHelpers::ReadMatrix2x2From4x4(diffuseTex, L"matrix", diffuseTexMat);
+  }
 
   auto reflectTex = a_materialNode.child(L"reflectivity").child(L"color").child(L"texture");
   if (reflectTex  != nullptr)
+  {
     reflectTexId = reflectTex.attribute(L"id").as_int();
+    HydraXMLHelpers::ReadMatrix2x2From4x4(reflectTex, L"matrix", reflectTexMat);
+  }
 
   
   auto reflectGlossTex = a_materialNode.child(L"reflectivity").child(L"glossiness").child(L"texture");
   if (reflectGlossTex  != nullptr)
+  {
     reflectGlossTexId = reflectGlossTex.attribute(L"id").as_int();
+    HydraXMLHelpers::ReadMatrix2x2From4x4(reflectGlossTex, L"matrix", reflectGlossTexMat);
+  }
 
   auto transparencyTex = a_materialNode.child(L"transparency").child(L"color").child(L"texture");
   if (transparencyTex  != nullptr)
+  {
     transparencyTexId = transparencyTex.attribute(L"id").as_int();
+    HydraXMLHelpers::ReadMatrix2x2From4x4(transparencyTex, L"matrix", transparencyTexMat);
+  }
   
   auto opacityTex = a_materialNode.child(L"opacity").child(L"texture");
   if (opacityTex  != nullptr)
+  {
     opacityTexId = opacityTex.attribute(L"id").as_int();
+    HydraXMLHelpers::ReadMatrix2x2From4x4(opacityTex, L"matrix", opacityTexMat);
+  }
 
   auto translucencyTex = a_materialNode.child(L"translucency").child(L"color").child(L"texture");
   if (translucencyTex  != nullptr)
+  {
     translucencyTexId = translucencyTex.attribute(L"id").as_int();
+    HydraXMLHelpers::ReadMatrix2x2From4x4(translucencyTex, L"matrix", translucencyTexMat);
+  }
 
   auto bumpTex = a_materialNode.child(L"displacement").child(L"normal_map").child(L"texture");
   if (bumpTex  != nullptr)
+  {
     bumpTexId = bumpTex.attribute(L"id").as_int();
+    HydraXMLHelpers::ReadMatrix2x2From4x4(bumpTex, L"matrix", bumpTexMat);
+  }
 
 
   int4 mat_pt1 = int4(emissionTexId, diffuseTexId, reflectTexId, reflectGlossTexId);
@@ -168,6 +205,15 @@ bool RD_OGL32_Utility::UpdateMaterial(int32_t a_matId, pugi::xml_node a_material
   m_materials_pt1.at(mat_id) = mat_pt1;
   m_materials_pt2.at(mat_id) = mat_pt2;
 
+  m_materials_matrix.at(mat_id * 8 + 0) = float4(emissionTexMat);
+  m_materials_matrix.at(mat_id * 8 + 1) = float4(diffuseTexMat);
+  m_materials_matrix.at(mat_id * 8 + 2) = float4(reflectTexMat);
+  m_materials_matrix.at(mat_id * 8 + 3) = float4(reflectGlossTexMat);
+
+  m_materials_matrix.at(mat_id * 8 + 4) = float4(translucencyTexMat);
+  m_materials_matrix.at(mat_id * 8 + 5) = float4(opacityTexMat);
+  m_materials_matrix.at(mat_id * 8 + 6) = float4(translucencyTexMat);
+  m_materials_matrix.at(mat_id * 8 + 7) = float4(bumpTexMat);
 
   return true;
 }
@@ -317,10 +363,10 @@ bool RD_OGL32_Utility::UpdateCamera(pugi::xml_node a_camNode)
 bool RD_OGL32_Utility::UpdateSettings(pugi::xml_node a_settingsNode)
 {
   if (a_settingsNode.child(L"width") != nullptr)
-    m_settingsWidth = min(a_settingsNode.child(L"width").text().as_int(), MAX_TEXTURE_RESOLUTION);
+    m_settingsWidth = MAX_TEXTURE_RESOLUTION;//min(a_settingsNode.child(L"width").text().as_int(), MAX_TEXTURE_RESOLUTION);
 
   if (a_settingsNode.child(L"height") != nullptr)
-    m_settingsHeight = min(a_settingsNode.child(L"height").text().as_int(), MAX_TEXTURE_RESOLUTION);
+    m_settingsHeight = MAX_TEXTURE_RESOLUTION;//min(a_settingsNode.child(L"height").text().as_int(), MAX_TEXTURE_RESOLUTION);
 
   return true;
 }
@@ -426,19 +472,22 @@ void RD_OGL32_Utility::InstanceMeshes(int32_t a_mesh_id, const float *a_matrices
     float modelM[16];
     mat4x4_transpose(modelM, (float*)(a_matrices + i*16));
 
+    int remapId = *(a_remapId + i);
+
     m_lodBufferProgram.SetUniform("model", float4x4(modelM));
 
     for(auto batch : m_objects[a_mesh_id])
     {
       int matId = batch.first;
 
-      if(*a_remapId != -1)
-        matId = m_remapLists.at(*a_remapId)[matId];
+      if(remapId != -1)
+        matId = m_remapLists.at(remapId)[matId];
 
       m_lodBufferProgram.SetUniform("matID", matId);
 
       bindTextureBuffer(m_lodBufferProgram, 0, "materials1", m_materialsTBOs[0], m_materialsTBOTexIds[0], GL_RGBA32I);
       bindTextureBuffer(m_lodBufferProgram, 1, "materials2", m_materialsTBOs[1], m_materialsTBOTexIds[1], GL_RGBA32I);
+      bindTextureBuffer(m_lodBufferProgram, 2, "materials_matrix", m_materialsTBOs[2], m_materialsTBOTexIds[2], GL_RGBA32F);
 
       glBindVertexArray(batch.second.first);
       glDrawElements(GL_TRIANGLES, batch.second.second, GL_UNSIGNED_INT, nullptr);
@@ -458,7 +507,7 @@ void RD_OGL32_Utility::InstanceLights(int32_t a_light_id, const float *a_matrix,
 
 void RD_OGL32_Utility::CreateMaterialsTBO()
 {
-  glGenBuffers(2, m_materialsTBOs);
+  glGenBuffers(3, m_materialsTBOs);
 
   glBindBuffer(GL_TEXTURE_BUFFER, m_materialsTBOs[0]);
   glBufferData(GL_TEXTURE_BUFFER, sizeof(int32_t) * 4 * m_materials_pt1.size(), nullptr, GL_STATIC_DRAW);
@@ -468,16 +517,23 @@ void RD_OGL32_Utility::CreateMaterialsTBO()
   glBufferData(GL_TEXTURE_BUFFER, sizeof(int32_t) * 4 * m_materials_pt2.size(), nullptr, GL_STATIC_DRAW);
   glGenTextures(1, &m_materialsTBOTexIds[1]);
 
+  glBindBuffer(GL_TEXTURE_BUFFER, m_materialsTBOs[2]);
+  glBufferData(GL_TEXTURE_BUFFER, sizeof(float) * 4 * 8 * m_materials_matrix.size(), nullptr, GL_STATIC_DRAW);
+  glGenTextures(1, &m_materialsTBOTexIds[2]);
+
   glBindBuffer(GL_TEXTURE_BUFFER, 0);
 }
 
 void RD_OGL32_Utility::SetMaterialsTBO()
 {
   glBindBuffer(GL_TEXTURE_BUFFER, m_materialsTBOs[0]);
-  glBufferSubData(GL_TEXTURE_BUFFER, 0,  sizeof(int) * 4 * m_materials_pt1.size(), &m_materials_pt1[0]);
+  glBufferSubData(GL_TEXTURE_BUFFER, 0,  sizeof(int32_t) * 4 * m_materials_pt1.size(), &m_materials_pt1[0]);
 
   glBindBuffer(GL_TEXTURE_BUFFER, m_materialsTBOs[1]);
-  glBufferSubData(GL_TEXTURE_BUFFER, 0,  sizeof(int) * 4 * m_materials_pt2.size(), &m_materials_pt2[0]);
+  glBufferSubData(GL_TEXTURE_BUFFER, 0,  sizeof(int32_t) * 4 * m_materials_pt2.size(), &m_materials_pt2[0]);
+
+  glBindBuffer(GL_TEXTURE_BUFFER, m_materialsTBOs[2]);
+  glBufferSubData(GL_TEXTURE_BUFFER, 0,  sizeof(float) * 4 * 8 * m_materials_matrix.size(), &m_materials_matrix[0]);
 
   glBindBuffer(GL_TEXTURE_BUFFER, 0);
 }
@@ -531,9 +587,10 @@ void RD_OGL32_Utility::FillMipLevelsDict()
     {
       if (m_mipLevelDict.find(texId) != m_mipLevelDict.end())
       {
-        if (m_mipLevelDict[texId] > mipLevel)
+        if (mipLevel < m_mipLevelDict[texId])
           m_mipLevelDict[texId] = mipLevel;
-      } else
+      }
+      else
         m_mipLevelDict[texId] = mipLevel;
     }
   }
