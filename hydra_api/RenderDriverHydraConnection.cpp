@@ -334,6 +334,7 @@ HRDriverInfo RD_HydraConnection::Info()
   info.createsLightGeometryItself         = false;
   info.supportGetFrameBufferLine          = true;
   info.supportUtilityPrepass              = true;
+  info.supportDisplacement                = true;
 
   info.memTotal                           = int64_t(8) * int64_t(1024 * 1024 * 1024); // #TODO: wth i have to do with that ???
 

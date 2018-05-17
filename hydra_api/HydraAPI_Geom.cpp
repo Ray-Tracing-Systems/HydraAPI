@@ -397,7 +397,7 @@ HAPI void hrMeshClose(HRMeshRef a_mesh)
 
   if (pMesh->openMode == HR_OPEN_READ_ONLY)
   {
-    pMesh->pImpl  = nullptr;
+    //pMesh->pImpl  = nullptr;
     pMesh->opened = false;
     return;
   }
@@ -964,14 +964,14 @@ HAPI void hrMeshComputeNormals(HRMeshRef a_mesh, const int indexNum, bool useFac
 		return;
 	}
 
-	const HRMesh::InputTriMesh& mesh = pMesh->m_input;
+	HRMesh::InputTriMesh& mesh = pMesh->m_input;
 
 	int faceNum = indexNum / 3;
 
 	//std::vector<float3> faceNormals;
 	//faceNormals.reserve(faceNum);
 
-	std::vector<float3> vertexNormals(mesh.triIndices.size(), float3(0.0, 0.0, 0.0));
+	std::vector<float3> vertexNormals(mesh.verticesPos.size() / 4, float3(0.0, 0.0, 0.0));
 
 
 	for (auto i = 0; i < faceNum; ++i)
@@ -1039,14 +1039,18 @@ HAPI void hrMeshComputeNormals(HRMeshRef a_mesh, const int indexNum, bool useFac
 		//faceNormals.push_back(face_normal);
 	}
 
+	if(mesh.verticesNorm.size() != mesh.verticesPos.size())
+	  mesh.verticesNorm.resize(mesh.verticesPos.size());
+
 	for (int i = 0; i < vertexNormals.size(); ++i)
 	{
 		float3 N = normalize(vertexNormals.at(i));
 
-		pMesh->m_input.verticesNorm.push_back(N.x);
-		pMesh->m_input.verticesNorm.push_back(N.y);
-		pMesh->m_input.verticesNorm.push_back(N.z);
-		pMesh->m_input.verticesNorm.push_back(1.0f);
+    mesh.verticesNorm.at(4 * i + 0) = N.x;
+    mesh.verticesNorm.at(4 * i + 1) = N.y;
+    mesh.verticesNorm.at(4 * i + 2) = N.z;
+    mesh.verticesNorm.at(4 * i + 3) = 1.0f;
+
 	}
 }
 
@@ -1237,6 +1241,9 @@ void hrMeshDisplace(HRMeshRef a_mesh)
   {
     doDisplacement(pMesh, dTris.second.first, dTris.second.second);
   }
+
+
+  hrMeshComputeNormals(a_mesh, mesh.triIndices.size(), false);
 }
 
 
