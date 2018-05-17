@@ -269,6 +269,7 @@ namespace MTL_TESTS
 
   bool test_161_simple_displacement();
   bool test_162_shadow_matte_back1();
+  bool test_163_diffuse_texture_recommended_res();
 }
 
 namespace LGHT_TESTS
@@ -386,7 +387,7 @@ void run_all_lgt_tests(int a_start = 0);
 void run_all_ipp_tests(int a_start = 0);
 void terminate_opengl();
 
-static const int CURR_RENDER_DEVICE = 0;
+static const int CURR_RENDER_DEVICE = 1;
 
 //void image_p_sandbox();
 
