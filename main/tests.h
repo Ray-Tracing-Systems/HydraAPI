@@ -269,7 +269,7 @@ namespace MTL_TESTS
 
   bool test_161_simple_displacement();
   bool test_162_shadow_matte_back1();
-
+  bool test_163_diffuse_texture_recommended_res();
   bool test_164_simple_displacement_proctex();
 }
 

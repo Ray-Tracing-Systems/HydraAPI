@@ -96,9 +96,6 @@ int main(int argc, const char** argv)
     //run_all_mtl_tests(); 
     //run_all_api_tests();
     //run_all_ipp_tests();
-
-    //test40_several_changes();
-    test64_several_changes_light_area();
   
     //test24_many_textures_big_data();
     //test25_many_textures_big_data();
@@ -145,13 +142,11 @@ int main(int argc, const char** argv)
     //test89_proc_texture_dirty();
 
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
-    //GEO_TESTS::test_005_instancing();
-    //MTL_TESTS::test_160_proc_dirt3();
-
     //GEO_TESTS::test_003_compute_normals();
+    //MTL_TESTS::test_154_proc_checker_precomp();
+    MTL_TESTS::test_163_diffuse_texture_recommended_res();
 
     //MTL_TESTS::test_161_simple_displacement();
-    //MTL_TESTS::test_164_simple_displacement_proctex();
 
     //MTL_TESTS::test_162_shadow_matte_back1();
     //MTL_TESTS::test_154_proc_checker_precomp();
@@ -178,7 +173,6 @@ int main(int argc, const char** argv)
     //test_gl32_002();
     //window_main_free_look(L"tests/test_gl32_002", L"opengl32Deferred");
     //window_main_free_look(L"tests/test_42", L"opengl1Debug");
-    //window_main_free_look(L"tests_f/test_161", L"opengl1Debug");
 
     //_hrDebugPrintVSGF(L"D:/temp/TestRenderFromPhil/data/chunk_00022.vsgf",   L"z_mesh_phil.txt");
     //_hrDebugPrintVSGF(L"D:/temp/TestRenderFromSergey/data/chunk_00022.vsgf", L"z_mesh_serg.txt");

@@ -1293,11 +1293,11 @@ resolution_dict InsertMipLevelInfoIntoXML(pugi::xml_document &stateToProcess, co
       int32_t newW = MAX_TEXTURE_RESOLUTION;
       int32_t newH = MAX_TEXTURE_RESOLUTION;
 
-      if(settingsNode != nullptr)
+     /* if(settingsNode != nullptr)
       {
         newW = std::min(settingsNode.child(L"width").text().as_int(), newW);
         newH = std::min(settingsNode.child(L"height").text().as_int(), newH);
-      }
+      }*/
 
       for(int i = 0; i < elem.second; ++i)
       {

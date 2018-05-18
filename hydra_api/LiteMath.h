@@ -39,6 +39,7 @@ namespace HydraLiteMath
   {
     float4() : x(0), y(0), z(0), w(0) {}
     float4(float a, float b, float c, float d) : x(a), y(b), z(c), w(d) {}
+    explicit float4(float a[4]) : x(a[0]), y(a[1]), z(a[2]), w(a[3]) {}
 
     float x, y, z, w;
   };

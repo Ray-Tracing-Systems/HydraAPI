@@ -95,6 +95,32 @@ namespace HydraXMLHelpers
     }
   }
 
+  static inline void ReadMatrix2x2From4x4(pugi::xml_node a_node, const wchar_t* a_attrib_name, float a_outData[4])
+  {
+    float tmp[16];
+    const wchar_t* matrixStr = a_node.attribute(a_attrib_name).value();
+    if(matrixStr != nullptr)
+    {
+      std::wstringstream inputStream(matrixStr);
+      inputStream >> tmp[0]  >> tmp[1]  >> tmp[2]  >> tmp[3]
+                  >> tmp[4]  >> tmp[5]  >> tmp[6]  >> tmp[7]
+                  >> tmp[8]  >> tmp[9]  >> tmp[10] >> tmp[11]
+                  >> tmp[12] >> tmp[13] >> tmp[14] >> tmp[15];
+    }
+    else
+    {
+      tmp[0]  = 1.0f; tmp[1]  = 0.0f; tmp[2]  = 0.0f; tmp[3]  = 0.0f;
+      tmp[4]  = 0.0f; tmp[5]  = 1.0f; tmp[6]  = 0.0f; tmp[7]  = 0.0f;
+      tmp[8]  = 0.0f; tmp[9]  = 0.0f; tmp[10] = 1.0f; tmp[11] = 0.0f;
+      tmp[12] = 0.0f; tmp[13] = 0.0f; tmp[14] = 0.0f; tmp[15] = 1.0f;
+    }
+
+    a_outData[0] = tmp[0];
+    a_outData[1] = tmp[1];
+    a_outData[2] = tmp[4];
+    a_outData[3] = tmp[5];
+  }
+
   static inline void ReadBBox(pugi::xml_node a_node, BBox &a_bbox)
   {
     const wchar_t* bboxStr = a_node.attribute(L"bbox").as_string();
