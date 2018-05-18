@@ -2017,13 +2017,22 @@ bool MTL_TESTS::test_161_simple_displacement()
     auto matNode = hrMaterialParamNode(mat1);
 
     auto diffuse = matNode.append_child(L"diffuse");
-    diffuse.append_child(L"color").append_attribute(L"val").set_value(L"0.0 1.0 0.0");
+    diffuse.append_child(L"color").append_attribute(L"val").set_value(L"0.25 0.25 0.25");
+
+    auto refl = matNode.append_child(L"reflectivity");
+
+    refl.append_attribute(L"brdf_type").set_value(L"torranse_sparrow");
+    refl.append_child(L"color").append_attribute(L"val").set_value(L"0.8 0.8 0.8");
+    refl.append_child(L"glossiness").append_attribute(L"val").set_value(L"0.75");
+    refl.append_child(L"extrusion").append_attribute(L"val").set_value(L"maxcolor");
+    refl.append_child(L"fresnel").append_attribute(L"val").set_value(1);
+    refl.append_child(L"fresnel_ior").append_attribute(L"val").set_value(8.0f);
 
     auto displacement = matNode.append_child(L"displacement");
     auto heightNode   = displacement.append_child(L"height_map");
 
     displacement.append_attribute(L"type").set_value(L"true_displacement");
-    heightNode.append_attribute(L"amount").set_value(20.5f);
+    heightNode.append_attribute(L"amount").set_value(0.1f);
 
     auto texNode = hrTextureBind(tex, heightNode);
 
@@ -2069,9 +2078,9 @@ bool MTL_TESTS::test_161_simple_displacement()
 
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Meshes
+  // Meshes4
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  HRMeshRef tess = CreateTriStrip(1024, 1024, 100);//hrMeshCreateFromFileDL(L"data/meshes/teapot.vsgf");//
+  HRMeshRef tess = hrMeshCreateFromFileDL(L"data/meshes/lucy.vsgf");//CreateTriStrip(1024, 1024, 100);//
 
   hrMeshOpen(tess, HR_TRIANGLE_IND3, HR_OPEN_EXISTING);
   {
@@ -2093,7 +2102,7 @@ bool MTL_TESTS::test_161_simple_displacement()
     auto intensityNode = lightNode.append_child(L"intensity");
 
     intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"0.75 0.75 1");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(0.25f);
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(0.75f);
 
     VERIFY_XML(lightNode);
   }
@@ -2143,7 +2152,7 @@ bool MTL_TESTS::test_161_simple_displacement()
   // Render settings
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 256, 1024);
+  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 1024, 256, 256);
 
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2166,7 +2175,7 @@ bool MTL_TESTS::test_161_simple_displacement()
   mRes.identity();
 
   mTranslate = translate4x4(float3(0.0f, -1.0f, 0.0f));
-  mScale = scale4x4(float3(1.01f, 1.01f, 1.01f));
+  mScale = scale4x4(float3(5.01f, 5.01f, 5.01f));
   mRes = mul(mTranslate, mScale);
 
   hrMeshInstance(scnRef, tess, mRes.L());
@@ -2179,7 +2188,7 @@ bool MTL_TESTS::test_161_simple_displacement()
   mTranslate = translate4x4(float3(0, 0.0f, 0.0));
   mRes = mul(mTranslate, mRes);
 
-  //hrLightInstance(scnRef, sky, mRes.L());
+  hrLightInstance(scnRef, sky, mRes.L());
 
   mTranslate = translate4x4(float3(0, 40.0f, 0.0));
   hrLightInstance(scnRef, sphereLight, mTranslate.L());
@@ -2190,8 +2199,8 @@ bool MTL_TESTS::test_161_simple_displacement()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
+  glViewport(0, 0, 1024, 1024);
+  std::vector<int32_t> image(1024 * 1024);
 
   while (true)
   {
@@ -2201,10 +2210,10 @@ bool MTL_TESTS::test_161_simple_displacement()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 1024, &image[0]);
 
       glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+      glDrawPixels(1024, 1024, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
@@ -2243,20 +2252,20 @@ bool MTL_TESTS::test_164_simple_displacement_proctex()
 
   //HRTextureNodeRef texChecker = hrTexture2DCreateFromFile(L"data/textures/chess_white.bmp");
   //HRTextureNodeRef tex = hrTexture2DCreateFromFile(L"data/textures/ornament.jpg");
-  HRTextureNodeRef tex = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep), sizeof(int), 16, 16);
+  HRTextureNodeRef tex = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep), sizeof(int), 64, 64);
 
   hrMaterialOpen(mat1, HR_WRITE_DISCARD);
   {
     auto matNode = hrMaterialParamNode(mat1);
 
     auto diffuse = matNode.append_child(L"diffuse");
-    diffuse.append_child(L"color").append_attribute(L"val").set_value(L"0.0 1.0 0.0");
+    diffuse.append_child(L"color").append_attribute(L"val").set_value(L"0.2 0.2 0.120");
 
     auto displacement = matNode.append_child(L"displacement");
     auto heightNode   = displacement.append_child(L"height_map");
 
     displacement.append_attribute(L"type").set_value(L"true_displacement");
-    heightNode.append_attribute(L"amount").set_value(3.0f);
+    heightNode.append_attribute(L"amount").set_value(5.5f);
 
     auto texNode = hrTextureBind(tex, heightNode);
 
@@ -2304,7 +2313,13 @@ bool MTL_TESTS::test_164_simple_displacement_proctex()
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Meshes
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  HRMeshRef tess = CreateTriStrip(128, 128, 100);//hrMeshCreateFromFileDL(L"data/meshes/tesselated_plane.vsgf");
+  HRMeshRef tess = CreateTriStrip(128, 128, 100);//hrMeshCreateFromFileDL(L"data/meshes/tesselated_plane.vsgf");//
+
+  hrMeshOpen(tess, HR_TRIANGLE_IND3, HR_OPEN_EXISTING);
+  {
+    hrMeshMaterialId(tess, mat1.id);
+  }
+  hrMeshClose(tess);
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Light
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
