@@ -1334,6 +1334,10 @@ std::wstring SaveFixedStateXML(pugi::xml_document &doc, const std::wstring &oldP
   return new_state_path;
 }
 
+#ifdef WIN32
+void HydraDestroyHiddenWindow();
+bool HydraCreateHiddenWindow(int width, int height, int a_major, int a_minor, int a_flags);
+#endif
 
 std::wstring HR_UtilityDriverStart(const wchar_t* state_path)
 {
@@ -1355,7 +1359,23 @@ std::wstring HR_UtilityDriverStart(const wchar_t* state_path)
     return new_state_path;
   }
 
+#ifdef WIN32
+  bool windowCreated = HydraCreateHiddenWindow(1024, 1024, 3, 3, 0);
+  if (!windowCreated)
+  {
+    HrError(L"HydraCreateHiddenWindow FAILED!");
+    return new_state_path;
+  }
+
+  gladLoadGLLoader((GLADloadproc)GetProcAddress);
+  if (!gladLoadGL())
+  {
+    HrError(L"gladLoadGL FAILED!");
+    return new_state_path;
+  }
+#else
   auto offscreen_context = InitGLForUtilityDriver();
+#endif
 
   std::unique_ptr<IHRRenderDriver> utilityDriver = CreateRenderFromString(L"opengl3Utility", L"");
 
@@ -1365,7 +1385,16 @@ std::wstring HR_UtilityDriverStart(const wchar_t* state_path)
 
     _hr_UtilityDriverUpdate(g_objManager.scnInst[g_objManager.m_currSceneId], utilityDriver.get());
 
-    auto mipLevelsDict = getMipLevelsFromUtilityDriver(utilityDriver.get(), offscreen_context);
+    auto mipLevelsDict = getMipLevelsFromUtilityDriver(utilityDriver.get());
+
+    for (std::pair<int32_t, int32_t> elem : mipLevelsDict)
+      std::cout << " " << elem.first << ":" << elem.second << std::endl;
+
+#ifdef WIN32
+    HydraDestroyHiddenWindow();
+#else
+    glfwSetWindowShouldClose(offscreen_context, GL_TRUE);
+#endif
 
     auto resDict = InsertMipLevelInfoIntoXML(stateToProcess, mipLevelsDict);
     CreatePrecompProcTex(stateToProcess, resDict);
