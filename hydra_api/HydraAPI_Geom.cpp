@@ -1247,6 +1247,97 @@ void hrMeshDisplace(HRMeshRef a_mesh)
 }
 
 
+void hrMeshSubdivide(HRMeshRef a_mesh, int a_iterations)
+{
+  HRMesh *pMesh = g_objManager.PtrById(a_mesh);
+  if (pMesh == nullptr)
+  {
+    HrError(L"hrMeshComputeNormals: nullptr input");
+    return;
+  }
+
+  HRMesh::InputTriMesh &mesh = pMesh->m_input;
+
+  const int vertexCount = int(mesh.verticesPos.size() / 4);
+  const int triangleCount = int(mesh.triIndices.size() / 3);
+
+  std::vector<uint32_t> indices;
+  indices.reserve(mesh.triIndices.size() * 3);
+  std::vector<uint32_t> mat_indices;
+  mat_indices.reserve(mesh.triIndices.size() * 3 / 3);
+
+  int face_num = 0;
+  for(int i = 0; i < mesh.triIndices.size(); i += 3)
+  {
+    int indA = mesh.triIndices[i + 0];
+    int indB = mesh.triIndices[i + 1];
+    int indC = mesh.triIndices[i + 2];
+
+    float4 A = float4(mesh.verticesPos[indA * 4 + 0], mesh.verticesPos[indA * 4 + 1],
+                      mesh.verticesPos[indA * 4 + 2], mesh.verticesPos[indA * 4 + 3]);
+    float4 B = float4(mesh.verticesPos[indB * 4 + 0], mesh.verticesPos[indB * 4 + 1],
+                      mesh.verticesPos[indB * 4 + 2], mesh.verticesPos[indB * 4 + 3]);
+    float4 C = float4(mesh.verticesPos[indC * 4 + 0], mesh.verticesPos[indC * 4 + 1],
+                      mesh.verticesPos[indC * 4 + 2], mesh.verticesPos[indC * 4 + 3]);
+
+    float4 ANorm = float4(mesh.verticesNorm[indA * 4 + 0], mesh.verticesNorm[indA * 4 + 1],
+                          mesh.verticesNorm[indA * 4 + 2], mesh.verticesNorm[indA * 4 + 3]);
+    float4 BNorm = float4(mesh.verticesNorm[indB * 4 + 0], mesh.verticesNorm[indB * 4 + 1],
+                          mesh.verticesNorm[indB * 4 + 2], mesh.verticesNorm[indB * 4 + 3]);
+    float4 CNorm = float4(mesh.verticesNorm[indC * 4 + 0], mesh.verticesNorm[indC * 4 + 1],
+                          mesh.verticesNorm[indC * 4 + 2], mesh.verticesNorm[indC * 4 + 3]);
+
+    float4 ATan = float4(mesh.verticesTangent[indA * 4 + 0], mesh.verticesTangent[indA * 4 + 1],
+                         mesh.verticesTangent[indA * 4 + 2], mesh.verticesTangent[indA * 4 + 3]);
+    float4 BTan = float4(mesh.verticesTangent[indB * 4 + 0], mesh.verticesTangent[indB * 4 + 1],
+                         mesh.verticesTangent[indB * 4 + 2], mesh.verticesTangent[indB * 4 + 3]);
+    float4 CTan = float4(mesh.verticesTangent[indC * 4 + 0], mesh.verticesTangent[indC * 4 + 1],
+                         mesh.verticesTangent[indC * 4 + 2], mesh.verticesTangent[indC * 4 + 3]);
+
+    float2 Auv = float2(mesh.verticesTexCoord[indA * 2 + 0], mesh.verticesTexCoord[indA * 2 + 1]);
+    float2 Buv = float2(mesh.verticesTexCoord[indB * 2 + 0], mesh.verticesTexCoord[indB * 2 + 1]);
+    float2 Cuv = float2(mesh.verticesTexCoord[indC * 2 + 0], mesh.verticesTexCoord[indC * 2 + 1]);
+
+    float4 P = (A + B + C) / 3.0f;
+    float4 PNorm = (ANorm + BNorm + CNorm) / 3.0f;
+    float3 PNorm3 = normalize(make_float3(PNorm.x, PNorm.y, PNorm.z));
+    PNorm.x = PNorm3.x; PNorm.y = PNorm3.y; PNorm.z = PNorm.z;
+    float4 PTan = (ATan + BTan + CTan) / 3.0f;
+    float2 Puv = (Auv + Buv + Cuv) / 3.0f;
+
+    uint32_t indP = mesh.verticesPos.size() / 4;
+    mesh.verticesPos.push_back(P.x);
+    mesh.verticesPos.push_back(P.y);
+    mesh.verticesPos.push_back(P.z);
+    mesh.verticesPos.push_back(P.w);
+
+    mesh.verticesNorm.push_back(PNorm.x);
+    mesh.verticesNorm.push_back(PNorm.y);
+    mesh.verticesNorm.push_back(PNorm.z);
+    mesh.verticesNorm.push_back(PNorm.w);
+
+    mesh.verticesTangent.push_back(PTan.x);
+    mesh.verticesTangent.push_back(PTan.y);
+    mesh.verticesTangent.push_back(PTan.z);
+    mesh.verticesTangent.push_back(PTan.w);
+
+    mesh.verticesTexCoord.push_back(Puv.x);
+    mesh.verticesTexCoord.push_back(Puv.y);
+
+    indices.push_back(indA); indices.push_back(indB); indices.push_back(indP);
+    mat_indices.push_back(mesh.matIndices[face_num]);
+    indices.push_back(indB); indices.push_back(indC); indices.push_back(indP);
+    mat_indices.push_back(mesh.matIndices[face_num]);
+    indices.push_back(indC); indices.push_back(indA); indices.push_back(indP);
+    mat_indices.push_back(mesh.matIndices[face_num]);
+
+    face_num++;
+  }
+
+  mesh.triIndices = indices;
+  mesh.matIndices = mat_indices;
+}
+
 void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::vector<uint3> &triangleList)
 {
   HRMesh::InputTriMesh &mesh = pMesh->m_input;
@@ -1270,6 +1361,7 @@ void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::v
   bool sampleTexture = false;
   std::vector<int> imageData;
   auto location = texLibNode.attribute(L"loc").as_string();
+  float3 texHeight(1.0f, 1.0f, 1.0f);
   if(location != L"")
   {
     int bpp = 0;
@@ -1287,23 +1379,33 @@ void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::v
     hrTextureNodeClose(texRef);
 
     sampleTexture = true;
+    texHeight = float3(0.0f, 0.0f, 0.0f);
   }
     //
 
+  std::set<uint32_t > displaced_indices;
   #pragma omp parallel for
   for(int i=0;i<triangleList.size();i++)
   {
     const auto& tri = triangleList[i];
-    float3 texHeight(1.0f, 1.0f, 1.0f);
+
     float2 uv1(mesh.verticesTexCoord.at(tri.x * 2 + 0), mesh.verticesTexCoord.at(tri.x * 2 + 1));
     float2 uv2(mesh.verticesTexCoord.at(tri.y * 2 + 0), mesh.verticesTexCoord.at(tri.y * 2 + 1));
     float2 uv3(mesh.verticesTexCoord.at(tri.z * 2 + 0), mesh.verticesTexCoord.at(tri.z * 2 + 1));
 
     if(sampleTexture)
     {
-      texHeight.x = sampleGrayscaleTextureLDR(imageData, w, h, uv1);
-      texHeight.y = sampleGrayscaleTextureLDR(imageData, w, h, uv2);
-      texHeight.z = sampleGrayscaleTextureLDR(imageData, w, h, uv3);
+      auto ins = displaced_indices.insert(tri.x);
+      if(ins.second)
+        texHeight.x = sampleGrayscaleTextureLDR(imageData, w, h, uv1);
+
+      ins = displaced_indices.insert(tri.y);
+      if(ins.second)
+        texHeight.y = sampleGrayscaleTextureLDR(imageData, w, h, uv2);
+
+      ins = displaced_indices.insert(tri.z);
+      if(ins.second)
+        texHeight.z = sampleGrayscaleTextureLDR(imageData, w, h, uv3);
     }
 
     mesh.verticesPos.at(tri.x * 4 + 0) += mesh.verticesNorm.at(tri.x * 4 + 0) * mult * texHeight.x;
@@ -1318,6 +1420,7 @@ void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::v
     mesh.verticesPos.at(tri.z * 4 + 1) += mesh.verticesNorm.at(tri.z * 4 + 1) * mult * texHeight.z;
     mesh.verticesPos.at(tri.z * 4 + 2) += mesh.verticesNorm.at(tri.z * 4 + 2) * mult * texHeight.z;
 
+    texHeight = float3(0.0f, 0.0f, 0.0f);
   }
 
 }
@@ -1401,6 +1504,7 @@ std::wstring HR_PrepocessMeshes(const wchar_t* state_path)
         hrMeshVertexAttribPointer2f(mesh_ref_new, L"texcoord", &verticesTexCoord[0]);
         hrMeshPrimitiveAttribPointer1i(mesh_ref_new, L"mind", (int *) (&matIndices[0]));
         hrMeshAppendTriangles3(mesh_ref_new, int(triIndices.size()), (int *) (&triIndices[0]));
+        //hrMeshSubdivide(mesh_ref_new, 1);
 
         hrMeshDisplace(mesh_ref_new);
         hrMeshClose(mesh_ref_new);

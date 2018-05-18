@@ -155,8 +155,8 @@ bool RD_OGL1_Debug::UpdateSettings(pugi::xml_node a_settingsNode)
 	if (a_settingsNode.child(L"draw_length") != nullptr)
 		m_renderNormalLength = a_settingsNode.child(L"draw_length").text().as_float();
 
-  if (a_settingsNode.child(L"draw_normals") != nullptr)
-    m_drawNormals = a_settingsNode.child(L"draw_normals").text().as_bool();
+  /*if (a_settingsNode.child(L"draw_normals") != nullptr)
+    m_drawNormals = a_settingsNode.child(L"draw_normals").text().as_bool();*/
 
   if (a_settingsNode.child(L"draw_tangents") != nullptr)
     m_drawTangents = a_settingsNode.child(L"draw_tangents").text().as_bool();
