@@ -1261,8 +1261,10 @@ void hrMeshSubdivide(HRMeshRef a_mesh, int a_iterations)
   const int vertexCount = int(mesh.verticesPos.size() / 4);
   const int triangleCount = int(mesh.triIndices.size() / 3);
 
-  std::vector<uint32_t> indices;//(mesh.triIndices.size() * 3, 0);
-  std::vector<uint32_t> mat_indices;//(mesh.triIndices.size() * 3 / 3, 0);
+  std::vector<uint32_t> indices;
+  indices.reserve(mesh.triIndices.size() * 3);
+  std::vector<uint32_t> mat_indices;
+  mat_indices.reserve(mesh.triIndices.size() * 3 / 3);
 
   int face_num = 0;
   for(int i = 0; i < mesh.triIndices.size(); i += 3)
@@ -1298,6 +1300,8 @@ void hrMeshSubdivide(HRMeshRef a_mesh, int a_iterations)
 
     float4 P = (A + B + C) / 3.0f;
     float4 PNorm = (ANorm + BNorm + CNorm) / 3.0f;
+    float3 PNorm3 = normalize(make_float3(PNorm.x, PNorm.y, PNorm.z));
+    PNorm.x = PNorm3.x; PNorm.y = PNorm3.y; PNorm.z = PNorm.z;
     float4 PTan = (ATan + BTan + CTan) / 3.0f;
     float2 Puv = (Auv + Buv + Cuv) / 3.0f;
 
@@ -1357,6 +1361,7 @@ void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::v
   bool sampleTexture = false;
   std::vector<int> imageData;
   auto location = texLibNode.attribute(L"loc").as_string();
+  float3 texHeight(1.0f, 1.0f, 1.0f);
   if(location != L"")
   {
     int bpp = 0;
@@ -1374,23 +1379,33 @@ void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::v
     hrTextureNodeClose(texRef);
 
     sampleTexture = true;
+    texHeight = float3(0.0f, 0.0f, 0.0f);
   }
     //
 
+  std::set<uint32_t > displaced_indices;
   #pragma omp parallel for
   for(int i=0;i<triangleList.size();i++)
   {
     const auto& tri = triangleList[i];
-    float3 texHeight(1.0f, 1.0f, 1.0f);
+
     float2 uv1(mesh.verticesTexCoord.at(tri.x * 2 + 0), mesh.verticesTexCoord.at(tri.x * 2 + 1));
     float2 uv2(mesh.verticesTexCoord.at(tri.y * 2 + 0), mesh.verticesTexCoord.at(tri.y * 2 + 1));
     float2 uv3(mesh.verticesTexCoord.at(tri.z * 2 + 0), mesh.verticesTexCoord.at(tri.z * 2 + 1));
 
     if(sampleTexture)
     {
-      texHeight.x = sampleGrayscaleTextureLDR(imageData, w, h, uv1);
-      texHeight.y = sampleGrayscaleTextureLDR(imageData, w, h, uv2);
-      texHeight.z = sampleGrayscaleTextureLDR(imageData, w, h, uv3);
+      auto ins = displaced_indices.insert(tri.x);
+      if(ins.second)
+        texHeight.x = sampleGrayscaleTextureLDR(imageData, w, h, uv1);
+
+      ins = displaced_indices.insert(tri.y);
+      if(ins.second)
+        texHeight.y = sampleGrayscaleTextureLDR(imageData, w, h, uv2);
+
+      ins = displaced_indices.insert(tri.z);
+      if(ins.second)
+        texHeight.z = sampleGrayscaleTextureLDR(imageData, w, h, uv3);
     }
 
     mesh.verticesPos.at(tri.x * 4 + 0) += mesh.verticesNorm.at(tri.x * 4 + 0) * mult * texHeight.x;
@@ -1405,6 +1420,7 @@ void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::v
     mesh.verticesPos.at(tri.z * 4 + 1) += mesh.verticesNorm.at(tri.z * 4 + 1) * mult * texHeight.z;
     mesh.verticesPos.at(tri.z * 4 + 2) += mesh.verticesNorm.at(tri.z * 4 + 2) * mult * texHeight.z;
 
+    texHeight = float3(0.0f, 0.0f, 0.0f);
   }
 
 }

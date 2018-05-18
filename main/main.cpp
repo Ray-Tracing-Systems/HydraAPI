@@ -144,9 +144,11 @@ int main(int argc, const char** argv)
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
     //GEO_TESTS::test_003_compute_normals();
     //MTL_TESTS::test_154_proc_checker_precomp();
-    MTL_TESTS::test_163_diffuse_texture_recommended_res();
+    //MTL_TESTS::test_163_diffuse_texture_recommended_res();
 
-    //MTL_TESTS::test_161_simple_displacement();
+    MTL_TESTS::test_161_simple_displacement();
+
+    //window_main_free_look(L"tests_f/test_161", L"opengl1Debug");
 
     //MTL_TESTS::test_162_shadow_matte_back1();
     //MTL_TESTS::test_154_proc_checker_precomp();
@@ -172,7 +174,7 @@ int main(int argc, const char** argv)
     //window_main_free_look(L"D:/PROG/HydraCore/hydra_app/tests/test_42", L"opengl1DrawRays");
     //test_gl32_002();
     //window_main_free_look(L"tests/test_gl32_002", L"opengl32Deferred");
-    //window_main_free_look(L"tests/test_42", L"opengl1Debug");
+
 
     //_hrDebugPrintVSGF(L"D:/temp/TestRenderFromPhil/data/chunk_00022.vsgf",   L"z_mesh_phil.txt");
     //_hrDebugPrintVSGF(L"D:/temp/TestRenderFromSergey/data/chunk_00022.vsgf", L"z_mesh_serg.txt");
