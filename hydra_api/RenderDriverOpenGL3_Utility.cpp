@@ -655,18 +655,12 @@ GLFWwindow * InitGLForUtilityDriver()
 }
 
 
-std::unordered_map<uint32_t, uint32_t> getMipLevelsFromUtilityDriver(IHRRenderDriver *driver, GLFWwindow* context)
+std::unordered_map<uint32_t, uint32_t> getMipLevelsFromUtilityDriver(IHRRenderDriver *driver)
 {
-  glfwPollEvents();
-  RD_OGL32_Utility &utilityDrvRef = *(dynamic_cast<RD_OGL32_Utility *>(driver));
-  glfwSwapBuffers(context);
+  glFinish();
+  RD_OGL32_Utility* utilityDrvRef = dynamic_cast<RD_OGL32_Utility *>(driver);
+  if (utilityDrvRef == nullptr)
+    return std::unordered_map<uint32_t, uint32_t>();
 
-  auto mipLevelsDict = utilityDrvRef.GetMipLevelsDict();
-
-  /*for (std::pair<int32_t, int32_t> elem : mipLevelsDict)
-    std::cout << " " << elem.first << ":" << elem.second << std::endl;*/
-
-  glfwSetWindowShouldClose(context, GL_TRUE);
-
-  return mipLevelsDict;
+  return utilityDrvRef->GetMipLevelsDict();
 };

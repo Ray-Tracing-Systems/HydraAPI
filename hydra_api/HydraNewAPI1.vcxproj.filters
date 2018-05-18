@@ -168,6 +168,9 @@
     <ClCompile Include="HydraTextureUtils.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="OpenGLContextWin.cpp">
+      <Filter>Source\OpenGLCoreUtils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LiteMath.h">
