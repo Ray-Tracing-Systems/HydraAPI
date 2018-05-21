@@ -147,7 +147,19 @@ namespace HydraLiteMath
     uint2() : x(0), y(0) {}
     uint2(unsigned int a, unsigned int b) : x(a), y(b) {}
 
+    bool operator==(const uint2 &other) const { return (x == other.x && y == other.y) || (x == other.y && y == other.x); }
+
     unsigned int x, y;
+  };
+
+  struct uint2_hash
+  {
+      std::size_t operator()(const uint2& k) const
+      {
+        using std::size_t;
+        using std::hash;
+        return ((hash<unsigned int>()(k.x) ^ (hash<unsigned int>()(k.y) << 1u)) >> 1u);
+      }
   };
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////

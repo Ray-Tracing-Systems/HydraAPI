@@ -13,6 +13,7 @@
 #include <iomanip>
 #include <complex>
 #include <set>
+#include <algorithm>
 
 #include "LiteMath.h"
 using namespace HydraLiteMath;
@@ -1368,6 +1369,35 @@ void smooth_common_vertex_attributes(uint32_t vertex_index, const HRMesh::InputT
   uv      = (1.0f - alpha) * uv      + (alpha / valence) * uv_;
 }
 
+
+void addEdge(uint32_t indA, uint32_t indB, uint32_t faceInd, std::unordered_map<uint2, std::vector<uint32_t>, uint2_hash> &edgeToTris)
+{
+  uint32_t eA = indA;
+  uint32_t eB = indB;
+
+ /* if(eA > eB)
+  {
+    eA = indB;
+    eB = indA;
+  }*/
+  uint2 edge1(eA, eB);
+  uint2 edge2(eB, eA);
+
+  if(edgeToTris.find(edge1) != edgeToTris.end())
+  {
+    edgeToTris[edge1].push_back(faceInd);
+  }
+  else if(edgeToTris.find(edge2) != edgeToTris.end())
+  {
+    edgeToTris[edge2].push_back(faceInd);
+  }
+  else
+  {
+    std::vector<uint32_t> tmp = {faceInd};
+    edgeToTris[edge1] = tmp;
+  }
+}
+
 void hrMeshSubdivideSqrt3(HRMeshRef a_mesh, int a_iterations)
 {
   HRMesh *pMesh = g_objManager.PtrById(a_mesh);
@@ -1387,14 +1417,21 @@ void hrMeshSubdivideSqrt3(HRMeshRef a_mesh, int a_iterations)
   std::vector<uint32_t> mat_indices;
   mat_indices.reserve(mesh.triIndices.size() * 3 / 3);
 
+  std::unordered_map<uint2, std::vector<uint32_t>, uint2_hash> edgeToTris;
+
   std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
-  int face_num = 0;
+  uint32_t face_num = 0;
   for(int i = 0; i < mesh.triIndices.size(); i += 3)
   {
     uint32_t indA = mesh.triIndices[i + 0];
     uint32_t indB = mesh.triIndices[i + 1];
     uint32_t indC = mesh.triIndices[i + 2];
+
+    addEdge(indA, indB, face_num, edgeToTris);
+    addEdge(indB, indC, face_num, edgeToTris);
+    addEdge(indC, indA, face_num, edgeToTris);
+
 
     float4 A = vertex_attrib_by_index_f4("pos", indA, mesh);
     float4 B = vertex_attrib_by_index_f4("pos", indB, mesh);
@@ -1438,12 +1475,12 @@ void hrMeshSubdivideSqrt3(HRMeshRef a_mesh, int a_iterations)
     mesh.verticesTexCoord.push_back(Puv.x);
     mesh.verticesTexCoord.push_back(Puv.y);
 
-    indices.push_back(indA); indices.push_back(indB); indices.push_back(indP);
+    /*indices.push_back(indA); indices.push_back(indB); indices.push_back(indP);
     mat_indices.push_back(mesh.matIndices[face_num]);
     indices.push_back(indB); indices.push_back(indC); indices.push_back(indP);
     mat_indices.push_back(mesh.matIndices[face_num]);
     indices.push_back(indC); indices.push_back(indA); indices.push_back(indP);
-    mat_indices.push_back(mesh.matIndices[face_num]);
+    mat_indices.push_back(mesh.matIndices[face_num]);*/
 
     face_num++;
   }
@@ -1451,6 +1488,36 @@ void hrMeshSubdivideSqrt3(HRMeshRef a_mesh, int a_iterations)
   std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
 
   std::cout << "Add middle vertex time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms" <<std::endl;
+
+  //flip edges
+
+  for(const auto &edge : edgeToTris)
+  {
+    if(edge.second.size() == 2)
+    {
+      uint32_t center1 = (old_vertex_count + edge.second[0]);
+      uint32_t center2 = (old_vertex_count + edge.second[1]);
+      uint32_t A = edge.first.x;
+      uint32_t B = edge.first.y;
+
+      indices.push_back(center1); indices.push_back(center2); indices.push_back(B);
+      mat_indices.push_back(mesh.matIndices[edge.second[0]]);
+
+      indices.push_back(center2); indices.push_back(center1); indices.push_back(A);
+      mat_indices.push_back(mesh.matIndices[edge.second[1]]);
+    }
+    else if(edge.second.size() == 1)
+    {
+      uint32_t center = (old_vertex_count + edge.second[0]);
+      uint32_t A = edge.first.x;
+      uint32_t B = edge.first.y;
+
+      indices.push_back(center); indices.push_back(A); indices.push_back(B);
+      mat_indices.push_back(mesh.matIndices[edge.second[0]]);
+    }
+  }
+
+
 
   std::vector<float> pos_new(old_vertex_count * 4, 0.0f);
   //pos_new.reserve(mesh.verticesPos.size());
@@ -1476,23 +1543,14 @@ void hrMeshSubdivideSqrt3(HRMeshRef a_mesh, int a_iterations)
 
     smooth_common_vertex_attributes(i, mesh, pos, normal, tangent, uv);
 
-    /*
-    pos_new.push_back(pos.x); pos_new.push_back(pos.y);
-    pos_new.push_back(pos.z); pos_new.push_back(pos.w);
-
-    normal_new.push_back(normal.x); normal_new.push_back(normal.y);
-    normal_new.push_back(normal.z); normal_new.push_back(normal.w);
-
-    tangent_new.push_back(tangent.x); tangent_new.push_back(tangent.y);
-    tangent_new.push_back(tangent.z); tangent_new.push_back(tangent.w);
-
-    uv_new.push_back(uv.x); uv_new.push_back(uv.y);
-    */
     update_vertex_attrib_by_index_f4(pos, i, pos_new);
     update_vertex_attrib_by_index_f4(normal, i, normal_new);
     update_vertex_attrib_by_index_f4(tangent, i, tangent_new);
     update_vertex_attrib_by_index_f2(uv, i, uv_new);
   }
+
+
+
 
   for(int i = 0; i < pos_new.size(); ++i)
   {
@@ -1511,14 +1569,12 @@ void hrMeshSubdivideSqrt3(HRMeshRef a_mesh, int a_iterations)
   std::copy(tangent_new.begin(), tangent_new.end(), mesh.verticesTangent.begin());
   std::copy(uv_new.begin(), uv_new.end(), mesh.verticesTexCoord.begin());*/
 
-  mesh.triIndices = indices;
-  mesh.matIndices = mat_indices;
-
   end= std::chrono::steady_clock::now();
 
   std::cout << "Vertex smoothing time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()  << " ms" <<std::endl;
 
-
+  mesh.triIndices = indices;
+  mesh.matIndices = mat_indices;
 }
 
 void hrMeshSubdivide(HRMeshRef a_mesh, int a_iterations)
@@ -1770,10 +1826,10 @@ std::wstring HR_PrepocessMeshes(const wchar_t* state_path)
         hrMeshPrimitiveAttribPointer1i(mesh_ref_new, L"mind", (int *) (&matIndices[0]));
         hrMeshAppendTriangles3(mesh_ref_new, int(triIndices.size()), (int *) (&triIndices[0]));
         //hrMeshSubdivide(mesh_ref_new, 1);
-        //hrMeshSubdivideSqrt3(mesh_ref_new, 1);
+        hrMeshSubdivideSqrt3(mesh_ref_new, 1);
 
         std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-        hrMeshDisplace(mesh_ref_new);
+        //hrMeshDisplace(mesh_ref_new);
         std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
         std::cout << "Displacement time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms" <<std::endl;
 
