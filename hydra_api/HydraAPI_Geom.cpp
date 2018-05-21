@@ -1343,30 +1343,33 @@ void smooth_common_vertex_attributes(uint32_t vertex_index, const HRMesh::InputT
   tangent  = vertex_attrib_by_index_f4("tangent", vertex_index, mesh);
   uv       = vertex_attrib_by_index_f2("uv", vertex_index, mesh);
 
-  float4 pos_;
-  float4 norm_;
-  float4 tangent_;
-  float2 uv_;
-
-  for(const auto& n : neighbours)
+  if(valence == 6)
   {
-    float4 pos_n  = vertex_attrib_by_index_f4("pos", n, mesh);
-    float4 norm_n = vertex_attrib_by_index_f4("normal", n, mesh);
-    float4 tan_n  = vertex_attrib_by_index_f4("tangent", n, mesh);
-    float2 uv_n   = vertex_attrib_by_index_f2("uv", n, mesh);
+    float4 pos_;
+    float4 norm_;
+    float4 tangent_;
+    float2 uv_;
 
-    pos_     += pos_n;
-    norm_    += norm_n;
-    tangent_ += tan_n;
-    uv_     += uv_n;
+    for (const auto &n : neighbours)
+    {
+      float4 pos_n = vertex_attrib_by_index_f4("pos", n, mesh);
+      float4 norm_n = vertex_attrib_by_index_f4("normal", n, mesh);
+      float4 tan_n = vertex_attrib_by_index_f4("tangent", n, mesh);
+      float2 uv_n = vertex_attrib_by_index_f2("uv", n, mesh);
+
+      pos_ += pos_n;
+      norm_ += norm_n;
+      tangent_ += tan_n;
+      uv_ += uv_n;
+    }
+
+    float alpha = smoothing_coeff(valence);
+
+    pos = (1.0f - alpha) * pos + (alpha / valence) * pos_;
+    normal = (1.0f - alpha) * normal + (alpha / valence) * norm_;
+    tangent = (1.0f - alpha) * tangent + (alpha / valence) * tangent_;
+    uv = (1.0f - alpha) * uv + (alpha / valence) * uv_;
   }
-
-  float alpha = smoothing_coeff(valence);
-
-  pos     = (1.0f - alpha) * pos     + (alpha / valence) * pos_;
-  normal  = (1.0f - alpha) * normal  + (alpha / valence) * norm_;
-  tangent = (1.0f - alpha) * tangent + (alpha / valence) * tangent_;
-  uv      = (1.0f - alpha) * uv      + (alpha / valence) * uv_;
 }
 
 
@@ -1548,9 +1551,6 @@ void hrMeshSubdivideSqrt3(HRMeshRef a_mesh, int a_iterations)
     update_vertex_attrib_by_index_f4(tangent, i, tangent_new);
     update_vertex_attrib_by_index_f2(uv, i, uv_new);
   }
-
-
-
 
   for(int i = 0; i < pos_new.size(); ++i)
   {

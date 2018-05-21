@@ -2556,7 +2556,7 @@ bool MTL_TESTS::test_165_simple_displacement_mesh()
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Meshes4
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  HRMeshRef tess = hrMeshCreateFromFileDL(L"data/meshes/lucy.vsgf");//HRMeshFromSimpleMesh(L"sph1",    CreateSphere(2.0f, 64), mat1.id);//CreateTriStrip(32, 32, 100);//
+  HRMeshRef tess = hrMeshCreateFromFileDL(L"data/meshes/teapot.vsgf");//HRMeshFromSimpleMesh(L"sph1",    CreateSphere(2.0f, 64), mat1.id);//CreateTriStrip(32, 32, 100);//
 
   hrMeshOpen(tess, HR_TRIANGLE_IND3, HR_OPEN_EXISTING);
   {
@@ -2650,7 +2650,7 @@ bool MTL_TESTS::test_165_simple_displacement_mesh()
   mTranslate.identity();
   mRes.identity();
 
-  mTranslate = translate4x4(float3(0.0f, -2.0f, 2.0f));
+  mTranslate = translate4x4(float3(0.0f, 30.0f, 2.0f));
   mScale = scale4x4(float3(5.01f, 5.01f, 5.01f));
   mRes = mul(mTranslate, mScale);
 
