@@ -10,8 +10,9 @@
 
 using namespace HydraLiteMath;
 
-float sampleHeightMapLDR(const std::vector<int> &imageData, int w, int h, float2 uv);
-float sampleHeightMapHDR(const std::vector<float> &imageData, int w, int h, float2 uv);
+float sampleHeightMapLDR(const std::vector<int> &imageData, int w, int h, float2 uv, float4x4 matrix);
+float sampleHeightMapHDR(const std::vector<float> &imageData, int w, int h, float2 uv, float4x4 matri);
+float sampleNoise(pugi::xml_node noiseXMLNode, float3 attrib);
 
 
 #endif //HYDRAAPI_EX_HYDRATEXTUREUTILS_H

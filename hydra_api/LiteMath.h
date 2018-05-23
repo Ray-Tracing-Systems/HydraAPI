@@ -182,6 +182,7 @@ namespace HydraLiteMath
 
   static inline float4 make_float4(float a, float b, float c, float d) { return float4(a, b, c, d); }
   static inline float3 make_float3(float a, float b, float c) { return float3(a, b, c); }
+  static inline float3 make_float3(float4 f4) { return float3(f4.x, f4.y, f4.z); }
   static inline float2 make_float2(float a, float b) { return float2(a, b); }
 
   static inline float2 to_float2(float4 v) { return make_float2(v.x, v.y); }
