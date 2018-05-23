@@ -621,7 +621,7 @@ IHRRenderDriver* CreateOpenGL3_Utilty_RenderDriver()
   return new RD_OGL32_Utility;
 }
 
-
+#ifndef WIN32
 GLFWwindow * InitGLForUtilityDriver()
 {
   GLFWwindow *offscreen_context = nullptr;
@@ -653,8 +653,7 @@ GLFWwindow * InitGLForUtilityDriver()
 
   return offscreen_context;
 }
-
-
+#endif
 std::unordered_map<uint32_t, uint32_t> getMipLevelsFromUtilityDriver(IHRRenderDriver *driver)
 {
   glFinish();
