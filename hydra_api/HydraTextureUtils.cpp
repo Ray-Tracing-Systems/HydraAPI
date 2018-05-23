@@ -6,7 +6,8 @@
 #include "HydraTextureUtils.h"
 #include "HydraAPI.h"
 
-float sampleGrayscaleTextureLDR(const std::vector<int> &imageData, int w, int h, float2 uv)
+
+float sampleHeightMapLDR(const std::vector<int> &imageData, int w, int h, float2 uv)
 {
   float acc = 0.0f;
   int samples = 0;
@@ -14,8 +15,8 @@ float sampleGrayscaleTextureLDR(const std::vector<int> &imageData, int w, int h,
   {
     for(int j = 0; j <= 1; j += 1)
     {
-      int x = uv.x * (w - 1) + i;
-      int y = uv.y * (h - 1) + j;
+      int x = int(uv.x * (w - 1)) + i;
+      int y = int(uv.y * (h - 1)) + j;
 
       x = x > (w - 1) ? w - 1 : x;
       x = x < 0 ? 0 : x;
@@ -41,7 +42,36 @@ float sampleGrayscaleTextureLDR(const std::vector<int> &imageData, int w, int h,
   return acc / samples;
 }
 
-float sampleTextureHDR(pugi::xml_node textureNode, float2 uv)
+float sampleHeightMapHDR(const std::vector<float> &imageData, int w, int h, float2 uv)
 {
-  return 0.0f;
+  float acc = 0.0f;
+  int samples = 0;
+  for(int i = 0; i <= 1; i += 1)
+  {
+    for(int j = 0; j <= 1; j += 1)
+    {
+      int x = int(uv.x * (w - 1)) + i;
+      int y = int(uv.y * (h - 1)) + j;
+
+      x = x > (w - 1) ? w - 1 : x;
+      x = x < 0 ? 0 : x;
+
+      y = y > (h - 1) ? h - 1 : y;
+      y = y < 0 ? 0 : y;
+
+      int ind = y * w + x;
+      if(ind < w *h)
+      {
+        float ch1 = imageData.at(ind * 4 + 0);
+        float ch2 = imageData.at(ind * 4 + 1);
+        float ch3 = imageData.at(ind * 4 + 2);
+
+        float gray = 0.2126f * ch1 + 0.7152f * ch2 + 0.0722f * ch3;
+
+        acc += gray;
+        samples++;
+      }
+    }
+  }
+  return acc / samples;
 }

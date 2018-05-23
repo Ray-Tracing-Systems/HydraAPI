@@ -62,7 +62,8 @@ BBox createBBoxFromFloat4V(const std::vector<HydraLiteMath::float4> &a_verts);
 BBox createBBoxFromFloatV(const std::vector<float> &a_verts, int stride = 4);
 std::vector< HydraLiteMath::float4> getVerticesFromBBox(const BBox &a_bbox);
 
-
+std::wstring HR_PreprocessMeshes(const wchar_t *state_path);
+void hrMeshComputeNormals(HRMeshRef a_mesh, int indexNum, bool useFaceNormals = false);
 
 
 struct IHRMesh : public IHRObject ///< Not empty Data (reimplement DataSerialize/DataDeserialize)
@@ -346,7 +347,6 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver);
 void HR_DriverDraw(HRSceneInst& scn, IHRRenderDriver* a_pDriver);
 
 std::wstring HR_UtilityDriverStart(const wchar_t* state_path);
-std::wstring HR_PrepocessMeshes(const wchar_t* state_path);
 std::wstring SaveFixedStateXML(pugi::xml_document &doc, const std::wstring &oldPath, const std::wstring &suffix);
 
 HRMeshDriverInput HR_GetMeshDataPointers(size_t a_meshId);

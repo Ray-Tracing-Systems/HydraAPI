@@ -57,7 +57,10 @@ set(SOURCE_FILES
         VirtualBuffer.cpp
         xxhash.c
         xxhash.h
-        HydraXMLHelpers.cpp HydraTextureUtils.cpp HydraTextureUtils.h)
+        HydraXMLHelpers.cpp
+        HydraTextureUtils.cpp
+        HydraTextureUtils.h
+        HydraAPI_GeomProcessing.cpp)
 
 
 if (WIN32)

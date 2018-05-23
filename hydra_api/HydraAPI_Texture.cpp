@@ -469,6 +469,56 @@ HAPI void hrTexture2DGetDataLDR(HRTextureNodeRef a_tex, int* pW, int* pH, int* p
 }
 
 
+HAPI void hrTexture2DGetDataHDR(HRTextureNodeRef a_tex, int* pW, int* pH, float* pData)
+{
+  HRTextureNode* pTexture = g_objManager.PtrById(a_tex);
+
+  if (pTexture == nullptr)
+  {
+    (*pW) = 0;
+    (*pH) = 0;
+    HrError(L"hrTexture2DGetDataHDR: nullptr reference");
+    return;
+  }
+
+  auto xml_node = pTexture->xml_node_immediate();
+
+  (*pW) = xml_node.attribute(L"width").as_int();
+  (*pH) = xml_node.attribute(L"height").as_int();
+
+  if (pTexture->pImpl == nullptr)
+  {
+    (*pW) = 0;
+    (*pH) = 0;
+    HrError(L"hrTexture2DGetDataHDR: nullptr texture data");
+    return;
+  }
+
+  auto chunkId  = pTexture->pImpl->chunkId();
+  auto chunk    = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
+  auto bytesize = xml_node.attribute(L"bytesize").as_int();
+  auto offset   = xml_node.attribute(L"offset").as_int();
+
+  char* data = (char*)chunk.GetMemoryNow();
+  if (data == nullptr)
+  {
+
+#ifdef WIN32
+    const std::wstring loc = g_objManager.GetLoc(xml_node);   // load from file from "loc" #TODO: find a way to test it in proper way.
+#else
+    std::wstring s1(g_objManager.GetLoc(xml_node));
+    const std::string  loc(s1.begin(), s1.end());
+#endif
+
+    std::ifstream fin(loc.c_str(), std::ios::binary);
+    fin.seekg(offset);
+    fin.read((char*)pData, bytesize);
+    fin.close();
+  }
+  else
+    memcpy(pData, data + offset, bytesize);
+}
+
 
 HAPI void hrTextureNodeOpen(HRTextureNodeRef a_pNode, HR_OPEN_MODE a_openMode)
 {

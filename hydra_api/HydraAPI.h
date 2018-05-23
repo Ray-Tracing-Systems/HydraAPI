@@ -419,6 +419,15 @@ HAPI void hrTexture2DGetSize(HRTextureNodeRef a_tex, int* pW, int* pH, int* pBPP
 */
 HAPI void hrTexture2DGetDataLDR(HRTextureNodeRef a_tex, int* pW, int* pH, int* pData);
 
+/**
+\brief get raw data for custom texture object.
+\param a_tex - input  texture reference
+\param pW    - output texture width. It will be written with 0 if hrTexture2DGetDataHDR operation is invalid.
+\param pH    - output texture height. It will be written with 0 if hrTexture2DGetDataHDR operation is invalid.
+\param pData - output data pointer that points to array of size (width*height).
+
+*/
+HAPI void hrTexture2DGetDataHDR(HRTextureNodeRef a_tex, int* pW, int* pH, float* pData);
 
 /**
 \brief create spetial object, called "Advanced Texture".
