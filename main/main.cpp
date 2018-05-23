@@ -149,8 +149,9 @@ int main(int argc, const char** argv)
     MTL_TESTS::test_161_simple_displacement();
     //MTL_TESTS::test_164_simple_displacement_proctex();
     //MTL_TESTS::test_165_simple_displacement_mesh();
+    //MTL_TESTS::test_166_displace_by_noise();
 
-    //window_main_free_look(L"tests_f/test_165", L"opengl1Debug");
+    //window_main_free_look(L"tests_f/test_166", L"opengl1Debug");
 
     //MTL_TESTS::test_162_shadow_matte_back1();
     //MTL_TESTS::test_154_proc_checker_precomp();
