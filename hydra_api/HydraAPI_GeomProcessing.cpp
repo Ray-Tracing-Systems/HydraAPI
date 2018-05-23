@@ -142,7 +142,7 @@ void hrMeshDisplace(HRMeshRef a_mesh)
 
 float smoothing_coeff(uint32_t valence)
 {
-  return (4.0f - 2.0f * cosf(float(2 * M_PI) / valence )) / 9.0f;
+  return (4.0f - 2.0f * cosf(float(2.0f * 3.14159265358979323846f) / valence )) / 9.0f;
 }
 
 std::vector<uint32_t> find_vertex_neighbours(int vertex_index, const HRMesh::InputTriMesh& mesh)
@@ -716,15 +716,15 @@ std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
         hrMeshPrimitiveAttribPointer1i(mesh_ref_new, L"mind", (int *) (&matIndices[0]));
         hrMeshAppendTriangles3(mesh_ref_new, int(triIndices.size()), (int *) (&triIndices[0]));
 
-        std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+        //std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
         hrMeshSubdivideSqrt3(mesh_ref_new, 1);
-        std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-        std::cout << "Subdivision time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms" <<std::endl;
+        //std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+        //std::cout << "Subdivision time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms" <<std::endl;
 
-        begin = std::chrono::steady_clock::now();
+        //begin = std::chrono::steady_clock::now();
         hrMeshDisplace(mesh_ref_new);
-        end = std::chrono::steady_clock::now();
-        std::cout << "Displacement time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms" <<std::endl;
+        //end = std::chrono::steady_clock::now();
+        //std::cout << "Displacement time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms" <<std::endl;
 
         hrMeshClose(mesh_ref_new);
 
