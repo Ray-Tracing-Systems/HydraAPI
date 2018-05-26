@@ -418,6 +418,7 @@ namespace TEST_UTILS
       node.append_child(L"pt_error").text()        = 1.0f; // 1.0%
       node.append_child(L"minRaysPerPixel").text() = minRays;
       node.append_child(L"maxRaysPerPixel").text() = maxRays;
+      node.append_child(L"resources_path").text() = L"..";
 
     }
     hrRenderClose(renderRef);

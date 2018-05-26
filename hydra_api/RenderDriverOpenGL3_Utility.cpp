@@ -63,14 +63,17 @@ HRDriverAllocInfo RD_OGL32_Utility::AllocAll(HRDriverAllocInfo a_info)
 
   m_libPath = std::wstring(a_info.libraryPath);
 
+  auto resources_pathW = std::wstring(a_info.resourcesPath);
+  auto resources_path = std::string(resources_pathW.begin(), resources_pathW.end());
+
   std::unordered_map<GLenum, std::string> lodBufferShaders;
-  lodBufferShaders[GL_VERTEX_SHADER] = "../glsl/LODBuffer.vert";
-  lodBufferShaders[GL_FRAGMENT_SHADER] = "../glsl/LODBuffer.frag";
+  lodBufferShaders[GL_VERTEX_SHADER] = resources_path + "/glsl/LODBuffer.vert"; //D:/!repos_new/!hydra/HydraAPI
+  lodBufferShaders[GL_FRAGMENT_SHADER] = resources_path + "/glsl/LODBuffer.frag";
   m_lodBufferProgram = ShaderProgram(lodBufferShaders);
 
   std::unordered_map<GLenum, std::string> quadShaders;
-  quadShaders[GL_VERTEX_SHADER] = "../glsl/vQuad.vert";
-  quadShaders[GL_FRAGMENT_SHADER] = "../glsl/fQuadDebug.frag";
+  quadShaders[GL_VERTEX_SHADER] = resources_path + "/glsl/vQuad.vert";
+  quadShaders[GL_FRAGMENT_SHADER] = resources_path + "/glsl/fQuadDebug.frag";
   m_quadProgram = ShaderProgram(quadShaders);
 
   m_texNum = (unsigned int)a_info.imgNum;
@@ -489,8 +492,11 @@ void RD_OGL32_Utility::InstanceMeshes(int32_t a_mesh_id, const float *a_matrices
       bindTextureBuffer(m_lodBufferProgram, 1, "materials2", m_materialsTBOs[1], m_materialsTBOTexIds[1], GL_RGBA32I);
       bindTextureBuffer(m_lodBufferProgram, 2, "materials_matrix", m_materialsTBOs[2], m_materialsTBOTexIds[2], GL_RGBA32F);
 
-      glBindVertexArray(batch.second.first);
-      glDrawElements(GL_TRIANGLES, batch.second.second, GL_UNSIGNED_INT, nullptr);
+      auto vao = batch.second.first;
+      auto indices = batch.second.second;
+
+      glBindVertexArray(vao);
+      glDrawElements(GL_TRIANGLES, indices, GL_UNSIGNED_INT, nullptr);
       glBindVertexArray(0);
 
       m_lodBufferProgram.SetUniform("matID", -1);
@@ -518,7 +524,7 @@ void RD_OGL32_Utility::CreateMaterialsTBO()
   glGenTextures(1, &m_materialsTBOTexIds[1]);
 
   glBindBuffer(GL_TEXTURE_BUFFER, m_materialsTBOs[2]);
-  glBufferData(GL_TEXTURE_BUFFER, sizeof(float) * 4 * 8 * m_materials_matrix.size(), nullptr, GL_STATIC_DRAW);
+  glBufferData(GL_TEXTURE_BUFFER, sizeof(float) * 4 * m_materials_matrix.size(), nullptr, GL_STATIC_DRAW);
   glGenTextures(1, &m_materialsTBOTexIds[2]);
 
   glBindBuffer(GL_TEXTURE_BUFFER, 0);
@@ -533,7 +539,7 @@ void RD_OGL32_Utility::SetMaterialsTBO()
   glBufferSubData(GL_TEXTURE_BUFFER, 0,  sizeof(int32_t) * 4 * m_materials_pt2.size(), &m_materials_pt2[0]);
 
   glBindBuffer(GL_TEXTURE_BUFFER, m_materialsTBOs[2]);
-  glBufferSubData(GL_TEXTURE_BUFFER, 0,  sizeof(float) * 4 * 8 * m_materials_matrix.size(), &m_materials_matrix[0]);
+  glBufferSubData(GL_TEXTURE_BUFFER, 0,  sizeof(float) * 4 * m_materials_matrix.size(), &m_materials_matrix[0]);
 
   glBindBuffer(GL_TEXTURE_BUFFER, 0);
 }
@@ -564,7 +570,7 @@ void RD_OGL32_Utility::Draw()
 
 void RD_OGL32_Utility::FillMipLevelsDict()
 {
-  std::vector<unsigned int> texture_data((unsigned long)(m_width * m_height * 4 * 2), 0);
+  std::vector<unsigned int> texture_data((unsigned long)(m_width * m_height* 4 * 2), 0);
 
   glBindTexture(GL_TEXTURE_2D, m_lodBuffer->GetTextureId(LODBuffer::LODBUF_TEX_1));
   glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA_INTEGER, GL_UNSIGNED_INT, &texture_data[0]);
