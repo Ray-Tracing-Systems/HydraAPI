@@ -436,6 +436,7 @@ void RD_OGL32_Utility::BeginScene(pugi::xml_node a_sceneNode)
   //m_lodBufferProgram.SetUniform("window_res", int2(m_width, m_height));
   m_lodBufferProgram.SetUniform("max_tex_res", int2(MAX_TEXTURE_RESOLUTION, MAX_TEXTURE_RESOLUTION));
   m_lodBufferProgram.SetUniform("render_res", int2(m_settingsWidth, m_settingsHeight));
+  m_lodBufferProgram.SetUniform("rasterization_res", int2(m_width, m_height));
 
 }
 

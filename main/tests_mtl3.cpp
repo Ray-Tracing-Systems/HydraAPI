@@ -1503,7 +1503,10 @@ bool MTL_TESTS::test_154_proc_checker_precomp()
   // Render settings
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 256, 1024);
+  int w = 1024;
+  int h = 768;
+
+  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, w, h, 256, 1024);
 
   hrRenderOpen(renderRef, HR_OPEN_EXISTING);
   auto node = hrRenderParamNode(renderRef);
@@ -1589,8 +1592,8 @@ bool MTL_TESTS::test_154_proc_checker_precomp()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
+  glViewport(0, 0, w, h);
+  std::vector<int32_t> image(w * h);
 
   while (true)
   {
@@ -1600,10 +1603,10 @@ bool MTL_TESTS::test_154_proc_checker_precomp()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+      hrRenderGetFrameBufferLDR1i(renderRef, w, h, &image[0]);
 
       glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+      glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
