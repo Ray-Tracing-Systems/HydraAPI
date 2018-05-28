@@ -164,6 +164,7 @@
     <ClCompile Include="HydraAPI_FrameBuffer.cpp" />
     <ClCompile Include="HydraAPI_GBuffer.cpp" />
     <ClCompile Include="HydraAPI_Geom.cpp" />
+    <ClCompile Include="HydraAPI_GeomProcessing.cpp" />
     <ClCompile Include="HydraAPI_Light.cpp" />
     <ClCompile Include="HydraAPI_LoadExistingLibrary.cpp" />
     <ClCompile Include="HydraAPI_Material.cpp" />

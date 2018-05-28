@@ -171,6 +171,9 @@
     <ClCompile Include="OpenGLContextWin.cpp">
       <Filter>Source\OpenGLCoreUtils</Filter>
     </ClCompile>
+    <ClCompile Include="HydraAPI_GeomProcessing.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LiteMath.h">

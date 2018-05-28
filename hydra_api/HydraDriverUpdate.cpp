@@ -1165,6 +1165,11 @@ void _hr_UtilityDriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 
 
   allocInfo.libraryPath = g_objManager.scnData.m_path.c_str();
+  
+  auto& settings = g_objManager.renderSettings[g_objManager.m_currRenderId];
+  auto resources_path = settings.xml_node_immediate().child(L"resources_path").text().as_string();
+
+  allocInfo.resourcesPath = resources_path;
 
   allocInfo = a_pDriver->AllocAll(allocInfo);
 
@@ -1339,6 +1344,7 @@ void HydraDestroyHiddenWindow();
 bool HydraCreateHiddenWindow(int width, int height, int a_major, int a_minor, int a_flags);
 #endif
 
+
 std::wstring HR_UtilityDriverStart(const wchar_t* state_path)
 {
   std::wstring new_state_path(L"");
@@ -1387,8 +1393,9 @@ std::wstring HR_UtilityDriverStart(const wchar_t* state_path)
 
     auto mipLevelsDict = getMipLevelsFromUtilityDriver(utilityDriver.get());
 
-    for (std::pair<int32_t, int32_t> elem : mipLevelsDict)
+/*    for (std::pair<int32_t, int32_t> elem : mipLevelsDict)
       std::cout << " " << elem.first << ":" << elem.second << std::endl;
+*/
 
 #ifdef WIN32
     HydraDestroyHiddenWindow();

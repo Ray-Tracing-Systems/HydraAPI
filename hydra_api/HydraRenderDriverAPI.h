@@ -34,6 +34,7 @@ struct HRDriverAllocInfo
   int64_t geomMem;
 
   const wchar_t* libraryPath;
+  const wchar_t* resourcesPath;
 };
 
 /** \brief This structure tell render HydraAPI what features are supported by driver.
