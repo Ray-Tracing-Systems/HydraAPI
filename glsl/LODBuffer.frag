@@ -16,15 +16,17 @@ uniform usamplerBuffer materials2;
 uniform samplerBuffer materials_matrix;
 
 uniform int matID;
-uniform ivec2 window_res;
+uniform ivec2 max_tex_res;
+uniform ivec2 render_res;
 //ivec2 window_res = ivec2(1024, 1024);
 
 #define MAX_MIP_LEVEL 10
+#define RASTERIZATION_RES 2048
 
 float mip_map_level(vec2 texture_coordinate)
 {
-  vec2  dx_vtc        = dFdx(window_res.x * texture_coordinate);
-  vec2  dy_vtc        = dFdy(window_res.y * texture_coordinate);
+  vec2  dx_vtc        = (RASTERIZATION_RES / float(render_res.x)) * dFdx(max_tex_res.x * texture_coordinate);
+  vec2  dy_vtc        = (RASTERIZATION_RES / float(render_res.y)) * dFdy(max_tex_res.y * texture_coordinate);
   float delta_max_sqr = max(dot(dx_vtc, dx_vtc), dot(dy_vtc, dy_vtc));
 
   const float maxClamp = pow(2.0f, MAX_MIP_LEVEL * 2.0f);

@@ -363,10 +363,10 @@ bool RD_OGL32_Utility::UpdateCamera(pugi::xml_node a_camNode)
 bool RD_OGL32_Utility::UpdateSettings(pugi::xml_node a_settingsNode)
 {
   if (a_settingsNode.child(L"width") != nullptr)
-    m_settingsWidth = MAX_TEXTURE_RESOLUTION;//min(a_settingsNode.child(L"width").text().as_int(), MAX_TEXTURE_RESOLUTION);
+    m_settingsWidth = a_settingsNode.child(L"width").text().as_int();
 
   if (a_settingsNode.child(L"height") != nullptr)
-    m_settingsHeight = MAX_TEXTURE_RESOLUTION;//min(a_settingsNode.child(L"height").text().as_int(), MAX_TEXTURE_RESOLUTION);
+    m_settingsHeight = a_settingsNode.child(L"height").text().as_int();
 
   return true;
 }
@@ -431,7 +431,9 @@ void RD_OGL32_Utility::BeginScene(pugi::xml_node a_sceneNode)
   SetMaterialsTBO();
 
   //m_lodBufferProgram.SetUniform("window_res", int2(m_width, m_height));
-  m_lodBufferProgram.SetUniform("window_res", int2(m_settingsWidth, m_settingsHeight));
+  m_lodBufferProgram.SetUniform("max_tex_res", int2(MAX_TEXTURE_RESOLUTION, MAX_TEXTURE_RESOLUTION));
+  m_lodBufferProgram.SetUniform("render_res", int2(m_settingsWidth, m_settingsHeight));
+
 }
 
 
