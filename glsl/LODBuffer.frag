@@ -19,7 +19,6 @@ uniform int matID;
 uniform ivec2 max_tex_res;
 uniform ivec2 render_res;
 uniform ivec2 rasterization_res;
-//ivec2 window_res = ivec2(1024, 1024);
 
 #define MAX_MIP_LEVEL 10
 
