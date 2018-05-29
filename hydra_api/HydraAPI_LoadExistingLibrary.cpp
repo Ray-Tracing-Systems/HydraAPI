@@ -32,18 +32,6 @@ HRTextureNodeRef _hrTexture2DCreateFromNode(pugi::xml_node a_node)
   const std::wstring loc     = g_objManager.GetLoc(a_node);
   const wchar_t* a_chunkPath = loc.c_str(); 
 
-  /////////////////////////////////////////////////////////////////////////////////////////////////
-  {
-    auto p = g_objManager.scnData.m_textureCache.find(a_fileName2);
-    if (p != g_objManager.scnData.m_textureCache.end() && !std::wstring(a_fileName2).empty())
-    {
-      HRTextureNodeRef ref;
-      ref.id = p->second;
-      return ref;
-    }
-  }
-  /////////////////////////////////////////////////////////////////////////////////////////////////
-
   HRTextureNodeRef ref;
   ref.id = HR_IDType(g_objManager.scnData.textures.size());
 

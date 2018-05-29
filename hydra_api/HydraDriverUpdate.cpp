@@ -969,7 +969,20 @@ int64_t EstimateTexturesMem(const ChangeList& a_objList)
     auto texObj           = g_objManager.scnData.textures[texId];
     pugi::xml_node node   = texObj.xml_node_immediate();
     const size_t byteSize = node.attribute(L"bytesize").as_llong();
-    memAmount += byteSize;
+
+    if (node.attribute(L"rwidth") != nullptr && node.attribute(L"rheight") != nullptr)
+    {
+      const int widthOriginal  = node.attribute(L"width").as_int();
+      const int heightOriginal = node.attribute(L"height").as_int();
+      const size_t elemSize    = byteSize / (widthOriginal*heightOriginal);
+
+      const int rwidth  = node.attribute(L"rwidth").as_int();
+      const int rheight = node.attribute(L"rheight").as_int();
+
+      memAmount += size_t(rwidth*rheight)*elemSize;
+    }
+    else
+      memAmount += byteSize;
   }
 
   return memAmount;
@@ -1278,6 +1291,44 @@ void CreatePrecompProcTex(pugi::xml_document &doc, resolution_dict &dict)
   }
 }
 
+
+static std::tuple<int, int> RecommendedTexResolutionFix(int w, int h, int rwidth, int rheight)
+{
+
+  if (rwidth < 256 || rheight < 256)
+  {
+    const double relation = double(w) / double(h);
+
+    if (rwidth >= rheight)
+    {
+      rheight = 256;
+      rwidth = int(double(rheight)*relation);
+    }
+    else
+    {
+      rwidth = 256;
+      rheight = int(relation / double(rwidth));
+    }
+
+  }
+  else if (w % rwidth != 0 || h % rheight != 0)
+  {
+    int w2 = w, h2 = h;
+
+    while ((w2 >> 1) >= rwidth || (h2 >> 1) >= rheight)
+    {
+      w2 = w2 >> 1;
+      h2 = h2 >> 1;
+    }
+
+    rwidth = w2;
+    rheight = h2;
+  }
+
+  return std::tuple<int, int>(rwidth, rheight);
+}
+
+
 resolution_dict InsertMipLevelInfoIntoXML(pugi::xml_document &stateToProcess, const std::unordered_map<uint32_t, uint32_t> &dict)
 {
   resolution_dict resDict;
@@ -1316,8 +1367,10 @@ resolution_dict InsertMipLevelInfoIntoXML(pugi::xml_document &stateToProcess, co
       if(currH >= 0 && newH > currH)
         newH = currH;
 
-      texNode.force_attribute(L"r_width").set_value(newW);
-      texNode.force_attribute(L"r_height").set_value(newH);
+      std::tie(newW, newH) = RecommendedTexResolutionFix(currW, currH, newW, newH);
+
+      texNode.force_attribute(L"rwidth").set_value(newW);
+      texNode.force_attribute(L"rheight").set_value(newH);
 
       resDict[elem.first] = std::pair<uint32_t, uint32_t>(newW, newH);
     }
@@ -1334,7 +1387,7 @@ std::wstring SaveFixedStateXML(pugi::xml_document &doc, const std::wstring &oldP
   ss << std::wstring(oldPath.begin(), oldPath.end() - 4) << suffix << L".xml"; //cut ".xml" from initial path and append new suffix
   std::wstring new_state_path = ss.str();
 
-  doc.save_file(new_state_path.c_str());
+  doc.save_file(new_state_path.c_str(), L"  ");
 
   return new_state_path;
 }
