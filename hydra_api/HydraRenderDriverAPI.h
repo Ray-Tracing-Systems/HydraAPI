@@ -31,6 +31,7 @@ struct HRDriverAllocInfo
   bool    envIsHDR;
 
   int64_t imgMem;
+  int64_t imgMemAux;
   int64_t geomMem;
 
   const wchar_t* libraryPath;

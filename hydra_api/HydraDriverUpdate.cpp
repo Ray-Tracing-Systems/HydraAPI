@@ -988,6 +988,93 @@ int64_t EstimateTexturesMem(const ChangeList& a_objList)
   return memAmount;
 }
 
+
+static void FindAllTexturesForNormalMaps(pugi::xml_node a_node, const std::unordered_map<int, pugi::xml_node >& a_matNodes, 
+                                         std::unordered_set<int32_t>& out_texIds)
+{
+
+  if (a_node.name() == std::wstring(L"displacement"))
+  {
+    int32_t texId = a_node.child(L"height_map").child(L"texture").attribute(L"id").as_int();
+    if(texId == 0)
+      texId = a_node.child(L"normal_map").child(L"texture").attribute(L"id").as_int();
+
+    out_texIds.insert(texId);
+  }
+  else
+  {
+    for (auto child : a_node.children())
+      FindAllTexturesForNormalMaps(child, a_matNodes, out_texIds);
+  }
+
+  if (a_node.name() == std::wstring(L"material") && a_node.attribute(L"type").as_string() == std::wstring(L"hydra_blend"))
+  {
+    int mid1 = a_node.attribute(L"node_top").as_int();
+    int mid2 = a_node.attribute(L"node_bottom").as_int();
+
+    auto p1 = a_matNodes.find(mid1);
+    auto p2 = a_matNodes.find(mid2);
+
+    if (p1 != a_matNodes.end())
+      FindAllTexturesForNormalMaps(p1->second, a_matNodes, out_texIds);
+
+    if (p2 != a_matNodes.end())
+      FindAllTexturesForNormalMaps(p2->second, a_matNodes, out_texIds);
+  }
+
+}
+
+int64_t EstimateTexturesMemBump(const ChangeList& a_objList)
+{
+  std::unordered_set<int32_t> texturesUsedForNormalMaps;
+  texturesUsedForNormalMaps.reserve(100);
+
+  std::unordered_map<int, pugi::xml_node > matNodesById;
+  for (auto mId : a_objList.matUsed)
+  {
+    if (mId < 0 || mId >= g_objManager.scnData.materials.size())
+      continue;
+
+    auto& hmat = g_objManager.scnData.materials[mId];
+    pugi::xml_node matNode = hmat.xml_node_immediate();
+  
+    matNodesById[mId] = hmat.xml_node_immediate();
+  }
+
+  for (auto matNodePair : matNodesById)
+    FindAllTexturesForNormalMaps(matNodePair.second, matNodesById, texturesUsedForNormalMaps);
+
+  // finally calculate needed memory amount
+  //
+  int64_t memAmount = 0;
+
+  for (auto texId : texturesUsedForNormalMaps)
+  {
+    if (texId < 0 || texId >= g_objManager.scnData.textures.size())
+      continue;
+
+    auto texObj           = g_objManager.scnData.textures[texId];
+    pugi::xml_node node   = texObj.xml_node_immediate();
+    const size_t byteSize = node.attribute(L"bytesize").as_llong();
+
+    if (node.attribute(L"rwidth") != nullptr && node.attribute(L"rheight") != nullptr)
+    {
+      const int widthOriginal  = node.attribute(L"width").as_int();
+      const int heightOriginal = node.attribute(L"height").as_int();
+      const size_t elemSize    = byteSize / (widthOriginal*heightOriginal);
+
+      const int rwidth  = node.attribute(L"rwidth").as_int();
+      const int rheight = node.attribute(L"rheight").as_int();
+
+      memAmount += size_t(rwidth*rheight)*elemSize;
+    }
+    else
+      memAmount += byteSize;
+  }
+
+  return memAmount;
+}
+
 void EstimateMemHungryLights(const ChangeList& a_objList, bool* pIsHDR, int* pHungryLightsNumber, int* pEnvSize)
 {
   size_t  envMemAmount   = 0;
@@ -1071,11 +1158,13 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
     allocInfo.matNum      = int32_t(matNum   + matNum/3   + 100);
     allocInfo.lightNum    = int32_t(lightNum + lightNum/3 + 100);
 
-    const int64_t neededMemT = EstimateTexturesMem(objList);
-    const int64_t neededMemG = EstimateGeometryMem(objList);
+    const int64_t neededMemT  = EstimateTexturesMem(objList);
+    const int64_t neededMemT2 = EstimateTexturesMemBump(objList);
+    const int64_t neededMemG  = EstimateGeometryMem(objList);
 
     allocInfo.libraryPath = g_objManager.scnData.m_path.c_str();
     allocInfo.imgMem      = neededMemT;
+    allocInfo.imgMemAux   = neededMemT2;
     allocInfo.geomMem     = neededMemG;
 
     EstimateMemHungryLights(objList, 
