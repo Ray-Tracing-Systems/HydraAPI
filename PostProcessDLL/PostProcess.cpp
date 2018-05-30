@@ -10,8 +10,18 @@
 
 class PostProcessHydra1 : public IFilter2D
 {
+public:
+  double* mmeanRGBcurrBlock_prevSpp;
+
+  PostProcessHydra1() 
+  {
+    mmeanRGBcurrBlock_prevSpp = (double*)calloc(1000, sizeof(double));
+  }
+
+
   void Release() override;   // COM like destructor; 
   bool Eval()    override;   //
+
 };
 
 
@@ -30,6 +40,9 @@ extern "C" __declspec(dllexport) IFilter2D* CreateFilter(const wchar_t* a_filter
 
 void PostProcessHydra1::Release()
 {
+  free(mmeanRGBcurrBlock_prevSpp);
+  mmeanRGBcurrBlock_prevSpp = nullptr;
+  
   // nothing to destroy here, we have simple implementation
 }
 
@@ -40,7 +53,7 @@ void ExecutePostProcessHydra1(
   const float a_uniformContrast, const float a_normalize, const float a_vignette,
   const float a_chromAberr, const float a_sharpness, const float a_sizeStar,
   const int a_numRay, const int a_rotateRay, const float a_randomAngle,
-  const float a_sprayRay, unsigned int a_width, unsigned int a_height); // forward declaraion
+  const float a_sprayRay, unsigned int a_width, unsigned int a_height, double* mmeanRGBcurrBlock_prevSpp); // forward declaraion
 
 bool PostProcessHydra1::Eval()
 {
@@ -198,9 +211,13 @@ bool PostProcessHydra1::Eval()
   //
 
   ExecutePostProcessHydra1(
-    input, output, numThreads, exposure, compress, contrast, saturation, whiteBalance,
-    whitePointColor, uniformContrast, normalize, vignette, chromAberr, sharpness,
-    sizeStar, numRay, rotateRay, randomAngle, sprayRay, w1, h1);
+    input, output, numThreads, 
+    exposure, compress, contrast, 
+    saturation, whiteBalance, whitePointColor,
+    uniformContrast, normalize, vignette,
+    chromAberr, sharpness, sizeStar, 
+    numRay, rotateRay, randomAngle, 
+    sprayRay, w1, h1, mmeanRGBcurrBlock_prevSpp);
 
   return true;
 }
@@ -216,7 +233,7 @@ void ExecutePostProcessHydra1(
   const float a_uniformContrast, const float a_normalize, const float a_vignette,
   const float a_chromAberr, const float a_sharpness, const float a_sizeStar,
   const int a_numRay, const int a_rotateRay, const float a_randomAngle, 
-  const float a_sprayRay, unsigned int a_width, unsigned int a_height)       
+  const float a_sprayRay, unsigned int a_width, unsigned int a_height, double* mmeanRGBcurrBlock_prevSpp)
 { 
   // Set the desired number of threads
   const unsigned int maxThreads = omp_get_num_procs();
@@ -460,8 +477,7 @@ void ExecutePostProcessHydra1(
     }
   }
 
-
-
+  
   // ---------- Many filters Loop 2. ----------
   #pragma omp parallel for
   for (int i = 0; i < sizeImage; ++i)
@@ -655,8 +671,9 @@ void ExecutePostProcessHydra1(
       Blend(image4out[i].z, dataNorm.z, a_normalize);
     }
   }
-
+    
   //********************* End filters *********************
+
   if (a_chromAberr > 0.0f)
   {
     free(chromAbberR);
@@ -687,6 +704,87 @@ void ExecutePostProcessHydra1(
     histogram.r = NULL;
     histogram.g = NULL;
     histogram.b = NULL;
+  }
+
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Stop rendering when an error is reached.
+  //////////////////////////////////////////////////////////////////////////////
+  bool diffSppMap = true;
+
+  if (diffSppMap)
+  {
+    int numBlockX = 20;
+    int numBlockY = 20;
+
+    double cummDiff = 0.0;
+    const float maxDiff = 0.3f;
+    const int sizeBlockX = a_width / numBlockX;
+    const int sizeBlockY = a_height / numBlockY;
+
+    //#pragma omp parallel for
+    for (int i = 0; i < numBlockY; i++)
+    {
+      for (int j = 0; j < numBlockX; j++)
+      {
+        // Calc mean block
+        double meanRGBcurrBlock = 0;
+        for (int y = 0; y < sizeBlockY; y++)
+        {
+          for (int x = 0; x < sizeBlockX; x++)
+          {
+            const int a = (y + sizeBlockY * i) * a_width + x + sizeBlockX * j;
+            meanRGBcurrBlock += (image4out[a].x + image4out[a].y + image4out[a].z) / 3.0f;
+          }
+        }
+
+        meanRGBcurrBlock /= (sizeBlockX * sizeBlockY);
+
+        double meanSpp = (mmeanRGBcurrBlock_prevSpp[i] + meanRGBcurrBlock) / 2.0f;
+        if (meanSpp <= 0) meanSpp = 0.0001f;
+
+        const double diffSpp = abs((mmeanRGBcurrBlock_prevSpp[i] - meanRGBcurrBlock) / meanSpp);
+
+        // Draw block
+        for (int y = 0; y < sizeBlockY; y+=2)
+        {
+          for (int x = 0; x < sizeBlockX; x+=2)
+          {
+            const int a = (y + sizeBlockY * i) * a_width + x + sizeBlockX * j;
+
+            if (diffSpp > maxDiff)
+            {
+              image4out[a].x = 0.5f;
+              image4out[a].x = 0.2f;
+              image4out[a].x = 0.2f;
+            }
+          }
+        }
+
+        // Copy mean to array
+        const int a = i * numBlockY + j;
+        mmeanRGBcurrBlock_prevSpp[a] = meanRGBcurrBlock;
+        //cummDiff += diffSpp;
+      }
+
+      //cummDiff = cummDiff / (double)(numBlockX * numBlockY);
+
+      // Draw quad if finish
+      //if (cummDiff < maxDiff)
+      //{
+      //  for (int y = 0; y < 32; y++)
+      //  {
+      //    for (int x = 0; x < 32; x++)
+      //    {
+      //      const int i = y * a_width + x;
+
+      //      image4out[i].x = 0.0f;
+      //      image4out[i].y = 1.0f;
+      //      image4out[i].z = 0.0f;
+      //    }
+      //  }
+      //}
+    }
   }
 }
 

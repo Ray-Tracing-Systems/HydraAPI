@@ -12,10 +12,6 @@
 #include <cmath>
 #include <math.h>
 
-//#include "HDRImage.h"
-//#include "HDRImageTool.h"
-
-
 #include "hydra_api/LiteMath.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -33,6 +29,7 @@ int FloatToInt(const float inData)
 {
   return int(inData + 0.5f);
 }
+
 float Luminance(const float3* data)
 {
   return (0.2126f * data->x + 0.7152f * data->y + 0.0722f * data->z);
@@ -41,6 +38,7 @@ float Luminance(const float4* data)
 {
   return (0.2126f * data->x + 0.7152f * data->y + 0.0722f * data->z);
 }
+
 void SpectralToRGB(float &r, float &g, float &b, const float l) // RGB <0,1> <- lambda l <400,700> [nm]
 {
   float t;
@@ -59,6 +57,7 @@ void SpectralToRGB(float &r, float &g, float &b, const float l) // RGB <0,1> <- 
   if ((l >= 400.0f) && (l < 475.0f)) { t = (l - 400.0f) / (475.0f - 400.0f); b = +(2.20f * t) - (1.50f * t * t); }
   else if ((l >= 475.0f) && (l < 560.0f)) { t = (l - 475.0f) / (560.0f - 475.0f); b = 0.7f - (t)+(0.30f * t * t); }
 }
+
 void ConvertRgbToHsv(float4* data)
 {
   #define MIN3(x,y,z)  ((y) <= (z) ? ((x) <= (y) ? (x) : (y)) : ((x) <= (z) ? (x) : (z)))
@@ -124,187 +123,6 @@ void ConvertRgbToHsv(float4* data)
   data->x = H;
   data->y = S;
   data->z = V;
-}
-template <typename T>
-void ConvertRgbToXyz65(T* data)
-{
-  float var_R = data->x; //var_R from 0 to 1
-  float var_G = data->y; //var_G from 0 to 1
-  float var_B = data->z; //var_B from 0 to 1
-
-  if (var_R > 0.04045f) var_R = pow((var_R + 0.055f) / 1.055f, 2.4f);
-  else                  var_R = var_R / 12.92f;
-
-  if (var_G > 0.04045f) var_G = pow((var_G + 0.055f) / 1.055f, 2.4f);
-  else                  var_G = var_G / 12.92f;
-
-  if (var_B > 0.04045f) var_B = pow((var_B + 0.055f) / 1.055f, 2.4f);
-  else                  var_B = var_B / 12.92f;
-
-  var_R *= 100.0f;
-  var_G *= 100.0f;
-  var_B *= 100.0f;
-
-  //Chromatic adaptation. Observer. = 2°, Illuminant = D65
-
-  data->x = var_R * 0.4124564f + var_G * 0.3575761f + var_B * 0.1804375f;
-  data->y = var_R * 0.2126729f + var_G * 0.7151522f + var_B * 0.0721750f;
-  data->z = var_R * 0.0193339f + var_G * 0.1191920f + var_B * 0.9503041f;
-}
-void ConvertSrgbToXyz(float3* data)
-{
-  const float R = data->x;
-  const float G = data->y;
-  const float B = data->z;
-
-  data->x = R * 0.4124564f + G * 0.3575761f + B * 0.1804375f;
-  data->y = R * 0.2126729f + G * 0.7151522f + B * 0.0721750f;
-  data->z = R * 0.0193339f + G * 0.1191920f + B * 0.9503041f;
-}
-void ConvertSrgbToXyz(float4* data)
-{
-  const float R = data->x;
-  const float G = data->y;
-  const float B = data->z;
-
-  data->x = R * 0.4124564f + G * 0.3575761f + B * 0.1804375f;
-  data->y = R * 0.2126729f + G * 0.7151522f + B * 0.0721750f;
-  data->z = R * 0.0193339f + G * 0.1191920f + B * 0.9503041f;
-}
-void ConvertSrgbToXyzIcam06(float4* data)
-{
-  const float R = data->x;
-  const float G = data->y;
-  const float B = data->z;
-
-  data->x = R * 0.412424f + G * 0.2126560f + B * 0.0193324f;
-  data->y = R * 0.357579f + G * 0.7151580f + B * 0.1191900f;
-  data->z = R * 0.180464f + G * 0.0721856f + B * 0.9504440f;
-}
-void ConvertXyz65ToRgb(float4* data)
-{
-  float var_X = data->x / 100.0f;  //X from 0 to  95.047      (Observer = 2°, Illuminant = D65)
-  float var_Y = data->y / 100.0f;  //Y from 0 to 100.000
-  float var_Z = data->z / 100.0f;  //Z from 0 to 108.883
-
-                                   //Chromatic adaptation.
-
-  float R = var_X * 3.2404542f + var_Y * -1.5371385f + var_Z * -0.4985314f;
-  float G = var_X * -0.9692660f + var_Y * 1.8760108f + var_Z * 0.0415560f;
-  float B = var_X * 0.0556434f + var_Y * -0.2040259f + var_Z * 1.0572252f;
-
-  if (R > 0.0031308f) R = 1.055f * (pow(R, 0.4166666666f)) - 0.055f; // 1.0f / 2.4f = 0.4166666666f
-  else                R = 12.92f * R;
-  if (G > 0.0031308f) G = 1.055f * (pow(G, 0.4166666666f)) - 0.055f;
-  else                G = 12.92f * G;
-  if (B > 0.0031308f) B = 1.055f * (pow(B, 0.4166666666f)) - 0.055f;
-  else                B = 12.92f * B;
-
-  data->x = R;
-  data->y = G;
-  data->z = B;
-}
-void ConvertXyzToSrgb(float4* data)
-{
-  const float X = data->x;
-  const float Y = data->y;
-  const float Z = data->z;
-
-  data->x = X * 3.2404542f + Y * -1.5371385f + Z * -0.4985314f;
-  data->y = X * -0.9692660f + Y * 1.8760108f + Z * 0.0415560f;
-  data->z = X * 0.0556434f + Y * -0.2040259f + Z * 1.0572252f;
-}
-void ConvertXyzToSrgbIcam06(float4* data)
-{
-  const float X = data->x;
-  const float Y = data->y;
-  const float Z = data->z;
-
-  data->x = X * 3.2407f + Y * -0.9693f + Z * 0.0556f;
-  data->y = X * -1.5373f + Y * 1.8760f + Z * -0.2040f;
-  data->z = X * -0.4986f + Y * 0.0416f + Z * 1.0571f;
-}
-void ConvertXyzToLab(float3* data)
-{
-  float var_X = data->x / 95.0470f;   //Observer= 2°, Illuminant= D65 
-  float var_Y = data->y / 100.000f;   //
-  float var_Z = data->z / 108.883f;   //
-
-  if (var_X > 0.008856f) var_X = pow(var_X, 0.33333333f);           //1.0f / 3.0f    = 0.33333333f
-  else                   var_X = (7.787037f * var_X) + 0.13793103f; //16.0f / 116.0f = 0.13793103f
-  if (var_Y > 0.008856f) var_Y = pow(var_Y, 0.33333333f);
-  else                   var_Y = (7.787037f * var_Y) + 0.13793103f;
-  if (var_Z > 0.008856f) var_Z = pow(var_Z, 0.33333333f);
-  else                   var_Z = (7.787037f * var_Z) + 0.13793103f;
-
-  data->x = 116.0f *  var_Y - 16.0f;  // CIE-L
-  data->y = 500.0f * (var_X - var_Y); // CIE-a
-  data->z = 200.0f * (var_Y - var_Z); // CIE-b
-}
-void ConvertXyzToLab(float4* data)
-{
-  float var_X = data->x / 95.0470f;   //Observer= 2°, Illuminant= D65 
-  float var_Y = data->y / 100.000f;   //
-  float var_Z = data->z / 108.883f;   //
-
-  if (var_X > 0.008856f) var_X = pow(var_X, 0.33333333f);           //1.0f / 3.0f    = 0.33333333f
-  else                   var_X = (7.787037f * var_X) + 0.13793103f; //16.0f / 116.0f = 0.13793103f
-  if (var_Y > 0.008856f) var_Y = pow(var_Y, 0.33333333f);
-  else                   var_Y = (7.787037f * var_Y) + 0.13793103f;
-  if (var_Z > 0.008856f) var_Z = pow(var_Z, 0.33333333f);
-  else                   var_Z = (7.787037f * var_Z) + 0.13793103f;
-
-  data->x = 116.0f *  var_Y - 16.0f;  // CIE-L
-  data->y = 500.0f * (var_X - var_Y); // CIE-a
-  data->z = 200.0f * (var_Y - var_Z); // CIE-b
-}
-void ConvertXyzToZlab(float4* data, const float3 whitePoint, const float a_whiteBalance)
-{
-  const float X = data->x;
-  const float Y = data->y;
-  const float Z = data->z;
-
-  const float Xw = whitePoint.x;
-  const float Yw = whitePoint.y;
-  const float Zw = whitePoint.z;
-
-  // ----- chromatic adaptation -----
-
-  // convert to sharpened cone responses using Бредфорский расчёт. 
-
-  const float R = 0.8951f * (X / Y) + 0.2664f * (Y / Y) + -0.1614f * (Z / Y);
-  const float G = -0.7502f * (X / Y) + 1.7135f * (Y / Y) + 0.0367f * (Z / Y);
-  const float B = 0.0389f * (X / Y) + -0.0685f * (Y / Y) + 1.0296f * (Z / Y);
-
-  const float Rw = 0.8951f * (Xw / Yw) + 0.2664f * (Yw / Yw) + -0.1614f * (Zw / Yw);
-  const float Gw = -0.7502f * (Xw / Yw) + 1.7135f * (Yw / Yw) + 0.0367f * (Zw / Yw);
-  const float Bw = 0.0389f * (Xw / Yw) + -0.0685f * (Yw / Yw) + 1.0296f * (Zw / Yw);
-
-  const float p = pow(Bw, 0.0834f);
-  const float D = a_whiteBalance;
-
-  const float Rc = (D * (1.0f / Rw) + 1.0f - D) * R;
-  const float Gc = (D * (1.0f / Gw) + 1.0f - D) * G;
-  float       Bc = (D * (1.0f / pow(Bw, p)) + 1.0f - D) * pow(abs(B), p);
-
-  if (B < 0.0f) Bc = -abs(B);
-
-  // Back all to XYZ with inverse M matrix
-
-  const float Xc = 0.9871f * Rc * Y + -0.1469f * Gc * Y + 0.1597f * Bc * Y;
-  const float Yc = 0.4324f * Rc * Y + 0.5184f * Gc * Y + 0.0491f * Bc * Y;
-  const float Zc = -0.0083f * Rc * Y + 0.0402f * Gc * Y + 0.9687f * Bc * Y;
-
-  // ----- Appearance Correlates -----
-
-
-  const float Lz = 100.0f *  pow(Yc / 100.0f, 0.50025f);
-  const float Az = 500.0f * (pow(Xc / 100.0f, 0.345f) - pow(Yc / 100.0f, 0.345f));
-  const float Bz = 200.0f * (pow(Yc / 100.0f, 0.345f) - pow(Zc / 100.0f, 0.345f));
-
-  data->x = Lz;
-  data->y = Az;
-  data->z = Bz;
 }
 void ConvertHsvToRgb(float4* data)
 {
@@ -373,27 +191,121 @@ void ConvertHsvToRgb(float4* data)
   data->y = g;
   data->z = b;
 }
-void ConvertXyzToRlab(float4* data, float power)
+
+template <typename T>
+void ConvertRgbToXyz65(T* data)
 {
-  const float var_X = data->x / 95.0470f;   //Observer= 2°, Illuminant= D65 
-  const float var_Y = data->y / 100.000f;   //
-  const float var_Z = data->z / 108.883f;   //
+  float var_R = data->x; //var_R from 0 to 1
+  float var_G = data->y; //var_G from 0 to 1
+  float var_B = data->z; //var_B from 0 to 1
 
-  const float p = 1.0f / (2.3f * power + 0.001f);
+  if (var_R > 0.04045f) var_R = pow((var_R + 0.055f) / 1.055f, 2.4f);
+  else                  var_R = var_R / 12.92f;
 
-  data->x = 100.0f *  pow(var_Y, p);                   // L
-  data->y = 430.0f * (pow(var_X, p) - pow(var_Y, p));  // a
-  data->z = 170.0f * (pow(var_Y, p) - pow(var_Z, p));  // b
+  if (var_G > 0.04045f) var_G = pow((var_G + 0.055f) / 1.055f, 2.4f);
+  else                  var_G = var_G / 12.92f;
+
+  if (var_B > 0.04045f) var_B = pow((var_B + 0.055f) / 1.055f, 2.4f);
+  else                  var_B = var_B / 12.92f;
+
+  var_R *= 100.0f;
+  var_G *= 100.0f;
+  var_B *= 100.0f;
+
+  //Chromatic adaptation. Observer. = 2°, Illuminant = D65
+
+  data->x = var_R * 0.4124564f + var_G * 0.3575761f + var_B * 0.1804375f;
+  data->y = var_R * 0.2126729f + var_G * 0.7151522f + var_B * 0.0721750f;
+  data->z = var_R * 0.0193339f + var_G * 0.1191920f + var_B * 0.9503041f;
 }
-void ConvertRlabToXyz(float4* data)
+void ConvertXyz65ToRgb(float4* data)
 {
-  const float var_Y = pow(data->x / 100.0f, 2.3f);
-  const float var_X = pow(pow(var_Y, 1.0f / 2.3f) + data->y / 430.0f, 2.3f);
-  const float var_Z = pow(pow(var_Y, 1.0f / 2.3f) - data->z / 170.0f, 2.3f);
+  float var_X = data->x / 100.0f;  //X from 0 to  95.047      (Observer = 2°, Illuminant = D65)
+  float var_Y = data->y / 100.0f;  //Y from 0 to 100.000
+  float var_Z = data->z / 100.0f;  //Z from 0 to 108.883
 
-  data->x = var_X * 95.047f;   // Observer= 2°, Illuminant= D65
-  data->y = var_Y * 100.0f;    //
-  data->z = var_Z * 108.883f;  //
+                                   //Chromatic adaptation.
+
+  float R = var_X * 3.2404542f + var_Y * -1.5371385f + var_Z * -0.4985314f;
+  float G = var_X * -0.9692660f + var_Y * 1.8760108f + var_Z * 0.0415560f;
+  float B = var_X * 0.0556434f + var_Y * -0.2040259f + var_Z * 1.0572252f;
+
+  if (R > 0.0031308f) R = 1.055f * (pow(R, 0.4166666666f)) - 0.055f; // 1.0f / 2.4f = 0.4166666666f
+  else                R = 12.92f * R;
+  if (G > 0.0031308f) G = 1.055f * (pow(G, 0.4166666666f)) - 0.055f;
+  else                G = 12.92f * G;
+  if (B > 0.0031308f) B = 1.055f * (pow(B, 0.4166666666f)) - 0.055f;
+  else                B = 12.92f * B;
+
+  data->x = R;
+  data->y = G;
+  data->z = B;
+}
+
+void ConvertSrgbToXyz(float3* data)
+{
+  const float R = data->x;
+  const float G = data->y;
+  const float B = data->z;
+
+  data->x = R * 0.4124564f + G * 0.3575761f + B * 0.1804375f;
+  data->y = R * 0.2126729f + G * 0.7151522f + B * 0.0721750f;
+  data->z = R * 0.0193339f + G * 0.1191920f + B * 0.9503041f;
+}
+void ConvertSrgbToXyz(float4* data)
+{
+  const float R = data->x;
+  const float G = data->y;
+  const float B = data->z;
+
+  data->x = R * 0.4124564f + G * 0.3575761f + B * 0.1804375f;
+  data->y = R * 0.2126729f + G * 0.7151522f + B * 0.0721750f;
+  data->z = R * 0.0193339f + G * 0.1191920f + B * 0.9503041f;
+}
+void ConvertXyzToSrgb(float4* data)
+{
+  const float X = data->x;
+  const float Y = data->y;
+  const float Z = data->z;
+
+  data->x = X * 3.2404542f + Y * -1.5371385f + Z * -0.4985314f;
+  data->y = X * -0.9692660f + Y * 1.8760108f + Z * 0.0415560f;
+  data->z = X * 0.0556434f + Y * -0.2040259f + Z * 1.0572252f;
+}
+
+void ConvertXyzToLab(float3* data)
+{
+  float var_X = data->x / 95.0470f;   //Observer= 2°, Illuminant= D65 
+  float var_Y = data->y / 100.000f;   //
+  float var_Z = data->z / 108.883f;   //
+
+  if (var_X > 0.008856f) var_X = pow(var_X, 0.33333333f);           //1.0f / 3.0f    = 0.33333333f
+  else                   var_X = (7.787037f * var_X) + 0.13793103f; //16.0f / 116.0f = 0.13793103f
+  if (var_Y > 0.008856f) var_Y = pow(var_Y, 0.33333333f);
+  else                   var_Y = (7.787037f * var_Y) + 0.13793103f;
+  if (var_Z > 0.008856f) var_Z = pow(var_Z, 0.33333333f);
+  else                   var_Z = (7.787037f * var_Z) + 0.13793103f;
+
+  data->x = 116.0f *  var_Y - 16.0f;  // CIE-L
+  data->y = 500.0f * (var_X - var_Y); // CIE-a
+  data->z = 200.0f * (var_Y - var_Z); // CIE-b
+}
+void ConvertXyzToLab(float4* data)
+{
+  float var_X = data->x / 95.0470f;   //Observer= 2°, Illuminant= D65 
+  float var_Y = data->y / 100.000f;   //
+  float var_Z = data->z / 108.883f;   //
+
+  if (var_X > 0.008856f) var_X = pow(var_X, 0.33333333f);           //1.0f / 3.0f    = 0.33333333f
+  else                   var_X = (7.787037f * var_X) + 0.13793103f; //16.0f / 116.0f = 0.13793103f
+  if (var_Y > 0.008856f) var_Y = pow(var_Y, 0.33333333f);
+  else                   var_Y = (7.787037f * var_Y) + 0.13793103f;
+  if (var_Z > 0.008856f) var_Z = pow(var_Z, 0.33333333f);
+  else                   var_Z = (7.787037f * var_Z) + 0.13793103f;
+
+  data->x = 116.0f *  var_Y - 16.0f;  // CIE-L
+  data->y = 500.0f * (var_X - var_Y); // CIE-a
+  data->z = 200.0f * (var_Y - var_Z); // CIE-b
 }
 void ConvertLabToXyz(float4* data)
 {
@@ -416,47 +328,7 @@ void ConvertLabToXyz(float4* data)
   data->y = var_Y * 100.0f;    //
   data->z = var_Z * 108.883f;  //
 }
-void ConvertZlabToXyz(float4* data, const float3 whitePoint)
-{
-  const float Lz = data->x;
-  const float Az = data->y;
-  const float Bz = data->z;
 
-  const float Rw = whitePoint.x;
-  const float Gw = whitePoint.y;
-  const float Bw = whitePoint.z;
-
-  // ----- Appearance Correlates -----
-
-  const float Yc = pow(Lz, 1.999f);
-  const float Xc = pow(pow(Yc, 0.345f) + Az / 5.0f, 2.8985f);
-  const float Zc = pow(pow(Yc, 0.345f) - Bz / 2.0f, 2.8985f);
-
-  // ----- chromatic adaptation -----
-
-  // M matrix
-
-  const float Rc = 0.8951f * Xc + 0.2664f * Yc + -0.1614f * Zc;
-  const float Gc = -0.7502f * Xc + 1.7135f * Yc + 0.0367f * Zc;
-  const float Bc = 0.0389f * Xc + -0.0685f * Yc + 1.0296f * Zc;
-
-  const float D = 0.0f;
-  const float p = pow(Bw, 0.0834f);
-
-  const float R = Rc / (D * (1.0f / Rw) + 1.0f - D);
-  const float G = Gc / (D * (1.0f / Gw) + 1.0f - D);
-  const float B = pow(abs(Bc / (D * (1.0f / pow(Bw, p)) + 1.0f - D)), 1 / p);
-
-  // inverse M matrix
-
-  const float X = 0.9871f * R + -0.1469f * G + 0.1597f * B;
-  const float Y = 0.4324f * R + 0.5184f * G + 0.0491f * B;
-  const float Z = -0.0083f * R + 0.0402f * G + 0.9687f * B;
-
-  data->x = Xc * 100.0f;
-  data->y = Yc * 100.0f;
-  data->z = Zc * 100.0f;
-}
 void MatrixCat02(float3* data)
 {
   // Преобразование в колбочковые ответы. Mcat02 in CAM02. 
@@ -492,6 +364,7 @@ void InverseMatrixCat02(T* data)
   data->y = Y;
   data->z = Z;
 }
+
 template <typename T>
 void MatrixHpe(T* data)
 {
@@ -515,26 +388,7 @@ void InverseMatrixHpe(float4 * data)
   data->y = G;
   data->z = B;
 }
-void ConvertXyzToLmsVonKries(float4* data)
-{
-  const float L = 0.4002400f * data->x + 0.7076000f * data->y + -0.0808100f * data->z;
-  const float M = -0.2263000f * data->x + 1.1653200f * data->y + 0.0457000f * data->z;
-  const float S = 0.9182200f * data->z;
 
-  data->x = L;
-  data->y = M;
-  data->z = S;
-}
-void ConvertLmsToXyzVonKries(float4* data)
-{
-  const float L = data->x;
-  const float M = data->y;
-  const float S = data->z;
-
-  data->x = 1.8599364f * L + -1.1293816f * M + 0.2198974f * S;
-  data->y = 0.3611914f * L + 0.6388125f * M + -0.0000064f * S;
-  data->z = 1.0890636f * S;
-}
 void ConvertXyzToLms(float4* data)
 {
   float L = 0.4002f * data->x + 0.7075f * data->y + -0.0807f * data->z;
@@ -554,65 +408,6 @@ void ConvertXyzToLms(float4* data)
   data->y = M;
   data->z = S;
 }
-void ConvertXyzToLmsPower(float4 * data, const float power)
-{
-  float L = 0.4002f * data->x + 0.7075f * data->y + -0.0807f * data->z;
-  float M = -0.2280f * data->x + 1.1500f * data->y + 0.0612f * data->z;
-  float S = 0.9184f * data->z;
-
-  const float a = 0.43f * power;
-
-  if (L >= 0.0f) L = pow(L, a);
-  else if (L <  0.0f) L = -pow(-L, a);
-  if (M >= 0.0f) M = pow(M, a);
-  else if (M <  0.0f) M = -pow(-M, a);
-  if (S >= 0.0f) S = pow(S, a);
-  else if (S <  0.0f) S = -pow(-S, a);
-
-  data->x = L;
-  data->y = M;
-  data->z = S;
-}
-void ExponentIcam(float4* data, const float4* dataBlur)
-{
-  float L = data->x;
-  float M = data->y;
-  float S = data->z;
-
-  const float La = 1.0f + dataBlur->y;
-
-  float Fl = 0.2f * pow(1.0f / (5.0f * La + 1.0f), 4.0f) * (5.0f * La) +
-    0.1f * pow(1.0f - pow(1.0f / (5.0f * La + 1.0f), 4.0f), 2.0f) * pow(5.0f * La, 0.3333333f);
-
-  Fl /= 1.7f;
-
-  if (Fl < 0.3f) Fl = 0.3f;
-
-  const float a = 0.43f * Fl;
-
-  if (L >= 0.0f) data->x = pow(L, a);
-  else if (L <  0.0f) data->x = -pow(-L, a);
-
-  if (M >= 0.0f) data->y = pow(M, a);
-  else if (M <  0.0f) data->y = -pow(-M, a);
-
-  if (S >= 0.0f) data->z = pow(S, a);
-  else if (S <  0.0f) data->z = -pow(-S, a);
-
-  //data->x = dataBlur->x;
-  //data->y = dataBlur->y;
-  //data->z = dataBlur->z;
-}
-void ConvertLmsToIpt(float4* data)
-{
-  const float I = 0.4000f * data->x + 0.4000f * data->y + 0.2000f * data->z;
-  const float P = 4.4550f * data->x + -4.8510f * data->y + 0.3960f * data->z;
-  const float T = 0.8056f * data->x + 0.3572f * data->y + -1.1628f * data->z;
-
-  data->x = I;
-  data->y = P;
-  data->z = T;
-}
 void ConvertLmsToXyz(float4* data)
 {
   float L = data->x;
@@ -623,24 +418,16 @@ void ConvertLmsToXyz(float4* data)
   data->y = 0.3660f * L + 0.6444f * M + -0.010f  * S;
   data->z = 1.0893f * S;
 }
-void ConvertLmsToXyzPower(float4* data)
+
+void ConvertLmsToIpt(float4* data)
 {
-  float L = data->x;
-  float M = data->y;
-  float S = data->z;
+  const float I = 0.4000f * data->x + 0.4000f * data->y + 0.2000f * data->z;
+  const float P = 4.4550f * data->x + -4.8510f * data->y + 0.3960f * data->z;
+  const float T = 0.8056f * data->x + 0.3572f * data->y + -1.1628f * data->z;
 
-  const float a = 2.3255819f; //  = 1.0f / 0.43f;
-
-  if (L >= 0.0f) L = pow(L, a);
-  else if (L <  0.0f) L = -pow(-L, a);
-  if (M >= 0.0f) M = pow(M, a);
-  else if (M <  0.0f) M = -pow(-M, a);
-  if (S >= 0.0f) S = pow(S, a);
-  else if (S <  0.0f) S = -pow(-S, a);
-
-  data->x = 1.8493f * L + -1.1383f * M + 0.2381f * S;
-  data->y = 0.3660f * L + 0.6444f * M + -0.010f  * S;
-  data->z = 1.0893f * S;
+  data->x = I;
+  data->y = P;
+  data->z = T;
 }
 void ConvertIptToLms(float4* data)
 {
@@ -652,6 +439,7 @@ void ConvertIptToLms(float4* data)
   data->y = M;
   data->z = S;
 }
+
 void ChromAdaptIcam(float4* data, float3 dataW, float3 d65, const float D)
 {
   MatrixCat02(data);
@@ -670,200 +458,8 @@ void ChromAdaptIcam(float4* data, float3 dataW, float3 d65, const float D)
 
   InverseMatrixCat02(data);
 }
-void InverseChromAdaptIcam(float4* data, const float D)
-{
-  static const float3 xyz_d65 = { 0.9505f, 1.0f, 1.0888f };
-  static const float Xd65 = 0.8562f * xyz_d65.x + 0.3372f * xyz_d65.y + -0.1934f * xyz_d65.z;
-  static const float Yd65 = -0.8360f * xyz_d65.x + 1.8327f * xyz_d65.y + 0.0033f * xyz_d65.z;
-  static const float Zd65 = 0.0357f * xyz_d65.x + -0.0469f * xyz_d65.y + 1.0112f * xyz_d65.z;
-
-  const float R = 0.8562f * data->x + 0.3372f * data->y + -0.1934f * data->z;
-  const float G = -0.8360f * data->x + 1.8327f * data->y + 0.0033f * data->z;
-  const float B = 0.0357f * data->x + -0.0469f * data->y + 1.0112f * data->z;
-
-  const float Rc = (D * Xd65 / Xd65 + 1.0f - D) * R;
-  const float Gc = (D * Yd65 / Yd65 + 1.0f - D) * G;
-  const float Bc = (D * Zd65 / Zd65 + 1.0f - D) * B;
-
-  const float Xadapt = 0.9873f * Rc + -0.1768f * Gc + 0.1894f * Bc;
-  const float Yadapt = 0.4504f * Rc + 0.4649f * Gc + 0.0846f * Bc;
-  const float Zadapt = -0.0139f * Rc + 0.0278f * Gc + 0.9861f * Bc;
-
-  data->x = Xadapt;
-  data->y = Yadapt;
-  data->z = Zadapt;
-}
-void ChromAdaptCam02(float4* data, const float3 dataW, float D)
-{
-  MatrixCat02(data);
-
-  // D65 offset: 95.047f / 100.0f = 0.95047f
-  // D65 offset: 108.883 / 100.0f = 1.08883f
-  const float Rc = (0.95047f * D / dataW.x + (1.0f - D)) * data->x;
-  const float Gc = (D / dataW.y + (1.0f - D)) * data->y;
-  const float Bc = (1.08883f * D / dataW.z + (1.0f - D)) * data->z;
-
-  data->x = Rc;
-  data->y = Gc;
-  data->z = Bc;
-
-  InverseMatrixCat02(data);
-}
-void InverseChromAdaptCam02(float4* data, const float3* dataW, const float Fl, const float D, const float c)
-{
-  MatrixCat02(data);
-
-  const float Rc = data->x;
-  const float Gc = data->y;
-  const float Bc = data->z;
-
-  const float R = Rc / (100.0f * D / dataW->x + 1.0f - D);
-  const float G = Gc / (100.0f * D / dataW->y + 1.0f - D);
-  const float B = Bc / (100.0f * D / dataW->z + 1.0f - D);
-
-  data->x = R;
-  data->y = G;
-  data->z = B;
-
-  InverseMatrixCat02(data); // Return XYZ
-}
-void OpponentColorCam02(float4* data, const float maxRgbSource, float& La, float& k, float& Fl, const float c, const float z, const float Nbb, const float Aw)
-{
-  MatrixHpe(data);
-
-  const float R1 = data->x;
-  const float G1 = data->y;
-  const float B1 = data->z;
-
-  La = 0.2f * maxRgbSource; // adaptation field's absolute luminance
-  k = 1.0f / (5.0f * La + 1.0f);
-  Fl = 0.2f * pow(k, 4.0f) * (5.0f * La) + 0.1f * pow(1.0f - pow(k, 4.0f), 2.0f) * pow(5.0f * La, 0.333333f);
-
-  float signR = 1.0f;
-  float signG = 1.0f;
-  float signB = 1.0f;
-
-  if (R1 < 0.0f) signR = -signR;
-  if (G1 < 0.0f) signG = -signG;
-  if (B1 < 0.0f) signB = -signB;
-
-  const float R1a = signR * ((400.0f * pow(Fl * abs(R1) / 100.0f, 0.42f)) / (27.13f + pow(Fl * abs(R1) / 100.0f, 0.42f))) + 0.1f;
-  const float G1a = signG * ((400.0f * pow(Fl * abs(G1) / 100.0f, 0.42f)) / (27.13f + pow(Fl * abs(G1) / 100.0f, 0.42f))) + 0.1f;
-  const float B1a = signB * ((400.0f * pow(Fl * abs(B1) / 100.0f, 0.42f)) / (27.13f + pow(Fl * abs(B1) / 100.0f, 0.42f))) + 0.1f;
-
-  const float A = (2.0f * R1a + G1a + B1a / 20.0f - 0.305f) * Nbb; // achromatic response
-
-  const float J = 100.0f * pow(A / Aw, c * z);              // lightness
-  const float a = R1a - 12.0f * G1a / 11.0f + B1a / 11.0f;
-  const float b = (R1a + G1a - 2.0f * B1a) / 9.0f;
-
-  data->x = J;
-  data->y = a;
-  data->z = b;
-}
-void InverseOpponentColorCam02(float4* data, float& Fl, const float c, const float z, const float Nbb, const float Aw)
-{
-  const float J = data->x;
-  const float a = data->y;
-  const float b = data->z;
-
-  const float A = Aw * pow(J / 100.0f, 1.0f / (c * z));
-  const float p2 = A / Nbb + 0.305f;
-
-  const float R1a = 460.0f / 1403.0f * p2 + 451.0f / 1403.0f * a + 288.00f / 1403.0f * b;
-  const float G1a = 460.0f / 1403.0f * p2 - 891.0f / 1403.0f * a + 261.00f / 1403.0f * b;
-  const float B1a = 460.0f / 1403.0f * p2 - 220.0f / 1403.0f * a - 6300.0f / 1403.0f * b;
-
-  float sign = 1.0f;
-
-  if (R1a - 0.1f == 0.0f) sign = 0.0f;
-  if (G1a - 0.1f == 0.0f) sign = 0.0f;
-  if (B1a - 0.1f == 0.0f) sign = 0.0f;
-  if (R1a - 0.1f < 0.0f)  sign = -1.0f;
-  if (G1a - 0.1f < 0.0f)  sign = -1.0f;
-  if (B1a - 0.1f < 0.0f)  sign = -1.0f;
-
-  float R1 = sign * (R1a - 0.1f) * 100.0f / Fl * pow((27.13f * abs(R1a - 0.1f)) / (400.0f - abs(R1a - 0.1f)), 2.380952f); // 2.380952 = 1 / 0.42
-  float G1 = sign * (G1a - 0.1f) * 100.0f / Fl * pow((27.13f * abs(G1a - 0.1f)) / (400.0f - abs(G1a - 0.1f)), 2.380952f);
-  float B1 = sign * (B1a - 0.1f) * 100.0f / Fl * pow((27.13f * abs(B1a - 0.1f)) / (400.0f - abs(B1a - 0.1f)), 2.380952f);
-
-  data->x = R1;
-  data->y = G1;
-  data->z = B1;
-
-  InverseMatrixHpe(data);
-}
-void ToneCompressionIcam(float4 inData[], const float &whiteImage, const float maxRgbSource, const float maxRgbSourceBlur)
-{
-  float4 dataHpe = *inData;
-  MatrixHpe(&dataHpe);
-
-  const float R1 = dataHpe.x;
-  const float G1 = dataHpe.y;
-  const float B1 = dataHpe.z;
-
-  //S is the luminance of each pixel in the chromatic adapted image, i.e., 
-  //the Y image, and Sw is the value of S for the reference white.
-  //By setting Sw to a global scale from the maximum value of the local adapted white point image,
-  //the rod response output is automatically adjusted by the general luminance perception of the scene.
-  // Yw is the luminance of the local adapted white image.
-
-  // cone response
-
-  const float La = 0.2f * whiteImage;
-  const float k = 1.0f / (5.0f * La + 1.0f);
-  const float Fl = 0.2f * pow(k, 4.0f) * (5.0f * La) + 0.1f * pow(1.0f - pow(k, 4.0f), 2.0f) * pow(5.0f * La, 0.333333f);
-
-  // compression
-  const float p = 0.75f; // 0.6 - 0.85
-  const float Yw = maxRgbSource;
-
-  float signR = 1.0f;
-  float signG = 1.0f;
-  float signB = 1.0f;
-
-  if (R1 < 0.0f) signR = -signR;
-  if (G1 < 0.0f) signG = -signG;
-  if (B1 < 0.0f) signB = -signB;
-
-  const float R1a = signR * ((400.0f * pow(Fl * abs(R1) / Yw, p)) / (27.13f + pow(Fl * abs(R1) / Yw, p))) + 0.1f;
-  const float G1a = signG * ((400.0f * pow(Fl * abs(G1) / Yw, p)) / (27.13f + pow(Fl * abs(G1) / Yw, p))) + 0.1f;
-  const float B1a = signB * ((400.0f * pow(Fl * abs(B1) / Yw, p)) / (27.13f + pow(Fl * abs(B1) / Yw, p))) + 0.1f;
-
-  // make a netural As Rod response
-  const float Las = 2.26f * La;
-  const float j = 0.00001f / (5.0f * Las / 2.26f + 0.00001f);
-  const float Fls = 3800.0f * (j * j) * (5.0f * Las / 2.26f) + 0.2f * pow(1.0f - j * j, 4.0f) * pow(5.0f * Las / 2.26f, 1.0f / 6.0f);
-  const float Sw = whiteImage;
-  const float S = inData->y;
-
-  // BS is the rod pigment bleach or satruration factor
-  const float Bs = 0.5f / (1.0f + 0.3f * pow((5.0f * Las / 2.26f) * (S / Sw), 0.3f))
-    + 0.5f / (1.0f + 5.0f *     (5.0f * Las / 2.26f));
-
-  // Noise term in Rod response is 1 / 3 of that in Cone response because Rods are more sensitive
-  const float As = 3.05f * Bs * (400.0f * pow(Fls * S / Sw, p)) / (27.13f + pow(Fls * S / Sw, p)) + 0.3f;
-
-  // combine Cone and Rod response
-  inData->x = R1a + As;
-  inData->y = G1a + As;
-  inData->z = B1a + As;
-
-  InverseMatrixHpe(inData);
 
 
-  // colorfulness adjustment - Hunt effect  in IPT color space       
-  //ConvertXyzToLmsPower(inData, 1.0f);
-  //ConvertLmsToIpt(inData);  
-
-  //const float C = sqrtf(inData->y * inData->y + inData->z * inData->z);
-  //const float multColor = (pow(Fl + 1.0f, 0.2f) * ((1.29f * C * C - 0.27f * C + 0.42f) / (C * C - 0.31f * C + 0.42f)));
-  //inData->y *= multColor;
-  //inData->z *= multColor;
-
-  //ConvertIptToLms(inData);
-  //ConvertLmsToXyzPower(inData);
-}
 
 void Blend(float& inData1, const float& inData2, const float coeff) // 0 - data1, 1 - data2
 {
