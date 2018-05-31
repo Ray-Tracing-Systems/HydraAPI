@@ -24,8 +24,8 @@ uniform ivec2 rasterization_res;
 
 float mip_map_level(vec2 texture_coordinate)
 {
-  vec2  dx_vtc        = (rasterization_res.x / float(render_res.x)) * dFdx(max_tex_res.x * texture_coordinate);
-  vec2  dy_vtc        = (rasterization_res.y / float(render_res.y)) * dFdy(max_tex_res.y * texture_coordinate);
+  vec2  dx_vtc        = (rasterization_res.x / float(render_res.x)) * max_tex_res.x * dFdx(texture_coordinate);
+  vec2  dy_vtc        = (rasterization_res.y / float(render_res.y)) * max_tex_res.y * dFdy(texture_coordinate);
   float delta_max_sqr = max(dot(dx_vtc, dx_vtc), dot(dy_vtc, dy_vtc));
 
   const float maxClamp = pow(2.0f, MAX_MIP_LEVEL * 2.0f);

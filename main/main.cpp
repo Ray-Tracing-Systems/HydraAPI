@@ -101,7 +101,7 @@ int main(int argc, const char** argv)
     //test25_many_textures_big_data();
 
     //test35_cornell_with_light();
-    //test42_load_library_basic();
+//    test42_load_library_basic();
     //test81_custom_attributes();
 
     //test1000_loadlibrary_and_edit();
@@ -143,8 +143,8 @@ int main(int argc, const char** argv)
 
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
     //GEO_TESTS::test_003_compute_normals();
-    //MTL_TESTS::test_154_proc_checker_precomp();
-    MTL_TESTS::test_163_diffuse_texture_recommended_res();
+    MTL_TESTS::test_154_proc_checker_precomp();
+    //MTL_TESTS::test_163_diffuse_texture_recommended_res();
 
     //MTL_TESTS::test_161_simple_displacement();
     //MTL_TESTS::test_164_simple_displacement_proctex();

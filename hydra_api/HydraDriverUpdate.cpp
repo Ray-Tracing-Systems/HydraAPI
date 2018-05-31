@@ -1384,6 +1384,10 @@ void CreatePrecompProcTex(pugi::xml_document &doc, resolution_dict &dict)
 static std::tuple<int, int> RecommendedTexResolutionFix(int w, int h, int rwidth, int rheight)
 {
 
+  if(w == -1 || h == -1)
+  {
+    return std::tuple<int, int>(rwidth, rheight);
+  }
   if (rwidth < 256 || rheight < 256)
   {
     const double relation = double(w) / double(h);
@@ -1449,6 +1453,7 @@ resolution_dict InsertMipLevelInfoIntoXML(pugi::xml_document &stateToProcess, co
         newW /= 2;
         newH /= 2;
       }
+
 
       if(currW >= 0 && newW > currW)
         newW = currW;
@@ -1535,9 +1540,9 @@ std::wstring HR_UtilityDriverStart(const wchar_t* state_path)
 
     auto mipLevelsDict = getMipLevelsFromUtilityDriver(utilityDriver.get());
 
-/*    for (std::pair<int32_t, int32_t> elem : mipLevelsDict)
+    for (std::pair<int32_t, int32_t> elem : mipLevelsDict)
       std::cout << " " << elem.first << ":" << elem.second << std::endl;
-*/
+
 
 #ifdef WIN32
     HydraDestroyHiddenWindow();
