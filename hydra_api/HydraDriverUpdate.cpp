@@ -1385,9 +1385,10 @@ static std::tuple<int, int> RecommendedTexResolutionFix(int w, int h, int rwidth
 {
 
   if(w == -1 || h == -1)
-  {
     return std::tuple<int, int>(rwidth, rheight);
-  }
+  else if(rwidth >= w || rheight >= h)
+    return std::tuple<int, int>(w, h);
+
   if (rwidth < 256 || rheight < 256)
   {
     const double relation = double(w) / double(h);
@@ -1453,13 +1454,6 @@ resolution_dict InsertMipLevelInfoIntoXML(pugi::xml_document &stateToProcess, co
         newW /= 2;
         newH /= 2;
       }
-
-
-      if(currW >= 0 && newW > currW)
-        newW = currW;
-
-      if(currH >= 0 && newH > currH)
-        newH = currH;
 
       std::tie(newW, newH) = RecommendedTexResolutionFix(currW, currH, newW, newH);
 
