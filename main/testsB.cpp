@@ -1716,7 +1716,7 @@ bool test84_proc_texture2()
     node.append_child(L"diff_trace_depth").text() = L"4";
     node.append_child(L"pt_error").text() = L"2.0";
     node.append_child(L"minRaysPerPixel").text() = L"256";
-    node.append_child(L"maxRaysPerPixel").text() = L"2048";
+    node.append_child(L"maxRaysPerPixel").text() = L"256";
   }
   hrRenderClose(renderRef);
 
