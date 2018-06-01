@@ -229,6 +229,9 @@ bool MTL_TESTS::test_162_shadow_matte_back1()
     intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"0.05 0.05 0.25");
     intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(1.0f);
 
+    auto back = lightNode.append_child(L"back");
+    hrTextureBind(texBack, back);
+
     VERIFY_XML(lightNode);
   }
   hrLightClose(sky);

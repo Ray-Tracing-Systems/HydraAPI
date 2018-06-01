@@ -20,6 +20,7 @@ typedef int sampler2D;
 typedef struct SurfaceInfoT
 {
   float3 wp;
+  float3 lp;
   float3 n;
   float2 tc0;
   float  ao;
@@ -30,6 +31,7 @@ typedef struct SurfaceInfoT
 } SurfaceInfo;
 
 #define readAttr_WorldPos(sHit) (sHit->wp)
+#define readAttr_LocalPos(sHit) (sHit->lp)
 #define readAttr_ShadeNorm(sHit) (sHit->n)
 #define readAttr_TexCoord0(sHit) (sHit->tc0)
 #define readAttr_AO(sHit) (sHit->ao)
@@ -72,20 +74,24 @@ static inline float3 decompressShadow(ushort4 shadowCompressed)
   return invNormCoeff * make_float3((float)shadowCompressed.x, (float)shadowCompressed.y, (float)shadowCompressed.z);
 }
 
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 __kernel void ProcTexExec(__global       uint*          restrict a_flags,
-                                                        
+                          __global const float4*        restrict in_rdir,                                                      
+
                           __global const float4*        restrict in_hitPosNorm,
                           __global const float2*        restrict in_hitTexCoord,
                           __global const HitMatRef*     restrict in_matData,
-                          __global const float4*        restrict in_normalsFull,
+ 
                           __global const uchar*         restrict in_shadowAOCompressed1,
                           __global const uchar*         restrict in_shadowAOCompressed2,
-                                                         
+                          __global const Lite_Hit*      restrict in_hits,
+                          __global const float4*        restrict in_matrices,
+
                           __global       float4*        restrict out_procTexData,
                                                         
                           __global const float4*        restrict in_texStorage1,
@@ -118,13 +124,21 @@ __kernel void ProcTexExec(__global       uint*          restrict a_flags,
     if(in_shadowAOCompressed2 != 0 )
       shadow2 = ((float)in_shadowAOCompressed2[tid]) / 255.0f;
 
+    const Lite_Hit hit = in_hits[tid];
+    const float4x4 instanceMatrixInv = fetchMatrix(hit, in_matrices);
+
+    const float4 dataPos = in_hitPosNorm[tid];
+
     SurfaceInfo surfHit;
     surfHit.wp  = to_float3(in_hitPosNorm[tid]);
-    surfHit.n   = to_float3(in_normalsFull[tid]); // normalize(decodeNormal(as_int(data.w)));
+    surfHit.lp  = mul4x3(instanceMatrixInv, surfHit.wp);
+    surfHit.n   = normalize(decodeNormal(as_int(dataPos.w)));
     surfHit.tc0 = in_hitTexCoord[tid];
     surfHit.ao  = shadow1; 
     surfHit.ao2 = shadow2;
     __private const SurfaceInfo* sHit = &surfHit;
+
+    const float3 hr_viewVectorHack = to_float3(in_rdir[tid]); // make dependence of this vector is not physycally correct but useful for artists ... 
 
     // (2) read custom attributes to 'surfHit' if target mesh have them.
     //
