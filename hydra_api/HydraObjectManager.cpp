@@ -50,7 +50,6 @@ void HRObjectManager::init(const wchar_t* a_className)
   m_emptyVB                    = false;
   m_computeBBoxes              = false;
 
-
   std::wistringstream instr(a_className);
 
   while (!instr.eof())
