@@ -174,7 +174,7 @@ def test02_mesh_from_vsgf(report_file, inBG):
   diff = matNode.append_child("diffuse")
   diff.append_attribute("brdf_type").set_value("lambert")
   diff.append_child("color").text().set("1.0 1.0 1.0")
-  testTex = hy.hrTexture2DCreateFromFile("checker_16x16.bmp")
+  testTex = hy.hrTexture2DCreateFromFile("../../main/data/textures/checker_16x16.bmp")
   hy.hrTextureBind(testTex, diff)
   refl = matNode.append_child("reflectivity")
   refl.append_attribute("brdf_type").set_value("phong")
@@ -242,7 +242,7 @@ def test02_mesh_from_vsgf(report_file, inBG):
   node.force_child("method_caustic").text().set("pathtracing")
   node.force_child("trace_depth").text().set(5)
   node.force_child("diff_trace_depth").text().set(3)
-  node.force_child("maxRaysPerPixel").text().set(256)
+  node.force_child("maxRaysPerPixel").text().set(512)
   hy.hrRenderClose(renderRef)
 
 
@@ -273,7 +273,7 @@ def test02_mesh_from_vsgf(report_file, inBG):
 
   if(inBG):
     runRenderInBG(renderRef, 1024, 768, test_name)
-    (res, mse) = check_images(test_name, 1, 30.0)
+    (res, mse) = check_images(test_name, 1, 60.0)
     if(res):
       report_file.write(test_name + " PASSED, MSE : {}\n".format(mse))
     else:
@@ -1854,23 +1854,23 @@ def run_tests():
   hy.hrInit("-copy_textures_to_local_folder 1 -local_data_path 1 ")
 
   with open("test_report.txt", "w") as report_file:
-#    test01_render_cubes(report_file, False)
-    test02_mesh_from_vsgf(report_file, False)    
-#    test03_cornell_box(report_file, False)    
-#    test04_instancing(report_file, False) 
-#    test05_load_existing(report_file, False)
-#    test06_blend_simple(report_file, False)
-#    test07_sky_hdr_rotate(report_file, False)
-#    test08_shadow_catcher(report_file, False)
-#    test09_load_car("tests/test09_load_car", report_file, False)
-#    test10_sky_sun_physical(report_file, False)
-#    test11_load_car_and_change_env("tests/test11_load_car_and_change_env", report_file, False)
-#    test12_cornell_box_gbuffer(report_file, False)
-#    test13_transform_instances(report_file, False)
-#    test14_merge_scenes(report_file, False)
-#    test15_merge_one_object(report_file, False)
-#    test16_print_matlib_map(report_file, True)
-#    test17_material_remap_lists(report_file, False)
+     test01_render_cubes(report_file, True)
+     test02_mesh_from_vsgf(report_file, True)    
+     test03_cornell_box(report_file, True)    
+     test04_instancing(report_file, True) 
+     test05_load_existing(report_file, True)
+     test06_blend_simple(report_file, True)
+     test07_sky_hdr_rotate(report_file, True)
+     test08_shadow_catcher(report_file, True)
+     test09_load_car("tests/test09_load_car", report_file, True)
+     test10_sky_sun_physical(report_file, True)
+     test11_load_car_and_change_env("tests/test11_load_car_and_change_env", report_file, True)
+     test12_cornell_box_gbuffer(report_file, True)
+     test13_transform_instances(report_file, True)
+     test14_merge_scenes(report_file, True)
+     test15_merge_one_object(report_file, True)
+     test16_print_matlib_map(report_file, True)
+     test17_material_remap_lists(report_file, True)
 #    render_scene("tests/test04_instancing")
 
 run_tests()

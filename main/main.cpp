@@ -143,7 +143,7 @@ int main(int argc, const char** argv)
 
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
     //GEO_TESTS::test_003_compute_normals();
-    MTL_TESTS::test_154_proc_checker_precomp();
+    //MTL_TESTS::test_154_proc_checker_precomp();
     //MTL_TESTS::test_163_diffuse_texture_recommended_res();
 
     //MTL_TESTS::test_161_simple_displacement();
@@ -151,7 +151,9 @@ int main(int argc, const char** argv)
     //MTL_TESTS::test_165_simple_displacement_mesh();
     //MTL_TESTS::test_166_displace_by_noise();
 
-    //window_main_free_look(L"tests_f/test_166", L"opengl1Debug");
+    //MTL_TESTS::test_167_subdiv();
+
+    window_main_free_look(L"tests_f/test_167", L"opengl1Debug");
 
     //MTL_TESTS::test_162_shadow_matte_back1();
     //MTL_TESTS::test_154_proc_checker_precomp();
