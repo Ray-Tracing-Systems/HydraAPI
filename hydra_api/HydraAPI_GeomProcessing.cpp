@@ -770,6 +770,7 @@ std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
     HrError(L"HR_PreprocessMeshes, pugixml load: ", loadResult.description());
     return new_state_path;
   }
+  bool anyChanges = false;
 
   if (g_objManager.m_currSceneId < g_objManager.scnInst.size())
   {
@@ -820,15 +821,19 @@ std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
         HRMesh *pMesh = g_objManager.PtrById(mesh_ref_new);
 
         meshTofixedMesh[p] = mesh_ref_new.id;
+        anyChanges = true;
       }
       else
       {
         hrMeshClose(mesh_ref);
       }
     }
-    InsertFixedMeshesInfoIntoXML(stateToProcess, meshTofixedMesh);
+    if(anyChanges)
+      InsertFixedMeshesInfoIntoXML(stateToProcess, meshTofixedMesh);
   }
 
-
-  return SaveFixedStateXML(stateToProcess, state_path, L"_meshes");
+  if(anyChanges)
+    return SaveFixedStateXML(stateToProcess, state_path, L"_meshes");
+  else
+    return state_path;
 }

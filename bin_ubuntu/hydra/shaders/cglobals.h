@@ -395,6 +395,7 @@ enum VARIABLE_NAMES { // int vars
                       HRT_MLT_ITERS_MULT           = 32,
                       HRT_MLT_BURN_ITERS           = 33,
                       HRT_MMLT_FIRST_BOUNCE        = 34,
+                      HRT_SHADOW_MATTE_BACK        = 35,
 };
 
 enum VARIABLE_FLOAT_NAMES{ // float vars
@@ -443,6 +444,7 @@ enum VARIABLE_FLOAT_NAMES{ // float vars
                            HRT_MLT_BKELEMEN                        = 33,
                            HRT_MLT_SCREEN_SCALE_X                  = 34,
                            HRT_MLT_SCREEN_SCALE_Y                  = 35,
+                           HRT_BACK_TEXINPUT_GAMMA                 = 36,
 };
 
 
@@ -1233,6 +1235,7 @@ enum MATERIAL_EVENT {
 static inline bool isPureSpecular(const MatSample a_sample) { return (a_sample.flags & RAY_EVENT_S) != 0; }
 static inline bool isDiffuse     (const MatSample a_sample) { return (a_sample.flags & RAY_EVENT_D) != 0; }
 static inline bool isGlossy      (const MatSample a_sample) { return (a_sample.flags & RAY_EVENT_G) != 0; }
+static inline bool isTransparent (const MatSample a_sample) { return (a_sample.flags & RAY_EVENT_T) != 0; }
 
 enum {
   RAY_GRAMMAR_DIRECT_LIGHT         = 64,
@@ -2410,10 +2413,11 @@ enum PLAIN_MAT_FLAGS{
   PLAIN_MATERIAL_HAVE_PROC_TEXTURES   = 32768*2,
   PLAIN_MATERIAL_LOCAL_AO1            = 32768*4,
   PLAIN_MATERIAL_LOCAL_AO2            = 32768*8,
+  PLAIN_MATERIAL_CAMERA_MAPPED_REFL   = 32768*16,
 };
 
-#define PLAIN_MATERIAL_DATA_SIZE        144
-#define PLAIN_MATERIAL_CUSTOM_DATA_SIZE 64
+#define PLAIN_MATERIAL_DATA_SIZE        192
+#define PLAIN_MATERIAL_CUSTOM_DATA_SIZE 80
 #define MIX_TREE_MAX_DEEP               16
 
 struct PlainMaterialT
@@ -2446,25 +2450,26 @@ typedef struct PlainMaterialT PlainMaterial;
 #define NORMAL_SAMPLER_OFFSET        (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+20)
 #define OPACITY_SAMPLER_OFFSET       (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+32)
 
-#define PROC_TEX1_F4_HEAD_OFFSET     (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+33)
-#define PROC_TEX2_F4_HEAD_OFFSET     (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+34)
-#define PROC_TEX3_F4_HEAD_OFFSET     (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+35)
-#define PROC_TEX4_F4_HEAD_OFFSET     (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+36)
-#define PROC_TEX5_F4_HEAD_OFFSET     (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+37)
+#define PROC_TEX1_F4_HEAD_OFFSET     (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+44)
+#define PROC_TEX2_F4_HEAD_OFFSET     (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+45)
+#define PROC_TEX3_F4_HEAD_OFFSET     (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+46)
+#define PROC_TEX4_F4_HEAD_OFFSET     (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+47)
+#define PROC_TEX5_F4_HEAD_OFFSET     (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+48)
 
-#define PROC_TEX_TABLE_OFFSET        (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+38)
+#define PROC_TEX_TABLE_OFFSET        (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+49)
 
-#define PROC_TEX_AO_TYPE             (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+39)
-#define PROC_TEX_AO_SAMPLER          (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+40)
-#define PROC_TEX_TEX_ID              (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+52)
-#define PROC_TEXMATRIX_ID            (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+53)
-#define PROC_TEX_AO_LENGTH           (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+54)
+#define PROC_TEX_AO_TYPE             (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+50)
+#define PROC_TEX_AO_SAMPLER          (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+52)
 
-#define PROC_TEX_AO_TYPE2            (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+55)
-#define PROC_TEX_AO_SAMPLER2         (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+56)
-#define PROC_TEX_TEX_ID2             (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+68)
-#define PROC_TEXMATRIX_ID2           (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+69)
-#define PROC_TEX_AO_LENGTH2          (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+70)
+#define PROC_TEX_TEX_ID              (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+64)
+#define PROC_TEXMATRIX_ID            (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+65)
+#define PROC_TEX_AO_LENGTH           (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+66)
+
+#define PROC_TEX_AO_TYPE2            (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+67)
+#define PROC_TEX_AO_SAMPLER2         (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+68)
+#define PROC_TEX_TEX_ID2             (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+80)
+#define PROC_TEXMATRIX_ID2           (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+81)
+#define PROC_TEX_AO_LENGTH2          (PLAIN_MATERIAL_CUSTOM_DATA_SIZE+82)
 
 enum AO_TYPES { AO_TYPE_NONE = 0, AO_TYPE_UP = 1, AO_TYPE_DOWN = 2, AO_TYPE_BOTH = 4 };
 
