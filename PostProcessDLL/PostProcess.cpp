@@ -11,17 +11,12 @@
 class PostProcessHydra1 : public IFilter2D
 {
 public:
-  double* mmeanRGBcurrBlock_prevSpp;
-
-  PostProcessHydra1() 
-  {
-    mmeanRGBcurrBlock_prevSpp = (double*)calloc(1000, sizeof(double));
-  }
-
+  std::vector<float> prevSppMeanRGB;
+  std::vector<float>& refPrevSppMeanRGB = prevSppMeanRGB;
+  
 
   void Release() override;   // COM like destructor; 
   bool Eval()    override;   //
-
 };
 
 
@@ -39,10 +34,7 @@ extern "C" __declspec(dllexport) IFilter2D* CreateFilter(const wchar_t* a_filter
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void PostProcessHydra1::Release()
-{
-  free(mmeanRGBcurrBlock_prevSpp);
-  mmeanRGBcurrBlock_prevSpp = nullptr;
-  
+{   
   // nothing to destroy here, we have simple implementation
 }
 
@@ -53,7 +45,8 @@ void ExecutePostProcessHydra1(
   const float a_uniformContrast, const float a_normalize, const float a_vignette,
   const float a_chromAberr, const float a_sharpness, const float a_sizeStar,
   const int a_numRay, const int a_rotateRay, const float a_randomAngle,
-  const float a_sprayRay, unsigned int a_width, unsigned int a_height, double* mmeanRGBcurrBlock_prevSpp); // forward declaraion
+  const float a_sprayRay, unsigned int a_width, unsigned int a_height,
+  std::vector<float>& refPrevSppMeanRGB, bool a_viewConvergence); // forward declaraion
 
 bool PostProcessHydra1::Eval()
 {
@@ -66,6 +59,8 @@ bool PostProcessHydra1::Eval()
   // read input and output arguments
   //
   unsigned int numThreads = settings.attribute(L"numThreads").as_int();
+
+  bool viewConvergence = settings.attribute(L"viewConver").as_bool();
 
   float exposure = settings.attribute(L"exposure").as_float();
   float compress = settings.attribute(L"compress").as_float();
@@ -91,7 +86,10 @@ bool PostProcessHydra1::Eval()
   const float* input = GetInputByName(L"in_color", &w1, &h1, &bpp1);
   float* output = GetOutputByName(L"out_color", &w2, &h2, &bpp2);
 
-
+  if (viewConvergence)
+  {
+    refPrevSppMeanRGB.reserve(10000);
+  }
   // check we have correct in and out arguments
   //
   if (numThreads < 0 || exposure < 0.0f || compress < 0.0f || contrast < 0.0f ||
@@ -217,7 +215,8 @@ bool PostProcessHydra1::Eval()
     uniformContrast, normalize, vignette,
     chromAberr, sharpness, sizeStar, 
     numRay, rotateRay, randomAngle, 
-    sprayRay, w1, h1, mmeanRGBcurrBlock_prevSpp);
+    sprayRay, w1, h1, 
+    refPrevSppMeanRGB, viewConvergence);
 
   return true;
 }
@@ -233,7 +232,8 @@ void ExecutePostProcessHydra1(
   const float a_uniformContrast, const float a_normalize, const float a_vignette,
   const float a_chromAberr, const float a_sharpness, const float a_sizeStar,
   const int a_numRay, const int a_rotateRay, const float a_randomAngle, 
-  const float a_sprayRay, unsigned int a_width, unsigned int a_height, double* mmeanRGBcurrBlock_prevSpp)
+  const float a_sprayRay, unsigned int a_width, unsigned int a_height,
+  std::vector<float>& a_refPrevSppMeanRGB, bool a_viewConvergence)
 { 
   // Set the desired number of threads
   const unsigned int maxThreads = omp_get_num_procs();
@@ -496,6 +496,8 @@ void ExecutePostProcessHydra1(
       ConvertSrgbToXyz(&image4out[i]);
       ChromAdaptIcam(&image4out[i], a_whitePointColor, d65, a_whiteBalance);
       ConvertXyzToSrgb(&image4out[i]);
+
+      ClampMinusToZero(&image4out[i]);
     }
 
     // ----- Compress -----
@@ -710,82 +712,64 @@ void ExecutePostProcessHydra1(
   //////////////////////////////////////////////////////////////////////////////
   // Stop rendering when an error is reached.
   //////////////////////////////////////////////////////////////////////////////
-  bool diffSppMap = true;
 
-  if (diffSppMap)
+  if (a_viewConvergence)
   {
-    int numBlockX = 20;
-    int numBlockY = 20;
+    int const numPixels = 10000.0f;
+    const int stepY = a_height / 100;
+    const int stepX = a_width / 100;
+    const float maxDiff = 0.001f;
 
-    double cummDiff = 0.0;
-    const float maxDiff = 0.3f;
-    const int sizeBlockX = a_width / numBlockX;
-    const int sizeBlockY = a_height / numBlockY;
+    int i = 0;
+    int numUnstablePixels = 0;
 
-    //#pragma omp parallel for
-    for (int i = 0; i < numBlockY; i++)
+    // Calculate pixels
+    for (int y = 0; y < a_height; y += stepY)
     {
-      for (int j = 0; j < numBlockX; j++)
+      for (int x = 0; x < a_width; x += stepX)
       {
-        // Calc mean block
-        double meanRGBcurrBlock = 0;
-        for (int y = 0; y < sizeBlockY; y++)
+        float meanRGBcurr = 0;
+        const int a = y * a_width + x;
+        meanRGBcurr += (image4out[a].x + image4out[a].y + image4out[a].z) / 3.0f;
+
+        float meanSpp = (a_refPrevSppMeanRGB[i] + meanRGBcurr) / 2.0f;
+        if (meanSpp <= 0) meanSpp = 1.0f;
+        const float diffSpp = abs((a_refPrevSppMeanRGB[i] - meanRGBcurr) / meanSpp);
+
+        a_refPrevSppMeanRGB[i] = meanRGBcurr;
+        i++;
+
+        // Draw unstable pixels
+        if (diffSpp > maxDiff)
         {
-          for (int x = 0; x < sizeBlockX; x++)
-          {
-            const int a = (y + sizeBlockY * i) * a_width + x + sizeBlockX * j;
-            meanRGBcurrBlock += (image4out[a].x + image4out[a].y + image4out[a].z) / 3.0f;
-          }
-        }
-
-        meanRGBcurrBlock /= (sizeBlockX * sizeBlockY);
-
-        double meanSpp = (mmeanRGBcurrBlock_prevSpp[i] + meanRGBcurrBlock) / 2.0f;
-        if (meanSpp <= 0) meanSpp = 0.0001f;
-
-        const double diffSpp = abs((mmeanRGBcurrBlock_prevSpp[i] - meanRGBcurrBlock) / meanSpp);
-
-        // Draw block
-        for (int y = 0; y < sizeBlockY; y+=2)
-        {
-          for (int x = 0; x < sizeBlockX; x+=2)
-          {
-            const int a = (y + sizeBlockY * i) * a_width + x + sizeBlockX * j;
-
-            if (diffSpp > maxDiff)
-            {
-              image4out[a].x = 0.5f;
-              image4out[a].x = 0.2f;
-              image4out[a].x = 0.2f;
-            }
-          }
-        }
-
-        // Copy mean to array
-        const int a = i * numBlockY + j;
-        mmeanRGBcurrBlock_prevSpp[a] = meanRGBcurrBlock;
-        //cummDiff += diffSpp;
+          image4out[a].x = 1.0f;
+          image4out[a].y = 1.0f;
+          image4out[a].z = 1.0f;
+          numUnstablePixels++;
+        }              
       }
+    }
 
-      //cummDiff = cummDiff / (double)(numBlockX * numBlockY);
+    // Draw progress bar
+    const int lenProgressBar = (float)a_width * (1.0f - (float)numUnstablePixels / (float)numPixels) + 0.5f;
+    for (int y = 0; y < 5; y++)
+    {
+      for (int x = 0; x < lenProgressBar; x++)
+      {
+        const int i = y * a_width + x;
 
-      // Draw quad if finish
-      //if (cummDiff < maxDiff)
-      //{
-      //  for (int y = 0; y < 32; y++)
-      //  {
-      //    for (int x = 0; x < 32; x++)
-      //    {
-      //      const int i = y * a_width + x;
+        image4out[i].x = 0.0f;
+        image4out[i].z = 0.0f;
 
-      //      image4out[i].x = 0.0f;
-      //      image4out[i].y = 1.0f;
-      //      image4out[i].z = 0.0f;
-      //    }
-      //  }
-      //}
+        if (lenProgressBar > (a_width * 0.99f))
+          image4out[i].y = 1.0f;        
+        else        
+          image4out[i].y = 0.25f;        
+      }
     }
   }
+
+
 }
 
 
