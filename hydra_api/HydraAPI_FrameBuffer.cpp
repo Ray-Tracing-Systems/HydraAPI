@@ -132,7 +132,7 @@ std::wstring ToWideString(const std::string& rhs)
 static void FreeImageErrorHandlerHydraInternal(FREE_IMAGE_FORMAT fif, const char *message)
 {
   std::wstringstream strOut;
-  strOut << L"(FIF = " << fif << ")";
+  strOut << L"(FIF = " << fif << L")";
   const std::wstring wstr = std::wstring(L"[FreeImage ") + strOut.str() + std::wstring(L"]: ") + ToWideString(message);
   HrError(wstr.c_str());
 }
