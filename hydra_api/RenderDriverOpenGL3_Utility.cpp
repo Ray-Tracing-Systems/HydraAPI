@@ -309,7 +309,7 @@ bool RD_OGL32_Utility::UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode, c
        */
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
 
-    glBindVertexArray(0);
+    glBindVertexArray(0); GL_CHECK_ERRORS;
 
     std::pair<GLuint, int> tmp;
     tmp.first = vertexArrayObject;
@@ -413,7 +413,7 @@ void RD_OGL32_Utility::BeginScene(pugi::xml_node a_sceneNode)
   glDepthMask(GL_TRUE);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_DEPTH_CLAMP);
-  glClear(GL_DEPTH_BUFFER_BIT);
+  glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
   const float aspect = float(m_width) / float(m_height);
   projection = projectionMatrixTransposed(camFov, aspect, camNearPlane, camFarPlane);
@@ -428,7 +428,7 @@ void RD_OGL32_Utility::BeginScene(pugi::xml_node a_sceneNode)
   glBindBuffer(GL_UNIFORM_BUFFER, m_matricesUBO);
   //glBufferData(GL_UNIFORM_BUFFER, 32 * sizeof(GLfloat), &matrices[0], GL_STATIC_DRAW);
   glBufferSubData(GL_UNIFORM_BUFFER, 0, 32 * sizeof(GLfloat), &matrices[0]);
-  glBindBuffer(GL_UNIFORM_BUFFER, 0);
+  glBindBuffer(GL_UNIFORM_BUFFER, 0); GL_CHECK_ERRORS;
 
 
   SetMaterialsTBO();
@@ -502,7 +502,7 @@ void RD_OGL32_Utility::InstanceMeshes(int32_t a_mesh_id, const float *a_matrices
 
       glBindVertexArray(vao);
       glDrawElements(GL_TRIANGLES, indices, GL_UNSIGNED_INT, nullptr);
-      glBindVertexArray(0);
+      glBindVertexArray(0); GL_CHECK_ERRORS;
 
       m_lodBufferProgram.SetUniform("matID", -1);
     }
@@ -546,7 +546,7 @@ void RD_OGL32_Utility::SetMaterialsTBO()
   glBindBuffer(GL_TEXTURE_BUFFER, m_materialsTBOs[2]);
   glBufferSubData(GL_TEXTURE_BUFFER, 0,  sizeof(float) * 4 * m_materials_matrix.size(), &m_materials_matrix[0]);
 
-  glBindBuffer(GL_TEXTURE_BUFFER, 0);
+  glBindBuffer(GL_TEXTURE_BUFFER, 0); GL_CHECK_ERRORS;
 }
 
 void RD_OGL32_Utility::CreateMatricesUBO()
@@ -557,7 +557,7 @@ void RD_OGL32_Utility::CreateMatricesUBO()
 
   GLsizei matricesUBOSize = 32 * sizeof(GLfloat);
 
-  glGenBuffers(1, &m_matricesUBO);
+  glGenBuffers(1, &m_matricesUBO); 
 
   glBindBuffer(GL_UNIFORM_BUFFER, m_matricesUBO);
   glBufferData(GL_UNIFORM_BUFFER, matricesUBOSize, nullptr, GL_STATIC_DRAW);
@@ -578,10 +578,10 @@ void RD_OGL32_Utility::FillMipLevelsDict()
   std::vector<unsigned int> texture_data((unsigned long)(m_width * m_height* 4 * 2), 0);
 
   glBindTexture(GL_TEXTURE_2D, m_lodBuffer->GetTextureId(LODBuffer::LODBUF_TEX_1));
-  glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA_INTEGER, GL_UNSIGNED_INT, &texture_data[0]);
+  glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA_INTEGER, GL_UNSIGNED_INT, &texture_data[0]); GL_CHECK_ERRORS;
 
   glBindTexture(GL_TEXTURE_2D, m_lodBuffer->GetTextureId(LODBuffer::LODBUF_TEX_2));
-  glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA_INTEGER, GL_UNSIGNED_INT, &texture_data[m_width * m_height * 4]);
+  glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA_INTEGER, GL_UNSIGNED_INT, &texture_data[m_width * m_height * 4]); GL_CHECK_ERRORS;
 
   const unsigned int texIdBits    = 0x00FFFFFFu;
   const unsigned int mipLevelBits = 0xFF000000u;
@@ -589,8 +589,10 @@ void RD_OGL32_Utility::FillMipLevelsDict()
   m_mipLevelDict.clear();
 
 
-  for(auto pix : texture_data)
+  //for(auto pix : texture_data)
+  for(int i=0;i<texture_data.size();i++)
   {
+    uint32_t pix      = texture_data[i];
     uint32_t mipLevel = pix >> 24u;
     uint32_t texId    = pix & texIdBits;
 
