@@ -404,7 +404,7 @@ def test04_instancing(report_file, inBG):
   test_name = "test04_instancing"
   hy.hrSceneLibraryOpen("tests/" + test_name, hy.HR_WRITE_DISCARD)
   
-  texPattern = hy.hrTexture2DCreateFromFile("../../main/data/meshes/bigleaf3.tga")
+  texPattern = hy.hrTexture2DCreateFromFile("../../main/data/textures/bigleaf3.tga")
   
   matGray = hy.hrMaterialCreate("matGray")
   matTrunk = hy.hrMaterialCreate("Trunk")
@@ -1854,9 +1854,9 @@ def run_tests():
   hy.hrInit("-copy_textures_to_local_folder 1 -local_data_path 1 ")
 
   with open("test_report.txt", "w") as report_file:
-     test01_render_cubes(report_file, True)
-     test02_mesh_from_vsgf(report_file, True)    
-     test03_cornell_box(report_file, True)    
+#     test01_render_cubes(report_file, True)
+#     test02_mesh_from_vsgf(report_file, True)    
+#     test03_cornell_box(report_file, True)    
      test04_instancing(report_file, True) 
      test05_load_existing(report_file, True)
      test06_blend_simple(report_file, True)
