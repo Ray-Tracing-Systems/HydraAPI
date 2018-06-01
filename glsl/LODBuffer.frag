@@ -20,17 +20,19 @@ uniform ivec2 max_tex_res;
 uniform ivec2 render_res;
 uniform ivec2 rasterization_res;
 
-#define MAX_MIP_LEVEL 10
+#define MAX_MIP_LEVEL 4
 
 float mip_map_level(vec2 texture_coordinate)
 {
-  vec2  dx_vtc        = (rasterization_res.x / float(render_res.x)) * dFdx(max_tex_res.x * texture_coordinate);
-  vec2  dy_vtc        = (rasterization_res.y / float(render_res.y)) * dFdy(max_tex_res.y * texture_coordinate);
-  float delta_max_sqr = max(dot(dx_vtc, dx_vtc), dot(dy_vtc, dy_vtc));
+  vec2  dx_vtc        = (rasterization_res.x / float(render_res.x)) * max_tex_res.x * dFdx(texture_coordinate);
+  vec2  dy_vtc        = (rasterization_res.y / float(render_res.y)) * max_tex_res.y * dFdy(texture_coordinate);
+
+  float dx2           = dot(dx_vtc, dx_vtc);
+  float dy2           = dot(dy_vtc, dy_vtc);  
+  float delta_max_sqr = max(dx2, dy2);
 
   const float maxClamp = pow(2.0f, MAX_MIP_LEVEL * 2.0f);
   delta_max_sqr = clamp(delta_max_sqr, 1.0f, maxClamp);
-
 
   return 0.5f * log2(delta_max_sqr);
 }

@@ -35,7 +35,7 @@ extern HRObjectManager   g_objManager;
 void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::vector<uint3> &triangleList);
 
 
-bool meshHasDisplacementMat(HRMeshRef a_mesh)
+bool meshHasDisplacementMat(HRMeshRef a_mesh, pugi::xml_node &displaceXMLNode)
 {
   HRMesh *pMesh = g_objManager.PtrById(a_mesh);
   if (pMesh == nullptr)
@@ -61,7 +61,10 @@ bool meshHasDisplacementMat(HRMeshRef a_mesh)
         auto d_node = mat->xml_node_next().child(L"displacement");
 
         if (d_node.attribute(L"type").as_string() == std::wstring(L"true_displacement"))
+        {
+          displaceXMLNode = d_node;
           return true;
+        }
       }
     }
   }
@@ -767,6 +770,7 @@ std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
     HrError(L"HR_PreprocessMeshes, pugixml load: ", loadResult.description());
     return new_state_path;
   }
+  bool anyChanges = false;
 
   if (g_objManager.m_currSceneId < g_objManager.scnInst.size())
   {
@@ -777,8 +781,10 @@ std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
       HRMeshRef mesh_ref;
       mesh_ref.id = p;
 
+      pugi::xml_node displaceXMLNode;
+
       hrMeshOpen(mesh_ref, HR_TRIANGLE_IND3, HR_OPEN_READ_ONLY);
-      if (meshHasDisplacementMat(mesh_ref))
+      if (meshHasDisplacementMat(mesh_ref, displaceXMLNode))
       {
         HRMesh& mesh = g_objManager.scnData.meshes[p];
         std::vector<float> verticesPos(mesh.m_input.verticesPos);       ///< float4
@@ -798,8 +804,10 @@ std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
         hrMeshPrimitiveAttribPointer1i(mesh_ref_new, L"mind", (int *) (&matIndices[0]));
         hrMeshAppendTriangles3(mesh_ref_new, int(triIndices.size()), (int *) (&triIndices[0]));
 
+        int subdivs = displaceXMLNode.attribute(L"subdivs").as_int();
+
         //std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-        hrMeshSubdivideSqrt3(mesh_ref_new, 2);
+        hrMeshSubdivideSqrt3(mesh_ref_new, max(subdivs, 1));
         //std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
         //std::cout << "Subdivision time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms" <<std::endl;
 
@@ -813,15 +821,19 @@ std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
         HRMesh *pMesh = g_objManager.PtrById(mesh_ref_new);
 
         meshTofixedMesh[p] = mesh_ref_new.id;
+        anyChanges = true;
       }
       else
       {
         hrMeshClose(mesh_ref);
       }
     }
-    InsertFixedMeshesInfoIntoXML(stateToProcess, meshTofixedMesh);
+    if(anyChanges)
+      InsertFixedMeshesInfoIntoXML(stateToProcess, meshTofixedMesh);
   }
 
-
-  return SaveFixedStateXML(stateToProcess, state_path, L"_meshes");
+  if(anyChanges)
+    return SaveFixedStateXML(stateToProcess, state_path, L"_meshes");
+  else
+    return state_path;
 }

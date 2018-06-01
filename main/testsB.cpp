@@ -1696,7 +1696,7 @@ bool test84_proc_texture2()
   //
   HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1
   hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
-  hrRenderLogDir(renderRef, L"C:/[Hydra]/logs/", false); 
+  //hrRenderLogDir(renderRef, L"/home/frol/hydra/logs/", false);
 
 
   hrRenderOpen(renderRef, HR_WRITE_DISCARD);
@@ -1716,7 +1716,7 @@ bool test84_proc_texture2()
     node.append_child(L"diff_trace_depth").text() = L"4";
     node.append_child(L"pt_error").text() = L"2.0";
     node.append_child(L"minRaysPerPixel").text() = L"256";
-    node.append_child(L"maxRaysPerPixel").text() = L"2048";
+    node.append_child(L"maxRaysPerPixel").text() = L"256";
   }
   hrRenderClose(renderRef);
 

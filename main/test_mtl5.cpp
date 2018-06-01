@@ -229,6 +229,9 @@ bool MTL_TESTS::test_162_shadow_matte_back1()
     intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"0.05 0.05 0.25");
     intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(1.0f);
 
+    auto back = lightNode.append_child(L"back");
+    hrTextureBind(texBack, back);
+
     VERIFY_XML(lightNode);
   }
   hrLightClose(sky);
@@ -347,6 +350,25 @@ bool MTL_TESTS::test_162_shadow_matte_back1()
   hrRenderSaveGBufferLayerLDR(renderRef, L"tests_images/test_162/z_out5.png", L"shadow");
 
   return check_images("test_162", 5, 25);
+}
+
+bool check_test_163(const wchar_t* a_path)
+{
+  pugi::xml_document doc;
+  doc.load_file(a_path);
+
+  pugi::xml_node libTex = doc.child(L"textures_lib");
+
+  pugi::xml_node tex1 = libTex.find_child_by_attribute(L"id", L"2");
+  pugi::xml_node tex2 = libTex.find_child_by_attribute(L"id", L"4");
+
+  int32_t rw1 = tex1.attribute(L"rwidth").as_int();
+  int32_t rh1 = tex1.attribute(L"rheight").as_int();
+
+  int32_t rw2 = tex2.attribute(L"rwidth").as_int();
+  int32_t rh2 = tex2.attribute(L"rheight").as_int();
+
+  return (rw1 == 512) && (rh1 == 512) && (rw1 == 2048) && (rh1 == 2048);
 }
 
 
@@ -715,5 +737,5 @@ bool MTL_TESTS::test_163_diffuse_texture_recommended_res()
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_163/z_out.png");
 
-  return check_images("test_163", 1, 60);
+  return check_images("test_163", 1, 60) && check_test_163(L"tests_f/test_163/statex_00001_fixed.xml");
 }

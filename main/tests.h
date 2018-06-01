@@ -273,6 +273,7 @@ namespace MTL_TESTS
   bool test_164_simple_displacement_proctex();
   bool test_165_simple_displacement_mesh();
   bool test_166_displace_by_noise();
+  bool test_167_subdiv();
 }
 
 namespace LGHT_TESTS
