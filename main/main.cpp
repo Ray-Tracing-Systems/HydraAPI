@@ -134,7 +134,7 @@ int main(int argc, const char** argv)
     //test38_licence_plate();
     //test82_proc_texture();
     //test83_proc_texture2(); 
-    //test84_proc_texture2();
+    test84_proc_texture2();
     //test85_proc_texture_ao();
     //test86_proc_texture_ao_dirt(); 
     //test87_proc_texture_reflect();
@@ -155,7 +155,7 @@ int main(int argc, const char** argv)
 
     //window_main_free_look(L"tests_f/test_167", L"opengl1Debug");
 
-    MTL_TESTS::test_162_shadow_matte_back1();
+    //MTL_TESTS::test_162_shadow_matte_back1();
     //MTL_TESTS::test_154_proc_checker_precomp();
     //LGHT_TESTS::test_223_rotated_area_light();
     
