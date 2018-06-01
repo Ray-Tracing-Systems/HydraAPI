@@ -131,10 +131,10 @@ std::wstring ToWideString(const std::string& rhs)
 
 static void FreeImageErrorHandlerHydraInternal(FREE_IMAGE_FORMAT fif, const char *message)
 {
-  // Error(L"\n [FreeImage error] ");
-  // const std::wstring wstr = ToWideString(message);
-  // Error(wstr.c_str());
-  // Error(L"\n [FreeImage error] \n");
+  std::wstringstream strOut;
+  strOut << L"(FIF = " << fif << ")";
+  const std::wstring wstr = std::wstring(L"[FreeImage ") + strOut.str() + std::wstring(L"]: ") + ToWideString(message);
+  HrError(wstr.c_str());
 }
 
 bool HR_SaveLDRImageToFile(const wchar_t* a_fileName, int w, int h, int32_t* data)
