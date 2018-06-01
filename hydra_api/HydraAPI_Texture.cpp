@@ -72,9 +72,9 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFile(const wchar_t* a_fileName, int w
   HRTextureNodeRef ref;
   ref.id = HR_IDType(g_objManager.scnData.textures.size() - 1);
 
-  HRTextureNode& texture = g_objManager.scnData.textures[ref.id];
-  auto pTextureImpl = g_objManager.m_pFactory->CreateTexture2DFromFile(&texture, a_fileName);
-  texture.pImpl = pTextureImpl;
+  HRTextureNode& texture   = g_objManager.scnData.textures[ref.id];
+  auto pTextureImpl        = g_objManager.m_pFactory->CreateTexture2DFromFile(&texture, a_fileName);
+  texture.pImpl            = pTextureImpl;
   texture.m_loadedFromFile = true;
 
   pugi::xml_node texNodeXml = g_objManager.textures_lib_append_child();
@@ -93,6 +93,8 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFile(const wchar_t* a_fileName, int w
   else
   {
     HrPrint(HR_SEVERITY_WARNING, L"hrTexture2DCreateFromFile can't open file ", a_fileName);
+    g_objManager.scnData.textures.pop_back();
+    ref.id = -1;
     return ref;
   }
 
