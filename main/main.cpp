@@ -153,9 +153,9 @@ int main(int argc, const char** argv)
 
     //MTL_TESTS::test_167_subdiv();
 
-    window_main_free_look(L"tests_f/test_167", L"opengl1Debug");
+    //window_main_free_look(L"tests_f/test_167", L"opengl1Debug");
 
-    //MTL_TESTS::test_162_shadow_matte_back1();
+    MTL_TESTS::test_162_shadow_matte_back1();
     //MTL_TESTS::test_154_proc_checker_precomp();
     //LGHT_TESTS::test_223_rotated_area_light();
     
