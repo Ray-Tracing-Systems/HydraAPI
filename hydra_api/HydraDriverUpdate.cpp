@@ -957,7 +957,7 @@ int64_t EstimateGeometryMem(const ChangeList& a_objList)
   return memAmount;
 }
 
-int64_t EstimateTexturesMem(const ChangeList& a_objList)
+int64_t EstimateTexturesMem(const ChangeList& a_objList, std::unordered_map<int32_t, HRTexResInfo>& out_texInfo)
 {
   int64_t memAmount = 0;
 
@@ -968,21 +968,34 @@ int64_t EstimateTexturesMem(const ChangeList& a_objList)
 
     auto texObj           = g_objManager.scnData.textures[texId];
     pugi::xml_node node   = texObj.xml_node_immediate();
-    const size_t byteSize = node.attribute(L"bytesize").as_llong();
+
+    const size_t byteSize    = node.attribute(L"bytesize").as_llong();
+    const int widthOriginal  = node.attribute(L"width").as_int();
+    const int heightOriginal = node.attribute(L"height").as_int();
+    const size_t elemSize    = byteSize / (widthOriginal*heightOriginal);
+
+    HRTexResInfo texInfo;
+    texInfo.id  = texId;
+    texInfo.w   = widthOriginal;
+    texInfo.h   = heightOriginal;
+    texInfo.rw  = widthOriginal;
+    texInfo.rh  = heightOriginal;
+    texInfo.aw  = widthOriginal;
+    texInfo.ah  = heightOriginal;
+    texInfo.bpp = elemSize;
+    texInfo.usedAsBump = false;
 
     if (node.attribute(L"rwidth") != nullptr && node.attribute(L"rheight") != nullptr)
     {
-      const int widthOriginal  = node.attribute(L"width").as_int();
-      const int heightOriginal = node.attribute(L"height").as_int();
-      const size_t elemSize    = byteSize / (widthOriginal*heightOriginal);
-
       const int rwidth  = node.attribute(L"rwidth").as_int();
       const int rheight = node.attribute(L"rheight").as_int();
-
-      memAmount += size_t(rwidth*rheight)*elemSize;
+      texInfo.rw = rwidth;
+      texInfo.rh = rheight;
+      //memAmount += size_t(rwidth*rheight)*elemSize;
     }
-    else
-      memAmount += byteSize;
+    memAmount += byteSize;
+
+    out_texInfo[texId] = texInfo;
   }
 
   return memAmount;
@@ -1024,7 +1037,7 @@ static void FindAllTexturesForNormalMaps(pugi::xml_node a_node, const std::unord
 
 }
 
-int64_t EstimateTexturesMemBump(const ChangeList& a_objList)
+int64_t EstimateTexturesMemBump(const ChangeList& a_objList, std::unordered_map<int32_t, HRTexResInfo>& a_outTexInfo)
 {
   std::unordered_set<int32_t> texturesUsedForNormalMaps;
   texturesUsedForNormalMaps.reserve(100);
@@ -1062,14 +1075,15 @@ int64_t EstimateTexturesMemBump(const ChangeList& a_objList)
       const int widthOriginal  = node.attribute(L"width").as_int();
       const int heightOriginal = node.attribute(L"height").as_int();
       const size_t elemSize    = byteSize / (widthOriginal*heightOriginal);
-
       const int rwidth  = node.attribute(L"rwidth").as_int();
       const int rheight = node.attribute(L"rheight").as_int();
-
-      memAmount += size_t(rwidth*rheight)*elemSize;
+      a_outTexInfo[texId].rw = rwidth;
+      a_outTexInfo[texId].rh = rheight;
     }
-    else
-      memAmount += byteSize;
+  
+    memAmount += byteSize;
+
+    a_outTexInfo[texId].usedAsBump = true;
   }
 
   return memAmount;
@@ -1158,14 +1172,22 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
     allocInfo.matNum      = int32_t(matNum   + matNum/3   + 100);
     allocInfo.lightNum    = int32_t(lightNum + lightNum/3 + 100);
 
-    const int64_t neededMemT  = EstimateTexturesMem(objList);
-    const int64_t neededMemT2 = EstimateTexturesMemBump(objList);
+    std::unordered_map<int32_t, HRTexResInfo> allTexInfo;
+    allTexInfo.reserve(imgNum);
+
+    const int64_t neededMemT  = EstimateTexturesMem(objList, allTexInfo);
+    const int64_t neededMemT2 = EstimateTexturesMemBump(objList, allTexInfo);
     const int64_t neededMemG  = EstimateGeometryMem(objList);
 
     allocInfo.libraryPath = g_objManager.scnData.m_path.c_str();
     allocInfo.imgMem      = neededMemT;
     allocInfo.imgMemAux   = neededMemT2;
     allocInfo.geomMem     = neededMemG;
+
+    std::vector<HRTexResInfo> imgResInfo(allocInfo.imgNum);
+    for (auto texInfoPair : allTexInfo)
+      imgResInfo[texInfoPair.first] = texInfoPair.second;
+    allocInfo.imgResInfoArray = imgResInfo.data();
 
     EstimateMemHungryLights(objList, 
                             &allocInfo.envIsHDR, 
@@ -1468,23 +1490,20 @@ resolution_dict InsertMipLevelInfoIntoXML(pugi::xml_document &stateToProcess, co
 }
 
 
-
 std::wstring SaveFixedStateXML(pugi::xml_document &doc, const std::wstring &oldPath, const std::wstring &suffix)
 {
   std::wstringstream ss;
   ss << std::wstring(oldPath.begin(), oldPath.end() - 4) << suffix << L".xml"; //cut ".xml" from initial path and append new suffix
   std::wstring new_state_path = ss.str();
-
   doc.save_file(new_state_path.c_str(), L"  ");
-
   return new_state_path;
 }
+
 
 #ifdef WIN32
 void HydraDestroyHiddenWindow();
 bool HydraCreateHiddenWindow(int width, int height, int a_major, int a_minor, int a_flags);
 #endif
-
 
 std::wstring HR_UtilityDriverStart(const wchar_t* state_path)
 {
@@ -1521,7 +1540,7 @@ std::wstring HR_UtilityDriverStart(const wchar_t* state_path)
     return new_state_path;
   }
 #else
-  auto offscreen_context = InitGLForUtilityDriver();
+  auto offscreen_context = InitGLForUtilityDriver();               //#TODO: refactor this
 #endif
 
   std::unique_ptr<IHRRenderDriver> utilityDriver = CreateRenderFromString(L"opengl3Utility", L"");
@@ -1541,7 +1560,7 @@ std::wstring HR_UtilityDriverStart(const wchar_t* state_path)
 #ifdef WIN32
     HydraDestroyHiddenWindow();
 #else
-    glfwSetWindowShouldClose(offscreen_context, GL_TRUE);
+    glfwSetWindowShouldClose(offscreen_context, GL_TRUE);         //#TODO: refactor this
 #endif
 
     auto resDict = InsertMipLevelInfoIntoXML(stateToProcess, mipLevelsDict);

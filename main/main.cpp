@@ -132,9 +132,9 @@ int main(int argc, const char** argv)
     //std::cout << test79_material_remap_list2() << std::endl;
     //std::cout << test77_save_gbuffer_layers() << std::endl;
     //test38_licence_plate();
-    //test82_proc_texture();
+    test82_proc_texture();
     //test83_proc_texture2(); 
-    test84_proc_texture2();
+    //test84_proc_texture2();
     //test85_proc_texture_ao();
     //test86_proc_texture_ao_dirt(); 
     //test87_proc_texture_reflect();
@@ -143,14 +143,12 @@ int main(int argc, const char** argv)
 
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
     //GEO_TESTS::test_003_compute_normals();
-    //MTL_TESTS::test_154_proc_checker_precomp();
     //MTL_TESTS::test_163_diffuse_texture_recommended_res();
 
     //MTL_TESTS::test_161_simple_displacement();
     //MTL_TESTS::test_164_simple_displacement_proctex();
     //MTL_TESTS::test_165_simple_displacement_mesh();
     //MTL_TESTS::test_166_displace_by_noise();
-
     //MTL_TESTS::test_167_subdiv();
 
     //window_main_free_look(L"tests_f/test_167", L"opengl1Debug");

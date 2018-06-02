@@ -588,11 +588,8 @@ void RD_OGL32_Utility::FillMipLevelsDict()
 
   m_mipLevelDict.clear();
 
-
-  //for(auto pix : texture_data)
-  for(int i=0;i<texture_data.size();i++)
+  for(auto pix : texture_data)
   {
-    uint32_t pix      = texture_data[i];
     uint32_t mipLevel = pix >> 24u;
     uint32_t texId    = pix & texIdBits;
 

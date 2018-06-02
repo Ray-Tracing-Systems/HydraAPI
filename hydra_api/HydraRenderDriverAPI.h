@@ -15,6 +15,24 @@
 
 #include "HR_HDRImage.h"
 
+/** \brief Internal structure to help driver allocate less memory.
+*
+*/
+struct HRTexResInfo
+{
+  HRTexResInfo() : id(0), w(0), h(0), rw(0), rh(0), bpp(4), usedAsBump(false) {}
+  int id;           ///< texture id
+  int w;            ///< texture width
+  int h;            ///< texture height
+  int rw;           ///< recommended texture width
+  int rh;           ///< recommended texture height
+  int aw;           ///< actual texture width
+  int ah;           ///< actual texture height
+  int bpp;          ///< texture bytes per pixel
+  bool usedAsBump;  ///< if texture used as bump it actually may consume double memory due to it's copy in separate 'normalmap' memory storage 
+};
+
+
 /** \brief This structure tell render driver very particular information how much memory and objects it have to allocate
 *
 * fff
@@ -36,11 +54,13 @@ struct HRDriverAllocInfo
 
   const wchar_t* libraryPath;
   const wchar_t* resourcesPath;
+
+  const HRTexResInfo* imgResInfoArray;
 };
+
 
 /** \brief This structure tell render HydraAPI what features are supported by driver.
 *
-* 
 */
 struct HRDriverInfo
 {
