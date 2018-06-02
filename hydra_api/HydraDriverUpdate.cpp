@@ -972,8 +972,11 @@ int64_t EstimateTexturesMem(const ChangeList& a_objList, std::unordered_map<int3
     const size_t byteSize    = node.attribute(L"bytesize").as_llong();
     const int widthOriginal  = node.attribute(L"width").as_int();
     const int heightOriginal = node.attribute(L"height").as_int();
-    const size_t elemSize    = byteSize / (widthOriginal*heightOriginal);
 
+    if (byteSize == 0 || heightOriginal == 0 || widthOriginal == 0)
+      continue;
+
+    const size_t elemSize    = byteSize / (widthOriginal*heightOriginal);
     HRTexResInfo texInfo;
     texInfo.id  = texId;
     texInfo.w   = widthOriginal;
@@ -1069,6 +1072,9 @@ int64_t EstimateTexturesMemBump(const ChangeList& a_objList, std::unordered_map<
     auto texObj           = g_objManager.scnData.textures[texId];
     pugi::xml_node node   = texObj.xml_node_immediate();
     const size_t byteSize = node.attribute(L"bytesize").as_llong();
+
+    if (byteSize == 0)
+      continue;
 
     if (node.attribute(L"rwidth") != nullptr && node.attribute(L"rheight") != nullptr)
     {
