@@ -877,42 +877,42 @@ namespace GL_RENDER_DRIVER_UTILS
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  ShaderProgram::ShaderProgram(const std::unordered_map<GLenum, std::string> &inputShaders)
+  ShaderProgram::ShaderProgram(const std::unordered_map<GLenum, std::string> &inputShaders, bool a_fromStrings)
   {
 
     shaderProgram = glCreateProgram();
 
     if (inputShaders.find(GL_VERTEX_SHADER) != inputShaders.end())
     {
-      shaderObjects[GL_VERTEX_SHADER] = LoadShaderObject(GL_VERTEX_SHADER, inputShaders.at(GL_VERTEX_SHADER));
+      shaderObjects[GL_VERTEX_SHADER] = LoadShaderObject(GL_VERTEX_SHADER, inputShaders.at(GL_VERTEX_SHADER), a_fromStrings);
       glAttachShader(shaderProgram, shaderObjects[GL_VERTEX_SHADER]);
     }
 
     if (inputShaders.find(GL_FRAGMENT_SHADER) != inputShaders.end())
     {
-      shaderObjects[GL_FRAGMENT_SHADER] = LoadShaderObject(GL_FRAGMENT_SHADER, inputShaders.at(GL_FRAGMENT_SHADER));
+      shaderObjects[GL_FRAGMENT_SHADER] = LoadShaderObject(GL_FRAGMENT_SHADER, inputShaders.at(GL_FRAGMENT_SHADER), a_fromStrings);
       glAttachShader(shaderProgram, shaderObjects[GL_FRAGMENT_SHADER]);
     }
     if (inputShaders.find(GL_GEOMETRY_SHADER) != inputShaders.end())
     {
-      shaderObjects[GL_GEOMETRY_SHADER] = LoadShaderObject(GL_GEOMETRY_SHADER, inputShaders.at(GL_GEOMETRY_SHADER));
+      shaderObjects[GL_GEOMETRY_SHADER] = LoadShaderObject(GL_GEOMETRY_SHADER, inputShaders.at(GL_GEOMETRY_SHADER), a_fromStrings);
       glAttachShader(shaderProgram, shaderObjects[GL_GEOMETRY_SHADER]);
     }
     if (inputShaders.find(GL_TESS_CONTROL_SHADER) != inputShaders.end())
     {
       shaderObjects[GL_TESS_CONTROL_SHADER] = LoadShaderObject(GL_TESS_CONTROL_SHADER,
-                                                               inputShaders.at(GL_TESS_CONTROL_SHADER));
+                                                               inputShaders.at(GL_TESS_CONTROL_SHADER), a_fromStrings);
       glAttachShader(shaderProgram, shaderObjects[GL_TESS_CONTROL_SHADER]);
     }
     if (inputShaders.find(GL_TESS_EVALUATION_SHADER) != inputShaders.end())
     {
       shaderObjects[GL_TESS_EVALUATION_SHADER] = LoadShaderObject(GL_TESS_EVALUATION_SHADER,
-                                                                  inputShaders.at(GL_TESS_EVALUATION_SHADER));
+                                                                  inputShaders.at(GL_TESS_EVALUATION_SHADER), a_fromStrings);
       glAttachShader(shaderProgram, shaderObjects[GL_TESS_EVALUATION_SHADER]);
     }
     if (inputShaders.find(GL_COMPUTE_SHADER) != inputShaders.end())
     {
-      shaderObjects[GL_COMPUTE_SHADER] = LoadShaderObject(GL_COMPUTE_SHADER, inputShaders.at(GL_COMPUTE_SHADER));
+      shaderObjects[GL_COMPUTE_SHADER] = LoadShaderObject(GL_COMPUTE_SHADER, inputShaders.at(GL_COMPUTE_SHADER), a_fromStrings);
       glAttachShader(shaderProgram, shaderObjects[GL_COMPUTE_SHADER]);
     }
 
@@ -999,17 +999,22 @@ namespace GL_RENDER_DRIVER_UTILS
   }
 
 
-  GLuint ShaderProgram::LoadShaderObject(GLenum type, const std::string &filename)
+  GLuint ShaderProgram::LoadShaderObject(GLenum type, const std::string &filename, bool a_fromStrings)
   {
-    std::ifstream fs(filename);
+    std::string shaderText;
 
-    if (!fs.is_open())
+    if (!a_fromStrings)
     {
-      std::cerr << "ERROR: Could not read shader from " << filename << std::endl;
-      return 0;
+      std::ifstream fs(filename);
+      if (!fs.is_open())
+      {
+        std::cerr << "ERROR: Could not read shader from " << filename << std::endl;
+        return 0;
+      }
+      shaderText = std::string((std::istreambuf_iterator<char>(fs)), std::istreambuf_iterator<char>());
     }
-
-    std::string shaderText((std::istreambuf_iterator<char>(fs)), std::istreambuf_iterator<char>());
+    else
+      shaderText = filename;
 
     GLuint newShaderObject = glCreateShader(type);
 

@@ -143,7 +143,7 @@ int main(int argc, const char** argv)
 
     //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
     //GEO_TESTS::test_003_compute_normals();
-    std::cout << MTL_TESTS::test_163_diffuse_texture_recommended_res() << std::endl;
+    //std::cout << MTL_TESTS::test_163_diffuse_texture_recommended_res() << std::endl;
     std::cout << MTL_TESTS::test_168_diffuse_texture_recommended_res2() << std::endl;
 
     //MTL_TESTS::test_161_simple_displacement();

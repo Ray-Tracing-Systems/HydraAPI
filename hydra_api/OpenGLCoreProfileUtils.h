@@ -130,7 +130,7 @@ namespace GL_RENDER_DRIVER_UTILS {
 
       ShaderProgram() {};
 
-      ShaderProgram(const std::unordered_map<GLenum, std::string> &inputShaders);
+      ShaderProgram(const std::unordered_map<GLenum, std::string> &inputShaders, bool a_fromStrings = false);
 
       virtual ~ShaderProgram() {};
 
@@ -164,7 +164,7 @@ namespace GL_RENDER_DRIVER_UTILS {
       void SetUniform(const std::string &location, const int2 &value) const;
 
   private:
-      static GLuint LoadShaderObject(GLenum type, const std::string &filename);
+      static GLuint LoadShaderObject(GLenum type, const std::string &filename, bool a_fromStrings = false);
 
       GLuint shaderProgram;
       std::unordered_map<GLenum, GLuint> shaderObjects;

@@ -57,6 +57,186 @@ void RD_OGL32_Utility::ClearAll()
 
 }
 
+// C++11 raw string literals
+
+const std::string lod_vs = R"END(
+#version 330 core
+layout (location = 0) in vec4 vertex;
+layout (location = 1) in vec4 normal;
+layout (location = 2) in vec2 texcoords;
+
+out VS_OUT
+{
+	vec2 TexCoords;
+	vec3 FragPos;
+	vec3 Normal;
+} vs_out;
+
+layout (std140) uniform matrixBuffer
+{
+	mat4 view;
+	mat4 projection;
+};
+
+uniform mat4 model;
+uniform bool invertNormals;	
+
+void main()
+{
+	vs_out.TexCoords  = texcoords;
+	vec4 viewPos      = view * model * vertex;
+	vs_out.FragPos    = viewPos.xyz;
+	mat3 normalMatrix = mat3(transpose(inverse(view * model)));
+
+	vs_out.Normal = normalMatrix * normal.xyz;
+	vs_out.Normal = invertNormals ? -1.0f * vs_out.Normal : vs_out.Normal;
+	gl_Position   = projection * viewPos;
+}
+)END";
+
+const std::string lod_fs = R"END(
+#version 330 core
+layout (location = 0) out uvec4 lodbuf_1;
+layout (location = 1) out uvec4 lodbuf_2;
+
+in VS_OUT
+{
+  vec2 TexCoords;
+  vec3 FragPos;
+  vec3 Normal;
+} fs_in;
+
+uniform usamplerBuffer materials1;
+uniform usamplerBuffer materials2;
+uniform samplerBuffer materials_matrix;
+
+uniform int matID;
+uniform ivec2 max_tex_res;
+uniform ivec2 render_res;
+uniform ivec2 rasterization_res;
+
+#define MAX_MIP_LEVEL 4
+
+float mip_map_level(vec2 texture_coordinate)
+{
+  vec2  dx_vtc        = (rasterization_res.x / float(render_res.x)) * max_tex_res.x * dFdx(texture_coordinate);
+  vec2  dy_vtc        = (rasterization_res.y / float(render_res.y)) * max_tex_res.y * dFdy(texture_coordinate);
+
+  float dx2           = dot(dx_vtc, dx_vtc);
+  float dy2           = dot(dy_vtc, dy_vtc);  
+  float delta_max_sqr = max(dx2, dy2);
+
+  const float maxClamp = pow(2.0f, MAX_MIP_LEVEL * 2.0f);
+  delta_max_sqr = clamp(delta_max_sqr, 1.0f, maxClamp);
+
+  return 0.5f * log2(delta_max_sqr);
+}
+
+const uint texIdBits    = 0x00FFFFFFu;
+const uint mipLevelBits = 0xFF000000u;
+
+mat2 getTexMatrix(int matId, int slotId)
+{
+  vec4 tex_mat = texelFetch(materials_matrix, matId * 8 + slotId);
+  mat2 res;
+  res[0][0] = tex_mat.x;
+  res[0][1] = tex_mat.y;
+  res[1][0] = tex_mat.z;
+  res[0][1] = tex_mat.w;
+
+  return res;
+}
+
+void main()
+{     
+  uvec4 texIds1 = uvec4(0, 0, 0, 0);
+  uvec4 texIds2 = uvec4(0, 0, 0, 0);
+  uint mipLevel = 0u;
+
+  if(matID >= 0)
+  {
+    texIds1 = texelFetch(materials1, matID);
+    texIds2 = texelFetch(materials2, matID);
+
+    mipLevel  = uint(floor(mip_map_level(fs_in.TexCoords * getTexMatrix(matID, 0))));
+    texIds1.r = (texIds1.r & texIdBits) | (mipLevel << 24);
+
+    mipLevel  = uint(floor(mip_map_level(fs_in.TexCoords * getTexMatrix(matID, 1))));
+    texIds1.g = (texIds1.g & texIdBits) | (mipLevel << 24);
+
+    mipLevel  = uint(floor(mip_map_level(fs_in.TexCoords * getTexMatrix(matID, 2))));
+    texIds1.b = (texIds1.b & texIdBits) | (mipLevel << 24);
+
+    mipLevel  = uint(floor(mip_map_level(fs_in.TexCoords * getTexMatrix(matID, 3))));
+    texIds1.a = (texIds1.a & texIdBits) | (mipLevel << 24);
+
+    mipLevel  = uint(floor(mip_map_level(fs_in.TexCoords * getTexMatrix(matID, 4))));
+    texIds2.r = (texIds2.r & texIdBits) | (mipLevel << 24);
+
+    mipLevel  = uint(floor(mip_map_level(fs_in.TexCoords * getTexMatrix(matID, 5))));
+    texIds2.g = (texIds2.g & texIdBits) | (mipLevel << 24);
+
+    mipLevel  = uint(floor(mip_map_level(fs_in.TexCoords * getTexMatrix(matID, 6))));
+    texIds2.b = (texIds2.b & texIdBits) | (mipLevel << 24);
+
+    mipLevel  = uint(floor(mip_map_level(fs_in.TexCoords * getTexMatrix(matID, 7))));
+    texIds2.a = (texIds2.a & texIdBits) | (mipLevel << 24);
+  }
+
+  lodbuf_1 = texIds1;
+  lodbuf_2 = texIds2;
+}
+)END";
+
+const std::string debug_vs = R"END(
+#version 330 core
+layout (location = 0) in vec2 vertex;
+
+out vec2 fragmentTexCoord;
+out vec2 vFragPosition;
+
+void main(void)
+{
+  fragmentTexCoord = vertex * 0.5 + 0.5; 
+  vFragPosition    = vertex;
+  gl_Position      = vec4(vertex, 0.0, 1.0);
+}
+
+)END";
+
+const std::string debug_fs = R"END(
+#version 330
+
+in vec2 fragmentTexCoord;
+out vec4 fragColor;
+
+uniform usampler2D debugTex;
+
+vec3 colorMap(float f)
+{
+  const float dx = 0.8;
+  f              = clamp(f, 0.0, 1.0f);
+  float g        = (6.0f - 2.0f * dx) * f + dx;
+  float red      = max(0.0f, (3.0f - abs(g - 4.0f) - abs(g - 5.0f))/2.0f);
+  float green    = max(0.0f, (4.0f - abs(g - 2.0f) - abs(g - 4.0f))/2.0f);
+  float blue     = max(0.0f, (3.0f - abs(g - 1.0f) - abs(g - 2.0f))/2.0f);
+  return vec3(red, green, blue);
+}
+
+const uint texIdBits    = 0x00FFFFFFu;
+const uint mipLevelBits = 0xFF000000u;
+
+void main(void)
+{
+  uvec4 val            = texture(debugTex, fragmentTexCoord);
+  uint diffuseMipLevel = val.g >> 24;
+  uint diffuseTexId    = val.g & texIdBits;
+
+  //fragColor = vec4(colorMap(color.x/10.0f), 1.0f);
+  fragColor = vec4(colorMap(diffuseMipLevel/10.0f), 1.0f); //color.rgb
+}
+)END";
+
 HRDriverAllocInfo RD_OGL32_Utility::AllocAll(HRDriverAllocInfo a_info)
 {
   //m_objects.resize(a_info.geomNum);
@@ -67,14 +247,14 @@ HRDriverAllocInfo RD_OGL32_Utility::AllocAll(HRDriverAllocInfo a_info)
   auto resources_path = std::string(resources_pathW.begin(), resources_pathW.end());
 
   std::unordered_map<GLenum, std::string> lodBufferShaders;
-  lodBufferShaders[GL_VERTEX_SHADER] = resources_path + "/glsl/LODBuffer.vert"; //D:/!repos_new/!hydra/HydraAPI
-  lodBufferShaders[GL_FRAGMENT_SHADER] = resources_path + "/glsl/LODBuffer.frag";
-  m_lodBufferProgram = ShaderProgram(lodBufferShaders);
+  lodBufferShaders[GL_VERTEX_SHADER]   = lod_vs; // resources_path + "/glsl/LODBuffer.vert"; //D:/!repos_new/!hydra/HydraAPI
+  lodBufferShaders[GL_FRAGMENT_SHADER] = lod_fs; // resources_path + "/glsl/LODBuffer.frag";
+  m_lodBufferProgram = ShaderProgram(lodBufferShaders, true);
 
   std::unordered_map<GLenum, std::string> quadShaders;
-  quadShaders[GL_VERTEX_SHADER] = resources_path + "/glsl/vQuad.vert";
-  quadShaders[GL_FRAGMENT_SHADER] = resources_path + "/glsl/fQuadDebug.frag";
-  m_quadProgram = ShaderProgram(quadShaders);
+  quadShaders[GL_VERTEX_SHADER]   = debug_vs; // resources_path  + "/glsl/vQuad.vert";
+  quadShaders[GL_FRAGMENT_SHADER] = debug_fs; // resources_path + "/glsl/fQuadDebug.frag";
+  m_quadProgram = ShaderProgram(quadShaders, true);
 
   m_texNum = (unsigned int)a_info.imgNum;
 
