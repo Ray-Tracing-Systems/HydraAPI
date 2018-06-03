@@ -274,6 +274,9 @@ namespace MTL_TESTS
   bool test_165_simple_displacement_mesh();
   bool test_166_displace_by_noise();
   bool test_167_subdiv();
+  bool test_168_diffuse_texture_recommended_res2();
+
+
 }
 
 namespace LGHT_TESTS

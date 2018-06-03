@@ -1190,10 +1190,15 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
     allocInfo.imgMemAux   = neededMemT2;
     allocInfo.geomMem     = neededMemG;
 
-    std::vector<HRTexResInfo> imgResInfo(allocInfo.imgNum);
-    for (auto texInfoPair : allTexInfo)
-      imgResInfo[texInfoPair.first] = texInfoPair.second;
-    allocInfo.imgResInfoArray = imgResInfo.data();
+    if (g_objManager.scnData.m_texturesLib.attribute(L"resize_textures").as_int() == 1)
+    {
+      std::vector<HRTexResInfo> imgResInfo(allocInfo.imgNum);
+      for (auto texInfoPair : allTexInfo)
+        imgResInfo[texInfoPair.first] = texInfoPair.second;
+      allocInfo.imgResInfoArray = imgResInfo.data();
+    }
+    else
+      allocInfo.imgResInfoArray = nullptr;
 
     EstimateMemHungryLights(objList, 
                             &allocInfo.envIsHDR, 
@@ -1451,7 +1456,7 @@ static std::tuple<int, int> RecommendedTexResolutionFix(int w, int h, int rwidth
 }
 
 
-resolution_dict InsertMipLevelInfoIntoXML(pugi::xml_document &stateToProcess, const std::unordered_map<uint32_t, uint32_t> &dict)
+resolution_dict InsertMipLevelInfoIntoXML(pugi::xml_document &stateToProcess, const std::unordered_map<uint32_t, uint32_t> &dict, int a_winWidth, int a_winHeight)
 {
   resolution_dict resDict;
   for (std::pair<int32_t, int32_t> elem : dict)
@@ -1489,6 +1494,27 @@ resolution_dict InsertMipLevelInfoIntoXML(pugi::xml_document &stateToProcess, co
       texNode.force_attribute(L"rheight").set_value(newH);
 
       resDict[elem.first] = std::pair<uint32_t, uint32_t>(newW, newH);
+    }
+  }
+
+  // next, for all textures that we don't see at all insert renderer screen resolution as recommended
+  //
+  auto texLib = stateToProcess.child(L"textures_lib");
+
+  for (auto texNode : texLib.children())
+  {
+    const int32_t id = texNode.attribute(L"id").as_int();
+    const auto p     = resDict.find(id);
+
+    if (id > 0 && p == resDict.end())
+    {
+      int32_t newW = a_winWidth;
+      int32_t newH = a_winHeight;
+
+      std::tie(newW, newH) = RecommendedTexResolutionFix(texNode.attribute(L"width").as_int(), texNode.attribute(L"height").as_int(), newW, newH);
+
+      texNode.force_attribute(L"rwidth")  = newW;
+      texNode.force_attribute(L"rheight") = newH;
     }
   }
 
@@ -1531,6 +1557,8 @@ std::wstring HR_UtilityDriverStart(const wchar_t* state_path)
     return new_state_path;
   }
 
+  stateToProcess.child(L"textures_lib").force_attribute(L"resize_textures") = 1;
+
 #ifdef WIN32
   bool windowCreated = HydraCreateHiddenWindow(1024, 1024, 3, 3, 0);
   if (!windowCreated)
@@ -1562,14 +1590,23 @@ std::wstring HR_UtilityDriverStart(const wchar_t* state_path)
     for (std::pair<int32_t, int32_t> elem : mipLevelsDict)
       std::cout << " " << elem.first << ":" << elem.second << std::endl;
 
-
 #ifdef WIN32
     HydraDestroyHiddenWindow();
 #else
     glfwSetWindowShouldClose(offscreen_context, GL_TRUE);         //#TODO: refactor this
 #endif
 
-    auto resDict = InsertMipLevelInfoIntoXML(stateToProcess, mipLevelsDict);
+    int winWidthRender  = 1024;
+    int winHeightRender = 1024;
+
+    auto renderSettings = stateToProcess.child(L"render_lib").child(L"render_settings");
+    if (renderSettings != nullptr)
+    {
+      winWidthRender  = renderSettings.child(L"width").text().as_int();
+      winHeightRender = renderSettings.child(L"height").text().as_int();
+    }
+
+    auto resDict = InsertMipLevelInfoIntoXML(stateToProcess, mipLevelsDict, winWidthRender, winHeightRender);
     CreatePrecompProcTex(stateToProcess, resDict);
   }
   return SaveFixedStateXML(stateToProcess, state_path, L"_fixed");
