@@ -1164,8 +1164,10 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 
   ChangeList objList = FindChangedObjects(scn, a_pDriver);
 
-  if (scn.meshUsedByDrv.size() == 0) // if this is the first call of HR_DriverUpdateDraw #TODO: refactor this !!!
+  auto p = g_objManager.driverAllocated.find(a_pDriver);
+  if (p == g_objManager.driverAllocated.end())
   {
+    g_objManager.driverAllocated.insert(a_pDriver);
     HRDriverAllocInfo allocInfo;
 
     const size_t geomNum  = objList.meshUsed.size();

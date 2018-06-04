@@ -1108,3 +1108,13 @@ HAPI HRLightRef hrFindLightByName(const wchar_t *a_lightName);
 
 */
 HAPI HRCameraRef hrFindCameraByName(const wchar_t *a_cameraName);
+
+/**
+\brief get HRRenderRef by its type name from the library.
+\param a_renderTypeName - render type name
+
+
+If camera with name = a_cameraName does not exist, HRCameraRef with id = -1 is returned
+
+*/
+HAPI HRRenderRef hrFindRenderByTypeName(const wchar_t *a_renderTypeName);

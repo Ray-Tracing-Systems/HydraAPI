@@ -629,6 +629,7 @@ struct HRObjectManager
   IHydraFactory* m_pFactory; // actual Factory
 
   std::shared_ptr<IHRRenderDriver> m_pDriver;
+  std::unordered_set<IHRRenderDriver*> driverAllocated;
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 

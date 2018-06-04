@@ -182,6 +182,7 @@ bool test93_check_xml_fail_materials();
 bool test94_check_xml_fail_camera();
 bool test95_check_xml_fail_render();
 bool test96_save_temp_renders();
+bool test97_camera_from_matrices();
 
 bool test98_test_split_clipping();
 

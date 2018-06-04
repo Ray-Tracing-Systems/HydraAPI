@@ -150,3 +150,26 @@ HAPI HRCameraRef hrFindCameraByName(const wchar_t *a_cameraName)
 
   return camera;
 }
+
+
+HAPI HRRenderRef hrFindRenderByTypeName(const wchar_t* a_renderTypeName)
+{
+  HRRenderRef res;
+  res.id = -1;
+
+  if (a_renderTypeName == nullptr)
+    return res;
+
+  const std::wstring typeName = std::wstring(a_renderTypeName);
+
+  for (auto rend : g_objManager.renderSettings)
+  {
+    if (typeName == rend.xml_node_immediate().attribute(L"type").as_string())
+    {
+      res.id = rend.xml_node_immediate().attribute(L"id").as_int();
+      break;
+    }
+  }
+
+  return res;
+}

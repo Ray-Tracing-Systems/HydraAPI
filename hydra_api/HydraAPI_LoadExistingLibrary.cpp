@@ -396,9 +396,8 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int32_t a_stateId)
 
   // (9) load render settings
   //
-  pugi::xml_node renderSettings = g_objManager.scnData.m_settingsNode.first_child();
-  _hrRenderSettingsFromNode(renderSettings);
-
+  for(pugi::xml_node renderSettings : g_objManager.scnData.m_settingsNode.children())
+    _hrRenderSettingsFromNode(renderSettings);
 
   // (10) load empty chunks to have correct chunk id for new objects
   //
