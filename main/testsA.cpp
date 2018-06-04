@@ -1939,7 +1939,8 @@ bool test96_save_temp_renders()
   return false;
 }
 
-
+using HydraLiteMath::float4x4;
+using HydraLiteMath::float3;
 
 bool test97_camera_from_matrices()
 {
@@ -2116,7 +2117,7 @@ bool test97_camera_from_matrices()
     auto intensityNode = lightNode.append_child(L"intensity");
 
     intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1.0 0.85 0.64");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"5.0");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"10.0");
 
     lightNode.append_child(L"shadow_softness").append_attribute(L"val").set_value(1.0f);
     lightNode.append_child(L"angle_radius").append_attribute(L"val").set_value(0.25f);
@@ -2236,28 +2237,38 @@ bool test97_camera_from_matrices()
   {
     xml_node camNode = hrCameraParamNode(camRef);
 
-    camNode.force_child(L"fov").text().set(L"45");
-    camNode.force_child(L"nearClipPlane").text().set(L"0.01");
-    camNode.force_child(L"farClipPlane").text().set(L"100.0"); 
-            
-    camNode.force_child(L"up").text().set(L"0 1 0");
-    camNode.force_child(L"position").text().set(L"2 4 2");
-    camNode.force_child(L"look_at").text().set(L"0 0 -5");
+    // camNode.force_child(L"fov").text().set(L"45");
+    // camNode.force_child(L"nearClipPlane").text().set(L"0.01");
+    // camNode.force_child(L"farClipPlane").text().set(L"100.0"); 
+    //         
+    // camNode.force_child(L"up").text().set(L"0 1 0");
+    // camNode.force_child(L"position").text().set(L"2 4 2");
+    // camNode.force_child(L"look_at").text().set(L"0 0 -5");
+
+    camNode.attribute(L"type") = L"two_matrices";
+
+    float4x4 projMatrixInv = HydraLiteMath::transpose( HydraLiteMath::projectionMatrixTransposed(45.0f, 1.0f, 0.01f, 100.0f) );
+    float4x4 lookAtMatrix  = HydraLiteMath::transpose( HydraLiteMath::lookAtTransposed(float3(2,4,2), float3(0, 0, -5), float3(0,1,0)) );
+
+    std::wstringstream mProj, mWorldView;
+
+    for (int i = 0; i < 16; i++)
+    {
+      mProj      << projMatrixInv.L()[i] << L" ";
+      mWorldView << lookAtMatrix.L()[i] << L" ";
+    }
+
+    const std::wstring str1 = mProj.str();
+    const std::wstring str2 = mWorldView.str();
+
+    camNode.force_child(L"mProj").text()      = str1.c_str();
+    camNode.force_child(L"mWorldView").text() = str2.c_str();
   }
   hrCameraClose(camRef);
 
   hrFlush(scnRef, renderOgl, camRef);
 
   hrRenderSaveFrameBufferLDR(renderOgl, L"tests_images/test_97/z_out.png"); 
-
-  //
-  //
-  hrCameraOpen(camRef, HR_OPEN_EXISTING);
-  {
-    xml_node camNode = hrCameraParamNode(camRef);
-    camNode.force_child(L"position").text().set(L"-2 4 2");
-  }
-  hrCameraClose(camRef);
 
   hrFlush(scnRef, renderRealistic, camRef);
 
@@ -2280,7 +2291,7 @@ bool test97_camera_from_matrices()
 
   hrRenderSaveFrameBufferLDR(renderRealistic, L"tests_images/test_97/z_out2.png");
 
-  return false; // check_images("test_97", 4);
+  return check_images("test_97", 2);
 }
 
 

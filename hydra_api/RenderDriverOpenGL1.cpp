@@ -182,6 +182,30 @@ bool RD_OGL1_Plain::UpdateCamera(pugi::xml_node a_camNode)
   if (a_camNode == nullptr)
     return true;
 
+  this->camUseMatrices = false;
+
+  if (std::wstring(a_camNode.attribute(L"type").as_string()) == L"two_matrices")
+  {
+    const wchar_t* m1 = a_camNode.child(L"mWorldView").text().as_string();
+    const wchar_t* m2 = a_camNode.child(L"mProj").text().as_string();
+
+    float mWorldView[16];
+    float mProj[16];
+
+    std::wstringstream str1(m1), str2(m2);
+    for (int i = 0; i < 16; i++)
+    {
+      str1 >> mWorldView[i];
+      str2 >> mProj[i];
+    }
+
+    this->camWorldViewMartrixTransposed = transpose(float4x4(mWorldView));
+    this->camProjMatrixTransposed       = transpose(float4x4(mProj));
+    this->camUseMatrices                = true;
+
+    return true;
+  }
+
   const wchar_t* camPosStr = a_camNode.child(L"position").text().as_string();
   const wchar_t* camLAtStr = a_camNode.child(L"look_at").text().as_string();
   const wchar_t* camUpStr  = a_camNode.child(L"up").text().as_string();
@@ -412,22 +436,34 @@ void RD_OGL1_Plain::BeginScene(pugi::xml_node a_sceneNode)
   glDisable(GL_LIGHTING);
   glDisable(GL_TEXTURE_2D);
 
-  glMatrixMode(GL_PROJECTION);			// Select The Projection Matrix
 
-  const float aspect = float(m_width) / float(m_height);
-  float4x4 projMatrixInv = projectionMatrixTransposed(camFov, aspect, camNearPlane, camFarPlane);
-  glLoadMatrixf(projMatrixInv.L()); 
+  if (camUseMatrices)
+  {
+    glMatrixMode(GL_PROJECTION);
+    glLoadMatrixf(camProjMatrixTransposed.L());
 
-  glMatrixMode(GL_MODELVIEW);			  // Select The Modelview Matrix
+    glMatrixMode(GL_MODELVIEW);
+    glLoadMatrixf(camWorldViewMartrixTransposed.L());
+  }
+  else
+  {
 
-  float3 eye(camPos[0], camPos[1], camPos[2]);
-  float3 center(camLookAt[0], camLookAt[1], camLookAt[2]);
-  float3 up(camUp[0], camUp[1], camUp[2]);
+    glMatrixMode(GL_PROJECTION);			// Select The Projection Matrix
 
-  float4x4 lookAtMatrix = lookAtTransposed(eye, center, up); // get inverse lookAt matrix
+    const float aspect = float(m_width) / float(m_height);
+    float4x4 projMatrixInv = projectionMatrixTransposed(camFov, aspect, camNearPlane, camFarPlane);
+    glLoadMatrixf(projMatrixInv.L());
 
-  glLoadMatrixf(lookAtMatrix.L());
+    glMatrixMode(GL_MODELVIEW);			  // Select The Modelview Matrix
 
+    float3 eye(camPos[0], camPos[1], camPos[2]);
+    float3 center(camLookAt[0], camLookAt[1], camLookAt[2]);
+    float3 up(camUp[0], camUp[1], camUp[2]);
+
+    float4x4 lookAtMatrix = lookAtTransposed(eye, center, up); // get inverse lookAt matrix
+
+    glLoadMatrixf(lookAtMatrix.L());
+  }
 }
 
 void RD_OGL1_Plain::EndScene()
