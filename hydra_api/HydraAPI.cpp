@@ -160,7 +160,7 @@ HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMod
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  for (size_t i = 0; i < g_objManager.scnInst.size(); i++) // //#TODO: do we have to clear them manually?
+  for (size_t i = 0; i < g_objManager.scnInst.size(); i++) // #TODO: do we have to clear them manually?
     g_objManager.scnInst[i].clear();
   g_objManager.scnInst.clear();
 
@@ -177,6 +177,8 @@ HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMod
     g_objManager.m_pDriver = nullptr;
   }
   g_objManager.m_currSceneId = 0;
+
+  g_objManager.driverAllocated.clear();
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
