@@ -94,11 +94,11 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFile(const wchar_t* a_fileName, int w
   {
     HrPrint(HR_SEVERITY_WARNING, L"hrTexture2DCreateFromFile can't open file ", a_fileName);
     g_objManager.scnData.textures.pop_back();
-    ref.id = -1;
+    ref.id = 0;
     return ref;
   }
 
-  auto byteSize = int32_t(size_t(w)*size_t(h)*size_t(bpp));
+  auto byteSize = size_t(w*h)*size_t(bpp);
 
   // form tex name
   //

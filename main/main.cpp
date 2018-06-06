@@ -91,10 +91,10 @@ int main(int argc, const char** argv)
 
   try
   {
+    run_all_api_tests();
 	  run_all_geo_tests();
     run_all_lgt_tests();
     run_all_mtl_tests(); 
-    run_all_api_tests(); 
     run_all_ipp_tests();
   
     //test24_many_textures_big_data();
