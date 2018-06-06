@@ -91,11 +91,11 @@ int main(int argc, const char** argv)
 
   try
   {
-	  //run_all_geo_tests();
-    //run_all_lgt_tests();
-    //run_all_mtl_tests(); 
-    //run_all_api_tests();
-    //run_all_ipp_tests();
+	  run_all_geo_tests();
+    run_all_lgt_tests();
+    run_all_mtl_tests(); 
+    run_all_api_tests(); 
+    run_all_ipp_tests();
   
     //test24_many_textures_big_data();
     //test25_many_textures_big_data();
@@ -132,7 +132,7 @@ int main(int argc, const char** argv)
     //std::cout << test79_material_remap_list2() << std::endl;
     //std::cout << test77_save_gbuffer_layers() << std::endl;
 
-    std::cout << test97_camera_from_matrices() << std::endl;
+    //std::cout << test97_camera_from_matrices() << std::endl;
 
     //test38_licence_plate();
     //test82_proc_texture();

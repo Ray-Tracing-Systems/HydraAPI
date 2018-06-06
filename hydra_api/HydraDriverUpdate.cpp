@@ -1181,6 +1181,7 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
     allocInfo.lightNum    = int32_t(lightNum + lightNum/3 + 100);
 
     std::unordered_map<int32_t, HRTexResInfo> allTexInfo;
+    std::vector<HRTexResInfo> imgResInfo;
     allTexInfo.reserve(imgNum);
 
     const int64_t neededMemT  = EstimateTexturesMem(objList, allTexInfo);
@@ -1194,7 +1195,7 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 
     if (g_objManager.scnData.m_texturesLib.attribute(L"resize_textures").as_int() == 1)
     {
-      std::vector<HRTexResInfo> imgResInfo(allocInfo.imgNum);
+      imgResInfo.resize(allocInfo.imgNum);
       for (auto texInfoPair : allTexInfo)
         imgResInfo[texInfoPair.first] = texInfoPair.second;
       allocInfo.imgResInfoArray = imgResInfo.data();

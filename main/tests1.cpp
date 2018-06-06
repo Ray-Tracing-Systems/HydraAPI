@@ -1664,6 +1664,14 @@ void run_all_api_tests(const int startTestId)
                        &test87_proc_texture_reflect,
                        &test88_proc_texture_convex_rust,
                        &test89_proc_texture_dirty,
+                       &dummy_test,
+                       &dummy_test,
+                       &dummy_test,
+                       &dummy_test,
+                       &dummy_test,
+                       &dummy_test,
+                       &dummy_test,
+                       &test97_camera_from_matrices,
   };
 
 
@@ -1810,6 +1818,16 @@ void run_all_mtl_tests(int a_start)
                        &test_158_proc_dirt1,
                        &test_159_proc_dirt2,
                        &test_160_proc_dirt3,
+
+                       &test_161_simple_displacement,
+                       &test_162_shadow_matte_back1,
+                       &test_163_diffuse_texture_recommended_res,
+
+                       &test_164_simple_displacement_proctex,
+                       &test_165_simple_displacement_mesh,
+                       &test_166_displace_by_noise,
+                       &test_167_subdiv,
+                       &test_168_diffuse_texture_recommended_res2,
 	                   };
 
 

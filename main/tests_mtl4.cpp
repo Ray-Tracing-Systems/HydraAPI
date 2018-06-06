@@ -650,7 +650,7 @@ bool MTL_TESTS::test_158_proc_dirt1()
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_158/z_out.png");
 
-  return check_images("test_158", 1, 10);
+  return check_images("test_158", 1, 25);
 }
 
 
@@ -1291,7 +1291,7 @@ bool MTL_TESTS::test_159_proc_dirt2()
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_159/z_out.png");
 
-  return check_images("test_159", 1, 10);
+  return check_images("test_159", 1, 25);
 }
 
 
@@ -1319,9 +1319,9 @@ bool MTL_TESTS::test_160_proc_dirt3()
   HRTextureNodeRef texBitmap1 = hrTexture2DCreateFromFile(L"data/textures/texture1.bmp");
   HRTextureNodeRef texBitmap2 = hrTexture2DCreateFromFile(L"data/textures/300px-Bump2.jpg");
   HRTextureNodeRef texBitmap3 = hrTexture2DCreateFromFile(L"data/textures/checker_16x16.bmp");
-  HRTextureNodeRef texGrad = hrTexture2DCreateFromFile(L"data/textures/gradient.png");
+  HRTextureNodeRef texGrad    = hrTexture2DCreateFromFile(L"data/textures/gradient.png");
 
-  HRTextureNodeRef texProc = hrTextureCreateAdvanced(L"proc", L"my_mul_tex_coord");
+  HRTextureNodeRef texProc  = hrTextureCreateAdvanced(L"proc", L"my_mul_tex_coord");
   HRTextureNodeRef texProc2 = hrTextureCreateAdvanced(L"proc", L"my_noise3D");
   HRTextureNodeRef texProc3 = hrTextureCreateAdvanced(L"proc", L"my_ao_test");
   HRTextureNodeRef texProc4 = hrTextureCreateAdvanced(L"proc", L"my_blue_water_test");
@@ -1988,7 +1988,7 @@ bool MTL_TESTS::test_160_proc_dirt3()
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_160/z_out.png");
 
-  return check_images("test_160", 1, 10);
+  return check_images("test_160", 1, 25);
 }
 
 

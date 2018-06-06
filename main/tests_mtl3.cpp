@@ -1834,7 +1834,7 @@ bool MTL_TESTS::test_155_proc_checker_HDR_precomp()
   // Render settings
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 256, 1024);
+  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 256, 2048);
 
   hrRenderOpen(renderRef, HR_OPEN_EXISTING);
   auto node = hrRenderParamNode(renderRef);
@@ -2580,7 +2580,7 @@ bool MTL_TESTS::test_157_proc_checker_precomp_remap()
   // Render settings
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 256, 1024);
+  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 256, 2048);
 
   hrRenderOpen(renderRef, HR_OPEN_EXISTING);
   auto node = hrRenderParamNode(renderRef);
