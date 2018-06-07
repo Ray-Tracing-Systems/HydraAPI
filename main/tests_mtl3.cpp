@@ -1799,13 +1799,13 @@ bool MTL_TESTS::test_155_proc_checker_HDR_precomp()
 
     auto sizeNode = lightNode.append_child(L"size");
 
-    sizeNode.append_attribute(L"half_length").set_value(L"8.0");
-    sizeNode.append_attribute(L"half_width").set_value(L"8.0");
+    sizeNode.append_attribute(L"half_length").set_value(L"2.0");
+    sizeNode.append_attribute(L"half_width").set_value(L"2.0");
 
     auto intensityNode = lightNode.append_child(L"intensity");
 
     intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"4.0");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"16.0");
     VERIFY_XML(lightNode);
   }
   hrLightClose(rectLight);
@@ -2545,13 +2545,13 @@ bool MTL_TESTS::test_157_proc_checker_precomp_remap()
 
     auto sizeNode = lightNode.append_child(L"size");
 
-    sizeNode.append_attribute(L"half_length").set_value(L"8.0");
-    sizeNode.append_attribute(L"half_width").set_value(L"8.0");
+    sizeNode.append_attribute(L"half_length").set_value(L"2.0");
+    sizeNode.append_attribute(L"half_width").set_value(L"2.0");
 
     auto intensityNode = lightNode.append_child(L"intensity");
 
     intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"4.0");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"16.0");
     VERIFY_XML(lightNode);
   }
   hrLightClose(rectLight);

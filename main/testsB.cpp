@@ -3310,7 +3310,7 @@ bool test88_proc_texture_convex_rust()
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_88/z_out.png");
 
-  return check_images("test_88", 1, 10);
+  return check_images("test_88", 1, 30);
 }
 
 
