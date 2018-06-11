@@ -2276,7 +2276,7 @@ namespace LGHT_TESTS
       auto intensityNode = lightNode.append_child(L"intensity");
 
       intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 0 0");
-      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"3.0");
+      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"2.0");
 
       auto portalNode = lightNode.append_child(L"sky_portal");
       portalNode.append_attribute(L"val")       = 1;
@@ -2304,7 +2304,7 @@ namespace LGHT_TESTS
       auto intensityNode = lightNode.append_child(L"intensity");
 
       intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"0 1 0");
-      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"3.0");
+      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"2.0");
 
       auto portalNode = lightNode.append_child(L"sky_portal");
       portalNode.append_attribute(L"val")       = 1;

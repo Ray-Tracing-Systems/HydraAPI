@@ -97,7 +97,9 @@ int main(int argc, const char** argv)
     // run_all_mtl_tests();
     // run_all_ipp_tests();
    
-    std::cout << test35_cornell_with_light() << std::endl;
+    std::cout << LGHT_TESTS::test_209_skyportal() << std::endl;
+    std::cout << LGHT_TESTS::test_210_skyportal_hdr() << std::endl;
+    std::cout << LGHT_TESTS::test_212_skyportal_sun() << std::endl;
 
     //test42_load_library_basic();
     //test77_save_gbuffer_layers();
