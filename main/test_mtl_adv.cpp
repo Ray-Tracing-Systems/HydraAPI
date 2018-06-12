@@ -366,7 +366,7 @@ namespace MTL_TESTS
     // Render settings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 256, 2048); // L"HydraModern"
+    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 4096); // L"HydraModern"
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -445,8 +445,8 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
+    glViewport(0, 0, 512, 512);
+    std::vector<int32_t> image(512 * 512);
 
     while (true)
     {
@@ -457,10 +457,10 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
         glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
@@ -476,7 +476,7 @@ namespace MTL_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_131/z_out.png");
 
-    return check_images("test_131", 1, 115);
+    return check_images("test_131", 1, 25);
   }
 
 
@@ -825,7 +825,7 @@ namespace MTL_TESTS
     // Render settings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 256, 2048); // L"HydraModern"
+    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 4096); // L"HydraModern"
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -904,8 +904,8 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
+    glViewport(0, 0, 512, 512);
+    std::vector<int32_t> image(512 * 512);
 
     while (true)
     {
@@ -916,10 +916,10 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
         glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
@@ -935,7 +935,7 @@ namespace MTL_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_132/z_out.png");
 
-    return check_images("test_132", 1, 115);
+    return check_images("test_132", 1, 25);
   }
 
   bool test_140_blend_emission()
@@ -1351,7 +1351,7 @@ namespace MTL_TESTS
     // Render settings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 256, 2048);
+    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 2048);
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1444,8 +1444,8 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
+    glViewport(0, 0, 512, 512);
+    std::vector<int32_t> image(512 * 512);
 
     while (true)
     {
@@ -1455,10 +1455,10 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
         glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
@@ -1474,7 +1474,7 @@ namespace MTL_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_140/z_out.png");
 
-    return check_images("test_140", 1, 65);
+    return check_images("test_140", 1, 25);
   }
 
   bool test_142_blend_normalmap_heightmap()
