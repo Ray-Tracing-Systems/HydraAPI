@@ -97,9 +97,7 @@ int main(int argc, const char** argv)
     // run_all_mtl_tests();
     // run_all_ipp_tests();
 
-    std::cout << LGHT_TESTS::test_222_cylinder_with_end_face() << std::endl;
-
-    std::cout << "MSE = " << g_MSEOutput << std::endl;
+    test69_pause_and_resume();
 
     //test42_load_library_basic();
     //test77_save_gbuffer_layers();
