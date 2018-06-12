@@ -170,7 +170,7 @@ namespace LGHT_TESTS
     // Render settings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 256, 2048);
+    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 2048);
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -260,8 +260,8 @@ namespace LGHT_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
+    glViewport(0, 0, 512, 512);
+    std::vector<int32_t> image(512 * 512);
 
     while (true)
     {
@@ -271,10 +271,10 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
         glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
@@ -290,7 +290,7 @@ namespace LGHT_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_200/z_out.png");
 
-    return check_images("test_200", 1, 115);
+    return check_images("test_200", 1, 15);
   }
 
   bool test_201_sphere()
@@ -396,7 +396,7 @@ namespace LGHT_TESTS
     // Render settings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 256, 2048);
+    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 2048);
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -476,8 +476,8 @@ namespace LGHT_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
+    glViewport(0, 0, 512, 512);
+    std::vector<int32_t> image(512 * 512);
 
     while (true)
     {
@@ -487,10 +487,10 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
         glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
@@ -506,7 +506,7 @@ namespace LGHT_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_201/z_out.png");
 
-    return check_images("test_201", 1, 115);
+    return check_images("test_201", 1, 40);
   }
 
   bool test_202_sky_color()
@@ -607,7 +607,7 @@ namespace LGHT_TESTS
     // Render settings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 256, 2048);
+    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 2048);
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -688,8 +688,8 @@ namespace LGHT_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
+    glViewport(0, 0, 512, 512);
+    std::vector<int32_t> image(512 * 512);
 
     while (true)
     {
@@ -699,10 +699,10 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
         glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
@@ -718,7 +718,7 @@ namespace LGHT_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_202/z_out.png");
 
-    return check_images("test_202", 1, 60);
+    return check_images("test_202", 1, 10);
   }
 
   bool test_203_sky_hdr()
@@ -836,7 +836,7 @@ namespace LGHT_TESTS
     // Render settings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    HRRenderRef renderRef = CreateBasicTestRenderPTNoCaust(CURR_RENDER_DEVICE, 1024, 768, 512, 4096);
+    HRRenderRef renderRef = CreateBasicTestRenderPTNoCaust(CURR_RENDER_DEVICE, 512, 512, 512, 4096);
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -917,8 +917,8 @@ namespace LGHT_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
+    glViewport(0, 0, 512, 512);
+    std::vector<int32_t> image(512 * 512);
 
     while (true)
     {
@@ -928,10 +928,10 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
         glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
@@ -947,7 +947,7 @@ namespace LGHT_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_203/z_out.png");
 
-    return check_images("test_203", 1, 150);
+    return check_images("test_203", 1, 20);
   }
 
   bool test_204_sky_hdr_rotate()
@@ -1068,7 +1068,7 @@ namespace LGHT_TESTS
     // Render settings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    HRRenderRef renderRef = CreateBasicTestRenderPTNoCaust(CURR_RENDER_DEVICE, 1024, 768, 512, 4096);
+    HRRenderRef renderRef = CreateBasicTestRenderPTNoCaust(CURR_RENDER_DEVICE, 512, 512, 512, 4096);
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1149,8 +1149,8 @@ namespace LGHT_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
+    glViewport(0, 0, 512, 512);
+    std::vector<int32_t> image(512 * 512);
 
     while (true)
     {
@@ -1160,10 +1160,10 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
         glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
@@ -1179,7 +1179,7 @@ namespace LGHT_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_204/z_out.png");
 
-    return check_images("test_204", 1, 150);
+    return check_images("test_204", 1, 25);
   }
 
   bool test_205_sky_and_directional_sun()
@@ -1305,7 +1305,7 @@ namespace LGHT_TESTS
     // Render settings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 256, 2048);
+    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 2048);
     hrRenderOpen(renderRef, HR_OPEN_EXISTING);
     {
       auto node = hrRenderParamNode(renderRef);
@@ -1431,8 +1431,8 @@ namespace LGHT_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
+    glViewport(0, 0, 512, 512);
+    std::vector<int32_t> image(512 * 512);
 
     while (true)
     {
@@ -1442,10 +1442,10 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
         glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
@@ -1461,7 +1461,7 @@ namespace LGHT_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_205/z_out.png");
 
-    return check_images("test_205", 1, 60);
+    return check_images("test_205", 1, 20);
   }
 
   bool test_206_ies1()
@@ -1599,7 +1599,7 @@ namespace LGHT_TESTS
     // Render settings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 256, 2048);
+    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 2048);
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1679,8 +1679,8 @@ namespace LGHT_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
+    glViewport(0, 0, 512, 512);
+    std::vector<int32_t> image(512 * 512);
 
     while (true)
     {
@@ -1690,10 +1690,10 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
         glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
@@ -1709,7 +1709,7 @@ namespace LGHT_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_206/z_out.png");
 
-    return check_images("test_206", 1, 115);
+    return check_images("test_206", 1, 40);
   }
 
   bool test_207_ies2()
@@ -1842,7 +1842,7 @@ namespace LGHT_TESTS
     // Render settings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 256, 2048);
+    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 2048);
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1923,8 +1923,8 @@ namespace LGHT_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
+    glViewport(0, 0, 512, 512);
+    std::vector<int32_t> image(512 * 512);
 
     while (true)
     {
@@ -1934,10 +1934,10 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
         glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
@@ -1953,7 +1953,7 @@ namespace LGHT_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_207/z_out.png");
 
-    return check_images("test_207", 1, 115);
+    return check_images("test_207", 1, 40);
   }
 
   bool test_208_ies3()
@@ -2086,7 +2086,7 @@ namespace LGHT_TESTS
     // Render settings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 256, 2048);
+    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 2048);
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2166,8 +2166,8 @@ namespace LGHT_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
+    glViewport(0, 0, 512, 512);
+    std::vector<int32_t> image(512 * 512);
 
     while (true)
     {
@@ -2177,10 +2177,10 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
         glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
@@ -2196,7 +2196,7 @@ namespace LGHT_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_208/z_out.png");
 
-    return check_images("test_208", 1, 115);
+    return check_images("test_208", 1, 40);
   }
 
   bool test_209_skyportal()
@@ -3077,7 +3077,7 @@ namespace LGHT_TESTS
     // Render settings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 256, 2048);
+    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 2048);
     hrRenderOpen(renderRef, HR_OPEN_EXISTING);
     {
       auto node = hrRenderParamNode(renderRef);
@@ -3205,8 +3205,8 @@ namespace LGHT_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
+    glViewport(0, 0, 512, 512);
+    std::vector<int32_t> image(512 * 512);
 
     while (true)
     {
@@ -3216,10 +3216,10 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
         glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
@@ -3235,7 +3235,7 @@ namespace LGHT_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_211/z_out.png");
 
-    return check_images("test_211", 1, 60);
+    return check_images("test_211", 1, 20);
   }
 
   bool test_212_skyportal_sun()
@@ -3745,7 +3745,7 @@ namespace LGHT_TESTS
     // Render settings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 256, 2048);
+    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 2048);
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3825,8 +3825,8 @@ namespace LGHT_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
+    glViewport(0, 0, 512, 512);
+    std::vector<int32_t> image(512 * 512);
 
     while (true)
     {
@@ -3836,10 +3836,10 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
         glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
@@ -3855,7 +3855,7 @@ namespace LGHT_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_213/z_out.png");
 
-    return check_images("test_213", 1, 115);
+    return check_images("test_213", 1, 30);
   }
 
 
@@ -3975,7 +3975,7 @@ namespace LGHT_TESTS
 		// Render settings
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		HRRenderRef renderRef = CreateBasicTestRenderPTNoCaust(CURR_RENDER_DEVICE, 1024, 768, 256, 2048);
+		HRRenderRef renderRef = CreateBasicTestRenderPTNoCaust(CURR_RENDER_DEVICE, 512, 512, 256, 2048);
 
 
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4056,8 +4056,8 @@ namespace LGHT_TESTS
 
 		hrFlush(scnRef, renderRef);
 
-		glViewport(0, 0, 1024, 768);
-		std::vector<int32_t> image(1024 * 768);
+		glViewport(0, 0, 512, 512);
+		std::vector<int32_t> image(512 * 512);
 
 		while (true)
 		{
@@ -4067,10 +4067,10 @@ namespace LGHT_TESTS
 
 			if (info.haveUpdateFB)
 			{
-				hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+				hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
 				glDisable(GL_TEXTURE_2D);
-				glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+				glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
 				auto pres = std::cout.precision(2);
 				std::cout << "rendering progress = " << info.progress << "% \r";
@@ -4086,7 +4086,7 @@ namespace LGHT_TESTS
 
 		hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_214/z_out.png");
 
-		return check_images("test_214", 1, 115);
+		return check_images("test_214", 1, 30);
 	}
 
 
@@ -4398,8 +4398,8 @@ namespace LGHT_TESTS
 		{
 			pugi::xml_node node = hrRenderParamNode(renderRef);
 
-			node.append_child(L"width").text() = L"1024";
-			node.append_child(L"height").text() = L"768";
+			node.append_child(L"width").text()  = 512;
+			node.append_child(L"height").text() = 512;
 
 			node.append_child(L"method_primary").text() = L"pathtracing";
 			node.append_child(L"method_secondary").text() = L"pathtracing";
@@ -4519,8 +4519,8 @@ namespace LGHT_TESTS
 
 		hrFlush(scnRef, renderRef);
 
-		glViewport(0, 0, 1024, 768);
-		std::vector<int32_t> image(1024 * 768);
+		glViewport(0, 0, 512, 512);
+		std::vector<int32_t> image(512 * 512);
 
 		while (true)
 		{
@@ -4530,10 +4530,10 @@ namespace LGHT_TESTS
 
 			if (info.haveUpdateFB)
 			{
-				hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+				hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
 				glDisable(GL_TEXTURE_2D);
-				glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+				glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
 				auto pres = std::cout.precision(2);
 				std::cout << "rendering progress = " << info.progress << "% \r";
@@ -4549,7 +4549,7 @@ namespace LGHT_TESTS
 
 		hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_215/z_out.png");
 
-		return check_images("test_215", 1, 50.0f);
+		return check_images("test_215", 1, 20.0f);
 	}
 
 	bool test_216_ies4()
@@ -4681,7 +4681,7 @@ namespace LGHT_TESTS
 		// Render settings
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 256, 2048);
+		HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 2048);
 
 
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4755,8 +4755,8 @@ namespace LGHT_TESTS
 
 		hrFlush(scnRef, renderRef);
 
-		glViewport(0, 0, 1024, 768);
-		std::vector<int32_t> image(1024 * 768);
+		glViewport(0, 0, 512, 512);
+		std::vector<int32_t> image(512 * 512);
 
 		while (true)
 		{
@@ -4766,10 +4766,10 @@ namespace LGHT_TESTS
 
 			if (info.haveUpdateFB)
 			{
-				hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+				hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
 				glDisable(GL_TEXTURE_2D);
-				glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+				glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
 				auto pres = std::cout.precision(2);
 				std::cout << "rendering progress = " << info.progress << "% \r";
@@ -4785,7 +4785,7 @@ namespace LGHT_TESTS
 
 		hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_216/z_out.png");
 
-		return check_images("test_216", 1, 115);
+		return check_images("test_216", 1, 15);
 	}
  
 
@@ -4904,7 +4904,7 @@ namespace LGHT_TESTS
     // Render settings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 256, 2048);
+    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 2048);
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4983,8 +4983,8 @@ namespace LGHT_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
+    glViewport(0, 0, 512, 512);
+    std::vector<int32_t> image(512 * 512);
 
     while (true)
     {
@@ -4994,10 +4994,10 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
         glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
@@ -5013,7 +5013,7 @@ namespace LGHT_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_217/z_out.png");
 
-    return check_images("test_217", 1, 115);
+    return check_images("test_217", 1, 25);
   }
 
   bool test_218_cylinder2()
@@ -5139,8 +5139,8 @@ namespace LGHT_TESTS
     {
       auto node = hrRenderParamNode(renderRef);
 
-      node.append_child(L"width").text()  = 1024;
-      node.append_child(L"height").text() = 768;
+      node.append_child(L"width").text()  = 512;
+      node.append_child(L"height").text() = 512;
 
       node.append_child(L"method_primary").text()   = L"pathtracing";
       node.append_child(L"method_secondary").text() = L"pathtracing";
@@ -5223,8 +5223,8 @@ namespace LGHT_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
+    glViewport(0, 0, 512, 512);
+    std::vector<int32_t> image(512 * 512);
 
     int counter = 0;
 
@@ -5236,10 +5236,10 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
         glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
@@ -5262,7 +5262,7 @@ namespace LGHT_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_218/z_out.png");
 
-    return check_images("test_218", 1, 100);
+    return check_images("test_218", 1, 25);
   }
 
 

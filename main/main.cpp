@@ -96,11 +96,8 @@ int main(int argc, const char** argv)
     // run_all_lgt_tests();
     // run_all_mtl_tests();
     // run_all_ipp_tests();
-   
-    // std::cout << LGHT_TESTS::test_209_skyportal() << std::endl;
-    // std::cout << LGHT_TESTS::test_210_skyportal_hdr() << std::endl;
-    // std::cout << LGHT_TESTS::test_212_skyportal_sun() << std::endl;
-    std::cout << MTL_TESTS::test_141_opacity_smooth() << std::endl;
+
+    std::cout << LGHT_TESTS::test_222_cylinder_with_end_face() << std::endl;
 
     std::cout << "MSE = " << g_MSEOutput << std::endl;
 
