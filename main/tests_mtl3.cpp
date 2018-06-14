@@ -879,7 +879,7 @@ bool MTL_TESTS::test_152_texture_color_replace_mode()
   // Render settings
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 256, 2048);
+  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 2048);
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Create scene
@@ -952,8 +952,8 @@ bool MTL_TESTS::test_152_texture_color_replace_mode()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
+  glViewport(0, 0, 512, 512);
+  std::vector<int32_t> image(512 * 512);
 
   while (true)
   {
@@ -963,10 +963,10 @@ bool MTL_TESTS::test_152_texture_color_replace_mode()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
       glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
@@ -982,7 +982,7 @@ bool MTL_TESTS::test_152_texture_color_replace_mode()
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_152/z_out.png");
 
-  return check_images("test_152", 1, 60);
+  return check_images("test_152", 1, 10);
 }
 
 

@@ -979,8 +979,22 @@ void RD_HydraConnection::ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out)
     if (m_pConnection == nullptr || m_pSharedImage == nullptr)
       return;
 
+    auto posSpace = inputA.find("pause ");
+    std::string path = inputA.substr(posSpace + 6, inputA.size());
+
     // (1) save imageA
     //
+    if(path.size() > 0)
+    {
+      std::ofstream fout(path.c_str(), std::ios::binary);
+      fout.write((const char*)m_pSharedImage->Header(), sizeof(HRSharedBufferHeader));
+    
+      const size_t size = size_t(m_pSharedImage->Header()->width*m_pSharedImage->Header()->height)*sizeof(float)*4;
+      for(int layer=0; layer < m_pSharedImage->Header()->depth; layer++)
+        fout.write((const char*)m_pSharedImage->ImageData(layer), size);
+    
+      fout.close();
+    }
 
     // (2) finish all render processes
     //
@@ -988,17 +1002,32 @@ void RD_HydraConnection::ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out)
   }
   else if (name == L"resume")
   {
-    // (1) create connection and run process
+    // (1) load imageA
     //
-    //RunAllHydraHeads();
+    auto posSpace = inputA.find("resume ");
+    std::string path = inputA.substr(posSpace + 7, inputA.size());
+    if (path.size() > 0)
+    {
+      std::ifstream fin(path.c_str(), std::ios::binary);
+      if (fin.is_open())
+      {
+        fin.read((char*)m_pSharedImage->Header(), sizeof(HRSharedBufferHeader));
+        const size_t size = size_t(m_pSharedImage->Header()->width*m_pSharedImage->Header()->height) * sizeof(float) * 4;
+        for (int layer = 0; layer < m_pSharedImage->Header()->depth; layer++)
+          fin.read((char*)m_pSharedImage->ImageData(layer), size);
+        fin.close();
+      }
+    }
 
-    // (2) load imageA
+    // (2) start rendering
     //
     inputA = "start";
   }
 
   if (m_pConnection == nullptr)
     return;
+
+  auto* header = m_pSharedImage->Header();
 
   std::stringstream sout2;
   sout2 << "-node_t A" << " -sid 0 -layer color -action " << inputA.c_str();

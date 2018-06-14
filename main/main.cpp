@@ -96,8 +96,8 @@ int main(int argc, const char** argv)
     // run_all_lgt_tests();
     // run_all_mtl_tests();
     // run_all_ipp_tests();
-   
-    std::cout << test35_cornell_with_light() << std::endl;
+
+    test69_pause_and_resume();
 
     //test42_load_library_basic();
     //test77_save_gbuffer_layers();

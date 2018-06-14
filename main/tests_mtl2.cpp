@@ -258,7 +258,7 @@ namespace MTL_TESTS
 		// Render settings
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 256, 2048);
+		HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 2048);
 
 
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -348,8 +348,8 @@ namespace MTL_TESTS
 
 		hrFlush(scnRef, renderRef);
 
-		glViewport(0, 0, 1024, 768);
-		std::vector<int32_t> image(1024 * 768);
+		glViewport(0, 0, 512, 512);
+		std::vector<int32_t> image(512 * 512);
 
 		while (true)
 		{
@@ -359,10 +359,10 @@ namespace MTL_TESTS
 
 			if (info.haveUpdateFB)
 			{
-				hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+				hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
 				glDisable(GL_TEXTURE_2D);
-				glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+				glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
 				auto pres = std::cout.precision(2);
 				std::cout << "rendering progress = " << info.progress << "% \r";
@@ -378,7 +378,7 @@ namespace MTL_TESTS
 
 		hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_133/z_out.png");
 
-		return check_images("test_133", 1, 30);
+		return check_images("test_133", 1, 10);
 	}
 
 	bool test_134_diff_refl_transp()
@@ -741,9 +741,9 @@ namespace MTL_TESTS
 
       texNode.append_attribute(L"matrix");
       float samplerMatrix[16] = { 3, 0, 0, 0,
-        0, 3, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1 };
+                                  0, 3, 0, 0,
+                                  0, 0, 1, 0,
+                                  0, 0, 0, 1 };
       texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
       texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
       texNode.append_attribute(L"input_gamma").set_value(2.2f);
@@ -775,9 +775,9 @@ namespace MTL_TESTS
 
       texNode.append_attribute(L"matrix");
       float samplerMatrix[16] = { 3, 0, 0, 0,
-        0, 3, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1 };
+                                  0, 3, 0, 0,
+                                  0, 0, 1, 0,
+                                  0, 0, 0, 1 };
       texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
       texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
       texNode.append_attribute(L"input_gamma").set_value(2.2f);
@@ -809,9 +809,9 @@ namespace MTL_TESTS
 
       texNode.append_attribute(L"matrix");
       float samplerMatrix[16] = { 3, 0, 0, 0,
-        0, 3, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1 };
+                                  0, 3, 0, 0,
+                                  0, 0, 1, 0,
+                                  0, 0, 0, 1 };
       texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
       texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
       texNode.append_attribute(L"input_gamma").set_value(2.2f);
@@ -838,9 +838,9 @@ namespace MTL_TESTS
 
       texNode.append_attribute(L"matrix");
       float samplerMatrix[16] = { 32, 0, 0, 0,
-        0, 16, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1 };
+                                   0, 16, 0, 0,
+                                   0, 0, 1, 0,
+                                   0, 0, 0, 1 };
       texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
       texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
       texNode.append_attribute(L"input_gamma").set_value(2.2f);
@@ -867,9 +867,9 @@ namespace MTL_TESTS
 
       texNode.append_attribute(L"matrix");
       float samplerMatrix[16] = { 16, 0, 0, 0,
-        0, 16, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1 };
+                                  0, 16, 0, 0,
+                                  0, 0, 1, 0,
+                                  0, 0, 0, 1 };
       texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
       texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
       texNode.append_attribute(L"input_gamma").set_value(2.2f);
@@ -941,7 +941,7 @@ namespace MTL_TESTS
     // Render settings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 256, 2048);
+    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 2048);
     hrRenderOpen(renderRef, HR_OPEN_EXISTING);
     {
       auto settingsNode = hrRenderParamNode(renderRef);
@@ -1036,8 +1036,8 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
+    glViewport(0, 0, 512, 512);
+    std::vector<int32_t> image(512 * 512);
 
     while (true)
     {
@@ -1047,10 +1047,10 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
         glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
@@ -1066,7 +1066,7 @@ namespace MTL_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_135/z_out.png");
 
-    return check_images("test_135", 1, 80);
+    return check_images("test_135", 1, 20);
   }
 
   bool test_136_opacity_glass()
@@ -1122,9 +1122,9 @@ namespace MTL_TESTS
 
       texNode.append_attribute(L"matrix");
       float samplerMatrix[16] = { 3, 0, 0, 0,
-        0, 3, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1 };
+                                  0, 3, 0, 0,
+                                  0, 0, 1, 0,
+                                  0, 0, 0, 1 };
       texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
       texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
       texNode.append_attribute(L"input_gamma").set_value(2.2f);
@@ -1169,9 +1169,9 @@ namespace MTL_TESTS
 
       texNode.append_attribute(L"matrix");
       float samplerMatrix[16] = { 3, 0, 0, 0,
-        0, 3, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1 };
+                                  0, 3, 0, 0,
+                                  0, 0, 1, 0,
+                                  0, 0, 0, 1 };
       texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
       texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
       texNode.append_attribute(L"input_gamma").set_value(2.2f);
@@ -1219,9 +1219,9 @@ namespace MTL_TESTS
 
       texNode.append_attribute(L"matrix");
       float samplerMatrix[16] = { 3, 0, 0, 0,
-        0, 3, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1 };
+                                  0, 3, 0, 0,
+                                  0, 0, 1, 0,
+                                  0, 0, 0, 1 };
       texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
       texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
       texNode.append_attribute(L"input_gamma").set_value(2.2f);
@@ -1239,9 +1239,9 @@ namespace MTL_TESTS
 
       texNode2.append_attribute(L"matrix");
       float samplerMatrix2[16] = { 2, 0, 0, 0,
-        0, 2, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1 };
+                                   0, 2, 0, 0,
+                                   0, 0, 1, 0,
+                                   0, 0, 0, 1 };
 
       texNode2.append_attribute(L"addressing_mode_u").set_value(L"wrap");
       texNode2.append_attribute(L"addressing_mode_v").set_value(L"wrap");
@@ -1269,9 +1269,9 @@ namespace MTL_TESTS
 
       texNode.append_attribute(L"matrix");
       float samplerMatrix[16] = { 32, 0, 0, 0,
-        0, 16, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1 };
+                                  0, 16, 0, 0,
+                                  0, 0, 1, 0,
+                                  0, 0, 0, 1 };
       texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
       texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
       texNode.append_attribute(L"input_gamma").set_value(2.2f);
@@ -1298,9 +1298,9 @@ namespace MTL_TESTS
 
       texNode.append_attribute(L"matrix");
       float samplerMatrix[16] = { 16, 0, 0, 0,
-        0, 16, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1 };
+                                  0, 16, 0, 0,
+                                  0, 0, 1, 0,
+                                  0, 0, 0, 1 };
       texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
       texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
       texNode.append_attribute(L"input_gamma").set_value(2.2f);
@@ -1372,7 +1372,7 @@ namespace MTL_TESTS
     // Render settings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 256, 2048);
+    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 2048);
 
     hrRenderOpen(renderRef, HR_OPEN_EXISTING);
     {
@@ -1468,8 +1468,8 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
+    glViewport(0, 0, 512, 512);
+    std::vector<int32_t> image(512 * 512);
 
     while (true)
     {
@@ -1479,10 +1479,10 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
         glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
@@ -1498,7 +1498,7 @@ namespace MTL_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_136/z_out.png");
 
-    return check_images("test_136", 1, 50);
+    return check_images("test_136", 1, 20);
   }
 
   bool test_137_opacity_emission()
@@ -2166,7 +2166,7 @@ namespace MTL_TESTS
     // Render settings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 256, 2048);
+    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 2048);
     hrRenderOpen(renderRef, HR_OPEN_EXISTING);
     {
       auto node = hrRenderParamNode(renderRef);
@@ -2269,8 +2269,8 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
+    glViewport(0, 0, 512, 512);
+    std::vector<int32_t> image(512 * 512);
 
     while (true)
     {
@@ -2280,10 +2280,10 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
         glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
@@ -2299,7 +2299,7 @@ namespace MTL_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_138/z_out.png");
 
-    return check_images("test_138", 1, 70);
+    return check_images("test_138", 1, 15);
   }
 
   bool test_139_glass_and_bump()
@@ -2954,7 +2954,7 @@ namespace MTL_TESTS
     // Render settings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 256, 2048);
+    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 2048);
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3044,8 +3044,8 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
+    glViewport(0, 0, 512, 512);
+    std::vector<int32_t> image(512 * 512);
 
     while (true)
     {
@@ -3055,10 +3055,10 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
         glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
@@ -3074,7 +3074,7 @@ namespace MTL_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_141/z_out.png");
 
-    return check_images("test_141", 1, 50);
+    return check_images("test_141", 1, 10);
   }
 
 
