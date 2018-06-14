@@ -589,7 +589,7 @@ HRMeshRef _hrMeshMergeFromNode(pugi::xml_node a_node, const std::wstring &a_libP
 
     const int triNum = meshInfo.indicesNum / 3;
 
-    auto matindices = (int32_t*)hrMeshGetPrimitiveAttribPointer(ref, L"mind");
+    auto matindices = (int32_t*)hrMeshGetPrimitiveAttribPointer(ref, L"m  ind");
 
     std::unordered_set<int> matIdsToMerge;
 
