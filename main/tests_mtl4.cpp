@@ -2033,7 +2033,7 @@ bool MTL_TESTS::test_161_simple_displacement()
 
     displacement.append_attribute(L"type").set_value(L"true_displacement");
     heightNode.append_attribute(L"amount").set_value(20.1f);
-
+    displacement.append_attribute(L"subdivs").set_value(2);
     auto texNode = hrTextureBind(tex, heightNode);
 
     texNode.append_attribute(L"matrix");
@@ -2270,7 +2270,7 @@ bool MTL_TESTS::test_164_simple_displacement_proctex()
     heightNode.append_attribute(L"amount").set_value(5.5f);
 
     auto texNode = hrTextureBind(tex, heightNode);
-
+    displacement.append_attribute(L"subdivs").set_value(0);
     texNode.append_attribute(L"matrix");
     float samplerMatrix[16] = { 1, 0, 0, 0,
                                 0, 1, 0, 0,
@@ -2281,6 +2281,8 @@ bool MTL_TESTS::test_164_simple_displacement_proctex()
     texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
     texNode.append_attribute(L"input_gamma").set_value(1.0f);
     texNode.append_attribute(L"input_alpha").set_value(L"rgb");
+
+    HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
 
   }
   hrMaterialClose(mat1);
@@ -2524,6 +2526,8 @@ bool MTL_TESTS::test_165_simple_displacement_mesh()
     texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
     texNode.append_attribute(L"input_gamma").set_value(1.0f);
     texNode.append_attribute(L"input_alpha").set_value(L"rgb");
+
+    HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
 
   }
   hrMaterialClose(mat1);
