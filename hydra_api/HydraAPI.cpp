@@ -508,6 +508,12 @@ HAPI void hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh,
     return;
   }
 
+  if (a_pMesh.id == -1)
+  {
+    HrError(L"hrMeshInstance: mesh with id == -1");
+    return;
+  }
+
   int32_t mmId = -1;
 
   if (a_mmListm != nullptr && a_mmListSize > 0 && a_mmListSize%2 == 0) // create new material remap list
@@ -550,11 +556,10 @@ HAPI void hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh,
   model.scene_sid = pScn->instancedScenesCounter;
   pScn->drawList.push_back(model);
 
-  if(g_objManager.m_computeBBoxes)
+  HRMesh *pMesh = g_objManager.PtrById(a_pMesh);
+  if(g_objManager.m_computeBBoxes && pMesh->pImpl != nullptr)
   {
-    HRMesh *pMesh = g_objManager.PtrById(a_pMesh);
     auto inst_bbox = transformBBox(pMesh->pImpl->getBBox(), HydraLiteMath::float4x4(a_mat));
-
     pScn->m_bbox = mergeBBoxes(pScn->m_bbox, inst_bbox);
   }
 

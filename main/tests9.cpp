@@ -458,11 +458,8 @@ bool test55_clear_scene()
   {
     pugi::xml_node node = hrRenderParamNode(settingsRef);
 
-    wchar_t temp[256];
-    swprintf(temp, 256, L"%d", 1024);
-    node.append_child(L"width").text().set(temp);
-    swprintf(temp, 256, L"%d", 768);
-    node.append_child(L"height").text().set(temp);
+    node.append_child(L"width").text() = 512;
+    node.append_child(L"height").text() = 512;
   }
   hrRenderClose(settingsRef);
 
