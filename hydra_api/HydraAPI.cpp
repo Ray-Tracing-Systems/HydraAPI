@@ -508,6 +508,12 @@ HAPI void hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh,
     return;
   }
 
+  if (a_pMesh.id == -1)
+  {
+    HrError(L"hrMeshInstance: mesh with id == -1");
+    return;
+  }
+
   int32_t mmId = -1;
 
   if (a_mmListm != nullptr && a_mmListSize > 0 && a_mmListSize%2 == 0) // create new material remap list
