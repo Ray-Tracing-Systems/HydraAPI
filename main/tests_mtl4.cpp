@@ -2985,7 +2985,7 @@ bool MTL_TESTS::test_167_subdiv()
     auto heightNode   = displacement.append_child(L"height_map");
 
     displacement.append_attribute(L"type").set_value(L"true_displacement");
-    displacement.append_attribute(L"subdivs").set_value(4);
+    displacement.append_attribute(L"subdivs").set_value(0);
     heightNode.append_attribute(L"amount").set_value(15.1f);
 
     auto texNode = hrTextureBind(tex1, heightNode);
@@ -3026,7 +3026,7 @@ bool MTL_TESTS::test_167_subdiv()
     auto heightNode   = displacement.append_child(L"height_map");
 
     displacement.append_attribute(L"type").set_value(L"true_displacement");
-    displacement.append_attribute(L"subdivs").set_value(5);
+    displacement.append_attribute(L"subdivs").set_value(1);
     heightNode.append_attribute(L"amount").set_value(15.1f);
 
     auto texNode = hrTextureBind(tex2, heightNode);
@@ -3067,7 +3067,7 @@ bool MTL_TESTS::test_167_subdiv()
     auto heightNode   = displacement.append_child(L"height_map");
 
     displacement.append_attribute(L"type").set_value(L"true_displacement");
-    displacement.append_attribute(L"subdivs").set_value(6);
+    displacement.append_attribute(L"subdivs").set_value(3);
     heightNode.append_attribute(L"amount").set_value(15.1f);
 
     auto texNode = hrTextureBind(tex3, heightNode);
