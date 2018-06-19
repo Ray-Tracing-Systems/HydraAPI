@@ -97,7 +97,8 @@ int main(int argc, const char** argv)
     // run_all_mtl_tests();
     // run_all_ipp_tests();
 
-    std::cout << test39_mesh_from_vsgf() << std::endl;
+    //test38_licence_plate();
+    //std::cout << test39_mesh_from_vsgf() << std::endl;
 
     //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
     //std::cout << test77_save_gbuffer_layers() << std::endl;
@@ -115,11 +116,11 @@ int main(int argc, const char** argv)
     //std::cout << MTL_TESTS::test_163_diffuse_texture_recommended_res() << std::endl;
     //std::cout << MTL_TESTS::test_168_diffuse_texture_recommended_res2() << std::endl;
 
-    //MTL_TESTS::test_161_simple_displacement();
-    //MTL_TESTS::test_164_simple_displacement_proctex();
-    //MTL_TESTS::test_165_simple_displacement_mesh();
+    //std::cout <<  MTL_TESTS::test_161_simple_displacement() << std::endl;
+    std::cout <<  MTL_TESTS::test_164_simple_displacement_proctex() << std::endl;
+    //std::cout <<  MTL_TESTS::test_165_simple_displacement_mesh()  << std::endl;
     //MTL_TESTS::test_166_displace_by_noise();
-    //MTL_TESTS::test_167_subdiv();
+    //std::cout <<  MTL_TESTS::test_167_subdiv()  << std::endl;
 
     //window_main_free_look(L"tests_f/test_167", L"opengl1Debug");
 

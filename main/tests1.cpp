@@ -1825,7 +1825,7 @@ void run_all_mtl_tests(int a_start)
 
                        &test_164_simple_displacement_proctex,
                        &test_165_simple_displacement_mesh,
-                       &test_166_displace_by_noise,
+                       &dummy_test, // test_166_displace_by_noise
                        &test_167_subdiv,
                        &test_168_diffuse_texture_recommended_res2,
 	                   };

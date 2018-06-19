@@ -2154,7 +2154,7 @@ bool MTL_TESTS::test_161_simple_displacement()
   // Render settings
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 1024, 256, 512);
+  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 1024, 256, 1024);
 
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2254,7 +2254,7 @@ bool MTL_TESTS::test_164_simple_displacement_proctex()
 
   //HRTextureNodeRef texChecker = hrTexture2DCreateFromFile(L"data/textures/chess_white.bmp");
   //HRTextureNodeRef tex = hrTexture2DCreateFromFile(L"data/textures/ornament.jpg");
-  HRTextureNodeRef tex = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep), sizeof(int), 64, 64);
+  HRTextureNodeRef tex = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep), sizeof(int), 32, 32);
 
   hrMaterialOpen(mat1, HR_WRITE_DISCARD);
   {
@@ -2270,10 +2270,10 @@ bool MTL_TESTS::test_164_simple_displacement_proctex()
     heightNode.append_attribute(L"amount").set_value(5.5f);
 
     auto texNode = hrTextureBind(tex, heightNode);
-    displacement.append_attribute(L"subdivs").set_value(0);
+    displacement.append_attribute(L"subdivs").set_value(2);
     texNode.append_attribute(L"matrix");
-    float samplerMatrix[16] = { 1, 0, 0, 0,
-                                0, 1, 0, 0,
+    float samplerMatrix[16] = { 1, 0, 0, -0.01f,
+                                0, 1, 0, -0.01f,
                                 0, 0, 1, 0,
                                 0, 0, 0, 1 };
 
@@ -2317,7 +2317,7 @@ bool MTL_TESTS::test_164_simple_displacement_proctex()
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Meshes
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  HRMeshRef tess = CreateTriStrip(128, 128, 100);//hrMeshCreateFromFileDL(L"data/meshes/tesselated_plane.vsgf");//
+  HRMeshRef tess = CreateTriStrip(64, 64, 100);//hrMeshCreateFromFileDL(L"data/meshes/tesselated_plane.vsgf");//
 
   hrMeshOpen(tess, HR_TRIANGLE_IND3, HR_OPEN_EXISTING);
   {
@@ -2486,11 +2486,11 @@ bool MTL_TESTS::test_165_simple_displacement_mesh()
   HRMaterialRef mat2 = hrMaterialCreate(L"mat2");
   HRMaterialRef mat3 = hrMaterialCreate(L"mat3");
 
-  int rep = 4;
+  int rep = 2;
 
   //HRTextureNodeRef texChecker = hrTexture2DCreateFromFile(L"data/textures/chess_white.bmp");
-  //HRTextureNodeRef tex = hrTexture2DCreateFromFile(L"data/textures/ornament.jpg");
-  HRTextureNodeRef tex = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep), sizeof(int), 64, 64);
+  HRTextureNodeRef tex = hrTexture2DCreateFromFile(L"data/textures/blur_pattern.bmp");
+  //HRTextureNodeRef tex = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep), sizeof(int), 256, 256);
 
   hrMaterialOpen(mat1, HR_WRITE_DISCARD);
   {
@@ -2512,13 +2512,14 @@ bool MTL_TESTS::test_165_simple_displacement_mesh()
     auto heightNode   = displacement.append_child(L"height_map");
 
     displacement.append_attribute(L"type").set_value(L"true_displacement");
-    heightNode.append_attribute(L"amount").set_value(0.05f);
+    heightNode.append_attribute(L"amount").set_value(0.025f);
+    displacement.append_attribute(L"subdivs").set_value(0);
 
     auto texNode = hrTextureBind(tex, heightNode);
 
     texNode.append_attribute(L"matrix");
-    float samplerMatrix[16] = { 1, 0, 0, 0,
-                                0, 1, 0, 0,
+    float samplerMatrix[16] = { 2, 0, 0, 0,
+                                0, 2, 0, 0,
                                 0, 0, 1, 0,
                                 0, 0, 0, 1 };
 
@@ -2634,7 +2635,7 @@ bool MTL_TESTS::test_165_simple_displacement_mesh()
   // Render settings
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 1024, 256, 256);
+  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 1024, 256, 512);
 
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2656,8 +2657,8 @@ bool MTL_TESTS::test_165_simple_displacement_mesh()
   mTranslate.identity();
   mRes.identity();
 
-  mTranslate = translate4x4(float3(0.0f, 30.0f, 2.0f));
-  mScale = scale4x4(float3(5.01f, 5.01f, 5.01f));
+  mTranslate = translate4x4(float3(0.0f, 17.0f, 2.0f));
+  mScale = scale4x4(float3(15.01f, 15.01f, 15.01f));
   mRes = mul(mTranslate, mScale);
 
   hrMeshInstance(scnRef, tess, mRes.L());
@@ -2672,7 +2673,7 @@ bool MTL_TESTS::test_165_simple_displacement_mesh()
 
   hrLightInstance(scnRef, sky, mRes.L());
 
-  mTranslate = translate4x4(float3(0, 40.0f, 0.0));
+  mTranslate = translate4x4(float3(0, 50.0f, 0.0));
   hrLightInstance(scnRef, sphereLight, mTranslate.L());
 
   ///////////
