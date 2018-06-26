@@ -31,6 +31,7 @@
 
 #include "../hydra_api/HR_HDRImageTool.h"
 #include "../hydra_api/HydraXMLHelpers.h"
+#include "HydraPostProcessAPI.h"
 
 #pragma warning(disable:4996)
 using namespace TEST_UTILS;
@@ -88,6 +89,7 @@ SimpleMesh CreateTestMeshForSplit(float a_size)
 }
 
 
+
 bool test98_denoise_and_motion_blur()
 {
   initGLIfNeeded();
@@ -113,6 +115,14 @@ bool test98_denoise_and_motion_blur()
   
   hrRenderEnableDevice(renderRef, 0, true);
   hrRenderLogDir(renderRef, L"/home/frol/hydra/", true);
+  
+  // hrRenderOpen(renderRef, HR_OPEN_EXISTING);
+  // {
+  //   auto node = hrRenderParamNode(renderRef);
+  //   node.child(L"minRaysPerPixel").text() = 64;
+  //   node.child(L"maxRaysPerPixel").text() = 64;
+  // }
+  // hrRenderClose(renderRef);
   
   hrCommit(scnRef, renderRef);
   hrRenderCommand(renderRef, L"start");
@@ -148,41 +158,45 @@ bool test98_denoise_and_motion_blur()
   std::cout << "framebuffer w = " << w << std::endl;
   std::cout << "framebuffer h = " << h << std::endl;
   
+  HRFBIRef image2 = hrFBICreate(L"colorAccum", w, h, 16);
   
-  std::vector<HRGBufferPixel> gbuffLine(w);
-  std::vector<float>          gbufferc(w*h*4);
+  hrFilterApply(L"NLMPut", pugi::xml_node(), renderRef,
+                L"out_color", image2);
   
-  for(int j=0;j<h;j++)
-  {
-    hrRenderGetGBufferLine(renderRef, j, gbuffLine.data(), 0, w);
-    
-    for(int i=0;i<w;i++)
-    {
-      const int offs = j*w*4 + i*4;
-      gbufferc[offs + 0] = gbuffLine[i].norm[0];
-      gbufferc[offs + 1] = gbuffLine[i].norm[1];
-      gbufferc[offs + 2] = gbuffLine[i].norm[2];
-      gbufferc[offs + 3] = gbuffLine[i].depth;
-    }
-  }
-  
-  {
-    hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_98/z_out.png");
-    std::ofstream fout("tests_images/test_98/02_normd.image4f", std::ios::binary);
-    fout.write((const char *) &w, sizeof(int));
-    fout.write((const char *) &h, sizeof(int));
-    fout.write((const char *) gbufferc.data(), size_t(sizeof(float) * 4) * size_t(w * h));
-    fout.close();
-  }
-  
-  {
-    hrRenderGetFrameBufferHDR4f(renderRef, w, h, gbufferc.data());
-    std::ofstream fout("tests_images/test_98/01_color.image4f", std::ios::binary);
-    fout.write((const char*)&w, sizeof(int));
-    fout.write((const char*)&h, sizeof(int));
-    fout.write((const char*)gbufferc.data(), size_t(sizeof(float)*4)*size_t(w*h));
-    fout.close();
-  }
+  // std::vector<HRGBufferPixel> gbuffLine(w);
+  // std::vector<float>          gbufferc(w*h*4);
+  //
+  // for(int j=0;j<h;j++)
+  // {
+  //   hrRenderGetGBufferLine(renderRef, j, gbuffLine.data(), 0, w);
+  //
+  //   for(int i=0;i<w;i++)
+  //   {
+  //     const int offs = j*w*4 + i*4;
+  //     gbufferc[offs + 0] = gbuffLine[i].norm[0];
+  //     gbufferc[offs + 1] = gbuffLine[i].norm[1];
+  //     gbufferc[offs + 2] = gbuffLine[i].norm[2];
+  //     gbufferc[offs + 3] = gbuffLine[i].depth;
+  //   }
+  // }
+  //
+  // {
+  //   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_98/z_out.png");
+  //   std::ofstream fout("tests_images/test_98/02_normd.image4f", std::ios::binary);
+  //   fout.write((const char *) &w, sizeof(int));
+  //   fout.write((const char *) &h, sizeof(int));
+  //   fout.write((const char *) gbufferc.data(), size_t(sizeof(float) * 4) * size_t(w * h));
+  //   fout.close();
+  // }
+  //
+  // {
+  //   hrRenderGetFrameBufferHDR4f(renderRef, w, h, gbufferc.data());
+  //   std::ofstream fout("tests_images/test_98/01_color.image4f", std::ios::binary);
+  //   fout.write((const char*)&w, sizeof(int));
+  //   fout.write((const char*)&h, sizeof(int));
+  //   fout.write((const char*)gbufferc.data(), size_t(sizeof(float)*4)*size_t(w*h));
+  //   fout.close();
+  // }
   
   return false;
 }

@@ -42,7 +42,7 @@ bool PP_TESTS::test301_resample()
 
   HRFBIRef image2 = hrFBICreate(L"temp", w / 2, h / 2, 16);
 
-  hrFilterApply(L"resample",  pugi::xml_node(),  // empty settimgs, will resample to width and height pof the second image
+  hrFilterApply(L"resample",  pugi::xml_node(), HRRenderRef(), // empty settimgs and render, will resample to width and height of the second image
                 L"in_color",  image1,            
                 L"out_color", image2);        
 
@@ -65,7 +65,7 @@ bool PP_TESTS::test302_median()
 
   settings.append_attribute(L"threshold") = 0.02f; // for LDR images is like 0.02*255 = 5 bit differense; for HDR is just 0.02
 
-  hrFilterApply(L"median",    settings,  
+  hrFilterApply(L"median",    settings, HRRenderRef(),
                 L"in_color",  image1,            
                 L"out_color", image2);        
 
@@ -84,9 +84,9 @@ bool PP_TESTS::test303_median_in_place()
 
   settings.append_attribute(L"threshold") = 0.02f; // for LDR images is like 0.02*255 = 5 bit difference; for HDR is just 0.02
 
-  hrFilterApply(L"median",    settings,            //
-                L"in_color",  image1,              // image1; special case (!!!); median filter can work in place; Most filers can not!
-                L"out_color", image1);             // image1; special case (!!!); median filter can work in place; Most filers can not!
+  hrFilterApply(L"median",    settings, HRRenderRef(), //
+                L"in_color",  image1,                  // image1; special case (!!!); median filter can work in place; Most filers can not!
+                L"out_color", image1);                 // image1; special case (!!!); median filter can work in place; Most filers can not!
 
   hrFBISaveToFile(image1, L"tests_images/test_303/z_out.png");
 
@@ -110,7 +110,7 @@ bool PP_TESTS::test304_obsolete_tone_mapping()
   settings.append_attribute(L"exposure") = 3.0f;
   settings.append_attribute(L"defog")    = 0.0f;
 
-  hrFilterApply(L"tonemapping_obsolette", settings,  
+  hrFilterApply(L"tonemapping_obsolette", settings, HRRenderRef(),
                 L"in_color",  image1,              
                 L"out_color", image2);             
 
@@ -142,7 +142,7 @@ bool PP_TESTS::test306_post_process_hydra1_exposure05()
   settings.append_attribute(L"vignette") = 0.0f;
   settings.append_attribute(L"chromAberr") = 0.0f;
 
-  hrFilterApply(L"post_process_hydra1", settings,
+  hrFilterApply(L"post_process_hydra1", settings, HRRenderRef(),
                 L"in_color", image1,
                 L"out_color", image2);
 
@@ -174,7 +174,7 @@ bool PP_TESTS::test307_post_process_hydra1_exposure2()
   settings.append_attribute(L"vignette") = 0.0f;
   settings.append_attribute(L"chromAberr") = 0.0f;
 
-  hrFilterApply(L"post_process_hydra1", settings,
+  hrFilterApply(L"post_process_hydra1", settings, HRRenderRef(),
                 L"in_color", image1,
                 L"out_color", image2);
 
@@ -206,7 +206,7 @@ bool PP_TESTS::test308_post_process_hydra1_compress()
   settings.append_attribute(L"vignette") = 0.0f;
   settings.append_attribute(L"chromAberr") = 0.0f;
 
-  hrFilterApply(L"post_process_hydra1", settings,
+  hrFilterApply(L"post_process_hydra1", settings, HRRenderRef(),
                 L"in_color", image1,
                 L"out_color", image2);
 
@@ -238,7 +238,7 @@ bool PP_TESTS::test309_post_process_hydra1_contrast()
   settings.append_attribute(L"vignette") = 0.0f;
   settings.append_attribute(L"chromAberr") = 0.0f;
 
-  hrFilterApply(L"post_process_hydra1", settings,
+  hrFilterApply(L"post_process_hydra1", settings, HRRenderRef(),
                 L"in_color", image1,
                 L"out_color", image2);
 
@@ -270,7 +270,7 @@ bool PP_TESTS::test310_post_process_hydra1_desaturation()
   settings.append_attribute(L"vignette") = 0.0f;
   settings.append_attribute(L"chromAberr") = 0.0f;
 
-  hrFilterApply(L"post_process_hydra1", settings,
+  hrFilterApply(L"post_process_hydra1", settings, HRRenderRef(),
                 L"in_color", image1,
                 L"out_color", image2);
 
@@ -302,7 +302,7 @@ bool PP_TESTS::test311_post_process_hydra1_saturation()
   settings.append_attribute(L"vignette") = 0.0f;
   settings.append_attribute(L"chromAberr") = 0.0f;
 
-  hrFilterApply(L"post_process_hydra1", settings,
+  hrFilterApply(L"post_process_hydra1", settings, HRRenderRef(),
                 L"in_color", image1,
                 L"out_color", image2);
 
@@ -334,7 +334,7 @@ bool PP_TESTS::test312_post_process_hydra1_whiteBalance()
   settings.append_attribute(L"vignette") = 0.0f;
   settings.append_attribute(L"chromAberr") = 0.0f;
 
-  hrFilterApply(L"post_process_hydra1", settings,
+  hrFilterApply(L"post_process_hydra1", settings, HRRenderRef(),
                 L"in_color", image1,
                 L"out_color", image2);
 
@@ -370,9 +370,9 @@ bool PP_TESTS::test312_2_post_process_hydra1_whitePointColor()
   settings.append_attribute(L"vignette") = 0.0f;
   settings.append_attribute(L"chromAberr") = 0.0f;
 
-  hrFilterApply(L"post_process_hydra1", settings,
-    L"in_color", image1,
-    L"out_color", image2);
+  hrFilterApply(L"post_process_hydra1", settings, HRRenderRef(),
+                L"in_color", image1,
+                L"out_color", image2);
 
   hrFBISaveToFile(image2, L"tests_images/test_312_2/z_out.png");
 
@@ -402,7 +402,7 @@ bool PP_TESTS::test313_post_process_hydra1_uniformContrast()
   settings.append_attribute(L"vignette") = 0.0f;
   settings.append_attribute(L"chromAberr") = 0.0f;
 
-  hrFilterApply(L"post_process_hydra1", settings,
+  hrFilterApply(L"post_process_hydra1", settings, HRRenderRef(),
                 L"in_color", image1,
                 L"out_color", image2);
 
@@ -434,7 +434,7 @@ bool PP_TESTS::test314_post_process_hydra1_normalize()
   settings.append_attribute(L"vignette") = 0.0f;
   settings.append_attribute(L"chromAberr") = 0.0f;
 
-  hrFilterApply(L"post_process_hydra1", settings,
+  hrFilterApply(L"post_process_hydra1", settings, HRRenderRef(),
                 L"in_color", image1,
                 L"out_color", image2);
 
@@ -466,7 +466,7 @@ bool PP_TESTS::test315_post_process_hydra1_vignette()
   settings.append_attribute(L"vignette") = 1.0f;
   settings.append_attribute(L"chromAberr") = 0.0f;
 
-  hrFilterApply(L"post_process_hydra1", settings,
+  hrFilterApply(L"post_process_hydra1", settings, HRRenderRef(),
                 L"in_color", image1,
                 L"out_color", image2);
 
@@ -498,7 +498,7 @@ bool PP_TESTS::test316_post_process_hydra1_chromAberr()
   settings.append_attribute(L"vignette") = 0.0f;
   settings.append_attribute(L"chromAberr") = 1.0f;
 
-  hrFilterApply(L"post_process_hydra1", settings,
+  hrFilterApply(L"post_process_hydra1", settings, HRRenderRef(),
                 L"in_color", image1,
                 L"out_color", image2);
 
@@ -531,11 +531,10 @@ bool PP_TESTS::test317_post_process_hydra1_sharpness()
   settings.append_attribute(L"vignette") = 0.0f;
   settings.append_attribute(L"chromAberr") = 0.0f;
 
-
-
-  hrFilterApply(L"post_process_hydra1", settings,
-    L"in_color", image1,
-    L"out_color", image2);
+  
+  hrFilterApply(L"post_process_hydra1", settings, HRRenderRef(),
+                L"in_color", image1,
+                L"out_color", image2);
 
   hrFBISaveToFile(image2, L"tests_images/test_317/z_out.png");
 
@@ -567,7 +566,7 @@ bool PP_TESTS::test318_post_process_hydra1_ECCSWUNSVC()
   settings.append_attribute(L"chromAberr") = 0.5f;
 
 
-  hrFilterApply(L"post_process_hydra1", settings,
+  hrFilterApply(L"post_process_hydra1", settings, HRRenderRef(),
                 L"in_color", image1,
                 L"out_color", image2);
 
@@ -609,9 +608,9 @@ bool PP_TESTS::test319_post_process_hydra1_diffStars()
   settings.append_attribute(L"diffStars_sprayRay") = 0.3f;
 
 
-  hrFilterApply(L"post_process_hydra1", settings,
-    L"in_color", image1,
-    L"out_color", image2);
+  hrFilterApply(L"post_process_hydra1", settings, HRRenderRef(),
+                L"in_color", image1,
+                L"out_color", image2);
 
   hrFBISaveToFile(image2, L"tests_images/test_319/z_out.png");
 

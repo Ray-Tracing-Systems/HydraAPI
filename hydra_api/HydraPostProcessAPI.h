@@ -94,12 +94,13 @@ void hrRenderCopyFrameBufferToFBI(HRRenderRef a_render, const wchar_t* name, HRF
 
 \param a_filterName - predefined filter name
 \param a_parameters - xml node with parameters
+\param a_rendRef    - render reference (may be "HRRenderRef()" in most cases) if it is needed for filter
 
 \param a_argName1   - predefined argument name (eqch filter have it's own predefined argument names)
 \param a_arg1       - input or output frame buffer image
 
 */
-void hrFilterApply(const wchar_t* a_filterName, pugi::xml_node a_parameters,
+void hrFilterApply(const wchar_t* a_filterName, pugi::xml_node a_parameters, HRRenderRef a_rendRef = HRRenderRef(),
                    const wchar_t* a_argName1 = L"", HRFBIRef a_arg1 = HRFBIRef(),
                    const wchar_t* a_argName2 = L"", HRFBIRef a_arg2 = HRFBIRef(),
                    const wchar_t* a_argName3 = L"", HRFBIRef a_arg3 = HRFBIRef(),

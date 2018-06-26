@@ -4,6 +4,8 @@
 #include "../hydra_api/HR_HDRImage.h"
 #include "../hydra_api/HR_HDRImageTool.h"
 
+#include "HydraRenderDriverAPI.h"
+
 #include <unordered_map>
 #include <memory>
 
@@ -29,7 +31,7 @@ public:
   using ArgArray1 = std::unordered_map<std::wstring, std::shared_ptr< HydraRender::HDRImage4f> >;
   using ArgArray2 = std::unordered_map<std::wstring, std::shared_ptr< HydraRender::LDRImage1i> >;
 
-  virtual bool Eval(ArgArray1& argsHDR, ArgArray2& argsLDR, pugi::xml_node setiings) = 0;   // to implement in subclass;
+  virtual bool Eval(ArgArray1& argsHDR, ArgArray2& argsLDR, pugi::xml_node settings, std::shared_ptr<IHRRenderDriver> a_pDriver) = 0;   // to implement in subclass;
 
   virtual const wchar_t* GetLastError() const { return m_err.c_str(); }
 

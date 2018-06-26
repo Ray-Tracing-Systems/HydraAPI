@@ -49,7 +49,7 @@ void _hrInitPostProcess()
 
   // do init here
   //
-  std::wstring filtersSpecial[] = { L"resample", L"median" };
+  std::wstring filtersSpecial[] = { L"resample", L"median", L"NLMPut" };
 
   for(auto name : filtersSpecial)
     g_spetialFilters[name.c_str()] = CreateSpecialFilter(name.c_str());
@@ -383,7 +383,7 @@ void hrRenderCopyFrameBufferToFBI(HRRenderRef a_render, const wchar_t* a_name, H
 }
 
 
-void hrFilterApply(const wchar_t* a_filterName, pugi::xml_node a_parameters,
+void hrFilterApply(const wchar_t* a_filterName, pugi::xml_node a_parameters, HRRenderRef a_rendRef,
                    const wchar_t* a_argName1,   HRFBIRef a_arg1,
                    const wchar_t* a_argName2,   HRFBIRef a_arg2,
                    const wchar_t* a_argName3,   HRFBIRef a_arg3,
@@ -393,6 +393,9 @@ void hrFilterApply(const wchar_t* a_filterName, pugi::xml_node a_parameters,
                    const wchar_t* a_argName7,   HRFBIRef a_arg7,
                    const wchar_t* a_argName8,   HRFBIRef a_arg8)
 {
+  
+  HRRender* pRenderObj = g_objManager.PtrById(a_rendRef);
+  auto pDriver         = (pRenderObj == nullptr) ? nullptr : pRenderObj->m_pDriver;
 
   const wchar_t* args  [FILTER_MAX_ARGS];
   HRFBIRef       images[FILTER_MAX_ARGS];
@@ -455,7 +458,7 @@ void hrFilterApply(const wchar_t* a_filterName, pugi::xml_node a_parameters,
       argArrayLDR[args[i]] = image.pLDRImage;      
     }
 
-    bool isOk = pFilterSpecial->Eval(argArrayHDR, argArrayLDR, a_parameters);
+    bool isOk = pFilterSpecial->Eval(argArrayHDR, argArrayLDR, a_parameters, pDriver);
     if (!isOk)
     {
       HrPrint(HR_SEVERITY_ERROR, L"[hrFilterApply]: filter error = ", pFilterSpecial->GetLastError());

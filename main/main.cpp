@@ -95,9 +95,9 @@ int main(int argc, const char** argv)
 	  // run_all_geo_tests();
     // run_all_lgt_tests();
     // run_all_mtl_tests();
-    run_all_ipp_tests();
+    // run_all_ipp_tests();
   
-    //test98_denoise_and_motion_blur();
+    test98_denoise_and_motion_blur();
     //std::cout << PP_TESTS::test303_median_in_place() << std::endl;
     
     //test38_licence_plate();
