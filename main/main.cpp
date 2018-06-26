@@ -95,8 +95,11 @@ int main(int argc, const char** argv)
 	  // run_all_geo_tests();
     // run_all_lgt_tests();
     // run_all_mtl_tests();
-    // run_all_ipp_tests();
-
+    run_all_ipp_tests();
+  
+    //test98_denoise_and_motion_blur();
+    //std::cout << PP_TESTS::test303_median_in_place() << std::endl;
+    
     //test38_licence_plate();
     //std::cout << test39_mesh_from_vsgf() << std::endl;
 
@@ -117,7 +120,7 @@ int main(int argc, const char** argv)
     //std::cout << MTL_TESTS::test_168_diffuse_texture_recommended_res2() << std::endl;
 
     //std::cout <<  MTL_TESTS::test_161_simple_displacement() << std::endl;
-    std::cout <<  MTL_TESTS::test_164_simple_displacement_proctex() << std::endl;
+    //std::cout <<  MTL_TESTS::test_164_simple_displacement_proctex() << std::endl;
     //std::cout <<  MTL_TESTS::test_165_simple_displacement_mesh()  << std::endl;
     //MTL_TESTS::test_166_displace_by_noise();
     //std::cout <<  MTL_TESTS::test_167_subdiv()  << std::endl;

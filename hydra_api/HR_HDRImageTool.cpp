@@ -242,9 +242,7 @@ namespace HydraRender
     image = HDRImage4f(w, h, &data[0]);
   }
 
-
-  /// #TODO: fix unicode on Linux!!!
-  ///
+  
   void LoadImageFromFile(const std::wstring& a_fileName, std::vector<float>& data, int& w, int& h) // loads both LDR and HDR images(!) 
   {
     const wchar_t* filename = a_fileName.c_str();
@@ -258,10 +256,23 @@ namespace HydraRender
     //check the file signature and deduce its format
     //if still unknown, try to guess the file format from the file extension
     //
+    #if defined WIN32
     fif = FreeImage_GetFileTypeU(filename, 0);
+    #else
+    char filename_s[256];
+    wcstombs(filename_s, filename, sizeof(filename_s));
+    fif = FreeImage_GetFileType(filename_s, 0);
+    #endif
+    
     if (fif == FIF_UNKNOWN)
+    {
+    #if defined WIN32
       fif = FreeImage_GetFIFFromFilenameU(filename);
-
+    #else
+      fif = FreeImage_GetFIFFromFilename(filename_s);
+    #endif
+    }
+    
     if (fif == FIF_UNKNOWN)
     {
       std::cerr << "FreeImage failed to guess file image format: " << a_fileName.c_str() << std::endl;
@@ -271,7 +282,13 @@ namespace HydraRender
     //check that the plugin has reading capabilities and load the file
     //
     if (FreeImage_FIFSupportsReading(fif))
+    {
+    #if defined WIN32
       dib = FreeImage_LoadU(fif, filename);
+    #else
+      dib = FreeImage_Load(fif, filename_s);
+    #endif
+    }
     else
     {
       std::cerr << "FreeImage does not support file image format: " << a_fileName.c_str() << std::endl;

@@ -1948,7 +1948,7 @@ void run_all_lgt_tests(int a_start)
   fout.close();
 
 }
-#ifdef WIN32
+
 void run_all_ipp_tests(int a_start) 
 {
   TestFunc tests[] = {                 
@@ -2003,7 +2003,6 @@ void run_all_ipp_tests(int a_start)
 
   fout.close();
 }
-#endif
 
 void terminate_opengl()
 {

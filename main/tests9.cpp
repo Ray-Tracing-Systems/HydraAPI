@@ -88,259 +88,102 @@ SimpleMesh CreateTestMeshForSplit(float a_size)
 }
 
 
-bool test98_test_split_clipping()
+bool test98_denoise_and_motion_blur()
 {
   initGLIfNeeded();
 
   hrErrorCallerPlace(L"test_98");
-
-  HRCameraRef    camRef;
+  hrSceneLibraryOpen(L"/home/frol/PROG/HydraNLM/data/scenelib_anim", HR_OPEN_EXISTING);
+  
+  /////////////////////////////////////////////////////////
+  HRRenderRef renderRef;
+  renderRef.id = 0;
+  
   HRSceneInstRef scnRef;
-  HRRenderRef    settingsRef;
-
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  hrSceneLibraryOpen(L"tests/test_98", HR_WRITE_DISCARD);
-
-  // material and textures
-  //
-  HRTextureNodeRef testTex2 = hrTexture2DCreateFromFile(L"data/textures/chess_red.bmp");
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  HRMaterialRef mat0 = hrMaterialCreate(L"mysimplemat");
-  HRMaterialRef mat1 = hrMaterialCreate(L"mysimplemat2");
-  HRMaterialRef mat2 = hrMaterialCreate(L"mysimplemat3");
-  HRMaterialRef mat3 = hrMaterialCreate(L"mysimplemat4");
-
-  hrMaterialOpen(mat0, HR_WRITE_DISCARD);
+  scnRef.id = 0;
+  /////////////////////////////////////////////////////////
+  
+  auto pList = hrRenderGetDeviceList(renderRef);
+  
+  while (pList != nullptr)
   {
-    xml_node matNode = hrMaterialParamNode(mat0);
-
-    xml_node diff = matNode.append_child(L"diffuse");
-
-    diff.append_attribute(L"brdf_type").set_value(L"lambert");
-    diff.append_child(L"color").text().set(L"0.75 0.75 0.25");
-
-    HRTextureNodeRef testTex = hrTexture2DCreateFromFile(L"data/textures/texture1.bmp");
-    hrTextureBind(testTex, diff);
+    std::wcout << L"device id = " << pList->id << L", name = " << pList->name << L", driver = " << pList->driver << std::endl;
+    pList = pList->next;
   }
-  hrMaterialClose(mat0);
-
-  hrMaterialOpen(mat1, HR_WRITE_DISCARD);
+  
+  hrRenderEnableDevice(renderRef, 0, true);
+  hrRenderLogDir(renderRef, L"/home/frol/hydra/", true);
+  
+  hrCommit(scnRef, renderRef);
+  hrRenderCommand(renderRef, L"start");
+  
+  while (true)
   {
-    xml_node matNode = hrMaterialParamNode(mat1);
-
-    xml_node diff = matNode.append_child(L"diffuse");
-
-    diff.append_attribute(L"brdf_type").set_value(L"lambert");
-    diff.append_child(L"color").text().set(L"1 1 1");
-
-    hrTextureBind(testTex2, diff);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    
+    HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
+    
+    if (info.haveUpdateFB)
+    {
+      auto pres = std::cout.precision(2);
+      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout.flush();
+      std::cout.precision(pres);
+    }
+    
+    if (info.finalUpdate)
+      break;
   }
-  hrMaterialClose(mat1);
-
-  hrMaterialOpen(mat2, HR_WRITE_DISCARD);
+  
+  int w, h;
+  hrRenderOpen(renderRef, HR_OPEN_READ_ONLY);
   {
-    xml_node matNode = hrMaterialParamNode(mat2);
-
-    xml_node diff = matNode.append_child(L"diffuse");
-
-    diff.append_attribute(L"brdf_type").set_value(L"lambert");
-    diff.append_child(L"color").text().set(L"0.75 0.75 0.75");
-
-    HRTextureNodeRef testTex = hrTexture2DCreateFromFile(L"data/textures/relief_wood.jpg");
-    hrTextureBind(testTex, diff);
+    auto node = hrRenderParamNode(renderRef);
+    w = node.child(L"width").text().as_int();
+    h = node.child(L"height").text().as_int();
   }
-  hrMaterialClose(mat2);
-
-  hrMaterialOpen(mat3, HR_WRITE_DISCARD);
+  hrRenderClose(renderRef);
+  
+  
+  std::cout << "framebuffer w = " << w << std::endl;
+  std::cout << "framebuffer h = " << h << std::endl;
+  
+  
+  std::vector<HRGBufferPixel> gbuffLine(w);
+  std::vector<float>          gbufferc(w*h*4);
+  
+  for(int j=0;j<h;j++)
   {
-    xml_node matNode = hrMaterialParamNode(mat3);
-
-    xml_node diff = matNode.append_child(L"diffuse");
-
-    diff.append_attribute(L"brdf_type").set_value(L"lambert");
-    diff.append_child(L"color").text().set(L"0.75 0.75 0.75");
-
-    HRTextureNodeRef testTex = hrTexture2DCreateFromFile(L"data/textures/163.jpg");
-    hrTextureBind(testTex, diff);
-
-
+    hrRenderGetGBufferLine(renderRef, j, gbuffLine.data(), 0, w);
+    
+    for(int i=0;i<w;i++)
+    {
+      const int offs = j*w*4 + i*4;
+      gbufferc[offs + 0] = gbuffLine[i].norm[0];
+      gbufferc[offs + 1] = gbuffLine[i].norm[1];
+      gbufferc[offs + 2] = gbuffLine[i].norm[2];
+      gbufferc[offs + 3] = gbuffLine[i].depth;
+    }
   }
-  hrMaterialClose(mat3);
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  SimpleMesh cube    = CreateCube(0.75f);
-  SimpleMesh plane   = CreatePlane(2.0f);
-  SimpleMesh sphere  = CreateSphere(0.5f, 32);
-  SimpleMesh torus   = CreateTorus(0.2f, 0.5f, 32, 32);
-  SimpleMesh trisoup = CreateTestMeshForSplit(2.0f);
-
-  HRMeshRef cubeRef   = hrMeshCreate(L"my_cube");
-  HRMeshRef planeRef  = hrMeshCreate(L"my_plane");
-  HRMeshRef sphereRef = hrMeshCreate(L"my_sphere");
-  HRMeshRef torusRef  = hrMeshCreate(L"my_torus");
-  HRMeshRef soupRef   = hrMeshCreate(L"my_soup");
-
-  hrMeshOpen(soupRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
+  
   {
-    hrMeshVertexAttribPointer4f(soupRef, L"pos", &trisoup.vPos[0]);
-    hrMeshMaterialId(soupRef, mat1.id);
-    hrMeshAppendTriangles3(soupRef, int32_t(trisoup.triIndices.size()), &trisoup.triIndices[0]);
+    hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_98/z_out.png");
+    std::ofstream fout("tests_images/test_98/02_normd.image4f", std::ios::binary);
+    fout.write((const char *) &w, sizeof(int));
+    fout.write((const char *) &h, sizeof(int));
+    fout.write((const char *) gbufferc.data(), size_t(sizeof(float) * 4) * size_t(w * h));
+    fout.close();
   }
-  hrMeshClose(soupRef);
-
-  hrMeshOpen(cubeRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
+  
   {
-    hrMeshVertexAttribPointer4f(cubeRef, L"pos", &cube.vPos[0]);
-    hrMeshVertexAttribPointer4f(cubeRef, L"norm", &cube.vNorm[0]);
-    hrMeshVertexAttribPointer2f(cubeRef, L"texcoord", &cube.vTexCoord[0]);
-
-    int cubeMatIndices[12] = { 0, 0, 1, 1, 2, 2, 3, 3, 0, 0, 1, 1 };
-
-    //hrMeshMaterialId(cubeRef, 0);
-    hrMeshPrimitiveAttribPointer1i(cubeRef, L"mind", cubeMatIndices);
-    hrMeshAppendTriangles3(cubeRef, int(cube.triIndices.size()), &cube.triIndices[0]);
+    hrRenderGetFrameBufferHDR4f(renderRef, w, h, gbufferc.data());
+    std::ofstream fout("tests_images/test_98/01_color.image4f", std::ios::binary);
+    fout.write((const char*)&w, sizeof(int));
+    fout.write((const char*)&h, sizeof(int));
+    fout.write((const char*)gbufferc.data(), size_t(sizeof(float)*4)*size_t(w*h));
+    fout.close();
   }
-  hrMeshClose(cubeRef);
-
-  hrMeshOpen(planeRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
-  {
-    hrMeshVertexAttribPointer4f(planeRef, L"pos", &plane.vPos[0]);
-    hrMeshVertexAttribPointer4f(planeRef, L"norm", &plane.vNorm[0]);
-    hrMeshVertexAttribPointer2f(planeRef, L"texcoord", &plane.vTexCoord[0]);
-
-    hrMeshMaterialId(planeRef, mat1.id);
-    hrMeshAppendTriangles3(planeRef, int32_t(plane.triIndices.size()), &plane.triIndices[0]);
-  }
-  hrMeshClose(planeRef);
-
-  hrMeshOpen(sphereRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
-  {
-    hrMeshVertexAttribPointer4f(sphereRef, L"pos", &sphere.vPos[0]);
-    hrMeshVertexAttribPointer4f(sphereRef, L"norm", &sphere.vNorm[0]);
-    hrMeshVertexAttribPointer2f(sphereRef, L"texcoord", &sphere.vTexCoord[0]);
-
-    for (size_t i = 0; i < sphere.matIndices.size() / 2; i++)
-      sphere.matIndices[i] = mat0.id;
-
-    for (size_t i = sphere.matIndices.size() / 2; i < sphere.matIndices.size(); i++)
-      sphere.matIndices[i] = mat2.id;
-
-    hrMeshPrimitiveAttribPointer1i(sphereRef, L"mind", &sphere.matIndices[0]);
-    hrMeshAppendTriangles3(sphereRef, int32_t(sphere.triIndices.size()), &sphere.triIndices[0]);
-  }
-  hrMeshClose(sphereRef);
-
-  hrMeshOpen(torusRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
-  {
-    hrMeshVertexAttribPointer4f(torusRef, L"pos", &torus.vPos[0]);
-    hrMeshVertexAttribPointer4f(torusRef, L"norm", &torus.vNorm[0]);
-    hrMeshVertexAttribPointer2f(torusRef, L"texcoord", &torus.vTexCoord[0]);
-
-    for (size_t i = 0; i < torus.matIndices.size() / 3; i++)
-      torus.matIndices[i] = mat0.id;
-
-    for (size_t i = 1 * torus.matIndices.size() / 3; i < 2 * torus.matIndices.size() / 3; i++)
-      torus.matIndices[i] = mat3.id;
-
-    for (size_t i = 2 * torus.matIndices.size() / 3; i < torus.matIndices.size(); i++)
-      torus.matIndices[i] = mat2.id;
-
-    //hrMeshMaterialId(torusRef, mat0.id);
-    hrMeshPrimitiveAttribPointer1i(torusRef, L"mind", &torus.matIndices[0]);
-    hrMeshAppendTriangles3(torusRef, int32_t(torus.triIndices.size()), &torus.triIndices[0]);
-  }
-  hrMeshClose(torusRef);
-
-  // camera
-  //
-  camRef = hrCameraCreate(L"my camera");
-
-  hrCameraOpen(camRef, HR_WRITE_DISCARD);
-  {
-    xml_node camNode = hrCameraParamNode(camRef);
-
-    camNode.append_child(L"fov").text().set(L"45");
-    camNode.append_child(L"nearClipPlane").text().set(L"0.01");
-    camNode.append_child(L"farClipPlane").text().set(L"100.0");
-
-    camNode.append_child(L"up").text().set(L"0 1 0");
-    camNode.append_child(L"position").text().set(L"0 0 0");
-    camNode.append_child(L"look_at").text().set(L"0 0 -1");
-  }
-  hrCameraClose(camRef);
-
-  // set up render settings
-  //
-  settingsRef = hrRenderCreate(L"opengl1");
-
-  hrRenderOpen(settingsRef, HR_WRITE_DISCARD);
-  {
-    pugi::xml_node node = hrRenderParamNode(settingsRef);
-
-    wchar_t temp[256];
-    swprintf(temp, 256, L"%d", 1024);
-    node.append_child(L"width").text().set(temp);
-    swprintf(temp, 256, L"%d", 768);
-    node.append_child(L"height").text().set(temp);
-  }
-  hrRenderClose(settingsRef);
-
-  // create scene
-  //
-  scnRef = hrSceneCreate(L"my scene");
-
-  float	rtri = 25.0f; // Angle For The Triangle ( NEW )
-  float	rquad = 40.0f;
-  float g_FPS = 60.0f;
-  int   frameCounter = 0;
-
-  const float DEG_TO_RAD = float(3.14159265358979323846f) / 180.0f;
-
-  float matrixT[4][4], matrixT2[4][4], matrixT3[4][4];
-  float mRot1[4][4], mTranslate[4][4], mRes[4][4];
-
-  float mTranslateDown[4][4], mRes2[4][4];
-
-  mat4x4_identity(mRot1);
-  mat4x4_identity(mTranslate);
-  mat4x4_identity(mRes);
-
-  mat4x4_translate(mTranslate, -2.0f, 0.25f, -5.0f);
-  mat4x4_rotate_X(mRot1, mRot1, -3.5f*rquad*DEG_TO_RAD);
-  mat4x4_rotate_Y(mRot1, mRot1, -7.0f*rquad*DEG_TO_RAD*0.5f);
-  mat4x4_mul(mRes, mTranslate, mRot1);
-  mat4x4_transpose(matrixT, mRes); // this fucking math library swap rows and columns
-
-  mat4x4_identity(mRes);
-  mat4x4_translate(mTranslateDown, 0.0f, -1.0f, -5.0f);
-  mat4x4_mul(mRes2, mTranslateDown, mRes);
-  mat4x4_transpose(matrixT2, mRes2);
-
-
-  mat4x4_identity(mRes);
-  mat4x4_translate(mTranslateDown, 1.0f, -0.5f, -6.0f);
-  mat4x4_mul(mRes2, mTranslateDown, mRes);
-  mat4x4_transpose(matrixT3, mRes2);
-
-  // draw scene
-  //
-  hrSceneOpen(scnRef, HR_WRITE_DISCARD);
-  {
-    //hrMeshInstance(scnRef, cubeRef,  &matrixT[0][0]);
-    //hrMeshInstance(scnRef, planeRef, &matrixT2[0][0]);
-    hrMeshInstance(scnRef, soupRef,  &matrixT3[0][0]);
-  }
-  hrSceneClose(scnRef);
-
-  hrFlush(scnRef, settingsRef);
-
-  hrRenderSaveFrameBufferLDR(settingsRef, L"tests_images/test_98/z_out.png");
-
+  
   return false;
 }
 
