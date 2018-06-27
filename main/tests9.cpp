@@ -163,40 +163,7 @@ bool test98_denoise_and_motion_blur()
   hrFilterApply(L"NLMPut", pugi::xml_node(), renderRef,
                 L"out_color", image2);
   
-  // std::vector<HRGBufferPixel> gbuffLine(w);
-  // std::vector<float>          gbufferc(w*h*4);
-  //
-  // for(int j=0;j<h;j++)
-  // {
-  //   hrRenderGetGBufferLine(renderRef, j, gbuffLine.data(), 0, w);
-  //
-  //   for(int i=0;i<w;i++)
-  //   {
-  //     const int offs = j*w*4 + i*4;
-  //     gbufferc[offs + 0] = gbuffLine[i].norm[0];
-  //     gbufferc[offs + 1] = gbuffLine[i].norm[1];
-  //     gbufferc[offs + 2] = gbuffLine[i].norm[2];
-  //     gbufferc[offs + 3] = gbuffLine[i].depth;
-  //   }
-  // }
-  //
-  // {
-  //   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_98/z_out.png");
-  //   std::ofstream fout("tests_images/test_98/02_normd.image4f", std::ios::binary);
-  //   fout.write((const char *) &w, sizeof(int));
-  //   fout.write((const char *) &h, sizeof(int));
-  //   fout.write((const char *) gbufferc.data(), size_t(sizeof(float) * 4) * size_t(w * h));
-  //   fout.close();
-  // }
-  //
-  // {
-  //   hrRenderGetFrameBufferHDR4f(renderRef, w, h, gbufferc.data());
-  //   std::ofstream fout("tests_images/test_98/01_color.image4f", std::ios::binary);
-  //   fout.write((const char*)&w, sizeof(int));
-  //   fout.write((const char*)&h, sizeof(int));
-  //   fout.write((const char*)gbufferc.data(), size_t(sizeof(float)*4)*size_t(w*h));
-  //   fout.close();
-  // }
+  hrFBISaveToFile(image2, L"/home/frol/PROG/HydraAPI/main/tests_images/test_98/z_out.png");
   
   return false;
 }

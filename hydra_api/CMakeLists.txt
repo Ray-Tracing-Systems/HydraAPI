@@ -87,6 +87,7 @@ set(POST_PROC
         HydraPostProcessCommon.cpp
         HydraPostProcessSpecial.h
         HydraPostProcessSpecial.cpp
+        NonLocalMeans.cpp
         )
 
 

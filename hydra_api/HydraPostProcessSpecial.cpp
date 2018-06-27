@@ -103,6 +103,11 @@ public:
   bool Eval(ArgArray1& argsHDR, ArgArray2& argsLDR, pugi::xml_node setiings, std::shared_ptr<IHRRenderDriver> a_pDriver) override;
 };
 
+using HydraRender::HDRImage4f;
+
+void NonLocalMeansGuidedTexNormDepthFilter(const HDRImage4f& inImage, const HDRImage4f& inTexColor, const HDRImage4f& inNormDepth,
+                                           HDRImage4f& outImage, int a_windowRadius, int a_blockRadius, float a_noiseLevel);
+
 
 bool NLMDenoiserPut::Eval(ArgArray1& argsHDR, ArgArray2& argsLDR, pugi::xml_node setiings, std::shared_ptr<IHRRenderDriver> a_pDriver)
 {
@@ -119,13 +124,41 @@ bool NLMDenoiserPut::Eval(ArgArray1& argsHDR, ArgArray2& argsLDR, pugi::xml_node
   const int w = outImagePtr->width();
   const int h = outImagePtr->height();
   
-  std::vector<float> colorIn(w*h*4);
-  std::vector<float> normdIn(w*h*4);
+  HDRImage4f colorImage(w,h);
+  HDRImage4f normdImage(w,h);
+  
+  float* colorIn = colorImage.data();
+  float* normdIn = normdImage.data();
+  
+  std::vector<float> colorLine(w*4);
+  std::vector<HRGBufferPixel> gbuffLine(w);
+  
+  const float gammaInv = 1.0f/2.2f;
   
   for(int j=0;j<h;j++)
   {
+    const int offset = j*w*4;
+    
+    a_pDriver->GetFrameBufferLineHDR(0, w, j, colorLine.data(), L"color");
+    a_pDriver->GetGBufferLine(j, gbuffLine.data(), 0, w, std::unordered_set<int32_t>());
   
+    for(int i=0;i<w;i++)
+    {
+      normdIn[offset + 0] = gbuffLine[i].norm[0];
+      normdIn[offset + 1] = gbuffLine[i].norm[1];
+      normdIn[offset + 2] = gbuffLine[i].norm[2];
+      normdIn[offset + 3] = gbuffLine[i].depth;
+  
+      colorIn[offset + 0] = 1.0f; //powf(colorLine[i*4 + 0], gammaInv);
+      colorIn[offset + 1] = 1.0f; //powf(colorLine[i*4 + 1], gammaInv);
+      colorIn[offset + 2] = 1.0f; //powf(colorLine[i*4 + 2], gammaInv);
+      colorIn[offset + 3] = 1.0f; //     colorLine[i*4 + 3];
+    }
   }
+  
+  // (2) run NLM filter
+  //
+  (*outImagePtr) = colorImage;
   
   return true;
 }
