@@ -108,6 +108,7 @@ using HydraRender::HDRImage4f;
 void NonLocalMeansGuidedTexNormDepthFilter(const HDRImage4f& inImage, const HDRImage4f& inTexColor, const HDRImage4f& inNormDepth,
                                            HDRImage4f& outImage, int a_windowRadius, int a_blockRadius, float a_noiseLevel);
 
+#include <iostream>
 
 bool NLMDenoiserPut::Eval(ArgArray1& argsHDR, ArgArray2& argsLDR, pugi::xml_node setiings, std::shared_ptr<IHRRenderDriver> a_pDriver)
 {
@@ -125,16 +126,20 @@ bool NLMDenoiserPut::Eval(ArgArray1& argsHDR, ArgArray2& argsLDR, pugi::xml_node
   const int h = outImagePtr->height();
   
   HDRImage4f colorImage(w,h);
+  HDRImage4f texColor(w,h);
   HDRImage4f normdImage(w,h);
   
-  float* colorIn = colorImage.data();
-  float* normdIn = normdImage.data();
+  float* colorIn  = colorImage.data();
+  float* normdIn  = normdImage.data();
+  float* texcolIn = texColor.data();
   
   std::vector<float> colorLine(w*4);
   std::vector<HRGBufferPixel> gbuffLine(w);
   
   const float gammaInv = 1.0f/2.2f;
-  
+  const float gamma    = 2.2f;
+
+  #pragma omp parallel for
   for(int j=0;j<h;j++)
   {
     const int offset = j*w*4;
@@ -144,21 +149,50 @@ bool NLMDenoiserPut::Eval(ArgArray1& argsHDR, ArgArray2& argsLDR, pugi::xml_node
   
     for(int i=0;i<w;i++)
     {
-      normdIn[offset + 0] = gbuffLine[i].norm[0];
-      normdIn[offset + 1] = gbuffLine[i].norm[1];
-      normdIn[offset + 2] = gbuffLine[i].norm[2];
-      normdIn[offset + 3] = gbuffLine[i].depth;
+      normdIn[offset + i*4 + 0] = gbuffLine[i].norm[0];
+      normdIn[offset + i*4 + 1] = gbuffLine[i].norm[1];
+      normdIn[offset + i*4 + 2] = gbuffLine[i].norm[2];
+      normdIn[offset + i*4 + 3] = gbuffLine[i].depth;
   
-      colorIn[offset + 0] = 1.0f; //powf(colorLine[i*4 + 0], gammaInv);
-      colorIn[offset + 1] = 1.0f; //powf(colorLine[i*4 + 1], gammaInv);
-      colorIn[offset + 2] = 1.0f; //powf(colorLine[i*4 + 2], gammaInv);
-      colorIn[offset + 3] = 1.0f; //     colorLine[i*4 + 3];
+      texcolIn[offset + i*4 + 0] = gbuffLine[i].rgba[0];
+      texcolIn[offset + i*4 + 1] = gbuffLine[i].rgba[1];
+      texcolIn[offset + i*4 + 2] = gbuffLine[i].rgba[2];
+      texcolIn[offset + i*4 + 3] = gbuffLine[i].rgba[3];
+      
+      colorIn[offset + i*4 + 0] = powf(colorLine[i*4 + 0], gammaInv);
+      colorIn[offset + i*4 + 1] = powf(colorLine[i*4 + 1], gammaInv);
+      colorIn[offset + i*4 + 2] = powf(colorLine[i*4 + 2], gammaInv);
+      colorIn[offset + i*4 + 3] = colorLine[i*4 + 3];
     }
   }
   
   // (2) run NLM filter
   //
-  (*outImagePtr) = colorImage;
+  HDRImage4f colorImage2(w,h);
+  {
+    std::cout << "begin NLM" << std::endl;
+    
+    NonLocalMeansGuidedTexNormDepthFilter(colorImage, texColor, normdImage,
+                                          colorImage2, 5, 1, 0.075f);
+    
+    colorIn = colorImage2.data();
+    std::cout << "end   NLM" << std::endl;
+  }
+  
+  float* colorOut = outImagePtr->data();
+
+  #pragma omp parallel for
+  for(int j=0;j<h;j++)
+  {
+    const int offset = j*w*4;
+    for(int i=0;i<w;i++)
+    {
+      colorOut[offset + i*4 + 0] = powf(colorIn[offset + i*4 + 0], gamma);
+      colorOut[offset + i*4 + 1] = powf(colorIn[offset + i*4 + 1], gamma);
+      colorOut[offset + i*4 + 2] = powf(colorIn[offset + i*4 + 2], gamma);
+      colorOut[offset + i*4 + 3] = colorIn[offset + i*4 + 3];
+    }
+  }
   
   return true;
 }
