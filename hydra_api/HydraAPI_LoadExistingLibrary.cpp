@@ -291,15 +291,20 @@ void _hrFindTargetOrLastState(const wchar_t* a_libPath, int32_t a_stateId,
   }
 }
 
-int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int32_t a_stateId)
+int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::wstring& a_stateFileName)
 {
   // (0) (a_stateId == -1) => find last state in folder
   //
-  std::wstring fileName = L"";
-  int stateId = 0;
-
-  _hrFindTargetOrLastState(a_libPath, a_stateId,
-                           fileName, stateId);
+  std::wstring fileName = a_stateFileName;
+  int stateId           = a_stateId;
+  
+  if(fileName == L"")
+  {
+    _hrFindTargetOrLastState(a_libPath, -1,
+                             fileName, stateId);
+  }
+  else
+    fileName = std::wstring(a_libPath) + L"/" + a_stateFileName;
   
 	if(fileName == L"")
 	{

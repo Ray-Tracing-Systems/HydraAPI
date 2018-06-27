@@ -128,20 +128,21 @@ HAPI void hrErrorCallerPlace(const wchar_t* a_placeName, int a_line)
   }
 }
 
-int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int32_t a_stateId);
+int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::wstring& a_stateFileName);
 
 HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMode)
 {
   std::wstring input(a_libPath);
   
+  int libStateId   = -1;
+  std::wstring libFile(L""), libFolder(L"");
   if(input.substr(input.size() - 4) == L".xml")
   {
     // split path to file to (path to folder, file name)
-    auto pos       = input.find_last_of(L"/");
-    auto libFolder = input.substr(0, pos);
-    auto libFile   = input.substr(pos+1, input.size());
+    auto pos  = input.find_last_of(L"/");
+    libFolder = input.substr(0, pos);
+    libFile   = input.substr(pos+1, input.size());
     
-    int libStateId   = -1;
     auto posOfNumber = libFile.find(L"_");
     auto numberStr   = libFile.substr(posOfNumber+1,5); //#TODO: implement more smart number parsing
     std::wstringstream strIn(numberStr);
@@ -222,7 +223,7 @@ HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMod
   }
   else if (a_openMode == HR_OPEN_EXISTING || a_openMode == HR_OPEN_READ_ONLY)
   {
-    return _hrSceneLibraryLoad(a_libPath, -1);
+    return _hrSceneLibraryLoad(a_libPath, libStateId, libFile);
   }
   else
   {
