@@ -1188,7 +1188,9 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
     const int64_t neededMemT2 = EstimateTexturesMemBump(objList, allTexInfo);
     const int64_t neededMemG  = EstimateGeometryMem(objList);
 
-    allocInfo.libraryPath = g_objManager.scnData.m_path.c_str();
+    allocInfo.libraryPath   = g_objManager.scnData.m_path.c_str();
+    allocInfo.stateFileName = g_objManager.scnData.m_fileState.c_str();
+    
     allocInfo.imgMem      = neededMemT;
     allocInfo.imgMemAux   = neededMemT2;
     allocInfo.geomMem     = neededMemG;
@@ -1300,15 +1302,14 @@ void _hr_UtilityDriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
   allocInfo.imgNum      = int32_t(imgNum   + imgNum/3   + 100);
   allocInfo.matNum      = int32_t(matNum   + matNum/3   + 100);
   allocInfo.lightNum    = int32_t(lightNum + lightNum/3 + 100);
-
-
-  allocInfo.libraryPath = g_objManager.scnData.m_path.c_str();
   
   auto& settings = g_objManager.renderSettings[g_objManager.m_currRenderId];
   auto resources_path = settings.xml_node_immediate().child(L"resources_path").text().as_string();
-
+  
   allocInfo.resourcesPath = resources_path;
-
+  allocInfo.libraryPath   = g_objManager.scnData.m_path.c_str();
+  allocInfo.stateFileName = g_objManager.scnData.m_fileState.c_str();
+  
   allocInfo = a_pDriver->AllocAll(allocInfo);
 
   HR_DriverUpdateCamera(scn, a_pDriver);
@@ -1590,7 +1591,7 @@ std::wstring HR_UtilityDriverStart(const wchar_t* state_path)
 
     auto mipLevelsDict = getMipLevelsFromUtilityDriver(utilityDriver.get());
 
-    for (std::pair<int32_t, int32_t> elem : mipLevelsDict)
+    for (auto elem : mipLevelsDict)
       std::cout << " " << elem.first << ":" << elem.second << std::endl;
 
 #ifdef WIN32

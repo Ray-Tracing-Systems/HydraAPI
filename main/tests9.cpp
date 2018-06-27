@@ -95,7 +95,8 @@ bool test98_denoise_and_motion_blur()
   initGLIfNeeded();
 
   hrErrorCallerPlace(L"test_98");
-  hrSceneLibraryOpen(L"/home/frol/PROG/HydraNLM/data/scenelib_anim", HR_OPEN_EXISTING);
+  hrSceneLibraryOpen(L"/home/frol/PROG/HydraNLM/data/scenelib_anim/statex_00001.xml", HR_OPEN_EXISTING);
+  //hrSceneLibraryOpen(L"/home/frol/PROG/HydraNLM/data/scenelib_anim", HR_OPEN_EXISTING);
   
   /////////////////////////////////////////////////////////
   HRRenderRef renderRef;
@@ -145,25 +146,27 @@ bool test98_denoise_and_motion_blur()
       break;
   }
   
-  int w, h;
-  hrRenderOpen(renderRef, HR_OPEN_READ_ONLY);
-  {
-    auto node = hrRenderParamNode(renderRef);
-    w = node.child(L"width").text().as_int();
-    h = node.child(L"height").text().as_int();
-  }
-  hrRenderClose(renderRef);
+  hrRenderSaveFrameBufferLDR(renderRef, L"/home/frol/PROG/HydraAPI/main/tests_images/test_98/z_out.png");
   
-  
-  std::cout << "framebuffer w = " << w << std::endl;
-  std::cout << "framebuffer h = " << h << std::endl;
-  
-  HRFBIRef image2 = hrFBICreate(L"colorAccum", w, h, 16);
-  
-  hrFilterApply(L"NLMPut", pugi::xml_node(), renderRef,
-                L"out_color", image2);
-  
-  hrFBISaveToFile(image2, L"/home/frol/PROG/HydraAPI/main/tests_images/test_98/z_out.png");
+  // int w, h;
+  // hrRenderOpen(renderRef, HR_OPEN_READ_ONLY);
+  // {
+  //   auto node = hrRenderParamNode(renderRef);
+  //   w = node.child(L"width").text().as_int();
+  //   h = node.child(L"height").text().as_int();
+  // }
+  // hrRenderClose(renderRef);
+  //
+  //
+  // std::cout << "framebuffer w = " << w << std::endl;
+  // std::cout << "framebuffer h = " << h << std::endl;
+  //
+  // HRFBIRef image2 = hrFBICreate(L"colorAccum", w, h, 16);
+  //
+  // hrFilterApply(L"NLMPut", pugi::xml_node(), renderRef,
+  //               L"out_color", image2);
+  //
+  // hrFBISaveToFile(image2, L"/home/frol/PROG/HydraAPI/main/tests_images/test_98/z_out.png");
   
   return false;
 }

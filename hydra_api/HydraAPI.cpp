@@ -132,6 +132,28 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int32_t a_stateId);
 
 HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMode)
 {
+  std::wstring input(a_libPath);
+  
+  if(input.substr(input.size() - 4) == L".xml")
+  {
+    // split path to file to (path to folder, file name)
+    auto pos       = input.find_last_of(L"/");
+    auto libFolder = input.substr(0, pos);
+    auto libFile   = input.substr(pos+1, input.size());
+    
+    int libStateId   = -1;
+    auto posOfNumber = libFile.find(L"_");
+    auto numberStr   = libFile.substr(posOfNumber+1,5); //#TODO: implement more smart number parsing
+    std::wstringstream strIn(numberStr);
+    strIn >> libStateId;
+    
+    g_objManager.scnData.m_pathState = input;
+    g_objManager.scnData.m_fileState = libFile;
+    input = libFolder;
+  }
+  
+  a_libPath = input.c_str();
+  
   g_objManager.scnData.opened   = true;
   g_objManager.scnData.openMode = a_openMode;
   if (a_libPath != nullptr)

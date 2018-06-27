@@ -428,7 +428,14 @@ HAPI void hrRenderCommand(const HRRenderRef a_pRender, const wchar_t* a_command,
     HrError(L"[hrRenderCommand]: nullptr Render Driver impl ");
     return;
   }
-
+  
+  std::wstring command(a_command);
+  if(command.find(L"start") != std::wstring::npos && g_objManager.scnData.m_fileState!= L"")
+  {
+    command += std::wstring(L" -statefile ") + g_objManager.scnData.m_fileState;
+    a_command = command.c_str();
+  }
+  
   pRender->m_pDriver->ExecuteCommand(a_command, a_answer);
 
 }

@@ -39,6 +39,8 @@ struct HRTexResInfo
 */
 struct HRDriverAllocInfo
 {
+  HRDriverAllocInfo() : libraryPath(nullptr), resourcesPath(nullptr), stateFileName(nullptr) {}
+  
   int32_t imgNum;
   int32_t matNum;
   int32_t geomNum;
@@ -54,6 +56,7 @@ struct HRDriverAllocInfo
 
   const wchar_t* libraryPath;
   const wchar_t* resourcesPath;
+  const wchar_t* stateFileName;
 
   const HRTexResInfo* imgResInfoArray;
 };

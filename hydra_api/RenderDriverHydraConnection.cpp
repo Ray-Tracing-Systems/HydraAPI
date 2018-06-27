@@ -104,6 +104,7 @@ struct RD_HydraConnection : public IHRRenderDriver
 protected:
 
   std::wstring m_libPath;
+  std::wstring m_libFileState;
   std::wstring m_logFolder;
   std::string  m_logFolderS;
   int          m_instancesNum; //// current instance num in the scene; (m_instancesNum == 0) => empty scene! 
@@ -285,7 +286,12 @@ void RD_HydraConnection::ClearAll()
 
 HRDriverAllocInfo RD_HydraConnection::AllocAll(HRDriverAllocInfo a_info)
 {
-  m_libPath       = std::wstring(a_info.libraryPath);
+  m_libPath = std::wstring(a_info.libraryPath);
+  if(a_info.stateFileName == nullptr)
+    m_libFileState = L"";
+  else
+    m_libFileState = std::wstring(a_info.stateFileName);
+  
   m_currAllocInfo = a_info;
   return m_currAllocInfo;
 }
