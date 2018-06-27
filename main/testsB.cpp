@@ -288,110 +288,110 @@ bool test38_licence_plate()
   HRTextureNodeRef texBitmap1Base;  
   HRTextureNodeRef texBitmap2[sizeTexBitmap2];
   HRTextureNodeRef texBitmapRusFont[22] = {
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_0.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_1.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_2.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_3.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_4.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_5.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_6.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_7.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_8.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Digits/RusFontLicensePlate_9.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_A.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_B.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_C.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_E.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_H.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_K.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_M.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_O.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_P.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_T.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_X.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/Letters/RusFontLicensePlate_Y.png") };
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Russia/Digits/RusFontLicensePlate_0.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Russia/Digits/RusFontLicensePlate_1.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Russia/Digits/RusFontLicensePlate_2.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Russia/Digits/RusFontLicensePlate_3.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Russia/Digits/RusFontLicensePlate_4.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Russia/Digits/RusFontLicensePlate_5.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Russia/Digits/RusFontLicensePlate_6.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Russia/Digits/RusFontLicensePlate_7.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Russia/Digits/RusFontLicensePlate_8.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Russia/Digits/RusFontLicensePlate_9.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Russia/Letters/RusFontLicensePlate_A.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Russia/Letters/RusFontLicensePlate_B.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Russia/Letters/RusFontLicensePlate_C.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Russia/Letters/RusFontLicensePlate_E.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Russia/Letters/RusFontLicensePlate_H.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Russia/Letters/RusFontLicensePlate_K.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Russia/Letters/RusFontLicensePlate_M.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Russia/Letters/RusFontLicensePlate_O.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Russia/Letters/RusFontLicensePlate_P.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Russia/Letters/RusFontLicensePlate_T.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Russia/Letters/RusFontLicensePlate_X.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Russia/Letters/RusFontLicensePlate_Y.png") };
 
   HRTextureNodeRef texBitmapGerFont[61] = {
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Digits/GerFontLicensePlate_0.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Digits/GerFontLicensePlate_1.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Digits/GerFontLicensePlate_2.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Digits/GerFontLicensePlate_3.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Digits/GerFontLicensePlate_4.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Digits/GerFontLicensePlate_5.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Digits/GerFontLicensePlate_6.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Digits/GerFontLicensePlate_7.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Digits/GerFontLicensePlate_8.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Digits/GerFontLicensePlate_9.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_A.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_A2.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_B.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_C.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_D.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_E.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_F.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_G.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_H.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_I.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_J.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_K.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_L.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_M.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_N.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_O.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_O2.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_P.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_Q.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_R.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_S.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_T.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_U.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_U2.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_V.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_W.png"),    
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_X.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_Y.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Letters/GerFontLicensePlate_Z.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Emblems/GerEmblemsReg_01.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Emblems/GerEmblemsReg_02.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Emblems/GerEmblemsReg_03.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Emblems/GerEmblemsReg_04.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Emblems/GerEmblemsReg_05.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Emblems/GerEmblemsReg_06.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Emblems/GerEmblemsReg_07.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Emblems/GerEmblemsReg_08.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Emblems/GerEmblemsReg_09.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Emblems/GerEmblemsReg_10.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Emblems/GerEmblemsReg_11.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Emblems/GerEmblemsReg_12.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Emblems/GerEmblemsReg_13.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Emblems/GerEmblemsReg_14.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Emblems/GerEmblemsReg_15.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Emblems/GerEmblemsReg_16.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Emblems/GerSafetyCheckSticker_01.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Emblems/GerSafetyCheckSticker_02.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Emblems/GerSafetyCheckSticker_03.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Emblems/GerSafetyCheckSticker_04.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Emblems/GerSafetyCheckSticker_05.png"),
-    hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/Emblems/GerSafetyCheckSticker_06.png") };
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Digits/GerFontLicensePlate_0.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Digits/GerFontLicensePlate_1.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Digits/GerFontLicensePlate_2.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Digits/GerFontLicensePlate_3.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Digits/GerFontLicensePlate_4.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Digits/GerFontLicensePlate_5.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Digits/GerFontLicensePlate_6.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Digits/GerFontLicensePlate_7.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Digits/GerFontLicensePlate_8.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Digits/GerFontLicensePlate_9.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_A.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_A2.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_B.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_C.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_D.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_E.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_F.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_G.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_H.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_I.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_J.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_K.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_L.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_M.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_N.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_O.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_O2.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_P.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_Q.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_R.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_S.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_T.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_U.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_U2.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_V.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_W.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_X.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_Y.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Letters/GerFontLicensePlate_Z.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Emblems/GerEmblemsReg_01.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Emblems/GerEmblemsReg_02.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Emblems/GerEmblemsReg_03.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Emblems/GerEmblemsReg_04.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Emblems/GerEmblemsReg_05.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Emblems/GerEmblemsReg_06.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Emblems/GerEmblemsReg_07.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Emblems/GerEmblemsReg_08.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Emblems/GerEmblemsReg_09.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Emblems/GerEmblemsReg_10.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Emblems/GerEmblemsReg_11.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Emblems/GerEmblemsReg_12.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Emblems/GerEmblemsReg_13.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Emblems/GerEmblemsReg_14.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Emblems/GerEmblemsReg_15.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Emblems/GerEmblemsReg_16.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Emblems/GerSafetyCheckSticker_01.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Emblems/GerSafetyCheckSticker_02.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Emblems/GerSafetyCheckSticker_03.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Emblems/GerSafetyCheckSticker_04.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Emblems/GerSafetyCheckSticker_05.png"),
+    hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/Emblems/GerSafetyCheckSticker_06.png") };
 
   switch (stateLicPlate)
   {
   case(RusLicPlate2digitReg):
   {
     texProc = hrTextureCreateAdvanced(L"proc", L"RusLicPlate2digitReg");
-    texBitmap1Base = hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/RusLicensePlate2digitRegionBase.png");
+    texBitmap1Base = hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Russia/RusLicensePlate2digitRegionBase.png");
     break;
   }
   case(RusLicPlate3digitReg):
   {
     texProc = hrTextureCreateAdvanced(L"proc", L"RusLicPlate3digitReg");
-    texBitmap1Base = hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Russia/RusLicensePlate3digitRegionBase.png");
+    texBitmap1Base = hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Russia/RusLicensePlate3digitRegionBase.png");
     break;
   }
   case(GerLicPlate):
   {
     texProc = hrTextureCreateAdvanced(L"proc", L"GerLicPlate");
-    texBitmap1Base = hrTexture2DCreateFromFile(L"d:/Samsung/Textures/license_plate/Germany/GerLicensePlateBase.png");
+    texBitmap1Base = hrTexture2DCreateFromFile(L"/home/frol/Yandex.Disk/samsungdata/Textures/license_plate/Germany/GerLicensePlateBase.png");
     break;
   }
   default:
@@ -604,11 +604,8 @@ bool test38_licence_plate()
     hrMeshVertexAttribPointer4f(planeRef, L"pos", &plane .vPos[0]);
     hrMeshVertexAttribPointer4f(planeRef, L"norm", &plane.vNorm[0]);
     hrMeshVertexAttribPointer2f(planeRef, L"texcoord", &plane.vTexCoord[0]);
-
-    int planeMatIndices[1] = { mat0.id };
-
-    //hrMeshMaterialId(cubeRef, 0);
-    hrMeshPrimitiveAttribPointer1i(planeRef, L"mind", planeMatIndices);
+    
+    hrMeshMaterialId(planeRef, mat0.id);
     hrMeshAppendTriangles3(planeRef, int(plane.triIndices.size()), &plane.triIndices[0]);
   }
   hrMeshClose(planeRef);
