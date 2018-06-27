@@ -167,32 +167,45 @@ bool NLMDenoiserPut::Eval(ArgArray1& argsHDR, ArgArray2& argsLDR, pugi::xml_node
   }
   
   // (2) run NLM filter
-  //
-  HDRImage4f colorImage2(w,h);
   {
+    HDRImage4f colorImage2(w,h);
     std::cout << "begin NLM" << std::endl;
-    
     NonLocalMeansGuidedTexNormDepthFilter(colorImage, texColor, normdImage,
-                                          colorImage2, 5, 1, 0.075f);
+                                          colorImage2, 5, 1, 0.10f);
     
     colorIn = colorImage2.data();
     std::cout << "end   NLM" << std::endl;
+  
+    float* outColor = outImagePtr->data();
+    float* inColor2 = colorImage2.data();
+    #pragma omp parallel for
+    for(int j=0;j<h;j++)
+    {
+      const int offset = j * w * 4;
+      for (int i = 0; i < w; i++)
+      {
+        outColor[offset + i*4 + 0] = powf(inColor2[offset + i*4 + 0], gamma);
+        outColor[offset + i*4 + 1] = powf(inColor2[offset + i*4 + 1], gamma);
+        outColor[offset + i*4 + 2] = powf(inColor2[offset + i*4 + 2], gamma);
+        outColor[offset + i*4 + 3] = inColor2[offset + i*4 + 3];
+      }
+    }
+    
   }
   
-  float* colorOut = outImagePtr->data();
-
-  #pragma omp parallel for
-  for(int j=0;j<h;j++)
-  {
-    const int offset = j*w*4;
-    for(int i=0;i<w;i++)
-    {
-      colorOut[offset + i*4 + 0] = powf(colorIn[offset + i*4 + 0], gamma);
-      colorOut[offset + i*4 + 1] = powf(colorIn[offset + i*4 + 1], gamma);
-      colorOut[offset + i*4 + 2] = powf(colorIn[offset + i*4 + 2], gamma);
-      colorOut[offset + i*4 + 3] = colorIn[offset + i*4 + 3];
-    }
-  }
+  // float* outColor = outImagePtr->data();
+  // #pragma omp parallel for
+  // for(int j=0;j<h;j++)
+  // {
+  //   const int offset = j * w * 4;
+  //   for (int i = 0; i < w; i++)
+  //   {
+  //     outColor[offset + i*4 + 0] = normdIn[offset + i*4 + 0];
+  //     outColor[offset + i*4 + 1] = normdIn[offset + i*4 + 1];
+  //     outColor[offset + i*4 + 2] = normdIn[offset + i*4 + 2];
+  //     outColor[offset + i*4 + 3] = normdIn[offset + i*4 + 3];
+  //   }
+  // }
   
   return true;
 }
