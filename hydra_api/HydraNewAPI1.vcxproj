@@ -181,6 +181,7 @@
     <ClCompile Include="HydraObjectManager.cpp" />
     <ClCompile Include="HydraXMLHelpers.cpp" />
     <ClCompile Include="HydraXMLVerify.cpp" />
+    <ClCompile Include="NonLocalMeans.cpp" />
     <ClCompile Include="OpenGLContextWin.cpp" />
     <ClCompile Include="OpenGLCoreProfileUtils.cpp" />
     <ClCompile Include="pugixml.cpp" />

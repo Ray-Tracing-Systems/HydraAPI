@@ -31,7 +31,7 @@
 
 #include "../hydra_api/HR_HDRImageTool.h"
 #include "../hydra_api/HydraXMLHelpers.h"
-#include "HydraPostProcessAPI.h"
+#include "../hydra_api/HydraPostProcessAPI.h"
 
 #pragma warning(disable:4996)
 using namespace TEST_UTILS;
