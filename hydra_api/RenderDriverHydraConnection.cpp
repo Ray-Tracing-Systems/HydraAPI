@@ -107,14 +107,16 @@ protected:
   std::wstring m_libFileState;
   std::wstring m_logFolder;
   std::string  m_logFolderS;
-  int          m_instancesNum; //// current instance num in the scene; (m_instancesNum == 0) => empty scene! 
+  std::string  m_lastSharedImageName;
+  
+  int          m_instancesNum; //// current instance num in the scene; (m_instancesNum == 0) => empty scene!
   int          m_oldCounter;
   float        m_oldSPP;
   int          m_clewInitRes;
   bool         m_dontRun;
 
   void InitBothDeviceList();
-  void RunAllHydraHeads();
+  void RunAllHydraHeads(bool a_clearFb = true);
 
   HRDriverAllocInfo m_currAllocInfo;
 
@@ -448,7 +450,7 @@ bool RD_HydraConnection::UpdateSettings(pugi::xml_node a_settingsNode)
 
 std::wstring GetAbsolutePath(const std::wstring& a_path);
 
-void RD_HydraConnection::RunAllHydraHeads()
+void RD_HydraConnection::RunAllHydraHeads(bool a_clearFb)
 {
   int width  = m_width;
   int height = m_height;
@@ -473,12 +475,14 @@ void RD_HydraConnection::RunAllHydraHeads()
   }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  if (m_pSharedImage == nullptr)
-    m_pSharedImage = CreateImageAccum();
-  else
-    m_pSharedImage->Clear();
-
+  if(a_clearFb)
+  {
+    if (m_pSharedImage == nullptr)
+      m_pSharedImage = CreateImageAccum();
+    else
+      m_pSharedImage->Clear();
+  }
+  
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   const bool runMLT      = false;
   const bool needGBuffer = m_needGbuff; 
@@ -498,26 +502,30 @@ void RD_HydraConnection::RunAllHydraHeads()
   auto now_ms   = std::chrono::time_point_cast<std::chrono::milliseconds>(currtime).time_since_epoch().count();
   std::stringstream nameStream;
   nameStream << "hydraimage_" << now_ms;
-  const std::string hydraImageName = nameStream.str();
-
-  char err[256];
-  bool shmemImageIsOk = m_pSharedImage->Create(width, height, layersNum, hydraImageName.c_str(), err); // #TODO: change this and pass via cmd line
+  const std::string hydraImageName = a_clearFb ? nameStream.str() : m_lastSharedImageName;
   
-  if (!shmemImageIsOk)
+  char err[256];
+  if(a_clearFb)
   {
-    //#TODO: call error callback or do some thing like that
+    bool shmemImageIsOk = m_pSharedImage->Create(width, height, layersNum, hydraImageName.c_str(), err); // #TODO: change this and pass via cmd line
+    if (!shmemImageIsOk)
+    {
+      //#TODO: call error callback or do some thing like that
+    }
+  
+    m_oldSPP     = 0.0f;
+    m_oldCounter = 0;
+  
+    m_pSharedImage->Header()->spp = 0.0f;
+    m_pSharedImage->Header()->counterRcv = 0;
+    m_pSharedImage->Header()->counterSnd = 0;
+    m_pSharedImage->Header()->gbufferIsEmpty = needGBuffer ? 1 : -1;
+    
+    strncpy(m_pSharedImage->MessageSendData(), "-layer color -action wait ", 256); // #TODO: (sid, mid) !!!
+    m_pSharedImage->Header()->counterSnd++;
+  
+    m_lastSharedImageName = hydraImageName;
   }
-
-  m_oldSPP     = 0.0f;
-  m_oldCounter = 0;
-
-  m_pSharedImage->Header()->spp            = 0.0f;
-  m_pSharedImage->Header()->counterRcv     = 0;
-  m_pSharedImage->Header()->counterSnd     = 0;
-  m_pSharedImage->Header()->gbufferIsEmpty = needGBuffer ? 1 : -1;
-  strncpy(m_pSharedImage->MessageSendData(), "-layer color -action wait ", 256); // #TODO: (sid, mid) !!!
-  m_pSharedImage->Header()->counterSnd++;
-
   ////////////////////////////////////////////////////////////////////////////////////////////////////
 
   delete m_pConnection;
@@ -979,6 +987,8 @@ void RD_HydraConnection::ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out)
   std::wstringstream inputStream(a_cmd);
   std::wstring name, value;
   inputStream >> name >> value;
+  
+  bool needToRunProcess = false;
 
   if (name == L"pause")
   {
@@ -1029,6 +1039,13 @@ void RD_HydraConnection::ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out)
     //
     inputA = "start";
   }
+  else if (name == L"continue")
+  {
+    inputA.replace(inputA.begin(), inputA.begin()+8,"start");
+    needToRunProcess = true;
+    std::cout << "[api]: inputA  = " << inputA.c_str() << std::endl;
+    std::cout << "[api]: (1) spp = " << m_pSharedImage->Header()->spp << std::endl;
+  }
 
   if (m_pConnection == nullptr)
     return;
@@ -1039,10 +1056,20 @@ void RD_HydraConnection::ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out)
   sout2 << "-node_t A" << " -sid 0 -layer color -action " << inputA.c_str();
   
   std::string message = sout2.str();
-  
   strncpy(m_pSharedImage->MessageSendData(), message.c_str(), 256);
-  m_pSharedImage->Header()->counterSnd++;
+  header->counterSnd++;
 
+  if(needToRunProcess)
+  {
+    std::cout << "[api]: (2) spp = " << m_pSharedImage->Header()->spp << std::endl;
+    RunAllHydraHeads(false);
+    std::cout << "[api]: (3) spp = " << m_pSharedImage->Header()->spp << std::endl;
+    strncpy(m_pSharedImage->MessageSendData(), message.c_str(), 256);
+    header->counterSnd++;
+  }
+  
+  std::cout << "[api]: MessageSendData = " << m_pSharedImage->MessageSendData() << std::endl;
+  std::cout << "[api]: (4)   spp = "       << header->spp << std::endl;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

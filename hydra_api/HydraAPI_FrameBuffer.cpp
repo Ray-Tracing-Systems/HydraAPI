@@ -430,7 +430,7 @@ HAPI void hrRenderCommand(const HRRenderRef a_pRender, const wchar_t* a_command,
   }
   
   std::wstring command(a_command);
-  if(command.find(L"start") != std::wstring::npos && g_objManager.scnData.m_fileState!= L"")
+  if(command == L"start" && g_objManager.scnData.m_fileState!= L"") // just 'start', without additional arguments
   {
     command += std::wstring(L" -statefile ") + g_objManager.scnData.m_fileState;
     a_command = command.c_str();
