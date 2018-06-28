@@ -28,9 +28,9 @@ Linux:
 
 Optionally, to build and use python bindings library (tested only under Linux):
 1. Clone pybind11 repo in hydra_api/hydra_api_py (to have 'hydra_api/hydra_api_py/pybind11' folder with pybind)
-2. Build hydra bindings with Cmake (hydra_api/hydra_api_py)
-3. Import resulting library in your python project
-
+2. sudo apt-get install python3-dev (install Python headers)
+3. Build hydra bindings with Cmake (hydra_api/hydra_api_py)
+4. Import resulting library in your python project
 
 Some examples can be found in hydra_api/hydra_api_py/hydraPyTests.py
 
