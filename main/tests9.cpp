@@ -147,8 +147,7 @@ bool test98_denoise_and_motion_blur()
   std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   std::cout << "after sleep" << std::endl;
   
-  hrRenderCommand(renderRef, L"continue -statefile statex_00133.xml");
-  //hrRenderCommand(renderRef, L"start -statefile statex_00133.xml");
+  hrRenderCommand(renderRef, L"continue -statefile statex_00009.xml");
   
   while (true)
   {
