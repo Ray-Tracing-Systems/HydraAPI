@@ -92,11 +92,10 @@ SimpleMesh CreateTestMeshForSplit(float a_size)
 
 bool test98_denoise_and_motion_blur()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_98");
-  hrSceneLibraryOpen(L"/home/frol/PROG/HydraNLM/data/scenelib_anim/statex_00001.xml", HR_OPEN_EXISTING);
+  //hrSceneLibraryOpen(L"/home/frol/PROG/HydraNLM/data/scenelib_anim/statex_00001.xml", HR_OPEN_EXISTING);
   //hrSceneLibraryOpen(L"/home/frol/PROG/HydraNLM/data/scenelib_anim", HR_OPEN_EXISTING);
+  hrSceneLibraryOpen(L"D:/PROG/HydraNLM/data/scenelib_anim", HR_OPEN_EXISTING);
   
   /////////////////////////////////////////////////////////
   HRRenderRef renderRef;
@@ -106,31 +105,53 @@ bool test98_denoise_and_motion_blur()
   scnRef.id = 0;
   /////////////////////////////////////////////////////////
   
-  auto pList = hrRenderGetDeviceList(renderRef);
+  hrRenderEnableDevice(renderRef, 1, true);
+  //hrRenderLogDir(renderRef, L"/home/frol/hydra/", true);
+  //hrRenderLogDir(renderRef, L"C:/[Hydra]/logs/", true);
   
-  while (pList != nullptr)
+  hrRenderOpen(renderRef, HR_OPEN_EXISTING);
   {
-    std::wcout << L"device id = " << pList->id << L", name = " << pList->name << L", driver = " << pList->driver << std::endl;
-    pList = pList->next;
+    auto node = hrRenderParamNode(renderRef);
+    node.child(L"maxRaysPerPixel").text() = 16*2;
   }
-  
-  hrRenderEnableDevice(renderRef, 0, true);
-  hrRenderLogDir(renderRef, L"/home/frol/hydra/", true);
-  
-  // hrRenderOpen(renderRef, HR_OPEN_EXISTING);
-  // {
-  //   auto node = hrRenderParamNode(renderRef);
-  //   node.child(L"minRaysPerPixel").text() = 64;
-  //   node.child(L"maxRaysPerPixel").text() = 64;
-  // }
-  // hrRenderClose(renderRef);
+  hrRenderClose(renderRef);
   
   hrCommit(scnRef, renderRef);
-  hrRenderCommand(renderRef, L"start");
+  
+  hrRenderCommand(renderRef, L"start -statefile statex_00001.xml");
   
   while (true)
   {
-    // std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    
+    HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
+    
+    if (info.haveUpdateFB)
+    {
+      auto pres = std::cout.precision(2);
+      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout.flush();
+      std::cout.precision(pres);
+    }
+    
+    if (info.progress >= 49.0f)
+    {
+      hrRenderCommand(renderRef, L"exitnow");
+      break;
+    }
+  }
+  
+  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_98/z_out_half.png");
+  
+  std::cout << "before sleep" << std::endl;
+  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  std::cout << "after sleep" << std::endl;
+  
+  hrRenderCommand(renderRef, L"continue -statefile statex_00009.xml");
+  
+  while (true)
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
     
     HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
     
@@ -146,7 +167,8 @@ bool test98_denoise_and_motion_blur()
       break;
   }
   
-  hrRenderSaveFrameBufferLDR(renderRef, L"/home/frol/PROG/HydraAPI/main/tests_images/test_98/z_out.png");
+  
+  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_98/z_out.png");
   
   // int w, h;
   // hrRenderOpen(renderRef, HR_OPEN_READ_ONLY);
