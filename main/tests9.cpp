@@ -31,7 +31,6 @@
 
 #include "../hydra_api/HR_HDRImageTool.h"
 #include "../hydra_api/HydraXMLHelpers.h"
-#include "../hydra_api/HydraPostProcessAPI.h"
 
 #pragma warning(disable:4996)
 using namespace TEST_UTILS;
@@ -90,12 +89,12 @@ SimpleMesh CreateTestMeshForSplit(float a_size)
 
 
 
-bool test98_denoise_and_motion_blur()
+bool test98_motion_blur()
 {
   hrErrorCallerPlace(L"test_98");
   //hrSceneLibraryOpen(L"/home/frol/PROG/HydraNLM/data/scenelib_anim/statex_00001.xml", HR_OPEN_EXISTING);
-  //hrSceneLibraryOpen(L"/home/frol/PROG/HydraNLM/data/scenelib_anim", HR_OPEN_EXISTING);
-  hrSceneLibraryOpen(L"D:/PROG/HydraNLM/data/scenelib_anim", HR_OPEN_EXISTING);
+  hrSceneLibraryOpen(L"/home/frol/PROG/HydraNLM/data/scenelib_anim", HR_OPEN_EXISTING);
+  //hrSceneLibraryOpen(L"D:/PROG/HydraNLM/data/scenelib_anim", HR_OPEN_EXISTING);
   
   /////////////////////////////////////////////////////////
   HRRenderRef renderRef;
@@ -105,14 +104,14 @@ bool test98_denoise_and_motion_blur()
   scnRef.id = 0;
   /////////////////////////////////////////////////////////
   
-  hrRenderEnableDevice(renderRef, 1, true);
-  //hrRenderLogDir(renderRef, L"/home/frol/hydra/", true);
+  hrRenderEnableDevice(renderRef, 0, true);
+  hrRenderLogDir(renderRef, L"/home/frol/hydra/", true);
   //hrRenderLogDir(renderRef, L"C:/[Hydra]/logs/", true);
   
   hrRenderOpen(renderRef, HR_OPEN_EXISTING);
   {
     auto node = hrRenderParamNode(renderRef);
-    node.child(L"maxRaysPerPixel").text() = 16*2;
+    node.child(L"maxRaysPerPixel").text() = 256*2;
   }
   hrRenderClose(renderRef);
   
@@ -141,7 +140,7 @@ bool test98_denoise_and_motion_blur()
     }
   }
   
-  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_98/z_out_half.png");
+  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_98/z_out.png");
   
   std::cout << "before sleep" << std::endl;
   std::this_thread::sleep_for(std::chrono::milliseconds(1000));
@@ -167,30 +166,9 @@ bool test98_denoise_and_motion_blur()
       break;
   }
   
+  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_98/z_out2.png");
   
-  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_98/z_out.png");
-  
-  // int w, h;
-  // hrRenderOpen(renderRef, HR_OPEN_READ_ONLY);
-  // {
-  //   auto node = hrRenderParamNode(renderRef);
-  //   w = node.child(L"width").text().as_int();
-  //   h = node.child(L"height").text().as_int();
-  // }
-  // hrRenderClose(renderRef);
-  //
-  //
-  // std::cout << "framebuffer w = " << w << std::endl;
-  // std::cout << "framebuffer h = " << h << std::endl;
-  //
-  // HRFBIRef image2 = hrFBICreate(L"colorAccum", w, h, 16);
-  //
-  // hrFilterApply(L"NLMPut", pugi::xml_node(), renderRef,
-  //               L"out_color", image2);
-  //
-  // hrFBISaveToFile(image2, L"/home/frol/PROG/HydraAPI/main/tests_images/test_98/z_out.png");
-  
-  return false;
+  return check_images("test_98", 2, 50);
 }
 
 bool test55_clear_scene()

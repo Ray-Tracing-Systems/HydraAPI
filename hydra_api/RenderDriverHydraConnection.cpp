@@ -1042,8 +1042,6 @@ void RD_HydraConnection::ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out)
   {
     inputA.replace(inputA.begin(), inputA.begin()+8,"start");
     needToRunProcess = true;
-    std::cout << "[api]: inputA  = " << inputA.c_str() << std::endl;
-    std::cout << "[api]: (1) spp = " << m_pSharedImage->Header()->spp << std::endl;
   }
 
   if (m_pConnection == nullptr)
@@ -1060,15 +1058,11 @@ void RD_HydraConnection::ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out)
 
   if(needToRunProcess)
   {
-    std::cout << "[api]: (2) spp = " << m_pSharedImage->Header()->spp << std::endl;
     RunAllHydraHeads(false);
-    std::cout << "[api]: (3) spp = " << m_pSharedImage->Header()->spp << std::endl;
     strncpy(m_pSharedImage->MessageSendData(), message.c_str(), 256);
     header->counterSnd++;
   }
   
-  std::cout << "[api]: MessageSendData = " << m_pSharedImage->MessageSendData() << std::endl;
-  std::cout << "[api]: (4)   spp = "       << header->spp << std::endl;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
