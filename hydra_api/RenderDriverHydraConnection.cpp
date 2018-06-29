@@ -117,6 +117,9 @@ protected:
 
   void InitBothDeviceList();
   void RunAllHydraHeads(bool a_clearFb = true);
+  
+  std::vector<int> GetCurrDeviceList();
+  std::string MakeRenderCommandLine(const std::string& hydraImageName);
 
   HRDriverAllocInfo m_currAllocInfo;
 
@@ -450,40 +453,72 @@ bool RD_HydraConnection::UpdateSettings(pugi::xml_node a_settingsNode)
 
 std::wstring GetAbsolutePath(const std::wstring& a_path);
 
-void RD_HydraConnection::RunAllHydraHeads(bool a_clearFb)
+std::vector<int> RD_HydraConnection::GetCurrDeviceList()
 {
-  int width  = m_width;
-  int height = m_height;
-
-  ////////////////////////////////////////////////////////////////////////////////////////////////////
-
   std::vector<int> devList;
-
+  
   for (size_t i = 0; i < m_devList2.size(); i++)
   {
     if (m_devList2[i].isEnabled)
       devList.push_back(m_devList2[i].id);
   }
-
+  
   if (devList.size() == 0)
   {
     devList.resize(1);
     devList[0] = 0;
-
+    
     if (m_pInfoCallBack != nullptr)
       m_pInfoCallBack(L"No device was selected; will use device 0 by default", L"RD_HydraConnection::RunAllHydraHeads", HR_SEVERITY_WARNING);
   }
-
-  ////////////////////////////////////////////////////////////////////////////////////////////////////
-  if(a_clearFb)
-  {
-    if (m_pSharedImage == nullptr)
-      m_pSharedImage = CreateImageAccum();
-    else
-      m_pSharedImage->Clear();
-  }
   
-  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  return devList;
+}
+
+std::string NewSharedImageName()
+{
+  auto currtime = std::chrono::system_clock::now();
+  auto now_ms   = std::chrono::time_point_cast<std::chrono::milliseconds>(currtime).time_since_epoch().count();
+  std::stringstream nameStream;
+  nameStream << "hydraimage_" << now_ms;
+  return nameStream.str();
+}
+
+std::string RD_HydraConnection::MakeRenderCommandLine(const std::string& hydraImageName)
+{
+  const int  width       = m_width;
+  const int  height      = m_height;
+  const bool needGBuffer = m_needGbuff;
+  
+  const std::wstring libPath = GetAbsolutePath(m_libPath);
+  std::string temp = ws2s(libPath);
+  std::stringstream auxInput;
+  auxInput << "-inputlib \"" << temp.c_str() << "\" -width " << width << " -height " << height << " ";
+  
+  if (m_presets.allocImageB)          // this is needed for LT and IBPT
+    auxInput << "-alloc_image_b 1 ";  // this is needed for LT and IBPT
+  
+  if(m_presets.allocImageBOnGPU)
+    auxInput << "-cpu_fb 0 ";
+  else
+    auxInput << "-cpu_fb 1 ";
+  
+  if (needGBuffer)
+    auxInput << "-evalgbuffer 1 ";
+  
+  auxInput << "-sharedimage " << hydraImageName.c_str() << " ";
+  
+  return auxInput.str();
+}
+
+
+void RD_HydraConnection::RunAllHydraHeads(bool a_clearFb)
+{
+  int width  = m_width;
+  int height = m_height;
+
+  std::vector<int> devList = GetCurrDeviceList();
+  
   const bool runMLT      = false;
   const bool needGBuffer = m_needGbuff; 
 
@@ -496,16 +531,18 @@ void RD_HydraConnection::RunAllHydraHeads(bool a_clearFb)
     layersNum = 2;
   else
     layersNum = 1;
+  
   ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  auto currtime = std::chrono::system_clock::now();
-  auto now_ms   = std::chrono::time_point_cast<std::chrono::milliseconds>(currtime).time_since_epoch().count();
-  std::stringstream nameStream;
-  nameStream << "hydraimage_" << now_ms;
-  const std::string hydraImageName = a_clearFb ? nameStream.str() : m_lastSharedImageName;
+  
+  const std::string hydraImageName = a_clearFb ? NewSharedImageName() : m_lastSharedImageName;
   
   if (a_clearFb)
   {
+    if (m_pSharedImage == nullptr)
+      m_pSharedImage = CreateImageAccum();
+    else
+      m_pSharedImage->Clear();
+    
     char err[256];
     bool shmemImageIsOk = m_pSharedImage->Create(width, height, layersNum, hydraImageName.c_str(), err); // #TODO: change this and pass via cmd line
     if (!shmemImageIsOk)
@@ -540,27 +577,9 @@ void RD_HydraConnection::RunAllHydraHeads(bool a_clearFb)
     params.normalPriorityCPU = false;
     params.showConsole       = !m_hideCmd;
 
-    const std::wstring libPath = GetAbsolutePath(m_libPath);
-    std::string temp = ws2s(libPath);
-    std::stringstream auxInput;
-    auxInput << "-inputlib \"" << temp.c_str() << "\" -width " << width << " -height " << height << " ";
-
-    if (m_presets.allocImageB)          // this is needed for LT and IBPT
-      auxInput << "-alloc_image_b 1 ";  // this is needed for LT and IBPT
-
-    if(m_presets.allocImageBOnGPU)
-      auxInput << "-cpu_fb 0 ";
-    else
-      auxInput << "-cpu_fb 1 ";
-
-    if (needGBuffer)
-      auxInput << "-evalgbuffer 1 ";
-
-    auxInput << "-sharedimage " << hydraImageName.c_str() << " ";
-
-    params.customExePath = m_params.customExePath; ///opt/hydra/hydra
-    params.customExeArgs = auxInput.str();
-    params.customLogFold = m_logFolderS;
+    params.customExePath     = m_params.customExePath;
+    params.customExeArgs     = MakeRenderCommandLine(hydraImageName);
+    params.customLogFold     = m_logFolderS;
 
     m_params = params;
 

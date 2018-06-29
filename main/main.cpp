@@ -102,7 +102,6 @@ int main(int argc, const char** argv)
     //test39_mesh_from_vsgf();
     //test42_load_library_basic();
     std::cout << test98_motion_blur() << std::endl;
-    std::cout << "g_MSEOutput = " << g_MSEOutput << std::endl;
     
     //std::cout << PP_TESTS::test303_median_in_place() << std::endl;
     

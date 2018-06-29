@@ -111,7 +111,7 @@ bool test98_motion_blur()
   hrRenderOpen(renderRef, HR_OPEN_EXISTING);
   {
     auto node = hrRenderParamNode(renderRef);
-    node.child(L"maxRaysPerPixel").text() = 256*2;
+    node.child(L"maxRaysPerPixel").text() = 16*2;
   }
   hrRenderClose(renderRef);
   
@@ -168,7 +168,8 @@ bool test98_motion_blur()
   
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_98/z_out2.png");
   
-  return check_images("test_98", 2, 50);
+  return false;
+  //return check_images("test_98", 2, 50);
 }
 
 bool test55_clear_scene()
