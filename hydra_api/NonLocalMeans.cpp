@@ -16,16 +16,16 @@ using HydraLiteMath::float3;
 using HydraRender::HDRImage4f;
 using HydraLiteMath::clamp;
 
-inline int clampi(int x, int a, int b)
+static inline int clampi(int x, int a, int b)
 {
   if (x < a) return a;
   else if (x > b) return b;
   else            return x;
 }
 
-inline float SQRF(float x) { return x*x; }
+static inline float SQRF(float x) { return x*x; }
 
-inline float NLMWeight(const float4* in_buff, int w, int h, int x, int y, int x1, int y1, int a_blockRadius)
+static inline float NLMWeight(const float4* in_buff, int w, int h, int x, int y, int x1, int y1, int a_blockRadius)
 {
   float w1 = 0.0f; // this is what NLM differs from KNN (bilateral)
   {
@@ -59,7 +59,7 @@ inline float NLMWeight(const float4* in_buff, int w, int h, int x, int y, int x1
 }
 
 
-inline float surfaceSimilarity(float4 data1, float4 data2, float MADXDIFF)
+static inline float surfaceSimilarity(float4 data1, float4 data2, float MADXDIFF)
 {
   const float MANXDIFF = 0.1;
 
@@ -82,7 +82,7 @@ inline float surfaceSimilarity(float4 data1, float4 data2, float MADXDIFF)
   return normalDiff*depthDiff;
 }
 
-inline float projectedPixelSize(float dist, float FOV, float w, float h)
+static inline float projectedPixelSize(float dist, float FOV, float w, float h)
 {
   float ppx = (FOV / w)*dist;
   float ppy = (FOV / h)*dist;

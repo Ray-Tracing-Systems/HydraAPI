@@ -94,7 +94,8 @@ bool test98_denoise_and_motion_blur()
 {
   hrErrorCallerPlace(L"test_98");
   //hrSceneLibraryOpen(L"/home/frol/PROG/HydraNLM/data/scenelib_anim/statex_00001.xml", HR_OPEN_EXISTING);
-  hrSceneLibraryOpen(L"/home/frol/PROG/HydraNLM/data/scenelib_anim", HR_OPEN_EXISTING);
+  //hrSceneLibraryOpen(L"/home/frol/PROG/HydraNLM/data/scenelib_anim", HR_OPEN_EXISTING);
+  hrSceneLibraryOpen(L"D:/PROG/HydraNLM/data/scenelib_anim", HR_OPEN_EXISTING);
   
   /////////////////////////////////////////////////////////
   HRRenderRef renderRef;
@@ -104,21 +105,14 @@ bool test98_denoise_and_motion_blur()
   scnRef.id = 0;
   /////////////////////////////////////////////////////////
   
-  auto pList = hrRenderGetDeviceList(renderRef);
-  
-  while (pList != nullptr)
-  {
-    std::wcout << L"device id = " << pList->id << L", name = " << pList->name << L", driver = " << pList->driver << std::endl;
-    pList = pList->next;
-  }
-  
-  hrRenderEnableDevice(renderRef, 0, true);
-  hrRenderLogDir(renderRef, L"/home/frol/hydra/", true);
+  hrRenderEnableDevice(renderRef, 1, true);
+  //hrRenderLogDir(renderRef, L"/home/frol/hydra/", true);
+  //hrRenderLogDir(renderRef, L"C:/[Hydra]/logs/", true);
   
   hrRenderOpen(renderRef, HR_OPEN_EXISTING);
   {
     auto node = hrRenderParamNode(renderRef);
-    node.child(L"maxRaysPerPixel").text() = 64*2;
+    node.child(L"maxRaysPerPixel").text() = 16*2;
   }
   hrRenderClose(renderRef);
   
@@ -147,13 +141,14 @@ bool test98_denoise_and_motion_blur()
     }
   }
   
-  hrRenderSaveFrameBufferLDR(renderRef, L"/home/frol/PROG/HydraAPI/main/tests_images/test_98/z_out_half.png");
+  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_98/z_out_half.png");
   
   std::cout << "before sleep" << std::endl;
   std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   std::cout << "after sleep" << std::endl;
   
-  hrRenderCommand(renderRef, L"continue -statefile statex_00010.xml");
+  hrRenderCommand(renderRef, L"continue -statefile statex_00133.xml");
+  //hrRenderCommand(renderRef, L"start -statefile statex_00133.xml");
   
   while (true)
   {
@@ -174,7 +169,7 @@ bool test98_denoise_and_motion_blur()
   }
   
   
-  hrRenderSaveFrameBufferLDR(renderRef, L"/home/frol/PROG/HydraAPI/main/tests_images/test_98/z_out.png");
+  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_98/z_out.png");
   
   // int w, h;
   // hrRenderOpen(renderRef, HR_OPEN_READ_ONLY);

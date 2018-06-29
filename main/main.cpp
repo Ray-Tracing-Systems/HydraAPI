@@ -98,10 +98,10 @@ int main(int argc, const char** argv)
     // run_all_ipp_tests();
   
     //test77_save_gbuffer_layers();
-    test38_licence_plate();
+    //test38_licence_plate();
     //test39_mesh_from_vsgf();
     //test42_load_library_basic();
-    //test98_denoise_and_motion_blur();
+    test98_denoise_and_motion_blur();
     //std::cout << PP_TESTS::test303_median_in_place() << std::endl;
     
     //test38_licence_plate();

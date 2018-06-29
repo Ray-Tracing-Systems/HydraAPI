@@ -504,32 +504,31 @@ void RD_HydraConnection::RunAllHydraHeads(bool a_clearFb)
   nameStream << "hydraimage_" << now_ms;
   const std::string hydraImageName = a_clearFb ? nameStream.str() : m_lastSharedImageName;
   
-  char err[256];
-  if(a_clearFb)
+  if (a_clearFb)
   {
+    char err[256];
     bool shmemImageIsOk = m_pSharedImage->Create(width, height, layersNum, hydraImageName.c_str(), err); // #TODO: change this and pass via cmd line
     if (!shmemImageIsOk)
     {
       //#TODO: call error callback or do some thing like that
     }
-  
-    m_oldSPP     = 0.0f;
+
+    m_oldSPP = 0.0f;
     m_oldCounter = 0;
-  
+
     m_pSharedImage->Header()->spp = 0.0f;
     m_pSharedImage->Header()->counterRcv = 0;
     m_pSharedImage->Header()->counterSnd = 0;
     m_pSharedImage->Header()->gbufferIsEmpty = needGBuffer ? 1 : -1;
-    
+
     strncpy(m_pSharedImage->MessageSendData(), "-layer color -action wait ", 256); // #TODO: (sid, mid) !!!
     m_pSharedImage->Header()->counterSnd++;
-  
-    m_lastSharedImageName = hydraImageName;
-  }
-  ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  delete m_pConnection;
-  m_pConnection = CreateHydraServerConnection(width, height, false, devList);
+    m_lastSharedImageName = hydraImageName;
+
+    delete m_pConnection;
+    m_pConnection = CreateHydraServerConnection(width, height, false, devList);
+  }
 
   if (m_pConnection != nullptr)
   {
