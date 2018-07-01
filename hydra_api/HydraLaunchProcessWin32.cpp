@@ -194,14 +194,7 @@ void PluginShmemPipe::runAllRenderProcesses(RenderProcessRunParams a_params, con
       if(a_params.customLogFold != "")
         ss << " -logdir \"" << a_params.customLogFold.c_str() << "\" ";
 
-      //if (pImageA != nullptr)
-      //pImageA->SendMsg("-node_t A -sid 0 -layer wait -action wait");
-
-      int deviceId = m_mdDeviceList.size() == 0 ? -1 : m_mdDeviceList[0];
-      int engineType = 1;
-      int liteMode = false;
-
-      std::string basicCmd = ss.str();
+      int deviceId  = m_mdDeviceList.size() == 0 ? -1 : m_mdDeviceList[0];
 
       m_hydraServerStarted = true;
       std::ofstream fout("C:\\[Hydra]\\pluginFiles\\zcmd.txt");
@@ -224,14 +217,8 @@ void PluginShmemPipe::runAllRenderProcesses(RenderProcessRunParams a_params, con
         if(a_showCmd)
           dwCreationFlags |= CREATE_NEW_CONSOLE;
 
-        std::stringstream ss3;
-
-        if (engineType == 1)
-          ss3 << " -cl_device_id " << devId << " -cl_lite_core " << liteMode;
-        else
-          ss3 << " -cl_device_id " << devId;
-
-        std::string cmdFull = basicCmd + ss3.str();
+        ss << " -cl_device_id " << devId;
+        const std::string cmdFull = ss.str();
 
         ZeroMemory(&m_mdProcessList[i], sizeof(PROCESS_INFORMATION));
         if (!a_debug)

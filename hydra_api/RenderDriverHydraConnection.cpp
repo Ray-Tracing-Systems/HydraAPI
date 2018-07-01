@@ -551,11 +551,18 @@ void RD_HydraConnection::CreateAndClearSharedImage()
   else
     m_pSharedImage->Clear();
 
+  if (m_pSharedImage == nullptr)
+  {
+    //#TODO: call error callback or do some thing like that
+    return;
+  }
+
   char err[256];
   bool shmemImageIsOk = m_pSharedImage->Create(width, height, layersNum, hydraImageName.c_str(), err); // #TODO: change this and pass via cmd line
   if (!shmemImageIsOk)
   {
     //#TODO: call error callback or do some thing like that
+    return;
   }
 
   m_oldSPP     = 0.0f;
