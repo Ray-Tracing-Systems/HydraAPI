@@ -116,10 +116,12 @@ protected:
   bool         m_dontRun;
 
   void InitBothDeviceList();
-  void RunAllHydraHeads(bool a_clearFb = true);
-  
+  void CreateAndClearSharedImage();
+  void RunAllHydraHeads();
+
   std::vector<int> GetCurrDeviceList();
   std::string MakeRenderCommandLine(const std::string& hydraImageName);
+  int GetCurrSharedImageLayersNum();
 
   HRDriverAllocInfo m_currAllocInfo;
 
@@ -469,7 +471,7 @@ std::vector<int> RD_HydraConnection::GetCurrDeviceList()
     devList[0] = 0;
     
     if (m_pInfoCallBack != nullptr)
-      m_pInfoCallBack(L"No device was selected; will use device 0 by default", L"RD_HydraConnection::RunAllHydraHeads", HR_SEVERITY_WARNING);
+      m_pInfoCallBack(L"No device was selected; will use device 0 by default", L"RD_HydraConnection::GetCurrDeviceList()", HR_SEVERITY_WARNING);
   }
   
   return devList;
@@ -511,16 +513,10 @@ std::string RD_HydraConnection::MakeRenderCommandLine(const std::string& hydraIm
   return auxInput.str();
 }
 
-
-void RD_HydraConnection::RunAllHydraHeads(bool a_clearFb)
+int RD_HydraConnection::GetCurrSharedImageLayersNum()
 {
-  int width  = m_width;
-  int height = m_height;
-
-  std::vector<int> devList = GetCurrDeviceList();
-  
-  const bool runMLT      = false;
-  const bool needGBuffer = m_needGbuff; 
+  const bool runMLT = false;
+  const bool needGBuffer = m_needGbuff;
 
   int layersNum = 1;
   if (runMLT && needGBuffer)
@@ -531,62 +527,76 @@ void RD_HydraConnection::RunAllHydraHeads(bool a_clearFb)
     layersNum = 2;
   else
     layersNum = 1;
-  
-  ////////////////////////////////////////////////////////////////////////////////////////////////////
-  
-  const std::string hydraImageName = a_clearFb ? NewSharedImageName() : m_lastSharedImageName;
-  
-  if (a_clearFb)
+
+  return layersNum;
+}
+
+void RD_HydraConnection::CreateAndClearSharedImage()
+{
+  ////////////////////////////////////////////////////////////////////////////////////////////
+
+  const int width  = m_width;
+  const int height = m_height;
+
+  const std::string hydraImageName = NewSharedImageName();
+  const std::vector<int> devList   = GetCurrDeviceList();
+
+  const bool needGBuffer = m_needGbuff;
+  const int layersNum    = GetCurrSharedImageLayersNum();
+
+  ////////////////////////////////////////////////////////////////////////////////////////////
+
+  if (m_pSharedImage == nullptr)
+    m_pSharedImage = CreateImageAccum();
+  else
+    m_pSharedImage->Clear();
+
+  char err[256];
+  bool shmemImageIsOk = m_pSharedImage->Create(width, height, layersNum, hydraImageName.c_str(), err); // #TODO: change this and pass via cmd line
+  if (!shmemImageIsOk)
   {
-    if (m_pSharedImage == nullptr)
-      m_pSharedImage = CreateImageAccum();
-    else
-      m_pSharedImage->Clear();
-    
-    char err[256];
-    bool shmemImageIsOk = m_pSharedImage->Create(width, height, layersNum, hydraImageName.c_str(), err); // #TODO: change this and pass via cmd line
-    if (!shmemImageIsOk)
-    {
-      //#TODO: call error callback or do some thing like that
-    }
-
-    m_oldSPP = 0.0f;
-    m_oldCounter = 0;
-
-    m_pSharedImage->Header()->spp = 0.0f;
-    m_pSharedImage->Header()->counterRcv = 0;
-    m_pSharedImage->Header()->counterSnd = 0;
-    m_pSharedImage->Header()->gbufferIsEmpty = needGBuffer ? 1 : -1;
-
-    strncpy(m_pSharedImage->MessageSendData(), "-layer color -action wait ", 256); // #TODO: (sid, mid) !!!
-    m_pSharedImage->Header()->counterSnd++;
-
-    m_lastSharedImageName = hydraImageName;
-
-    delete m_pConnection;
-    m_pConnection = CreateHydraServerConnection(width, height, false, devList);
+    //#TODO: call error callback or do some thing like that
   }
 
-  if (m_pConnection != nullptr)
-  {
-    RenderProcessRunParams params;
+  m_oldSPP     = 0.0f;
+  m_oldCounter = 0;
 
-    params.compileShaders    = false;
-    params.debug             = MODERN_DRIVER_DEBUG;
-    params.enableMLT         = m_enableMLT;
-    params.normalPriorityCPU = false;
-    params.showConsole       = !m_hideCmd;
+  m_pSharedImage->Header()->spp        = 0.0f;
+  m_pSharedImage->Header()->counterRcv = 0;
+  m_pSharedImage->Header()->counterSnd = 0;
+  m_pSharedImage->Header()->gbufferIsEmpty = needGBuffer ? 1 : -1;
 
-    params.customExePath     = m_params.customExePath;
-    params.customExeArgs     = MakeRenderCommandLine(hydraImageName);
-    params.customLogFold     = m_logFolderS;
+  strncpy(m_pSharedImage->MessageSendData(), "-layer color -action wait ", 256); // #TODO: (sid, mid) !!!
+  m_pSharedImage->Header()->counterSnd++;
 
-    m_params = params;
+  m_lastSharedImageName = hydraImageName;
 
-    m_pConnection->runAllRenderProcesses(params, m_devList);
-  }
+  delete m_pConnection;
+  m_pConnection = CreateHydraServerConnection(width, height, false, devList);
+}
 
 
+
+void RD_HydraConnection::RunAllHydraHeads()
+{
+  if (m_pConnection == nullptr)
+    return;
+  
+  RenderProcessRunParams params;
+  
+  params.compileShaders    = false;
+  params.debug             = MODERN_DRIVER_DEBUG;
+  params.enableMLT         = m_enableMLT;
+  params.normalPriorityCPU = false;
+  params.showConsole       = !m_hideCmd;
+  
+  params.customExePath     = m_params.customExePath;
+  params.customExeArgs     = MakeRenderCommandLine(m_lastSharedImageName);
+  params.customLogFold     = m_logFolderS;
+  
+  m_params = params;
+  
+  m_pConnection->runAllRenderProcesses(params, m_devList);
 }
 
 void RD_HydraConnection::BeginScene(pugi::xml_node a_sceneNode)
@@ -601,8 +611,11 @@ void RD_HydraConnection::BeginScene(pugi::xml_node a_sceneNode)
 
   // (3) run hydras
   //
-  if(!m_dontRun)
+  if (!m_dontRun)
+  {
+    CreateAndClearSharedImage();
     RunAllHydraHeads();
+  }
 
   m_firstUpdate  = true;
   m_instancesNum = 0;
@@ -1077,7 +1090,7 @@ void RD_HydraConnection::ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out)
 
   if(needToRunProcess)
   {
-    RunAllHydraHeads(false);
+    RunAllHydraHeads();  // #NOTE: we don't call CreateAndClearSharedImage();
     strncpy(m_pSharedImage->MessageSendData(), message.c_str(), 256);
     header->counterSnd++;
   }
