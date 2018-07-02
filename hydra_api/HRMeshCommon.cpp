@@ -379,11 +379,11 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
   {
     BBox box;
     box.x_min = std::numeric_limits<float>::max();
-    box.x_max = std::numeric_limits<float>::min();
+    box.x_max = std::numeric_limits<float>::lowest();
     box.y_min = std::numeric_limits<float>::max();
-    box.y_max = std::numeric_limits<float>::min();
+    box.y_max = std::numeric_limits<float>::lowest();
     box.z_min = std::numeric_limits<float>::max();
-    box.z_max = std::numeric_limits<float>::min();
+    box.z_max = std::numeric_limits<float>::lowest();
     for (int i = 0; i < input.verticesPos.size(); i += 4)
     {
       float x = input.verticesPos[i + 0];
