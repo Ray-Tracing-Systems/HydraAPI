@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <semaphore.h>
 
+#include <iostream>
 
 struct SharedAccumImageLinux : public IHRSharedAccumImage
 {
@@ -48,9 +49,10 @@ private:
 
   std::string m_mutexName;
   std::string m_shmemName;
+  bool m_ownThisResource;
 };
 
-SharedAccumImageLinux::SharedAccumImageLinux() : m_buffDescriptor(0), m_mutex(NULL), m_memory(nullptr), m_msgSend(nullptr), m_msgRcv(nullptr), m_images(nullptr)
+SharedAccumImageLinux::SharedAccumImageLinux() : m_buffDescriptor(0), m_mutex(NULL), m_memory(nullptr), m_msgSend(nullptr), m_msgRcv(nullptr), m_images(nullptr), m_ownThisResource(false)
 {
 
 }
@@ -63,7 +65,9 @@ SharedAccumImageLinux::~SharedAccumImageLinux()
 void SharedAccumImageLinux::Free()
 {
   sem_close(m_mutex);
-  sem_unlink(m_mutexName.c_str());
+  if(m_ownThisResource)
+    sem_unlink(m_mutexName.c_str());
+  
   m_mutex = NULL;
 
   if (m_memory != nullptr)
@@ -71,16 +75,16 @@ void SharedAccumImageLinux::Free()
   m_memory = nullptr;
 
   if (m_buffDescriptor !=  -1)
-  {
     close(m_buffDescriptor);
-  }
   m_buffDescriptor = -1;
-
-  shm_unlink(m_shmemName.c_str());
+  
+  if(m_ownThisResource)
+    shm_unlink(m_shmemName.c_str());
 
   m_msgSend = nullptr;
   m_msgRcv  = nullptr;
   m_images  = nullptr;
+  m_ownThisResource = false;
 }
 
 
@@ -178,7 +182,8 @@ bool SharedAccumImageLinux::Create(int a_width, int a_height, int a_depth, const
 
     AttachTo(m_memory);
   }
-
+  
+  m_ownThisResource = true;
   strcpy(a_errMsg, "");
   return true;
 }
@@ -224,14 +229,14 @@ bool SharedAccumImageLinux::Attach(const char* name, char errMsg[256])
 
   HRSharedBufferHeader* pHeader = (HRSharedBufferHeader*)m_memory;
 
-  int a_width = pHeader->width;
+  int a_width  = pHeader->width;
   int a_height = pHeader->height;
-  int a_depth = pHeader->depth;
+  int a_depth  = pHeader->depth;
 
   if (m_memory != nullptr)
     munmap(m_memory, totalSize);
 
-  totalSize   = uint64_t(sizeof(HRSharedBufferHeader)) + uint64_t(MESSAGE_SIZE * 2) + uint64_t(a_width*a_height)*uint64_t(a_depth*sizeof(float)*4) + uint64_t(1024);
+  totalSize = uint64_t(sizeof(HRSharedBufferHeader)) + uint64_t(MESSAGE_SIZE * 2) + uint64_t(a_width*a_height)*uint64_t(a_depth*sizeof(float)*4) + uint64_t(1024);
 
   m_memory = (char*)mmap(nullptr, totalSize + 1, PROT_READ | PROT_WRITE, MAP_SHARED, m_buffDescriptor, 0);
 
@@ -244,7 +249,8 @@ bool SharedAccumImageLinux::Attach(const char* name, char errMsg[256])
   }
 
   AttachTo(m_memory);
-
+  
+  m_ownThisResource = false;
   strcpy(errMsg, "");
   return true;
 }

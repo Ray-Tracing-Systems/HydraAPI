@@ -902,6 +902,12 @@ HAPI void hrDrawPassOnly(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraR
   if (a_pCam.id != -1)
     g_objManager.m_currCamId = a_pCam.id;
 
+  if (g_objManager.scnInst.size() <= g_objManager.m_currSceneId)
+  {
+    HrError(L"hrDrawPassOnly(no scene instances were loaded), g_objManager.scnInst.size() = ", g_objManager.scnInst.size());
+    return;
+  }
+
   HR_DriverDraw(g_objManager.scnInst[g_objManager.m_currSceneId], g_objManager.m_pDriver.get());
 }
 
