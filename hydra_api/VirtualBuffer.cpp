@@ -171,30 +171,45 @@ char* VirtualBuffer::AllocInCacheNow(uint64_t a_sizeInBytes)
 
 void* VirtualBuffer::AllocInCache(uint64_t a_sizeInBytes)
 {
-  uint64_t freeSize = m_currSize - m_currTop;
+  const uint64_t freeSize = gCopyCollector ? (m_currSize - m_currTop) : (m_totalSize - m_currTop);
 
   if (a_sizeInBytes < freeSize) // alloc 
   {
     return AllocInCacheNow(a_sizeInBytes);
   }
-  else
+  else if (gCopyCollector)
   {
-    uint64_t maxAllowedSize = m_currSize - maxAccumulatedSize();
-
+    const uint64_t maxAllowedSize = m_currSize - maxAccumulatedSize();
+    
     if (a_sizeInBytes < maxAllowedSize) // swap old objects to disc and put a new object to free memory 
     {
-      if(gCopyCollector)
-        RunCopyingCollector();
-      else
-        RunCollector();
+      RunCopyingCollector();
       return AllocInCacheNow(a_sizeInBytes);
     }
     else // this object is too big. We can not allocate memory here. Need to store it on disk.
     {
-      std::cerr << "VirtualBuffer::AllocInCache : the object is too big!" << std::endl;
+      std::cerr << "VirtualBuffer::AllocInCache : the object is too big! gCopyCollector = " << int(gCopyCollector) << std::endl;
       return nullptr;
     }
   }
+  else
+  { 
+    constexpr int div = 8;
+    const uint64_t maxAllowedSize = (m_totalSize*(div-1))/div - 1024;
+    
+    if (a_sizeInBytes < maxAllowedSize) // swap old objects to disc and put a new object to free memory 
+    {
+      RunCollector(div);
+      return AllocInCacheNow(a_sizeInBytes);
+    }
+    else // this object is too big. We can not allocate memory here. Need to store it on disk.
+    {
+      std::cerr << "VirtualBuffer::AllocInCache : the object is too big! gCopyCollector = " << int(gCopyCollector) << std::endl;
+      return nullptr;
+    }
+    
+  }
+
 
 }
 
@@ -300,7 +315,7 @@ void VirtualBuffer::RunCopyingCollector()
   m_currTop      = top;
 }
 
-void VirtualBuffer::RunCollector()
+void VirtualBuffer::RunCollector(int a_divisor)
 {
   // (1)  we must decide wich objects we can handle in memory
   // sort currChunksInMemory by m_allChunks[i].useCounter
@@ -321,10 +336,10 @@ void VirtualBuffer::RunCollector()
   //
   size_t top = 0;
   size_t curAccumulatedMemory = 0;
-  size_t maxAccumulatedMemory = m_totalSize / 8;
+  size_t maxAccumulatedMemory = m_totalSize / a_divisor;
 
   if (m_pTempBuffer->size() < maxAccumulatedMemory)
-    m_pTempBuffer->resize( maxAccumulatedMemory/sizeof(int) );
+    m_pTempBuffer->resize( maxAccumulatedMemory/sizeof(int) + 1);
 
   char* dataTemp = (char*)m_pTempBuffer->data();
 

@@ -299,7 +299,7 @@ protected:
   char* AllocInCacheNow(uint64_t a_sizeInBytes);
   void* AllocInCache(uint64_t a_sizeInBytes); ///< Always alloc aligned 16 byte memory;
   void  RunCopyingCollector();
-  void  RunCollector();
+  void  RunCollector(int a_divisor);
 
   inline uint64_t maxAccumulatedSize() const { return m_currSize / 2; }
 
