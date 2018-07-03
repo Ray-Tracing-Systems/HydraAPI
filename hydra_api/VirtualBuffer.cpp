@@ -40,7 +40,7 @@ inline uint64_t roundBlocks(uint64_t elems, int threadsPerBlock)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-bool VirtualBuffer::Init(uint64_t a_sizeInBytes, const char* a_shmemName)
+bool VirtualBuffer::Init(uint64_t a_sizeInBytes, const char* a_shmemName, std::vector<int>* a_pTempBuffer)
 {
   if (a_sizeInBytes % 1024 != 0)
   {
@@ -117,7 +117,7 @@ bool VirtualBuffer::Init(uint64_t a_sizeInBytes, const char* a_shmemName)
 #endif
 
   Clear();
-
+  m_pTempBuffer = a_pTempBuffer;
   return true;
 }
 
@@ -240,7 +240,6 @@ void VirtualBuffer::RunCopyingCollector()
   // (1)  we must decide wich objects we can handle in memory
   // sort currChunksInMemory by m_allChunks[i].useCounter
   //
-
   struct CompareIds
   {
     CompareIds(VirtualBuffer* a_pVB) : pVB(a_pVB) { }
@@ -297,6 +296,11 @@ void VirtualBuffer::RunCopyingCollector()
   m_currTop      = top;
 }
 
+void VirtualBuffer::RunCollector()
+{
+
+}
+
 void VirtualBuffer::FlushToDisc()
 {
   for (size_t i = 0; i < m_chunksIdInMemory.size(); i++)
@@ -321,7 +325,7 @@ void* ChunkPointer::GetMemoryNow()
   }
   else
   {
-    return nullptr; // #TODO: Swap chunk to memory and get fucking pointer
+    return nullptr; // #TODO: Swap chunk to memory (m_tempBuffer) and get fucking pointer
   }
 }
 

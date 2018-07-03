@@ -3107,9 +3107,7 @@ bool test1016_merge_scene_remap_override()
   //std::vector<int32_t> override_list = {4, 13, 6, 13, 7, 13, 8, 13, 0, 1, 2, 3, 10, 15, 20, 25};
   //std::vector<int32_t> override_list = {4, 12};
 
-
-
-  HRUtils::InstanceSceneIntoScene(scnRef2, scnRef, mTranslate.L(), false, &override_list[0], override_list.size());
+  HRUtils::InstanceSceneIntoScene(scnRef2, scnRef, mTranslate.L(), false, &override_list[0], int32_t(override_list.size()));
 
   hrFlush(scnRef, renderRef, camRef);
 

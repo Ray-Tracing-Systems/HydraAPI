@@ -266,7 +266,7 @@ protected:
 struct VirtualBuffer
 {
   VirtualBuffer() : m_data(nullptr), m_dataHalfCurr(nullptr), m_dataHalfFree(nullptr), 
-                    m_currTop(0), m_currSize(0), m_totalSize(0), m_totalSizeAllocated(0)
+                    m_currTop(0), m_currSize(0), m_totalSize(0), m_totalSizeAllocated(0), m_pTempBuffer(nullptr)
   {
   #ifdef WIN32
     m_fileHandle = 0;
@@ -275,7 +275,7 @@ struct VirtualBuffer
   #endif
   }
 
-  bool Init(uint64_t a_sizeInBytes, const char* a_shmemName);
+  bool Init(uint64_t a_sizeInBytes, const char* a_shmemName, std::vector<int>* a_pTempBuffer);
   void Destroy();
   void Clear();
   void FlushToDisc();
@@ -299,6 +299,7 @@ protected:
   char* AllocInCacheNow(uint64_t a_sizeInBytes);
   void* AllocInCache(uint64_t a_sizeInBytes); ///< Always alloc aligned 16 byte memory;
   void  RunCopyingCollector();
+  void  RunCollector();
 
   inline uint64_t maxAccumulatedSize() const { return m_currSize / 2; }
 
@@ -321,6 +322,7 @@ protected:
 
   std::vector<ChunkPointer> m_allChunks;
   std::vector<size_t>       m_chunksIdInMemory;
+  std::vector<int>*         m_pTempBuffer;
 };
 
 std::wstring ChunkName(const ChunkPointer& a_chunk);
