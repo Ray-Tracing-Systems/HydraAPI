@@ -184,10 +184,13 @@ void HR_MyDebugSaveBMP(const wchar_t* fname, const int* pixels, int w, int h)
   info[22] = (unsigned char)(sizeData >> 16);
   info[23] = (unsigned char)(sizeData >> 24);
 
-
+  #ifdef WIN32
+  std::ofstream stream(fname, std::ios::out | std::ios::binary);
+  #else
   std::wstring fnameW(fname);
   std::string  fnameA(fnameW.begin(), fnameW.end());
   std::ofstream stream(fnameA.c_str(), std::ios::out | std::ios::binary);
+  #endif
 
   stream.write((char*)file, sizeof(file));
   stream.write((char*)info, sizeof(info));
