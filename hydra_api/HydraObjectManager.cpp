@@ -42,6 +42,11 @@ pugi::xml_node get_global_trash_node() { return g_objManager.trash_node(); }
 
 void _hrInitPostProcess();
 
+namespace HydraRender
+{
+  std::unique_ptr<IHRImageTool> CreateImageTool();
+};
+
 void HRObjectManager::init(const wchar_t* a_className)
 {
   m_useLocalPath               = false;
@@ -73,6 +78,8 @@ void HRObjectManager::init(const wchar_t* a_className)
 
   m_pFactory = new HydraFactoryCommon;
   scnData.init(m_emptyVB);
+
+  m_pImgTool = HydraRender::CreateImageTool();
 
   _hrInitPostProcess();
 }
