@@ -13,7 +13,7 @@
 #include "FreeImage.h"
 #pragma comment(lib, "FreeImage.lib")
 
-bool HR_SaveLDRImageToFile(const wchar_t* a_fileName, int w, int h, int32_t* data);
+bool HR_SaveLDRImageToFile(const wchar_t* a_fileName, int w, int h, const int32_t* data);
 bool HR_SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, const float* a_data, const float a_scale = 1.0f);
 
 extern HRObjectManager g_objManager;
@@ -141,7 +141,7 @@ namespace HydraRender
 
   void SaveImageToFile(const std::wstring& a_fileName, int w, int h, const unsigned int* data)
   {
-    HR_SaveLDRImageToFile(a_fileName.c_str(), w, h, (int32_t*)data);
+    HR_SaveLDRImageToFile(a_fileName.c_str(), w, h, (const int32_t*)data);
   }
 
 
@@ -448,8 +448,7 @@ namespace HydraRender
     
     //#TODO: add ppm and bmp loaders here ... 
 
-    std::string tempExt = ws2s(fileExt);
-    HrPrint(HR_SEVERITY_ERROR, "InternalImageTool::LoadImageFromFile, unsupported file extension ", tempExt.c_str());
+    HrPrint(HR_SEVERITY_ERROR, L"InternalImageTool::LoadImageFromFile, unsupported file extension ", fileExt.c_str());
     return false;
   }
 
@@ -499,79 +498,47 @@ namespace HydraRender
                                         int& w, int& h, int& bpp, std::vector<int>& a_data)
   {
 
-    /*
-     const wchar_t* filename = a_fileName.c_str();
-
-  FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
-  FIBITMAP *dib(NULL), *converted(NULL);
-  BYTE* bits(NULL);                    // pointer to the image data
-  unsigned int width(0), height(0);    //image width and height
-
-  int bytesPerPixel = HRUtils_LoadImageFromFileToPairOfFreeImageObjects(a_fileName.c_str(), dib, converted, &fif);
-  int bitsPerPixel  = bytesPerPixel * 8;
-
-  if (bytesPerPixel == 0)
-  {
-    HrError(L"FreeImage failed to load image: ", a_fileName.c_str());
-    return nullptr;
-  }
-
-  bits   = FreeImage_GetBits(converted);
-  width  = FreeImage_GetWidth(converted);
-  height = FreeImage_GetHeight(converted);
-
-  if ((bits == 0) || (width == 0) || (height == 0))
-  {
-    HrError(L"FreeImage failed for undefined reason, file : ", a_fileName.c_str());
-    FreeImage_Unload(converted);
-    FreeImage_Unload(dib);
-    return nullptr;
-  }
-
-  // (3.*) check totalByteSizeOfTexture
-  //
-  size_t totalByteSizeOfTexture = (bitsPerPixel <= 32) ? size_t(width)*size_t(height)*size_t(sizeof(char)*4) : size_t(width)*size_t(height)*size_t(sizeof(float) * 4);
-  totalByteSizeOfTexture += size_t(2 * sizeof(unsigned int));
-
-  // now put image data directly to cache ... ?
-  //
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ////
-  size_t chunkId = g_objManager.scnData.m_vbCache.AllocChunk(totalByteSizeOfTexture, pSysObj->id);
-  auto& chunk    = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
-  chunk.type     = (bytesPerPixel <= 4) ? CHUNK_TYPE_IMAGE4UB : CHUNK_TYPE_IMAGE4F;
-
-  //unsigned char* data = new unsigned char[size];
-  char* data = (char*)chunk.GetMemoryNow();
-  if (data == nullptr)
-  {
-    FreeImage_Unload(converted);
-    FreeImage_Unload(dib);
-
-    std::shared_ptr<BitmapProxy> p = std::make_shared<BitmapProxy>(width, height, totalByteSizeOfTexture, chunkId); //#TODO: return nullptr here?
-    p->fileName        = a_fileName;
-    p->m_bytesPerPixel = bytesPerPixel;
-    return p;
-  }
-  ////
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  unsigned int* pW = (unsigned int*)data;
-  unsigned int* pH = pW + 1;
-  data += 2 * sizeof(unsigned int);
-
-  (*pW) = width;
-  (*pH) = height;
-
-  HRUtils_GetImageDataFromFreeImageObject(converted, data);
-
-  FreeImage_Unload(converted);
-  FreeImage_Unload(dib);
+    FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
+    FIBITMAP *dib(NULL), *converted(NULL);
     
-    */
+    int bytesPerPixel = HRUtils_LoadImageFromFileToPairOfFreeImageObjects(a_fileName, dib, converted, &fif);
+    int bitsPerPixel  = bytesPerPixel * 8;
+    
+    if (bytesPerPixel == 0)
+    {
+      HrError(L"FreeImage failed to load image: ", a_fileName);
+      return false;
+    }
 
-    return false;
+    w   = FreeImage_GetWidth(converted);
+    h   = FreeImage_GetHeight(converted);
+    bpp = FreeImage_GetBPP(converted)/8;
+    
+    if (w == 0 || h == 0)
+    {
+      HrError(L"FreeImage failed for undefined reason, file : ", a_fileName);
+      FreeImage_Unload(converted);
+      FreeImage_Unload(dib);
+      return false;
+    }
+   
+    a_data.resize(w*h*bpp/sizeof(int));
+   
+    HRUtils_GetImageDataFromFreeImageObject(converted, (char*)a_data.data());
+    
+    FreeImage_Unload(converted);
+    FreeImage_Unload(dib);
+
+    return true;
   }
 
+  void FreeImageTool::SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, const float* a_data)
+  {
+    HR_SaveHDRImageToFileHDR(a_fileName, w, h, a_data, 1.0f);
+  }
 
+  void FreeImageTool::SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, const int* a_data)
+  {
+    HR_SaveLDRImageToFile(a_fileName, w, h, a_data);
+  }
 };

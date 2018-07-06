@@ -215,7 +215,7 @@ static void ExtractCoverage(const HRGBufferPixel* a_inLine, int32_t* a_outLine, 
 }
 
 
-bool HR_SaveLDRImageToFile(const wchar_t* a_fileName, int w, int h, int32_t* data);
+bool HR_SaveLDRImageToFile(const wchar_t* a_fileName, int w, int h, const int32_t* data);
 
 HAPI bool hrRenderSaveGBufferLayerLDR(const HRRenderRef a_pRender, const wchar_t* a_outFileName, const wchar_t* a_layerName,
                                       const int* a_palette, const int a_paletteSize)

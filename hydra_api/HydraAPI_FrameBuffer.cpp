@@ -217,13 +217,13 @@ void HR_MyDebugSaveBMP(const wchar_t* fname, const int* pixels, int w, int h)
 
 
 
-bool HR_SaveLDRImageToFile(const wchar_t* a_fileName, int w, int h, int32_t* data)
+bool HR_SaveLDRImageToFile(const wchar_t* a_fileName, int w, int h, const int32_t* data)
 {
   FIBITMAP* dib = FreeImage_Allocate(w, h, 32);
 
   BYTE* bits = FreeImage_GetBits(dib);
   //memcpy(bits, data, w*h*sizeof(int32_t));
-  BYTE* data2 = (BYTE*)data;
+  const BYTE* data2 = (const BYTE*)data;
   for (int i = 0; i<w*h; i++)
   {
     bits[4 * i + 0] = data2[4 * i + 2];
