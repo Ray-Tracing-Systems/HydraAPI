@@ -25,9 +25,9 @@ namespace HydraRender
     float  b = clamp(z*255.0f, 0.0f, 255.0f);
     float  a = clamp(w*255.0f, 0.0f, 255.0f);
 
-    unsigned char red = (unsigned char)r;
+    unsigned char red   = (unsigned char)r;
     unsigned char green = (unsigned char)g;
-    unsigned char blue = (unsigned char)b;
+    unsigned char blue  = (unsigned char)b;
     unsigned char alpha = (unsigned char)a;
 
     return red | (green << 8) | (blue << 16) | (alpha << 24);

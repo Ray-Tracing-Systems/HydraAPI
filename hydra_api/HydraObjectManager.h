@@ -2,7 +2,6 @@
 
 #include "HydraAPI.h"
 #include "HydraInternal.h"
-#include "HydraInternalCommon.h"
 #include "HydraRenderDriverAPI.h"
 #include "HR_HDRImage.h"
 

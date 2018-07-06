@@ -10,7 +10,6 @@
 #endif
 
 #include <cstring>
-
 #include "alloc16.h"
 
 namespace HydraRender

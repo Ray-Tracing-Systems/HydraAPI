@@ -985,7 +985,7 @@ int64_t EstimateTexturesMem(const ChangeList& a_objList, std::unordered_map<int3
     texInfo.rh  = heightOriginal;
     texInfo.aw  = widthOriginal;
     texInfo.ah  = heightOriginal;
-    texInfo.bpp = elemSize;
+    texInfo.bpp = int(elemSize);
     texInfo.usedAsBump = false;
 
     if (node.attribute(L"rwidth") != nullptr && node.attribute(L"rheight") != nullptr)
