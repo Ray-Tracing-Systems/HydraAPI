@@ -400,8 +400,6 @@ ChangeList FindChangedObjects(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-int HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* a_filename, FIBITMAP*& dib, FIBITMAP*& converted, FREE_IMAGE_FORMAT* pFif);
-bool HRUtils_GetImageDataFromFreeImageObject(FIBITMAP* converted, char* data);
 
 void UpdateImageFromFileOrChunk(int32_t a_id, HRTextureNode& img, IHRRenderDriver* a_pDriver) // #TODO: debug and test this
 {
@@ -413,43 +411,17 @@ void UpdateImageFromFileOrChunk(int32_t a_id, HRTextureNode& img, IHRRenderDrive
   {
     const wchar_t* filename = node.attribute(L"path").as_string();
 
-    FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
-    FIBITMAP *dib(NULL), *converted(NULL);
-    BYTE* bits(NULL);                    // pointer to the image data
-    unsigned int width(0), height(0);    //image width and height
+    int width, height, bpp;
+    bool loaded = g_objManager.m_pImgTool->LoadImageFromFile(filename, 
+                                                             width, height, bpp, g_objManager.m_tempBuffer);
 
-    int bytesPerPixel = HRUtils_LoadImageFromFileToPairOfFreeImageObjects(filename, dib, converted, &fif);
-    int bitsPerPixel  = bytesPerPixel * 8;
+    if(loaded)
+      a_pDriver->UpdateImage(a_id, width, height, bpp, (char*)g_objManager.m_tempBuffer.data(), node);
+    else
+      a_pDriver->UpdateImage(a_id, 0, 0, 0, nullptr, node);
 
-    if (bytesPerPixel == 0)
-    {
-      HrError(L"UpdateImageFromFileOrChunk: FreeImage failed to load image: ", filename);
-      return;
-    }
-
-    bits   = FreeImage_GetBits(converted);
-    width  = FreeImage_GetWidth(converted);
-    height = FreeImage_GetHeight(converted);
-
-    if ((bits == 0) || (width == 0) || (height == 0))
-    {
-      HrError(L"UpdateImageFromFileOrChunk: FreeImage failed for undefined reason, file : ", filename);
-      FreeImage_Unload(converted);
-      FreeImage_Unload(dib);
-      return;
-    }
-
-    size_t sizeInBytes = bytesPerPixel*width*height;
-
-    g_objManager.m_tempBuffer.resize(sizeInBytes / uint64_t(sizeof(int)) + uint64_t(sizeof(int) * 16));
-    char* data = (char*)&g_objManager.m_tempBuffer[0];
-
-    HRUtils_GetImageDataFromFreeImageObject(converted, data);
-
-    FreeImage_Unload(converted);
-    FreeImage_Unload(dib);
-
-    a_pDriver->UpdateImage(a_id, width, height, bytesPerPixel, data, node);
+    if (g_objManager.m_tempBuffer.size() > TEMP_BUFFER_MAX_SIZE_DONT_FREE)
+      g_objManager.m_tempBuffer = g_objManager.EmptyBuffer();
   }
   else // load chunk
   {

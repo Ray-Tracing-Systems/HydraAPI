@@ -20,8 +20,117 @@ std::wstring s2ws(const std::string& s);
 
 void HR_MyDebugSaveBMP(const wchar_t* fname, const int* pixels, int w, int h);
 
-int HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* a_filename, FIBITMAP*& dib, FIBITMAP*& converted, FREE_IMAGE_FORMAT* pFif);
-bool HRUtils_GetImageDataFromFreeImageObject(FIBITMAP* converted, char* data);
+static int HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* filename, FIBITMAP*& dib, FIBITMAP*& converted, FREE_IMAGE_FORMAT* pFif)
+{
+  FREE_IMAGE_FORMAT& fif = (*pFif); // image format
+
+                                    //check the file signature and deduce its format
+                                    //if still unknown, try to guess the file format from the file extension
+                                    //
+
+#if defined WIN32
+  fif = FreeImage_GetFileTypeU(filename, 0);
+#else
+  char filename_s[256];
+  size_t len = wcstombs(filename_s, filename, sizeof(filename_s));
+  fif = FreeImage_GetFileType(filename_s, 0);
+#endif
+
+  if (fif == FIF_UNKNOWN)
+#if defined WIN32
+    fif = FreeImage_GetFIFFromFilenameU(filename);
+#else
+    fif = FreeImage_GetFIFFromFilename(filename_s);
+#endif
+  if (fif == FIF_UNKNOWN)
+    return 0;
+
+  //check that the plugin has reading capabilities and load the file
+  //
+  if (FreeImage_FIFSupportsReading(fif))
+#if defined WIN32
+    dib = FreeImage_LoadU(fif, filename);
+#else
+    dib = FreeImage_Load(fif, filename_s);
+#endif
+  else
+    return 0;
+
+  bool invertY = false; //(fif != FIF_BMP);
+
+  if (!dib)
+    return 0;
+
+  int bitsPerPixel = FreeImage_GetBPP(dib);
+
+  int bytesPerPixel = 4;
+  if (bitsPerPixel <= 32) // bits per pixel
+  {
+    converted = FreeImage_ConvertTo32Bits(dib);
+    bytesPerPixel = 4;
+  }
+  else
+  {
+    converted = FreeImage_ConvertToRGBF(dib);
+    bytesPerPixel = 16;
+  }
+
+  return bytesPerPixel;
+}
+
+static bool HRUtils_GetImageDataFromFreeImageObject(FIBITMAP* converted, char* data)
+{
+  auto bits = FreeImage_GetBits(converted);
+  auto width = FreeImage_GetWidth(converted);
+  auto height = FreeImage_GetHeight(converted);
+  auto bitsPerPixel = FreeImage_GetBPP(converted);
+
+  if ((bits == 0) || (width == 0) || (height == 0))
+    return false;
+
+  if (bitsPerPixel <= 32)
+  {
+    // (2.1) if ldr -> create bitmap2DLDR
+    //
+    for (unsigned int y = 0; y<height; y++)
+    {
+      int lineOffset1 = y*width;
+      int lineOffset2 = y*width;
+      //if (invertY)
+      //lineOffset2 = (height - y - 1)*width;
+
+      for (unsigned int x = 0; x<width; x++)
+      {
+        int offset1 = lineOffset1 + x;
+        int offset2 = lineOffset2 + x;
+
+        data[4 * offset1 + 0] = bits[4 * offset2 + 2];
+        data[4 * offset1 + 1] = bits[4 * offset2 + 1];
+        data[4 * offset1 + 2] = bits[4 * offset2 + 0];
+        data[4 * offset1 + 3] = bits[4 * offset2 + 3];
+      }
+    }
+
+  }
+  else
+  {
+    // (2.2) if hdr -> create bitmap2DHDR
+    //
+    float* fbits = (float*)bits;
+    float* fdata = (float*)data;
+
+    for (unsigned int i = 0; i < width*height; i++)
+    {
+      fdata[4 * i + 0] = fbits[3 * i + 0];
+      fdata[4 * i + 1] = fbits[3 * i + 1];
+      fdata[4 * i + 2] = fbits[3 * i + 2];
+      fdata[4 * i + 3] = 0.0f;
+    }
+
+  }
+
+  return true;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -200,15 +309,15 @@ namespace HydraRender
     g_objManager.m_pImgTool->SaveHDRImageToFileHDR(fileNameW.c_str(), w, h, a_data);
   }
 
+  void SaveHDRImageToFileHDR(const std::wstring& a_fileName, int w, int h, const float* a_data)
+  {
+    g_objManager.m_pImgTool->SaveHDRImageToFileHDR(a_fileName.c_str(), w, h, a_data);
+  }
+
   void SaveImageToFile(const std::string& a_fileName, int w, int h, unsigned int* data)
   {
     const std::wstring fileNameW = s2ws(a_fileName);
     g_objManager.m_pImgTool->SaveLDRImageToFileLDR(fileNameW.c_str(), w, h, (const int*)data);
-  }
-
-  void SaveHDRImageToFileHDR(const std::wstring& a_fileName, int w, int h, const float* a_data)
-  {
-    g_objManager.m_pImgTool->SaveHDRImageToFileHDR(a_fileName.c_str(), w, h, a_data);
   }
 
   void SaveImageToFile(const std::wstring& a_fileName, int w, int h, const unsigned int* data)

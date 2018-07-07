@@ -1,6 +1,8 @@
 #include "RenderDriverOpenGL1.h"
 #include <iostream>
 
+#include "HydraObjectManager.h"
+
 #pragma warning(disable:4996)
 
 #if defined(WIN32)
@@ -37,9 +39,6 @@ protected:
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-int HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* a_filename, FIBITMAP*& dib, FIBITMAP*& converted, FREE_IMAGE_FORMAT* pFif);
-bool HRUtils_GetImageDataFromFreeImageObject(FIBITMAP* converted, char* data);
-
 HRDriverInfo RD_OGL1_Plain_DelayedLoad::Info()
 {
   HRDriverInfo info; 
@@ -56,6 +55,8 @@ HRDriverInfo RD_OGL1_Plain_DelayedLoad::Info()
 
   return info;
 }
+
+extern HRObjectManager g_objManager;
 
 bool RD_OGL1_Plain_DelayedLoad::UpdateImageFromFile(int32_t a_texId, const wchar_t* a_fileName, pugi::xml_node a_texNode)
 {
@@ -91,51 +92,16 @@ bool RD_OGL1_Plain_DelayedLoad::UpdateImageFromFile(int32_t a_texId, const wchar
   }
   else
   {
-    FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
-    FIBITMAP *dib(NULL), *converted(NULL);
-    BYTE* bits(NULL);                    // pointer to the image data
-    unsigned int width(0), height(0);    // image width and height
+    int width, height, bpp;
+    bool loaded = g_objManager.m_pImgTool->LoadImageFromFile(filename,
+                                                             width, height, bpp, g_objManager.m_tempBuffer);
 
-    int bytesPerPixel = HRUtils_LoadImageFromFileToPairOfFreeImageObjects(filename, dib, converted, &fif);
-    int bitsPerPixel = bytesPerPixel * 8;
+    const bool res = UpdateImage(a_texId, width, height, bpp, (char*)g_objManager.m_tempBuffer.data(), a_texNode);
 
-    if (bytesPerPixel == 0)
-    {
-      if (m_pInfoCallBack != nullptr)
-        m_pInfoCallBack(L"UpdateImageFromFile: FreeImage failed to load image", 
-                        L"RD_OGL1_Plain_DelayedLoad::UpdateImageFromFile", 
-                        HR_SEVERITY_WARNING);
-      return false;
-    }
+    if (g_objManager.m_tempBuffer.size() > TEMP_BUFFER_MAX_SIZE_DONT_FREE)
+      g_objManager.m_tempBuffer = g_objManager.EmptyBuffer();
 
-    bits = FreeImage_GetBits(converted);
-    width = FreeImage_GetWidth(converted);
-    height = FreeImage_GetHeight(converted);
-
-    if ((bits == 0) || (width == 0) || (height == 0))
-    {
-      if (m_pInfoCallBack != nullptr)
-      {
-        std::wstring errMsg = std::wstring(L"FreeImage failed for undefined reason, file") + filename;
-        m_pInfoCallBack(errMsg.c_str(), L"RD_OGL1_Plain_DelayedLoad::UpdateImageFromFile", HR_SEVERITY_WARNING);
-      }
-
-      FreeImage_Unload(converted);
-      FreeImage_Unload(dib);
-      return false;
-    }
-
-    size_t sizeInBytes = bytesPerPixel*width*height;
-
-    std::vector<char> tempBuffer(sizeInBytes + size_t(16));
-    char* data = &tempBuffer[0];
-
-    HRUtils_GetImageDataFromFreeImageObject(converted, data);
-
-    FreeImage_Unload(converted);
-    FreeImage_Unload(dib);
-
-    return UpdateImage(a_texId, width, height, bytesPerPixel, data, a_texNode);
+    return res;
   }
 }
 
