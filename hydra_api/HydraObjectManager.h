@@ -511,6 +511,8 @@ struct HRRender : public HRObject<IHRRender>
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#define TEMP_BUFFER_MAX_SIZE_DONT_FREE 104857600
+
 struct HRObjectManager
 {
   HRObjectManager() : m_pFactory(nullptr), m_pDriver(nullptr), m_pImgTool(nullptr), m_currSceneId(0), m_currRenderId(0), m_currCamId(0),
@@ -545,13 +547,14 @@ struct HRObjectManager
 
   std::vector<int> m_tempBuffer;
   std::wstring     m_tempPathToChangeFile;
+  std::vector<int> EmptyBuffer() { return std::vector<int>(); }
 
   void CommitChanges(pugi::xml_document& a_from, pugi::xml_document& a_to);
   IHydraFactory* m_pFactory; // actual Factory
 
   std::shared_ptr<IHRRenderDriver>     m_pDriver;
   std::unordered_set<IHRRenderDriver*> driverAllocated;
-  std::unique_ptr<IHRImageTool>        m_pImgTool;
+  std::shared_ptr<IHRImageTool>        m_pImgTool;
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 

@@ -31,9 +31,6 @@
 
 #include "../hydra_api/HR_HDRImageTool.h"
 
-using HydraRender::LoadImageFromFile;
-using HydraRender::SaveImageToFile;
-
 static GLFWwindow* g_window = nullptr;
 static int         g_width  = 1024;
 static int         g_height = 768;
@@ -75,8 +72,8 @@ bool check_images(const char* a_path, const int a_numImages, const float a_mse)
     int w1, h1, w2, h2;
     std::vector<float> data1, data2;
 
-    LoadImageFromFile(path1.c_str(), data1, w1, h1);
-    LoadImageFromFile(path2.c_str(), data2, w2, h2);
+    HydraRender::LoadImageFromFile(path1.c_str(), data1, w1, h1);
+    HydraRender::LoadImageFromFile(path2.c_str(), data2, w2, h2);
 
     if (w1 != w2 || h1 != h2)
       return false;
@@ -1568,7 +1565,7 @@ bool test15_main_scene_and_mat_editor()
     for (int x = 0; x < 256; x++)
       frameBufferData[(768 - y - 1 - 512) * 1024 + x] = frameBufferDataMat[(256 - y - 1) * 256 + x];
 
-  SaveImageToFile(std::string("tests_images/test_15/z_out.png"), 1024, 768, (unsigned int*)&frameBufferData[0]);
+  HydraRender::SaveImageToFile(std::string("tests_images/test_15/z_out.png"), 1024, 768, (unsigned int*)&frameBufferData[0]);
 
   bool noDups1 = check_all_duplicates(L"tests/test_15/statex_00002.xml");
   bool noDups2 = check_all_duplicates(L"tests/test_15/statex_00003.xml");

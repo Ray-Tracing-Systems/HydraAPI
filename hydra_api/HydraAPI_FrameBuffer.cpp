@@ -153,13 +153,18 @@ HAPI bool hrRenderSaveFrameBufferLDR(const HRRenderRef a_pRender, const wchar_t*
     return false;
   }
 
-  std::vector<int32_t> imgData(w*h);
-  pRender->m_pDriver->GetFrameBufferLDR(w, h, &imgData[0]);
+  auto pImgTool = g_objManager.m_pImgTool;
+  auto& imgData = g_objManager.m_tempBuffer;
+  if (imgData.size() < w*h)
+    imgData.resize(w*h);
 
-  //HR_MyDebugSaveBMP(a_outFileName, &imgData[0], w, h);
-  //return true;
+  pRender->m_pDriver->GetFrameBufferLDR(w, h, imgData.data());
+  pImgTool->SaveLDRImageToFileLDR(a_outFileName, w, h, imgData.data());
 
-  return HR_SaveLDRImageToFile(a_outFileName, w, h, &imgData[0]);
+  if (imgData.size() > TEMP_BUFFER_MAX_SIZE_DONT_FREE) // free temp buffer if it's too large
+    imgData = g_objManager.EmptyBuffer();
+
+  return true;
 }
 
 HAPI bool hrRenderSaveFrameBufferHDR(const HRRenderRef a_pRender, const wchar_t* a_outFileName)
@@ -180,8 +185,8 @@ HAPI bool hrRenderSaveFrameBufferHDR(const HRRenderRef a_pRender, const wchar_t*
 
   pugi::xml_node node = pRender->xml_node_immediate();
 
-  int w = node.child(L"width").text().as_int();
-  int h = node.child(L"height").text().as_int();
+  const int w = node.child(L"width").text().as_int();
+  const int h = node.child(L"height").text().as_int();
 
   if (w <= 0 || h <= 0)
   {
@@ -189,15 +194,24 @@ HAPI bool hrRenderSaveFrameBufferHDR(const HRRenderRef a_pRender, const wchar_t*
     return false;
   }
 
-  std::vector<float> imgData(w*h*4);
-  pRender->m_pDriver->GetFrameBufferHDR(w, h, &imgData[0], L"color");
+  auto pImgTool = g_objManager.m_pImgTool;
+  auto& imgData = g_objManager.m_tempBuffer;
+  if (imgData.size() < size_t(w*h)*size_t(4))
+    imgData.resize(size_t(w*h)*size_t(4));
 
-  return HR_SaveHDRImageToFileHDR(a_outFileName, w, h, &imgData[0]);
+  pRender->m_pDriver->GetFrameBufferHDR(w, h, (float*)imgData.data(), L"color");
+  pImgTool->SaveHDRImageToFileHDR(a_outFileName, w, h, (const float*)imgData.data());
+
+  if (imgData.size() > TEMP_BUFFER_MAX_SIZE_DONT_FREE) // free temp buffer if it's too large
+    imgData = g_objManager.EmptyBuffer();
+
+  return true;
 }
 
 HAPI void hrRenderCommand(const HRRenderRef a_pRender, const wchar_t* a_command, wchar_t* a_answer)
 {
   HRRender* pRender = g_objManager.PtrById(a_pRender);
+
   if (pRender == nullptr)
   {
     HrError(L"[hrRenderCommand]: nullptr Render Driver ");

@@ -111,11 +111,11 @@ void HRObjectManager::destroy()
 	scnData.m_sceneNode    = pugi::xml_node();
 
 	scnData.m_texturesLibChanges	 = pugi::xml_node();
-	scnData.m_materialsLibChanges = pugi::xml_node();
+	scnData.m_materialsLibChanges  = pugi::xml_node();
 	scnData.m_lightsLibChanges		 = pugi::xml_node();
 	scnData.m_cameraLibChanges		 = pugi::xml_node();
 	scnData.m_geometryLibChanges	 = pugi::xml_node();
-	scnData.m_settingsNodeChanges = pugi::xml_node();
+	scnData.m_settingsNodeChanges  = pugi::xml_node();
 	scnData.m_sceneNodeChanges		 = pugi::xml_node();
 
 	scnData.m_vbCache.Destroy();
@@ -125,7 +125,6 @@ void HRObjectManager::destroy()
 const std::wstring HRObjectManager::GetLoc(const pugi::xml_node a_node) const
 {
   return scnData.m_path + std::wstring(L"/") + std::wstring(a_node.attribute(L"loc").as_string());
-  //return std::wstring(a_node.attribute(L"loc").as_string());
 }
 
 void HRObjectManager::SetLoc(pugi::xml_node a_node, const std::wstring& a_loc)
