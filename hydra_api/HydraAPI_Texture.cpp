@@ -345,8 +345,8 @@ HAPI HRTextureNodeRef hrTexture2DUpdateFromMemory(HRTextureNodeRef currentRef, i
     {
       const size_t texSize = pImpl->DataSizeInBytes();
       if (texSize == size_t(w*h)*size_t(bpp) && pImpl->width() == w && pImpl->height() == h)
-        if(pImpl->ReadDataFromChunkTo(g_objManager.m_tempBuffer))   
-          if (memcmp(g_objManager.m_tempBuffer.data(), a_data, texSize) == 0)
+        if(pImpl->ReadDataFromChunkTo(g_objManager.m_tempBuffer))                             //#TODO: don't try to load from disk, only from memory; its too slow!
+          if (memcmp(g_objManager.m_tempBuffer.data(), a_data, texSize) == 0)                 //#TODO: also don't copy data, just get pointer if it is in memory.
             return currentRef;
     }
   }
