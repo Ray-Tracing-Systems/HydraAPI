@@ -18,6 +18,31 @@
   #include <FreeImage.h>
 #endif
 
+size_t IHRTextureNode::DataSizeInBytes() const
+{
+  return size_t(width()*height())*size_t(bpp());
+}
+
+// void IHRTextureNode::DataSerialize(void* p, size_t a_sizeInBytes) //#TODO: implement this and use for chunk save, then optionally add compression.
+// {
+// 
+// }
+// 
+// void IHRTextureNode::DataDeserialize(const void* pFrom, size_t a_sizeInBytes)
+// {
+//   auto chunk_id = chunkId();
+//   auto chunk    = g_objManager.scnData.m_vbCache.chunk_at(chunk_id);
+// 
+//   if (chunk.id >= 0)
+//   {
+// 
+//   }
+//   else
+//   {
+//     memset(pFrom, 0, a_sizeInBytes);
+//   }
+// }
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

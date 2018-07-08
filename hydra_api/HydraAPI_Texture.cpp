@@ -207,9 +207,9 @@ HAPI HRTextureNodeRef hrTexture2DUpdateFromFile(HRTextureNodeRef currentRef, con
 	HRTextureNodeRef ref;
 	ref.id = currentRef.id;
 
-	HRTextureNode& texture = g_objManager.scnData.textures[ref.id];
-	auto pTextureImpl = g_objManager.m_pFactory->CreateTexture2DFromFile(&texture, a_fileName);
-	texture.pImpl = pTextureImpl;
+	HRTextureNode& texture   = g_objManager.scnData.textures[ref.id];
+	auto pTextureImpl        = g_objManager.m_pFactory->CreateTexture2DFromFile(&texture, a_fileName);
+	texture.pImpl            = pTextureImpl;
 	texture.m_loadedFromFile = true;
 
 	pugi::xml_node texNodeXml = g_objManager.textures_lib_append_child();
@@ -235,9 +235,9 @@ HAPI HRTextureNodeRef hrTexture2DUpdateFromFile(HRTextureNodeRef currentRef, con
 
 	// form tex name
 	//
-	std::wstring id = ToWString(ref.id);
-	std::wstring location = ChunkName(chunk);
-	std::wstring bytesize = ToWString(byteSize);
+	const std::wstring id       = ToWString(ref.id);
+	const std::wstring location = ChunkName(chunk);
+	const std::wstring bytesize = ToWString(byteSize);
 
 	texNodeXml.append_attribute(L"name").set_value(a_fileName);
 	texNodeXml.append_attribute(L"id").set_value(id.c_str());
@@ -334,7 +334,27 @@ HAPI HRTextureNodeRef hrTexture2DUpdateFromMemory(HRTextureNodeRef currentRef, i
     HrPrint(HR_SEVERITY_WARNING, L"hrTexture2DUpdateFromMemory, invalid input");
     return currentRef;
   }
-	/////////////////////////////////////////////////////////////////////////////////////////////////
+	
+  //if(false)
+  {
+    auto* pSysObject = g_objManager.PtrById(currentRef);
+    auto pImpl       = pSysObject->pImpl;
+
+    if (pImpl != nullptr)
+    {
+      const size_t texSize = pImpl->DataSizeInBytes();
+      if (texSize == size_t(w*h)*size_t(bpp) && pImpl->width() == w && pImpl->height() == h)
+      {
+        if (g_objManager.m_tempBuffer.size() < texSize)
+          g_objManager.m_tempBuffer.resize(texSize);
+
+        //pImpl->DataDeserialize(g_objManager.m_tempBuffer.data(), pImpl->DataSizeInBytes());
+
+      }
+    }
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	std::wstringstream outStr;
 	outStr << L"texture2d_" << g_objManager.scnData.textures.size();
@@ -343,8 +363,8 @@ HAPI HRTextureNodeRef hrTexture2DUpdateFromMemory(HRTextureNodeRef currentRef, i
 	ref.id = currentRef.id;
 
 	HRTextureNode& texture = g_objManager.scnData.textures[ref.id];
-	auto pTextureImpl = g_objManager.m_pFactory->CreateTexture2DFromMemory(&texture, w, h, bpp, a_data);
-	texture.pImpl = pTextureImpl;
+	auto pTextureImpl      = g_objManager.m_pFactory->CreateTexture2DFromMemory(&texture, w, h, bpp, a_data);
+	texture.pImpl          = pTextureImpl;
 
 	pugi::xml_node texNodeXml = g_objManager.textures_lib_append_child();
 
@@ -356,8 +376,8 @@ HAPI HRTextureNodeRef hrTexture2DUpdateFromMemory(HRTextureNodeRef currentRef, i
 	//
 	std::wstringstream namestr;
 	namestr << L"Map#" << ref.id;
-	std::wstring texName = namestr.str();
-	std::wstring id = ToWString(ref.id);
+	std::wstring texName  = namestr.str();
+	std::wstring id       = ToWString(ref.id);
 	std::wstring location = ChunkName(chunk);
 	std::wstring bytesize = ToWString(byteSize);
 
