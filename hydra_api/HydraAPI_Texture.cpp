@@ -335,7 +335,8 @@ HAPI HRTextureNodeRef hrTexture2DUpdateFromMemory(HRTextureNodeRef currentRef, i
     return currentRef;
   }
 	
-  //if(false)
+  // check for user try to update texture with exactly same data (each frame updates). 
+  //   
   {
     auto* pSysObject = g_objManager.PtrById(currentRef);
     auto pImpl       = pSysObject->pImpl;
@@ -344,13 +345,9 @@ HAPI HRTextureNodeRef hrTexture2DUpdateFromMemory(HRTextureNodeRef currentRef, i
     {
       const size_t texSize = pImpl->DataSizeInBytes();
       if (texSize == size_t(w*h)*size_t(bpp) && pImpl->width() == w && pImpl->height() == h)
-      {
-        if (g_objManager.m_tempBuffer.size() < texSize)
-          g_objManager.m_tempBuffer.resize(texSize);
-
-        //pImpl->DataDeserialize(g_objManager.m_tempBuffer.data(), pImpl->DataSizeInBytes());
-
-      }
+        if(pImpl->ReadDataFromChunkTo(g_objManager.m_tempBuffer))   
+          if (memcmp(g_objManager.m_tempBuffer.data(), a_data, texSize) == 0)
+            return currentRef;
     }
   }
 

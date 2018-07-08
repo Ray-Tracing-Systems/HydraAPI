@@ -269,6 +269,114 @@ void HR_MyDebugSaveBMP(const wchar_t* fname, const int* pixels, int w, int h)
   }
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+std::wstring CutFileExt(const std::wstring fileName)
+{
+  auto pos = fileName.find_last_of(L".");
+  if (pos == std::wstring::npos)
+  {
+    HrPrint(HR_SEVERITY_ERROR, "CutFileExt, can not guess file extension");
+    return false;
+  }
+  return fileName.substr(pos, fileName.size());
+}
+
+bool InternalImageTool::LoadImageFromFile(const wchar_t* a_fileName,
+                                          int& w, int& h, int& bpp, std::vector<int>& a_data)
+{
+  const std::wstring fileExt = CutFileExt(a_fileName);
+
+#ifdef WIN32
+  std::ifstream fin(a_fileName, std::ios::binary);
+#else
+  std::string   s2 = ws2s(fileName);
+  std::ifstream fin(s2.c_str(), std::ios::binary);
+#endif
+
+  if (!fin.is_open())
+    return false;
+
+  int wh[2] = { 0,0 };
+  fin.read((char*)wh, sizeof(int) * 2);
+  w = wh[0];
+  h = wh[1];
+
+  if (fileExt == L".image4f")
+  {
+    bpp = 16;
+    a_data.resize(w*h * 4);
+    fin.read((char*)a_data.data(), a_data.size() * sizeof(int));
+    fin.close();
+    return true;
+  }
+  else if (fileExt == L".image1i" || fileExt == L".image1ui" || fileExt == L".image4b" || fileExt == L".image4ub")
+  {
+    bpp = 4;
+    a_data.resize(w*h);
+    fin.read((char*)a_data.data(), a_data.size() * sizeof(int));
+    fin.close();
+    return true;
+  }
+
+  //#TODO: add ppm and bmp loaders here ... 
+
+  HrPrint(HR_SEVERITY_ERROR, L"InternalImageTool::LoadImageFromFile, unsupported file extension ", fileExt.c_str());
+  return false;
+}
+
+bool InternalImageTool::LoadImageFromFile(const wchar_t* a_fileName,
+                                          int& w, int& h, std::vector<float>& a_data) //#TODO: the implementation works only for ".image4f" ... this is not strictly correct. 
+{
+  std::vector<int> tempData;
+  int bpp = 0;
+  LoadImageFromFile(a_fileName,
+                    w, h, bpp, tempData);
+
+  a_data.resize(tempData.size());
+  memcpy(a_data.data(), tempData.data(), tempData.size() * sizeof(int));
+  return true;
+}
+
+void InternalImageTool::SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, const float* a_data)
+{
+#ifdef WIN32
+  std::ofstream fout(a_fileName, std::ios::binary);
+#else
+  std::string   s2 = ws2s(fileName);
+  std::ofstream fout(s2.c_str(), std::ios::binary);
+#endif
+  int wh[2] = { w,h };
+  fout.write((const char*)wh, sizeof(int) * 2);
+  fout.write((const char*)a_data, sizeof(float) * size_t(4 * w*h));
+  fout.close();
+}
+
+void InternalImageTool::SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, const int* a_data)
+{
+  const std::wstring fileExt = CutFileExt(a_fileName);
+
+  if (fileExt == L".bmp" || fileExt == L".BMP")
+  {
+    HR_MyDebugSaveBMP(a_fileName, a_data, w, h);
+    return;
+  }
+
+  //#TODO: implement ppm writer here ... 
+
+#ifdef WIN32
+  std::ofstream fout(a_fileName, std::ios::binary);
+#else
+  std::string   s2 = ws2s(fileName);
+  std::ofstream fout(s2.c_str(), std::ios::binary);
+#endif
+  int wh[2] = { w,h };
+  fout.write((const char*)wh, sizeof(int) * 2);
+  fout.write((const char*)a_data, sizeof(float) * size_t(w*h));
+  fout.close();
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -400,22 +508,6 @@ namespace HydraRender
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  class InternalImageTool : public IHRImageTool
-  {
-  public:
-
-    InternalImageTool() {}
-
-    bool LoadImageFromFile(const wchar_t* a_fileName,
-                           int& w, int& h, int& bpp, std::vector<int>& a_data) override;
-
-    bool LoadImageFromFile(const wchar_t* a_fileName, 
-                           int& w, int& h, std::vector<float>& a_data) override;
-
-    void SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, const float* a_data) override;
-    void SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, const int*   a_data) override;
-  };
-
 
   class FreeImageTool : public IHRImageTool
   {
@@ -443,115 +535,7 @@ namespace HydraRender
     return std::move(std::make_unique<FreeImageTool>()); // C++ equals shit, std::unique_ptr equals shit
   }
 
-
-  std::wstring CutFileExt(const std::wstring fileName)
-  {
-    auto pos = fileName.find_last_of(L".");
-    if (pos == std::wstring::npos)
-    {
-      HrPrint(HR_SEVERITY_ERROR, "CutFileExt, can not guess file extension");
-      return false;
-    }
-    return fileName.substr(pos, fileName.size());
-  }
-  
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  bool InternalImageTool::LoadImageFromFile(const wchar_t* a_fileName,
-                                            int& w, int& h, int& bpp, std::vector<int>& a_data)
-  {
-    const std::wstring fileExt = CutFileExt(a_fileName);  
-
-    #ifdef WIN32
-    std::ifstream fin(a_fileName, std::ios::binary);
-    #else
-    std::string   s2 = ws2s(fileName);
-    std::ifstream fin(s2.c_str(), std::ios::binary);
-    #endif
-
-    if (!fin.is_open())
-      return false;
-
-    int wh[2] = {0,0};
-    fin.read((char*)wh, sizeof(int) * 2);
-    w = wh[0];
-    h = wh[1];
-
-    if (fileExt == L".image4f")
-    {
-      bpp = 16;
-      a_data.resize(w*h*4);
-      fin.read((char*)a_data.data(), a_data.size() * sizeof(int));
-      fin.close();
-      return true;
-    }
-    else if (fileExt == L".image1i" || fileExt == L".image1ui" || fileExt == L".image4b" || fileExt == L".image4ub")
-    {
-      bpp = 4;
-      a_data.resize(w*h);
-      fin.read((char*)a_data.data(), a_data.size() * sizeof(int));
-      fin.close();
-      return true;
-    } 
-    
-    //#TODO: add ppm and bmp loaders here ... 
-
-    HrPrint(HR_SEVERITY_ERROR, L"InternalImageTool::LoadImageFromFile, unsupported file extension ", fileExt.c_str());
-    return false;
-  }
-
-  bool InternalImageTool::LoadImageFromFile(const wchar_t* a_fileName,
-                                            int& w, int& h, std::vector<float>& a_data) //#TODO: the implementation works only for ".image4f" ... this is not strictly correct. 
-  {
-    std::vector<int> tempData;
-    int bpp = 0;
-    LoadImageFromFile(a_fileName,
-                      w, h, bpp, tempData);
-
-    a_data.resize(tempData.size());
-    memcpy(a_data.data(), tempData.data(), tempData.size() * sizeof(int));
-    return true;
-  }
-
-  void InternalImageTool::SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, const float* a_data)
-  {
-    #ifdef WIN32
-    std::ofstream fout(a_fileName, std::ios::binary);
-    #else
-    std::string   s2 = ws2s(fileName);
-    std::ofstream fout(s2.c_str(), std::ios::binary);
-    #endif
-    int wh[2] = { w,h };
-    fout.write((const char*)wh,     sizeof(int) * 2);
-    fout.write((const char*)a_data, sizeof(float) * size_t(4*w*h));
-    fout.close();
-  }
-
-  void InternalImageTool::SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, const int* a_data)
-  {
-    const std::wstring fileExt = CutFileExt(a_fileName);
-
-    if (fileExt == L".bmp" || fileExt == L".BMP")
-    {
-      HR_MyDebugSaveBMP(a_fileName, a_data, w, h);
-      return;
-    }
-
-    //#TODO: implement ppm writer here ... 
-
-    #ifdef WIN32
-    std::ofstream fout(a_fileName, std::ios::binary);
-    #else
-    std::string   s2 = ws2s(fileName);
-    std::ofstream fout(s2.c_str(), std::ios::binary);
-    #endif
-    int wh[2] = { w,h };
-    fout.write((const char*)wh,     sizeof(int) * 2);
-    fout.write((const char*)a_data, sizeof(float) * size_t(w*h));
-    fout.close();
-  }
+ 
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

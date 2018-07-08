@@ -157,3 +157,19 @@ private:
   IHRImageTool& operator=(const IHRImageTool& a_rhs) { return *this; }
 };
 
+
+class InternalImageTool : public IHRImageTool
+{
+public:
+
+  InternalImageTool() {}
+
+  bool LoadImageFromFile(const wchar_t* a_fileName,
+    int& w, int& h, int& bpp, std::vector<int>& a_data) override;
+
+  bool LoadImageFromFile(const wchar_t* a_fileName,
+    int& w, int& h, std::vector<float>& a_data) override;
+
+  void SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, const float* a_data) override;
+  void SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, const int*   a_data) override;
+};

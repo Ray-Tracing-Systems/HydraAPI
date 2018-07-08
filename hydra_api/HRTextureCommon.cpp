@@ -18,30 +18,43 @@
   #include <FreeImage.h>
 #endif
 
+extern HRObjectManager g_objManager;
+
 size_t IHRTextureNode::DataSizeInBytes() const
 {
   return size_t(width()*height())*size_t(bpp());
 }
 
-// void IHRTextureNode::DataSerialize(void* p, size_t a_sizeInBytes) //#TODO: implement this and use for chunk save, then optionally add compression.
-// {
-// 
-// }
-// 
-// void IHRTextureNode::DataDeserialize(const void* pFrom, size_t a_sizeInBytes)
-// {
-//   auto chunk_id = chunkId();
-//   auto chunk    = g_objManager.scnData.m_vbCache.chunk_at(chunk_id);
-// 
-//   if (chunk.id >= 0)
-//   {
-// 
-//   }
-//   else
-//   {
-//     memset(pFrom, 0, a_sizeInBytes);
-//   }
-// }
+bool IHRTextureNode::ReadDataFromChunkTo(std::vector<int>& a_dataConteiner)
+{
+  auto chunk = g_objManager.scnData.m_vbCache.chunk_at(chunkId());
+
+  auto sizeInInts = DataSizeInBytes() / sizeof(int) + 1;
+  if (a_dataConteiner.size() < sizeInInts)
+    a_dataConteiner.resize(sizeInInts);
+
+  // copy from memory
+  //
+  if (chunk.InMemory())
+  {
+    char* data = (char*)chunk.GetMemoryNow();
+    if (data != nullptr)
+    {
+      memcpy(a_dataConteiner.data(), data + sizeof(int)*2, DataSizeInBytes());
+      return true;
+    }
+  }
+
+  // if fail then try to load from file
+  //
+  std::wstring locPath = g_objManager.scnData.m_path + std::wstring(L"/") + ChunkName(chunk);
+
+  InternalImageTool chunkLoader;
+
+  int w, h, bpp;
+  return chunkLoader.LoadImageFromFile(locPath.c_str(), 
+                                       w, h, bpp, a_dataConteiner);
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
