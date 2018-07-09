@@ -566,7 +566,7 @@ namespace HydraRender
 
     w   = FreeImage_GetWidth(converted);
     h   = FreeImage_GetHeight(converted);
-    bpp = FreeImage_GetBPP(converted)/8;
+    bpp = bytesPerPixel;
     
     if (w == 0 || h == 0)
     {
