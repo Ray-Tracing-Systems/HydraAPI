@@ -20,9 +20,6 @@
 
 namespace std_fs = std::experimental::filesystem;
 
-
-
-
 int hr_mkdir(const char* a_folder)
 {
   return mkdir(a_folder, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);

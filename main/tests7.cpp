@@ -63,7 +63,7 @@ bool test42_load_library_basic()
 {
   initGLIfNeeded();
   hrErrorCallerPlace(L"test42");
-  hrSceneLibraryOpen(L"tests/test_42", HR_OPEN_EXISTING);
+  hrSceneLibraryOpen(L"/home/frol/temp/hydra_debug_scene", HR_OPEN_EXISTING);
 
   /////////////////////////////////////////////////////////
   HRRenderRef renderRef;

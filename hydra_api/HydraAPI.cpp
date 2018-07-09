@@ -983,6 +983,9 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
   clear_node_childs(g_objManager.scnData.m_cameraLibChanges);
   clear_node_childs(g_objManager.scnData.m_sceneNodeChanges);
   clear_node_childs(g_objManager.scnData.m_settingsNodeChanges);
+  
+  if(g_objManager.m_tempBuffer.size() > TEMP_BUFFER_MAX_SIZE_DONT_FREE)
+    g_objManager.m_tempBuffer = g_objManager.EmptyBuffer();
 }
 
 HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pCam)  ///< blocking commit, waiting for all current commands to be executed

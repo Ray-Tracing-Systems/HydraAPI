@@ -88,22 +88,23 @@ int main(int argc, const char** argv)
   std::cout << sizeof(size_t) <<std::endl;
 
 #endif
-
+  
   try
   {
-    // run_all_api_tests();
+    // run_all_api_tests(81);
 	  // run_all_geo_tests();
     // run_all_lgt_tests();
     // run_all_mtl_tests();
     // run_all_ipp_tests();
   
-    std::cout << test36_update_from_memory() << std::endl;
-    std::cout << test33_update_from_file()   << std::endl;
+    //std::cout << test36_update_from_memory() << std::endl;
+    //std::cout << test33_update_from_file()   << std::endl;
 
     //test77_save_gbuffer_layers();
     //test38_licence_plate();
     //test39_mesh_from_vsgf();
-    //test42_load_library_basic();
+    test82_proc_texture();
+    //test85_proc_texture_ao();
     //std::cout << test98_motion_blur() << std::endl;
     
     //std::cout << PP_TESTS::test303_median_in_place() << std::endl;
