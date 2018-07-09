@@ -203,9 +203,8 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, int
 HAPI HRTextureNodeRef hrTexture2DUpdateFromFile(HRTextureNodeRef currentRef, const wchar_t* a_fileName, int w, int h, int bpp)
 {
   int w1, h1, bpp1;
-  std::vector<int> data1;
-  if (g_objManager.m_pImgTool->LoadImageFromFile(a_fileName, w1, h1, bpp1, data1))
-    return hrTexture2DUpdateFromMemory(currentRef, w1, h1, bpp1, data1.data());
+  if (g_objManager.m_pImgTool->LoadImageFromFile(a_fileName, w1, h1, bpp1, g_objManager.m_tempBuffer))
+    return hrTexture2DUpdateFromMemory(currentRef, w1, h1, bpp1, g_objManager.m_tempBuffer.data());
   else
     return currentRef;
 }
