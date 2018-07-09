@@ -44,10 +44,10 @@ struct IHRObject
   IHRObject() {}
   virtual ~IHRObject(){}
 
-  virtual uint64_t chunkId() const { return uint64_t(-1); }
-  virtual size_t   DataSizeInBytes() const { return 0; }                        ///< The size of the second part (big data in virtual buffer) in bytes.
-  
-  virtual bool     ReadDataFromChunkTo(std::vector<int>& a_dataConteiner) { return false; }
+  virtual uint64_t    chunkId() const { return uint64_t(-1); }
+  virtual size_t      DataSizeInBytes() const { return 0; }                        ///< The size of the second part (big data in virtual buffer) in bytes.
+  virtual const void* GetData() const { return nullptr; }
+  virtual bool        ReadDataFromChunkTo(std::vector<int>& a_dataConteiner) { return false; }
 
 protected:
 
@@ -115,8 +115,9 @@ struct IHRTextureNode : public IHRObject ///< Not empty Data (reimplement DataSe
   virtual uint32_t height()  const { return 0; }
   virtual uint32_t bpp()     const { return 0; }
 
-  size_t   DataSizeInBytes() const override;  
-  bool     ReadDataFromChunkTo(std::vector<int>& a_dataConteiner) override;
+  size_t      DataSizeInBytes() const override;
+  const void* GetData() const override;
+  bool        ReadDataFromChunkTo(std::vector<int>& a_dataConteiner) override;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

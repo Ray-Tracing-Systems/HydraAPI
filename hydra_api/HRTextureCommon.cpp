@@ -56,6 +56,20 @@ bool IHRTextureNode::ReadDataFromChunkTo(std::vector<int>& a_dataConteiner)
                                        w, h, bpp, a_dataConteiner);
 }
 
+const void* IHRTextureNode::GetData() const
+{
+  auto chunk = g_objManager.scnData.m_vbCache.chunk_at(chunkId());
+
+  if (!chunk.InMemory())
+    return nullptr;
+
+  const char* ptr = (const char*)chunk.GetMemoryNow();
+  if (ptr == nullptr)
+    return nullptr;
+
+  return (ptr + 2 * sizeof(int));
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

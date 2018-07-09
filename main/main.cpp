@@ -97,9 +97,12 @@ int main(int argc, const char** argv)
     // run_all_mtl_tests();
     // run_all_ipp_tests();
   
+    std::cout << test36_update_from_memory() << std::endl;
+    std::cout << test33_update_from_file()   << std::endl;
+
     //test77_save_gbuffer_layers();
     //test38_licence_plate();
-    test39_mesh_from_vsgf();
+    //test39_mesh_from_vsgf();
     //test42_load_library_basic();
     //std::cout << test98_motion_blur() << std::endl;
     
