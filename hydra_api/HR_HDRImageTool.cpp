@@ -279,7 +279,7 @@ std::wstring CutFileExt(const std::wstring fileName)
   if (pos == std::wstring::npos)
   {
     HrPrint(HR_SEVERITY_ERROR, "CutFileExt, can not guess file extension");
-    return false;
+    return L"";
   }
   return fileName.substr(pos, fileName.size());
 }
@@ -292,7 +292,7 @@ bool InternalImageTool::LoadImageFromFile(const wchar_t* a_fileName,
 #ifdef WIN32
   std::ifstream fin(a_fileName, std::ios::binary);
 #else
-  std::string   s2 = ws2s(fileName);
+  std::string   s2 = ws2s(a_fileName);
   std::ifstream fin(s2.c_str(), std::ios::binary);
 #endif
 
@@ -345,7 +345,7 @@ void InternalImageTool::SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, 
 #ifdef WIN32
   std::ofstream fout(a_fileName, std::ios::binary);
 #else
-  std::string   s2 = ws2s(fileName);
+  std::string   s2 = ws2s(a_fileName);
   std::ofstream fout(s2.c_str(), std::ios::binary);
 #endif
   int wh[2] = { w,h };
@@ -369,7 +369,7 @@ void InternalImageTool::SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, 
 #ifdef WIN32
   std::ofstream fout(a_fileName, std::ios::binary);
 #else
-  std::string   s2 = ws2s(fileName);
+  std::string   s2 = ws2s(a_fileName);
   std::ofstream fout(s2.c_str(), std::ios::binary);
 #endif
   int wh[2] = { w,h };

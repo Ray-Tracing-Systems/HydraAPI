@@ -4,7 +4,6 @@
 
 #include "HydraAPI.h"
 #include "HydraInternal.h"
-#include "HydraInternalCommon.h"
 
 #include <sys/stat.h>
 #include <sys/types.h>
