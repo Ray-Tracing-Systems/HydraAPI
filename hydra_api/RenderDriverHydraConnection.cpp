@@ -615,6 +615,24 @@ void RD_HydraConnection::RunAllHydraHeads()
   m_pConnection->runAllRenderProcesses(params, m_devList, currDevs);
 }
 
+int ReadDeviceId(const char* a_cmdLine)
+{
+  std::stringstream strIn(a_cmdLine);
+  int devId = 0;  //#TODO: read device id from command line
+  std::string name;
+  while (!strIn.eof())
+  {
+    strIn >> name;
+    if (name == "-cl_device_id")
+    {
+      strIn >> devId;
+      break;
+    }
+  }
+
+  return devId;
+}
+
 void RD_HydraConnection::RunSingleHydraHead(const char* a_cmdLine)
 {
   if (m_pConnection == nullptr)
@@ -622,12 +640,11 @@ void RD_HydraConnection::RunSingleHydraHead(const char* a_cmdLine)
 
   auto params = GetCurrRunProcessParams();
 
-  const int devId = 0;  //#TODO: read device id from command line
-
   std::vector<int> devs(1);
-  devs[0] = devId;
+  devs[0] = ReadDeviceId(a_cmdLine);
 
-  //#TODO: pass custom 'a_cmdLine' inside runAllRenderProcesses
+  params.customExeArgs += " ";
+  params.customExeArgs += a_cmdLine;
 
   m_pConnection->runAllRenderProcesses(params, m_devList, devs);
 }
@@ -1056,6 +1073,11 @@ void RD_HydraConnection::ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out)
 
   if (name == L"runhydra") // this is special command to run _single_ hydra process
   {
+    if (m_pSharedImage == nullptr)
+    {
+                                   //#TODO: read image width, height and evalgbuffer
+      CreateAndClearSharedImage(); //#TODO: this function can not alloc memory because it does know image size!!!
+    }
     auto* header = m_pSharedImage->Header();
     header->counterSnd++;
 

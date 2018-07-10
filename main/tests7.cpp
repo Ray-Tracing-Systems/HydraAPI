@@ -63,7 +63,7 @@ bool test42_load_library_basic()
 {
   initGLIfNeeded();
   hrErrorCallerPlace(L"test42");
-  hrSceneLibraryOpen(L"/home/frol/temp/hydra_debug_scene", HR_OPEN_EXISTING);
+  hrSceneLibraryOpen(L"tests/test_42", HR_OPEN_EXISTING);
 
   /////////////////////////////////////////////////////////
   HRRenderRef renderRef;
@@ -86,6 +86,8 @@ bool test42_load_library_basic()
   hrCommit(scnRef, renderRef);
   hrRenderCommand(renderRef, L"resume");
 
+  //hrCommit(scnRef);
+  //hrRenderCommand(renderRef, L"runhydra -cl_device_id 0 -contribsamples 256 -maxsamples 512");
 
   glViewport(0, 0, 1024, 768);
   std::vector<int32_t> image(1024 * 768);
@@ -98,13 +100,13 @@ bool test42_load_library_basic()
 
     if (info.haveUpdateFB)
     {
-      // hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-      // 
-      // glDisable(GL_TEXTURE_2D);
-      // glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+      
+      glDisable(GL_TEXTURE_2D);
+      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -116,7 +118,6 @@ bool test42_load_library_basic()
   }
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_42/z_out.png");
-  hrRenderSaveGBufferLayerLDR(renderRef, L"tests_images/test_42/z_out7.png", L"shadow");
 
   return check_images("test_42", 1, 35.0f);
 }

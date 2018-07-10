@@ -96,44 +96,13 @@ int main(int argc, const char** argv)
     // run_all_lgt_tests();
     // run_all_mtl_tests();
     // run_all_ipp_tests();
-  
-    //std::cout << test36_update_from_memory() << std::endl;
-    //std::cout << test33_update_from_file()   << std::endl;
-
-    //test77_save_gbuffer_layers();
-    //test38_licence_plate();
-    //test39_mesh_from_vsgf();
-    test82_proc_texture();
-    //test85_proc_texture_ao();
-    //std::cout << test98_motion_blur() << std::endl;
+    
+    test42_load_library_basic();
     
     //std::cout << PP_TESTS::test303_median_in_place() << std::endl;
     
     //test38_licence_plate();
     //std::cout << test39_mesh_from_vsgf() << std::endl;
-
-    //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
-    //std::cout << test77_save_gbuffer_layers() << std::endl;
-    //std::cout << test70_area_lights16() << std::endl;
-    //std::cout << test79_material_remap_list2() << std::endl;
-    //std::cout << test77_save_gbuffer_layers() << std::endl;
-
-    //std::cout << test97_camera_from_matrices() << std::endl;
-
-    //test38_licence_plate();
-    //test82_proc_texture();
-
-    //std::cout << test72_load_library_sigle_teapot_with_opacity() << std::endl;
-    //GEO_TESTS::test_003_compute_normals();
-    //std::cout << MTL_TESTS::test_163_diffuse_texture_recommended_res() << std::endl;
-    //std::cout << MTL_TESTS::test_168_diffuse_texture_recommended_res2() << std::endl;
-
-    //std::cout <<  MTL_TESTS::test_161_simple_displacement() << std::endl;
-    //std::cout <<  MTL_TESTS::test_164_simple_displacement_proctex() << std::endl;
-    //std::cout <<  MTL_TESTS::test_165_simple_displacement_mesh()  << std::endl;
-    //MTL_TESTS::test_166_displace_by_noise();
-    //std::cout <<  MTL_TESTS::test_167_subdiv()  << std::endl;
-
     //window_main_free_look(L"tests_f/test_167", L"opengl1Debug");
 
     //MTL_TESTS::test_162_shadow_matte_back1();
