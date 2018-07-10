@@ -970,18 +970,32 @@ HAPI bool hrRenderSaveGBufferLayerLDR(const HRRenderRef a_pRender, const wchar_t
 *  All these commands (except 'exitnow') are used in default 'offline' render mode. The 'interactive' render mode is controlled by hrCommit only.
 *  command list:
 * 
-*  start    [-statefile statex_00009.xml] -- signal to start rendering for hydra processes that are waiting. "-statefile" argument is optional.
-*                                         -- Automaticly sends after hrFlush() is performed (or hrCommit() + shared VB is enabled).
-*  continue [-statefile statex_00009.xml] -- force launch hydra processes first, then and send them "start". "-statefile" argument is optional.
+*  start    [-statefile statex_00009.xml] 
+*                                  -- signal to start rendering for hydra processes that are waiting. "-statefile" argument is optional.
+*                                  -- Automaticly sends after hrFlush() is performed (or hrCommit() + shared VB is enabled).
 *
-*  exitnow                                -- all hydra processes should immediately exit; can be used also in 'interactive mode'
+*  continue [-statefile statex_00009.xml] 
+*                                  -- launch hydra processes first, then and send them "start".  "-statefile" argument is optional.
 *
-*  pause  z_image.bin                     -- save accumulated shared image to "z_image.bin", then send "exitnow"; no spaces, no quotes allowed, single string file name
+*  runhydra -cl_device_id 0 [-statefile statex_00009.xml] [-contribsamples 256] [-maxsamples 512]   
 *
-*  resume z_image.bin                     -- load accumulated shared image from "z_image.bin", then send "start" to waiting processes. 
-*                                         -- note that this command does not launch hydra processes (!!!), you have to manually call "hrCommit(scnRef, renderRef)".
-*                                         -- This is due to pause may occur within main program exit. When main program will be launched again it must open scene
-*                                         -- we want to cointinue render and Commit the new state via hrCommit(scnRef, renderRef). Thus it launch processes.
+*                                  -- launch single hydra process and pass everything via command line; i.e. running process will not react to any commands (except "exitnow") in this mode; 
+*                                  -- this is like running hydra process in the 'box mode'; you can only stop it.    
+*          
+*           args: -statefile       -- specify hydra process to render target state
+*           args: -contribsamples  -- specify hydra process to count exact contribution to shared image this process should do and then exit when reach contribsamples value
+*           args: -maxsamples      -- specify hydra process to evaluate no more then maxsamples values sample per pixel; note that this value should be greater then contribsamples.
+*           args: -cl_device_id    -- specify device id for hydra process
+* 
+*  exitnow [-cl_device_id 0]       -- all hydra processes should immediately exit; can be used also in 'interactive mode' and 'box mode'
+*                                  -- #NOT_IMPLEMENTED: optionally you can stop only single process by specifying target device id.                                 
+*
+*  pause  z_image.bin              -- save accumulated shared image to "z_image.bin", then send "exitnow"; no spaces, no quotes allowed, single string file name
+*                                 
+*  resume z_image.bin              -- load accumulated shared image from "z_image.bin", then send "start" to waiting processes. 
+*                                  -- note that this command does not launch hydra processes (!!!), you have to manually call "hrCommit(scnRef, renderRef)".
+*                                  -- This is due to pause may occur within main program exit. When main program will be launched again it must open scene
+*                                  -- we want to continue render and Commit the new state via hrCommit(scnRef, renderRef). Thus it launch processes.
 */
 HAPI void hrRenderCommand(const HRRenderRef a_pRender, const wchar_t* a_command, wchar_t* a_answer = nullptr);
 

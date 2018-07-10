@@ -105,20 +105,29 @@ bool test98_motion_blur()
   /////////////////////////////////////////////////////////
   
   hrRenderEnableDevice(renderRef, 0, true);
-  hrRenderLogDir(renderRef, L"/home/frol/hydra/", true);
+  //hrRenderLogDir(renderRef, L"/home/frol/hydra/", true);
   //hrRenderLogDir(renderRef, L"C:/[Hydra]/logs/", true);
   
+  const int samplesPerSubFrame = 32;
+
   hrRenderOpen(renderRef, HR_OPEN_EXISTING);
   {
     auto node = hrRenderParamNode(renderRef);
-    node.child(L"maxRaysPerPixel").text() = 16*2;
+    node.child(L"maxRaysPerPixel").text() = samplesPerSubFrame*2;
   }
   hrRenderClose(renderRef);
   
   hrCommit(scnRef, renderRef);
   
-  hrRenderCommand(renderRef, L"start -statefile statex_00001.xml");
-  
+  // tell render to render subframe with exact samples number
+  //
+  {
+    std::wstringstream strOut;
+    strOut << L"start -statefile statex_00001.xml "; // << L"-contribsamples " << samplesPerSubFrame;
+    auto str = strOut.str();
+    hrRenderCommand(renderRef, str.c_str());
+  }
+
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -146,8 +155,15 @@ bool test98_motion_blur()
   std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   std::cout << "after sleep" << std::endl;
   
-  hrRenderCommand(renderRef, L"continue -statefile statex_00009.xml");
-  
+  // tell render to render subframe with exact samples number
+  //
+  {
+    std::wstringstream strOut;
+    strOut << L"start -statefile statex_00009.xml "; // << L"-contribsamples " << samplesPerSubFrame;
+    auto str = strOut.str();
+    hrRenderCommand(renderRef, str.c_str());
+  }
+
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
