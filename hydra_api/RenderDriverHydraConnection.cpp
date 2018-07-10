@@ -1063,6 +1063,7 @@ void RD_HydraConnection::ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out)
     strOut << (inputA.c_str() + 9) << " -boxmode 1" << " -mid " << header->counterSnd;
     const std::string cmdArgs = strOut.str();
     RunSingleHydraHead(cmdArgs.c_str());
+    return;
   }
   else if (name == L"pause")
   {
