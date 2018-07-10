@@ -2592,8 +2592,8 @@ bool test63_cornell_with_caustic_from_torus()
     pList = pList->next;
   }
 
-  //hrRenderEnableDevice(renderRef, 0, true);
-  hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
+  hrRenderEnableDevice(renderRef, 1, true);
+  //hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

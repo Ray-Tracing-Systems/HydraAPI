@@ -128,7 +128,7 @@ protected:
   IHydraNetPluginAPI*                  m_pConnection;
   IHRSharedAccumImage*                 m_pSharedImage;
 
-  std::vector<HydraRenderDevice>           m_devList;
+  std::vector<HydraRenderDevice>          m_devList;
   std::vector<HRRenderDeviceInfoListElem> m_devList2;
 
   float m_progressVal;
@@ -579,7 +579,7 @@ void RD_HydraConnection::CreateAndClearSharedImage()
   m_lastSharedImageName = hydraImageName;
 
   delete m_pConnection;
-  m_pConnection = CreateHydraServerConnection(width, height, false, devList);
+  m_pConnection = CreateHydraServerConnection(width, height, false);
 }
 
 
@@ -603,7 +603,9 @@ void RD_HydraConnection::RunAllHydraHeads()
   
   m_params = params;
   
-  m_pConnection->runAllRenderProcesses(params, m_devList);
+  auto currDevs = GetCurrDeviceList();
+
+  m_pConnection->runAllRenderProcesses(params, m_devList, currDevs);
 }
 
 void RD_HydraConnection::BeginScene(pugi::xml_node a_sceneNode)
@@ -1028,7 +1030,11 @@ void RD_HydraConnection::ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out)
   
   bool needToRunProcess = false;
 
-  if (name == L"pause")
+  if (name == L"runhydra") // this is special command to run _single_ hydra process
+  {
+
+  }
+  else if (name == L"pause")
   {
     if (m_pConnection == nullptr || m_pSharedImage == nullptr)
       return;
