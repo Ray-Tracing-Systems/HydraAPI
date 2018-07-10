@@ -124,9 +124,9 @@ void PluginShmemPipe::CreateConnectionMainType(const char* imageFileName, const 
 
   // remember params
   //
-  m_imageFileName   = imageFileName;
+  m_imageFileName = imageFileName;
 
-  m_width = width;
+  m_width  = width;
   m_height = height;
 }
 

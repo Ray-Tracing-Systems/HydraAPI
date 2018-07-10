@@ -118,10 +118,13 @@ protected:
   void InitBothDeviceList();
   void CreateAndClearSharedImage();
   void RunAllHydraHeads();
+  void RunSingleHydraHead(const char* a_cmdLine);
 
   std::vector<int> GetCurrDeviceList();
-  std::string MakeRenderCommandLine(const std::string& hydraImageName);
+  std::string MakeRenderCommandLine(const std::string& hydraImageName) const;
   int GetCurrSharedImageLayersNum();
+
+  RenderProcessRunParams GetCurrRunProcessParams();
 
   HRDriverAllocInfo m_currAllocInfo;
 
@@ -252,7 +255,7 @@ void RD_HydraConnection::InitBothDeviceList()
     memset(deviceName, 0, 1024);
     clGetPlatformInfo(devList[i].platform, CL_PLATFORM_VERSION, 1024, deviceName, NULL);
     m_devList[i].driverName = s2ws(deviceName);
-    m_devList[i].id         = i;
+    m_devList[i].id         = int(i);
   }
  
   // (2) form list in memory ... )
@@ -486,7 +489,7 @@ std::string NewSharedImageName()
   return nameStream.str();
 }
 
-std::string RD_HydraConnection::MakeRenderCommandLine(const std::string& hydraImageName)
+std::string RD_HydraConnection::MakeRenderCommandLine(const std::string& hydraImageName) const 
 {
   const int  width       = m_width;
   const int  height      = m_height;
@@ -582,6 +585,22 @@ void RD_HydraConnection::CreateAndClearSharedImage()
   m_pConnection = CreateHydraServerConnection(width, height, false);
 }
 
+RenderProcessRunParams RD_HydraConnection::GetCurrRunProcessParams()
+{
+  RenderProcessRunParams params;
+
+  params.compileShaders    = false;
+  params.debug             = MODERN_DRIVER_DEBUG;
+  params.enableMLT         = m_enableMLT;
+  params.normalPriorityCPU = false;
+  params.showConsole       = !m_hideCmd;
+
+  params.customExePath     = m_params.customExePath;
+  params.customExeArgs     = MakeRenderCommandLine(m_lastSharedImageName);
+  params.customLogFold     = m_logFolderS;
+
+  return params;
+}
 
 
 void RD_HydraConnection::RunAllHydraHeads()
@@ -589,23 +608,28 @@ void RD_HydraConnection::RunAllHydraHeads()
   if (m_pConnection == nullptr)
     return;
   
-  RenderProcessRunParams params;
-  
-  params.compileShaders    = false;
-  params.debug             = MODERN_DRIVER_DEBUG;
-  params.enableMLT         = m_enableMLT;
-  params.normalPriorityCPU = false;
-  params.showConsole       = !m_hideCmd;
-  
-  params.customExePath     = m_params.customExePath;
-  params.customExeArgs     = MakeRenderCommandLine(m_lastSharedImageName);
-  params.customLogFold     = m_logFolderS;
-  
-  m_params = params;
-  
   auto currDevs = GetCurrDeviceList();
-
+  auto params   = GetCurrRunProcessParams();
+  m_params      = params;
+  
   m_pConnection->runAllRenderProcesses(params, m_devList, currDevs);
+}
+
+void RD_HydraConnection::RunSingleHydraHead(const char* a_cmdLine)
+{
+  if (m_pConnection == nullptr)
+    return;
+
+  auto params = GetCurrRunProcessParams();
+
+  const int devId = 0;  //#TODO: read device id from command line
+
+  std::vector<int> devs(1);
+  devs[0] = devId;
+
+  //#TODO: pass custom 'a_cmdLine' inside runAllRenderProcesses
+
+  m_pConnection->runAllRenderProcesses(params, m_devList, devs);
 }
 
 void RD_HydraConnection::BeginScene(pugi::xml_node a_sceneNode)
@@ -1032,7 +1056,13 @@ void RD_HydraConnection::ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out)
 
   if (name == L"runhydra") // this is special command to run _single_ hydra process
   {
+    auto* header = m_pSharedImage->Header();
+    header->counterSnd++;
 
+    std::stringstream strOut;
+    strOut << (inputA.c_str() + 9) << " -boxmode 1" << " -mid " << header->counterSnd;
+    const std::string cmdArgs = strOut.str();
+    RunSingleHydraHead(cmdArgs.c_str());
   }
   else if (name == L"pause")
   {
