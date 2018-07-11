@@ -280,7 +280,7 @@ void SharedAccumImageLinux::AttachTo(char* a_memory)
 bool SharedAccumImageLinux::Lock(int a_miliseconds)
 {
   struct timespec ts;
-  ts.tv_sec = a_miliseconds / 1000;
+  ts.tv_sec  = a_miliseconds / 1000;
   ts.tv_nsec = a_miliseconds * 1'000'000 - ts.tv_sec * 1'000'000'000;
 
   int res = sem_timedwait(m_mutex, &ts);

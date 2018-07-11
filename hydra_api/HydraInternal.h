@@ -331,6 +331,9 @@ protected:
 
 std::wstring ChunkName(const ChunkPointer& a_chunk);
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
   int  hr_mkdir(const char* a_folder);
   int  hr_cleardir(const char* a_folder);
@@ -338,11 +341,17 @@ std::wstring ChunkName(const ChunkPointer& a_chunk);
   int  hr_mkdir(const wchar_t* a_folder);
   void hr_cleardir(const wchar_t* a_folder);
 #endif
-
+  
   void hr_copy_file(const wchar_t* a_file1, const wchar_t* a_file2); //#TODO: implement this on Linux!!!
 
-//#TODO: hr_mutex ? (or do that via connection class)
-//#TODO: hr_shmem ?
+
+struct HRSystemMutex;
+HRSystemMutex* hr_create_system_mutex(const char* a_mutexName);
+void hr_free_system_mutex(HRSystemMutex*& a_mutex);
+bool hr_lock_system_mutex(HRSystemMutex* a_mutex, int a_msToWait = 1000);
+void hr_unlock_system_mutex(HRSystemMutex* a_mutex);
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 struct HRSceneInst;
 struct IHRRenderDriver;

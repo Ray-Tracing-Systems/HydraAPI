@@ -67,3 +67,39 @@ void hr_copy_file(const wchar_t* a_file1, const wchar_t* a_file2)
 {
   CopyFileW(a_file1, a_file2, FALSE);
 }
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+struct HRSystemMutex
+{
+  std::string name;
+  bool        owner;
+};
+
+HRSystemMutex* hr_create_system_mutex(const char* a_mutexName)
+{
+  return nullptr;
+}
+
+void hr_free_system_mutex(HRSystemMutex*& a_mutex) // logic of this function is not strictly correct, but its ok for our usage case.
+{
+  if(a_mutex == nullptr)
+    return;
+  
+  //todo: implement this
+  
+  delete a_mutex;
+  a_mutex = nullptr;
+}
+
+bool hr_lock_system_mutex(HRSystemMutex* a_mutex, int a_msToWait)
+{
+  //todo: implement this
+  return false;
+}
+
+void hr_unlock_system_mutex(HRSystemMutex* a_mutex)
+{
+  //todo: implement this
+}
