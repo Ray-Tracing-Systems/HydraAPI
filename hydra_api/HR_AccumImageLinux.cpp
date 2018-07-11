@@ -287,7 +287,7 @@ bool SharedAccumImageLinux::Lock(int a_miliseconds)
 
   if(res == -1)
   {
-    perror("sem_timedwait");
+    perror("sem_timedwait(SharedAccumImageLinux::Lock)");
     return false;
   }
   else

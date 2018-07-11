@@ -72,22 +72,40 @@ bool test42_load_library_basic()
   HRSceneInstRef scnRef;
   scnRef.id = 0;
   /////////////////////////////////////////////////////////
-
+  
+  auto pList = hrRenderGetDeviceList(renderRef);
+  
+  while (pList != nullptr)
+  {
+    std::wcout << L"device id = " << pList->id << L", name = " << pList->name << L", driver = " << pList->driver << std::endl;
+    pList = pList->next;
+  }
+  
   hrRenderEnableDevice(renderRef, 0, true);
-
+  //hrRenderEnableDevice(renderRef, 1, true);
+  
+  hrRenderOpen(renderRef, HR_OPEN_EXISTING);    // disable automatic process run for hrCommit, ... probably need to add custom params to tis function
+  {
+    auto node = hrRenderParamNode(renderRef);
+    //node.force_child(L"forceGPUFrameBuffer").text() = 1;
+  }
+  hrRenderClose(renderRef);
+  
   hrCommit(scnRef, renderRef);
   hrRenderCommand(renderRef, L"resume");
 
   // hrRenderOpen(renderRef, HR_OPEN_EXISTING);    // disable automatic process run for hrCommit, ... probably need to add custom params to tis function
   // {
   //   auto node = hrRenderParamNode(renderRef);
-  //   node.force_child(L"dont_run").text() = 1;
+  //   node.force_child(L"dont_run").text() = 1; // forceGPUFrameBuffer
   // }
   // hrRenderClose(renderRef);
   //
   // hrCommit(scnRef, renderRef);
   // hrRenderCommand(renderRef, L"runhydra -cl_device_id 0 -contribsamples 256 -maxsamples 512");
 
+  auto timeBeg = std::chrono::system_clock::now();
+  
   glViewport(0, 0, 1024, 768);
   std::vector<int32_t> image(1024 * 768);
 
@@ -117,7 +135,14 @@ bool test42_load_library_basic()
   }
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_42/z_out.png");
-
+  
+  auto timeEnd  = std::chrono::system_clock::now();
+  
+  auto msPassed = std::chrono::duration_cast<std::chrono::milliseconds>(timeEnd - timeBeg).count();
+  
+  std::cout << std::endl;
+  std::cout << "rendering time (in seconds) = " << double(msPassed)/1000.0 << std::endl;
+  
   return check_images("test_42", 1, 35.0f);
 }
 
