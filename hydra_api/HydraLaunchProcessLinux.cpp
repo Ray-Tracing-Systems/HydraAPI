@@ -148,7 +148,8 @@ void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params
         std::string cmdFull = basicCmd + ss.str();
         std::string hydraExe(hydraPath + "hydra");
   
-        CreateProcessUnix(hydraExe.c_str(), cmdFull.c_str(), a_params.debug, m_pLog, m_mdProcessList);
+        if(!a_params.debug)
+          CreateProcessUnix(hydraExe.c_str(), cmdFull.c_str(), a_params.debug, m_pLog, m_mdProcessList);
         fout << cmdFull.c_str() << std::endl;
       }
 

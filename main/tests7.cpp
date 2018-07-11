@@ -73,21 +73,20 @@ bool test42_load_library_basic()
   scnRef.id = 0;
   /////////////////////////////////////////////////////////
 
-  auto pList = hrRenderGetDeviceList(renderRef);
-
-  while (pList != nullptr)
-  {
-    std::wcout << L"device id = " << pList->id << L", name = " << pList->name << L", driver = " << pList->driver << std::endl;
-    pList = pList->next;
-  }
-
   hrRenderEnableDevice(renderRef, 0, true);
 
   hrCommit(scnRef, renderRef);
   hrRenderCommand(renderRef, L"resume");
 
-  //hrCommit(scnRef);
-  //hrRenderCommand(renderRef, L"runhydra -cl_device_id 0 -contribsamples 256 -maxsamples 512");
+  // hrRenderOpen(renderRef, HR_OPEN_EXISTING);    // disable automatic process run for hrCommit, ... probably need to add custom params to tis function
+  // {
+  //   auto node = hrRenderParamNode(renderRef);
+  //   node.force_child(L"dont_run").text() = 1;
+  // }
+  // hrRenderClose(renderRef);
+  //
+  // hrCommit(scnRef, renderRef);
+  // hrRenderCommand(renderRef, L"runhydra -cl_device_id 0 -contribsamples 256 -maxsamples 512");
 
   glViewport(0, 0, 1024, 768);
   std::vector<int32_t> image(1024 * 768);

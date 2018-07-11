@@ -1071,18 +1071,16 @@ void RD_HydraConnection::ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out)
   
   bool needToRunProcess = false;
 
-  if (name == L"runhydra") // this is special command to run _single_ hydra process
+  if (name == L"runhydra" && m_width != 0) // this is special command to run _single_ hydra process
   {
-    if (m_pSharedImage == nullptr)
-    {
-                                   //#TODO: read image width, height and evalgbuffer
-      CreateAndClearSharedImage(); //#TODO: this function can not alloc memory because it does know image size!!!
-    }
+    if(m_pSharedImage == nullptr)
+      CreateAndClearSharedImage();
+    
     auto* header = m_pSharedImage->Header();
     header->counterSnd++;
 
     std::stringstream strOut;
-    strOut << (inputA.c_str() + 9) << " -boxmode 1" << " -mid " << header->counterSnd;
+    strOut << (inputA.c_str() + 9) << " -boxmode 1"; // << " -mid " << header->counterSnd;
     const std::string cmdArgs = strOut.str();
     RunSingleHydraHead(cmdArgs.c_str());
     return;
