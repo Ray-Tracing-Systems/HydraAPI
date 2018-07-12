@@ -1070,6 +1070,10 @@ struct HRLightGroupExt
 */
 HAPI void  hrLightGroupInstanceExt(HRSceneInstRef pScn, HRLightGroupExt pLight, float m[16], const wchar_t** a_customAttribsArray = nullptr);
 
+#ifdef WIN32
+#undef min
+#undef max
+#endif
 
 namespace HRUtils
 {
