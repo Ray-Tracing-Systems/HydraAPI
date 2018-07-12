@@ -1,6 +1,5 @@
 #include "HydraAPI.h"
 #include "HydraInternal.h"
-#include "HydraInternalCommon.h"
 
 #include <memory>
 #include <vector>
@@ -67,4 +66,61 @@ std::vector<std::wstring> hr_listfiles(const wchar_t* a_folder)
 void hr_copy_file(const wchar_t* a_file1, const wchar_t* a_file2)
 {
   CopyFileW(a_file1, a_file2, FALSE);
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+struct HRSystemMutex
+{
+  HANDLE      mutex;
+  std::string name;
+  bool        owner;
+};
+
+HRSystemMutex* hr_create_system_mutex(const char* a_mutexName)
+{
+  HRSystemMutex* a_mutex = new HRSystemMutex;
+
+  a_mutex->mutex = OpenMutexA(MUTEX_ALL_ACCESS, FALSE, a_mutexName);
+  if (a_mutex->mutex == NULL || a_mutex->mutex == INVALID_HANDLE_VALUE)
+    a_mutex->mutex = CreateMutexA(NULL, FALSE, a_mutexName);
+
+  return a_mutex;
+}
+
+void hr_free_system_mutex(HRSystemMutex*& a_mutex) // logic of this function is not strictly correct, but its ok for our usage case.
+{
+  if(a_mutex == nullptr)
+    return;
+  
+  if (a_mutex->mutex != INVALID_HANDLE_VALUE && a_mutex->mutex != NULL)
+  {
+    CloseHandle(a_mutex->mutex);
+    a_mutex->mutex = NULL;
+  }
+
+  delete a_mutex;
+  a_mutex = nullptr;
+}
+
+bool hr_lock_system_mutex(HRSystemMutex* a_mutex, int a_msToWait)
+{
+  if (a_mutex == nullptr)
+    return false;
+
+  const DWORD res = WaitForSingleObject(a_mutex->mutex, a_msToWait);
+
+  if (res == WAIT_TIMEOUT || res == WAIT_FAILED)
+    return false;
+  else
+    return true;
+}
+
+void hr_unlock_system_mutex(HRSystemMutex* a_mutex)
+{
+  if (a_mutex == nullptr)
+    return;
+
+  ReleaseMutex(a_mutex->mutex);
 }

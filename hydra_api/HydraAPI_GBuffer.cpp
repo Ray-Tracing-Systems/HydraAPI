@@ -1,6 +1,5 @@
 #include "HydraAPI.h"
 #include "HydraInternal.h"
-#include "HydraInternalCommon.h"
 
 #include <memory>
 #include <vector>
@@ -215,9 +214,6 @@ static void ExtractCoverage(const HRGBufferPixel* a_inLine, int32_t* a_outLine, 
   }
 }
 
-
-bool HR_SaveLDRImageToFile(const wchar_t* a_fileName, int w, int h, int32_t* data);
-
 HAPI bool hrRenderSaveGBufferLayerLDR(const HRRenderRef a_pRender, const wchar_t* a_outFileName, const wchar_t* a_layerName,
                                       const int* a_palette, const int a_paletteSize)
 {
@@ -365,7 +361,7 @@ HAPI bool hrRenderSaveGBufferLayerLDR(const HRRenderRef a_pRender, const wchar_t
     }
   }
 
-  HR_SaveLDRImageToFile(a_outFileName, width, height, &imageLDR[0]);
+  g_objManager.m_pImgTool->SaveLDRImageToFileLDR(a_outFileName, width, height, imageLDR.data());
 
   return true;
 }

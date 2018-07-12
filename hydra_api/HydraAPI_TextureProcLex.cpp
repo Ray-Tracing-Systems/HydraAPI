@@ -1,6 +1,5 @@
 #include "HydraAPI.h"
 #include "HydraInternal.h"
-#include "HydraInternalCommon.h"
 
 #include <memory>
 #include <vector>
@@ -62,8 +61,8 @@ std::string FunctionDeclRegex()
   // * -- 0 or more
 
   // <Identifier><Whitespace><Identifier>(<Anthing>)<Whitespace>{
-  //      <Identifier>            <Whitespace>       <Identifier>      (<Anthing>)<Whitespace> {
-  return "([a-zA-Z_][a-zA-Z0-9_]+)([\\n|\\s]+)([a-zA-Z_][a-zA-Z0-9_]+)\\((.*)\\)([\\n|\\s]*)\\{";
+  //      <Identifier>            <Whitespace>      <Identifier>     <Whitespace> (<Anthing>)<Whitespace> {
+  return "([a-zA-Z_][a-zA-Z0-9_]+)([\\n|\\s]+)([a-zA-Z_][a-zA-Z0-9_]+)([\\n|\\s]*)\\((.*)\\)([\\n|\\s]*)\\{";
 }
 
 std::string FunctionDeclRegex(const std::string& fname)

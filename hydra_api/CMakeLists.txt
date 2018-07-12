@@ -27,7 +27,6 @@ set(SOURCE_FILES
         HydraAPI_TextureProcLex.cpp
         HydraDriverUpdate.cpp
         HydraInternal.h
-        HydraInternalCommon.h
         HydraObjectManager.cpp
         HydraObjectManager.h
         HydraRenderDriverAPI.h

@@ -304,10 +304,6 @@ void hrFBILoadFromFile(HRFBIRef a_image, const wchar_t* a_fileName, int a_desire
       image.pHDRImage = nullptr;
       image.name      = a_fileName;
 
-      // int w, h;
-      // auto& vec = image.pLDRImage->dataVector();
-      // HydraRender::LoadImageFromFile(a_fileName, vec, &w, &h);
-
     }
   }
 

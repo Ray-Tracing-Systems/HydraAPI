@@ -9,15 +9,13 @@ PROCESS_INFORMATION g_materialProcessInfo;
 
 struct PluginShmemPipe : public IHydraNetPluginAPI
 {
-  PluginShmemPipe(const char* imageFileName, const char* messageFileName, const char* guiFile, int width, int height,
-                  const char* connectionType = "main",
-                  const std::vector<int>& a_devIdList = std::vector<int>(),
+  PluginShmemPipe(const char* imageFileName, const char* messageFileName, const char* guiFile, int width, int height, const char* connectionType = "main",
                   std::ostream* m_pLog = nullptr);
 
   virtual ~PluginShmemPipe();
   bool hasConnection() const;
 
-  void runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydraRenderDevice>& a_devList);
+  void runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydraRenderDevice>& a_devList, const std::vector<int>& activeDevices);
   void stopAllRenderProcesses();
 
   HANDLE getMtlRenderHProcess() const { return g_materialProcessInfo.hProcess; }
@@ -31,11 +29,7 @@ protected:
   BOOL m_hydraServerStarted;
   bool m_staticConnection;
 
-  // when multi-device mode is used
-  bool m_multiDevMode;
   std::vector<PROCESS_INFORMATION> m_mdProcessList;
-  std::vector<int>                 m_mdDeviceList;
-  // \\
 
   unsigned int m_lastImageType;
 
@@ -57,7 +51,7 @@ static IHydraNetPluginAPI* g_pMaterialRenderConnect = nullptr;
 static std::ofstream g_logMain;
 static std::ofstream g_logMtl;
 
-IHydraNetPluginAPI* CreateHydraServerConnection(int renderWidth, int renderHeight, bool inMatEditor, const std::vector<int>& a_devList)
+IHydraNetPluginAPI* CreateHydraServerConnection(int renderWidth, int renderHeight, bool inMatEditor)
 {
   static int m_matRenderTimes = 0;
 
@@ -78,7 +72,7 @@ IHydraNetPluginAPI* CreateHydraServerConnection(int renderWidth, int renderHeigh
     if (!g_logMain.is_open())
       g_logMain.open("C:/[Hydra]/logs/plugin_log.txt");
     logPtr = &g_logMain;
-    pImpl  = new PluginShmemPipe(imageName.c_str(), messageName.c_str(), guiName.c_str(), renderWidth, renderHeight, "main", a_devList, logPtr);
+    pImpl  = new PluginShmemPipe(imageName.c_str(), messageName.c_str(), guiName.c_str(), renderWidth, renderHeight, "main", logPtr);
   }
   else // if in matEditor
   {
@@ -99,7 +93,7 @@ IHydraNetPluginAPI* CreateHydraServerConnection(int renderWidth, int renderHeigh
 
     if (pImpl == nullptr)
     {
-      g_pMaterialRenderConnect = new PluginShmemPipe(imageName.c_str(), messageName.c_str(), guiName.c_str(), 512, 512, "material", a_devList, logPtr);
+      g_pMaterialRenderConnect = new PluginShmemPipe(imageName.c_str(), messageName.c_str(), guiName.c_str(), 512, 512, "material", logPtr);
       pImpl = g_pMaterialRenderConnect;
     }
 
@@ -117,25 +111,11 @@ IHydraNetPluginAPI* CreateHydraServerConnection(int renderWidth, int renderHeigh
 }
 
 
-PluginShmemPipe::PluginShmemPipe(const char* imageFileName, const char* messageFileName, const char* guiFileName, int width, int height, const char* connectionType, const std::vector<int>& a_devIdList, std::ostream* a_pLog) : m_hydraServerStarted(false), m_staticConnection(false), m_pLog(a_pLog)
+PluginShmemPipe::PluginShmemPipe(const char* imageFileName, const char* messageFileName, const char* guiFileName, int width, int height, const char* connectionType, std::ostream* a_pLog) : m_hydraServerStarted(false), m_staticConnection(false), m_pLog(a_pLog)
 {
-  m_mdDeviceList.clear();
   m_mdProcessList.clear();
-
   m_connectionType = connectionType;
-  m_mdDeviceList = a_devIdList;
-
-  if (m_connectionType == "main")
-  {
-    m_multiDevMode = true; // to enable specular filter
-    m_mdProcessList.resize(m_mdDeviceList.size());
-    CreateConnectionMainType(imageFileName, messageFileName, guiFileName, width, height);
-  }
-  else
-  {
-    m_multiDevMode = false;
-  }
-
+  CreateConnectionMainType(imageFileName, messageFileName, guiFileName, width, height);
 }
 
 void PluginShmemPipe::CreateConnectionMainType(const char* imageFileName, const char* messageFileName, const char* guiFileName, int width, int height)
@@ -144,15 +124,15 @@ void PluginShmemPipe::CreateConnectionMainType(const char* imageFileName, const 
 
   // remember params
   //
-  m_imageFileName   = imageFileName;
+  m_imageFileName = imageFileName;
 
-  m_width = width;
+  m_width  = width;
   m_height = height;
 }
 
 
 
-void PluginShmemPipe::runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydraRenderDevice>& a_devList)
+void PluginShmemPipe::runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydraRenderDevice>& a_devList, const std::vector<int>& activeDevices)
 {
   std::ostream* outp = m_pLog;
 
@@ -164,10 +144,10 @@ void PluginShmemPipe::runAllRenderProcesses(RenderProcessRunParams a_params, con
 
   const char* imageFileName = m_imageFileName.c_str();
 
-  int width = m_width;
+  int width  = m_width;
   int height = m_height;
 
-  m_mdProcessList.resize(a_devList.size());
+  m_mdProcessList.resize(activeDevices.size());
 
   if (m_connectionType == "main")
   {
@@ -197,26 +177,24 @@ void PluginShmemPipe::runAllRenderProcesses(RenderProcessRunParams a_params, con
       //if (pImageA != nullptr)
       //pImageA->SendMsg("-node_t A -sid 0 -layer wait -action wait");
 
-      int deviceId = m_mdDeviceList.size() == 0 ? -1 : m_mdDeviceList[0];
-      int engineType = 1;
-      int liteMode = false;
+      int deviceId  = activeDevices.size() == 0 ? -1 : activeDevices[0];
 
       std::string basicCmd = ss.str();
 
       m_hydraServerStarted = true;
       std::ofstream fout("C:\\[Hydra]\\pluginFiles\\zcmd.txt");
 
-      for (size_t i = 0; i < m_mdDeviceList.size(); i++)
+      for (size_t i = 0; i < activeDevices.size(); i++)
       {
         DWORD dwCreationFlags = a_showCmd ? 0 : CREATE_NO_WINDOW;
 
-        int devId = m_mdDeviceList[i];
+        int devId = activeDevices[i];
         if (isTargetDevIdACPU(devId, a_devList))
         {
           if (isTargetDevIdAHydraCPU(devId, a_devList))
           {
             devId *= -1;
-            if (m_mdDeviceList.size() != 1 && !a_normalPriorityCPU)
+            if (activeDevices.size() != 1 && !a_normalPriorityCPU)
               dwCreationFlags |= BELOW_NORMAL_PRIORITY_CLASS; // is CPU is the only one device, use normal priority, else use background mode
           }
         }
@@ -225,13 +203,8 @@ void PluginShmemPipe::runAllRenderProcesses(RenderProcessRunParams a_params, con
           dwCreationFlags |= CREATE_NEW_CONSOLE;
 
         std::stringstream ss3;
-
-        if (engineType == 1)
-          ss3 << " -cl_device_id " << devId << " -cl_lite_core " << liteMode;
-        else
-          ss3 << " -cl_device_id " << devId;
-
-        std::string cmdFull = basicCmd + ss3.str();
+        ss3 << " -cl_device_id " << devId;
+        const std::string cmdFull = basicCmd + ss3.str();
 
         ZeroMemory(&m_mdProcessList[i], sizeof(PROCESS_INFORMATION));
         if (!a_debug)
@@ -256,43 +229,25 @@ void PluginShmemPipe::runAllRenderProcesses(RenderProcessRunParams a_params, con
 
 void PluginShmemPipe::stopAllRenderProcesses()
 {
-
-  if (m_multiDevMode && m_hydraServerStarted)
+  if (!m_hydraServerStarted)
+    return;
+  
+  for (auto i = 0; i < m_mdProcessList.size(); i++)
   {
-    for (auto i = 0; i < m_mdProcessList.size(); i++)
-    {
-      if (m_mdProcessList[i].hProcess == 0 || m_mdProcessList[i].hProcess == INVALID_HANDLE_VALUE)
-        continue;
-
-      DWORD exitCode;
-      GetExitCodeProcess(m_mdProcessList[i].hProcess, &exitCode);
-
-      if (exitCode == STILL_ACTIVE)
-        Sleep(100);
-
-      GetExitCodeProcess(m_mdProcessList[i].hProcess, &exitCode);
-
-      if (exitCode == STILL_ACTIVE)
-        TerminateProcess(m_mdProcessList[i].hProcess, NO_ERROR);
-    }
-  }
-  else if (m_hydraServerStarted && m_hydraProcessInfo.hProcess != 0 && m_hydraProcessInfo.hProcess != INVALID_HANDLE_VALUE)
-  {
-    // ask process for exit
-    //
+    if (m_mdProcessList[i].hProcess == 0 || m_mdProcessList[i].hProcess == INVALID_HANDLE_VALUE)
+      continue;
+  
     DWORD exitCode;
-    GetExitCodeProcess(m_hydraProcessInfo.hProcess, &exitCode);
-
+    GetExitCodeProcess(m_mdProcessList[i].hProcess, &exitCode);
+  
     if (exitCode == STILL_ACTIVE)
       Sleep(100);
-
-    GetExitCodeProcess(m_hydraProcessInfo.hProcess, &exitCode);
-
+  
+    GetExitCodeProcess(m_mdProcessList[i].hProcess, &exitCode);
+  
     if (exitCode == STILL_ACTIVE)
-      TerminateProcess(m_hydraProcessInfo.hProcess, NO_ERROR);
+      TerminateProcess(m_mdProcessList[i].hProcess, NO_ERROR);
   }
-
-
 }
 
 PluginShmemPipe::~PluginShmemPipe()

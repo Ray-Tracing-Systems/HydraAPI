@@ -961,13 +961,42 @@ if GBuffer was not evaluated by render driver (you have to set 'evalgbuffer' = 1
 HAPI bool hrRenderSaveGBufferLayerLDR(const HRRenderRef a_pRender, const wchar_t* a_outFileName, const wchar_t* a_layerName,
                                       const int* a_palette = nullptr, const int a_paletteSize = 0); 
 
-
 /**
 \brief execute custom command for render driver
 * \param a_pRender - render reference
 * \param a_command - command string
 * \param a_answer  - optional string answer; max 256 wchars;
+* 
+*  In the case of "HydraModern" render driver, the command will be sended to all render processes. 
+*  All these commands (except 'exitnow') are used in default 'offline' render mode. The 'interactive' render mode is controlled by hrCommit only.
+*  command list:
+* 
+*  start    [-statefile statex_00009.xml] 
+*                                  -- signal to start rendering for hydra processes that are waiting. "-statefile" argument is optional.
+*                                  -- Automaticly sends after hrFlush() is performed (or hrCommit() + shared VB is enabled).
 *
+*  continue [-statefile statex_00009.xml] 
+*                                  -- launch hydra processes first, then and send them "start".  "-statefile" argument is optional.
+*
+*  runhydra -cl_device_id 0 [-statefile statex_00009.xml] [-contribsamples 256] [-maxsamples 512]   
+*
+*                                  -- launch single hydra process and pass everything via command line; i.e. running process will not react to any commands (except "exitnow") in this mode; 
+*                                  -- this is like running hydra process in the 'box mode'; you can only stop it.    
+*          
+*           args: -statefile       -- specify hydra process to render target state
+*           args: -contribsamples  -- specify hydra process to count exact contribution to shared image this process should do and then exit when reach contribsamples value
+*           args: -maxsamples      -- specify hydra process to evaluate no more then maxsamples values sample per pixel; note that this value should be greater then contribsamples.
+*           args: -cl_device_id    -- specify device id for hydra process
+* 
+*  exitnow [-cl_device_id 0]       -- all hydra processes should immediately exit; can be used also in 'interactive mode' and 'box mode'
+*                                  -- #NOT_IMPLEMENTED: optionally you can stop only single process by specifying target device id.                                 
+*
+*  pause  z_image.bin              -- save accumulated shared image to "z_image.bin", then send "exitnow"; no spaces, no quotes allowed, single string file name
+*                                 
+*  resume z_image.bin              -- load accumulated shared image from "z_image.bin", then send "start" to waiting processes. 
+*                                  -- note that this command does not launch hydra processes (!!!), you have to manually call "hrCommit(scnRef, renderRef)".
+*                                  -- This is due to pause may occur within main program exit. When main program will be launched again it must open scene
+*                                  -- we want to continue render and Commit the new state via hrCommit(scnRef, renderRef). Thus it launch processes.
 */
 HAPI void hrRenderCommand(const HRRenderRef a_pRender, const wchar_t* a_command, wchar_t* a_answer = nullptr);
 
@@ -984,7 +1013,9 @@ HAPI void hrRenderLogDir(const HRRenderRef a_pRender, const wchar_t* a_logDir, b
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
-\brief non blocking commit, send commands to renderer and return immediately 
+\brief non blocking commit, send commands to renderer and return immediately.
+* 
+* For the "HydraModern" render driver this command will launch new process or transfer changes to existing (if interactive mode is implemented and enabled).
 */
 HAPI void hrCommit(HRSceneInstRef a_pScn = HRSceneInstRef(), 
                    HRRenderRef a_pRender = HRRenderRef(),

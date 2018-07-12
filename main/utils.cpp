@@ -8,8 +8,6 @@
 
 #include "../hydra_api/HR_HDRImageTool.h"
 using HDRImage4f = HydraRender::HDRImage4f;
-using HydraRender::LoadImageFromFile;
-using HydraRender::SaveImageToFile;
 using namespace HydraLiteMath;
 
 #pragma warning(disable:4838)
@@ -31,7 +29,7 @@ namespace TEST_UTILS
     fin.read((char*)&sdata[0], sdata.size() * sizeof(uint32_t));
     fin.close();
 
-    SaveImageToFile(a_outFleName, wh[0], wh[1], &sdata[0]);
+    HydraRender::SaveImageToFile(a_outFleName, wh[0], wh[1], &sdata[0]);
   }
 
   void show_me_texture_hdr(const std::string& a_inFleName, const std::string& a_outFleName)
@@ -48,7 +46,7 @@ namespace TEST_UTILS
     fin.read((char*)colorImg.data(), wh[0] * wh[1] * 4 * sizeof(float));
     fin.close();
 
-    SaveImageToFile(a_outFleName, colorImg, 2.2f);
+    HydraRender::SaveImageToFile(a_outFleName, colorImg, 2.2f);
   }
 
   std::vector<unsigned int> CreateStripedImageData(unsigned int* a_colors, int a_stripsNum, int w, int h)
@@ -62,7 +60,7 @@ namespace TEST_UTILS
     {
       unsigned int color = a_colors[stripId];
 
-#pragma omp parallel for
+      #pragma omp parallel for
       for (int y = currH; y < currH + strideH; y++)
       {
         for (int x = 0; x < w; x++)
@@ -348,7 +346,7 @@ namespace TEST_UTILS
   void CreateStripedImageFile(const char* a_fileName, unsigned int* a_colors, int a_stripsNum, int w, int h)
   {
     std::vector<unsigned int> imageData = CreateStripedImageData(a_colors, a_stripsNum, w, h);
-    SaveImageToFile(a_fileName, w, h, (unsigned int*)&imageData[0]);
+    HydraRender::SaveImageToFile(a_fileName, w, h, (unsigned int*)&imageData[0]);
   }
 
   std::vector<HRMeshRef> CreateRandomMeshesArray(int a_size)

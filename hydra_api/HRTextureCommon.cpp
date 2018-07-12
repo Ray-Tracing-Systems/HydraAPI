@@ -18,6 +18,58 @@
   #include <FreeImage.h>
 #endif
 
+extern HRObjectManager g_objManager;
+
+size_t IHRTextureNode::DataSizeInBytes() const
+{
+  return size_t(width()*height())*size_t(bpp());
+}
+
+bool IHRTextureNode::ReadDataFromChunkTo(std::vector<int>& a_dataConteiner)
+{
+  auto chunk = g_objManager.scnData.m_vbCache.chunk_at(chunkId());
+
+  auto sizeInInts = DataSizeInBytes() / sizeof(int) + 1;
+  if (a_dataConteiner.size() < sizeInInts)
+    a_dataConteiner.resize(sizeInInts);
+
+  // copy from memory
+  //
+  if (chunk.InMemory())
+  {
+    char* data = (char*)chunk.GetMemoryNow();
+    if (data != nullptr)
+    {
+      memcpy(a_dataConteiner.data(), data + sizeof(int)*2, DataSizeInBytes());
+      return true;
+    }
+  }
+
+  // if fail then try to load from file
+  //
+  std::wstring locPath = g_objManager.scnData.m_path + std::wstring(L"/") + ChunkName(chunk);
+
+  InternalImageTool chunkLoader;
+
+  int w, h, bpp;
+  return chunkLoader.LoadImageFromFile(locPath.c_str(), 
+                                       w, h, bpp, a_dataConteiner);
+}
+
+const void* IHRTextureNode::GetData() const
+{
+  auto chunk = g_objManager.scnData.m_vbCache.chunk_at(chunkId());
+
+  if (!chunk.InMemory())
+    return nullptr;
+
+  const char* ptr = (const char*)chunk.GetMemoryNow();
+  if (ptr == nullptr)
+    return nullptr;
+
+  return (ptr + 2 * sizeof(int));
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -117,199 +169,58 @@ std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTexture2DFromMemory(HR
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-int HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* filename, FIBITMAP*& dib, FIBITMAP*& converted, FREE_IMAGE_FORMAT* pFif)
+std::shared_ptr<IHRTextureNode> CreateTexture2D_WithImageTool(HRTextureNode* pSysObj, const std::wstring& a_fileName)
 {
-  FREE_IMAGE_FORMAT& fif = (*pFif); // image format
-
-  //check the file signature and deduce its format
-  //if still unknown, try to guess the file format from the file extension
-  //
-
-#if defined WIN32
-  fif = FreeImage_GetFileTypeU(filename, 0);
-#else
-  char filename_s[256];
-  size_t len = wcstombs(filename_s, filename, sizeof(filename_s));
-  fif = FreeImage_GetFileType(filename_s, 0);
-#endif
-
-  if (fif == FIF_UNKNOWN)
-#if defined WIN32
-    fif = FreeImage_GetFIFFromFilenameU(filename);
-#else
-    fif = FreeImage_GetFIFFromFilename(filename_s);
-#endif
-  if (fif == FIF_UNKNOWN)
-    return 0;
-
-  //check that the plugin has reading capabilities and load the file
-  //
-  if (FreeImage_FIFSupportsReading(fif))
-#if defined WIN32
-    dib = FreeImage_LoadU(fif, filename);
-#else
-    dib = FreeImage_Load(fif, filename_s);
-#endif
-  else
-    return 0;
-
-  bool invertY = false; //(fif != FIF_BMP);
-
-  if (!dib)
-    return 0;
-
-  int bitsPerPixel = FreeImage_GetBPP(dib);
-
-  int bytesPerPixel = 4;
-  if (bitsPerPixel <= 32) // bits per pixel
-  {
-    converted = FreeImage_ConvertTo32Bits(dib);
-    bytesPerPixel = 4;
-  }
-  else
-  {
-    converted = FreeImage_ConvertToRGBF(dib);
-    bytesPerPixel = 16;
-  }
-
-  return bytesPerPixel;
-}
-
-bool HRUtils_GetImageDataFromFreeImageObject(FIBITMAP* converted, char* data)
-{
-  auto bits         = FreeImage_GetBits(converted);
-  auto width        = FreeImage_GetWidth(converted);
-  auto height       = FreeImage_GetHeight(converted);
-  auto bitsPerPixel = FreeImage_GetBPP(converted);
-
-  if ((bits == 0) || (width == 0) || (height == 0))
-    return false;
-
-  if (bitsPerPixel <= 32)
-  {
-    // (2.1) if ldr -> create bitmap2DLDR
-    //
-    for (unsigned int y = 0; y<height; y++)
-    {
-      int lineOffset1 = y*width;
-      int lineOffset2 = y*width;
-      //if (invertY)
-      //lineOffset2 = (height - y - 1)*width;
-
-      for (unsigned int x = 0; x<width; x++)
-      {
-        int offset1 = lineOffset1 + x;
-        int offset2 = lineOffset2 + x;
-
-        data[4 * offset1 + 0] = bits[4 * offset2 + 2];
-        data[4 * offset1 + 1] = bits[4 * offset2 + 1];
-        data[4 * offset1 + 2] = bits[4 * offset2 + 0];
-        data[4 * offset1 + 3] = bits[4 * offset2 + 3];
-      }
-    }
-
-  }
-  else
-  {
-    // (2.2) if hdr -> create bitmap2DHDR
-    //
-    float* fbits = (float*)bits;
-    float* fdata = (float*)data;
-
-    for (unsigned int i = 0; i < width*height; i++)
-    {
-      fdata[4 * i + 0] = fbits[3 * i + 0];
-      fdata[4 * i + 1] = fbits[3 * i + 1];
-      fdata[4 * i + 2] = fbits[3 * i + 2];
-      fdata[4 * i + 3] = 0.0f;
-    }
-
-  }
-
-  return true;
-}
-
-std::shared_ptr<IHRTextureNode> CreateTexture2DFreeImage(HRTextureNode* pSysObj, const std::wstring& a_fileName)
-{
-  // (1) load image from file
+  // load image from file
   //
   const wchar_t* filename = a_fileName.c_str();
 
-  FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
-  FIBITMAP *dib(NULL), *converted(NULL);
-  BYTE* bits(NULL);                    // pointer to the image data
-  unsigned int width(0), height(0);    //image width and height
-
-  int bytesPerPixel = HRUtils_LoadImageFromFileToPairOfFreeImageObjects(a_fileName.c_str(), dib, converted, &fif);
-  int bitsPerPixel  = bytesPerPixel * 8;
-
-  if (bytesPerPixel == 0)
-  {
-    HrError(L"FreeImage failed to load image: ", a_fileName.c_str());
+  int width, height, bpp;
+  bool loaded = g_objManager.m_pImgTool->LoadImageFromFile(filename, 
+                                                           width, height, bpp, g_objManager.m_tempBuffer);
+  
+  if (!loaded)
     return nullptr;
-  }
 
-  bits   = FreeImage_GetBits(converted);
-  width  = FreeImage_GetWidth(converted);
-  height = FreeImage_GetHeight(converted);
+  const size_t totalByteSizeOfTexture = size_t(width*height)*size_t(bpp) + size_t(2)*sizeof(unsigned int);
 
-  if ((bits == 0) || (width == 0) || (height == 0))
-  {
-    HrError(L"FreeImage failed for undefined reason, file : ", a_fileName.c_str());
-    FreeImage_Unload(converted);
-    FreeImage_Unload(dib);
-    return nullptr;
-  }
-
-  // (3.*) check totalByteSizeOfTexture
+  // now put image data directly to cache ... 
   //
-  size_t totalByteSizeOfTexture = (bitsPerPixel <= 32) ? size_t(width)*size_t(height)*size_t(sizeof(char)*4) : size_t(width)*size_t(height)*size_t(sizeof(float) * 4);
-  totalByteSizeOfTexture += size_t(2 * sizeof(unsigned int));
-
-  // now put image data directly to cache ... ?
-  //
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ////
   size_t chunkId = g_objManager.scnData.m_vbCache.AllocChunk(totalByteSizeOfTexture, pSysObj->id);
   auto& chunk    = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
-  chunk.type     = (bytesPerPixel <= 4) ? CHUNK_TYPE_IMAGE4UB : CHUNK_TYPE_IMAGE4F;
+  chunk.type     = (bpp <= 4) ? CHUNK_TYPE_IMAGE4UB : CHUNK_TYPE_IMAGE4F;
 
   //unsigned char* data = new unsigned char[size];
   char* data = (char*)chunk.GetMemoryNow();
   if (data == nullptr)
   {
-    FreeImage_Unload(converted);
-    FreeImage_Unload(dib);
-
     std::shared_ptr<BitmapProxy> p = std::make_shared<BitmapProxy>(width, height, totalByteSizeOfTexture, chunkId); //#TODO: return nullptr here?
     p->fileName        = a_fileName;
-    p->m_bytesPerPixel = bytesPerPixel;
+    p->m_bytesPerPixel = bpp;
     return p;
   }
-  ////
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   unsigned int* pW = (unsigned int*)data;
   unsigned int* pH = pW + 1;
   data += 2 * sizeof(unsigned int);
 
+  memcpy(data, g_objManager.m_tempBuffer.data(), size_t(width*height)*size_t(bpp));
+
+  if (g_objManager.m_tempBuffer.size() > TEMP_BUFFER_MAX_SIZE_DONT_FREE)
+    g_objManager.m_tempBuffer = g_objManager.EmptyBuffer();
+
   (*pW) = width;
   (*pH) = height;
 
-  HRUtils_GetImageDataFromFreeImageObject(converted, data);
-
-  FreeImage_Unload(converted);
-  FreeImage_Unload(dib);
-
+  // return resulting object
+  //
   std::shared_ptr<BitmapLDRNode> p1 = std::make_shared<BitmapLDRNode>(width, height, totalByteSizeOfTexture, chunkId);
   std::shared_ptr<BitmapHDRNode> p2 = std::make_shared<BitmapHDRNode>(width, height, totalByteSizeOfTexture, chunkId);
 
   std::shared_ptr<IHRTextureNode> p11 = p1;
   std::shared_ptr<IHRTextureNode> p22 = p2;
 
-  //delete [] data;
-
-  return (bitsPerPixel <= 32) ? p11 : p22;
+  return (bpp == 4) ? p11 : p22;
 }
 
 std::shared_ptr<IHRTextureNode> CreateTexture2DImage4UB(HRTextureNode* pSysObj, const std::wstring& a_fileName)
@@ -422,7 +333,7 @@ std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTexture2DFromFile(HRTe
   }
   else
   {
-    return CreateTexture2DFreeImage(pSysObj, a_fileName);
+    return CreateTexture2D_WithImageTool(pSysObj, a_fileName);
   }
 }
 

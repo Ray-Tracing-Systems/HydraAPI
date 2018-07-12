@@ -2381,7 +2381,7 @@ namespace LGHT_TESTS
         currLEDIndex = 0;
     }
 
-    HRLightGroupExt res(lights.size());
+    HRLightGroupExt res(int32_t(lights.size()));
     for (int i = 0; i < res.lightsNum; i++)
     {
       res.lights[i] = lights[i];

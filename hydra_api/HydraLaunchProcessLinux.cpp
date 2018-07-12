@@ -9,21 +9,19 @@
 
 struct HydraProcessLauncher : IHydraNetPluginAPI
 {
-  HydraProcessLauncher(const char* imageFileName, int width, int height, const char* connectionType, const std::vector<int>& a_devIdList, std::ostream* m_pLog = nullptr);
+  HydraProcessLauncher(const char* imageFileName, int width, int height, const char* connectionType, std::ostream* m_pLog = nullptr);
   ~HydraProcessLauncher();
 
   bool hasConnection() const override;
 
-  void runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydraRenderDevice>& a_devList) override;
+  void runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydraRenderDevice>& a_devList, const std::vector<int>& activeDevices) override;
   void stopAllRenderProcesses() override;
 
 protected:
 
   bool m_hydraServerStarted;
   std::ostream* m_pLog;
-
-
-  std::vector<int>   m_mdDeviceList;
+  
   std::vector<pid_t> m_mdProcessList;
 
   std::string m_connectionType;
@@ -36,7 +34,7 @@ protected:
 
 static std::ofstream g_logMain;
 
-IHydraNetPluginAPI* CreateHydraServerConnection(int renderWidth, int renderHeight, bool inMatEditor, const std::vector<int>& a_devList)
+IHydraNetPluginAPI* CreateHydraServerConnection(int renderWidth, int renderHeight, bool inMatEditor)
 {
   static int m_matRenderTimes = 0;
 
@@ -57,7 +55,7 @@ IHydraNetPluginAPI* CreateHydraServerConnection(int renderWidth, int renderHeigh
     if (!g_logMain.is_open())
       g_logMain.open("/home/vsan/test/log.txt");
     logPtr = &g_logMain;
-    pImpl  = new HydraProcessLauncher(imageName.c_str(), renderWidth, renderHeight, "main", a_devList, logPtr);
+    pImpl  = new HydraProcessLauncher(imageName.c_str(), renderWidth, renderHeight, "main", logPtr);
   }
   else // if in matEditor
   {
@@ -76,13 +74,10 @@ IHydraNetPluginAPI* CreateHydraServerConnection(int renderWidth, int renderHeigh
 
 
 
-HydraProcessLauncher::HydraProcessLauncher(const char* imageFileName, int width, int height, const char* connectionType, const std::vector<int>& a_devIdList, std::ostream* a_pLog) :
-        m_imageFileName(imageFileName), m_connectionType(connectionType), m_width(width), m_height(height), m_hydraServerStarted(false), m_pLog(a_pLog)
+HydraProcessLauncher::HydraProcessLauncher(const char* imageFileName, int width, int height, const char* connectionType, std::ostream* a_pLog) :
+                                           m_imageFileName(imageFileName), m_connectionType(connectionType), m_width(width), m_height(height), m_hydraServerStarted(false), m_pLog(a_pLog)
 {
-  m_mdDeviceList.clear();
   m_mdProcessList.clear();
-
-  m_mdDeviceList = a_devIdList;
 }
 
 HydraProcessLauncher::~HydraProcessLauncher()
@@ -103,7 +98,8 @@ void CreateProcessUnix(const char* exePath, const char* allArgs, const bool a_de
   std::string command = std::string(exePath) + " " + std::string(allArgs) + " &";
   system(command.c_str());
 }
-void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydraRenderDevice>& a_devList)
+
+void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydraRenderDevice>& a_devList, const std::vector<int>& a_activeDevices)
 {
   const char* imageFileName = m_imageFileName.c_str();
 
@@ -114,7 +110,6 @@ void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params
 
   if (m_connectionType == "main")
   {
-
     char user_name[L_cuserid];
     cuserid(user_name);
 
@@ -143,9 +138,9 @@ void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params
       m_hydraServerStarted = true;
       std::ofstream fout(hydraPath + "zcmd.txt");
 
-      for (size_t i = 0; i < m_mdDeviceList.size(); i++)
+      for (size_t i = 0; i < a_activeDevices.size(); i++)
       {
-        int devId = m_mdDeviceList[i];
+        int devId = a_activeDevices[i];
 
         ss.str(std::string());
         ss << " -cl_device_id " << devId;
@@ -153,7 +148,8 @@ void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params
         std::string cmdFull = basicCmd + ss.str();
         std::string hydraExe(hydraPath + "hydra");
   
-        CreateProcessUnix(hydraExe.c_str(), cmdFull.c_str(), a_params.debug, m_pLog, m_mdProcessList);
+        if(!a_params.debug)
+          CreateProcessUnix(hydraExe.c_str(), cmdFull.c_str(), a_params.debug, m_pLog, m_mdProcessList);
         fout << cmdFull.c_str() << std::endl;
       }
 

@@ -15,7 +15,8 @@
 
 #include <math.h>
 
-static const bool gDebugMode = true;
+static constexpr bool gDebugMode     = true;
+static constexpr bool gCopyCollector = false;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -40,7 +41,7 @@ inline uint64_t roundBlocks(uint64_t elems, int threadsPerBlock)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-bool VirtualBuffer::Init(uint64_t a_sizeInBytes, const char* a_shmemName)
+bool VirtualBuffer::Init(uint64_t a_sizeInBytes, const char* a_shmemName, std::vector<int>* a_pTempBuffer)
 {
   if (a_sizeInBytes % 1024 != 0)
   {
@@ -57,10 +58,10 @@ bool VirtualBuffer::Init(uint64_t a_sizeInBytes, const char* a_shmemName)
     a_sizeInBytes = totalMem / 4;
 #endif
   
-  m_totalSize = a_sizeInBytes;
+  m_totalSize   = a_sizeInBytes;
+  //a_sizeInBytes = gCopyCollector ? a_sizeInBytes : a_sizeInBytes / 2; //#NOTE: HACK
 
 #ifdef WIN32
-
   DWORD imageSizeL = a_sizeInBytes & 0x00000000FFFFFFFF;
   DWORD imageSizeH = (a_sizeInBytes & 0xFFFFFFFF00000000) >> 32;
 
@@ -117,7 +118,7 @@ bool VirtualBuffer::Init(uint64_t a_sizeInBytes, const char* a_shmemName)
 #endif
 
   Clear();
-
+  m_pTempBuffer = a_pTempBuffer;
   return true;
 }
 
@@ -170,16 +171,16 @@ char* VirtualBuffer::AllocInCacheNow(uint64_t a_sizeInBytes)
 
 void* VirtualBuffer::AllocInCache(uint64_t a_sizeInBytes)
 {
-  uint64_t freeSize = m_currSize - m_currTop;
+  const uint64_t freeSize = gCopyCollector ? (m_currSize - m_currTop) : (m_totalSize - m_currTop);
 
   if (a_sizeInBytes < freeSize) // alloc 
   {
     return AllocInCacheNow(a_sizeInBytes);
   }
-  else
+  else if (gCopyCollector)
   {
-    uint64_t maxAllowedSize = m_currSize - maxAccumulatedSize();
-
+    const uint64_t maxAllowedSize = m_currSize - maxAccumulatedSize();
+    
     if (a_sizeInBytes < maxAllowedSize) // swap old objects to disc and put a new object to free memory 
     {
       RunCopyingCollector();
@@ -187,10 +188,28 @@ void* VirtualBuffer::AllocInCache(uint64_t a_sizeInBytes)
     }
     else // this object is too big. We can not allocate memory here. Need to store it on disk.
     {
-      std::cerr << "VirtualBuffer::AllocInCache : the object is too big!" << std::endl;
+      std::cerr << "VirtualBuffer::AllocInCache : the object is too big! gCopyCollector = " << int(gCopyCollector) << std::endl;
       return nullptr;
     }
   }
+  else
+  { 
+    constexpr int div = 8;
+    const uint64_t maxAllowedSize = (m_totalSize*(div-1))/div - 1024;
+    
+    if (a_sizeInBytes < maxAllowedSize) // swap old objects to disc and put a new object to free memory 
+    {
+      RunCollector(div);
+      return AllocInCacheNow(a_sizeInBytes);
+    }
+    else // this object is too big. We can not allocate memory here. Need to store it on disk.
+    {
+      std::cerr << "VirtualBuffer::AllocInCache : the object is too big! gCopyCollector = " << int(gCopyCollector) << std::endl;
+      return nullptr;
+    }
+    
+  }
+
 
 }
 
@@ -240,7 +259,6 @@ void VirtualBuffer::RunCopyingCollector()
   // (1)  we must decide wich objects we can handle in memory
   // sort currChunksInMemory by m_allChunks[i].useCounter
   //
-
   struct CompareIds
   {
     CompareIds(VirtualBuffer* a_pVB) : pVB(a_pVB) { }
@@ -297,6 +315,68 @@ void VirtualBuffer::RunCopyingCollector()
   m_currTop      = top;
 }
 
+void VirtualBuffer::RunCollector(int a_divisor)
+{
+  // (1)  we must decide wich objects we can handle in memory
+  // sort currChunksInMemory by m_allChunks[i].useCounter
+  //
+  struct CompareIds
+  {
+    CompareIds(VirtualBuffer* a_pVB) : pVB(a_pVB) { }
+    bool operator()(size_t a, size_t b) const { return pVB->chunk_at(a).useCounter > pVB->chunk_at(b).useCounter; }
+    VirtualBuffer* pVB;
+  };
+
+  std::sort(m_chunksIdInMemory.begin(), m_chunksIdInMemory.end(), CompareIds(this));
+
+  std::vector<size_t> currChunksInMemory = m_chunksIdInMemory;
+  m_chunksIdInMemory.clear();
+
+  // (2) sweep throught currChunksInMemory to copy 1/8 of the buffer size to tempBuffer
+  //
+  size_t top = 0;
+  size_t curAccumulatedMemory = 0;
+  size_t maxAccumulatedMemory = m_totalSize / a_divisor;
+
+  if (m_pTempBuffer->size() < maxAccumulatedMemory)
+    m_pTempBuffer->resize( maxAccumulatedMemory/sizeof(int) + 1);
+
+  char* dataTemp = (char*)m_pTempBuffer->data();
+
+  size_t i = 0;
+  for (; i < currChunksInMemory.size(); i++)
+  {
+    size_t id = currChunksInMemory[i];
+    uint64_t totalSizeInBytes = m_allChunks[id].sizeInBytes;
+
+    curAccumulatedMemory += totalSizeInBytes; 
+    if (curAccumulatedMemory > maxAccumulatedMemory)
+      break;
+    
+    memcpy(dataTemp + top, m_dataHalfCurr + m_allChunks[id].localAddress, totalSizeInBytes);  // copy chunk from m_dataHalfCurr to m_dataHalfFree
+    
+    m_allChunks[id].localAddress = top; // alternate it's address because now this chunk is in different location;
+    m_chunksIdInMemory.push_back(id);
+    top += totalSizeInBytes;
+  }
+
+  // (3) swap other chunks to disk
+  //
+  for (; i < currChunksInMemory.size(); i++)
+  {
+    size_t id = currChunksInMemory[i];
+    m_allChunks[id].SwapToDisk();
+    m_allChunks[id].localAddress = uint64_t(-1);
+  }
+
+  // (4) copy chunks from tempBuffer to 
+  //
+  memcpy(m_dataHalfCurr, dataTemp, top);
+
+  if (m_pTempBuffer->size() > maxAccumulatedMemory) // free unneccesary memory of tempBuffer it it was allocated previously too much
+    (*m_pTempBuffer) = std::vector<int>();
+}
+
 void VirtualBuffer::FlushToDisc()
 {
   for (size_t i = 0; i < m_chunksIdInMemory.size(); i++)
@@ -321,7 +401,7 @@ void* ChunkPointer::GetMemoryNow()
   }
   else
   {
-    return nullptr; // #TODO: Swap chunk to memory and get fucking pointer
+    return nullptr; // #TODO: Swap chunk to memory (m_tempBuffer) and get fucking pointer
   }
 }
 

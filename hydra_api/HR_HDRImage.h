@@ -10,7 +10,6 @@
 #endif
 
 #include <cstring>
-
 #include "alloc16.h"
 
 namespace HydraRender
@@ -121,5 +120,56 @@ namespace HydraRender
 
 };
 
+/**
+\brief abstract interface to image Load/Save operations
+*/
+struct IHRImageTool
+{
+  IHRImageTool() {}
+  virtual ~IHRImageTool() {}
+
+  /**
+  \brief load image from file to a_data; load both LDR and HDR images
+  \param a_fileName -- input file name
+  \param w          -- out image width
+  \param h          -- out image height
+  \param bpp        -- out image bytes per pixel (4 for LDR or 16 for HDR images)
+  \param a_data     -- we pass container to allow its resize by the loader impl; if bpp = 16 then loader must increase size 4 times.
+  */
+  virtual bool LoadImageFromFile(const wchar_t* a_fileName, 
+                                 int& w, int& h, int& bpp, std::vector<int>& a_data) = 0;
+
+  /**
+  \brief load image and force convert it to HDR (linear color space).
+  \param a_fileName -- input file name
+  \param w          -- out image width
+  \param h          -- out image height
+  \param a_data     -- we pass container to allow its resize by the loader impl; if bpp = 16 then loader must increase size 4 times.
+  */
+  virtual bool LoadImageFromFile(const wchar_t* a_fileName, 
+                                 int& w, int& h, std::vector<float>& a_data) = 0;
+
+  virtual void SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, const float* a_data) = 0;
+  virtual void SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, const int*   a_data) = 0;
+
+private:
+  IHRImageTool(const IHRImageTool& a_rhs) { }
+  IHRImageTool& operator=(const IHRImageTool& a_rhs) { return *this; }
+};
 
 
+class InternalImageTool : public IHRImageTool
+{
+public:
+
+  InternalImageTool() {}
+
+  bool LoadImageFromFile(const wchar_t* a_fileName,
+    int& w, int& h, int& bpp, std::vector<int>& a_data) override;
+
+  bool LoadImageFromFile(const wchar_t* a_fileName,
+    int& w, int& h, std::vector<float>& a_data) override;
+
+  void SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, const float* a_data) override;
+  void SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, const int*   a_data) override;
+};

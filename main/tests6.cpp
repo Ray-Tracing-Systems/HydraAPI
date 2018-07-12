@@ -1714,6 +1714,7 @@ bool test39_mesh_from_vsgf()
   }
 
   //hrRenderEnableDevice(renderRef, 0, true);
+  //hrRenderEnableDevice(renderRef, 1, true);
   hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1809,7 +1810,7 @@ bool test39_mesh_from_vsgf()
   }
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_39/z_out.png");
-  //hrRenderSaveFrameBufferHDR(renderRef, L"tests_images/test_39/z_out.hdr");
+  hrRenderSaveFrameBufferHDR(renderRef, L"tests_images/test_39/z_out.hdr");
 
   return check_images("test_39", 1, 40.0f);
 }

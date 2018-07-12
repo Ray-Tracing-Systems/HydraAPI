@@ -809,6 +809,7 @@ bool test36_update_from_memory()
 
 
 	HRTextureNodeRef new_testTex2 = hrTexture2DUpdateFromMemory(testTex2, 300, 300, 4, &imageData2[0]);
+                   new_testTex2 = hrTexture2DUpdateFromMemory(testTex2, 300, 300, 4, &imageData2[0]); // check memcmp way with debugger.
 
 	hrMaterialOpen(mat0, HR_OPEN_EXISTING);
 	{

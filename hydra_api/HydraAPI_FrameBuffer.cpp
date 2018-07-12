@@ -1,6 +1,5 @@
 #include "HydraAPI.h"
 #include "HydraInternal.h"
-#include "HydraInternalCommon.h"
 
 #include <memory>
 #include <vector>
@@ -17,7 +16,6 @@ extern std::wstring      g_lastError;
 extern std::wstring      g_lastErrorCallerPlace;
 extern HR_ERROR_CALLBACK g_pErrorCallback;
 extern HRObjectManager   g_objManager;
-
 
 #include <FreeImage.h>
 #include <cmath>
@@ -121,227 +119,6 @@ HAPI bool hrRenderGetFrameBufferLineLDR1i(const HRRenderRef a_pRender, int a_beg
   return true;
 }
 
-std::wstring ToWideString(const std::string& rhs)
-{
-  std::wstring res; res.resize(rhs.size());
-  std::copy(rhs.begin(), rhs.end(), res.begin());
-  return res;
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-static void FreeImageErrorHandlerHydraInternal(FREE_IMAGE_FORMAT fif, const char *message)
-{
-  std::wstringstream strOut;
-  strOut << L"(FIF = " << fif << L")";
-  const std::wstring wstr = std::wstring(L"[FreeImage ") + strOut.str() + std::wstring(L"]: ") + ToWideString(message);
-  HrError(wstr.c_str());
-}
-
-void HR_MyDebugSaveBMP(const wchar_t* fname, const int* pixels, int w, int h)
-{
-  unsigned char file[14] = {
-    'B','M',      // magic
-    0,0,0,0,      // size in bytes
-    0,0,          // app data
-    0,0,          // app data
-    40 + 14,0,0,0 // start of data offset
-  };
-  unsigned char info[40] = {
-    40,0,0,0, // info hd size
-    0,0,0,0,  // width
-    0,0,0,0,  // heigth
-    1,0,      // number color planes
-    24,0,     // bits per pixel
-    0,0,0,0,  // compression is none
-    0,0,0,0,  // image bits size
-    0x13,0x0B,0,0, // horz resoluition in pixel / m
-    0x13,0x0B,0,0, // vert resolutions (0x03C3 = 96 dpi, 0x0B13 = 72 dpi)
-    0,0,0,0,  // #colors in pallete
-    0,0,0,0,  // #important colors
-  };
-
-  int padSize = (4 - (w * 3) % 4) % 4;
-  int sizeData = w * h * 3 + h * padSize;
-  int sizeAll = sizeData + sizeof(file) + sizeof(info);
-
-  file[2] = (unsigned char)(sizeAll);
-  file[3] = (unsigned char)(sizeAll >> 8);
-  file[4] = (unsigned char)(sizeAll >> 16);
-  file[5] = (unsigned char)(sizeAll >> 24);
-
-  info[4] = (unsigned char)(w);
-  info[5] = (unsigned char)(w >> 8);
-  info[6] = (unsigned char)(w >> 16);
-  info[7] = (unsigned char)(w >> 24);
-
-  info[8] = (unsigned char)(h);
-  info[9] = (unsigned char)(h >> 8);
-  info[10] = (unsigned char)(h >> 16);
-  info[11] = (unsigned char)(h >> 24);
-
-  info[20] = (unsigned char)(sizeData);
-  info[21] = (unsigned char)(sizeData >> 8);
-  info[22] = (unsigned char)(sizeData >> 16);
-  info[23] = (unsigned char)(sizeData >> 24);
-
-
-  std::wstring fnameW(fname);
-  std::string  fnameA(fnameW.begin(), fnameW.end());
-  std::ofstream stream(fnameA.c_str(), std::ios::out | std::ios::binary);
-
-  stream.write((char*)file, sizeof(file));
-  stream.write((char*)info, sizeof(info));
-
-  unsigned char pad[3] = { 0,0,0 };
-
-  std::vector<unsigned char> line(3 * w);
-
-  for (int y = 0; y<h; y++)
-  {
-    for (int x = 0; x<w; x++)
-    {
-      const int pxData = pixels[y*w + x];
-
-      line[x * 3 + 0] = (pxData & 0x00FF0000) >> 16;
-      line[x * 3 + 1] = (pxData & 0x0000FF00) >> 8;
-      line[x * 3 + 2] = (pxData & 0x000000FF);
-    }
-
-    stream.write((char*)&line[0], line.size());
-    stream.write((char*)pad, padSize);
-  }
-}
-
-
-
-bool HR_SaveLDRImageToFile(const wchar_t* a_fileName, int w, int h, int32_t* data)
-{
-  FIBITMAP* dib = FreeImage_Allocate(w, h, 32);
-
-  BYTE* bits = FreeImage_GetBits(dib);
-  //memcpy(bits, data, w*h*sizeof(int32_t));
-  BYTE* data2 = (BYTE*)data;
-  for (int i = 0; i<w*h; i++)
-  {
-    bits[4 * i + 0] = data2[4 * i + 2];
-    bits[4 * i + 1] = data2[4 * i + 1];
-    bits[4 * i + 2] = data2[4 * i + 0];
-    bits[4 * i + 3] = 255; // data2[4 * i + 3]; // 255 to kill alpha channel
-  }
-
-  FreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);
-
-	auto imageFileFormat = FIF_PNG;
-
-	std::wstring fileName(a_fileName);
-	if (fileName.size() > 4)
-	{
-		std::wstring resolution = fileName.substr(fileName.size() - 4, 4);
-
-		if (resolution.find(L".bmp") != std::wstring::npos || resolution.find(L".BMP") != std::wstring::npos)
-			imageFileFormat = FIF_BMP;
-
-	}
-#if defined WIN32
-  if (!FreeImage_SaveU(imageFileFormat, dib, a_fileName))
-#else
-  char filename_s[256];
-  size_t len = wcstombs(filename_s, a_fileName, sizeof(filename_s));
-  if (!FreeImage_Save(imageFileFormat, dib, filename_s))
-#endif
-  {
-    FreeImage_Unload(dib);
-    HrError(L"SaveImageToFile(): FreeImage_Save error on ", a_fileName);
-    return false;
-  }
-
-  FreeImage_Unload(dib);
-
-  return true;
-}
-
-static inline float clamp(float u, float a, float b) { float r = fmax(a, u); return fmin(r, b); }
-
-bool HR_SaveHDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, const float* a_data, const float a_scaleInv, const float a_gamma = 2.2f)
-{
-  struct float4 { float x, y, z, w; };
-  const float4* data = (const float4*)a_data;
-
-  const float gammaPow = 1.0f / a_gamma;
-  std::vector<int32_t> imageLDR(w*h);
-
-  const int size = w*h;
-  #pragma omp parallel for
-  for (int i = 0; i < size; i++)
-  {
-    float4 color = data[i];
-
-    color.x = powf(clamp(color.x*a_scaleInv, 0.0f, 1.0f), gammaPow);
-    color.y = powf(clamp(color.y*a_scaleInv, 0.0f, 1.0f), gammaPow);
-    color.z = powf(clamp(color.z*a_scaleInv, 0.0f, 1.0f), gammaPow);
-    color.w = 1.0f;
-
-    float  r = clamp(color.x * 255.0f, 0.0f, 255.0f);
-    float  g = clamp(color.y * 255.0f, 0.0f, 255.0f);
-    float  b = clamp(color.z * 255.0f, 0.0f, 255.0f);
-    float  a = 1.0f;
-
-    unsigned char red   = (unsigned char)r;
-    unsigned char green = (unsigned char)g;
-    unsigned char blue  = (unsigned char)b;
-    unsigned char alpha = (unsigned char)a;
-
-    imageLDR[i] = red | (green << 8) | (blue << 16) | (alpha << 24);
-  }
-
-  return HR_SaveLDRImageToFile(a_fileName, w, h, &imageLDR[0]);
-}
-
-bool HR_SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, const float* a_data, const float a_scale = 1.0f)
-{
-  struct float3 { float x, y, z; };
-  struct float4 { float x, y, z, w; };
-
-  const float4* data = (const float4*)a_data;
-
-  std::vector<float3> tempData(w*h);
-  for (int i = 0; i < w*h; i++)
-  {
-    float4 src = data[i];
-    float3 dst;
-    dst.x = src.x*a_scale;
-    dst.y = src.y*a_scale;
-    dst.z = src.z*a_scale;
-    tempData[i] = dst;
-  }
-
-  FIBITMAP* dib = FreeImage_AllocateT(FIT_RGBF, w, h);
-
-  BYTE* bits = FreeImage_GetBits(dib);
-
-  memcpy(bits, &tempData[0], sizeof(float3)*w*h);
-
-
-  FreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);
-
-#if defined WIN32
-  if (!FreeImage_SaveU(FIF_HDR, dib, a_fileName))
-#else
-  char filename_s[256];
-  size_t len = wcstombs(filename_s, a_fileName, sizeof(filename_s));
-  if (!FreeImage_Save(FIF_HDR, dib, filename_s))
-#endif
-  {
-    FreeImage_Unload(dib);
-    HrError(L"SaveImageToFile(): FreeImage_Save error: ", a_fileName);
-    return false;
-  }
-
-  FreeImage_Unload(dib);
-
-  return true;
-}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -372,13 +149,18 @@ HAPI bool hrRenderSaveFrameBufferLDR(const HRRenderRef a_pRender, const wchar_t*
     return false;
   }
 
-  std::vector<int32_t> imgData(w*h);
-  pRender->m_pDriver->GetFrameBufferLDR(w, h, &imgData[0]);
+  auto pImgTool = g_objManager.m_pImgTool;
+  auto& imgData = g_objManager.m_tempBuffer;
+  if (imgData.size() < w*h)
+    imgData.resize(w*h);
 
-  //HR_MyDebugSaveBMP(a_outFileName, &imgData[0], w, h);
-  //return true;
+  pRender->m_pDriver->GetFrameBufferLDR(w, h, imgData.data());
+  pImgTool->SaveLDRImageToFileLDR(a_outFileName, w, h, imgData.data());
 
-  return HR_SaveLDRImageToFile(a_outFileName, w, h, &imgData[0]);
+  if (imgData.size() > TEMP_BUFFER_MAX_SIZE_DONT_FREE) // free temp buffer if it's too large
+    imgData = g_objManager.EmptyBuffer();
+
+  return true;
 }
 
 HAPI bool hrRenderSaveFrameBufferHDR(const HRRenderRef a_pRender, const wchar_t* a_outFileName)
@@ -399,8 +181,8 @@ HAPI bool hrRenderSaveFrameBufferHDR(const HRRenderRef a_pRender, const wchar_t*
 
   pugi::xml_node node = pRender->xml_node_immediate();
 
-  int w = node.child(L"width").text().as_int();
-  int h = node.child(L"height").text().as_int();
+  const int w = node.child(L"width").text().as_int();
+  const int h = node.child(L"height").text().as_int();
 
   if (w <= 0 || h <= 0)
   {
@@ -408,15 +190,24 @@ HAPI bool hrRenderSaveFrameBufferHDR(const HRRenderRef a_pRender, const wchar_t*
     return false;
   }
 
-  std::vector<float> imgData(w*h*4);
-  pRender->m_pDriver->GetFrameBufferHDR(w, h, &imgData[0], L"color");
+  auto pImgTool = g_objManager.m_pImgTool;
+  auto& imgData = g_objManager.m_tempBuffer;
+  if (imgData.size() < size_t(w*h)*size_t(4))
+    imgData.resize(size_t(w*h)*size_t(4));
 
-  return HR_SaveHDRImageToFileHDR(a_outFileName, w, h, &imgData[0]);
+  pRender->m_pDriver->GetFrameBufferHDR(w, h, (float*)imgData.data(), L"color");
+  pImgTool->SaveHDRImageToFileHDR(a_outFileName, w, h, (const float*)imgData.data());
+
+  if (imgData.size() > TEMP_BUFFER_MAX_SIZE_DONT_FREE) // free temp buffer if it's too large
+    imgData = g_objManager.EmptyBuffer();
+
+  return true;
 }
 
 HAPI void hrRenderCommand(const HRRenderRef a_pRender, const wchar_t* a_command, wchar_t* a_answer)
 {
   HRRender* pRender = g_objManager.PtrById(a_pRender);
+
   if (pRender == nullptr)
   {
     HrError(L"[hrRenderCommand]: nullptr Render Driver ");

@@ -2,7 +2,6 @@
 
 #include "HydraAPI.h"
 #include "HydraInternal.h"
-#include "HydraInternalCommon.h"
 #include "HydraRenderDriverAPI.h"
 #include "HR_HDRImage.h"
 
@@ -373,90 +372,9 @@ struct HRSceneData : public HRObject<IHRSceneData>
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 
-  void init(bool a_emptyvb)
-  {
-    m_texturesLib         = m_xmlDoc.append_child(L"textures_lib");
-    m_materialsLib        = m_xmlDoc.append_child(L"materials_lib");
-    m_lightsLib           = m_xmlDoc.append_child(L"lights_lib");
-    m_cameraLib           = m_xmlDoc.append_child(L"cam_lib");
-    m_geometryLib         = m_xmlDoc.append_child(L"geometry_lib");
-    m_settingsNode        = m_xmlDoc.append_child(L"render_lib");
-    m_sceneNode           = m_xmlDoc.append_child(L"scenes");
-
-    m_texturesLibChanges  = m_xmlDocChanges.append_child(L"textures_lib");
-    m_materialsLibChanges = m_xmlDocChanges.append_child(L"materials_lib");
-    m_lightsLibChanges    = m_xmlDocChanges.append_child(L"lights_lib");
-    m_cameraLibChanges    = m_xmlDocChanges.append_child(L"cam_lib");
-    m_geometryLibChanges  = m_xmlDocChanges.append_child(L"geometry_lib");
-    m_settingsNodeChanges = m_xmlDocChanges.append_child(L"render_lib");
-    m_sceneNodeChanges    = m_xmlDocChanges.append_child(L"scenes");
-
-    m_trashNode = m_xmlDocChanges.append_child(L"trash");
-
-    if (a_emptyvb)
-      m_vbCache.Init(4096, "NOSUCHSHMEM");
-    else
-      m_vbCache.Init(VIRTUAL_BUFFER_SIZE, "HYDRAAPISHMEM2");
-  }
-
-  void init_existing(bool a_emptyVB)
-  {
-    m_texturesLib         = m_xmlDoc.child(L"textures_lib");
-    m_materialsLib        = m_xmlDoc.child(L"materials_lib");
-    m_lightsLib           = m_xmlDoc.child(L"lights_lib");
-    m_cameraLib           = m_xmlDoc.child(L"cam_lib");
-    m_geometryLib         = m_xmlDoc.child(L"geometry_lib");
-    m_settingsNode        = m_xmlDoc.child(L"render_lib");
-    m_sceneNode           = m_xmlDoc.child(L"scenes");
-
-    m_texturesLibChanges  = m_xmlDocChanges.child(L"textures_lib");
-    m_materialsLibChanges = m_xmlDocChanges.child(L"materials_lib");
-    m_lightsLibChanges    = m_xmlDocChanges.child(L"lights_lib");
-    m_cameraLibChanges    = m_xmlDocChanges.child(L"cam_lib");
-    m_geometryLibChanges  = m_xmlDocChanges.child(L"geometry_lib");
-    m_settingsNodeChanges = m_xmlDocChanges.child(L"render_lib");
-    m_sceneNodeChanges    = m_xmlDocChanges.child(L"scenes");
-
-    m_trashNode           = m_xmlDocChanges.child(L"trash");
-
-    if (a_emptyVB)
-      m_vbCache.Init(4096, "NOSUCHSHMEM");
-    else
-      m_vbCache.Init(VIRTUAL_BUFFER_SIZE, "HYDRAAPISHMEM2");
-  }
-
-  void clear()
-  {
-    meshes.clear();
-    lights.clear();
-    materials.clear();
-    cameras.clear();
-    textures.clear();
-
-    clear_node(m_texturesLib);
-    clear_node(m_materialsLib);
-    clear_node(m_lightsLib);
-    clear_node(m_cameraLib);
-    clear_node(m_geometryLib);
-    clear_node(m_settingsNode);
-    clear_node(m_sceneNode);
-
-    clear_node(m_texturesLibChanges);
-    clear_node(m_materialsLibChanges);
-    clear_node(m_lightsLibChanges);
-    clear_node(m_cameraLibChanges);
-    clear_node(m_geometryLibChanges);
-    clear_node(m_settingsNodeChanges);
-    clear_node(m_sceneNodeChanges);
-
-    m_commitId = 0;
-    m_vbCache.Clear();
-    m_textureCache.clear();
-    m_iesCache.clear();
-
-    m_materialToMeshDependency.clear();
-    m_shadowCatchers.clear();
-  }
+  void init(bool a_emptyvb);
+  void init_existing(bool a_emptyVB);
+  void clear();
 
   int32_t m_commitId;
   std::wstring m_path;
@@ -587,14 +505,17 @@ struct HRRender : public HRObject<IHRRender>
   }
 };
 
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#define TEMP_BUFFER_MAX_SIZE_DONT_FREE 104857600
+
 struct HRObjectManager
 {
-  HRObjectManager() : m_pFactory(nullptr), m_pDriver(nullptr), m_currSceneId(0), m_currRenderId(0), m_currCamId(0),
+  HRObjectManager() : m_pFactory(nullptr), m_pDriver(nullptr), m_pImgTool(nullptr), m_currSceneId(0), m_currRenderId(0), m_currCamId(0),
                       m_copyTexFilesToLocalStorage(false), m_useLocalPath(true), m_emptyVB(false) {}
  
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
@@ -626,12 +547,14 @@ struct HRObjectManager
 
   std::vector<int> m_tempBuffer;
   std::wstring     m_tempPathToChangeFile;
+  std::vector<int> EmptyBuffer() { return std::vector<int>(); }
 
   void CommitChanges(pugi::xml_document& a_from, pugi::xml_document& a_to);
   IHydraFactory* m_pFactory; // actual Factory
 
-  std::shared_ptr<IHRRenderDriver> m_pDriver;
+  std::shared_ptr<IHRRenderDriver>     m_pDriver;
   std::unordered_set<IHRRenderDriver*> driverAllocated;
+  std::shared_ptr<IHRImageTool>        m_pImgTool;
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 

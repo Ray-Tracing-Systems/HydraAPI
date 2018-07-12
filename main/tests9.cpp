@@ -105,20 +105,30 @@ bool test98_motion_blur()
   /////////////////////////////////////////////////////////
   
   hrRenderEnableDevice(renderRef, 0, true);
-  hrRenderLogDir(renderRef, L"/home/frol/hydra/", true);
+  //hrRenderLogDir(renderRef, L"/home/frol/hydra/", true);
   //hrRenderLogDir(renderRef, L"C:/[Hydra]/logs/", true);
+  
+  const int samplesPerSubFrame = 32;
   
   hrRenderOpen(renderRef, HR_OPEN_EXISTING);
   {
     auto node = hrRenderParamNode(renderRef);
-    node.child(L"maxRaysPerPixel").text() = 16*2;
+    node.force_child(L"maxRaysPerPixel").text() = samplesPerSubFrame*2;
+    node.force_child(L"dont_run").text()        = 1;
   }
   hrRenderClose(renderRef);
   
   hrCommit(scnRef, renderRef);
   
-  hrRenderCommand(renderRef, L"start -statefile statex_00001.xml");
-  
+  // tell render to render subframe with exact samples number
+  //
+  {
+    std::wstringstream strOut;
+    strOut << L"runhydra -cl_device_id 0 -contribsamples 32 -maxsamples 64 -statefile statex_00001.xml "; // << L"-contribsamples " << samplesPerSubFrame;
+    auto str = strOut.str();
+    hrRenderCommand(renderRef, str.c_str());
+  }
+
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -142,12 +152,19 @@ bool test98_motion_blur()
   
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_98/z_out.png");
   
-  std::cout << "before sleep" << std::endl;
-  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-  std::cout << "after sleep" << std::endl;
+  //std::cout << "before sleep" << std::endl;
+  //std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  //std::cout << "after sleep" << std::endl;
   
-  hrRenderCommand(renderRef, L"continue -statefile statex_00009.xml");
-  
+  // tell render to render subframe with exact samples number
+  //
+  {
+    std::wstringstream strOut;
+    strOut << L"runhydra -cl_device_id 0 -contribsamples 32 -maxsamples 64 -statefile statex_00009.xml "; // << L"-contribsamples " << samplesPerSubFrame;
+    auto str = strOut.str();
+    hrRenderCommand(renderRef, str.c_str());
+  }
+
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -2576,8 +2593,8 @@ bool test63_cornell_with_caustic_from_torus()
     pList = pList->next;
   }
 
-  //hrRenderEnableDevice(renderRef, 0, true);
-  hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
+  hrRenderEnableDevice(renderRef, 1, true);
+  //hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
