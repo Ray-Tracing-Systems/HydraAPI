@@ -1,1 +1,0 @@
-Copy bin2 folder to "C:/[Hydra]/" fo form "C:/[Hydra]/bin2" 
