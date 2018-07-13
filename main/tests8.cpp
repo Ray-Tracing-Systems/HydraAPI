@@ -892,7 +892,7 @@ bool test_126_debug_bump()
       glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -1269,7 +1269,7 @@ bool test51_instance_many_trees_and_opacity()
       glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
   
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
   
       glfwSwapBuffers(g_window);
@@ -1616,7 +1616,7 @@ bool test52_instance_perf_test()
       glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
   
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
   
       glfwSwapBuffers(g_window);
@@ -1805,7 +1805,7 @@ bool test53_crysponza_perf()
       glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -1992,7 +1992,7 @@ bool test54_portalsroom_perf()
       glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);

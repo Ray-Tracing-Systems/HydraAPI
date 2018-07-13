@@ -4,8 +4,10 @@
 #include <vector>
 #include <string.h>
 #include <sstream>
-#include "../hydra_api/LiteMath.h"
 
+#include "simplerandom.h"
+
+#include "../hydra_api/LiteMath.h"
 #include "../hydra_api/HR_HDRImageTool.h"
 using HDRImage4f = HydraRender::HDRImage4f;
 using namespace HydraLiteMath;
@@ -74,12 +76,13 @@ namespace TEST_UTILS
   }
 
 
-  HRTextureNodeRef AddRandomTextureFromMemory(size_t& memTotal)
+  HRTextureNodeRef AddRandomTextureFromMemory(size_t& memTotal, simplerandom::RandomGen& rgen)
   {
-    int choice = rand() % 3;
+    
+    int choice = rand(rgen) % 3;
 
-    int w = rand() % 2048 + 1 + 128;
-    int h = rand() % 2048 + 1 + 128;
+    int w = rand(rgen) % 2048 + 1 + 128;
+    int h = rand(rgen) % 2048 + 1 + 128;
 
     if (choice == 0)      // add LDR texture
     {

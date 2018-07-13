@@ -97,7 +97,13 @@ int main(int argc, const char** argv)
     // run_all_mtl_tests();
     // run_all_ipp_tests();
   
-    test42_load_library_basic();
+    
+    //GEO_TESTS::test_005_instancing();
+    //test55_clear_scene();
+  
+    test24_many_textures_big_data();
+    
+    //test42_load_library_basic();
     //test98_motion_blur();
     
     //std::cout << PP_TESTS::test303_median_in_place() << std::endl;

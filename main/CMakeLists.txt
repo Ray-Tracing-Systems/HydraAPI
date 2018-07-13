@@ -42,7 +42,7 @@ set(SOURCE_FILES
         Timer.cpp
         Timer.h
         utils.cpp
-        #../hydra_api/glad.c
+        simplerandom.h
         )
 
 #set (CMAKE_CXX_FLAGS_DEBUG  "${CMAKE_CXX_FLAGS_DEBUG}")

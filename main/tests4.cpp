@@ -22,6 +22,7 @@
 #endif
 
 #include "mesh_utils.h"
+#include "simplerandom.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -242,12 +243,13 @@ bool test24_many_textures_big_data()
   textures[9] = hrTexture2DCreateFromFile(L"data/textures_gen/texture_big_z07.png");
   
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  srand(777);
+  
+  auto rgen = simplerandom::RandomGenInit(777);
+  
   size_t memTotal = 0;
   for (int i = 0; i < 500; i++)
   {
-    HRTextureNodeRef texRef = AddRandomTextureFromMemory(memTotal);
+    HRTextureNodeRef texRef = AddRandomTextureFromMemory(memTotal, rgen);
   
     if (i % 20 == 0)
       std::cout << "[test_mbg]: total mem = " << memTotal / size_t(1024 * 1024) << " MB, total textures = " << i << "\r";

@@ -448,7 +448,7 @@ bool test35_cornell_with_light()
       glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -881,7 +881,7 @@ bool test37_cornell_with_light_different_image_layers()
       glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -1404,7 +1404,7 @@ bool test38_test_for_mlt()
       glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -1798,7 +1798,7 @@ bool test39_mesh_from_vsgf()
       glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
   
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
   
       glfwSwapBuffers(g_window);
@@ -2193,7 +2193,7 @@ bool test40_several_changes()
       glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -2236,7 +2236,7 @@ bool test40_several_changes()
       glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -2345,7 +2345,7 @@ bool test40_several_changes()
       glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);

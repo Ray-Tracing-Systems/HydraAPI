@@ -8,7 +8,9 @@
 
 #include "../hydra_api/HydraAPI.h"
 #include "../hydra_api/HydraXMLVerify.h"
+
 #include "mesh_utils.h"
+#include "simplerandom.h"
 
 void ErrorCallBack(const wchar_t* message, const wchar_t* callerPlace);
 void InfoCallBack(const wchar_t* message, const wchar_t* callerPlace, HR_SEVERITY_LEVEL a_level);
@@ -36,8 +38,6 @@ void initGLIfNeeded();
 
 
 
-
-
 namespace TEST_UTILS
 {
   bool FileExists(const char* a_fileName);
@@ -46,7 +46,7 @@ namespace TEST_UTILS
   void show_me_texture_ldr(const std::string& a_inFleName, const std::string& a_outFleName);
   void show_me_texture_hdr(const std::string& a_inFleName, const std::string& a_outFleName);
   void CreateTestBigTexturesFilesIfNeeded();
-  HRTextureNodeRef AddRandomTextureFromMemory(size_t& memTotal);
+  HRTextureNodeRef AddRandomTextureFromMemory(size_t& memTotal, simplerandom::RandomGen& rgen);
   HRTextureNodeRef CreateRandomStrippedTextureFromMemory(size_t& a_byteSize);
   std::vector<unsigned int> CreateStripedImageData(unsigned int* a_colors, int a_stripsNum, int w, int h);
   void CreateStripedImageFile(const char* a_fileName, unsigned int* a_colors, int a_stripsNum, int w, int h);
