@@ -1078,10 +1078,10 @@ bool test58_crysponza_and_opacity1_perf()
 
   hrMeshInstance(scnRef, sponzaRef, mRes.L());
 
-  srand(555);
+  auto rgen = simplerandom::RandomGenInit(16384);
   for (int i = 0; i < 100; i++)
   {
-    mTranslate = translate4x4(float3(HydraLiteMath::rnd(-20.0f, 20.0f), HydraLiteMath::rnd(0.0f, 40.0f), HydraLiteMath::rnd(-50.0f, 50.0f)));
+    mTranslate = translate4x4(float3(simplerandom::rnd(rgen, -20.0f, 20.0f), simplerandom::rnd(rgen, 0.0f, 40.0f), simplerandom::rnd(rgen, -50.0f, 50.0f)));
     mRes       = mTranslate;
 
     hrMeshInstance(scnRef, cubeR, mRes.L());

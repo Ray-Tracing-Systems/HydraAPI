@@ -257,15 +257,12 @@ bool test81_custom_attributes()
   return check_images("test_81");
 }
 
-
 namespace hlm = HydraLiteMath;
-
 
 bool test38_licence_plate()
 {
   return false; // not implemented
 }
-
 
 bool test82_proc_texture()
 {
