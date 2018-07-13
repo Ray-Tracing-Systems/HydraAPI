@@ -47,7 +47,7 @@ namespace TEST_UTILS
   void show_me_texture_hdr(const std::string& a_inFleName, const std::string& a_outFleName);
   void CreateTestBigTexturesFilesIfNeeded();
   HRTextureNodeRef AddRandomTextureFromMemory(size_t& memTotal, simplerandom::RandomGen& rgen);
-  HRTextureNodeRef CreateRandomStrippedTextureFromMemory(size_t& a_byteSize);
+  HRTextureNodeRef CreateRandomStrippedTextureFromMemory(size_t& a_byteSize, simplerandom::RandomGen& rgen);
   std::vector<unsigned int> CreateStripedImageData(unsigned int* a_colors, int a_stripsNum, int w, int h);
   void CreateStripedImageFile(const char* a_fileName, unsigned int* a_colors, int a_stripsNum, int w, int h);
   void procTexCheckerHDR(float* a_buffer, int w, int h, void* a_repeat);

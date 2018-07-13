@@ -254,10 +254,10 @@ namespace TEST_UTILS
     }
   }
 
-  HRTextureNodeRef CreateRandomStrippedTextureFromMemory(size_t& a_byteSize)
+  HRTextureNodeRef CreateRandomStrippedTextureFromMemory(size_t& a_byteSize, simplerandom::RandomGen& rgen)
   {
     int TXSZ = 1024;
-    int choice1 = rand() % 3;
+    int choice1 = simplerandom::rand(rgen) % 3;
     if (choice1 == 0)
     {
       a_byteSize += size_t(2048 * 2048 * 4);
@@ -274,7 +274,7 @@ namespace TEST_UTILS
       TXSZ = 1024;
     }
 
-    int choice = rand() % 10;
+    int choice = simplerandom::rand(rgen) % 10;
 
     if (choice == 0)
     {

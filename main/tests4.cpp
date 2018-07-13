@@ -320,12 +320,9 @@ bool test24_many_textures_big_data()
   hrRenderOpen(settingsRef, HR_WRITE_DISCARD);
   {
     pugi::xml_node node = hrRenderParamNode(settingsRef);
-
-    wchar_t temp[256];
-    swprintf(temp, 256, L"%d", 1024);
-    node.append_child(L"width").text().set(temp);
-    swprintf(temp, 256, L"%d", 768);
-    node.append_child(L"height").text().set(temp);
+    
+    node.append_child(L"width").text()  = 512;
+    node.append_child(L"height").text() = 512;
   }
   hrRenderClose(settingsRef);
 
@@ -510,12 +507,9 @@ bool test25_many_textures_big_data()
   hrRenderOpen(settingsRef, HR_WRITE_DISCARD);
   {
     pugi::xml_node node = hrRenderParamNode(settingsRef);
-
-    wchar_t temp[256];
-    swprintf(temp, 256, L"%d", 1024);
-    node.append_child(L"width").text().set(temp);
-    swprintf(temp, 256, L"%d", 768);
-    node.append_child(L"height").text().set(temp);
+    
+    node.append_child(L"width").text()  = 512;
+    node.append_child(L"height").text() = 512;
   }
   hrRenderClose(settingsRef);
 
@@ -700,12 +694,9 @@ bool test26_many_textures_big_data()
   hrRenderOpen(settingsRef, HR_WRITE_DISCARD);
   {
     pugi::xml_node node = hrRenderParamNode(settingsRef);
-
-    wchar_t temp[256];
-    swprintf(temp, 256, L"%d", 1024);
-    node.append_child(L"width").text().set(temp);
-    swprintf(temp, 256, L"%d", 768);
-    node.append_child(L"height").text().set(temp);
+    
+    node.append_child(L"width").text()  = 512;
+    node.append_child(L"height").text() = 512;
   }
   hrRenderClose(settingsRef);
 
@@ -817,12 +808,13 @@ bool test27_many_textures_big_data_from_mem()
   const int NMats = 20;
 
   HRTextureNodeRef textures[NMats];
-  srand(777);
+ 
+  auto rgen = simplerandom::RandomGenInit(768756);
 
   size_t memTotal = 0;
   for (int i = 0; i < 500; i++)
   {
-    HRTextureNodeRef texRef = CreateRandomStrippedTextureFromMemory(memTotal);
+    HRTextureNodeRef texRef = CreateRandomStrippedTextureFromMemory(memTotal, rgen);
     
     if (i < NMats)
       textures[i] = texRef;
@@ -892,12 +884,9 @@ bool test27_many_textures_big_data_from_mem()
   hrRenderOpen(settingsRef, HR_WRITE_DISCARD);
   {
     pugi::xml_node node = hrRenderParamNode(settingsRef);
-
-    wchar_t temp[256];
-    swprintf(temp, 256, L"%d", 1024);
-    node.append_child(L"width").text().set(temp);
-    swprintf(temp, 256, L"%d", 768);
-    node.append_child(L"height").text().set(temp);
+    
+    node.append_child(L"width").text()  = 512;
+    node.append_child(L"height").text() = 512;
   }
   hrRenderClose(settingsRef);
 
@@ -1009,12 +998,13 @@ bool test29_many_textures_and_meshes()
   const int NMats = 100;
 
   HRTextureNodeRef textures[NMats];
-  srand(123);
-
+  
+  auto rgen = simplerandom::RandomGenInit(123);
+  
   size_t memTotal = 0;
   for (int i = 0; i < 300; i++)
   {
-    HRTextureNodeRef texRef = CreateRandomStrippedTextureFromMemory(memTotal);
+    HRTextureNodeRef texRef = CreateRandomStrippedTextureFromMemory(memTotal, rgen);
 
     if (i < NMats)
       textures[i] = texRef;
@@ -1046,9 +1036,8 @@ bool test29_many_textures_and_meshes()
 
   // geometry
   //
-  srand(456);
-
-  HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane", CreatePlane(2.0f), rand() % 20);
+  
+  HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane", CreatePlane(2.0f), simplerandom::rand(rgen) % 20);
 
   std::vector<HRMeshRef> meshes = CreateRandomMeshesArray(1000);
   
@@ -1086,12 +1075,9 @@ bool test29_many_textures_and_meshes()
   hrRenderOpen(settingsRef, HR_WRITE_DISCARD);
   {
     pugi::xml_node node = hrRenderParamNode(settingsRef);
-
-    wchar_t temp[256];
-    swprintf(temp, 256, L"%d", 1024);
-    node.append_child(L"width").text().set(temp);
-    swprintf(temp, 256, L"%d", 768);
-    node.append_child(L"height").text().set(temp);
+    
+    node.append_child(L"width").text()  = 512;
+    node.append_child(L"height").text() = 512;
   }
   hrRenderClose(settingsRef);
 
@@ -1203,12 +1189,13 @@ bool test30_many_textures_and_meshes()
   const int NMats = 100;
 
   HRTextureNodeRef textures[NMats];
-  srand(123);
 
+  auto rgen = simplerandom::RandomGenInit(123);
+  
   size_t memTotal = 0;
   for (int i = 0; i < 300; i++)
   {
-    HRTextureNodeRef texRef = CreateRandomStrippedTextureFromMemory(memTotal);
+    HRTextureNodeRef texRef = CreateRandomStrippedTextureFromMemory(memTotal, rgen);
 
     if (i < NMats)
       textures[i] = texRef;
@@ -1240,9 +1227,7 @@ bool test30_many_textures_and_meshes()
 
   // geometry
   //
-  srand(457);
-
-  HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane", CreatePlane(2.0f), rand() % 20);
+  HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane", CreatePlane(2.0f), simplerandom::rand(rgen) % 20);
 
   std::vector<HRMeshRef> meshes = CreateRandomMeshesArray(600);
 
@@ -1280,12 +1265,9 @@ bool test30_many_textures_and_meshes()
   hrRenderOpen(settingsRef, HR_WRITE_DISCARD);
   {
     pugi::xml_node node = hrRenderParamNode(settingsRef);
-
-    wchar_t temp[256];
-    swprintf(temp, 256, L"%d", 1024);
-    node.append_child(L"width").text().set(temp);
-    swprintf(temp, 256, L"%d", 768);
-    node.append_child(L"height").text().set(temp);
+    
+    node.append_child(L"width").text()  = 512;
+    node.append_child(L"height").text() = 512;
   }
   hrRenderClose(settingsRef);
 

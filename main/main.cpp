@@ -101,7 +101,13 @@ int main(int argc, const char** argv)
     //GEO_TESTS::test_005_instancing();
     //test55_clear_scene();
   
-    test24_many_textures_big_data();
+    //test24_many_textures_big_data();
+    //test25_many_textures_big_data();
+    //test26_many_textures_big_data();
+    //test27_many_textures_big_data_from_mem();
+    //test28_compute_normals();
+    test29_many_textures_and_meshes();
+    test30_many_textures_and_meshes();
     
     //test42_load_library_basic();
     //test98_motion_blur();
