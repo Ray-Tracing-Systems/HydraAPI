@@ -847,17 +847,16 @@ bool test27_many_textures_big_data_from_mem()
 
   // geometry
   //
-  srand(888);
-
-  HRMeshRef cubeRef  = HRMeshFromSimpleMesh(L"my_cube",    CreateCube(0.5f), rand()%20);
+  
+  HRMeshRef cubeRef  = HRMeshFromSimpleMesh(L"my_cube",    CreateCube(0.5f), simplerandom::rand(rgen)%20);
                                                            
-  HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane",   CreatePlane(2.0f), rand() % 20);
-  HRMeshRef sphRef   = HRMeshFromSimpleMesh(L"my_sphere",  CreateSphere(0.5f, 32), rand()%20);
+  HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane",   CreatePlane(2.0f), simplerandom::rand(rgen) % 20);
+  HRMeshRef sphRef   = HRMeshFromSimpleMesh(L"my_sphere",  CreateSphere(0.5f, 32), simplerandom::rand(rgen)%20);
   HRMeshRef torRef   = HRMeshFromSimpleMesh(L"my_torus",   CreateTorus(0.2f, 0.5f, 32, 32), rand()%20);
 
   HRMeshRef cubeRef2 = HRMeshFromSimpleMesh(L"my_cube2",   CreateCube(0.5f), 8);
   HRMeshRef sphRef2  = HRMeshFromSimpleMesh(L"my_sphere2", CreateSphere(0.5f, 32), 15);
-  HRMeshRef torRef2  = HRMeshFromSimpleMesh(L"my_torus2",  CreateTorus(0.2f, 0.5f, 32, 32), rand()%20);
+  HRMeshRef torRef2  = HRMeshFromSimpleMesh(L"my_torus2",  CreateTorus(0.2f, 0.5f, 32, 32), simplerandom::rand(rgen)%20);
 
   // camera
   //
