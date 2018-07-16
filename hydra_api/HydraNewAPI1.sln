@@ -16,6 +16,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "clew", "..\clew\clew.vcxpro
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PostProcess", "..\PostProcessDLL\PostProcessDLLTrofimm.vcxproj", "{999F34F2-BF3C-4D55-AFDF-75235335B1A1}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PostProcessDLLExample", "..\PostProcessDLLExample\PostProcessDLLExample.vcxproj", "{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -86,6 +88,18 @@ Global
 		{999F34F2-BF3C-4D55-AFDF-75235335B1A1}.Release|Win32.Build.0 = Release|Win32
 		{999F34F2-BF3C-4D55-AFDF-75235335B1A1}.Release|x64.ActiveCfg = Release|x64
 		{999F34F2-BF3C-4D55-AFDF-75235335B1A1}.Release|x64.Build.0 = Release|x64
+		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Debug|Win32.Build.0 = Debug|Win32
+		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Debug|x64.ActiveCfg = Debug|x64
+		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Debug|x64.Build.0 = Debug|x64
+		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Release|Win32.ActiveCfg = Release|Win32
+		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Release|Win32.Build.0 = Release|Win32
+		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Release|x64.ActiveCfg = Release|x64
+		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
