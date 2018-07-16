@@ -1032,7 +1032,7 @@ HAPI void hrFlush(HRSceneInstRef a_pScn = HRSceneInstRef(),
 
 typedef int32_t HR_IDType;
 
-constexpr int64_t VIRTUAL_BUFFER_SIZE = int64_t(4096)*int64_t(1024 * 1024);
+constexpr int64_t VIRTUAL_BUFFER_SIZE = int64_t(2048)*int64_t(1024 * 1024);
 
 
 
