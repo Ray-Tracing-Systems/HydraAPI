@@ -273,7 +273,7 @@ protected:
 struct VirtualBuffer
 {
   VirtualBuffer() : m_data(nullptr), m_chunkTable(nullptr), m_dataHalfCurr(nullptr), m_dataHalfFree(nullptr),
-                    m_currTop(0), m_currSize(0), m_totalSize(0), m_totalSizeAllocated(0), m_pTempBuffer(nullptr)
+                    m_currTop(0), m_currSize(0), m_totalSize(0), m_totalSizeAllocated(0), m_pTempBuffer(nullptr), m_owner(false)
   {
   #ifdef WIN32
     m_fileHandle = 0;
@@ -283,6 +283,9 @@ struct VirtualBuffer
   }
 
   bool Init(uint64_t a_sizeInBytes, const char* a_shmemName, std::vector<int>* a_pTempBuffer);
+  bool Attach(uint64_t a_sizeInBytes, const char* a_shmemName, std::vector<int>* a_pTempBuffer);
+  void RestoreChunks();
+  
   void Destroy();
   void Clear();
   void FlushToDisc();
@@ -337,6 +340,8 @@ protected:
   std::vector<ChunkPointer> m_allChunks;
   std::vector<size_t>       m_chunksIdInMemory;
   std::vector<int>*         m_pTempBuffer;
+  
+  bool m_owner;
 };
 
 std::wstring ChunkName(const ChunkPointer& a_chunk);

@@ -103,7 +103,8 @@ bool VirtualBuffer::Init(uint64_t a_sizeInBytes, const char* a_shmemName, std::v
   else
   {
     m_fileDescriptor = shm_open(a_shmemName, O_CREAT | O_RDWR | O_TRUNC, 0777);
-    ftruncate(m_fileDescriptor, a_sizeInBytes);
+    if(ftruncate(m_fileDescriptor, a_sizeInBytes) == -1)
+      HrError(L"VirtualBuffer::FATAL ERROR: shmem file can not be resized (ftruncate error)");
 
     m_data = mmap(nullptr, a_sizeInBytes, PROT_READ | PROT_WRITE, MAP_SHARED, m_fileDescriptor, 0);
     if(m_data == MAP_FAILED)
@@ -128,7 +129,100 @@ bool VirtualBuffer::Init(uint64_t a_sizeInBytes, const char* a_shmemName, std::v
   
   Clear();
   m_pTempBuffer = a_pTempBuffer;
+  m_owner       = true;
   return true;
+}
+
+
+bool VirtualBuffer::Attach(uint64_t a_sizeInBytes, const char* a_shmemName, std::vector<int>* a_pTempBuffer)
+{
+  if (a_sizeInBytes % 1024 != 0)
+  {
+    HrError(L"VirtualBuffer::FATAL ERROR: bad virtual buffer size");
+    return false;
+  }
+  
+  m_totalSize = 0;
+  if(a_sizeInBytes > 4096)                                        // don't init table if single page wa allocated, dummy virtual buffer.
+    a_sizeInBytes += (VB_CHUNK_TABLE_OFFS + VB_CHUNK_TABLE_SIZE); // alloc memory for both virtual buffer and chunks table
+
+#ifdef WIN32
+
+
+#else
+  
+  shmemName = std::string(a_shmemName);
+  if (gDebugMode)
+    return false;
+  else
+  {
+    m_fileDescriptor = shm_open(a_shmemName, O_RDWR, 0777);
+    if(m_fileDescriptor == -1)
+    {
+      HrError(L"VirtualBuffer::FATAL ERROR: can not attach to shmem file (shm_open)");
+      return false;
+    }
+    
+    m_data = mmap(nullptr, a_sizeInBytes, PROT_READ, MAP_SHARED, m_fileDescriptor, 0);
+    if(m_data == MAP_FAILED)
+    {
+      HrError(L"VirtualBuffer::FATAL ERROR: can not attach to shmem file (mmap)");
+      close(m_fileDescriptor);
+      return false;
+    }
+  }
+  
+  if (m_data == nullptr)
+  {
+    HrError(L"VirtualBuffer::FATAL ERROR: shmem file can not be mapped");
+    return false;
+  }
+  
+#endif
+  
+  if(a_sizeInBytes > 4096) // don't init table if single page was allocated only, dummy virtual buffer.
+  {
+    m_chunkTable = (int64_t *) (((char *) m_data) + m_totalSize + VB_CHUNK_TABLE_OFFS);
+  }
+  
+  Clear();
+  m_pTempBuffer = a_pTempBuffer;
+  m_owner       = false;
+  return true;
+}
+
+void VirtualBuffer::RestoreChunks()
+{
+  const int64_t* table = ChunksTablePtr();
+  if(table == nullptr)
+    return;
+
+  // (1) scan table to find last chunk
+  //
+  auto chunkOffset = 0;
+  size_t i         = 0;
+  size_t lastI     = i;
+  
+  const auto maxChunks = (VB_CHUNK_TABLE_SIZE)/sizeof(int64_t) - 2;
+  
+  do {
+  
+    i++;
+    chunkOffset = table[i];
+    lastI       = i;
+    
+  } while(chunkOffset != 0 && i < maxChunks);
+  
+  // (2) restore chunk pointers (their localAddresses)
+  //
+  m_allChunks.resize(lastI);
+  
+  for(size_t j=0;j<m_allChunks.size();j++)
+  {
+    m_allChunks[j].id           = j;
+    m_allChunks[j].localAddress = uint64_t(table[j]);
+  }
+
 }
 
 void VirtualBuffer::Destroy()

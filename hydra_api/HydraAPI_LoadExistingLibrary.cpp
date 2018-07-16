@@ -330,7 +330,7 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
 
   // (2) set change id to curr value
   //
-  g_objManager.scnData.changeId = stateId;
+  g_objManager.scnData.changeId   = stateId;
   g_objManager.scnData.m_commitId = stateId;
 
   // (3) load textures
