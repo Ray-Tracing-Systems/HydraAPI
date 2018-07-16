@@ -91,7 +91,7 @@ int main(int argc, const char** argv)
   
   try
   {
-    // run_all_api_tests(81);
+    run_all_api_tests();
 	  // run_all_geo_tests();
     // run_all_lgt_tests();
     // run_all_mtl_tests();
@@ -99,7 +99,7 @@ int main(int argc, const char** argv)
   
   
     //test39_mesh_from_vsgf();
-    test42_load_library_basic();
+    //test42_load_library_basic();
     
     //test38_licence_plate();
     //std::cout << test39_mesh_from_vsgf() << std::endl;
