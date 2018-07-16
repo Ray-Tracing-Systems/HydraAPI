@@ -361,11 +361,11 @@ namespace TEST_UTILS
       int choice = simplerandom::rand(rgen) % 3;
 
       if (choice == 0)
-        meshes[i] = HRMeshFromSimpleMesh(L"my_cube", CreateCube(0.5f), rand() % 50);
+        meshes[i] = HRMeshFromSimpleMesh(L"my_cube", CreateCube(0.5f), simplerandom::rand(rgen) % 50);
       else if (choice == 1)
-        meshes[i] = HRMeshFromSimpleMesh(L"my_sphere", CreateSphere(0.5f, 128), rand() % 50);
+        meshes[i] = HRMeshFromSimpleMesh(L"my_sphere", CreateSphere(0.5f, 128), simplerandom::rand(rgen) % 50);
       else
-        meshes[i] = HRMeshFromSimpleMesh(L"my_torus2", CreateTorus(0.2f, 0.5f, 128, 128), rand() % 50);
+        meshes[i] = HRMeshFromSimpleMesh(L"my_torus2", CreateTorus(0.2f, 0.5f, 128, 128), simplerandom::rand(rgen) % 50);
 
       if (i % 20 == 0)
         std::cout << "[test_mbm]: MB, total meshes = " << i << "\r";
