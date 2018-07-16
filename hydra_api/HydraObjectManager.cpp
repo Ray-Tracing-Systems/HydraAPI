@@ -669,7 +669,16 @@ void HRSceneData::init_existing(bool a_emptyVB)
   m_trashNode = m_xmlDocChanges.child(L"trash");
 
   if (a_emptyVB)
+  {
+    // (1) try to attach to existing buffer, caus it is 'init_existing'
+    //
+    
+    
+    
+    // (2) if fail, init single page only
+    //
     m_vbCache.Init(4096, "NOSUCHSHMEM", &g_objManager.m_tempBuffer);
+  }
   else
     m_vbCache.Init(VIRTUAL_BUFFER_SIZE, "HYDRAAPISHMEM2", &g_objManager.m_tempBuffer);
 }

@@ -972,7 +972,23 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
   size_t chunks = g_objManager.scnData.m_vbCache.size();
   force_attrib(g_objManager.scnData.m_geometryLib, L"total_chunks").set_value(chunks);
   force_attrib(g_objManager.scnData.m_texturesLib, L"total_chunks").set_value(chunks);
-
+  
+  // put chunks addresses in chunk table.
+  // note that you don't have to lock mutex due to all data is appended to the end of virtual buffer.
+  // due to this new object should not damadge previouse and only garbage collector operation must lock mutex
+  //
+  int64_t* chunkTable = g_objManager.scnData.m_vbCache.ChunksTablePtr();
+  if(chunkTable != nullptr)
+  {
+    const size_t chunksNum = g_objManager.scnData.m_vbCache.size();
+    for(size_t i=0;i<chunksNum;i++)
+    {
+      const auto& chunk = g_objManager.scnData.m_vbCache.chunk_at(i);
+      if(chunk.InMemory())
+        chunkTable[i] = int64_t(chunk.localAddress);
+    }
+  }
+  
   // clear temporary trash and changes xml
   // 
   clear_node_childs(g_objManager.trash_node()); 

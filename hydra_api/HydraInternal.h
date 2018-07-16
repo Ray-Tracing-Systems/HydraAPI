@@ -240,7 +240,8 @@ struct ChunkPointer
   ChunkPointer(VirtualBuffer* a_pVB) : localAddress(-1), sizeInBytes(0), id(0), inUse(true), pVB(a_pVB), useCounter(0), type(CHUNK_TYPE_UNKNOWN) {}
 
   void* GetMemoryNow();
-
+  const void* GetMemoryNow() const;
+  
   //void SwapToMemory();
   void SwapToDisk();
   bool InMemory() const { return (localAddress != uint64_t(-1)); }
@@ -271,7 +272,7 @@ protected:
 
 struct VirtualBuffer
 {
-  VirtualBuffer() : m_data(nullptr), m_dataHalfCurr(nullptr), m_dataHalfFree(nullptr), 
+  VirtualBuffer() : m_data(nullptr), m_chunkTable(nullptr), m_dataHalfCurr(nullptr), m_dataHalfFree(nullptr),
                     m_currTop(0), m_currSize(0), m_totalSize(0), m_totalSizeAllocated(0), m_pTempBuffer(nullptr)
   {
   #ifdef WIN32
@@ -296,12 +297,18 @@ struct VirtualBuffer
   inline ChunkPointer  chunk_at(size_t a_id) const { return m_allChunks[a_id]; }
   inline ChunkPointer& chunk_at(size_t a_id)       { return m_allChunks[a_id]; }
 
-  inline uint64_t GetCacheSizeInBytes() const { return m_currSize; }
-
+  inline uint64_t       SizeInBytes()    const { return m_currSize; }
+  
+  inline const int64_t* ChunksTablePtr() const { return m_chunkTable; }
+  inline int64_t*       ChunksTablePtr()       { return m_chunkTable; }
+  
 protected:
 
   friend struct ChunkPointer;
-
+  
+  constexpr static size_t VB_CHUNK_TABLE_SIZE = sizeof(int64_t)*99999;
+  constexpr static size_t VB_CHUNK_TABLE_OFFS = 1024;
+  
   char* AllocInCacheNow(uint64_t a_sizeInBytes);
   void* AllocInCache(uint64_t a_sizeInBytes); ///< Always alloc aligned 16 byte memory;
   void  RunCopyingCollector();
@@ -309,7 +316,8 @@ protected:
 
   inline uint64_t maxAccumulatedSize() const { return m_currSize / 2; }
 
-  void* m_data;
+  void*    m_data;
+  int64_t* m_chunkTable;
 
   char* m_dataHalfCurr;
   char* m_dataHalfFree;

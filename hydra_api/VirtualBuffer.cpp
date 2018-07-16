@@ -15,7 +15,7 @@
 
 #include <math.h>
 
-static constexpr bool gDebugMode     = true;
+static constexpr bool gDebugMode     = false;
 static constexpr bool gCopyCollector = false;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -58,8 +58,11 @@ bool VirtualBuffer::Init(uint64_t a_sizeInBytes, const char* a_shmemName, std::v
     a_sizeInBytes = totalMem / 4;
 #endif
   
+  
   m_totalSize   = a_sizeInBytes;
-  //a_sizeInBytes = gCopyCollector ? a_sizeInBytes : a_sizeInBytes / 2; //#NOTE: HACK
+  
+  if(a_sizeInBytes > 4096)                                        // don't init table if single page wa allocated, dummy virtual buffer.
+    a_sizeInBytes += (VB_CHUNK_TABLE_OFFS + VB_CHUNK_TABLE_SIZE); // alloc memory for both virtual buffer and chunks table
 
 #ifdef WIN32
   DWORD imageSizeL = a_sizeInBytes & 0x00000000FFFFFFFF;
@@ -116,7 +119,13 @@ bool VirtualBuffer::Init(uint64_t a_sizeInBytes, const char* a_shmemName, std::v
     return false;
   }
 #endif
-
+  
+  if(a_sizeInBytes > 4096) // don't init table if single page was allocated only, dummy virtual buffer.
+  {
+    m_chunkTable = (int64_t *) (((char *) m_data) + m_totalSize + VB_CHUNK_TABLE_OFFS);
+    memset(m_chunkTable, 0, VB_CHUNK_TABLE_SIZE);
+  }
+  
   Clear();
   m_pTempBuffer = a_pTempBuffer;
   return true;
@@ -396,6 +405,18 @@ void VirtualBuffer::FlushToDisc()
 
 
 void* ChunkPointer::GetMemoryNow()
+{
+  if (InMemory())
+  {
+    return pVB->m_dataHalfCurr + localAddress;
+  }
+  else
+  {
+    return nullptr; // #TODO: Swap chunk to memory (m_tempBuffer) and get fucking pointer
+  }
+}
+
+const void* ChunkPointer::GetMemoryNow() const
 {
   if (InMemory())
   {
