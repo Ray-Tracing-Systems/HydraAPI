@@ -106,8 +106,8 @@ bool test42_load_library_basic()
 
   auto timeBeg = std::chrono::system_clock::now();
   
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
+  glViewport(0, 0, 1024, 1024);
+  std::vector<int32_t> image(1024 * 1024);
 
   while (true)
   {
@@ -117,10 +117,10 @@ bool test42_load_library_basic()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 1024, &image[0]);
       
       glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+      glDrawPixels(1024, 1024, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();

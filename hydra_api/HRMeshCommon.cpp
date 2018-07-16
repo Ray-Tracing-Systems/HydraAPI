@@ -413,7 +413,7 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
 
 std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromFile(HRMesh* pSysObj, const std::wstring& a_fileName, pugi::xml_node a_node)
 {
-  int64_t totalByteSize = a_node.attribute(L"bytesize").as_llong();
+  const int64_t totalByteSize = a_node.attribute(L"bytesize").as_llong();
 
   if(totalByteSize <= 0)
     return nullptr;
@@ -424,8 +424,8 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromFile(HRMesh* pSysObj,
   if(mindicesNode == nullptr)
     mindicesNode = a_node.child(L"mindices");
 
-  int64_t moffset = mindicesNode.attribute(L"offset").as_llong();
-  int64_t msize   = mindicesNode.attribute(L"bytesize").as_llong();
+  const int64_t moffset = mindicesNode.attribute(L"offset").as_llong();
+  const int64_t msize   = mindicesNode.attribute(L"bytesize").as_llong();
 
   std::vector<uint32_t> mindices(a_node.attribute(L"triNum").as_int());
 
@@ -442,6 +442,7 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromFile(HRMesh* pSysObj,
   pMeshImpl->m_vertNum     = a_node.attribute(L"vertNum").as_int();
   pMeshImpl->m_indNum      = a_node.attribute(L"triNum").as_int()*3;
   pMeshImpl->m_matDrawList = FormMatDrawListRLE(mindices);
+  pMeshImpl->m_chunkId     = ChunkIdFromFileName(a_fileName.c_str());
 
   BBox bbox;
   HydraXMLHelpers::ReadBBox(a_node, bbox);

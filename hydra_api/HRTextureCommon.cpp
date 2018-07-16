@@ -337,60 +337,53 @@ std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTexture2DFromFile(HRTe
   }
 }
 
-
-std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTextureInfoFromChunkFile(HRTextureNode* pSysObj, const wchar_t* a_chunkFileName)
+int32_t ChunkIdFromFileName(const wchar_t* a_chunkFileName)
 {
-  const std::wstring chunkFileName(a_chunkFileName);
+  std::wstring fileName(a_chunkFileName);
+  
+  auto posBeg = fileName.find(L"chunk_") + 6;
+  auto posEnd = fileName.find_last_of(L".");
+  
+  if(posBeg == std::wstring::npos || posEnd == std::wstring::npos)
+    return -1;
+  
+  auto strid  = fileName.substr(posBeg, posEnd - posBeg);
+  
+  return wcstol(strid.c_str(), NULL, 0);
+}
 
-  int wh[2] = {0,0};
-  int bpp = 4;
-
-  if (chunkFileName.find(L".image4ub") != std::wstring::npos)
-    bpp = 4;
-  else if(chunkFileName.find(L".image4f") != std::wstring::npos)
-    bpp = 16;
-
-#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
-  std::wstring s1(a_chunkFileName);
-  std::string  s2(s1.begin(), s1.end());
-  std::ifstream fin(s2.c_str(), std::ios::binary);
-#elif defined WIN32
-  std::ifstream fin(a_chunkFileName, std::ios::binary);
-#endif
-
-  fin.read((char*)wh, sizeof(int) * 2);
-  fin.close();
+std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTextureInfoFromChunkFile(HRTextureNode* pSysObj, const wchar_t* a_chunkFileName, pugi::xml_node a_node)
+{
+  // width="64" height="64" bytesize="16384"
+  int wh[2];
+  wh[0] = a_node.attribute(L"width").as_int();
+  wh[1] = a_node.attribute(L"height").as_int();
+  
+  if(wh[0] == 0 || wh[1] == 0)
+    return nullptr;
+  
+  const size_t bytesize = size_t(a_node.attribute(L"bytesize").as_llong());
+  const int bpp         = int( bytesize/(wh[0]*wh[1]) );
 
   // now put all this to a custom implementations of IHRTextureNode
   //
   struct BitmapInfo : public IHRTextureNode
   {
-    uint64_t chunkId() const { return m_chunkId; }
-    uint32_t width()   const { return m_width; }
-    uint32_t height()  const { return m_height; }
-    uint32_t bpp()     const { return m_bpp; }
-
+    uint64_t chunkId() const override { return m_chunkId; }
+    uint32_t width()   const override { return m_width;   }
+    uint32_t height()  const override { return m_height;  }
+    uint32_t bpp()     const override { return m_bpp;     }
+    
     uint64_t m_chunkId;
+    
     uint32_t m_width;
     uint32_t m_height;
     uint32_t m_bpp;
   };
 
-  // cut id of chunk and convert it from string to int
-  //
-  // auto idBeginPos = chunkFileName.find(L"chunk_") + wcslen(L"chunk_");
-  // auto idEndPos   = chunkFileName.find(L".image");
-  // auto idStrSize  = idEndPos - idBeginPos;
-  // 
-  // std::wstring id = chunkFileName.substr(idBeginPos, idStrSize);
-  // 
-  // uint64_t chunkId;
-  // std::wstringstream strIn(id.c_str());
-  // strIn >> chunkId;
-
   std::shared_ptr<BitmapInfo> pBitMapIndo = std::make_shared<BitmapInfo>();
 
-  pBitMapIndo->m_chunkId = -1;
+  pBitMapIndo->m_chunkId = ChunkIdFromFileName(a_chunkFileName);
   pBitMapIndo->m_width   = uint32_t(wh[0]);
   pBitMapIndo->m_height  = uint32_t(wh[1]);
   pBitMapIndo->m_bpp     = uint32_t(bpp);

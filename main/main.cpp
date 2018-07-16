@@ -97,25 +97,9 @@ int main(int argc, const char** argv)
     // run_all_mtl_tests();
     // run_all_ipp_tests();
   
-    
-    //GEO_TESTS::test_004_dof();
-    //test55_clear_scene();
   
-    //test24_many_textures_big_data();
-    //test25_many_textures_big_data();
-    //test26_many_textures_big_data();
-    //test27_many_textures_big_data_from_mem();
-    //test28_compute_normals();
-    //test29_many_textures_and_meshes();
-    //test30_many_textures_and_meshes();
-    //test43_test_direct_light();
-  
-    test12_render_ogl_100_random_figures();
-    
-    //test42_load_library_basic();
-    //test98_motion_blur();
-    
-    //std::cout << PP_TESTS::test303_median_in_place() << std::endl;
+    //test39_mesh_from_vsgf();
+    test42_load_library_basic();
     
     //test38_licence_plate();
     //std::cout << test39_mesh_from_vsgf() << std::endl;

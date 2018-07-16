@@ -1145,8 +1145,8 @@ bool test51_instance_many_trees_and_opacity()
   mRot.identity();
 
   mTranslate = translate4x4(float3(-4.75f, 1.0f, 5.0f));
-  mRot = rotate_Y_4x4(60.0f*DEG_TO_RAD);
-  mRes = mul(mTranslate, mRot);
+  mRot       = rotate_Y_4x4(60.0f*DEG_TO_RAD);
+  mRes       = mul(mTranslate, mRot);
 
   hrMeshInstance(scnRef, cubeR, mRes.L());
 
@@ -1164,8 +1164,8 @@ bool test51_instance_many_trees_and_opacity()
         const float3 pos = dist1*float3(float(i), 0.0f, float(j)) + dist1*1.0f*float3(randOffset.x, 0.0f, randOffset.y);
 
         mTranslate = translate4x4(float3(pos.x, 1.0f, pos.z));
-        mRot = rotate_Y_4x4(simplerandom::rnd(rgen, -180.0f*DEG_TO_RAD, +180.0f*DEG_TO_RAD));
-        mRes = mul(mTranslate, mRot);
+        mRot       = rotate_Y_4x4(simplerandom::rnd(rgen, -180.0f*DEG_TO_RAD, +180.0f*DEG_TO_RAD));
+        mRes       = mul(mTranslate, mRot);
 
         hrMeshInstance(scnRef, cubeR, mRes.L());
       }
@@ -1185,9 +1185,9 @@ bool test51_instance_many_trees_and_opacity()
         const float3 pos = dist*float3(float(i), 0.0f, float(j)) + dist*0.5f*float3(randOffset.x, 0.0f, randOffset.y);
 
         mTranslate = translate4x4(pos);
-        mScale = scale4x4(float3(5.0f, 5.0f, 5.0f));
-        mRot = rotate_Y_4x4(simplerandom::rnd(rgen, -180.0f*DEG_TO_RAD, +180.0f*DEG_TO_RAD));
-        mRes = mul(mTranslate, mul(mRot, mScale));
+        mScale     = scale4x4(float3(5.0f, 5.0f, 5.0f));
+        mRot       = rotate_Y_4x4(simplerandom::rnd(rgen, -180.0f*DEG_TO_RAD, +180.0f*DEG_TO_RAD));
+        mRes       = mul(mTranslate, mul(mRot, mScale));
 
         if((simplerandom::rnd(rgen, 0.0f, 1.0f) > 0.5f))
           hrMeshInstance(scnRef, treeRef, mRes.L());
@@ -1543,11 +1543,11 @@ bool test52_instance_perf_test()
       for (int j = -SQUARESIZE1; j < SQUARESIZE1; j++)
       {
         const float2 randOffset = float2(simplerandom::rnd(rgen, -1.0f, 1.0f), simplerandom::rnd(rgen,-1.0f, 1.0f));
-        const float3 pos = dist1*float3(float(i), 0.0f, float(j)) + dist1*1.0f*float3(randOffset.x, 0.0f, randOffset.y);
+        const float3 pos        = dist1*float3(float(i), 0.0f, float(j)) + dist1*1.0f*float3(randOffset.x, 0.0f, randOffset.y);
 
         mTranslate = translate4x4(float3(pos.x, 1.0f, pos.z));
-        mRot = rotate_Y_4x4(simplerandom::rnd(rgen, -180.0f*DEG_TO_RAD, +180.0f*DEG_TO_RAD));
-        mRes = mul(mTranslate, mRot);
+        mRot       = rotate_Y_4x4(simplerandom::rnd(rgen, -180.0f*DEG_TO_RAD, +180.0f*DEG_TO_RAD));
+        mRes       = mul(mTranslate, mRot);
 
         hrMeshInstance(scnRef, cubeR, mRes.L());
       }
@@ -1567,9 +1567,9 @@ bool test52_instance_perf_test()
         const float3 pos = dist*float3(float(i), 0.0f, float(j)) + dist*0.5f*float3(randOffset.x, 0.0f, randOffset.y);
 
         mTranslate = translate4x4(pos);
-        mScale = scale4x4(float3(5.0f, 5.0f, 5.0f));
-        mRot = rotate_Y_4x4(simplerandom::rnd(rgen, -180.0f*DEG_TO_RAD, +180.0f*DEG_TO_RAD));
-        mRes = mul(mTranslate, mul(mRot, mScale));
+        mScale     = scale4x4(float3(5.0f, 5.0f, 5.0f));
+        mRot       = rotate_Y_4x4(simplerandom::rnd(rgen, -180.0f*DEG_TO_RAD, +180.0f*DEG_TO_RAD));
+        mRes       = mul(mTranslate, mul(mRot, mScale));
 
         if ((simplerandom::rnd(rgen, 0.0f, 1.0f) > 0.5f))
           hrMeshInstance(scnRef, treeRef, mRes.L());

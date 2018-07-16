@@ -47,7 +47,7 @@ HRTextureNodeRef _hrTexture2DCreateFromNode(pugi::xml_node a_node)
   g_objManager.scnData.m_textureCache[a_fileName2] = ref.id; // remember texture id for given file name
 
   if (!std::wstring(a_chunkPath).empty())
-    texture.pImpl = g_objManager.m_pFactory->CreateTextureInfoFromChunkFile(&texture, a_chunkPath);
+    texture.pImpl = g_objManager.m_pFactory->CreateTextureInfoFromChunkFile(&texture, a_chunkPath, a_node);
 
   return ref;
 }
