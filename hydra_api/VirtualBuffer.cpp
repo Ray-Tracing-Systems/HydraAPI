@@ -142,7 +142,7 @@ bool VirtualBuffer::Attach(uint64_t a_sizeInBytes, const char* a_shmemName, std:
     return false;
   }
   
-  m_totalSize = 0;
+  m_totalSize = a_sizeInBytes;
   if(a_sizeInBytes > 4096)                                        // don't init table if single page wa allocated, dummy virtual buffer.
     a_sizeInBytes += (VB_CHUNK_TABLE_OFFS + VB_CHUNK_TABLE_SIZE); // alloc memory for both virtual buffer and chunks table
 
@@ -200,21 +200,29 @@ void VirtualBuffer::RestoreChunks()
   // (1) scan table to find last chunk
   //
   const auto maxChunks = (VB_CHUNK_TABLE_SIZE)/sizeof(int64_t) - 2;
-  std::cout << "maxChunks = " << maxChunks << std::endl;
-  std::cout.flush();
-  
+
+  int chunksNum = 0, chunkOffset = 1;
+  do {
+
+    chunksNum++;
+    chunkOffset = table[chunksNum];
+
+  } while(chunksNum < maxChunks && chunkOffset != 0);
+
   // (2) restore chunk pointers (their localAddresses)
   //
-  m_allChunks.resize(maxChunks);
+  m_allChunks.resize(chunksNum);
   
-  for(size_t j=0;j<m_allChunks.size();j++)
+  for(size_t j=0;j<m_allChunks.size()-1;j++)
   {
     m_allChunks[j].id           = j;
     m_allChunks[j].localAddress = uint64_t(table[j]);
-    std::cout << "table[j] = " << table[j] << std::endl;
-    std::cout.flush();
+    m_allChunks[j].sizeInBytes  = table[j+1] - table[j];
   }
 
+  auto last = m_allChunks.size()-1;
+  m_allChunks[last].localAddress = -1;
+  m_allChunks[last].id           = last;
 }
 
 void VirtualBuffer::Destroy()
