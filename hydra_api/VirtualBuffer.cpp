@@ -199,28 +199,20 @@ void VirtualBuffer::RestoreChunks()
 
   // (1) scan table to find last chunk
   //
-  auto chunkOffset = 0;
-  size_t i         = 0;
-  size_t lastI     = i;
-  
   const auto maxChunks = (VB_CHUNK_TABLE_SIZE)/sizeof(int64_t) - 2;
-  
-  do {
-  
-    i++;
-    chunkOffset = table[i];
-    lastI       = i;
-    
-  } while(chunkOffset != 0 && i < maxChunks);
+  std::cout << "maxChunks = " << maxChunks << std::endl;
+  std::cout.flush();
   
   // (2) restore chunk pointers (their localAddresses)
   //
-  m_allChunks.resize(lastI);
+  m_allChunks.resize(maxChunks);
   
   for(size_t j=0;j<m_allChunks.size();j++)
   {
     m_allChunks[j].id           = j;
     m_allChunks[j].localAddress = uint64_t(table[j]);
+    std::cout << "table[j] = " << table[j] << std::endl;
+    std::cout.flush();
   }
 
 }

@@ -986,6 +986,8 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
       const auto& chunk = g_objManager.scnData.m_vbCache.chunk_at(i);
       if(chunk.InMemory())
         chunkTable[i] = int64_t(chunk.localAddress);
+      else
+        chunkTable[i] = int64_t(-1);
     }
   }
   
@@ -1020,14 +1022,12 @@ HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pC
   g_objManager.m_tempPathToChangeFile = cngPath; // postpone g_objManager.scnData.m_xmlDocChanges.save_file(cngPath.c_str(), L"  ");
 
   hrCommit(a_pScn, a_pRender, a_pCam);
+  
   g_objManager.scnData.m_commitId++;
-
   g_objManager.scnData.m_xmlDoc.save_file(newPath.c_str(), L"  ");
-
-
+  
   HRRender* pSettings = g_objManager.PtrById(a_pRender);
-
-
+  
   //////////////
   ////////////// Call utility render driver here
   if(g_objManager.m_pDriver != nullptr)

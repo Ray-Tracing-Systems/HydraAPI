@@ -670,10 +670,10 @@ void HRSceneData::init_existing(bool a_emptyVB)
 
   if (a_emptyVB)
   {
-    bool attached = m_vbCache.Attach(VIRTUAL_BUFFER_SIZE, "HYDRAAPISHMEM2", &g_objManager.m_tempBuffer);
-    if(attached)
-      m_vbCache.RestoreChunks();
-    else
+    // bool attached = m_vbCache.Attach(VIRTUAL_BUFFER_SIZE, "HYDRAAPISHMEM2", &g_objManager.m_tempBuffer);
+    // if(attached)
+    //   m_vbCache.RestoreChunks();
+    // else
       m_vbCache.Init(4096, "NOSUCHSHMEM", &g_objManager.m_tempBuffer); // if fail, init single page only, dummy virtual buffer
   }
   else
