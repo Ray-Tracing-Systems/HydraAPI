@@ -352,13 +352,13 @@ namespace TEST_UTILS
     HydraRender::SaveImageToFile(a_fileName, w, h, (unsigned int*)&imageData[0]);
   }
 
-  std::vector<HRMeshRef> CreateRandomMeshesArray(int a_size)
+  std::vector<HRMeshRef> CreateRandomMeshesArray(int a_size, simplerandom::RandomGen& rgen)
   {
     std::vector<HRMeshRef> meshes(a_size);
 
     for (size_t i = 0; i < meshes.size(); i++)
     {
-      int choice = rand() % 3;
+      int choice = simplerandom::rand(rgen) % 3;
 
       if (choice == 0)
         meshes[i] = HRMeshFromSimpleMesh(L"my_cube", CreateCube(0.5f), rand() % 50);

@@ -375,6 +375,8 @@ void VirtualBuffer::RunCollector(int a_divisor)
 
   if (m_pTempBuffer->size() > maxAccumulatedMemory) // free unneccesary memory of tempBuffer it it was allocated previously too much
     (*m_pTempBuffer) = std::vector<int>();
+
+  m_currTop = top;
 }
 
 void VirtualBuffer::FlushToDisc()

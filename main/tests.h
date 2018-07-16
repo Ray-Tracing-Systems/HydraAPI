@@ -54,7 +54,7 @@ namespace TEST_UTILS
   void procTexCheckerLDR(unsigned char* a_buffer, int w, int h, void* a_repeat);
 
   //geometry
-  std::vector<HRMeshRef> CreateRandomMeshesArray(int a_size);
+  std::vector<HRMeshRef> CreateRandomMeshesArray(int a_size, simplerandom::RandomGen& rgen);
   HRMeshRef HRMeshFromSimpleMesh(const wchar_t* a_name, const SimpleMesh& a_mesh, int a_matId);
 
   //render

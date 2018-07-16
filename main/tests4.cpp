@@ -852,7 +852,7 @@ bool test27_many_textures_big_data_from_mem()
                                                            
   HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane",   CreatePlane(2.0f), simplerandom::rand(rgen) % 20);
   HRMeshRef sphRef   = HRMeshFromSimpleMesh(L"my_sphere",  CreateSphere(0.5f, 32), simplerandom::rand(rgen)%20);
-  HRMeshRef torRef   = HRMeshFromSimpleMesh(L"my_torus",   CreateTorus(0.2f, 0.5f, 32, 32), rand()%20);
+  HRMeshRef torRef   = HRMeshFromSimpleMesh(L"my_torus",   CreateTorus(0.2f, 0.5f, 32, 32), simplerandom::rand(rgen)%20);
 
   HRMeshRef cubeRef2 = HRMeshFromSimpleMesh(L"my_cube2",   CreateCube(0.5f), 8);
   HRMeshRef sphRef2  = HRMeshFromSimpleMesh(L"my_sphere2", CreateSphere(0.5f, 32), 15);
@@ -1038,7 +1038,7 @@ bool test29_many_textures_and_meshes()
   
   HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane", CreatePlane(2.0f), simplerandom::rand(rgen) % 20);
 
-  std::vector<HRMeshRef> meshes = CreateRandomMeshesArray(1000);
+  std::vector<HRMeshRef> meshes = CreateRandomMeshesArray(1000, rgen);
   
   // HRMeshRef cubeRef  = HRMeshFromSimpleMesh(L"my_cube",  CreateCube(0.5f), rand() % 20);
   // 
@@ -1163,15 +1163,16 @@ bool test29_many_textures_and_meshes()
   {
     hrMeshInstance(scnRef, planeRef, &matrixT2[0][0]);
 
-    hrMeshInstance(scnRef, meshes[rand() % (meshes.size() / 2)], &matrixT[0][0]);
-    hrMeshInstance(scnRef, meshes[rand() % (meshes.size() / 2)], &matrixT3[0][0]);
-    hrMeshInstance(scnRef, meshes[rand() % (meshes.size() / 2)], &matrixT4[0][0]);
+    hrMeshInstance(scnRef, meshes[simplerandom::rand(rgen) % (meshes.size() / 2)], &matrixT[0][0]);
+    hrMeshInstance(scnRef, meshes[simplerandom::rand(rgen) % (meshes.size() / 2)], &matrixT3[0][0]);
+    hrMeshInstance(scnRef, meshes[simplerandom::rand(rgen) % (meshes.size() / 2)], &matrixT4[0][0]);
 
-    hrMeshInstance(scnRef, meshes[rand() % (meshes.size() / 2)], &matrixT5[0][0]);
-    hrMeshInstance(scnRef, meshes[rand() % (meshes.size() / 2)], &matrixT6[0][0]);
-    hrMeshInstance(scnRef, meshes[rand() % (meshes.size() / 2)], &matrixT7[0][0]);
+    hrMeshInstance(scnRef, meshes[simplerandom::rand(rgen) % (meshes.size() / 2)], &matrixT5[0][0]);
+    hrMeshInstance(scnRef, meshes[simplerandom::rand(rgen) % (meshes.size() / 2)], &matrixT6[0][0]);
+    hrMeshInstance(scnRef, meshes[simplerandom::rand(rgen) % (meshes.size() / 2)], &matrixT7[0][0]);
   }
   hrSceneClose(scnRef);
+
 
   hrFlush(scnRef, settingsRef);
   hrRenderSaveFrameBufferLDR(settingsRef, L"tests_images/test_29/z_out.png");
@@ -1228,16 +1229,7 @@ bool test30_many_textures_and_meshes()
   //
   HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane", CreatePlane(2.0f), simplerandom::rand(rgen) % 20);
 
-  std::vector<HRMeshRef> meshes = CreateRandomMeshesArray(600);
-
-  // HRMeshRef cubeRef  = HRMeshFromSimpleMesh(L"my_cube",  CreateCube(0.5f), rand() % 20);
-  // 
-  // HRMeshRef sphRef   = HRMeshFromSimpleMesh(L"my_sphere", CreateSphere(0.5f, 32), rand() % 20);
-  // HRMeshRef torRef   = HRMeshFromSimpleMesh(L"my_torus",  CreateTorus(0.2f, 0.5f, 32, 32), rand() % 20);
-  // 
-  // HRMeshRef cubeRef2 = HRMeshFromSimpleMesh(L"my_cube2",   CreateCube(0.5f), 8);
-  // HRMeshRef sphRef2  = HRMeshFromSimpleMesh(L"my_sphere2", CreateSphere(0.5f, 32), 15);
-  // HRMeshRef torRef2  = HRMeshFromSimpleMesh(L"my_torus2",  CreateTorus(0.2f, 0.5f, 32, 32), rand() % 20);
+  std::vector<HRMeshRef> meshes = CreateRandomMeshesArray(600, rgen);
 
   // camera
   //
