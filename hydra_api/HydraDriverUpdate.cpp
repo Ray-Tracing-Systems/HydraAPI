@@ -496,7 +496,7 @@ int32_t HR_DriverUpdateTextures(HRSceneInst& scn, ChangeList& objList, IHRRender
       bpp = texNode.pImpl->bpp();
 
       uint64_t chunkId = texNode.pImpl->chunkId();
-      if (chunkId != uint64_t(-1))
+      if (chunkId != uint64_t(-1) && chunkId < g_objManager.scnData.m_vbCache.size()) // cache may be inactive, so m_vbCache.size() size may be 0
       {
         ChunkPointer chunk = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
         dataPtr = (char*)chunk.GetMemoryNow();
@@ -658,9 +658,11 @@ HRMeshDriverInput HR_GetMeshDataPointers(size_t a_meshId)
   if (chunkId == uint64_t(-1))
     return input;
 
-  ChunkPointer chunk  = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
-  char* dataPtr       = (char*)chunk.GetMemoryNow();
+  ChunkPointer chunk;
+  if(chunkId < g_objManager.scnData.m_vbCache.size())
+    chunk = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
 
+  char* dataPtr = (char*)chunk.GetMemoryNow();
   if (dataPtr == nullptr)
   {
      input.pos4f         = nullptr;
@@ -707,13 +709,11 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, const std::vector<HRBatchIn
   char* dataPtr = nullptr;
   auto chunkId  = mesh.pImpl->chunkId();
 
-  if (chunkId != uint64_t(-1))
+  if (chunkId != uint64_t(-1) && chunkId < g_objManager.scnData.m_vbCache.size())
   {
     ChunkPointer chunk = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
-
     g_objManager.m_tempBuffer.resize(chunk.sizeInBytes / uint64_t(sizeof(int)) + uint64_t(sizeof(int) * 16));
     dataPtr = (char*)&g_objManager.m_tempBuffer[0];
-
     fin.read(dataPtr, chunk.sizeInBytes);
   }
   else

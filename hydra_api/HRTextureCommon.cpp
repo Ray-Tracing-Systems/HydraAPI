@@ -58,8 +58,10 @@ bool IHRTextureNode::ReadDataFromChunkTo(std::vector<int>& a_dataConteiner)
 
 const void* IHRTextureNode::GetData() const
 {
+  if(chunkId() >= g_objManager.scnData.m_vbCache.size())
+    return nullptr;
+  
   auto chunk = g_objManager.scnData.m_vbCache.chunk_at(chunkId());
-
   if (!chunk.InMemory())
     return nullptr;
 
