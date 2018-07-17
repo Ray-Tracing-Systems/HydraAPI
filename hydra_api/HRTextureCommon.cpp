@@ -348,8 +348,10 @@ int32_t ChunkIdFromFileName(const wchar_t* a_chunkFileName)
     return -1;
   
   auto strid  = fileName.substr(posBeg, posEnd - posBeg);
-  
-  return wcstol(strid.c_str(), NULL, 0);
+  std::wstringstream strIn(strid);
+  int res = 0;
+  strIn >> res;
+  return res; //wcstol(strid.c_str(), NULL, 0);
 }
 
 std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTextureInfoFromChunkFile(HRTextureNode* pSysObj, const wchar_t* a_chunkFileName, pugi::xml_node a_node)

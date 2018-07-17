@@ -156,7 +156,7 @@ bool VirtualBuffer::Attach(uint64_t a_sizeInBytes, const char* a_shmemName, std:
     return false;
   else
   {
-    m_fileDescriptor = shm_open(a_shmemName, O_RDWR, 0777);
+    m_fileDescriptor = shm_open(a_shmemName, O_RDONLY, 0777);
     if(m_fileDescriptor == -1)
     {
       HrError(L"VirtualBuffer::FATAL ERROR: can not attach to shmem file (shm_open)");
@@ -218,11 +218,15 @@ void VirtualBuffer::RestoreChunks()
     m_allChunks[j].id           = j;
     m_allChunks[j].localAddress = uint64_t(table[j]);
     m_allChunks[j].sizeInBytes  = table[j+1] - table[j];
+    m_allChunks[j].pVB          = this;
   }
 
   auto last = m_allChunks.size()-1;
-  m_allChunks[last].localAddress = -1;
+  
   m_allChunks[last].id           = last;
+  m_allChunks[last].localAddress = uint64_t(table[last]);
+  m_allChunks[last].sizeInBytes  = 0;
+  m_allChunks[last].pVB          = this;
 }
 
 void VirtualBuffer::Destroy()

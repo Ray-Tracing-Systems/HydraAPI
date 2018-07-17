@@ -82,7 +82,6 @@ HAPI HRMeshRef _hrMeshCreateFromNode(pugi::xml_node a_node)
   mesh.name = std::wstring(a_objectName);
   mesh.id   = ref.id;
   g_objManager.scnData.meshes.push_back(mesh);
-
   g_objManager.scnData.meshes[ref.id].update_this(a_node);
   g_objManager.scnData.meshes[ref.id].id = ref.id;
 
@@ -403,11 +402,14 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
   for(pugi::xml_node renderSettings : g_objManager.scnData.m_settingsNode.children())
     _hrRenderSettingsFromNode(renderSettings);
 
-  // (10) load empty chunks to have correct chunk id for new objects
+  // (10) load empty chunks to have correct chunk id for new objects if we are not in 'attach mode'
   //
-  size_t chunks = size_t(g_objManager.scnData.m_geometryLib.attribute(L"total_chunks").as_llong());
-  g_objManager.scnData.m_vbCache.ResizeAndAllocEmptyChunks(chunks);
-
+  if(!g_objManager.m_emptyVB)
+  {
+    size_t chunks = size_t(g_objManager.scnData.m_geometryLib.attribute(L"total_chunks").as_llong());
+    g_objManager.scnData.m_vbCache.ResizeAndAllocEmptyChunks(chunks);
+  }
+  
   return 0;
 }
 

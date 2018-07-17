@@ -978,7 +978,7 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
   // due to this new object should not damadge previouse and only garbage collector operation must lock mutex
   //
   int64_t* chunkTable = g_objManager.scnData.m_vbCache.ChunksTablePtr();
-  if(chunkTable != nullptr)
+  if(chunkTable != nullptr && !g_objManager.m_emptyVB)
   {
     const size_t chunksNum = g_objManager.scnData.m_vbCache.size();
     for(size_t i=0;i<chunksNum;i++)

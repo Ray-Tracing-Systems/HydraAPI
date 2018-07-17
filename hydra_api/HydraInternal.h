@@ -229,10 +229,10 @@ enum CHUNK_TYPE { CHUNK_TYPE_UNKNOWN  = 0,
 };
 
 
+struct VirtualBuffer;
+
 /**
-
 \brief This is like a smarp pointer, well, may be not so smart ... just a pointer to chunk )
-
 */
 struct ChunkPointer
 {
@@ -256,6 +256,7 @@ struct ChunkPointer
 
 protected:
 
+  friend struct VirtualBuffer;
   VirtualBuffer* pVB;
 };
 
