@@ -29,7 +29,7 @@
 
 #pragma warning(disable:4996) // for wcscpy to be ok
 
-static constexpr bool MODERN_DRIVER_DEBUG = true;
+static constexpr bool MODERN_DRIVER_DEBUG = false;
 
 using HydraRender::HDRImage4f;
 

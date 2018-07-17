@@ -648,7 +648,7 @@ void HRSceneData::init(bool a_emptyvb)
     m_vbCache.Init(VIRTUAL_BUFFER_SIZE, "HYDRAAPISHMEM2", &g_objManager.m_tempBuffer);
 }
 
-void HRSceneData::init_existing(bool a_emptyVB)
+void HRSceneData::init_existing(bool a_attachMode)
 {
   m_texturesLib  = m_xmlDoc.child(L"textures_lib");
   m_materialsLib = m_xmlDoc.child(L"materials_lib");
@@ -668,7 +668,7 @@ void HRSceneData::init_existing(bool a_emptyVB)
 
   m_trashNode = m_xmlDocChanges.child(L"trash");
 
-  if (a_emptyVB)
+  if (a_attachMode)
   {
     bool attached = m_vbCache.Attach(VIRTUAL_BUFFER_SIZE, "HYDRAAPISHMEM2", &g_objManager.m_tempBuffer);
     if(attached)

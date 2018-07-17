@@ -373,7 +373,7 @@ struct HRSceneData : public HRObject<IHRSceneData>
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
   
   void init(bool a_emptyvb);
-  void init_existing(bool a_emptyVB);
+  void init_existing(bool a_attachMode);
   void clear();
 
   int32_t m_commitId;

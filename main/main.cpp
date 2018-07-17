@@ -97,8 +97,8 @@ int main(int argc, const char** argv)
     // run_all_mtl_tests();
     // run_all_ipp_tests();
   
-  
-    test39_mesh_from_vsgf();
+    test35_cornell_with_light();
+    //test39_mesh_from_vsgf();
     //test42_load_library_basic();
     
     //test38_licence_plate();

@@ -218,7 +218,11 @@ void VirtualBuffer::RestoreChunks()
     m_allChunks[j].id           = j;
     m_allChunks[j].localAddress = uint64_t(table[j]);
     m_allChunks[j].sizeInBytes  = table[j+1] - table[j];
-    m_allChunks[j].pVB          = this;
+    
+    if(m_allChunks[j].localAddress == uint64_t(-1))
+      m_allChunks[j].pVB = nullptr;
+    else
+      m_allChunks[j].pVB = this;
   }
 
   auto last = m_allChunks.size()-1;
@@ -226,7 +230,10 @@ void VirtualBuffer::RestoreChunks()
   m_allChunks[last].id           = last;
   m_allChunks[last].localAddress = uint64_t(table[last]);
   m_allChunks[last].sizeInBytes  = 0;
-  m_allChunks[last].pVB          = this;
+  if(m_allChunks[last].localAddress == uint64_t(-1))
+    m_allChunks[last].pVB = nullptr;
+  else
+    m_allChunks[last].pVB = this;
 }
 
 void VirtualBuffer::Destroy()
