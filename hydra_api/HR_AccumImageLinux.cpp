@@ -206,7 +206,6 @@ bool SharedAccumImageLinux::Attach(const char* name, char errMsg[256])
   }
 
   m_buffDescriptor = shm_open(m_shmemName.c_str(), O_RDWR, 0);
-
   if(m_buffDescriptor == -1)
   {
     perror("shm_open");
@@ -218,7 +217,6 @@ bool SharedAccumImageLinux::Attach(const char* name, char errMsg[256])
   totalSize = 0;
 
   m_memory = (char*)mmap(nullptr, totalSize + 1, PROT_READ | PROT_WRITE, MAP_SHARED, m_buffDescriptor, 0);
-
   if(m_memory == MAP_FAILED)
   {
     perror("mmap");
