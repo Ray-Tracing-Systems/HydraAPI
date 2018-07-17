@@ -52,7 +52,7 @@ void HRObjectManager::init(const wchar_t* a_className)
   m_useLocalPath               = false;
   m_copyTexFilesToLocalStorage = false;
   m_sortTriIndices             = false;
-  m_emptyVB                    = false;
+  m_attachMode                    = false;
   m_computeBBoxes              = false;
 
   std::wistringstream instr(a_className);
@@ -71,13 +71,13 @@ void HRObjectManager::init(const wchar_t* a_className)
     else if (std::wstring(name) == L"-sort_indices" && val != 0)
       m_sortTriIndices = true;
     else if (std::wstring(name) == L"-emptyvirtualbuffer" && val != 0)
-      m_emptyVB = true;
+      m_attachMode = true;
     else if (std::wstring(name) == L"-compute_bboxes" && val != 0)
       m_computeBBoxes = true;
   }
 
   m_pFactory = new HydraFactoryCommon;
-  scnData.init(m_emptyVB);
+  scnData.init(m_attachMode);
 
   m_pImgTool = HydraRender::CreateImageTool();
 
@@ -144,7 +144,7 @@ HRMesh* HRObjectManager::PtrById(HRMeshRef a_ref)
 {
   if (scnData.meshes.size() == 0)
     return nullptr;
-  else if (a_ref.id < 0 || a_ref.id >(int32_t)scnData.meshes.size())
+  else if (a_ref.id < 0 || a_ref.id > (int32_t)(scnData.meshes.size()))
   {
     HrError(L"Invalid HRMeshRef, id = ", a_ref.id);
     return nullptr;

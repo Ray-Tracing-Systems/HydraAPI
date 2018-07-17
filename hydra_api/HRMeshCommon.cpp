@@ -419,7 +419,10 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromFile(HRMesh* pSysObj,
     return nullptr;
 
   std::shared_ptr<MeshVSGF> pMeshImpl = std::make_shared<MeshVSGF>(totalByteSize, -1);
-
+  pMeshImpl->m_vertNum     = a_node.attribute(L"vertNum").as_int();
+  pMeshImpl->m_indNum      = a_node.attribute(L"triNum").as_int()*3;
+  pMeshImpl->m_chunkId     = ChunkIdFromFileName(a_fileName.c_str());
+  
   pugi::xml_node mindicesNode = a_node.child(L"matindices");
   if(mindicesNode == nullptr)
     mindicesNode = a_node.child(L"mindices");
@@ -429,20 +432,31 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromFile(HRMesh* pSysObj,
 
   std::vector<uint32_t> mindices(a_node.attribute(L"triNum").as_int());
 
-#ifdef WIN32
-  std::ifstream fin(a_fileName.c_str(), std::ios::binary);   
-#else
-  std::string fileIn(a_fileName.begin(), a_fileName.end());
-  std::ifstream fin(fileIn.c_str(), std::ios::binary);
-#endif
-  fin.seekg(moffset);
-  fin.read((char*)&mindices[0], msize);
-  fin.close();
-
-  pMeshImpl->m_vertNum     = a_node.attribute(L"vertNum").as_int();
-  pMeshImpl->m_indNum      = a_node.attribute(L"triNum").as_int()*3;
+  size_t totalChunks = g_objManager.scnData.m_vbCache.size();
+  
+  ChunkPointer chunk;
+  if(g_objManager.m_attachMode && pMeshImpl->m_chunkId >= 0 && pMeshImpl->m_chunkId < totalChunks)
+    chunk = g_objManager.scnData.m_vbCache.chunk_at(pMeshImpl->m_chunkId);
+  
+  if(chunk.InMemory())
+  {
+    const char* data = (const char*)chunk.GetMemoryNow();
+    memcpy(mindices.data(), data + moffset, msize);
+  }
+  else
+  {
+  #ifdef WIN32
+    std::ifstream fin(a_fileName.c_str(), std::ios::binary);
+  #else
+    std::string fileIn(a_fileName.begin(), a_fileName.end());
+    std::ifstream fin(fileIn.c_str(), std::ios::binary);
+  #endif
+    fin.seekg(moffset);
+    fin.read((char*)mindices.data(), msize);
+    fin.close();
+  }
+  
   pMeshImpl->m_matDrawList = FormMatDrawListRLE(mindices);
-  pMeshImpl->m_chunkId     = ChunkIdFromFileName(a_fileName.c_str());
 
   BBox bbox;
   HydraXMLHelpers::ReadBBox(a_node, bbox);

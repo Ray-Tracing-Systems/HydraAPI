@@ -325,7 +325,7 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
     return -1;
   }
 
-  g_objManager.scnData.init_existing(g_objManager.m_emptyVB);
+  g_objManager.scnData.init_existing(g_objManager.m_attachMode);
 
   // (2) set change id to curr value
   //
@@ -404,7 +404,7 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
 
   // (10) load empty chunks to have correct chunk id for new objects if we are not in 'attach mode'
   //
-  if(!g_objManager.m_emptyVB)
+  if(!g_objManager.m_attachMode)
   {
     size_t chunks = size_t(g_objManager.scnData.m_geometryLib.attribute(L"total_chunks").as_llong());
     g_objManager.scnData.m_vbCache.ResizeAndAllocEmptyChunks(chunks);

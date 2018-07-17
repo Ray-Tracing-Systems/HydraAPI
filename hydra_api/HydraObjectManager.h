@@ -517,7 +517,7 @@ struct HRRender : public HRObject<IHRRender>
 struct HRObjectManager
 {
   HRObjectManager() : m_pFactory(nullptr), m_pDriver(nullptr), m_pImgTool(nullptr), m_currSceneId(0), m_currRenderId(0), m_currCamId(0),
-                      m_copyTexFilesToLocalStorage(false), m_useLocalPath(true), m_emptyVB(false) {}
+                      m_copyTexFilesToLocalStorage(false), m_useLocalPath(true), m_attachMode(false) {}
  
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 
@@ -576,7 +576,7 @@ struct HRObjectManager
   bool m_copyTexFilesToLocalStorage;
   bool m_useLocalPath;
   bool m_sortTriIndices;
-  bool m_emptyVB;
+  bool m_attachMode;
   bool m_computeBBoxes;
 };
 
