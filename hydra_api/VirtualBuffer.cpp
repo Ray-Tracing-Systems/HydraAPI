@@ -152,6 +152,20 @@ bool VirtualBuffer::Attach(uint64_t a_sizeInBytes, const char* a_shmemName, std:
 
 #ifdef WIN32
 
+  m_fileHandle = OpenFileMappingA(FILE_MAP_READ | FILE_MAP_WRITE, 0, a_shmemName);
+  if (m_fileHandle == NULL)
+  {
+    HrError(L"VirtualBuffer::FATAL ERROR: shmem file can not attach (OpenFileMappingA)");
+    return false;
+  }
+
+  m_data = MapViewOfFile(m_fileHandle, FILE_MAP_WRITE | FILE_MAP_READ, 0, 0, 0);
+  if (m_data == nullptr)
+  {
+    CloseHandle(m_fileHandle); m_fileHandle = NULL;
+    HrError(L"VirtualBuffer::FATAL ERROR: shmem file can not be maped (MapViewOfFile)");
+    return false;
+  }
 
 #else
   
@@ -258,7 +272,8 @@ void VirtualBuffer::Destroy()
   if (!gDebugMode)
   {
     munmap(m_data, m_totalSizeAllocated);
-    shm_unlink(shmemName.c_str());
+    if(m_owner)
+      shm_unlink(shmemName.c_str());
     close(m_fileDescriptor);
   }
 #endif

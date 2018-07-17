@@ -20,6 +20,7 @@
 #include "HydraVSGFExport.h"
 #include "RenderDriverOpenGL3_Utility.h"
 
+#include <chrono>
 
 extern HRObjectManager g_objManager;
 extern HR_INFO_CALLBACK  g_pInfoCallback;
