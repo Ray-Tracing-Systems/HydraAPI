@@ -372,8 +372,8 @@ struct HRSceneData : public HRObject<IHRSceneData>
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
   
-  void init(bool a_emptyvb);
-  void init_existing(bool a_attachMode);
+  void init(bool a_emptyvb, HRSystemMutex* a_pVBSysMutexLock);
+  void init_existing(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock);
   void clear();
 
   int32_t m_commitId;
@@ -516,7 +516,7 @@ struct HRRender : public HRObject<IHRRender>
 
 struct HRObjectManager
 {
-  HRObjectManager() : m_pFactory(nullptr), m_pDriver(nullptr), m_pImgTool(nullptr), m_currSceneId(0), m_currRenderId(0), m_currCamId(0),
+  HRObjectManager() : m_pFactory(nullptr), m_pDriver(nullptr), m_pImgTool(nullptr), m_currSceneId(0), m_currRenderId(0), m_currCamId(0), m_pVBSysMutex(nullptr),
                       m_copyTexFilesToLocalStorage(false), m_useLocalPath(true), m_attachMode(false) {}
  
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
@@ -527,7 +527,9 @@ struct HRObjectManager
   int32_t m_currSceneId;
   int32_t m_currRenderId;
   int32_t m_currCamId;
-
+  
+  HRSystemMutex*           m_pVBSysMutex;
+  
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 
   void init(const wchar_t* a_className);

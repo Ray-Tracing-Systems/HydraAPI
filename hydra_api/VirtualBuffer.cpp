@@ -43,8 +43,10 @@ inline uint64_t roundBlocks(uint64_t elems, int threadsPerBlock)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-bool VirtualBuffer::Init(uint64_t a_sizeInBytes, const char* a_shmemName, std::vector<int>* a_pTempBuffer)
+bool VirtualBuffer::Init(uint64_t a_sizeInBytes, const char* a_shmemName, std::vector<int>* a_pTempBuffer, HRSystemMutex* a_mutex)
 {
+  m_pVBMutex = a_mutex;
+  
   if (a_sizeInBytes % 1024 != 0)
   {
     HrError(L"VirtualBuffer::FATAL ERROR: bad virtual buffer size");
@@ -299,7 +301,20 @@ void* VirtualBuffer::AllocInCache(uint64_t a_sizeInBytes)
     
     if (a_sizeInBytes < maxAllowedSize) // swap old objects to disc and put a new object to free memory 
     {
+      if(m_pVBMutex!=nullptr)
+        hr_lock_system_mutex(m_pVBMutex, VB_LOCK_WAIT_TIME_MS);
+      
       RunCopyingCollector();
+      
+      int64_t* chunkTable = ChunksTablePtr(); // we need to clear table right after collector works, because old data is invalid!
+      if(chunkTable != nullptr)               // we can do better of cource here, but clearing should be enought to work corretcly
+      {
+        for(size_t i=0;i<size();i++)
+          chunkTable[i] = int64_t(-1);
+      }
+
+      if(m_pVBMutex!=nullptr)
+        hr_unlock_system_mutex(m_pVBMutex);
       return AllocInCacheNow(a_sizeInBytes);
     }
     else // this object is too big. We can not allocate memory here. Need to store it on disk.
@@ -315,7 +330,21 @@ void* VirtualBuffer::AllocInCache(uint64_t a_sizeInBytes)
     
     if (a_sizeInBytes < maxAllowedSize) // swap old objects to disc and put a new object to free memory 
     {
+      if(m_pVBMutex!=nullptr)
+        hr_lock_system_mutex(m_pVBMutex, VB_LOCK_WAIT_TIME_MS);
+      
       RunCollector(div);
+  
+      int64_t* chunkTable = ChunksTablePtr(); // we need to clear table right after collector works, because old data is invalid!
+      if(chunkTable != nullptr)               // we can do better of cource here, but clearing should be enought to work corretcly
+      {
+        for(size_t i=0;i<size();i++)
+          chunkTable[i] = int64_t(-1);
+      }
+      
+      if(m_pVBMutex!=nullptr)
+        hr_unlock_system_mutex(m_pVBMutex);
+
       return AllocInCacheNow(a_sizeInBytes);
     }
     else // this object is too big. We can not allocate memory here. Need to store it on disk.

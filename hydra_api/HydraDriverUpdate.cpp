@@ -1208,6 +1208,9 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
   
   auto timeBeg = std::chrono::system_clock::now();
   
+  if(g_objManager.m_attachMode)
+    hr_lock_system_mutex(g_objManager.m_pVBSysMutex, VB_LOCK_WAIT_TIME_MS);          // need to lock here because update may load data from virtual buffer
+  
   HR_DriverUpdateCamera(scn, a_pDriver);
   HR_DriverUpdateSettings(scn, a_pDriver);
 
@@ -1224,6 +1227,9 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
   int32_t updatedLights    = HR_DriverUpdateLight    (scn, objList, a_pDriver);
 
   HR_CheckCommitErrors    (scn, objList);
+  
+  if(g_objManager.m_attachMode)
+    hr_unlock_system_mutex(g_objManager.m_pVBSysMutex);
   
   if(g_objManager.m_attachMode)
     HrPrint(HR_SEVERITY_INFO, L"HydraAPI, begin scene ");

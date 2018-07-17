@@ -266,16 +266,18 @@ protected:
   #include <windows.h>
 #endif
 
+struct HRSystemMutex;
+#define VB_LOCK_WAIT_TIME_MS 60000
+
 /**
 \brief Infinite linear memory space that stored on disk and cached in shmem with some strategy (copying collector currently ... ).
        The VirtualBuffer is an allocator or a pool. It is infinite and addressed with uint64_t;
 
 */
-
 struct VirtualBuffer
 {
   VirtualBuffer() : m_data(nullptr), m_chunkTable(nullptr), m_dataHalfCurr(nullptr), m_dataHalfFree(nullptr),
-                    m_currTop(0), m_currSize(0), m_totalSize(0), m_totalSizeAllocated(0), m_pTempBuffer(nullptr), m_owner(false)
+                    m_currTop(0), m_currSize(0), m_totalSize(0), m_totalSizeAllocated(0), m_pTempBuffer(nullptr), m_owner(false), m_pVBMutex(nullptr)
   {
   #ifdef WIN32
     m_fileHandle = 0;
@@ -284,7 +286,7 @@ struct VirtualBuffer
   #endif
   }
 
-  bool Init(uint64_t a_sizeInBytes, const char* a_shmemName, std::vector<int>* a_pTempBuffer);
+  bool Init(uint64_t a_sizeInBytes, const char* a_shmemName, std::vector<int>* a_pTempBuffer, HRSystemMutex* a_mutex);
   bool Attach(uint64_t a_sizeInBytes, const char* a_shmemName, std::vector<int>* a_pTempBuffer);
   void RestoreChunks();
   
@@ -344,6 +346,7 @@ protected:
   std::vector<int>*         m_pTempBuffer;
   
   bool m_owner;
+  HRSystemMutex* m_pVBMutex;
 };
 
 std::wstring ChunkName(const ChunkPointer& a_chunk);

@@ -325,7 +325,7 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
     return -1;
   }
 
-  g_objManager.scnData.init_existing(g_objManager.m_attachMode);
+  g_objManager.scnData.init_existing(g_objManager.m_attachMode, g_objManager.m_pVBSysMutex);
 
   // (2) set change id to curr value
   //
@@ -340,6 +340,9 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
   g_objManager.scnData.materials.reserve(HRSceneData::MATERIAL_RESERVE);
   g_objManager.scnData.cameras.reserve(HRSceneData::CAMERAS_RESERVE);
 
+  if(g_objManager.m_attachMode)
+    hr_lock_system_mutex(g_objManager.m_pVBSysMutex, VB_LOCK_WAIT_TIME_MS); // need to lock here because _hrMeshCreateFromNode may load data from virtual buffer
+  
   for (pugi::xml_node node = g_objManager.scnData.m_texturesLib.first_child(); node != nullptr; node = node.next_sibling())
     _hrTexture2DCreateFromNode(node);
 
@@ -365,6 +368,8 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
 
   g_objManager.scnInst.resize(0);
   
+  if(g_objManager.m_attachMode)
+    hr_unlock_system_mutex(g_objManager.m_pVBSysMutex);
 
   // (8) load instanced objects (i.e. scenes)
   //
