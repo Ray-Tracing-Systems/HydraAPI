@@ -237,8 +237,8 @@ struct VirtualBuffer;
 */
 struct ChunkPointer
 {
-  ChunkPointer()                     : localAddress(-1), sizeInBytes(0), id(0), inUse(true), pVB(nullptr), useCounter(0), type(CHUNK_TYPE_UNKNOWN) {}
-  ChunkPointer(VirtualBuffer* a_pVB) : localAddress(-1), sizeInBytes(0), id(0), inUse(true), pVB(a_pVB), useCounter(0), type(CHUNK_TYPE_UNKNOWN) {}
+  ChunkPointer()                     : localAddress(-1), sizeInBytes(0), id(0), inUse(true), wasSaved(false), pVB(nullptr), useCounter(0), type(CHUNK_TYPE_UNKNOWN) {}
+  ChunkPointer(VirtualBuffer* a_pVB) : localAddress(-1), sizeInBytes(0), id(0), inUse(true), wasSaved(false), pVB(a_pVB), useCounter(0), type(CHUNK_TYPE_UNKNOWN) {}
 
   void* GetMemoryNow();
   const void* GetMemoryNow() const;
@@ -254,6 +254,7 @@ struct ChunkPointer
   
   CHUNK_TYPE type;
   bool       inUse;
+  bool       wasSaved;
 
 protected:
 

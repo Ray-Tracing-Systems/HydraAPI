@@ -546,9 +546,6 @@ void VirtualBuffer::FlushToDisc()
     size_t id = m_chunksIdInMemory[i];
     m_allChunks[id].SwapToDisk();
   }
-
-  // m_chunksIdInMemory.clear();
-  // m_currTop = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -617,6 +614,9 @@ void ChunkPointer::SwapToDisk()
     return;
   }
 
+  if (wasSaved)
+    return;
+
   const std::wstring name = ChunkName(*this);
 #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
   std::wstring s1(name);
@@ -627,8 +627,7 @@ void ChunkPointer::SwapToDisk()
 #endif
   fout.write(pVB->m_dataHalfCurr + localAddress, sizeInBytes);
   fout.close();
-
-  // localAddress = -1;
+  wasSaved = true;
 }
 
 
