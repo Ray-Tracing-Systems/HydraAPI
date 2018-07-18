@@ -706,23 +706,10 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, const std::vector<HRBatchIn
   std::ifstream fin(s2.c_str(), std::ios::binary);
 #elif defined WIN32
   std::ifstream fin(path, std::ios::binary);
-#endif
-  char* dataPtr = nullptr;
-  auto chunkId  = mesh.pImpl->chunkId();
-
-  if (chunkId != uint64_t(-1) && chunkId < g_objManager.scnData.m_vbCache.size())
-  {
-    ChunkPointer chunk = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
-    g_objManager.m_tempBuffer.resize(chunk.sizeInBytes / uint64_t(sizeof(int)) + uint64_t(sizeof(int) * 16));
-    dataPtr = (char*)&g_objManager.m_tempBuffer[0];
-    fin.read(dataPtr, chunk.sizeInBytes);
-  }
-  else
-  {
-    g_objManager.m_tempBuffer.resize(a_byteSize / sizeof(int) + sizeof(int) * 16);
-    dataPtr = (char*)&g_objManager.m_tempBuffer[0];
-    fin.read(dataPtr, a_byteSize);
-  }
+#endif 
+  g_objManager.m_tempBuffer.resize(a_byteSize / sizeof(int) + sizeof(int) * 16);
+  char* dataPtr = (char*)g_objManager.m_tempBuffer.data();
+  fin.read(dataPtr, a_byteSize);
 
   HRMeshDriverInput input;
 
