@@ -85,7 +85,7 @@ static bool HRUtils_GetImageDataFromFreeImageObject(FIBITMAP* converted, char* d
   auto height = FreeImage_GetHeight(converted);
   auto bitsPerPixel = FreeImage_GetBPP(converted);
 
-  if ((bits == 0) || (width == 0) || (height == 0))
+  if (bits == nullptr || width == 0 || height == 0)
     return false;
 
   if (bitsPerPixel <= 32)
@@ -141,7 +141,7 @@ static void FreeImageErrorHandlerHydraInternal(FREE_IMAGE_FORMAT fif, const char
   std::wstringstream strOut;
   strOut << L"(FIF = " << fif << L")";
   const std::wstring wstr = std::wstring(L"[FreeImage ") + strOut.str() + std::wstring(L"]: ") + s2ws(message);
-  HrError(wstr.c_str());
+  HrError(wstr);
 }
 
 
@@ -158,10 +158,9 @@ bool HR_SaveHDRImageToFileHDR_WithFreeImage(const wchar_t* a_fileName, int w, in
   for (int i = 0; i < w*h; i++)
   {
     float4 src = data[i];
-    float3 dst;
-    dst.x = src.x*a_scale;
-    dst.y = src.y*a_scale;
-    dst.z = src.z*a_scale;
+    float3 dst = {src.x*a_scale,
+                  src.y*a_scale,
+                  src.z*a_scale};
     tempData[i] = dst;
   }
 
@@ -273,7 +272,7 @@ void HR_MyDebugSaveBMP(const wchar_t* fname, const int* pixels, int w, int h)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-std::wstring CutFileExt(const std::wstring fileName)
+std::wstring CutFileExt(const std::wstring& fileName)
 {
   auto pos = fileName.find_last_of(L".");
   if (pos == std::wstring::npos)

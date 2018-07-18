@@ -48,10 +48,7 @@ namespace HydraRender
   }
 
 
-  HDRImage4f::~HDRImage4f()
-  {
-
-  }
+  HDRImage4f::~HDRImage4f() = default;
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -477,7 +474,7 @@ namespace HydraRender
     return gKernel;
   }
 
-  void HDRImage4f::gaussBlur(const int BLUR_RADIUS2, float a_sigma)
+  void HDRImage4f::gaussBlur(int BLUR_RADIUS2, float a_sigma)
   {
     _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
     _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
@@ -568,9 +565,9 @@ namespace HydraRender
     float  b = clamp(a_b*255.0f, 0.0f, 255.0f);
     float  a = clamp(a_alpha*255.0f, 0.0f, 255.0f);
 
-    unsigned char red = (unsigned char)r;
+    unsigned char red   = (unsigned char)r;
     unsigned char green = (unsigned char)g;
-    unsigned char blue = (unsigned char)b;
+    unsigned char blue  = (unsigned char)b;
     unsigned char alpha = (unsigned char)a;
 
     return red | (green << 8) | (blue << 16) | (alpha << 24);

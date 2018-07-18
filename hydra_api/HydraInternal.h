@@ -182,25 +182,6 @@ enum HR_LIGHT_DISTR_TYPE {
   HR_LIGHT_DISTR_IES     = 4,
 };
 
-struct HRLightContainerPoint : public IHRLight
-{
-  HRLightContainerPoint(HRLight* a_pSysObject);
-  virtual ~HRLightContainerPoint() {}
-};
-
-struct HRLightContainerArea : public IHRLight
-{
-  HRLightContainerArea(HRLight* a_pSysObject);
-  virtual ~HRLightContainerArea() {}
-};
-
-
-struct HRLightContainerSky : public IHRLight
-{
-  HRLightContainerSky(HRLight* a_pSysObject);
-  virtual ~HRLightContainerSky() {}
-};
-
 
 /// Camera projection type
 

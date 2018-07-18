@@ -210,8 +210,8 @@ static HR_SimpleMesh CreateSphereMeshForLight(int a_matId, float radius, int num
   sphere.triIndices.resize(numberIndices);
   sphere.matIndices.resize(numberIndices / 3);
 
-  for (size_t i = 0; i < sphere.matIndices.size(); i++)
-    sphere.matIndices[i] = a_matId;
+  for (size_t k = 0; k < sphere.matIndices.size(); k++)
+    sphere.matIndices[k] = a_matId;
 
   for (i = 0; i < numberParallels + 1; i++)
   {

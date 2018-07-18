@@ -37,14 +37,14 @@ namespace HydraRender
 
     inline const float* data() const
     {
-      if (m_data.size() == 0) return nullptr;
-      else                    return &m_data[0];
+      if (m_data.empty()) return nullptr;
+      else                return m_data.data();
     }
 
     inline float* data()
     {
-      if (m_data.size() == 0) return nullptr;
-      else                    return &m_data[0];
+      if (m_data.empty()) return nullptr;
+      else                return m_data.data();
     }
 
     void loadFromImage4f(const std::string& a_fileName);
@@ -59,7 +59,7 @@ namespace HydraRender
     void convertFromLDR(float a_gamma, const unsigned int* inData, int a_size);
 
     void medianFilterInPlace(float a_thresholdValue, float avgB);
-    void gaussBlur(const int BLUR_RADIUS2, float a_sigma);
+    void gaussBlur(int BLUR_RADIUS2, float a_sigma);
 
   private:
 
@@ -74,8 +74,8 @@ namespace HydraRender
   {
   public:
 
-    LDRImage1i() {}
-    LDRImage1i(int w, int h, const int* data = nullptr)
+    LDRImage1i()                                        : m_width(0), m_height(0) {}
+    LDRImage1i(int w, int h, const int* data = nullptr) : m_width(0), m_height(0)
     {
       resize(w, h);
       if(data != nullptr)
@@ -97,14 +97,14 @@ namespace HydraRender
 
     inline const int* data() const
     {
-      if (m_data.size() == 0) return nullptr;
-      else                    return &m_data[0];
+      if (m_data.empty()) return nullptr;
+      else                return m_data.data();
     }
 
     inline int* data()
     {
-      if (m_data.size() == 0) return nullptr;
-      else                    return &m_data[0];
+      if (m_data.empty()) return nullptr;
+      else                return m_data.data();
     }
 
     inline       std::vector<int>& dataVector()       { return m_data; }
@@ -125,8 +125,8 @@ namespace HydraRender
 */
 struct IHRImageTool
 {
-  IHRImageTool() {}
-  virtual ~IHRImageTool() {}
+  IHRImageTool()          = default;
+  virtual ~IHRImageTool() = default;
 
   /**
   \brief load image from file to a_data; load both LDR and HDR images
@@ -153,8 +153,8 @@ struct IHRImageTool
   virtual void SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, const int*   a_data) = 0;
 
 private:
-  IHRImageTool(const IHRImageTool& a_rhs) { }
-  IHRImageTool& operator=(const IHRImageTool& a_rhs) { return *this; }
+  IHRImageTool(const IHRImageTool& a_rhs)            = default;
+  IHRImageTool& operator=(const IHRImageTool& a_rhs) = default;
 };
 
 
@@ -162,13 +162,13 @@ class InternalImageTool : public IHRImageTool
 {
 public:
 
-  InternalImageTool() {}
+  InternalImageTool() = default;
 
   bool LoadImageFromFile(const wchar_t* a_fileName,
-    int& w, int& h, int& bpp, std::vector<int>& a_data) override;
+                         int& w, int& h, int& bpp, std::vector<int>& a_data) override;
 
   bool LoadImageFromFile(const wchar_t* a_fileName,
-    int& w, int& h, std::vector<float>& a_data) override;
+                         int& w, int& h, std::vector<float>& a_data) override;
 
   void SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, const float* a_data) override;
   void SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, const int*   a_data) override;

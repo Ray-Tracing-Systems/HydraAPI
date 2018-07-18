@@ -144,7 +144,7 @@ HRMesh* HRObjectManager::PtrById(HRMeshRef a_ref)
 {
   if (scnData.meshes.size() == 0)
     return nullptr;
-  else if (a_ref.id < 0 || a_ref.id > (int32_t)(scnData.meshes.size()))
+  else if (a_ref.id < 0 || a_ref.id > (int)(scnData.meshes.size()))
   {
     HrError(L"Invalid HRMeshRef, id = ", a_ref.id);
     return nullptr;
@@ -157,7 +157,7 @@ HRLight* HRObjectManager::PtrById(HRLightRef a_ref)
 {
   if (scnData.lights.size() == 0)
     return nullptr;
-  else if (a_ref.id < 0 || a_ref.id >(int32_t)scnData.lights.size())
+  else if (a_ref.id < 0 || a_ref.id > (int)scnData.lights.size())
   {
     HrError(L"Invalid HRLightRef, id = ", a_ref.id);
     return nullptr;
@@ -170,7 +170,7 @@ HRMaterial* HRObjectManager::PtrById(HRMaterialRef a_ref)
 {
   if (scnData.materials.size() == 0)
     return nullptr;
-  else if (a_ref.id < 0 || a_ref.id >(int32_t)scnData.materials.size())
+  else if (a_ref.id < 0 || a_ref.id > (int)scnData.materials.size())
   {
     HrError(L"Invalid HRMaterialRef, id = ", a_ref.id);
     return nullptr;
@@ -183,7 +183,7 @@ HRCamera* HRObjectManager::PtrById(HRCameraRef a_ref)
 {
   if (scnData.cameras.size() == 0)
     return nullptr;
-  else if (a_ref.id < 0 || a_ref.id >(int32_t)scnData.cameras.size())
+  else if (a_ref.id < 0 || a_ref.id > (int)scnData.cameras.size())
   {
     //Error(L"Invalid HRCameraRef, id = ", a_ref.id);
     return nullptr;
@@ -196,7 +196,7 @@ HRTextureNode* HRObjectManager::PtrById(HRTextureNodeRef a_ref)
 {
   if (scnData.textures.size() == 0)
     return nullptr;
-  else if (a_ref.id < 0 || a_ref.id >(int32_t)scnData.textures.size())
+  else if (a_ref.id < 0 || a_ref.id > (int)scnData.textures.size())
   {
     //Error(L"Invalid HRTextureNodeRef, id = ", a_ref.id);
     return nullptr;
@@ -209,7 +209,7 @@ HRSceneInst* HRObjectManager::PtrById(HRSceneInstRef a_ref)
 {
   if (scnInst.size() == 0)
     return nullptr;
-  else if (a_ref.id < 0 || a_ref.id > (int32_t)scnInst.size())
+  else if (a_ref.id < 0 || a_ref.id > (int)scnInst.size())
   {
     //Error(L"Invalid HRSceneInstRef, id = ", a_ref.id);
     return nullptr;
@@ -222,7 +222,7 @@ HRRender* HRObjectManager::PtrById(HRRenderRef a_ref)
 {
   if (renderSettings.size() == 0)
     return nullptr;
-  else if (a_ref.id < 0 || a_ref.id > (int32_t)renderSettings.size())
+  else if (a_ref.id < 0 || a_ref.id > (int)renderSettings.size())
   {
     //Error(L"Invalid HRRenderRef, id = ", a_ref.id);
     return nullptr;
