@@ -158,7 +158,9 @@ struct MeshVSGF : public IHRMesh
 
 
 uint64_t MeshVSGF::offset(const wchar_t* a_arrayname) const 
-{ 
+{
+  // auto node = this->xml_node_immediate();
+
   uint64_t offset1 = sizeof(HydraGeomData::Header);
   uint64_t offset2 = offset1 + m_vertNum*sizeof(float)*4; // after pos
   uint64_t offset3 = offset2 + m_vertNum*sizeof(float)*4; // after norm
@@ -202,7 +204,7 @@ std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndi
 {
   std::vector<HRBatchInfo> matDrawList;
 
-  if (matIndices.size() == 0)
+  if (matIndices.empty())
     return matDrawList;
 
   matDrawList.reserve(matIndices.size() / 4);
@@ -218,7 +220,7 @@ std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndi
     {
       // append current tri sequence withe the same material id
       //
-      HRBatchInfo elem;
+      HRBatchInfo elem = {0,0,0};
       elem.matId    = tMatId;
       elem.triBegin = tBegin;
       elem.triEnd   = uint32_t(i);
@@ -242,7 +244,7 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
 {
   const auto& input = pSysObj->m_input;
 
-  if (input.matIndices.size() == 0)
+  if (input.matIndices.empty())
   {
     HrError(L"CreateVSGFFromSimpleInputMesh: input.matIndices.size() == 0");
     return nullptr;
@@ -302,7 +304,7 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
 
   for (auto& arr : pSysObj->m_input.customArrays)
   {
-    if (arr.fdata.size() > 0)
+    if (!arr.fdata.empty())
       totalByteSizeCustom += arr.fdata.size() * sizeof(float);
     else
       totalByteSizeCustom += arr.idata.size() * sizeof(int);
@@ -342,7 +344,7 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
     std::wstring type = L"";
 
     size_t currSize = 0;
-    if (arr.fdata.size() > 0)
+    if (!arr.fdata.empty())
     {
       currSize = arr.fdata.size() * sizeof(float);
       memcpy(memory + currOffset, &arr.fdata[0], currSize);

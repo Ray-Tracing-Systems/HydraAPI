@@ -18,7 +18,7 @@ struct SharedAccumImageLinux : public IHRSharedAccumImage
   SharedAccumImageLinux();
   ~SharedAccumImageLinux() override;
 
-  bool   Create(int w, int h, int d, const char* name, char errMsg[256]) override;
+  bool   Create(int a_width, int a_height, int a_depth, const char* a_name, char a_errMsg[256]) override;
   bool   Attach(const char* name, char errMsg[256]) override;
 
   void Clear() override;
@@ -29,12 +29,12 @@ struct SharedAccumImageLinux : public IHRSharedAccumImage
   HRSharedBufferHeader* Header() override;
   char*   MessageSendData() override;
   char*   MessageRcvData() override;
-  float*  ImageData(int layerNum) override;
+  float*  ImageData(int layerId) override;
 
 private:
 
   void Free();
-  void AttachTo(char* memory);
+  void AttachTo(char* a_memory);
 
   int m_buffDescriptor;
   sem_t* m_mutex;
@@ -267,11 +267,11 @@ void SharedAccumImageLinux::Clear()
 
 void SharedAccumImageLinux::AttachTo(char* a_memory)
 {
-  auto* pHeader = (HRSharedBufferHeader*)m_memory;
+  auto* pHeader = (HRSharedBufferHeader*)a_memory;
 
-  m_msgSend = m_memory + pHeader->messageSendOffset;
-  m_msgRcv  = m_memory + pHeader->messageRcvOffset;
-  m_images  = (float*)(m_memory + pHeader->imageDataOffset);
+  m_msgSend = a_memory + pHeader->messageSendOffset;
+  m_msgRcv  = a_memory + pHeader->messageRcvOffset;
+  m_images  = (float*)(a_memory + pHeader->imageDataOffset);
 }
 
 bool SharedAccumImageLinux::Lock(int a_miliseconds)

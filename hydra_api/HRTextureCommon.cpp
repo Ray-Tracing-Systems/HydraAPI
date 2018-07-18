@@ -6,8 +6,8 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include <stdio.h>
-#include <wchar.h>
+#include <cstdio>
+#include <cwchar>
 
 #pragma warning(disable:4996)
 
@@ -124,8 +124,6 @@ struct BitmapProxy : public IHRTextureNode
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-extern HRObjectManager g_objManager;
 
 std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTexture2DFromMemory(HRTextureNode* pSysObj, int width, int height, int bpp, const void* a_data)
 {
@@ -373,13 +371,15 @@ std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTextureInfoFromChunkFi
   //
   struct BitmapInfo : public IHRTextureNode
   {
+
+    BitmapInfo() : m_chunkId(uint64_t(-1)), m_width(0), m_height(0), m_bpp(0) {}
+
     uint64_t chunkId() const override { return m_chunkId; }
     uint32_t width()   const override { return m_width;   }
     uint32_t height()  const override { return m_height;  }
     uint32_t bpp()     const override { return m_bpp;     }
-    
+
     uint64_t m_chunkId;
-    
     uint32_t m_width;
     uint32_t m_height;
     uint32_t m_bpp;

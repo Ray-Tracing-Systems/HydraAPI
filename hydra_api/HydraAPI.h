@@ -887,38 +887,38 @@ struct HRRenderUpdateInfo
 /**
 \brief indicate that render do have Update for FrameBuffer
 */
-HAPI HRRenderUpdateInfo  hrRenderHaveUpdate(const HRRenderRef pRender);
+HAPI HRRenderUpdateInfo  hrRenderHaveUpdate(HRRenderRef pRender);
 
 
 /**
 \brief get framebuffer content to imgData
 */
-HAPI bool hrRenderGetFrameBufferHDR4f(const HRRenderRef pRender, int w, int h, float* imgData, const wchar_t* a_layerName = L"color");  // w*h*4*sizeof(float)
+HAPI bool hrRenderGetFrameBufferHDR4f(HRRenderRef pRender, int w, int h, float* imgData, const wchar_t* a_layerName = L"color");  // w*h*4*sizeof(float)
 
 /**
 \brief get framebuffer content to imgData, only color
 */
-HAPI bool hrRenderGetFrameBufferLDR1i(const HRRenderRef pRender, int w, int h, int32_t* imgData);  // w*h*sizeof(int) --> RGBA
+HAPI bool hrRenderGetFrameBufferLDR1i(HRRenderRef pRender, int w, int h, int32_t* imgData);  // w*h*sizeof(int) --> RGBA
 
 /**
 \brief get framebuffer line to imgData. 
 */
-HAPI bool hrRenderGetFrameBufferLineHDR4f(const HRRenderRef pRender, int a_begin, int a_end, int a_y, float* imgData, const wchar_t* a_layerName = L"color");  // w*h*4*sizeof(float)
+HAPI bool hrRenderGetFrameBufferLineHDR4f(HRRenderRef pRender, int a_begin, int a_end, int a_y, float* imgData, const wchar_t* a_layerName = L"color");  // w*h*4*sizeof(float)
 
 /**
 \brief get framebuffer line to imgData, only color
 */
-HAPI bool hrRenderGetFrameBufferLineLDR1i(const HRRenderRef pRender, int a_begin, int a_end, int a_y, int32_t* imgData);  // w*h*sizeof(int) --> RGBA
+HAPI bool hrRenderGetFrameBufferLineLDR1i(HRRenderRef pRender, int a_begin, int a_end, int a_y, int32_t* imgData);  // w*h*sizeof(int) --> RGBA
 
 /**
 \brief save framebuffer content to imgData (convert it to LDR). Color only.
 */
-HAPI bool hrRenderSaveFrameBufferLDR(const HRRenderRef pRender, const wchar_t* a_outFileName);  // w*h*4*sizeof(float)
+HAPI bool hrRenderSaveFrameBufferLDR(HRRenderRef pRender, const wchar_t* a_outFileName);  // w*h*4*sizeof(float)
 
 /**
 \brief save framebuffer content to imgData. Color only.
 */
-HAPI bool hrRenderSaveFrameBufferHDR(const HRRenderRef pRender, const wchar_t* a_outFileName);  // w*h*4*sizeof(float)
+HAPI bool hrRenderSaveFrameBufferHDR(HRRenderRef pRender, const wchar_t* a_outFileName);  // w*h*4*sizeof(float)
 
 struct HRGBufferPixel
 {
@@ -943,7 +943,7 @@ struct HRGBufferPixel
 *
 */
 
-HAPI void hrRenderGetGBufferLine(const HRRenderRef a_pRender, int32_t a_lineNumber, HRGBufferPixel* a_lineData, int32_t a_startX, int32_t a_endX);  // w*4*sizeof(float)
+HAPI void hrRenderGetGBufferLine(HRRenderRef a_pRender, int32_t a_lineNumber, HRGBufferPixel* a_lineData, int32_t a_startX, int32_t a_endX);  // w*4*sizeof(float)
 
 /**
 \brief save custom gbuffer layer
@@ -957,8 +957,8 @@ If palette is not set for "id" layers, this function will use it's default palet
 if GBuffer was not evaluated by render driver (you have to set 'evalgbuffer' = 1 in render settings), this function do nothing.
 
 */
-HAPI bool hrRenderSaveGBufferLayerLDR(const HRRenderRef a_pRender, const wchar_t* a_outFileName, const wchar_t* a_layerName,
-                                      const int* a_palette = nullptr, const int a_paletteSize = 0); 
+HAPI bool hrRenderSaveGBufferLayerLDR(HRRenderRef a_pRender, const wchar_t* a_outFileName, const wchar_t* a_layerName,
+                                      const int* a_palette = nullptr, int a_paletteSize = 0);
 
 /**
 \brief execute custom command for render driver
@@ -997,7 +997,7 @@ HAPI bool hrRenderSaveGBufferLayerLDR(const HRRenderRef a_pRender, const wchar_t
 *                                  -- This is due to pause may occur within main program exit. When main program will be launched again it must open scene
 *                                  -- we want to continue render and Commit the new state via hrCommit(scnRef, renderRef). Thus it launch processes.
 */
-HAPI void hrRenderCommand(const HRRenderRef a_pRender, const wchar_t* a_command, wchar_t* a_answer = nullptr);
+HAPI void hrRenderCommand(HRRenderRef a_pRender, const wchar_t* a_command, wchar_t* a_answer = nullptr);
 
 
 /**
@@ -1006,7 +1006,7 @@ HAPI void hrRenderCommand(const HRRenderRef a_pRender, const wchar_t* a_command,
 * \param a_logDir      - directory where renderer save logs.
 * \param a_hideConsole - if you want to hide console
 */
-HAPI void hrRenderLogDir(const HRRenderRef a_pRender, const wchar_t* a_logDir, bool a_hideConsole = false);
+HAPI void hrRenderLogDir(HRRenderRef a_pRender, const wchar_t* a_logDir, bool a_hideConsole = false);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1049,7 +1049,7 @@ struct HRLightGroupExt
   typedef float float16[16];
 
   HRLightGroupExt() : lights(nullptr), matrix(nullptr), customAttr(nullptr), lightsNum(0) { }
-  HRLightGroupExt(int a_lightNum);
+  explicit HRLightGroupExt(int a_lightNum);
   ~HRLightGroupExt();
 
   HRLightGroupExt(HRLightGroupExt&& a_in);

@@ -18,7 +18,7 @@
 
 extern HRObjectManager g_objManager;
 
-HAPI void hrRenderGetGBufferLine(const HRRenderRef a_pRender, int32_t a_lineNumber, HRGBufferPixel* a_lineData, int32_t a_startX, int32_t a_endX)
+HAPI void hrRenderGetGBufferLine(HRRenderRef a_pRender, int32_t a_lineNumber, HRGBufferPixel* a_lineData, int32_t a_startX, int32_t a_endX)
 {
   HRRender* pRender = g_objManager.PtrById(a_pRender);
 
@@ -214,8 +214,8 @@ static void ExtractCoverage(const HRGBufferPixel* a_inLine, int32_t* a_outLine, 
   }
 }
 
-HAPI bool hrRenderSaveGBufferLayerLDR(const HRRenderRef a_pRender, const wchar_t* a_outFileName, const wchar_t* a_layerName,
-                                      const int* a_palette, const int a_paletteSize)
+HAPI bool hrRenderSaveGBufferLayerLDR(HRRenderRef a_pRender, const wchar_t* a_outFileName, const wchar_t* a_layerName,
+                                      const int* a_palette, int a_paletteSize)
 {
   HRRender* pRender = g_objManager.PtrById(a_pRender);
 

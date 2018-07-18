@@ -9,8 +9,8 @@
 #include <fstream>
 #include <algorithm>
 
-#include <string.h> // memcpy in linux
-#include <math.h>   // sqrt, exp, fmax, fmin
+#include <cstring> // memcpy in linux
+#include <cmath>   // sqrt, exp, fmax, fmin
 
 #ifndef _MM_DENORMALS_ZERO_MASK
   #define _MM_DENORMALS_ZERO_MASK	0x0040

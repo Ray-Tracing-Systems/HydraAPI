@@ -7,7 +7,7 @@
 #include <windows.h>
 #endif
 
-#include <math.h>
+#include <cmath>
 #include <cstdint>
 #include "FreeImage.h"
 
@@ -19,11 +19,11 @@ namespace HydraRender
 
   void SaveHDRImageToFileHDR(const std::string& a_fileName, int w, int h, const float* a_data);
   void SaveImageToFile(const std::string& a_fileName, int w, int h, unsigned int* data);
-  void SaveImageToFile(const std::string& a_fileName, const HydraRender::HDRImage4f& image, const float a_gamma = 2.2f);
+  void SaveImageToFile(const std::string& a_fileName, const HydraRender::HDRImage4f& image, float a_gamma = 2.2f);
 
   void SaveHDRImageToFileHDR(const std::wstring& a_fileName, int w, int h, const float* a_data);
   void SaveImageToFile      (const std::wstring& a_fileName, int w, int h, const unsigned int* data);
-  void SaveImageToFile      (const std::wstring& a_fileName, const HydraRender::HDRImage4f& image, const float a_gamma = 2.2f);
+  void SaveImageToFile      (const std::wstring& a_fileName, const HydraRender::HDRImage4f& image, float a_gamma = 2.2f);
 
 
   void LoadImageFromFile(const std::string& a_fileName, std::vector<float>& data, int& w, int& h);

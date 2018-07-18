@@ -81,7 +81,7 @@ namespace HydraRender
       if(data != nullptr)
         memcpy(&m_data[0], data, w*h * sizeof(int));
     }
-    virtual ~LDRImage1i() {}
+    virtual ~LDRImage1i() = default;
 
     LDRImage1i(const LDRImage1i& rhs) = default;
     LDRImage1i(LDRImage1i&& lhs)      = default;

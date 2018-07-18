@@ -20,7 +20,7 @@
 #include <limits>       
 
 #include <memory> 
-#include <math.h>
+#include <cmath>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -213,8 +213,8 @@ void ProcessProcTexFile(const std::wstring& in_file, const std::wstring& out_fil
   std::vector<std::string> funNames = ExtractElementsByRegex(allString, FunctionDeclRegex(), 3);
   std::vector<std::string> incFiles = ExtractElementsByRegex(allString, IncludeRegex(), 2);
 
-  auto args            = ParseProcMainArgs   (fname.c_str(), allString);
-  std::wstring retType = s2ws(ParseProcMainRetType(fname.c_str(), allString));
+  auto args            = ParseProcMainArgs   (fname, allString);
+  std::wstring retType = s2ws(ParseProcMainRetType(fname, allString));
 
   // filter
   //
@@ -247,7 +247,7 @@ void ProcessProcTexFile(const std::wstring& in_file, const std::wstring& out_fil
     {
       std::string line2 = ReplaceAttr(line);
 
-      for (auto f : funNames) // rename functions
+      for (const auto& f : funNames) // rename functions
       {
         std::regex e("\\b" + f + "\\b");
         line2 = std::regex_replace(line2, e, prefix + f);

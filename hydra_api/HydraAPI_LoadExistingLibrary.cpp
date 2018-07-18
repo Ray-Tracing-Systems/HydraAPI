@@ -460,7 +460,7 @@ void fixTextureIds(pugi::xml_node a_node, const std::wstring &a_libPath, const s
 }
 
 
-HRMaterialRef _hrMaterialMergeFromNode(pugi::xml_node a_node, const std::wstring &a_libPath, std::unordered_map<int32_t, int32_t> texIdUpdates,//int32_t numTexturesPreMerge,
+HRMaterialRef _hrMaterialMergeFromNode(pugi::xml_node a_node, const std::wstring &a_libPath, const std::unordered_map<int32_t, int32_t>& texIdUpdates,//int32_t numTexturesPreMerge,
                                        int32_t numMaterialsPreMerge, bool mergeDependencies = false, bool forceMerge = false)
 {
   const wchar_t* a_objectName = a_node.attribute(L"name").as_string();

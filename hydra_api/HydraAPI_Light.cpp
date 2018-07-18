@@ -175,7 +175,7 @@ HAPI void hrLightClose(HRLightRef a_pLight)
 
 struct HR_SimpleMesh
 {
-  HR_SimpleMesh() {}
+  HR_SimpleMesh() = default;
 
   HR_SimpleMesh(HR_SimpleMesh&& a_in)      = default;
   HR_SimpleMesh(const HR_SimpleMesh& a_in) = default;

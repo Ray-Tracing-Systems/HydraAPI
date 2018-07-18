@@ -134,7 +134,7 @@ HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMod
   std::wstring input(a_libPath);
   
   int libStateId   = -1;
-  std::wstring libFile(L""), libFolder(L"");
+  std::wstring libFile, libFolder;
   if(input.substr(input.size() - 4) == L".xml")
   {
     // split path to file to (path to folder, file name)
@@ -207,13 +207,14 @@ HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMod
   if (a_openMode == HR_WRITE_DISCARD) // total clear of all objects
   {
     if (a_libPath != nullptr && !std::wstring(a_libPath).empty())
-#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
+    {
+    #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
       hr_cleardir(libPath.c_str());
       hr_mkdir(dataPath.c_str());
-#elif defined WIN32
+    #elif defined WIN32
       hr_cleardir(a_libPath);
-#endif
-
+    #endif
+    }
     int32_t whileImage[4] = { int32_t(0xFFFFFFFF), int32_t(0xFFFFFFFF),
                               int32_t(0xFFFFFFFF), int32_t(0xFFFFFFFF) };
 
@@ -847,11 +848,11 @@ HAPI void hrRenderEnableDevice(HRRenderRef a_pRender, int32_t a_deviceId, bool a
     std::wstringstream strOut;
     strOut << L"hrRenderEnableDevice, bad device id" << a_deviceId;
     std::wstring temp = strOut.str();
-    HrError(temp.c_str());
+    HrError(temp);
   }
 }
 
-HAPI HRRenderUpdateInfo hrRenderHaveUpdate(const HRRenderRef a_pRender)
+HAPI HRRenderUpdateInfo hrRenderHaveUpdate(HRRenderRef a_pRender)
 {
   HRRender* pRender = g_objManager.PtrById(a_pRender);
 

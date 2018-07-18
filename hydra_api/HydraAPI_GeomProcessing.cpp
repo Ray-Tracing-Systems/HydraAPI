@@ -46,9 +46,8 @@ bool meshHasDisplacementMat(HRMeshRef a_mesh, pugi::xml_node &displaceXMLNode)
   HRMesh::InputTriMesh &mesh = pMesh->m_input;
 
   std::set<int32_t> uniqueMatIndices;
-  for(int i=0;i<mesh.matIndices.size();i++)
+  for(auto mI : mesh.matIndices)
   {
-    auto mI  = mesh.matIndices[i];
     auto ins = uniqueMatIndices.insert(mI);
     if (ins.second)
     {

@@ -432,7 +432,7 @@ namespace HydraRender
     g_objManager.m_pImgTool->SaveLDRImageToFileLDR(a_fileName.c_str(), w, h, (const int*)data);
   }
 
-  void SaveImageToFile(const std::wstring& a_fileName, const HDRImage4f& image, const float a_gamma)
+  void SaveImageToFile(const std::wstring& a_fileName, const HDRImage4f& image, float a_gamma)
   {
     std::vector<unsigned int> ldrImageData(image.width()*image.height());
 
@@ -454,7 +454,7 @@ namespace HydraRender
     SaveImageToFile(a_fileName, image.width(), image.height(), &ldrImageData[0]);
   }
 
-  void SaveImageToFile(const std::string& a_fileName, const HDRImage4f& image, const float a_gamma)
+  void SaveImageToFile(const std::string& a_fileName, const HDRImage4f& image, float a_gamma)
   {
     const std::wstring fileNameW = s2ws(a_fileName);
     SaveImageToFile(fileNameW, image, a_gamma);

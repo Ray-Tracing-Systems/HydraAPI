@@ -29,7 +29,7 @@ using resolution_dict = std::unordered_map<uint32_t, std::pair<uint32_t, uint32_
 
 struct ChangeList
 {
-  ChangeList() {}
+  ChangeList() = default;
   ChangeList(ChangeList&& a_list) : meshUsed(std::move(a_list.meshUsed)), matUsed(std::move(a_list.matUsed)), 
                                     lightUsed(std::move(a_list.lightUsed)), texturesUsed(std::move(a_list.texturesUsed)),
                                     drawSeq(std::move(a_list.drawSeq))
@@ -112,7 +112,7 @@ void AddUsedMaterialChildrenRecursive(ChangeList& objects, int32_t matId)
   auto matNode = mat.xml_node_immediate();
   auto matType = std::wstring(matNode.attribute(L"type").as_string());
 
-  if (matType.compare(std::wstring(L"hydra_blend")) == 0)
+  if (matType == L"hydra_blend")
   {
     auto subMatId1 = matNode.attribute(L"node_top").as_int();
     auto subMatId2 = matNode.attribute(L"node_bottom").as_int();
@@ -197,7 +197,7 @@ void FindNewObjects(ChangeList& objects, HRSceneInst& scn)
 
   // (1.2) loop through needed meshed to define what material used in scene      --> ?
   //
-  if (g_objManager.scnData.meshes.size() > 0)
+  if (!g_objManager.scnData.meshes.empty())
   {
     for (auto p = objects.meshUsed.begin(); p != objects.meshUsed.end(); ++p)
     {
@@ -210,12 +210,9 @@ void FindNewObjects(ChangeList& objects, HRSceneInst& scn)
 
       if (pImpl != nullptr)
       {
-        auto mlist = pImpl->MList();
-        for (auto q = mlist.begin(); q != mlist.end(); ++q)
+        for(const auto& trio : pImpl->MList())
         {
-          HRBatchInfo trio = (*q);
           objects.matUsed.insert(trio.matId);
-
           AddUsedMaterialChildrenRecursive(objects, trio.matId);
         }
       }
@@ -225,11 +222,10 @@ void FindNewObjects(ChangeList& objects, HRSceneInst& scn)
 
   // (1.3) loop through needed materials to define what textures used in scene 
   //
-  if (g_objManager.scnData.materials.size() > 0)
+  if (!g_objManager.scnData.materials.empty())
   {
-    for (auto p = objects.matUsed.begin(); p != objects.matUsed.end(); ++p)
+    for (auto matId : objects.matUsed)
     {
-      size_t matId = (*p);
       if (matId >= g_objManager.scnData.materials.size()) //#TODO: ? add log message if need to debug some thiing here
         continue;
 
@@ -251,7 +247,7 @@ void FindNewObjects(ChangeList& objects, HRSceneInst& scn)
 
   // (1.4) loop through all changed lights to define what lights are used in scene --> TEXTURES
   //
-  if (g_objManager.scnData.lights.size() > 0)
+  if (!g_objManager.scnData.lights.empty())
   {
     for (auto p = objects.lightUsed.begin(); p != objects.lightUsed.end(); ++p)
     {
@@ -465,7 +461,7 @@ void UpdateImageFromFileOrChunk(int32_t a_id, HRTextureNode& img, IHRRenderDrive
 //
 int32_t HR_DriverUpdateTextures(HRSceneInst& scn, ChangeList& objList, IHRRenderDriver* a_pDriver)
 {
-  if (g_objManager.scnData.textures.size() == 0 || a_pDriver == nullptr)
+  if (g_objManager.scnData.textures.empty() || a_pDriver == nullptr)
     return 0;
 
   a_pDriver->BeginTexturesUpdate();
@@ -550,7 +546,7 @@ int32_t HR_DriverUpdateMaterials(HRSceneInst& scn, ChangeList& objList, IHRRende
 {
   a_pDriver->BeginMaterialUpdate();
 
-  if (g_objManager.scnData.materials.size() == 0)
+  if (g_objManager.scnData.materials.empty() == 0)
     return 0;
 
   // we should update meterials in their id order !!!
@@ -562,14 +558,13 @@ int32_t HR_DriverUpdateMaterials(HRSceneInst& scn, ChangeList& objList, IHRRende
 
   int32_t updatedMaterials = 0;
 
-  for (auto p = idsToUpdate.begin(); p != idsToUpdate.end(); ++p)
+  for (auto matId : idsToUpdate)
   {
-    int32_t matId = int32_t(*p);
     if (matId < g_objManager.scnData.materials.size())
     {
       pugi::xml_node node = g_objManager.scnData.materials[matId].xml_node_immediate();
-      scn.matUsedByDrv.insert(*p);
-      a_pDriver->UpdateMaterial(int32_t(*p), node);
+      scn.matUsedByDrv.insert(matId);
+      a_pDriver->UpdateMaterial(int32_t(matId), node);
       if (std::wstring(L"shadow_catcher") == node.attribute(L"type").as_string())
         g_objManager.scnData.m_shadowCatchers.insert(matId);
       updatedMaterials++;

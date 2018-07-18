@@ -56,7 +56,7 @@ public:
   struct rebind { typedef aligned16<U> other; };
 
   template <class U>
-  aligned16(const aligned16<U>&) {}
+  explicit aligned16(const aligned16<U>&) {}
 
   template <class U>
   aligned16& operator=(const aligned16<U>&) { return *this; }

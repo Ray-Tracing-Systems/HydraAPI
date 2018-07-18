@@ -62,16 +62,12 @@ static void ThrowExceptionOnGLError(int line, const char *file)
       std::cerr << "GL_OUT_OF_MEMORY file " << file << " line " << line << std::endl;
       break;
 
-    case GL_NO_ERROR:
-      break;
-
     default:
       std::cerr << "Unknown error @ file " << file << " line " << line << std::endl;
       break;
   }
 
-  if (gl_error != GL_NO_ERROR)
-    throw std::runtime_error(errMsg);
+  throw std::runtime_error(errMsg);
 }
 
 std::string getexepath();
