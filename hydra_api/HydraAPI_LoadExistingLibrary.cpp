@@ -317,6 +317,9 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
   g_objManager.scnData.clear();
   g_objManager.scnInst.clear();
 
+  if (g_objManager.m_attachMode)
+    HrPrint(HR_SEVERITY_INFO, L"HydraAPI, loading xml ... ");
+
   auto loadResult = g_objManager.scnData.m_xmlDoc.load_file(fileName.c_str());
 
   if (!loadResult)
@@ -324,6 +327,9 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
     HrError(L"_hrSceneLibraryLoad, pugixml load: ", loadResult.description());
     return -1;
   }
+
+  if (g_objManager.m_attachMode)
+    HrPrint(HR_SEVERITY_INFO, L"HydraAPI, initialising virtual buffer");
 
   g_objManager.scnData.init_existing(g_objManager.m_attachMode, g_objManager.m_pVBSysMutex);
 
@@ -340,9 +346,15 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
   g_objManager.scnData.materials.reserve(HRSceneData::MATERIAL_RESERVE);
   g_objManager.scnData.cameras.reserve(HRSceneData::CAMERAS_RESERVE);
 
+  if (g_objManager.m_attachMode)
+    HrPrint(HR_SEVERITY_INFO, L"HydraAPI, before system mutex lock");
+
   if(g_objManager.m_attachMode)
     hr_lock_system_mutex(g_objManager.m_pVBSysMutex, VB_LOCK_WAIT_TIME_MS); // need to lock here because _hrMeshCreateFromNode may load data from virtual buffer
   
+  if (g_objManager.m_attachMode)
+    HrPrint(HR_SEVERITY_INFO, L"HydraAPI, loading objects from xml ... ");
+
   for (pugi::xml_node node = g_objManager.scnData.m_texturesLib.first_child(); node != nullptr; node = node.next_sibling())
     _hrTexture2DCreateFromNode(node);
 
@@ -370,6 +382,9 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
   
   if(g_objManager.m_attachMode)
     hr_unlock_system_mutex(g_objManager.m_pVBSysMutex);
+
+  if (g_objManager.m_attachMode)
+    HrPrint(HR_SEVERITY_INFO, L"HydraAPI, generating instances");
 
   // (8) load instanced objects (i.e. scenes)
   //
