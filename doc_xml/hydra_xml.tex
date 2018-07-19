@@ -500,4 +500,87 @@ Disk and spheres have size radius attribute:
 </light>
 \end{lstlisting}
 
+\section{Camera}
+
+Currently there are two ways to specify camera - variation of UVN or as two matrices.
+
+\begin{lstlisting}
+<camera id="0" name="anyString" type="[UVN|two_matrices]"/>
+\end{lstlisting}
+
+\subsection{UVN}
+With UVN-type camera you need to set the following parameters:
+\begin{itemize}
+\item camera position vector;
+\item look at vector;
+\item up vector;
+\item near clip plane;
+\item far clip plane;
+\item field of view.
+\end{itemize}
+
+Field of view should be computed from half-height of camera sensor and specified in degrees.
+ 
+\lstset{language=XML}
+\begin{lstlisting}
+<camera id="0" name="my UVN camera" type="uvn">
+  <fov>27.22</fov>
+  <nearClipPlane>0.1</nearClipPlane>
+  <farClipPlane>100.0</farClipPlane>
+  <up>0.0 1.0 0.0</up>
+  <position>0.0 1.5 2.0</position>
+  <look_at>0.0 0.5 0.0</look_at>
+</camera>
+\end{lstlisting}
+
+\subsection{Two matrices}
+
+With this type of camera the following parameters should be specified:
+\begin{itemize}
+\item worldview matrix;
+\item projection matrix.
+\end{itemize}
+
+\lstset{language=XML}
+\begin{lstlisting}
+<camera id="0" name="my two matrices camera" type="two_matrices">
+  <mProj>1.184 0.0  0.0   0.0
+         0.0   4.17 0.0   0.0
+         0.0   0.0 -1.00 -0.02
+         0.0   0.0 -1.0   0.0</mProj>
+  <mWorldView>1.0     0.022 0.0008 -0.04
+             -0.02    1.0   0.004  -1.62
+             -0.0007 -0.004 1.0     0.28
+              0.0     0.0   0.0     1.0</mWorldView>
+</camera>
+\end{lstlisting}
+
+\subsection{Additional camera parameters}
+
+Both camera types have some additional parameters:
+\begin{itemize}
+\item tilt shift x;
+\item tilt shift y;
+\item tilt rotate x;
+\item tilt rotate y;
+\item turn depth of field on/off.
+\end{itemize}
+
+\lstset{language=XML}
+\begin{lstlisting}
+<camera id="0" name="my camera" type="uvn">
+  <fov>27.22</fov>
+  <nearClipPlane>0.1</nearClipPlane>
+  <farClipPlane>100.0</farClipPlane>
+  <up>0.0 1.0 0.0</up>
+  <position>0.0 1.5 2.0</position>
+  <look_at>0.0 0.5 0.0</look_at>
+  <tiltRotX>10</tiltRotX>
+  <tiltRotY>10</tiltRotY>
+  <tiltShiftX>0.01</tiltShiftX>
+  <tiltShiftY>0.2</tiltShiftY>
+  <enable_dof>1</enable_dof>
+</camera>
+\end{lstlisting}
+
 \end{document}
