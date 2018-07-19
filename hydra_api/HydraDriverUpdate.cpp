@@ -546,7 +546,7 @@ int32_t HR_DriverUpdateMaterials(HRSceneInst& scn, ChangeList& objList, IHRRende
 {
   a_pDriver->BeginMaterialUpdate();
 
-  if (g_objManager.scnData.materials.empty() == 0)
+  if (g_objManager.scnData.materials.empty())
     return 0;
 
   // we should update meterials in their id order !!!
