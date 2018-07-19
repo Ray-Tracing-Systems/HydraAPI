@@ -35,17 +35,16 @@ using HydraRender::HDRImage4f;
 
 struct RD_HydraConnection : public IHRRenderDriver
 {
-  RD_HydraConnection() : m_pConnection(nullptr), m_pSharedImage(nullptr), m_progressVal(0.0f), m_firstUpdate(true), m_width(0), m_height(0), m_avgBrightness(0.0f), m_avgBCounter(0),
-                         m_enableMedianFilter(false), m_medianthreshold(0.4f), m_stopThreadImmediately(false), haveUpdateFromMT(false), m_threadIsRun(false), m_threadFinished(false), hadFinalUpdate(false), m_clewInitRes(-1)
+  RD_HydraConnection() : m_pConnection(nullptr), m_pSharedImage(nullptr), m_progressVal(0.0f), m_firstUpdate(true), m_width(0), m_height(0),
+                         m_avgBrightness(0.0f), m_avgBCounter(0), m_enableMedianFilter(false), m_medianthreshold(0.4f), m_stopThreadImmediately(false),
+                         haveUpdateFromMT(false), m_threadIsRun(false), m_threadFinished(false), hadFinalUpdate(false), m_clewInitRes(-1), m_instancesNum(0)
   {
     InitBothDeviceList();
 
     m_oldCounter = 0;
     m_oldSPP     = 0.0f;
     m_dontRun    = false;
-    //#TODO: init m_currAllocInfo
     //#TODO: init m_presets
-    //#TODO: init m_lastServerReply
 
     HydraSSE::exp2_init();
     HydraSSE::log2_init();
@@ -244,16 +243,16 @@ void RD_HydraConnection::InitBothDeviceList()
   for (size_t i = 0; i < devList.size(); i++)
   {
     memset(deviceName, 0, 1024);
-    clGetDeviceInfo(devList[i].dev, CL_DEVICE_NAME, 1024, deviceName, NULL);
+    clGetDeviceInfo(devList[i].dev, CL_DEVICE_NAME, 1024, deviceName, nullptr);
     std::string devName2 = cutSpaces(deviceName);
     m_devList[i].name    = s2ws(devName2);
 
     cl_device_type devType = CL_DEVICE_TYPE_GPU;
-    clGetDeviceInfo(devList[i].dev, CL_DEVICE_TYPE, sizeof(cl_device_type), &devType, NULL);
+    clGetDeviceInfo(devList[i].dev, CL_DEVICE_TYPE, sizeof(cl_device_type), &devType, nullptr);
     m_devList[i].isCPU = (devType == CL_DEVICE_TYPE_CPU);
 
     memset(deviceName, 0, 1024);
-    clGetPlatformInfo(devList[i].platform, CL_PLATFORM_VERSION, 1024, deviceName, NULL);
+    clGetPlatformInfo(devList[i].platform, CL_PLATFORM_VERSION, 1024, deviceName, nullptr);
     m_devList[i].driverName = s2ws(deviceName);
     m_devList[i].id         = int(i);
   }
@@ -308,10 +307,10 @@ HRDriverAllocInfo RD_HydraConnection::AllocAll(HRDriverAllocInfo a_info)
 
 const HRRenderDeviceInfoListElem* RD_HydraConnection::DeviceList() const
 {
-  if (m_devList2.size() == 0)
+  if (m_devList2.empty())
     return nullptr;
   else
-    return &m_devList2[0];
+    return m_devList2.data();
 }
 
 bool RD_HydraConnection::EnableDevice(int32_t id, bool a_enable)
@@ -462,13 +461,13 @@ std::vector<int> RD_HydraConnection::GetCurrDeviceList()
 {
   std::vector<int> devList;
   
-  for (size_t i = 0; i < m_devList2.size(); i++)
+  for (const auto& dev : m_devList2)
   {
-    if (m_devList2[i].isEnabled)
-      devList.push_back(m_devList2[i].id);
+    if (dev.isEnabled)
+      devList.push_back(dev.id);
   }
   
-  if (devList.size() == 0)
+  if (devList.empty())
   {
     devList.resize(1);
     devList[0] = 0;
@@ -1095,7 +1094,7 @@ void RD_HydraConnection::ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out)
 
     // (1) save imageA
     //
-    if(path.size() > 0)
+    if(!path.empty())
     {
       std::ofstream fout(path.c_str(), std::ios::binary);
       fout.write((const char*)m_pSharedImage->Header(), sizeof(HRSharedBufferHeader));
@@ -1117,7 +1116,7 @@ void RD_HydraConnection::ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out)
     //
     auto posSpace = inputA.find("resume ");
     std::string path = inputA.substr(posSpace + 7, inputA.size());
-    if (path.size() > 0)
+    if (!path.empty())
     {
       std::ifstream fin(path.c_str(), std::ios::binary);
       if (fin.is_open())

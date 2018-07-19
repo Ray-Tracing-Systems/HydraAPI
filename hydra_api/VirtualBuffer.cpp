@@ -13,7 +13,7 @@
 #include <unistd.h>
 #endif
 
-#include <math.h>
+#include <cmath>
 
 static constexpr bool gDebugMode     = false;
 static constexpr bool gCopyCollector = false;
@@ -541,11 +541,8 @@ void VirtualBuffer::RunCollector(int a_divisor)
 
 void VirtualBuffer::FlushToDisc()
 {
-  for (size_t i = 0; i < m_chunksIdInMemory.size(); i++)
-  {
-    size_t id = m_chunksIdInMemory[i];
+  for (size_t id : m_chunksIdInMemory)
     m_allChunks[id].SwapToDisk();
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

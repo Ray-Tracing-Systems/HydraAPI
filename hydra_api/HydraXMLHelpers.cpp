@@ -42,10 +42,8 @@ namespace HydraXMLHelpers
         if(listStr != nullptr)
         {
           std::wstringstream inputStream(listStr);
-          for(int i = 0; i < list.size(); ++i)
-          {
-            inputStream >> list[i];
-          }
+          for(auto& elem : list)
+            inputStream >> elem;
 
           remap_lists.emplace_back(list);
         }

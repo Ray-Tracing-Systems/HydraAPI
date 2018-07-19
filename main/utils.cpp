@@ -1,8 +1,9 @@
 #include "tests.h"
-#include <math.h>
+#include <cmath>
+#include <cstring>
+
 #include <fstream>
 #include <vector>
-#include <string.h>
 #include <sstream>
 
 #include "simplerandom.h"
@@ -349,7 +350,7 @@ namespace TEST_UTILS
   void CreateStripedImageFile(const char* a_fileName, unsigned int* a_colors, int a_stripsNum, int w, int h)
   {
     std::vector<unsigned int> imageData = CreateStripedImageData(a_colors, a_stripsNum, w, h);
-    HydraRender::SaveImageToFile(a_fileName, w, h, (unsigned int*)&imageData[0]);
+    HydraRender::SaveImageToFile(a_fileName, w, h, imageData.data());
   }
 
   std::vector<HRMeshRef> CreateRandomMeshesArray(int a_size, simplerandom::RandomGen& rgen)

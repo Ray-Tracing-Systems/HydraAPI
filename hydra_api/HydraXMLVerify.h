@@ -10,13 +10,13 @@ namespace HydraVerify
 	void SetErrorCallback(ErrorFuncType a_func);
 	void Error(const wchar_t* a_msg, const wchar_t* a_file, int a_line);
 
-	bool VerifyLight   (const pugi::xml_node a_node, const wchar_t* a_file, int a_line);
-	bool VerifyMaterial(const pugi::xml_node a_node, const wchar_t* a_file, int a_line);
-	bool VerifyCamera  (const pugi::xml_node a_node, const wchar_t* a_file, int a_line);
-	bool VerifySettings(const pugi::xml_node a_node, const wchar_t* a_file, int a_line);
+	bool VerifyLight   (pugi::xml_node a_node, const wchar_t* a_file, int a_line);
+	bool VerifyMaterial(pugi::xml_node a_node, const wchar_t* a_file, int a_line);
+	bool VerifyCamera  (pugi::xml_node a_node, const wchar_t* a_file, int a_line);
+	bool VerifySettings(pugi::xml_node a_node, const wchar_t* a_file, int a_line);
 
-	bool VerifyXMLParameter(const pugi::xml_node a_node, const wchar_t* a_file, int a_line);
-	bool VerifyXMLParameter(const pugi::xml_node a_node, const char* a_file, int a_line);
+	bool VerifyXMLParameter(pugi::xml_node a_node, const wchar_t* a_file, int a_line);
+	bool VerifyXMLParameter(pugi::xml_node a_node, const char* a_file, int a_line);
 };
 
 

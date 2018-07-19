@@ -21,13 +21,13 @@ struct RD_OGL1_Plain_DelayedLoad : public RD_OGL1_Plain
 {
 public:
 
-  RD_OGL1_Plain_DelayedLoad(){}
-  ~RD_OGL1_Plain_DelayedLoad(){}
+  RD_OGL1_Plain_DelayedLoad()  = default;
+  ~RD_OGL1_Plain_DelayedLoad() = default;
 
-  HRDriverInfo Info();
+  HRDriverInfo Info() override;
 
-  bool UpdateImage(int32_t a_texId, int32_t w, int32_t h, int32_t bpp, const void* a_data, pugi::xml_node a_texNode);
-  bool UpdateImageFromFile(int32_t a_texId, const wchar_t* a_fileName, pugi::xml_node a_texNode);
+  bool UpdateImage(int32_t a_texId, int32_t w, int32_t h, int32_t bpp, const void* a_data, pugi::xml_node a_texNode)  override;
+  bool UpdateImageFromFile(int32_t a_texId, const wchar_t* a_fileName, pugi::xml_node a_texNode) override;
 
 protected:
 
@@ -81,11 +81,11 @@ bool RD_OGL1_Plain_DelayedLoad::UpdateImageFromFile(int32_t a_texId, const wchar
       size_t sizeInBytes = size_t(wh[0]) * size_t(wh[1]) * size_t(sizeof(int));
 
       std::vector<char> data(size_t(wh[0]) * size_t(wh[1]) * size_t(sizeof(int)) + size_t(16));
-      if (data.size() == 0)
+      if (data.empty())
         return false;
 
-      fin.read((char*)&data[0], sizeInBytes);
-      return UpdateImage(a_texId, wh[0], wh[1], 4, &data[0], a_texNode);
+      fin.read(data.data(), sizeInBytes);
+      return UpdateImage(a_texId, wh[0], wh[1], 4, data.data(), a_texNode);
     }
     else
       return false;
@@ -137,13 +137,13 @@ struct RD_OGL1_Plain_DelayedLoad2 : public RD_OGL1_Plain_DelayedLoad
 {
 public:
 
-  RD_OGL1_Plain_DelayedLoad2(){}
-  ~RD_OGL1_Plain_DelayedLoad2(){}
+  RD_OGL1_Plain_DelayedLoad2()  = default;
+  ~RD_OGL1_Plain_DelayedLoad2() = default;
 
-  HRDriverInfo Info();
+  HRDriverInfo Info() override;
 
-  bool UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode, const HRMeshDriverInput& a_input, const HRBatchInfo* a_batchList, int32_t listSize);
-  bool UpdateMeshFromFile(int32_t a_meshId, pugi::xml_node a_meshNode, const wchar_t* a_fileName);
+  bool UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode, const HRMeshDriverInput& a_input, const HRBatchInfo* a_batchList, int32_t a_listSize) override;
+  bool UpdateMeshFromFile(int32_t a_meshId, pugi::xml_node a_meshNode, const wchar_t* a_fileName) override;
 
 protected:
 
@@ -195,9 +195,9 @@ std::vector<HRBatchInfo> CreateBatchesArrayRLE(const int32_t* matIndices, int32_
       // append current tri sequence withe the same material id
       //
       HRBatchInfo elem;
-      elem.matId = tMatId;
+      elem.matId    = tMatId;
       elem.triBegin = tBegin;
-      elem.triEnd = int32_t(i);
+      elem.triEnd   = int32_t(i);
 
       if (i == matIndicesSize - 1)
         elem.triEnd = int32_t(matIndicesSize);
@@ -225,11 +225,11 @@ bool RD_OGL1_Plain_DelayedLoad2::UpdateMeshFromFile(int32_t a_meshId, pugi::xml_
     wasThere = true;
   }
 
-  uint64_t dataOffset  = a_meshNode.attribute(L"offset").as_ullong();
+  //uint64_t dataOffset  = a_meshNode.attribute(L"offset").as_ullong();
   uint64_t sizeInBytes = a_meshNode.attribute(L"bytesize").as_ullong();
 
   std::vector<char> tempBuffer(size_t(sizeInBytes + uint64_t(16)));
-  char* dataPtr = (char*)&tempBuffer[0];
+  char* dataPtr = tempBuffer.data();
 
   const std::wstring path = m_libPath + std::wstring(L"/") + a_meshNode.attribute(L"loc").as_string();
 #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
@@ -268,7 +268,7 @@ bool RD_OGL1_Plain_DelayedLoad2::UpdateMesh(int32_t a_meshId, pugi::xml_node a_m
   if (a_input.triNum == 0) // don't support loading mesh from file 'a_fileName'
     return false;
 
-  bool invalidMaterial = (m_diffTexId.size() == 0);
+  bool invalidMaterial = m_diffTexId.empty();
 
   // DebugPrintMesh(a_input, "z_mesh.txt");
 

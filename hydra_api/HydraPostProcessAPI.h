@@ -42,7 +42,7 @@ HRFBIRef hrFBICreateFromFile(const wchar_t* a_fileName, int a_desiredBpp = -1, f
 \param a_fileName - input file name
 \param a_gamma    - optional parameter. gamma. used if hdr image is saved to LDR format.
 */
-void hrFBISaveToFile(HRFBIRef a_image, const wchar_t* a_fileName, const float a_gamma = 2.2f);
+void hrFBISaveToFile(HRFBIRef a_image, const wchar_t* a_fileName, float a_gamma = 2.2f);
 
 /**
 \brief Load frame buffer image from file

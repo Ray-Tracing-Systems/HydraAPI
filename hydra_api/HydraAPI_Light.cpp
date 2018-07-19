@@ -116,7 +116,7 @@ HAPI pugi::xml_node hrLightParamNode(HRLightRef a_lightRef)
     return pugi::xml_node();
   }
 
-  return pLight->xml_node_next();
+  return pLight->xml_node_next(HR_OPEN_EXISTING);
 }
 
 
@@ -137,7 +137,7 @@ HAPI void hrLightClose(HRLightRef a_pLight)
 
   // if have ies files, copy them to local data folder and alter 
   //
-  auto lightNode = pLight->xml_node_next();
+  auto lightNode = pLight->xml_node_next(HR_OPEN_EXISTING);
 
   if (lightNode.child(L"ies") != nullptr)
   {
@@ -201,7 +201,6 @@ static HR_SimpleMesh CreateSphereMeshForLight(int a_matId, float radius, int num
   int numberIndices = numberParallels * numberSlices * 3;
 
   float angleStep = (2.0f * 3.14159265358979323846f) / ((float)numberSlices);
-  float helpVector[3] = { 0.0f, 1.0f, 0.0f };
 
   sphere.vPos.resize(numberVertices * 4);
   sphere.vNorm.resize(numberVertices * 4);
@@ -377,7 +376,6 @@ static HR_SimpleMesh CreateDiskMeshForLight(int a_matId, float a_radius)
 static HR_SimpleMesh CreateCylinderMeshForLight(int a_matId, float a_radius, float a_height, float a_angle, int a_numberSlices)
 {
   const float DEG_TO_RAD     = float(3.14159265358979323846f) / 180.0f;
-  const float angleInRadians = DEG_TO_RAD*a_angle;
   const float partOfCircle   = a_angle / 360.0f;
 
   const int numberSliceZ = a_numberSlices;
@@ -536,8 +534,8 @@ void OpenHRMesh(HRMesh* pMesh, pugi::xml_node nodeXml);
 
 bool HR_UpdateLightGeomAndMaterial(pugi::xml_node a_lightNode, const std::wstring& a_shape)
 {
-  const float3  clr           = HydraXMLHelpers::ReadLightIntensity(a_lightNode);
-  const int32_t lightId       = a_lightNode.attribute(L"id").as_int();
+  //const float3  clr           = HydraXMLHelpers::ReadLightIntensity(a_lightNode);
+  //const int32_t lightId       = a_lightNode.attribute(L"id").as_int();
   const std::wstring lightIdS = a_lightNode.attribute(L"id").as_string();
 
   // update light material (1)
@@ -667,7 +665,7 @@ void HR_UpdateLightsGeometryAndMaterial(pugi::xml_node a_lightLibChanges, pugi::
 			  continue;
 		}
 
-    const int32_t     lightId   = lightNode.attribute(L"id").as_int();
+    //const int32_t     lightId   = lightNode.attribute(L"id").as_int();
     const std::wstring lshape   = lightNode.attribute(L"shape").as_string();
 
     HR_UpdateLightGeomAndMaterial(lightNode, lshape);

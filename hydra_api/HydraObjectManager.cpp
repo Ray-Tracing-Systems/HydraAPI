@@ -122,7 +122,7 @@ void HRObjectManager::destroy()
 	scnData.m_vbCache.Destroy();
 }
 
-const std::wstring HRObjectManager::GetLoc(const pugi::xml_node a_node) const
+const std::wstring HRObjectManager::GetLoc(pugi::xml_node a_node) const
 {
   return scnData.m_path + std::wstring(L"/") + std::wstring(a_node.attribute(L"loc").as_string());
 }
@@ -142,7 +142,7 @@ void HRObjectManager::SetLoc(pugi::xml_node a_node, const std::wstring& a_loc)
 
 HRMesh* HRObjectManager::PtrById(HRMeshRef a_ref)
 {
-  if (scnData.meshes.size() == 0)
+  if (scnData.meshes.empty())
     return nullptr;
   else if (a_ref.id < 0 || a_ref.id > (int)(scnData.meshes.size()))
   {
@@ -155,7 +155,7 @@ HRMesh* HRObjectManager::PtrById(HRMeshRef a_ref)
 
 HRLight* HRObjectManager::PtrById(HRLightRef a_ref)
 {
-  if (scnData.lights.size() == 0)
+  if (scnData.lights.empty())
     return nullptr;
   else if (a_ref.id < 0 || a_ref.id > (int)scnData.lights.size())
   {
@@ -168,7 +168,7 @@ HRLight* HRObjectManager::PtrById(HRLightRef a_ref)
 
 HRMaterial* HRObjectManager::PtrById(HRMaterialRef a_ref)
 {
-  if (scnData.materials.size() == 0)
+  if (scnData.materials.empty())
     return nullptr;
   else if (a_ref.id < 0 || a_ref.id > (int)scnData.materials.size())
   {
@@ -181,7 +181,7 @@ HRMaterial* HRObjectManager::PtrById(HRMaterialRef a_ref)
 
 HRCamera* HRObjectManager::PtrById(HRCameraRef a_ref)
 {
-  if (scnData.cameras.size() == 0)
+  if (scnData.cameras.empty())
     return nullptr;
   else if (a_ref.id < 0 || a_ref.id > (int)scnData.cameras.size())
   {
@@ -194,7 +194,7 @@ HRCamera* HRObjectManager::PtrById(HRCameraRef a_ref)
 
 HRTextureNode* HRObjectManager::PtrById(HRTextureNodeRef a_ref)
 {
-  if (scnData.textures.size() == 0)
+  if (scnData.textures.empty())
     return nullptr;
   else if (a_ref.id < 0 || a_ref.id > (int)scnData.textures.size())
   {
@@ -207,7 +207,7 @@ HRTextureNode* HRObjectManager::PtrById(HRTextureNodeRef a_ref)
 
 HRSceneInst* HRObjectManager::PtrById(HRSceneInstRef a_ref)
 {
-  if (scnInst.size() == 0)
+  if (scnInst.empty())
     return nullptr;
   else if (a_ref.id < 0 || a_ref.id > (int)scnInst.size())
   {
@@ -220,7 +220,7 @@ HRSceneInst* HRObjectManager::PtrById(HRSceneInstRef a_ref)
 
 HRRender* HRObjectManager::PtrById(HRRenderRef a_ref)
 {
-  if (renderSettings.size() == 0)
+  if (renderSettings.empty())
     return nullptr;
   else if (a_ref.id < 0 || a_ref.id > (int)renderSettings.size())
   {

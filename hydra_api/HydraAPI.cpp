@@ -806,7 +806,7 @@ HAPI pugi::xml_node hrRenderParamNode(HRRenderRef a_pRender)
     return pugi::xml_node();
   }
 
-  return pSettings->xml_node_next();
+  return pSettings->xml_node_next(HR_OPEN_EXISTING);
 }
 
 //const int MAX_DEVICES_NUM = 256;
@@ -887,8 +887,8 @@ void HR_UpdateLightsGeometryAndMaterial(pugi::xml_node a_lightLibChanges, pugi::
 HAPI void hrDrawPassOnly(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pCam)
 {
   HRRender* pSettings = g_objManager.PtrById(a_pRender);
-  HRSceneInst* pScn = g_objManager.PtrById(a_pScn);
-  HRCamera*    pCam = g_objManager.PtrById(a_pCam);
+  //HRSceneInst* pScn   = g_objManager.PtrById(a_pScn);
+  //HRCamera*    pCam   = g_objManager.PtrById(a_pCam);
 
   if (a_pRender.id != -1)
   {
@@ -936,7 +936,7 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
 {
   HRRender* pSettings = g_objManager.PtrById(a_pRender);
   HRSceneInst* pScn   = g_objManager.PtrById(a_pScn);
-  HRCamera*    pCam   = g_objManager.PtrById(a_pCam);
+  //HRCamera*    pCam   = g_objManager.PtrById(a_pCam);
 
   if (a_pRender.id != -1)
   {

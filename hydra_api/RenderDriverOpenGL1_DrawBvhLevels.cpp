@@ -6,13 +6,13 @@
 #include "LiteMath.h"
 using namespace HydraLiteMath;
 
+#include <cassert>
 #include <vector>
+
 #include <string>
 #include <sstream>
 #include <fstream>
 #include <iostream>
-
-#include <assert.h>
 
 #define MAX_BVH_LEVELS 32
 
@@ -49,13 +49,13 @@ struct RD_OGL1_DebugDrawBVH : public RD_OGL1_Debug
 {
   typedef RD_OGL1_Debug Base;
 
-  RD_OGL1_DebugDrawBVH()  
+  RD_OGL1_DebugDrawBVH() : m_numDebugRays(0), m_boxesDisplayLists(0)
   { 
     m_boxesDisplayLists = glGenLists(GLsizei(MAX_BVH_LEVELS)); 
     LoadRays(); 
   }
 
-  ~RD_OGL1_DebugDrawBVH() { glDeleteLists(m_boxesDisplayLists, MAX_BVH_LEVELS); }
+  ~RD_OGL1_DebugDrawBVH() override { glDeleteLists(m_boxesDisplayLists, MAX_BVH_LEVELS); }
 
   void BeginScene(pugi::xml_node a_sceneNode) override;
   void EndScene() override;

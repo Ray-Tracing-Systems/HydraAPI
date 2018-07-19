@@ -9,7 +9,7 @@
 
 struct FrameBufferImage
 {
-  FrameBufferImage() { }
+  FrameBufferImage() = default;
   FrameBufferImage(const wchar_t* a_name, HDRImage4f* a_hdrImg) { name = a_name; pHDRImage = std::shared_ptr<HDRImage4f>(a_hdrImg); pLDRImage = nullptr; }
   FrameBufferImage(const wchar_t* a_name, LDRImage1i* a_ldrImg) { name = a_name; pLDRImage = std::shared_ptr<LDRImage1i>(a_ldrImg); pHDRImage = nullptr; }
 
@@ -51,8 +51,8 @@ void _hrInitPostProcess()
   //
   std::wstring filtersSpecial[] = { L"resample", L"median", L"NLMPut" };
 
-  for(auto name : filtersSpecial)
-    g_spetialFilters[name.c_str()] = CreateSpecialFilter(name.c_str());
+  for(const auto& name : filtersSpecial)
+    g_spetialFilters[name] = CreateSpecialFilter(name.c_str());
 
   // load dll's
   //
@@ -151,7 +151,7 @@ HRFBIRef hrFBICreateFromFile(const wchar_t* a_fileName, int a_desiredBpp, float 
   return resId;
 }
 
-void hrFBISaveToFile(HRFBIRef a_image, const wchar_t* a_fileName, const float a_gamma)
+void hrFBISaveToFile(HRFBIRef a_image, const wchar_t* a_fileName, float a_gamma)
 {
   if (a_image.id >= g_fbImages.size() || a_image.id < 0)
   {

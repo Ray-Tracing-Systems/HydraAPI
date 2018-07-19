@@ -34,7 +34,6 @@ namespace HydraRender
 
   HDRImage4f::HDRImage4f(int w, int h, const float* data) : m_width(w), m_height(h)
   {
-    const int channels = 4;
     m_data.resize(m_width*m_height * 4);
     if (data != nullptr)
       memcpy(&m_data[0], data, m_width*m_height * 4 * sizeof(float));
@@ -308,8 +307,6 @@ namespace HydraRender
     const __m128 mult  = _mm_mul_ps(a, b);
     const __m128 shuf1 = _mm_shuffle_ps(mult, mult, _MM_SHUFFLE(0, 3, 2, 1));
     const __m128 shuf2 = _mm_shuffle_ps(mult, mult, _MM_SHUFFLE(1, 0, 3, 2));
-    const __m128 shuf3 = _mm_shuffle_ps(mult, mult, _MM_SHUFFLE(2, 1, 0, 3));
-
     return _mm_add_ss(_mm_add_ss(mult, shuf1), shuf2);
   }
 
@@ -484,8 +481,6 @@ namespace HydraRender
     float sigma = a_sigma; // = 0.85f + 0.05f*float(BLUR_RADIUS2);
     std::vector<float> kernel = createGaussKernelWeights1D_HDRImage(BLUR_RADIUS2 * 2 + 1, sigma);
 
-    __m128 one = _mm_set_ps(1.0f, 1.0f, 1.0f, 1.0f);
-
     // init weights
     //
     __m128 weights[64];
@@ -538,8 +533,6 @@ namespace HydraRender
     {
       for (int y = BLUR_RADIUS2; y < m_height - BLUR_RADIUS2; y++)
       {
-        int offset2 = (y * 4)*m_width + x * 4;
-
         __m128 summ = _mm_mul_ps(weights[BLUR_RADIUS2], _mm_load_ps(tmpData + y*m_width * 4 + x * 4));
 
         for (int wid = 1; wid < BLUR_RADIUS2; wid++)

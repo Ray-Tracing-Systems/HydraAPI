@@ -32,7 +32,7 @@ static int HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* file
   fif = FreeImage_GetFileTypeU(filename, 0);
 #else
   char filename_s[256];
-  size_t len = wcstombs(filename_s, filename, sizeof(filename_s));
+  wcstombs(filename_s, filename, sizeof(filename_s));
   fif = FreeImage_GetFileType(filename_s, 0);
 #endif
 
@@ -176,7 +176,7 @@ bool HR_SaveHDRImageToFileHDR_WithFreeImage(const wchar_t* a_fileName, int w, in
   if (!FreeImage_SaveU(FIF_HDR, dib, a_fileName))
   #else
   char filename_s[256];
-  size_t len = wcstombs(filename_s, a_fileName, sizeof(filename_s));
+  wcstombs(filename_s, a_fileName, sizeof(filename_s));
   if (!FreeImage_Save(FIF_HDR, dib, filename_s))
   #endif
   {
@@ -555,8 +555,6 @@ namespace HydraRender
     FIBITMAP *dib(NULL), *converted(NULL);
     
     int bytesPerPixel = HRUtils_LoadImageFromFileToPairOfFreeImageObjects(a_fileName, dib, converted, &fif);
-    int bitsPerPixel  = bytesPerPixel * 8;
-    
     if (bytesPerPixel == 0)
     {
       HrError(L"FreeImage failed to load image: ", a_fileName);
@@ -645,12 +643,8 @@ namespace HydraRender
       return false;
     }
 
-    unsigned int bitsPerPixel = FreeImage_GetBPP(dib);
+    converted = FreeImage_ConvertToRGBF(dib);
 
-    int bytesPerPixel = 4;
-
-    converted     = FreeImage_ConvertToRGBF(dib);
-    bytesPerPixel = 16;
 
     bits   = FreeImage_GetBits(converted);
     width  = FreeImage_GetWidth(converted);
@@ -710,7 +704,7 @@ namespace HydraRender
       if (!FreeImage_SaveU(FIF_HDR, dib, a_fileName))
       #else
       char filename_s[256];
-      size_t len = wcstombs(filename_s, a_fileName, sizeof(filename_s));
+      wcstombs(filename_s, a_fileName, sizeof(filename_s));
       if (!FreeImage_Save(FIF_HDR, dib, filename_s))
       #endif
       {
@@ -758,7 +752,7 @@ namespace HydraRender
       if (!FreeImage_SaveU(imageFileFormat, dib, a_fileName))
       #else
       char filename_s[256];
-      size_t len = wcstombs(filename_s, a_fileName, sizeof(filename_s));
+      wcstombs(filename_s, a_fileName, sizeof(filename_s));
       if (!FreeImage_Save(imageFileFormat, dib, filename_s))
       #endif
       {

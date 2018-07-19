@@ -163,7 +163,7 @@ void FindDepthMinMax(std::shared_ptr<IHRRenderDriver> a_pDriver, int width, int 
     for (int x = 0; x < width; x++)
     {
       const float d = gbufferLine[x].depth;
-      if (d < 1e5f && d >= 0.0f && isfinite(d))
+      if (d < 1e5f && d >= 0.0f && std::isfinite(d))
       {
         if (d < dmin) dmin = d;
         if (d > dmax) dmax = d;

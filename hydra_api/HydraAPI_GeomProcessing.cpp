@@ -56,7 +56,7 @@ bool meshHasDisplacementMat(HRMeshRef a_mesh, pugi::xml_node &displaceXMLNode)
       auto mat = g_objManager.PtrById(tmpRef);
       if (mat != nullptr)
       {
-        auto d_node = mat->xml_node_next().child(L"displacement");
+        auto d_node = mat->xml_node_next(HR_OPEN_EXISTING).child(L"displacement");
 
         if (d_node.attribute(L"type").as_string() == std::wstring(L"true_displacement"))
         {
@@ -98,7 +98,7 @@ void hrMeshDisplace(HRMeshRef a_mesh)
       auto mat = g_objManager.PtrById(tmpRef);
       if(mat != nullptr)
       {
-        auto d_node = mat->xml_node_next().child(L"displacement");
+        auto d_node = mat->xml_node_next(HR_OPEN_EXISTING).child(L"displacement");
 
         if (d_node != nullptr &&
             std::wstring(d_node.attribute(L"type").as_string()) == std::wstring(L"true_displacement"))
@@ -143,7 +143,7 @@ void hrMeshDisplace(HRMeshRef a_mesh)
 
 float smoothing_coeff(uint32_t valence)
 {
-  return (4.0f - 2.0f * cosf(float(2.0f * 3.14159265358979323846f) / valence )) / 9.0f;
+  return (4.0f - 2.0f * cosf((2.0f * 3.14159265358979323846f) / valence )) / 9.0f;
 }
 
 std::vector<uint32_t> find_vertex_neighbours(int vertex_index, const HRMesh::InputTriMesh& mesh)

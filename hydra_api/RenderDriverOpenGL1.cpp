@@ -9,7 +9,7 @@ void RD_OGL1_Plain::ClearAll()
   if (m_displayLists != -1)
     glDeleteLists(m_displayLists, m_listNum);
 
-  if(m_texturesList.size() > 0)
+  if(!m_texturesList.empty())
     glDeleteTextures(m_texturesList.size(), m_texturesList.data());
   
   m_displayLists = -1;
@@ -209,7 +209,7 @@ bool RD_OGL1_Plain::UpdateCamera(pugi::xml_node a_camNode)
   const wchar_t* camPosStr = a_camNode.child(L"position").text().as_string();
   const wchar_t* camLAtStr = a_camNode.child(L"look_at").text().as_string();
   const wchar_t* camUpStr  = a_camNode.child(L"up").text().as_string();
-  const wchar_t* testStr   = a_camNode.child(L"test").text().as_string();
+  //const wchar_t* testStr   = a_camNode.child(L"test").text().as_string();
 
   if (!a_camNode.child(L"fov").text().empty())
     camFov = a_camNode.child(L"fov").text().as_float();
@@ -345,7 +345,7 @@ bool RD_OGL1_Plain::UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode, cons
     return true;
   }
 
-  bool invalidMaterial = (m_diffTexId.size() == 0);
+  bool invalidMaterial = m_diffTexId.empty();
 
   //DebugPrintMesh(a_input, "z_mesh.txt");
 

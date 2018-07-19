@@ -49,7 +49,7 @@ BOOL WINAPI HandlerExit(_In_ DWORD fdwControl)
 #endif
 
 extern float g_MSEOutput;
-void test02_draw(void);
+void test02_draw();
 void test02_init();
 
 void test_gl32_001_init(void);

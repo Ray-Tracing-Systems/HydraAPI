@@ -41,8 +41,8 @@
 
 struct IHRObject 
 {
-  IHRObject() {}
-  virtual ~IHRObject(){}
+  IHRObject()          = default;
+  virtual ~IHRObject() = default;
 
   virtual uint64_t    chunkId() const { return uint64_t(-1); }
   virtual size_t      DataSizeInBytes() const { return 0; }                        ///< The size of the second part (big data in virtual buffer) in bytes.
@@ -69,10 +69,10 @@ void hrMeshComputeNormals(HRMeshRef a_mesh, int indexNum, bool useFaceNormals = 
 
 struct IHRMesh : public IHRObject ///< Not empty Data (reimplement DataSerialize/DataDeserialize)
 {
-  IHRMesh() {}
-  virtual ~IHRMesh() {}
+  IHRMesh()          = default;
+  virtual ~IHRMesh() = default;
 
-  virtual uint64_t chunkId() const { return uint64_t(-1); }
+  virtual uint64_t chunkId() const override { return uint64_t(-1); }
   virtual uint64_t offset(const wchar_t* a_arrayname) const { return uint64_t(-1); }
   virtual uint64_t vertNum() const { return 0; }
   virtual uint64_t indNum() const { return 0; }
@@ -83,12 +83,10 @@ struct IHRMesh : public IHRObject ///< Not empty Data (reimplement DataSerialize
   virtual const std::unordered_map<std::wstring, std::tuple<std::wstring, size_t, size_t, int> >& GetOffsAndSizeForAttrs() const = 0;
 };
 
-struct HRLight;
-
 struct IHRLight : public IHRObject
 {
-  IHRLight(){}
-  virtual ~IHRLight() {}
+  IHRLight()          = default;
+  virtual ~IHRLight() = default;
 
 protected:
 
@@ -96,20 +94,20 @@ protected:
 
 struct IHRMat : public IHRObject
 {
-  IHRMat(){}
-  virtual ~IHRMat() {}
+  IHRMat()          = default;
+  virtual ~IHRMat() = default;
 };
 
 struct IHRCam : public IHRObject
 {
-  IHRCam(){}
-  virtual ~IHRCam(){}
+  IHRCam()          = default;
+  virtual ~IHRCam() = default;
 };
 
 struct IHRTextureNode : public IHRObject ///< Not empty Data (reimplement DataSerialize/DataDeserialize)
 {
-  IHRTextureNode(){}
-  virtual ~IHRTextureNode(){}
+  IHRTextureNode()           = default;
+  ~IHRTextureNode() override = default;
 
   virtual uint32_t width()   const { return 0; }
   virtual uint32_t height()  const { return 0; }
@@ -125,31 +123,29 @@ struct IHRTextureNode : public IHRObject ///< Not empty Data (reimplement DataSe
 
 struct IHRSceneData : public IHRObject
 {
-  IHRSceneData(){}
-  virtual ~IHRSceneData(){}
+  IHRSceneData()           = default;
+  ~IHRSceneData() override = default;
 };
 
 struct IHRSceneInst : public IHRObject
 {
-  IHRSceneInst(){}
-  virtual ~IHRSceneInst(){}
+  IHRSceneInst()           = default;
+  ~IHRSceneInst() override = default;
 };
 
 struct IHRRender : public IHRObject
 {
-  IHRRender(){}
-  virtual ~IHRRender(){}
+  IHRRender()           = default;
+  ~IHRRender() override = default;
 };
 
-struct HRLight;
-struct HRMaterial;
 struct HRTextureNode;
 struct HRMesh;
 
 struct IHydraFactory
 {
-  IHydraFactory() {}
-  virtual ~IHydraFactory() {}
+  IHydraFactory()          = default;
+  virtual ~IHydraFactory() = default;
 
   virtual std::shared_ptr<IHRTextureNode> CreateTexture2DFromFile(HRTextureNode* pSysObj, const std::wstring& a_fileName)                               = 0;
   virtual std::shared_ptr<IHRTextureNode> CreateTexture2DFromMemory(HRTextureNode* pSysObj, int w, int h, int bpp, const void* a_data)                  = 0;
@@ -218,8 +214,8 @@ struct VirtualBuffer;
 */
 struct ChunkPointer
 {
-  ChunkPointer()                     : localAddress(-1), sizeInBytes(0), id(0), inUse(true), wasSaved(false), pVB(nullptr), useCounter(0), type(CHUNK_TYPE_UNKNOWN) {}
-  ChunkPointer(VirtualBuffer* a_pVB) : localAddress(-1), sizeInBytes(0), id(0), inUse(true), wasSaved(false), pVB(a_pVB), useCounter(0), type(CHUNK_TYPE_UNKNOWN) {}
+  ChunkPointer()                              : localAddress(-1), sizeInBytes(0), id(0), inUse(true), wasSaved(false), pVB(nullptr), useCounter(0), type(CHUNK_TYPE_UNKNOWN) {}
+  explicit ChunkPointer(VirtualBuffer* a_pVB) : localAddress(-1), sizeInBytes(0), id(0), inUse(true), wasSaved(false), pVB(a_pVB), useCounter(0), type(CHUNK_TYPE_UNKNOWN) {}
 
   void* GetMemoryNow();
   const void* GetMemoryNow() const;
@@ -264,7 +260,7 @@ struct VirtualBuffer
   #ifdef WIN32
     m_fileHandle = 0;
   #else
-    // some thing from unix ... 
+    m_fileDescriptor = 0;
   #endif
   }
 
@@ -355,11 +351,9 @@ void hr_unlock_system_mutex(HRSystemMutex* a_mutex);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-struct HRSceneInst;
-struct IHRRenderDriver;
-
 std::unique_ptr<IHRRenderDriver> CreateRenderFromString(const wchar_t *a_className, const wchar_t *a_options);
 
+struct HRSceneInst;
 void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver);
 void HR_DriverDraw(HRSceneInst& scn, IHRRenderDriver* a_pDriver);
 
@@ -394,8 +388,8 @@ struct HRSharedBufferHeader
 
 struct IHRSharedAccumImage
 {
-  IHRSharedAccumImage() {}
-  virtual ~IHRSharedAccumImage() {}
+  IHRSharedAccumImage()          = default;
+  virtual ~IHRSharedAccumImage() = default;
 
   virtual bool Create(int w, int h, int d, const char* name, char errMsg[256]) = 0; 
   virtual bool Attach(const char* name, char errMsg[256])                      = 0;
@@ -421,8 +415,8 @@ IHRSharedAccumImage* CreateImageAccum();
 
 struct HydraFactoryCommon : public IHydraFactory
 {
-  HydraFactoryCommon() {}
-  virtual ~HydraFactoryCommon() {}
+  HydraFactoryCommon()  = default;
+  ~HydraFactoryCommon() = default;
 
   std::shared_ptr<IHRTextureNode> CreateTexture2DFromFile(HRTextureNode* pSysObj, const std::wstring& a_fileName) override;
   std::shared_ptr<IHRTextureNode> CreateTexture2DFromMemory(HRTextureNode* pSysObj, int w, int h, int bpp, const void* a_data) override;

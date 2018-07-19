@@ -21,13 +21,13 @@ struct RD_OGL1_DebugDrawRays : public RD_OGL1_Debug
 
   typedef RD_OGL1_Debug Base;
 
-  RD_OGL1_DebugDrawRays()
+  RD_OGL1_DebugDrawRays() : m_numDebugRays(0), m_rayDepth(0)
   {
     m_drawWire = true;
     LoadRays();
   }
 
-  ~RD_OGL1_DebugDrawRays() { }
+  ~RD_OGL1_DebugDrawRays() = default;
 
   void BeginScene(pugi::xml_node a_sceneNode) override;
   void EndScene  () override;
@@ -55,7 +55,7 @@ void RD_OGL1_DebugDrawRays::EndScene()
   glDisable(GL_LIGHTING);
   glDisable(GL_TEXTURE_2D);
  
-  int rayIndex = g_drawBVHIdInput;
+  //int rayIndex = g_drawBVHIdInput;
   
   glColor3f(1, 1, 1);
   

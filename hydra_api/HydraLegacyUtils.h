@@ -5,12 +5,14 @@
 #endif
 
 #include <cstdint>
+#include <cmath>
+
 #include <fstream>
 #include <vector>
 #include <iostream>
 #include <string>
 #include <sstream>
-#include <math.h>
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -41,8 +43,8 @@ struct RenderProcessRunParams
 
 struct IHydraNetPluginAPI
 {
-  IHydraNetPluginAPI(){}
-  virtual ~IHydraNetPluginAPI(){}
+  IHydraNetPluginAPI()          = default;
+  virtual ~IHydraNetPluginAPI() = default;
 
   virtual bool hasConnection() const = 0;
 
@@ -54,14 +56,6 @@ struct IHydraNetPluginAPI
   */
   virtual void runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydraRenderDevice>& a_devList, const std::vector<int>& activeDevices) = 0;
   virtual void stopAllRenderProcesses() = 0;
-};
-
-struct SharedBufferDataInfo
-{
-  int width;
-  int height;
-  int read;
-  int written;
 };
 
 

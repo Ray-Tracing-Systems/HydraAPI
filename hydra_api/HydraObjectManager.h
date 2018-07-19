@@ -67,7 +67,7 @@ struct HRObject
       return m_xmlNode;
   }
 
-  virtual pugi::xml_node xml_node_next(HR_OPEN_MODE a_openMode = HR_OPEN_EXISTING)
+  virtual pugi::xml_node xml_node_next(HR_OPEN_MODE a_openMode)
   { 
     if (m_xmlNodeNext == nullptr)
     {
@@ -130,10 +130,7 @@ struct HRMesh : public HRObject<IHRMesh>
 
   struct InputTriMesh
   {
-    InputTriMesh()
-    {
-      
-    }
+    InputTriMesh() = default;
 
     void clear()
     {
@@ -244,7 +241,7 @@ struct HRMesh : public HRObject<IHRMesh>
 
 struct HRLight : public HRObject<IHRLight>
 {
-  HRLight(){}
+  HRLight() = default;
 
   pugi::xml_node copy_node(pugi::xml_node a_node, bool a_lite) override;
   pugi::xml_node copy_node_back(pugi::xml_node a_node) override;
@@ -252,7 +249,7 @@ struct HRLight : public HRObject<IHRLight>
 
 struct HRMaterial : public HRObject<IHRMat>
 {
-  HRMaterial(){}
+  HRMaterial() = default;
 
   std::shared_ptr<IHRMat> pImpl;
 
@@ -262,7 +259,7 @@ struct HRMaterial : public HRObject<IHRMat>
 
 struct HRCamera : public HRObject<IHRCam>
 {
-  HRCamera(){}
+  HRCamera() = default;
 
   std::shared_ptr<IHRCam> pImpl;
 
@@ -389,7 +386,7 @@ struct HRSceneData : public HRObject<IHRSceneData>
 
 struct HRSceneInst : public HRObject<IHRSceneInst>
 {
-  HRSceneInst() : pImpl(nullptr), drawBegin(0), drawBeginLight(0), driverDirtyFlag(true) {}
+  HRSceneInst() : pImpl(nullptr), drawBegin(0), drawBeginLight(0), driverDirtyFlag(true), lightGroupCounter(0), instancedScenesCounter(0) {}
 
   void update(pugi::xml_node a_newNode)
   {
@@ -410,7 +407,7 @@ struct HRSceneInst : public HRObject<IHRSceneInst>
     m_xmlNodeNext = pugi::xml_node();
   }
 
-  pugi::xml_node xml_node_next(HR_OPEN_MODE a_openMode = HR_OPEN_EXISTING) override
+  pugi::xml_node xml_node_next(HR_OPEN_MODE a_openMode) override
   {
      if (m_xmlNodeNext == nullptr)
        m_xmlNodeNext = copy_node(m_xmlNode, true); // don't copy all scene instances ! :) 
@@ -517,7 +514,7 @@ struct HRRender : public HRObject<IHRRender>
 struct HRObjectManager
 {
   HRObjectManager() : m_pFactory(nullptr), m_pDriver(nullptr), m_pImgTool(nullptr), m_currSceneId(0), m_currRenderId(0), m_currCamId(0), m_pVBSysMutex(nullptr),
-                      m_copyTexFilesToLocalStorage(false), m_useLocalPath(true), m_attachMode(false) {}
+                      m_copyTexFilesToLocalStorage(false), m_useLocalPath(true), m_attachMode(false), m_sortTriIndices(false), m_computeBBoxes(false) {}
  
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 
@@ -545,7 +542,7 @@ struct HRObjectManager
   HRSceneInst*   PtrById(HRSceneInstRef a_ref);
   HRRender*      PtrById(HRRenderRef a_ref);
 
-  const std::wstring GetLoc(const pugi::xml_node a_node) const;
+  const std::wstring GetLoc(pugi::xml_node a_node) const;
   void SetLoc(pugi::xml_node a_node, const std::wstring& a_loc);
 
   std::vector<int> m_tempBuffer;

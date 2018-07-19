@@ -132,7 +132,7 @@ void FillXMLFromMeshImpl(pugi::xml_node nodeXml, std::shared_ptr<IHRMesh> a_pImp
   for (const auto& arr : a_pImpl->GetOffsAndSizeForAttrs())
   {
     pugi::xml_node arrayNode = nodeXml.append_child(arr.first.c_str());
-    const std::wstring& name = (std::wstring&)std::get<0>(arr.second);
+    const std::wstring& name = std::get<0>(arr.second);
 
     arrayNode.append_attribute(L"type").set_value(name.c_str());
     arrayNode.append_attribute(L"bytesize").set_value(std::get<2>(arr.second));
@@ -411,7 +411,7 @@ HAPI void hrMeshClose(HRMeshRef a_mesh)
   if (pMesh->pImpl == nullptr)
     return;
 
-  auto nodeXml = pMesh->xml_node_next();
+  auto nodeXml = pMesh->xml_node_next(HR_OPEN_EXISTING);
   auto pImpl   = pMesh->pImpl;
 
   FillXMLFromMeshImpl(nodeXml, pImpl, false); 

@@ -14,10 +14,7 @@
 
 struct RD_DebugPrint : public IHRRenderDriver
 {
-  RD_DebugPrint()
-  {
-    // m_msg = L"";
-  }
+  RD_DebugPrint() = default;
 
   void              ClearAll() override;
   HRDriverAllocInfo AllocAll(HRDriverAllocInfo a_info) override;
@@ -65,7 +62,7 @@ void RD_DebugPrint::ClearAll()
 
 }
 
-constexpr static wchar_t* const foldername = L"/debugmeshes";
+constexpr static wchar_t* foldername = L"/debugmeshes";
 
 HRDriverAllocInfo RD_DebugPrint::AllocAll(HRDriverAllocInfo a_info) 
 {

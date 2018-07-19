@@ -29,7 +29,7 @@ struct RD_OGL1_Plain : public IHRRenderDriver
     camNearPlane = 0.1f;
     camFarPlane  = 1000.0f;
 
-    camPos[0] = 0.0f; camPos[1] = 0.0f; camPos[2] = 0.0f;
+    camPos[0]    = 0.0f; camPos[1]    = 0.0f; camPos[2]    = 0.0f;
     camLookAt[0] = 0.0f; camLookAt[1] = 0.0f; camLookAt[2] = -1.0f;
 
     m_width  = 1024;
@@ -157,9 +157,9 @@ protected:
 
 struct RD_OGL1_ShowCustomAttr : public RD_OGL1_Plain
 {
-  RD_OGL1_ShowCustomAttr(){}
+  RD_OGL1_ShowCustomAttr() = default;
 
-  bool UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode, const HRMeshDriverInput& a_input, const HRBatchInfo* a_batchList, int32_t listSize);
+  bool UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode, const HRMeshDriverInput& a_input, const HRBatchInfo* a_batchList, int32_t listSize) override;
 
 protected:
   

@@ -61,7 +61,7 @@ public:
   template <class U>
   aligned16& operator=(const aligned16<U>&) { return *this; }
 
-  bool operator==(const aligned16<T> a_rhs)       { return true; } // sigleton, all instances are always equal
+  bool operator==(const aligned16<T> a_rhs)       { return true; } // singleton, all instances are always equal
   bool operator==(const aligned16<T> a_rhs) const { return true; }
   bool operator!=(const aligned16& other)   const { return !(*this == other);}
 };
