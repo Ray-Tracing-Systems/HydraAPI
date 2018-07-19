@@ -66,8 +66,8 @@ SharedAccumImageLinux::~SharedAccumImageLinux()
 void SharedAccumImageLinux::Free()
 {
   sem_close(m_mutex);
-  if(m_ownThisResource)
-    sem_unlink(m_mutexName.c_str());
+  //if(m_ownThisResource)
+  sem_unlink(m_mutexName.c_str());
   
   m_mutex = nullptr;
 
@@ -79,8 +79,8 @@ void SharedAccumImageLinux::Free()
     close(m_buffDescriptor);
   m_buffDescriptor = -1;
   
-  if(m_ownThisResource)
-    shm_unlink(m_shmemName.c_str());
+  //if(m_ownThisResource)
+  shm_unlink(m_shmemName.c_str());
 
   m_msgSend = nullptr;
   m_msgRcv  = nullptr;

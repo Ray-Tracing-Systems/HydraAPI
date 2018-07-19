@@ -356,8 +356,8 @@ bool test55_clear_scene()
       mat4x4_identity(mRes);
 
       mat4x4_translate(mTranslate, xCoord, 0.5f, yCoord);
-      mat4x4_rotate_X(mRot1, mRot1, rnd(0.0f, 360.0f)*DEG_TO_RAD);
-      mat4x4_rotate_Y(mRot1, mRot1, rnd(0.0f, 360.0f)*DEG_TO_RAD*0.5f);
+      mat4x4_rotate_X(mRot1, mRot1, simplerandom::rnd(rgen, 0.0f, 360.0f)*DEG_TO_RAD);
+      mat4x4_rotate_Y(mRot1, mRot1, simplerandom::rnd(rgen, 0.0f, 360.0f)*DEG_TO_RAD*0.5f);
       mat4x4_mul(mRes, mTranslate, mRot1);
       mat4x4_transpose(matrixT, mRes); // this fucking math library swap rows and columns
 
@@ -387,8 +387,8 @@ bool test55_clear_scene()
       mat4x4_identity(mRes);
 
       mat4x4_translate(mTranslate, xCoord, 0.5f, yCoord);
-      mat4x4_rotate_X(mRot1, mRot1, rnd(0.0f, 360.0f)*DEG_TO_RAD);
-      mat4x4_rotate_Y(mRot1, mRot1, rnd(0.0f, 360.0f)*DEG_TO_RAD*0.5f);
+      mat4x4_rotate_X(mRot1, mRot1, simplerandom::rnd(rgen, 0.0f, 360.0f)*DEG_TO_RAD);
+      mat4x4_rotate_Y(mRot1, mRot1, simplerandom::rnd(rgen, 0.0f, 360.0f)*DEG_TO_RAD*0.5f);
       mat4x4_mul(mRes, mTranslate, mRot1);
       mat4x4_transpose(matrixT, mRes); // this fucking math library swap rows and columns
 

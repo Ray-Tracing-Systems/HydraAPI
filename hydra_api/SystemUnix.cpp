@@ -143,8 +143,8 @@ void hr_free_system_mutex(HRSystemMutex*& a_mutex) // logic of this function is 
     return;
   
   sem_close(a_mutex->mutex);
-  if(a_mutex->owner)
-    sem_unlink(a_mutex->name.c_str());
+  //if(a_mutex->owner)
+  sem_unlink(a_mutex->name.c_str());
   
   delete a_mutex;
   a_mutex = nullptr;

@@ -272,8 +272,8 @@ void VirtualBuffer::Destroy()
   if (!gDebugMode)
   {
     munmap(m_data, m_totalSizeAllocated);
-    if(m_owner)
-      shm_unlink(shmemName.c_str());
+    //if(m_owner)
+    shm_unlink(shmemName.c_str());
     close(m_fileDescriptor);
   }
 #endif

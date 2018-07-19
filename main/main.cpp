@@ -91,12 +91,13 @@ int main(int argc, const char** argv)
   
   try
   {
-    run_all_api_tests();
+    // run_all_api_tests();
 	  // run_all_geo_tests();
     // run_all_lgt_tests();
     // run_all_mtl_tests();
     // run_all_ipp_tests();
 
+    std::cout << test55_clear_scene() << std::endl;
     // std::cout << test41_load_library_basic() << std::endl;
 
     //test35_cornell_with_light();
