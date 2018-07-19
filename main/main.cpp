@@ -97,7 +97,7 @@ int main(int argc, const char** argv)
     // run_all_mtl_tests();
     // run_all_ipp_tests();
 
-    std::cout << test55_clear_scene() << std::endl;
+    std::cout << test84_proc_texture2() << std::endl;
     // std::cout << test41_load_library_basic() << std::endl;
 
     //test35_cornell_with_light();

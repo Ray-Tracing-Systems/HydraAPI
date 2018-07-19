@@ -1215,11 +1215,9 @@ bool test84_proc_texture2()
     node.append_child(L"method_caustic").text() = L"pathtracing";
     node.append_child(L"shadows").text() = L"1";
 
-    node.append_child(L"trace_depth").text() = L"8";
-    node.append_child(L"diff_trace_depth").text() = L"4";
-    node.append_child(L"pt_error").text() = L"2.0";
-    node.append_child(L"minRaysPerPixel").text() = L"256";
-    node.append_child(L"maxRaysPerPixel").text() = L"256";
+    node.append_child(L"trace_depth").text()      = 8;
+    node.append_child(L"diff_trace_depth").text() = 4;
+    node.append_child(L"maxRaysPerPixel").text()  = 512;
   }
   hrRenderClose(renderRef);
 
@@ -3105,12 +3103,15 @@ bool test89_proc_texture_dirty()
   hrRenderLogDir(renderRef, L"/tmp/hydra_logs", true);
 
 
+  const int w = 512;
+  const int h = 512;
+
   hrRenderOpen(renderRef, HR_WRITE_DISCARD);
   {
     pugi::xml_node node = hrRenderParamNode(renderRef);
 
-    node.append_child(L"width").text() = L"1024";
-    node.append_child(L"height").text() = L"1024";
+    node.append_child(L"width").text()  = w;
+    node.append_child(L"height").text() = h;
 
     node.append_child(L"method_primary").text() = L"pathtracing";
     node.append_child(L"method_secondary").text() = L"pathtracing";
@@ -3155,9 +3156,6 @@ bool test89_proc_texture_dirty()
 
   hrFlush(scnRef, renderRef, camRef);
 
-
-  int w = 1024;
-  int h = 1024;
 
   glViewport(0, 0, w , h);
   std::vector<int32_t> image(w * h);
