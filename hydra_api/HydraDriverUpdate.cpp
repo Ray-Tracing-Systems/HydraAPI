@@ -422,14 +422,19 @@ void UpdateImageFromFileOrChunk(int32_t a_id, HRTextureNode& img, IHRRenderDrive
   }
   else // load chunk
   {
-    if (img.pImpl == nullptr)
+    auto w           = node.attribute(L"width").as_int();
+    auto h           = node.attribute(L"height").as_int();
+    auto sizeInBytes = node.attribute(L"bytesize").as_llong();
+
+    if(w == 0 || h == 0 || sizeInBytes == 0)
+    {
+      HrError(L"UpdateImageFromFileOrChunk: zero or unknown image size/resolution");
       return;
+    }
 
-    auto w   = img.pImpl->width();
-    auto h   = img.pImpl->height();
-    auto bpp = img.pImpl->bpp();
+    auto bpp = sizeInBytes / (w*h);
 
-    size_t sizeInBytes = size_t(w*h)*size_t(bpp) + size_t(sizeof(int) * 2);
+    sizeInBytes += size_t(sizeof(int) * 2);
 
     g_objManager.m_tempBuffer.resize(sizeInBytes / uint64_t(sizeof(int)) + uint64_t(sizeof(int) * 16));
     char* data = (char*)&g_objManager.m_tempBuffer[0];
@@ -445,9 +450,7 @@ void UpdateImageFromFileOrChunk(int32_t a_id, HRTextureNode& img, IHRRenderDrive
     if (fin.is_open())
     {
       fin.read(data, sizeInBytes);
-
       uint64_t dataOffset = node.attribute(L"offset").as_ullong();
-
       a_pDriver->UpdateImage(a_id, w, h, bpp, data + dataOffset, node);
       fin.close();
     }
@@ -1189,7 +1192,7 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
   
   auto timeBeg = std::chrono::system_clock::now();
   
-  if(g_objManager.m_attachMode)
+  if(g_objManager.m_attachMode && g_objManager.m_pVBSysMutex != nullptr)
     hr_lock_system_mutex(g_objManager.m_pVBSysMutex, VB_LOCK_WAIT_TIME_MS);          // need to lock here because update may load data from virtual buffer
   
   HR_DriverUpdateCamera(scn, a_pDriver);
@@ -1209,7 +1212,7 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 
   HR_CheckCommitErrors    (scn, objList);
   
-  if(g_objManager.m_attachMode)
+  if(g_objManager.m_attachMode && g_objManager.m_pVBSysMutex != nullptr)
     hr_unlock_system_mutex(g_objManager.m_pVBSysMutex);
   
   if(g_objManager.m_attachMode)

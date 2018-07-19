@@ -76,8 +76,11 @@ void HRObjectManager::init(const wchar_t* a_className)
       m_computeBBoxes = true;
   }
   
-  m_pFactory    = new HydraFactoryCommon;
-  m_pVBSysMutex = hr_create_system_mutex("hydra_virtual_buffer_lock");
+  m_pFactory = new HydraFactoryCommon;
+  if(SharedVirtualBufferIsEnabled())
+    m_pVBSysMutex = hr_create_system_mutex("hydra_virtual_buffer_lock");
+  else
+    m_pVBSysMutex = nullptr;
   scnData.init(m_attachMode, m_pVBSysMutex);
 
   m_pImgTool = HydraRender::CreateImageTool();

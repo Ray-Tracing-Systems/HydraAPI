@@ -362,8 +362,11 @@ std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTextureInfoFromChunkFi
   wh[1] = a_node.attribute(L"height").as_int();
   
   if(wh[0] == 0 || wh[1] == 0)
+  {
+    HrError(L"HydraFactoryCommon::CreateTextureInfoFromChunkFile, unknown image resolution is not allowed!");
     return nullptr;
-  
+  }
+
   const size_t bytesize = size_t(a_node.attribute(L"bytesize").as_llong());
   const int bpp         = int( bytesize/(wh[0]*wh[1]) );
 

@@ -46,7 +46,7 @@ HRTextureNodeRef _hrTexture2DCreateFromNode(pugi::xml_node a_node)
   g_objManager.scnData.textures      [ref.id].update_this(a_node);
   g_objManager.scnData.m_textureCache[a_fileName2] = ref.id; // remember texture id for given file name
 
-  if (!std::wstring(a_chunkPath).empty())
+  if (a_chunkPath != L"")
     texture.pImpl = g_objManager.m_pFactory->CreateTextureInfoFromChunkFile(&texture, a_chunkPath, a_node);
 
   return ref;
@@ -349,7 +349,7 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
   if (g_objManager.m_attachMode)
     HrPrint(HR_SEVERITY_INFO, L"HydraAPI, before system mutex lock");
 
-  if(g_objManager.m_attachMode)
+  if(g_objManager.m_attachMode && g_objManager.m_pVBSysMutex != nullptr)
     hr_lock_system_mutex(g_objManager.m_pVBSysMutex, VB_LOCK_WAIT_TIME_MS); // need to lock here because _hrMeshCreateFromNode may load data from virtual buffer
   
   if (g_objManager.m_attachMode)
@@ -380,7 +380,7 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
 
   g_objManager.scnInst.resize(0);
   
-  if(g_objManager.m_attachMode)
+  if(g_objManager.m_attachMode && g_objManager.m_pVBSysMutex != nullptr)
     hr_unlock_system_mutex(g_objManager.m_pVBSysMutex);
 
   if (g_objManager.m_attachMode)

@@ -15,7 +15,7 @@
 
 #include <cmath>
 
-static constexpr bool gDebugMode     = false;
+static constexpr bool gDebugMode     = true;
 static constexpr bool gCopyCollector = false;
 
 bool SharedVirtualBufferIsEnabled() { return (gDebugMode == false); }

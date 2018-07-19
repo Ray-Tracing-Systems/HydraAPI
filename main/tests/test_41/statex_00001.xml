@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <textures_lib total_chunks="9">
-  <texture name="Map#0" id="0" loc="data/chunk_00000.image4ub" offset="8" bytesize="16" />
-  <texture id="1" name="data/textures/chess_red.bmp" path="data/textures/chess_red.bmp" loc="data/chunk_00001.image4ub" offset="8" bytesize="16384" dl="0" />
-  <texture id="2" name="data/textures/texture1.bmp" path="data/textures/texture1.bmp" loc="data/chunk_00002.image4ub" offset="8" bytesize="262144" dl="0" />
-  <texture id="3" name="data/textures/relief_wood.jpg" path="data/textures/relief_wood.jpg" loc="data/chunk_00003.image4ub" offset="8" bytesize="1048576" dl="0" />
-  <texture id="4" name="data/textures/163.jpg" path="data/textures/163.jpg" loc="data/chunk_00004.image4ub" offset="8" bytesize="250000" dl="0" />
+  <texture name="Map#0" id="0" loc="data/chunk_00000.image4ub" offset="8" bytesize="16" width = "2" height = "2" />
+  <texture id="1" name="data/textures/chess_red.bmp" path="data/textures/chess_red.bmp" loc="data/chunk_00001.image4ub" offset="8" bytesize="16384" dl="0" width = "64" height = "64" />
+  <texture id="2" name="data/textures/texture1.bmp" path="data/textures/texture1.bmp" loc="data/chunk_00002.image4ub" offset="8" bytesize="262144" dl="0" width = "256" height = "256" />
+  <texture id="3" name="data/textures/relief_wood.jpg" path="data/textures/relief_wood.jpg" loc="data/chunk_00003.image4ub" offset="8" bytesize="1048576" dl="0" width = "512" height = "512" />
+  <texture id="4" name="data/textures/163.jpg" path="data/textures/163.jpg" loc="data/chunk_00004.image4ub" offset="8" bytesize="250000" dl="0" width = "250" height = "250" />
 </textures_lib>
 <materials_lib>
   <material id="0" name="mysimplemat" type="hydra_material">

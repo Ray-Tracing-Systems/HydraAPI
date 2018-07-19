@@ -62,7 +62,7 @@ void RD_DebugPrint::ClearAll()
 
 }
 
-constexpr static wchar_t* foldername = L"/debugmeshes";
+constexpr static wchar_t foldername[] = L"/debugmeshes";
 
 HRDriverAllocInfo RD_DebugPrint::AllocAll(HRDriverAllocInfo a_info) 
 {
