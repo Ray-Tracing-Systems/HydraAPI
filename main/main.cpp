@@ -101,8 +101,8 @@ int main(int argc, const char** argv)
     // std::cout << test41_load_library_basic() << std::endl;
 
     //test35_cornell_with_light();
-    test39_mesh_from_vsgf();
-    //test42_load_library_basic();
+    //test39_mesh_from_vsgf();
+    std::cout << test40_several_changes() << std::endl;
     
     //test38_licence_plate();
     //std::cout << test39_mesh_from_vsgf() << std::endl;

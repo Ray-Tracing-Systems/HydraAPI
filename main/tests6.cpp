@@ -2113,8 +2113,8 @@ bool test40_several_changes()
   {
     pugi::xml_node node = hrRenderParamNode(renderRef);
 
-    node.append_child(L"width").text()  = L"1024";
-    node.append_child(L"height").text() = L"768";
+    node.append_child(L"width").text()  = 512;
+    node.append_child(L"height").text() = 512;
 
     node.append_child(L"method_primary").text()   = L"pathtracing";
     node.append_child(L"method_secondary").text() = L"pathtracing";
@@ -2124,9 +2124,6 @@ bool test40_several_changes()
 
     node.append_child(L"trace_depth").text()      = L"5";
     node.append_child(L"diff_trace_depth").text() = L"3";
-
-    node.append_child(L"pt_error").text()         = L"2";
-    node.append_child(L"minRaysPerPixel").text()  = L"256";
     node.append_child(L"maxRaysPerPixel").text()  = L"1024";
   }
   hrRenderClose(renderRef);
@@ -2177,8 +2174,8 @@ bool test40_several_changes()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
+  glViewport(0, 0, 512, 512);
+  std::vector<int32_t> image(512 * 512);
 
   while (true)
   {
@@ -2188,10 +2185,10 @@ bool test40_several_changes()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
       glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
@@ -2231,10 +2228,10 @@ bool test40_several_changes()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
       glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
@@ -2322,10 +2319,7 @@ bool test40_several_changes()
   hrRenderOpen(renderRef, HR_OPEN_EXISTING);
   {
     pugi::xml_node node = hrRenderParamNode(renderRef);
-
-    node.child(L"pt_error").text()        = L"2";
-    node.child(L"minRaysPerPixel").text() = L"256";
-    node.child(L"maxRaysPerPixel").text() = L"4096";
+    node.child(L"maxRaysPerPixel").text() = 2048;
   }
   hrRenderClose(renderRef);
 
@@ -2340,10 +2334,10 @@ bool test40_several_changes()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
       glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
