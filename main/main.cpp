@@ -103,6 +103,8 @@ int main(int argc, const char** argv)
     //test35_cornell_with_light();
     std::cout << test39_mesh_from_vsgf() << std::endl;
     std::cout << test40_several_changes() << std::endl;
+  
+    //std::cout << test71_out_of_memory() << std::endl;
     
     //test38_licence_plate();
     //std::cout << test39_mesh_from_vsgf() << std::endl;

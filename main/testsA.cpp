@@ -3200,8 +3200,8 @@ bool test71_out_of_memory()
   hrMeshClose(cubeRef);
 
   const int texSize = numBytes / 16;
-  const int h       = int(sqrt(texSize));
-  const int w       = texSize / h;
+  const int h       = 2*int(sqrt(texSize));
+  const int w       = 2*texSize / h;
 
   //std::cout << "w = " << w << std::endl;
   //std::cout << "h = " << h << std::endl;
