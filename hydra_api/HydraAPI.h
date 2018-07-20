@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <limits>
 #include "pugixml.hpp"
 
 /**
@@ -1069,6 +1070,10 @@ struct HRLightGroupExt
 */
 HAPI void  hrLightGroupInstanceExt(HRSceneInstRef pScn, HRLightGroupExt pLight, float m[16], const wchar_t** a_customAttribsArray = nullptr);
 
+#ifdef WIN32
+#undef min
+#undef max
+#endif
 
 namespace HRUtils
 {
@@ -1088,7 +1093,9 @@ namespace HRUtils
       float z_min;
       float z_max;
 
-      BBox(): x_min(0.0f), x_max(0.0f), y_min(0.0f), y_max(0.0f), z_min(0.0f), z_max(0.0f) {}
+      BBox(): x_min(std::numeric_limits<float>::max()), x_max(std::numeric_limits<float>::lowest()),
+              y_min(std::numeric_limits<float>::max()), y_max(std::numeric_limits<float>::lowest()),
+              z_min(std::numeric_limits<float>::max()), z_max(std::numeric_limits<float>::lowest()) {}
   };
 
 
