@@ -126,7 +126,7 @@ int main(int argc, const char** argv)
   
   try
   {
-    // run_all_api_tests();
+    // run_all_api_tests(82);
 	  // run_all_geo_tests();
     // run_all_lgt_tests();
     // run_all_mtl_tests();
@@ -134,8 +134,10 @@ int main(int argc, const char** argv)
 
     // std::cout << test84_proc_texture2() << std::endl;
     // std::cout << test41_load_library_basic() << std::endl;
-
-    test35_cornell_with_light();
+  
+    std::cout << test82_proc_texture()  << std::endl;
+    std::cout << test84_proc_texture2() << std::endl;
+    
     //std::cout << test39_mesh_from_vsgf() << std::endl;
     //std::cout << test40_several_changes() << std::endl;
   

@@ -283,15 +283,15 @@ bool test82_proc_texture()
   //
   HRTextureNodeRef texBitmap1 = hrTexture2DCreateFromFile(L"data/textures/texture1.bmp");
   HRTextureNodeRef texBitmap2 = hrTexture2DCreateFromFile(L"data/textures/300px-Bump2.jpg");
-  HRTextureNodeRef texProc    = hrTextureCreateAdvanced(L"proc", L"my_custom_faloff"); 
-  HRTextureNodeRef texProc2   = hrTextureCreateAdvanced(L"proc", L"my_custom_faloff");
+  HRTextureNodeRef texProc    = hrTextureCreateAdvanced(L"proc", L"my_custom_tex");
+  HRTextureNodeRef texProc2   = hrTextureCreateAdvanced(L"proc", L"my_custom_tex2");
 
   hrTextureNodeOpen(texProc, HR_WRITE_DISCARD);
   {
     xml_node texNode = hrTextureParamNode(texProc);
    
     xml_node code_node = texNode.append_child(L"code");
-    code_node.append_attribute(L"file") = L"data/code/mul_tex_coord.c";
+    code_node.append_attribute(L"file") = L"data/code/mul_tex_coord2.c";
     code_node.append_attribute(L"main") = L"userProc";
   }
   hrTextureNodeClose(texProc);
@@ -382,38 +382,16 @@ bool test82_proc_texture()
     texNode.append_attribute(L"input_alpha").set_value(L"rgb");
     
     HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
-
-
+    
     // proc texture sampler settings
     //
     xml_node p1 = texNode.append_child(L"arg"); 
-    xml_node p2 = texNode.append_child(L"arg");
-    xml_node p3 = texNode.append_child(L"arg");
-    xml_node p4 = texNode.append_child(L"arg");
-   
+    
     p1.append_attribute(L"id")   = 0;
-    p1.append_attribute(L"name") = L"texId1";
-    p1.append_attribute(L"type") = L"sampler2D";
+    p1.append_attribute(L"name") = L"color";
+    p1.append_attribute(L"type") = L"float4";
     p1.append_attribute(L"size") = 1;
-    p1.append_attribute(L"val")  = texBitmap1.id;
-     
-    p2.append_attribute(L"id")   = 1;
-    p2.append_attribute(L"name") = L"texId2";
-    p2.append_attribute(L"type") = L"sampler2D";
-    p2.append_attribute(L"size") = 1;
-    p2.append_attribute(L"val")  = texBitmap2.id;
-
-    p3.append_attribute(L"id")   = 3;
-    p3.append_attribute(L"name") = L"offset";
-    p3.append_attribute(L"type") = L"float2";
-    p3.append_attribute(L"size") = 1;
-    p3.append_attribute(L"val")  = L"0 0";
-
-    p4.append_attribute(L"id")   = 4;
-    p4.append_attribute(L"name") = L"color";
-    p4.append_attribute(L"type") = L"float4";
-    p4.append_attribute(L"size") = 1;
-    p4.append_attribute(L"val")  = L"1 1 1 1";
+    p1.append_attribute(L"val")  = L"1 1 1 1";
   }
   hrMaterialClose(mat1);
 
@@ -542,9 +520,8 @@ bool test82_proc_texture()
 
     node.append_child(L"trace_depth").text()      = L"8";
     node.append_child(L"diff_trace_depth").text() = L"4";
-    node.append_child(L"maxRaysPerPixel").text()  = L"2048";
-
-    node.append_child(L"evalgbuffer").text() = 1;
+    node.append_child(L"maxRaysPerPixel").text()  = 1024;
+    node.append_child(L"evalgbuffer").text()      = 1;
   }
   hrRenderClose(renderRef);
 
@@ -590,7 +567,7 @@ bool test82_proc_texture()
       glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -915,7 +892,7 @@ bool test83_proc_texture2()
       glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -1263,7 +1240,7 @@ bool test84_proc_texture2()
       glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -1623,7 +1600,7 @@ bool test85_proc_texture_ao()
       glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -1980,7 +1957,7 @@ bool test86_proc_texture_ao_dirt()
       glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -2344,7 +2321,7 @@ bool test87_proc_texture_reflect()
       glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -3174,7 +3151,7 @@ bool test89_proc_texture_dirty()
       glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
