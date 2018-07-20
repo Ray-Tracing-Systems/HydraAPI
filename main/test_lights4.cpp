@@ -262,7 +262,7 @@ namespace LGHT_TESTS
         glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
-        std::cout << "rendering progress = " << info.progress << "% \r";
+        std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
         glfwSwapBuffers(g_window);
@@ -503,7 +503,7 @@ namespace LGHT_TESTS
         glDrawPixels(TEST_IMG_SIZE, TEST_IMG_SIZE, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
-        std::cout << "rendering progress = " << info.progress << "% \r";
+        std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
         glfwSwapBuffers(g_window);
@@ -739,7 +739,7 @@ namespace LGHT_TESTS
         glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
-        std::cout << "rendering progress = " << info.progress << "% \r";
+        std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
         glfwSwapBuffers(g_window);
@@ -1104,7 +1104,7 @@ namespace LGHT_TESTS
         glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
-        std::cout << "rendering progress = " << info.progress << "% \r";
+        std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
         glfwSwapBuffers(g_window);
@@ -1500,7 +1500,7 @@ namespace LGHT_TESTS
         glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
-        std::cout << "rendering progress = " << info.progress << "% \r";
+        std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
         glfwSwapBuffers(g_window);
@@ -1902,7 +1902,7 @@ namespace LGHT_TESTS
         glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
-        std::cout << "rendering progress = " << info.progress << "% \r";
+        std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
         glfwSwapBuffers(g_window);
@@ -2267,7 +2267,7 @@ namespace LGHT_TESTS
         glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
-        std::cout << "rendering progress = " << info.progress << "% \r";
+        std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
         glfwSwapBuffers(g_window);
@@ -2464,7 +2464,7 @@ namespace LGHT_TESTS
         glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
-        std::cout << "rendering progress = " << info.progress << "% \r";
+        std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
         glfwSwapBuffers(g_window);
@@ -2721,7 +2721,7 @@ namespace LGHT_TESTS
         glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
-        std::cout << "rendering progress = " << info.progress << "% \r";
+        std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
         counter++;
       }

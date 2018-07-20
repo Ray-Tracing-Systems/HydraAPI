@@ -68,6 +68,7 @@ void APIENTRY glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severi
     case GL_DEBUG_SOURCE_THIRD_PARTY:     std::cout << "Source: Third Party"; break;
     case GL_DEBUG_SOURCE_APPLICATION:     std::cout << "Source: Application"; break;
     case GL_DEBUG_SOURCE_OTHER:           std::cout << "Source: Other"; break;
+    default:                              std::cout << "Source: Unknown";  break;
   } std::cout << std::endl;
 
   switch (type)
@@ -81,6 +82,7 @@ void APIENTRY glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severi
     case GL_DEBUG_TYPE_PUSH_GROUP:          std::cout << "Type: Push Group"; break;
     case GL_DEBUG_TYPE_POP_GROUP:           std::cout << "Type: Pop Group"; break;
     case GL_DEBUG_TYPE_OTHER:               std::cout << "Type: Other"; break;
+    default:                                std::cout << "Source: Unknown"; break;
   } std::cout << std::endl;
 
   switch (severity)
@@ -89,6 +91,7 @@ void APIENTRY glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severi
     case GL_DEBUG_SEVERITY_MEDIUM:       std::cout << "Severity: medium"; break;
     case GL_DEBUG_SEVERITY_LOW:          std::cout << "Severity: low"; break;
     case GL_DEBUG_SEVERITY_NOTIFICATION: std::cout << "Severity: notification"; break;
+    default:                             std::cout << "Severity: unknown"; break;
   } std::cout << std::endl;
 
   std::cout << std::endl;
@@ -215,7 +218,7 @@ static void Draw(void)
 #if defined WIN32
   static Timer    timer(true);
 #endif
-  const float DEG_TO_RAD = float(M_PI) / 180.0f;
+  //const float DEG_TO_RAD = float(M_PI) / 180.0f;
 
   hrCameraOpen(camRef, HR_OPEN_EXISTING);
   {

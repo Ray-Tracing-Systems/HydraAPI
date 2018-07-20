@@ -200,7 +200,7 @@ bool RD_OGL1_Debug::UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode, cons
     return true;
   }
 
-  bool invalidMaterial = (m_diffTexId.size() == 0);
+  bool invalidMaterial = m_diffTexId.empty();
 
   // DebugPrintMesh(a_input, "z_mesh.txt");
   

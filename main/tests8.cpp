@@ -892,7 +892,7 @@ bool test_126_debug_bump()
       glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -1145,11 +1145,13 @@ bool test51_instance_many_trees_and_opacity()
   mRot.identity();
 
   mTranslate = translate4x4(float3(-4.75f, 1.0f, 5.0f));
-  mRot = rotate_Y_4x4(60.0f*DEG_TO_RAD);
-  mRes = mul(mTranslate, mRot);
+  mRot       = rotate_Y_4x4(60.0f*DEG_TO_RAD);
+  mRes       = mul(mTranslate, mRot);
 
   hrMeshInstance(scnRef, cubeR, mRes.L());
 
+  auto rgen = simplerandom::RandomGenInit(114674);
+  
   {
     const float dist1     = 40.0f;
     const int SQUARESIZE1 = 100;
@@ -1158,12 +1160,12 @@ bool test51_instance_many_trees_and_opacity()
     {
       for (int j = -SQUARESIZE1; j < SQUARESIZE1; j++)
       {
-        const float2 randOffset = float2(HydraLiteMath::rnd(-1.0f, 1.0f), HydraLiteMath::rnd(-1.0f, 1.0f));
+        const float2 randOffset = float2(simplerandom::rnd(rgen, -1.0f, 1.0f), simplerandom::rnd(rgen, -1.0f, 1.0f));
         const float3 pos = dist1*float3(float(i), 0.0f, float(j)) + dist1*1.0f*float3(randOffset.x, 0.0f, randOffset.y);
 
         mTranslate = translate4x4(float3(pos.x, 1.0f, pos.z));
-        mRot = rotate_Y_4x4(HydraLiteMath::rnd(-180.0f*DEG_TO_RAD, +180.0f*DEG_TO_RAD));
-        mRes = mul(mTranslate, mRot);
+        mRot       = rotate_Y_4x4(simplerandom::rnd(rgen, -180.0f*DEG_TO_RAD, +180.0f*DEG_TO_RAD));
+        mRes       = mul(mTranslate, mRot);
 
         hrMeshInstance(scnRef, cubeR, mRes.L());
       }
@@ -1179,15 +1181,15 @@ bool test51_instance_many_trees_and_opacity()
     {
       for (int j = -SQUARESIZE; j < SQUARESIZE; j++)
       {
-        const float2 randOffset = float2(HydraLiteMath::rnd(-1.0f, 1.0f), HydraLiteMath::rnd(-1.0f, 1.0f));
+        const float2 randOffset = float2(simplerandom::rnd(rgen, -1.0f, 1.0f), simplerandom::rnd(rgen, -1.0f, 1.0f));
         const float3 pos = dist*float3(float(i), 0.0f, float(j)) + dist*0.5f*float3(randOffset.x, 0.0f, randOffset.y);
 
         mTranslate = translate4x4(pos);
-        mScale = scale4x4(float3(5.0f, 5.0f, 5.0f));
-        mRot = rotate_Y_4x4(HydraLiteMath::rnd(-180.0f*DEG_TO_RAD, +180.0f*DEG_TO_RAD));
-        mRes = mul(mTranslate, mul(mRot, mScale));
+        mScale     = scale4x4(float3(5.0f, 5.0f, 5.0f));
+        mRot       = rotate_Y_4x4(simplerandom::rnd(rgen, -180.0f*DEG_TO_RAD, +180.0f*DEG_TO_RAD));
+        mRes       = mul(mTranslate, mul(mRot, mScale));
 
-        if((HydraLiteMath::rnd(0.0f, 1.0f) > 0.5f))
+        if((simplerandom::rnd(rgen, 0.0f, 1.0f) > 0.5f))
           hrMeshInstance(scnRef, treeRef, mRes.L());
       }
     }
@@ -1269,7 +1271,7 @@ bool test51_instance_many_trees_and_opacity()
       glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
   
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
   
       glfwSwapBuffers(g_window);
@@ -1529,6 +1531,9 @@ bool test52_instance_perf_test()
 
   hrMeshInstance(scnRef, cubeR, mRes.L());
 
+  
+  auto rgen = simplerandom::RandomGenInit(34235);
+  
   {
     const float dist1     = 40.0f;
     const int SQUARESIZE1 = 2;
@@ -1537,12 +1542,12 @@ bool test52_instance_perf_test()
     {
       for (int j = -SQUARESIZE1; j < SQUARESIZE1; j++)
       {
-        const float2 randOffset = float2(HydraLiteMath::rnd(-1.0f, 1.0f), HydraLiteMath::rnd(-1.0f, 1.0f));
-        const float3 pos = dist1*float3(float(i), 0.0f, float(j)) + dist1*1.0f*float3(randOffset.x, 0.0f, randOffset.y);
+        const float2 randOffset = float2(simplerandom::rnd(rgen, -1.0f, 1.0f), simplerandom::rnd(rgen,-1.0f, 1.0f));
+        const float3 pos        = dist1*float3(float(i), 0.0f, float(j)) + dist1*1.0f*float3(randOffset.x, 0.0f, randOffset.y);
 
         mTranslate = translate4x4(float3(pos.x, 1.0f, pos.z));
-        mRot = rotate_Y_4x4(HydraLiteMath::rnd(-180.0f*DEG_TO_RAD, +180.0f*DEG_TO_RAD));
-        mRes = mul(mTranslate, mRot);
+        mRot       = rotate_Y_4x4(simplerandom::rnd(rgen, -180.0f*DEG_TO_RAD, +180.0f*DEG_TO_RAD));
+        mRes       = mul(mTranslate, mRot);
 
         hrMeshInstance(scnRef, cubeR, mRes.L());
       }
@@ -1558,15 +1563,15 @@ bool test52_instance_perf_test()
     {
       for (int j = -SQUARESIZE; j < SQUARESIZE; j++)
       {
-        const float2 randOffset = float2(HydraLiteMath::rnd(-1.0f, 1.0f), HydraLiteMath::rnd(-1.0f, 1.0f));
+        const float2 randOffset = float2(simplerandom::rnd(rgen, -1.0f, 1.0f), simplerandom::rnd(rgen, -1.0f, 1.0f));
         const float3 pos = dist*float3(float(i), 0.0f, float(j)) + dist*0.5f*float3(randOffset.x, 0.0f, randOffset.y);
 
         mTranslate = translate4x4(pos);
-        mScale = scale4x4(float3(5.0f, 5.0f, 5.0f));
-        mRot = rotate_Y_4x4(HydraLiteMath::rnd(-180.0f*DEG_TO_RAD, +180.0f*DEG_TO_RAD));
-        mRes = mul(mTranslate, mul(mRot, mScale));
+        mScale     = scale4x4(float3(5.0f, 5.0f, 5.0f));
+        mRot       = rotate_Y_4x4(simplerandom::rnd(rgen, -180.0f*DEG_TO_RAD, +180.0f*DEG_TO_RAD));
+        mRes       = mul(mTranslate, mul(mRot, mScale));
 
-        if ((HydraLiteMath::rnd(0.0f, 1.0f) > 0.5f))
+        if ((simplerandom::rnd(rgen, 0.0f, 1.0f) > 0.5f))
           hrMeshInstance(scnRef, treeRef, mRes.L());
       }
     }
@@ -1616,7 +1621,7 @@ bool test52_instance_perf_test()
       glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
   
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
   
       glfwSwapBuffers(g_window);
@@ -1805,7 +1810,7 @@ bool test53_crysponza_perf()
       glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -1992,7 +1997,7 @@ bool test54_portalsroom_perf()
       glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);

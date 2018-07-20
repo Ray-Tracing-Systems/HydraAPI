@@ -8,7 +8,9 @@
 
 #include "../hydra_api/HydraAPI.h"
 #include "../hydra_api/HydraXMLVerify.h"
+
 #include "mesh_utils.h"
+#include "simplerandom.h"
 
 void ErrorCallBack(const wchar_t* message, const wchar_t* callerPlace);
 void InfoCallBack(const wchar_t* message, const wchar_t* callerPlace, HR_SEVERITY_LEVEL a_level);
@@ -36,8 +38,6 @@ void initGLIfNeeded();
 
 
 
-
-
 namespace TEST_UTILS
 {
   bool FileExists(const char* a_fileName);
@@ -46,15 +46,15 @@ namespace TEST_UTILS
   void show_me_texture_ldr(const std::string& a_inFleName, const std::string& a_outFleName);
   void show_me_texture_hdr(const std::string& a_inFleName, const std::string& a_outFleName);
   void CreateTestBigTexturesFilesIfNeeded();
-  HRTextureNodeRef AddRandomTextureFromMemory(size_t& memTotal);
-  HRTextureNodeRef CreateRandomStrippedTextureFromMemory(size_t& a_byteSize);
+  HRTextureNodeRef AddRandomTextureFromMemory(size_t& memTotal, simplerandom::RandomGen& rgen);
+  HRTextureNodeRef CreateRandomStrippedTextureFromMemory(size_t& a_byteSize, simplerandom::RandomGen& rgen);
   std::vector<unsigned int> CreateStripedImageData(unsigned int* a_colors, int a_stripsNum, int w, int h);
   void CreateStripedImageFile(const char* a_fileName, unsigned int* a_colors, int a_stripsNum, int w, int h);
   void procTexCheckerHDR(float* a_buffer, int w, int h, void* a_repeat);
   void procTexCheckerLDR(unsigned char* a_buffer, int w, int h, void* a_repeat);
 
   //geometry
-  std::vector<HRMeshRef> CreateRandomMeshesArray(int a_size);
+  std::vector<HRMeshRef> CreateRandomMeshesArray(int a_size, simplerandom::RandomGen& rgen);
   HRMeshRef HRMeshFromSimpleMesh(const wchar_t* a_name, const SimpleMesh& a_mesh, int a_matId);
 
   //render
@@ -395,7 +395,7 @@ void run_all_lgt_tests(int a_start = 0);
 void run_all_ipp_tests(int a_start = 0);
 void terminate_opengl();
 
-static const int CURR_RENDER_DEVICE = 0;
+static const int CURR_RENDER_DEVICE = 1;
 
 //void image_p_sandbox();
 

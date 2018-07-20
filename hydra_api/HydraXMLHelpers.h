@@ -306,9 +306,8 @@ namespace HydraXMLHelpers
   {
     bool have = false;
     const std::wstring symbols = L"<>&\\";
-    for (int i = 0; i < symbols.size(); i++)
+    for (wchar_t symbol : symbols)
     {
-      wchar_t symbol = symbols[i];
       if (a_str.find(symbol) != std::wstring::npos)
         have = true;
     }

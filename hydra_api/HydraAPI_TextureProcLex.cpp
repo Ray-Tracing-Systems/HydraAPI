@@ -20,7 +20,7 @@
 #include <limits>       
 
 #include <memory> 
-#include <math.h>
+#include <cmath>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -116,10 +116,13 @@ int SizeOfInputTypeInWords(const std::string& a_type)
 
 void PopArgument(const std::string& argList, std::vector<Arg>& a_outList)
 {
-  std::smatch m;
-  std::regex args("([a-zA-Z_][a-zA-Z0-9_]*)([\\n|\\s]+)([a-zA-Z_][a-zA-Z0-9_]*)(\\[[0-9_]\\])*(\\,|\\))(.*)");
+  std::smatch m;  //
+  std::regex args("([a-zA-Z_][a-zA-Z0-9_]*)\\**([\\n|\\s]+)\\**([a-zA-Z_][a-zA-Z0-9_]*)\\**(\\[[0-9_]\\])*(\\,|\\))(.*)");
   std::regex_search(argList, m, args);
-
+  
+  //for(int i=0;i<m.size();i++)
+    //std::cout << i << "\t:\t" << m[i].str().c_str() << std::endl;
+  
   if (m.size() >= 3)
   {
     Arg arg;
@@ -132,8 +135,9 @@ void PopArgument(const std::string& argList, std::vector<Arg>& a_outList)
       std::string arraySize = m[4].str().substr(1, m[4].str().size() - 2);
       arg.size = atoi(arraySize.c_str())*SizeOfInputTypeInWords(arg.type);
     }
-
-    a_outList.push_back(arg);
+  
+    if(arg.type != "const" && arg.name != "SurfaceInfo" && arg.type != "SurfaceInfo")
+      a_outList.push_back(arg);
   }
   else
   {
@@ -156,7 +160,10 @@ void PopArgument(const std::string& argList, std::vector<Arg>& a_outList)
         a_outList.push_back(arg);
     }
   }
-
+  
+  //for(int i=0;i<m.size();i++)
+    //std::cout << i << "\t:\t" << m[i].str().c_str() << std::endl;
+  
   if (m.size() >= 6)
     PopArgument(m[6].str(), a_outList);
 }
@@ -213,8 +220,8 @@ void ProcessProcTexFile(const std::wstring& in_file, const std::wstring& out_fil
   std::vector<std::string> funNames = ExtractElementsByRegex(allString, FunctionDeclRegex(), 3);
   std::vector<std::string> incFiles = ExtractElementsByRegex(allString, IncludeRegex(), 2);
 
-  auto args            = ParseProcMainArgs   (fname.c_str(), allString);
-  std::wstring retType = s2ws(ParseProcMainRetType(fname.c_str(), allString));
+  auto args            = ParseProcMainArgs   (fname, allString);
+  std::wstring retType = s2ws(ParseProcMainRetType(fname, allString));
 
   // filter
   //
@@ -247,7 +254,7 @@ void ProcessProcTexFile(const std::wstring& in_file, const std::wstring& out_fil
     {
       std::string line2 = ReplaceAttr(line);
 
-      for (auto f : funNames) // rename functions
+      for (const auto& f : funNames) // rename functions
       {
         std::regex e("\\b" + f + "\\b");
         line2 = std::regex_replace(line2, e, prefix + f);

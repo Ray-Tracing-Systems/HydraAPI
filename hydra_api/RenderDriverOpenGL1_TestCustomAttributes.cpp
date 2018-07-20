@@ -12,7 +12,7 @@ bool RD_OGL1_ShowCustomAttr::UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshN
     return true;
   }
 
-  bool invalidMaterial    = (m_diffTexId.size() == 0);
+  bool invalidMaterial    = m_diffTexId.empty();
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////// get custom aatrib pointers 
   

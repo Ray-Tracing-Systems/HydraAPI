@@ -4,8 +4,8 @@
 class ResampleFilter2D : public IFilter2DSpecial
 {
 public:
-  ResampleFilter2D() {}
-  ~ResampleFilter2D() {}
+  ResampleFilter2D()  = default;
+  ~ResampleFilter2D() = default;
 
   bool Eval(ArgArray1& argsHDR, ArgArray2& argsLDR, pugi::xml_node settings, std::shared_ptr<IHRRenderDriver> a_pDriver) override;
 };
@@ -51,8 +51,8 @@ bool ResampleFilter2D::Eval(ArgArray1& argsHDR, ArgArray2& argsLDR, pugi::xml_no
 class MedianFilter2D : public IFilter2DSpecial
 {
 public:
-  MedianFilter2D() {}
-  ~MedianFilter2D() {}
+  MedianFilter2D()  = default;
+  ~MedianFilter2D() = default;
 
   bool Eval(ArgArray1& argsHDR, ArgArray2& argsLDR, pugi::xml_node settings, std::shared_ptr<IHRRenderDriver> a_pDriver) override;
 };
@@ -97,8 +97,8 @@ bool MedianFilter2D::Eval(ArgArray1& argsHDR, ArgArray2& argsLDR, pugi::xml_node
 class NLMDenoiserPut : public IFilter2DSpecial
 {
 public:
-  NLMDenoiserPut() {}
-  ~NLMDenoiserPut() {}
+  NLMDenoiserPut()  = default;
+  ~NLMDenoiserPut() = default;
   
   bool Eval(ArgArray1& argsHDR, ArgArray2& argsLDR, pugi::xml_node setiings, std::shared_ptr<IHRRenderDriver> a_pDriver) override;
 };

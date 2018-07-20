@@ -52,7 +52,7 @@ void HRObjectManager::init(const wchar_t* a_className)
   m_useLocalPath               = false;
   m_copyTexFilesToLocalStorage = false;
   m_sortTriIndices             = false;
-  m_emptyVB                    = false;
+  m_attachMode                    = false;
   m_computeBBoxes              = false;
 
   std::wistringstream instr(a_className);
@@ -71,16 +71,19 @@ void HRObjectManager::init(const wchar_t* a_className)
     else if (std::wstring(name) == L"-sort_indices" && val != 0)
       m_sortTriIndices = true;
     else if (std::wstring(name) == L"-emptyvirtualbuffer" && val != 0)
-      m_emptyVB = true;
+      m_attachMode = true;
     else if (std::wstring(name) == L"-compute_bboxes" && val != 0)
       m_computeBBoxes = true;
   }
-
+  
   m_pFactory = new HydraFactoryCommon;
-  scnData.init(m_emptyVB);
+  if(SharedVirtualBufferIsEnabled())
+    m_pVBSysMutex = hr_create_system_mutex("hydra_virtual_buffer_lock");
+  else
+    m_pVBSysMutex = nullptr;
+  scnData.init(m_attachMode, m_pVBSysMutex);
 
   m_pImgTool = HydraRender::CreateImageTool();
-
   _hrInitPostProcess();
 }
 
@@ -88,8 +91,9 @@ void _hrDestroyPostProcess();
 
 void HRObjectManager::destroy()
 {
+  hr_free_system_mutex(m_pVBSysMutex);
   delete m_pFactory; m_pFactory = nullptr;
-
+  
   g_objManager.m_pDriver = nullptr; // delete curr render driver pointer to prevent global reference;
   for (auto& r : renderSettings)
     r.clear();
@@ -119,10 +123,9 @@ void HRObjectManager::destroy()
 	scnData.m_sceneNodeChanges		 = pugi::xml_node();
 
 	scnData.m_vbCache.Destroy();
-
 }
 
-const std::wstring HRObjectManager::GetLoc(const pugi::xml_node a_node) const
+const std::wstring HRObjectManager::GetLoc(pugi::xml_node a_node) const
 {
   return scnData.m_path + std::wstring(L"/") + std::wstring(a_node.attribute(L"loc").as_string());
 }
@@ -142,9 +145,9 @@ void HRObjectManager::SetLoc(pugi::xml_node a_node, const std::wstring& a_loc)
 
 HRMesh* HRObjectManager::PtrById(HRMeshRef a_ref)
 {
-  if (scnData.meshes.size() == 0)
+  if (scnData.meshes.empty())
     return nullptr;
-  else if (a_ref.id < 0 || a_ref.id >(int32_t)scnData.meshes.size())
+  else if (a_ref.id < 0 || a_ref.id > (int)(scnData.meshes.size()))
   {
     HrError(L"Invalid HRMeshRef, id = ", a_ref.id);
     return nullptr;
@@ -155,9 +158,9 @@ HRMesh* HRObjectManager::PtrById(HRMeshRef a_ref)
 
 HRLight* HRObjectManager::PtrById(HRLightRef a_ref)
 {
-  if (scnData.lights.size() == 0)
+  if (scnData.lights.empty())
     return nullptr;
-  else if (a_ref.id < 0 || a_ref.id >(int32_t)scnData.lights.size())
+  else if (a_ref.id < 0 || a_ref.id > (int)scnData.lights.size())
   {
     HrError(L"Invalid HRLightRef, id = ", a_ref.id);
     return nullptr;
@@ -168,9 +171,9 @@ HRLight* HRObjectManager::PtrById(HRLightRef a_ref)
 
 HRMaterial* HRObjectManager::PtrById(HRMaterialRef a_ref)
 {
-  if (scnData.materials.size() == 0)
+  if (scnData.materials.empty())
     return nullptr;
-  else if (a_ref.id < 0 || a_ref.id >(int32_t)scnData.materials.size())
+  else if (a_ref.id < 0 || a_ref.id > (int)scnData.materials.size())
   {
     HrError(L"Invalid HRMaterialRef, id = ", a_ref.id);
     return nullptr;
@@ -181,9 +184,9 @@ HRMaterial* HRObjectManager::PtrById(HRMaterialRef a_ref)
 
 HRCamera* HRObjectManager::PtrById(HRCameraRef a_ref)
 {
-  if (scnData.cameras.size() == 0)
+  if (scnData.cameras.empty())
     return nullptr;
-  else if (a_ref.id < 0 || a_ref.id >(int32_t)scnData.cameras.size())
+  else if (a_ref.id < 0 || a_ref.id > (int)scnData.cameras.size())
   {
     //Error(L"Invalid HRCameraRef, id = ", a_ref.id);
     return nullptr;
@@ -194,9 +197,9 @@ HRCamera* HRObjectManager::PtrById(HRCameraRef a_ref)
 
 HRTextureNode* HRObjectManager::PtrById(HRTextureNodeRef a_ref)
 {
-  if (scnData.textures.size() == 0)
+  if (scnData.textures.empty())
     return nullptr;
-  else if (a_ref.id < 0 || a_ref.id >(int32_t)scnData.textures.size())
+  else if (a_ref.id < 0 || a_ref.id > (int)scnData.textures.size())
   {
     //Error(L"Invalid HRTextureNodeRef, id = ", a_ref.id);
     return nullptr;
@@ -207,9 +210,9 @@ HRTextureNode* HRObjectManager::PtrById(HRTextureNodeRef a_ref)
 
 HRSceneInst* HRObjectManager::PtrById(HRSceneInstRef a_ref)
 {
-  if (scnInst.size() == 0)
+  if (scnInst.empty())
     return nullptr;
-  else if (a_ref.id < 0 || a_ref.id > (int32_t)scnInst.size())
+  else if (a_ref.id < 0 || a_ref.id > (int)scnInst.size())
   {
     //Error(L"Invalid HRSceneInstRef, id = ", a_ref.id);
     return nullptr;
@@ -220,9 +223,9 @@ HRSceneInst* HRObjectManager::PtrById(HRSceneInstRef a_ref)
 
 HRRender* HRObjectManager::PtrById(HRRenderRef a_ref)
 {
-  if (renderSettings.size() == 0)
+  if (renderSettings.empty())
     return nullptr;
-  else if (a_ref.id < 0 || a_ref.id > (int32_t)renderSettings.size())
+  else if (a_ref.id < 0 || a_ref.id > (int)renderSettings.size())
   {
     //Error(L"Invalid HRRenderRef, id = ", a_ref.id);
     return nullptr;
@@ -622,7 +625,7 @@ pugi::xml_node HRRender::copy_node_back(pugi::xml_node a_proto)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-void HRSceneData::init(bool a_emptyvb)
+void HRSceneData::init(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock)
 {
   m_texturesLib  = m_xmlDoc.append_child(L"textures_lib");
   m_materialsLib = m_xmlDoc.append_child(L"materials_lib");
@@ -641,14 +644,12 @@ void HRSceneData::init(bool a_emptyvb)
   m_sceneNodeChanges    = m_xmlDocChanges.append_child(L"scenes");
 
   m_trashNode = m_xmlDocChanges.append_child(L"trash");
-
-  if (a_emptyvb)
-    m_vbCache.Init(4096, "NOSUCHSHMEM", &g_objManager.m_tempBuffer);
-  else
-    m_vbCache.Init(VIRTUAL_BUFFER_SIZE, "HYDRAAPISHMEM2", &g_objManager.m_tempBuffer);
+  
+  if(!a_attachMode)                                       // will do this init later inside HRSceneData::init_existing when open scene
+    init_virtual_buffer(false, a_pVBSysMutexLock);
 }
 
-void HRSceneData::init_existing(bool a_emptyVB)
+void HRSceneData::init_existing(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock)
 {
   m_texturesLib  = m_xmlDoc.child(L"textures_lib");
   m_materialsLib = m_xmlDoc.child(L"materials_lib");
@@ -667,11 +668,27 @@ void HRSceneData::init_existing(bool a_emptyVB)
   m_sceneNodeChanges    = m_xmlDocChanges.child(L"scenes");
 
   m_trashNode = m_xmlDocChanges.child(L"trash");
+  
+  init_virtual_buffer(a_attachMode, a_pVBSysMutexLock);
+}
 
-  if (a_emptyVB)
-    m_vbCache.Init(4096, "NOSUCHSHMEM", &g_objManager.m_tempBuffer);
+void HRSceneData::init_virtual_buffer(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock)
+{
+  if (a_attachMode)
+  {
+    if(SharedVirtualBufferIsEnabled())
+    {
+      bool attached = m_vbCache.Attach(VIRTUAL_BUFFER_SIZE, "HYDRAAPISHMEM2", &g_objManager.m_tempBuffer);
+      if (attached)
+        m_vbCache.RestoreChunks();
+      else
+        m_vbCache.Init(4096, "NOSUCHSHMEM", &g_objManager.m_tempBuffer, a_pVBSysMutexLock); // if fail, init single page only, dummy virtual buffer
+    }
+    else
+      m_vbCache.Init(4096, "NOSUCHSHMEM", &g_objManager.m_tempBuffer, a_pVBSysMutexLock);
+  }
   else
-    m_vbCache.Init(VIRTUAL_BUFFER_SIZE, "HYDRAAPISHMEM2", &g_objManager.m_tempBuffer);
+    m_vbCache.Init(VIRTUAL_BUFFER_SIZE, "HYDRAAPISHMEM2", &g_objManager.m_tempBuffer, a_pVBSysMutexLock);
 }
 
 void HRSceneData::clear()

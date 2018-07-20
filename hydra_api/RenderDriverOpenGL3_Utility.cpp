@@ -764,7 +764,7 @@ void RD_OGL32_Utility::FillMipLevelsDict()
   glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA_INTEGER, GL_UNSIGNED_INT, &texture_data[m_width * m_height * 4]); GL_CHECK_ERRORS;
 
   const unsigned int texIdBits    = 0x00FFFFFFu;
-  const unsigned int mipLevelBits = 0xFF000000u;
+  //const unsigned int mipLevelBits = 0xFF000000u;
 
   m_mipLevelDict.clear();
 

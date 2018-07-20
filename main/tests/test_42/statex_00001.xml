@@ -138,8 +138,8 @@
 <render_lib>
   <render_settings type="HydraModern" id="0">
     <width>1024</width>
-    <height>768</height>
-    <method_primary>pathtracing</method_primary>
+    <height>1024</height>
+    <method_primary>lighttracing</method_primary>
     <trace_depth>5</trace_depth>
     <diff_trace_depth>3</diff_trace_depth>
     <maxRaysPerPixel>1024</maxRaysPerPixel>

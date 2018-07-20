@@ -18,8 +18,8 @@ public:
   typedef const T&  const_reference;
   typedef T         value_type;
 
-  aligned16() {}
-  aligned16(const aligned16&) {}
+  aligned16()                 = default;
+  aligned16(const aligned16&) = default;
 
   pointer allocate(size_type n, const void* hint = nullptr)
   {
@@ -42,7 +42,7 @@ public:
 
   pointer           address(reference x) const { return &x; }
   const_pointer     address(const_reference x) const { return &x; }
-  aligned16<T>&     operator=(const aligned16&) { return *this; }
+  aligned16<T>&     operator=(const aligned16&) = default;
 
   void              construct(pointer p, const T& val)
   {
@@ -56,12 +56,12 @@ public:
   struct rebind { typedef aligned16<U> other; };
 
   template <class U>
-  aligned16(const aligned16<U>&) {}
+  explicit aligned16(const aligned16<U>&) {}
 
   template <class U>
   aligned16& operator=(const aligned16<U>&) { return *this; }
 
-  bool operator==(const aligned16<T> a_rhs)       { return true; } // sigleton, all instances are always equal
+  bool operator==(const aligned16<T> a_rhs)       { return true; } // singleton, all instances are always equal
   bool operator==(const aligned16<T> a_rhs) const { return true; }
   bool operator!=(const aligned16& other)   const { return !(*this == other);}
 };

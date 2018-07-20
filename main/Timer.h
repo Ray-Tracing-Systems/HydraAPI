@@ -48,14 +48,12 @@ private:
 class Timer
 {
 public:
-    explicit        Timer           (bool started = false)  { if (started) start(); }
-                    Timer           (const Timer& other)    { operator=(other); }
-                    ~Timer          (void)                  { }
-
-    Timer&          operator=       (const Timer& other) { m_timeVal = other.m_timeVal; }
-
-    void            start           (void) { gettimeofday(&m_timeVal, 0);}
-    float           getElapsed      (void);
+    explicit        Timer           (bool started = false)  { m_timeVal = {0,0}; if (started) start(); }
+                    Timer           (const Timer& other)    = default;
+                    ~Timer          ()                      = default;
+    Timer&          operator=       (const Timer& other)    = default;
+    void            start           () { gettimeofday(&m_timeVal, nullptr);}
+    float           getElapsed      ();
 
 private:
     

@@ -39,17 +39,14 @@ struct RD_OGL1_TestSplit : public RD_OGL1_Plain
     m_meshNum = 0;
   }
 
-  void              ClearAll();
-  HRDriverAllocInfo AllocAll(HRDriverAllocInfo a_info);
+  void              ClearAll() override;
+  HRDriverAllocInfo AllocAll(HRDriverAllocInfo a_info) override;
 
-  bool     UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode, const HRMeshDriverInput& a_input, const HRBatchInfo* a_batchList, int32_t listSize);
-  bool     UpdateSettings(pugi::xml_node a_settingsNode);
-
-  /////////////////////////////////////////////////////////////////////////////////////////////
+  bool     UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode, const HRMeshDriverInput& a_input, const HRBatchInfo* a_batchList, int32_t a_listSize) override;
+  bool     UpdateSettings(pugi::xml_node a_settingsNode) override;
 
   void     InstanceMeshes(int32_t a_mesh_id, const float* a_matrices, int32_t a_instNum, const int* a_lightInstId, const int* a_remapId);
-
-  void     EndScene();
+  void     EndScene() override;
 
 protected:
 
@@ -221,8 +218,7 @@ namespace EarlySplit
 
   struct Triangle
   {
-    Triangle() {}
-
+    Triangle() = default;
     float4 A; 
     float4 B; 
     float4 C; 
@@ -230,6 +226,7 @@ namespace EarlySplit
 
   struct TriRef
   {
+    TriRef () : triId(-1), metric(0.0f) {}
     Box3f box;
     int   triId;
     float metric;
@@ -535,8 +532,8 @@ bool RD_OGL1_TestSplit::UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode, 
   // draw boxes
   //
   glNewList(m_displayLists + 2 * m_meshNum + GLuint(a_meshId), GL_COMPILE);
-  for (size_t i = 0; i < splitted.size(); i++)
-    DrawBox(splitted[i].box.vmin, splitted[i].box.vmax);
+  for (const auto& sbox : splitted)
+    DrawBox(sbox.box.vmin, sbox.box.vmax);
   glEndList();
 
   // wire frame mode

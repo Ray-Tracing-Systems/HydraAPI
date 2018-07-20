@@ -7,22 +7,22 @@ HydraGeomData::HydraGeomData()
 {
   m_ownMemory = false;
 
-  m_data      = NULL;
-  m_positions = NULL;
-  m_normals   = NULL;
-  m_tangents  = NULL;
-  m_texcoords = NULL;
+  m_data      = nullptr;
+  m_positions = nullptr;
+  m_normals   = nullptr;
+  m_tangents  = nullptr;
+  m_texcoords = nullptr;
 
-  m_triVertIndices = NULL;
-  m_triMaterialIndices = NULL;
-  m_materialNames = NULL;
+  m_triVertIndices     = nullptr;
+  m_triMaterialIndices = nullptr;
+  m_materialNames      = nullptr;
 
   m_matNamesTotalStringSize = 0;
   fileSizeInBytes = 0;
-  verticesNum = 0;
-  indicesNum = 0;
-  materialsNum = 0;
-  flags = 0;
+  verticesNum     = 0;
+  indicesNum      = 0;
+  materialsNum    = 0;
+  flags           = 0;
 }
 
 
@@ -47,8 +47,8 @@ uint32_t HydraGeomData::getIndicesNumber() const { return indicesNum; }
 const uint32_t* HydraGeomData::getTriangleVertexIndicesArray()    const { return m_triVertIndices; }
 const uint32_t* HydraGeomData::getTriangleMaterialIndicesArray()  const { return m_triMaterialIndices; }
 
-const float* HydraGeomData::getVertexLightmapTexcoordFloat2Array()  const { return NULL; }
-const float* HydraGeomData::getVertexSphericalHarmonicCoeffs()  const {return NULL; }
+const float* HydraGeomData::getVertexLightmapTexcoordFloat2Array()  const { return nullptr; }
+const float* HydraGeomData::getVertexSphericalHarmonicCoeffs()  const {return nullptr; }
 
 void HydraGeomData::setData(uint32_t a_vertNum, const float* a_pos, const float* a_norm, const float* a_tangent, const float* a_texCoord,
                             uint32_t a_indicesNum, const uint32_t* a_triVertIndices, const uint32_t* a_triMatIndices)
@@ -76,7 +76,7 @@ size_t HydraGeomData::sizeInBytes()
 
 void HydraGeomData::write(std::ostream& a_out)
 {
-  if(m_tangents != NULL)
+  if(m_tangents != nullptr)
     flags |= HAS_TANGENT;
 
   fileSizeInBytes = verticesNum*( sizeof(float)*4*2 + sizeof(float)*2 );
@@ -121,7 +121,7 @@ void HydraGeomData::write(std::ostream& a_out)
 void HydraGeomData::writeToMemory(char* a_dataToWrite)
 {
 
-  if (m_tangents != NULL)
+  if (m_tangents != nullptr)
     flags |= HAS_TANGENT;
 
   fileSizeInBytes = verticesNum*(sizeof(float) * 4 * 2 + sizeof(float) * 2);
@@ -144,9 +144,9 @@ void HydraGeomData::writeToMemory(char* a_dataToWrite)
   header.materialsNum    = materialsNum;
   header.flags           = flags;
 
-  memcpy(ptr, &header, sizeof(Header)); ptr += sizeof(Header);   
+  memcpy(ptr, &header,     sizeof(Header));              ptr += sizeof(Header);
   memcpy(ptr, m_positions, sizeof(float)*4*verticesNum); ptr += sizeof(float) * 4 * verticesNum;
-  memcpy(ptr, m_normals, sizeof(float)*4*verticesNum);   ptr += sizeof(float) * 4 * verticesNum;
+  memcpy(ptr, m_normals,   sizeof(float)*4*verticesNum); ptr += sizeof(float) * 4 * verticesNum;
 
   if (flags & HAS_TANGENT)
   {
@@ -172,7 +172,7 @@ void HydraGeomData::write(const std::string& a_fileName)
 }
 
 
-inline const int readInt32(unsigned char* ptr) // THIS IS CORRECT BOTH FOR X86 AND PPC !!!
+inline const int readInt32(const unsigned char* ptr) // THIS IS CORRECT BOTH FOR X86 AND PPC !!!
 {
   const unsigned char b0 = ptr[0];
   const unsigned char b1 = ptr[1];
@@ -183,7 +183,7 @@ inline const int readInt32(unsigned char* ptr) // THIS IS CORRECT BOTH FOR X86 A
 }
 
 
-inline const uint64_t readInt64(unsigned char* ptr) // THIS IS CORRECT BOTH FOR X86 AND PPC !!!
+inline const uint64_t readInt64(const unsigned char* ptr) // THIS IS CORRECT BOTH FOR X86 AND PPC !!!
 {
   const unsigned char b0 = ptr[0];
   const unsigned char b1 = ptr[1];
@@ -263,22 +263,6 @@ void HydraGeomData::read(std::istream& a_input)
   convertLittleBigEndian((unsigned int*)m_texcoords, verticesNum*2);
   convertLittleBigEndian((unsigned int*)m_triVertIndices, indicesNum);
   convertLittleBigEndian((unsigned int*)m_triMaterialIndices, (indicesNum/3));
-
-  char* matNames = ptr;
-
-  // m_matNameByIndex.reserve(materialsNum);
-  // m_matNameByIndex.resize(0);
-  // 
-  // std::stringstream strstr(matNames);
-  // char temp[256];
-  // 
-  // while( m_matNameByIndex.size() < materialsNum )
-  // {
-  //   strstr.getline(temp, 256);
-  //   m_matNameByIndex.push_back(std::string(temp));
-  //   m_matIndexByName[std::string(temp)] = int(m_matNameByIndex.size()) - 1;
-  // }
-
 }
 
 void HydraGeomData::read(const std::string& a_fileName)

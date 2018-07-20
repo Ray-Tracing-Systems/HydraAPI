@@ -429,7 +429,7 @@ bool RD_OGL32_Deferred::UpdateCamera(pugi::xml_node a_camNode)
 
 bool RD_OGL32_Deferred::UpdateSettings(pugi::xml_node a_settingsNode)
 {
-  int new_w, new_h;
+  int new_w = 0, new_h = 0;
   if (a_settingsNode.child(L"width") != nullptr)
     new_w = a_settingsNode.child(L"width").text().as_int();
 
@@ -445,7 +445,7 @@ bool RD_OGL32_Deferred::UpdateSettings(pugi::xml_node a_settingsNode)
 
   if(new_w != m_width || new_h != m_height)
   {
-    m_width = new_w;
+    m_width  = new_w;
     m_height = new_h;
     m_gBuffer->ResizeAttachments(m_width, m_height);
     m_ssaoBuffer->ResizeAttachments(m_width, m_height);

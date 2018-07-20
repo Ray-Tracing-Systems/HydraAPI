@@ -1,19 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2027
+VisualStudioVersion = 15.0.27130.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HydraAPI", "HydraNewAPI1.vcxproj", "{C05FF9EA-3D61-48B7-ABEA-4353253691DC}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "main", "..\main\main.vcxproj", "{F276469E-9751-4572-B988-E3130637E885}"
 	ProjectSection(ProjectDependencies) = postProject
-		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C} = {C5AC1D8F-9BC7-467B-BC17-829F02A2831C}
 		{999F34F2-BF3C-4D55-AFDF-75235335B1A1} = {999F34F2-BF3C-4D55-AFDF-75235335B1A1}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PostProcessDLLExample", "..\PostProcessDLLExample\PostProcessDLLExample.vcxproj", "{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}"
-	ProjectSection(ProjectDependencies) = postProject
-		{C05FF9EA-3D61-48B7-ABEA-4353253691DC} = {C05FF9EA-3D61-48B7-ABEA-4353253691DC}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ies_parser", "..\ies_parser\ies_parser.vcxproj", "{1D53B494-4B7E-464B-82A1-A2052240F6EF}"
@@ -21,6 +15,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "clew", "..\clew\clew.vcxproj", "{5F13E40F-C0F1-4EF4-A775-AB8BC703DE88}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PostProcess", "..\PostProcessDLL\PostProcessDLLTrofimm.vcxproj", "{999F34F2-BF3C-4D55-AFDF-75235335B1A1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PostProcessDLLExample", "..\PostProcessDLLExample\PostProcessDLLExample.vcxproj", "{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -56,18 +52,6 @@ Global
 		{F276469E-9751-4572-B988-E3130637E885}.Release|Win32.Build.0 = Release|Win32
 		{F276469E-9751-4572-B988-E3130637E885}.Release|x64.ActiveCfg = Release|x64
 		{F276469E-9751-4572-B988-E3130637E885}.Release|x64.Build.0 = Release|x64
-		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Debug|Mixed Platforms.Build.0 = Debug|Win32
-		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Debug|Win32.ActiveCfg = Debug|Win32
-		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Debug|Win32.Build.0 = Debug|Win32
-		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Debug|x64.ActiveCfg = Debug|x64
-		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Debug|x64.Build.0 = Debug|x64
-		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Release|Mixed Platforms.Build.0 = Release|Win32
-		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Release|Win32.ActiveCfg = Release|Win32
-		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Release|Win32.Build.0 = Release|Win32
-		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Release|x64.ActiveCfg = Release|x64
-		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Release|x64.Build.0 = Release|x64
 		{1D53B494-4B7E-464B-82A1-A2052240F6EF}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
 		{1D53B494-4B7E-464B-82A1-A2052240F6EF}.Debug|Mixed Platforms.Build.0 = Debug|Win32
 		{1D53B494-4B7E-464B-82A1-A2052240F6EF}.Debug|Win32.ActiveCfg = Debug|Win32
@@ -104,6 +88,18 @@ Global
 		{999F34F2-BF3C-4D55-AFDF-75235335B1A1}.Release|Win32.Build.0 = Release|Win32
 		{999F34F2-BF3C-4D55-AFDF-75235335B1A1}.Release|x64.ActiveCfg = Release|x64
 		{999F34F2-BF3C-4D55-AFDF-75235335B1A1}.Release|x64.Build.0 = Release|x64
+		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Debug|Win32.Build.0 = Debug|Win32
+		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Debug|x64.ActiveCfg = Debug|x64
+		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Debug|x64.Build.0 = Debug|x64
+		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Release|Win32.ActiveCfg = Release|Win32
+		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Release|Win32.Build.0 = Release|Win32
+		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Release|x64.ActiveCfg = Release|x64
+		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

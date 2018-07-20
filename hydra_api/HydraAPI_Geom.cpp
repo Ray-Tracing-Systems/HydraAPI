@@ -48,25 +48,22 @@ struct VSGFChunkInfo
 
 void FillXMLFromMeshImpl(pugi::xml_node nodeXml, std::shared_ptr<IHRMesh> a_pImpl, bool dlLoad)
 {
-
-  auto pImpl = a_pImpl;
-
   ////
   //
-  size_t       chunkId  = pImpl->chunkId();
+  size_t       chunkId  = a_pImpl->chunkId();
   ChunkPointer chunk    = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
   std::wstring location = ChunkName(chunk);
 
   VSGFChunkInfo info;
 
-  info.vertNum    = pImpl->vertNum();
-  info.indNum     = pImpl->indNum();
-  info.offsetPos  = pImpl->offset(L"pos");
-  info.offsetNorm = pImpl->offset(L"norm");
-  info.offsetTexc = pImpl->offset(L"texc");
-  info.offsetTang = pImpl->offset(L"tan");
-  info.offsetInd  = pImpl->offset(L"ind");
-  info.offsetMInd = pImpl->offset(L"mind");
+  info.vertNum    = a_pImpl->vertNum();
+  info.indNum     = a_pImpl->indNum();
+  info.offsetPos  = a_pImpl->offset(L"pos");
+  info.offsetNorm = a_pImpl->offset(L"norm");
+  info.offsetTexc = a_pImpl->offset(L"texc");
+  info.offsetTang = a_pImpl->offset(L"tan");
+  info.offsetInd  = a_pImpl->offset(L"ind");
+  info.offsetMInd = a_pImpl->offset(L"mind");
   info.dataBytes  = chunk.sizeInBytes;
 
   clear_node_childs(nodeXml);
@@ -78,7 +75,7 @@ void FillXMLFromMeshImpl(pugi::xml_node nodeXml, std::shared_ptr<IHRMesh> a_pImp
   nodeXml.attribute(L"vertNum").set_value(info.vertNum);
   nodeXml.attribute(L"triNum").set_value(info.indNum / 3);
 
-  HydraXMLHelpers::WriteBBox(nodeXml, pImpl->getBBox());
+  HydraXMLHelpers::WriteBBox(nodeXml, a_pImpl->getBBox());
 
   // (1) fill common attributes
   //
@@ -135,7 +132,7 @@ void FillXMLFromMeshImpl(pugi::xml_node nodeXml, std::shared_ptr<IHRMesh> a_pImp
   for (const auto& arr : a_pImpl->GetOffsAndSizeForAttrs())
   {
     pugi::xml_node arrayNode = nodeXml.append_child(arr.first.c_str());
-    const std::wstring& name = (std::wstring&)std::get<0>(arr.second);
+    const std::wstring& name = std::get<0>(arr.second);
 
     arrayNode.append_attribute(L"type").set_value(name.c_str());
     arrayNode.append_attribute(L"bytesize").set_value(std::get<2>(arr.second));
@@ -414,7 +411,7 @@ HAPI void hrMeshClose(HRMeshRef a_mesh)
   if (pMesh->pImpl == nullptr)
     return;
 
-  auto nodeXml = pMesh->xml_node_next();
+  auto nodeXml = pMesh->xml_node_next(HR_OPEN_EXISTING);
   auto pImpl   = pMesh->pImpl;
 
   FillXMLFromMeshImpl(nodeXml, pImpl, false); 
@@ -577,7 +574,7 @@ HAPI void hrMeshPrimitiveAttribPointer1i(HRMeshRef a_mesh, const wchar_t* a_name
   }
 }
 
-HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, const int indexNum);
+HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, int indexNum);
 
 static void AddCommonAttributesFromPointers(HRMesh* pMesh, int maxVertexId)
 {
@@ -789,7 +786,7 @@ HAPI void hrMeshAppendTriangles3(HRMeshRef a_mesh, int indNum, const int* indice
   if (matIndices != nullptr)
     pMesh->m_allMeshMatId = -1;
 
-  if (indices == 0)
+  if (indices == nullptr)
   {
     HrPrint(HR_SEVERITY_WARNING, L"hrMeshAppendTriangles3: nullptr input indices", a_mesh.id);
     return;
@@ -922,8 +919,8 @@ HAPI void* hrMeshGetPrimitiveAttribPointer(HRMeshRef a_mesh, const wchar_t* attr
   {
     HRMesh::InputTriMesh& mesh = pMesh->m_input;
 
-    if (!wcscmp(attributeName, L"mind") && mesh.matIndices.size() != 0)
-      return (void*)(&mesh.matIndices[0]);
+    if (!wcscmp(attributeName, L"mind") && !mesh.matIndices.empty())
+      return mesh.matIndices.data();
     else
       return nullptr;
   }
@@ -1052,7 +1049,7 @@ void hrMeshComputeNormals(HRMeshRef a_mesh, const int indexNum, bool useFaceNorm
 	}
 }
 
-HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, const int indexNum)
+HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, int indexNum)
 {
   HRMesh* pMesh = g_objManager.PtrById(a_mesh);
   if (pMesh == nullptr)

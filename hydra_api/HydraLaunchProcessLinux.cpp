@@ -4,17 +4,17 @@
 
 #include <unistd.h>
 #include <spawn.h>
-#include <signal.h>
+#include <csignal>
 #include "HydraLegacyUtils.h"
 
 struct HydraProcessLauncher : IHydraNetPluginAPI
 {
-  HydraProcessLauncher(const char* imageFileName, int width, int height, const char* connectionType, std::ostream* m_pLog = nullptr);
+  HydraProcessLauncher(const char* imageFileName, int width, int height, const char* connectionType, std::ostream* a_pLog = nullptr);
   ~HydraProcessLauncher();
 
   bool hasConnection() const override;
 
-  void runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydraRenderDevice>& a_devList, const std::vector<int>& activeDevices) override;
+  void runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydraRenderDevice>& a_devList, const std::vector<int>& a_activeDevices) override;
   void stopAllRenderProcesses() override;
 
 protected:
@@ -36,8 +36,6 @@ static std::ofstream g_logMain;
 
 IHydraNetPluginAPI* CreateHydraServerConnection(int renderWidth, int renderHeight, bool inMatEditor)
 {
-  static int m_matRenderTimes = 0;
-
   IHydraNetPluginAPI* pImpl = nullptr;
   long ticks = sysconf(_SC_CLK_TCK);
 
@@ -101,13 +99,6 @@ void CreateProcessUnix(const char* exePath, const char* allArgs, const bool a_de
 
 void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydraRenderDevice>& a_devList, const std::vector<int>& a_activeDevices)
 {
-  const char* imageFileName = m_imageFileName.c_str();
-
-  int width = m_width;
-  int height = m_height;
-
-  //m_mdProcessList.resize(a_devList.size());
-
   if (m_connectionType == "main")
   {
     char user_name[L_cuserid];
@@ -138,10 +129,8 @@ void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params
       m_hydraServerStarted = true;
       std::ofstream fout(hydraPath + "zcmd.txt");
 
-      for (size_t i = 0; i < a_activeDevices.size(); i++)
+      for (int devId : a_activeDevices)
       {
-        int devId = a_activeDevices[i];
-
         ss.str(std::string());
         ss << " -cl_device_id " << devId;
 
@@ -162,12 +151,12 @@ void HydraProcessLauncher::stopAllRenderProcesses()
 {
   if (m_hydraServerStarted)
   {
-    for (auto i = 0; i < m_mdProcessList.size(); i++)
+    for (auto pid : m_mdProcessList)
     {
-      if (m_mdProcessList[i] <= 0)
+      if (pid <= 0)
         continue;
 
-      kill(m_mdProcessList[i], SIGKILL);
+      kill(pid, SIGKILL);
     }
   }
 }

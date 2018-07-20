@@ -611,12 +611,9 @@ bool test12_render_ogl_100_random_figures()
   hrRenderOpen(settingsRef, HR_WRITE_DISCARD);
   {
     pugi::xml_node node = hrRenderParamNode(settingsRef);
-
-    wchar_t temp[256];
-    swprintf(temp, 256, L"%d", 1024);
-    node.append_child(L"width").text().set(temp);
-    swprintf(temp, 256, L"%d", 768);
-    node.append_child(L"height").text().set(temp);
+    
+    node.append_child(L"width").text()  = 512;
+    node.append_child(L"height").text() = 512;
   }
   hrRenderClose(settingsRef);
 
@@ -653,7 +650,7 @@ bool test12_render_ogl_100_random_figures()
   
   hrMeshInstance(scnRef, planeRef, &matrixT2[0][0]);
 
-  srand(779);
+  auto rgen = simplerandom::RandomGenInit(125467);
 
   for (int i = -5; i <= 5; i++)
   {
@@ -668,12 +665,12 @@ bool test12_render_ogl_100_random_figures()
       mat4x4_identity(mRes);
 
       mat4x4_translate(mTranslate, xCoord, 0.5f, yCoord);
-      mat4x4_rotate_X(mRot1, mRot1, rnd(0.0f, 360.0f)*DEG_TO_RAD);
-      mat4x4_rotate_Y(mRot1, mRot1, rnd(0.0f, 360.0f)*DEG_TO_RAD*0.5f);
+      mat4x4_rotate_X(mRot1, mRot1, simplerandom::rnd(rgen, 0.0f, 360.0f)*DEG_TO_RAD);
+      mat4x4_rotate_Y(mRot1, mRot1, simplerandom::rnd(rgen, 0.0f, 360.0f)*DEG_TO_RAD*0.5f);
       mat4x4_mul(mRes, mTranslate, mRot1);
       mat4x4_transpose(matrixT, mRes); // this fucking math library swap rows and columns
 
-      hrMeshInstance(scnRef, refs[rand() % 3], &matrixT[0][0]);
+      hrMeshInstance(scnRef, refs[simplerandom::rand(rgen) % 3], &matrixT[0][0]);
     }
   }
   hrSceneClose(scnRef);

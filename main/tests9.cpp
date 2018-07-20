@@ -22,6 +22,7 @@
 #endif
 
 #include "mesh_utils.h"
+#include "simplerandom.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -138,7 +139,7 @@ bool test98_motion_blur()
     if (info.haveUpdateFB)
     {
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.flush();
       std::cout.precision(pres);
     }
@@ -174,7 +175,7 @@ bool test98_motion_blur()
     if (info.haveUpdateFB)
     {
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.flush();
       std::cout.precision(pres);
     }
@@ -341,7 +342,7 @@ bool test55_clear_scene()
 
   hrMeshInstance(scnRef, planeRef, &matrixT2[0][0]);
 
-  srand(779);
+  auto rgen = simplerandom::RandomGenInit(779);
 
   for (int i = -2; i <= 2; i++)
   {
@@ -349,19 +350,18 @@ bool test55_clear_scene()
     {
       float xCoord = 2.0f*float(i);
       float yCoord = 2.0f*float(j);
-
-
+      
       mat4x4_identity(mRot1);
       mat4x4_identity(mTranslate);
       mat4x4_identity(mRes);
 
       mat4x4_translate(mTranslate, xCoord, 0.5f, yCoord);
-      mat4x4_rotate_X(mRot1, mRot1, rnd(0.0f, 360.0f)*DEG_TO_RAD);
-      mat4x4_rotate_Y(mRot1, mRot1, rnd(0.0f, 360.0f)*DEG_TO_RAD*0.5f);
+      mat4x4_rotate_X(mRot1, mRot1, simplerandom::rnd(rgen, 0.0f, 360.0f)*DEG_TO_RAD);
+      mat4x4_rotate_Y(mRot1, mRot1, simplerandom::rnd(rgen, 0.0f, 360.0f)*DEG_TO_RAD*0.5f);
       mat4x4_mul(mRes, mTranslate, mRot1);
       mat4x4_transpose(matrixT, mRes); // this fucking math library swap rows and columns
 
-      hrMeshInstance(scnRef, refs[rand() % 3], &matrixT[0][0]);
+      hrMeshInstance(scnRef, refs[simplerandom::rand(rgen) % 3], &matrixT[0][0]);
     }
   }
   hrSceneClose(scnRef);
@@ -375,27 +375,24 @@ bool test55_clear_scene()
 
   hrMeshInstance(scnRef, planeRef, &matrixT2[0][0]);
 
-  srand(888);
-
   for (int i = -2; i <= 2; i++)
   {
     for (int j = -2; j <= 2; j++)
     {
       float xCoord = 2.0f*float(i);
       float yCoord = 2.0f*float(j);
-
-
+      
       mat4x4_identity(mRot1);
       mat4x4_identity(mTranslate);
       mat4x4_identity(mRes);
 
       mat4x4_translate(mTranslate, xCoord, 0.5f, yCoord);
-      mat4x4_rotate_X(mRot1, mRot1, rnd(0.0f, 360.0f)*DEG_TO_RAD);
-      mat4x4_rotate_Y(mRot1, mRot1, rnd(0.0f, 360.0f)*DEG_TO_RAD*0.5f);
+      mat4x4_rotate_X(mRot1, mRot1, simplerandom::rnd(rgen, 0.0f, 360.0f)*DEG_TO_RAD);
+      mat4x4_rotate_Y(mRot1, mRot1, simplerandom::rnd(rgen, 0.0f, 360.0f)*DEG_TO_RAD*0.5f);
       mat4x4_mul(mRes, mTranslate, mRot1);
       mat4x4_transpose(matrixT, mRes); // this fucking math library swap rows and columns
 
-      hrMeshInstance(scnRef, refs[rand() % 3], &matrixT[0][0]);
+      hrMeshInstance(scnRef, refs[simplerandom::rand(rgen) % 3], &matrixT[0][0]);
     }
   }
   hrSceneClose(scnRef);
@@ -920,7 +917,7 @@ bool test57_single_instance()
       glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -1081,10 +1078,10 @@ bool test58_crysponza_and_opacity1_perf()
 
   hrMeshInstance(scnRef, sponzaRef, mRes.L());
 
-  srand(555);
+  auto rgen = simplerandom::RandomGenInit(16384);
   for (int i = 0; i < 100; i++)
   {
-    mTranslate = translate4x4(float3(HydraLiteMath::rnd(-20.0f, 20.0f), HydraLiteMath::rnd(0.0f, 40.0f), HydraLiteMath::rnd(-50.0f, 50.0f)));
+    mTranslate = translate4x4(float3(simplerandom::rnd(rgen, -20.0f, 20.0f), simplerandom::rnd(rgen, 0.0f, 40.0f), simplerandom::rnd(rgen, -50.0f, 50.0f)));
     mRes       = mTranslate;
 
     hrMeshInstance(scnRef, cubeR, mRes.L());
@@ -1128,7 +1125,7 @@ bool test58_crysponza_and_opacity1_perf()
       glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -1393,7 +1390,7 @@ bool test59_cornell_water_mlt()
       glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -1821,7 +1818,7 @@ bool test60_debug_print()
   //     glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
   // 
   //     auto pres = std::cout.precision(2);
-  //     std::cout << "rendering progress = " << info.progress << "% \r";
+  //     std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
   //     std::cout.precision(pres);
   // 
   //     glfwSwapBuffers(g_window);
@@ -2239,7 +2236,7 @@ bool test61_cornell_with_light_near_wall_and_glossy_wall()
       glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
   
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
   
       glfwSwapBuffers(g_window);
@@ -2681,7 +2678,7 @@ bool test63_cornell_with_caustic_from_torus()
       glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -2877,7 +2874,7 @@ bool test100_dummy_hydra_exec()
 			glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
 			auto pres = std::cout.precision(2);
-			std::cout << "rendering progress = " << info.progress << "% \r";
+			std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
 			std::cout.precision(pres);
 
 			glfwSwapBuffers(g_window);

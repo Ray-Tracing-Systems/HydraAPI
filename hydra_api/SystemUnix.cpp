@@ -65,7 +65,7 @@ std::vector<std::string> hr_listfiles(const std::string &a_folder)
     return result;
   }
   
-  while ((ent = readdir(dir)) != NULL)
+  while ((ent = readdir(dir)) != nullptr)
   {
     const std::string file_name      = ent->d_name;
     const std::string full_file_name = a_folder + "/" + file_name;
@@ -108,6 +108,7 @@ void hr_copy_file(const wchar_t* a_file1, const wchar_t* a_file2)
 
 struct HRSystemMutex
 {
+  HRSystemMutex() : mutex(nullptr), name(""), owner(false) {}
   sem_t*      mutex;
   std::string name;
   bool        owner;
@@ -121,13 +122,13 @@ HRSystemMutex* hr_create_system_mutex(const char* a_mutexName)
   a_mutex->mutex = sem_open(a_mutexName, 0);
   a_mutex->owner = false;
   
-  if (a_mutex->mutex == NULL || a_mutex->mutex == SEM_FAILED)
+  if (a_mutex->mutex == nullptr || a_mutex->mutex == SEM_FAILED)
   {
     a_mutex->mutex = sem_open(a_mutexName, O_CREAT | O_EXCL, 0775, 1); //0775  | O_EXCL
     a_mutex->owner = true;
   }
   
-  if (a_mutex->mutex == NULL)
+  if (a_mutex->mutex == nullptr)
   {
     std::cerr << "hr_create_system_mutex (a_mutex): FAILED to create mutex (shared_mutex_init), name = " << a_mutexName << std::endl;
     return nullptr;
@@ -142,8 +143,8 @@ void hr_free_system_mutex(HRSystemMutex*& a_mutex) // logic of this function is 
     return;
   
   sem_close(a_mutex->mutex);
-  if(a_mutex->owner)
-    sem_unlink(a_mutex->name.c_str());
+  //if(a_mutex->owner)
+  sem_unlink(a_mutex->name.c_str());
   
   delete a_mutex;
   a_mutex = nullptr;
@@ -151,16 +152,12 @@ void hr_free_system_mutex(HRSystemMutex*& a_mutex) // logic of this function is 
 
 bool hr_lock_system_mutex(HRSystemMutex* a_mutex, int a_msToWait)
 {
-  struct timespec ts;
+  timespec ts = {0,0};
   ts.tv_sec  = a_msToWait / 1000;
   ts.tv_nsec = a_msToWait * 1'000'000 - ts.tv_sec * 1'000'000'000;
   
   int res = sem_timedwait(a_mutex->mutex, &ts);
-  
-  if(res == -1)
-    return false;
-  else
-    return true;
+  return (res != -1);
 }
 
 void hr_unlock_system_mutex(HRSystemMutex* a_mutex)

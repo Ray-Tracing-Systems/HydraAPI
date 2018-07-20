@@ -134,7 +134,7 @@ HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMod
   std::wstring input(a_libPath);
   
   int libStateId   = -1;
-  std::wstring libFile(L""), libFolder(L"");
+  std::wstring libFile, libFolder;
   if(input.substr(input.size() - 4) == L".xml")
   {
     // split path to file to (path to folder, file name)
@@ -207,13 +207,14 @@ HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMod
   if (a_openMode == HR_WRITE_DISCARD) // total clear of all objects
   {
     if (a_libPath != nullptr && !std::wstring(a_libPath).empty())
-#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
+    {
+    #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
       hr_cleardir(libPath.c_str());
       hr_mkdir(dataPath.c_str());
-#elif defined WIN32
+    #elif defined WIN32
       hr_cleardir(a_libPath);
-#endif
-
+    #endif
+    }
     int32_t whileImage[4] = { int32_t(0xFFFFFFFF), int32_t(0xFFFFFFFF),
                               int32_t(0xFFFFFFFF), int32_t(0xFFFFFFFF) };
 
@@ -805,7 +806,7 @@ HAPI pugi::xml_node hrRenderParamNode(HRRenderRef a_pRender)
     return pugi::xml_node();
   }
 
-  return pSettings->xml_node_next();
+  return pSettings->xml_node_next(HR_OPEN_EXISTING);
 }
 
 //const int MAX_DEVICES_NUM = 256;
@@ -847,11 +848,11 @@ HAPI void hrRenderEnableDevice(HRRenderRef a_pRender, int32_t a_deviceId, bool a
     std::wstringstream strOut;
     strOut << L"hrRenderEnableDevice, bad device id" << a_deviceId;
     std::wstring temp = strOut.str();
-    HrError(temp.c_str());
+    HrError(temp);
   }
 }
 
-HAPI HRRenderUpdateInfo hrRenderHaveUpdate(const HRRenderRef a_pRender)
+HAPI HRRenderUpdateInfo hrRenderHaveUpdate(HRRenderRef a_pRender)
 {
   HRRender* pRender = g_objManager.PtrById(a_pRender);
 
@@ -886,8 +887,8 @@ void HR_UpdateLightsGeometryAndMaterial(pugi::xml_node a_lightLibChanges, pugi::
 HAPI void hrDrawPassOnly(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pCam)
 {
   HRRender* pSettings = g_objManager.PtrById(a_pRender);
-  HRSceneInst* pScn = g_objManager.PtrById(a_pScn);
-  HRCamera*    pCam = g_objManager.PtrById(a_pCam);
+  //HRSceneInst* pScn   = g_objManager.PtrById(a_pScn);
+  //HRCamera*    pCam   = g_objManager.PtrById(a_pCam);
 
   if (a_pRender.id != -1)
   {
@@ -935,7 +936,7 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
 {
   HRRender* pSettings = g_objManager.PtrById(a_pRender);
   HRSceneInst* pScn   = g_objManager.PtrById(a_pScn);
-  HRCamera*    pCam   = g_objManager.PtrById(a_pCam);
+  //HRCamera*    pCam   = g_objManager.PtrById(a_pCam);
 
   if (a_pRender.id != -1)
   {
@@ -972,7 +973,25 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
   size_t chunks = g_objManager.scnData.m_vbCache.size();
   force_attrib(g_objManager.scnData.m_geometryLib, L"total_chunks").set_value(chunks);
   force_attrib(g_objManager.scnData.m_texturesLib, L"total_chunks").set_value(chunks);
-
+  
+  // put chunks addresses in chunk table.
+  // note that you don't have to lock mutex due to all data is appended to the end of virtual buffer.
+  // due to this new object should not damadge previouse and only garbage collector operation must lock mutex
+  //
+  int64_t* chunkTable = g_objManager.scnData.m_vbCache.ChunksTablePtr();
+  if(chunkTable != nullptr && !g_objManager.m_attachMode)
+  {
+    const size_t chunksNum = g_objManager.scnData.m_vbCache.size();
+    for(size_t i=0;i<chunksNum;i++)
+    {
+      const auto& chunk = g_objManager.scnData.m_vbCache.chunk_at(i);
+      if(chunk.InMemory())
+        chunkTable[i] = int64_t(chunk.localAddress);
+      else
+        chunkTable[i] = int64_t(-1);
+    }
+  }
+  
   // clear temporary trash and changes xml
   // 
   clear_node_childs(g_objManager.trash_node()); 
@@ -1004,14 +1023,12 @@ HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pC
   g_objManager.m_tempPathToChangeFile = cngPath; // postpone g_objManager.scnData.m_xmlDocChanges.save_file(cngPath.c_str(), L"  ");
 
   hrCommit(a_pScn, a_pRender, a_pCam);
+  
   g_objManager.scnData.m_commitId++;
-
   g_objManager.scnData.m_xmlDoc.save_file(newPath.c_str(), L"  ");
-
-
+  
   HRRender* pSettings = g_objManager.PtrById(a_pRender);
-
-
+  
   //////////////
   ////////////// Call utility render driver here
   if(g_objManager.m_pDriver != nullptr)
