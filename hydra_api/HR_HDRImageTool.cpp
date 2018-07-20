@@ -506,8 +506,7 @@ namespace HydraRender
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
+  
   class FreeImageTool : public IHRImageTool
   {
   public:
@@ -528,10 +527,27 @@ namespace HydraRender
     std::unique_ptr<InternalImageTool> m_pInternal;
 
   };
-
+  
+  class GentooFix_SaveBMP : public FreeImageTool
+  {
+  public:
+    void SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, const int*   a_data) override
+    {
+      auto fileExt = CutFileExt(a_fileName);
+      if(fileExt == L".bmp" || fileExt == L".BMP")
+        HR_MyDebugSaveBMP(a_fileName, a_data, w, h);
+      else
+        FreeImageTool::SaveLDRImageToFileLDR(a_fileName, w, h, a_data);
+    }
+  };
+  
   std::unique_ptr<IHRImageTool> CreateImageTool()
   {
+  #ifdef GENTOO_FIX_SAVE_BMP
+    return std::move(std::make_unique<GentooFix_SaveBMP>());
+  #else
     return std::move(std::make_unique<FreeImageTool>()); // C++ equals shit, std::unique_ptr equals shit
+  #endif
   }
 
  

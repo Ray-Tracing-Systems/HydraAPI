@@ -97,11 +97,11 @@ int main(int argc, const char** argv)
     // run_all_mtl_tests();
     // run_all_ipp_tests();
 
-    std::cout << test84_proc_texture2() << std::endl;
+    // std::cout << test84_proc_texture2() << std::endl;
     // std::cout << test41_load_library_basic() << std::endl;
 
     //test35_cornell_with_light();
-    //test39_mesh_from_vsgf();
+    test39_mesh_from_vsgf();
     //test42_load_library_basic();
     
     //test38_licence_plate();

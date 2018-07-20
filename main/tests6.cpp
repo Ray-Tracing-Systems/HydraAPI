@@ -1808,7 +1808,8 @@ bool test39_mesh_from_vsgf()
     if (info.finalUpdate)
       break;
   }
-
+  
+  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_39/z_out.bmp");
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_39/z_out.png");
   hrRenderSaveFrameBufferHDR(renderRef, L"tests_images/test_39/z_out.hdr");
 
