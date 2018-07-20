@@ -377,7 +377,8 @@ struct HRSceneData : public HRObject<IHRSceneData>
   std::wstring m_path;
   std::wstring m_pathState;
   std::wstring m_fileState;
-  
+protected:
+  void init_virtual_buffer(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock);
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

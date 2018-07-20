@@ -625,7 +625,7 @@ pugi::xml_node HRRender::copy_node_back(pugi::xml_node a_proto)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-void HRSceneData::init(bool a_emptyvb, HRSystemMutex* a_pVBSysMutexLock)
+void HRSceneData::init(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock)
 {
   m_texturesLib  = m_xmlDoc.append_child(L"textures_lib");
   m_materialsLib = m_xmlDoc.append_child(L"materials_lib");
@@ -644,11 +644,9 @@ void HRSceneData::init(bool a_emptyvb, HRSystemMutex* a_pVBSysMutexLock)
   m_sceneNodeChanges    = m_xmlDocChanges.append_child(L"scenes");
 
   m_trashNode = m_xmlDocChanges.append_child(L"trash");
-
-  if (a_emptyvb)
-    m_vbCache.Init(4096, "NOSUCHSHMEM", &g_objManager.m_tempBuffer, a_pVBSysMutexLock);
-  else
-    m_vbCache.Init(VIRTUAL_BUFFER_SIZE, "HYDRAAPISHMEM2", &g_objManager.m_tempBuffer, a_pVBSysMutexLock);
+  
+  if(!a_attachMode)                                       // will do this init later inside HRSceneData::init_existing when open scene
+    init_virtual_buffer(false, a_pVBSysMutexLock);
 }
 
 void HRSceneData::init_existing(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock)
@@ -670,7 +668,12 @@ void HRSceneData::init_existing(bool a_attachMode, HRSystemMutex* a_pVBSysMutexL
   m_sceneNodeChanges    = m_xmlDocChanges.child(L"scenes");
 
   m_trashNode = m_xmlDocChanges.child(L"trash");
+  
+  init_virtual_buffer(a_attachMode, a_pVBSysMutexLock);
+}
 
+void HRSceneData::init_virtual_buffer(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock)
+{
   if (a_attachMode)
   {
     if(SharedVirtualBufferIsEnabled())
