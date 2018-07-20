@@ -559,6 +559,7 @@ HAPI pugi::xml_node hrTextureBind(HRTextureNodeRef a_pTexNode, pugi::xml_node a_
   {
     pugi::xml_node texNode = a_node.child(L"texture"); // delete texture
     texNode.parent().remove_child(texNode);
+    HrPrint(HR_SEVERITY_WARNING, L"hrTextureBind: invalid texture id: ", a_pTexNode.id);
     return pugi::xml_node();
   }
 

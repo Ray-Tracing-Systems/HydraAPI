@@ -385,10 +385,9 @@ bool test82_proc_texture()
     
     // proc texture sampler settings
     //
-    xml_node p1 = texNode.append_child(L"arg"); 
-    
+    xml_node p1 = texNode.append_child(L"arg");
     p1.append_attribute(L"id")   = 0;
-    p1.append_attribute(L"name") = L"color";
+    p1.append_attribute(L"name") = L"inColor";
     p1.append_attribute(L"type") = L"float4";
     p1.append_attribute(L"size") = 1;
     p1.append_attribute(L"val")  = L"1 1 1 1";
