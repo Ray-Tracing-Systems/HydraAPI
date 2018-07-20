@@ -16,6 +16,7 @@ IHRRenderDriver* CreateDriverRTE(const wchar_t* a_cfg) { return nullptr; }
 #include <windows.h> // for SetConsoleCtrlHandler
 #else
 #include <unistd.h>
+#include <signal.h>
 #endif
 
 void ErrorCallBack(const wchar_t* message, const wchar_t* callerPlace)
@@ -37,14 +38,36 @@ void InfoCallBack(const wchar_t* message, const wchar_t* callerPlace, HR_SEVERIT
 
 void destroy()
 {
+  std::cout << "call destroy() --> hrDestroy()" << std::endl;
   hrDestroy();
 }
 
-#if defined WIN32
+#ifdef WIN32
 BOOL WINAPI HandlerExit(_In_ DWORD fdwControl)
 {
   exit(0);
   return TRUE;
+}
+#else
+bool destroyedBySig = false;
+void sig_handler(int signo)
+{
+  if(destroyedBySig)
+    return;
+  switch(signo)
+  {
+    case SIGINT : std::cerr << "\nmain_app, SIGINT";      break;
+    case SIGABRT: std::cerr << "\nmain_app, SIGABRT";     break;
+    case SIGILL : std::cerr << "\nmain_app, SIGINT";      break;
+    case SIGTERM: std::cerr << "\nmain_app, SIGILL";      break;
+    case SIGSEGV: std::cerr << "\nmain_app, SIGSEGV";     break;
+    case SIGFPE : std::cerr << "\nmain_app, SIGFPE";      break;
+    default     : std::cerr << "\nmain_app, SIG_UNKNOWN"; break;
+    break;
+  }
+  std::cerr << " --> hrDestroy()" << std::endl;
+  hrDestroy();
+  destroyedBySig = true;
 }
 #endif
 
@@ -84,10 +107,22 @@ int main(int argc, const char** argv)
     std::cout << "[main]: curr_dir = " << cwd <<std::endl;
   else
     std::cout << "getcwd() error" <<std::endl;
-
-  std::cout << sizeof(size_t) <<std::endl;
-
+  
+  {
+    struct sigaction sigIntHandler;
+    sigIntHandler.sa_handler = sig_handler;
+    sigemptyset(&sigIntHandler.sa_mask);
+    sigIntHandler.sa_flags = SA_RESETHAND;
+    sigaction(SIGINT,  &sigIntHandler, NULL);
+    sigaction(SIGABRT, &sigIntHandler, NULL);
+    sigaction(SIGILL,  &sigIntHandler, NULL);
+    sigaction(SIGTERM, &sigIntHandler, NULL);
+    sigaction(SIGSEGV, &sigIntHandler, NULL);
+    sigaction(SIGFPE,  &sigIntHandler, NULL);
+  }
 #endif
+  
+  std::cout << "sizeof(size_t) = " << sizeof(size_t) <<std::endl;
   
   try
   {
@@ -100,9 +135,9 @@ int main(int argc, const char** argv)
     // std::cout << test84_proc_texture2() << std::endl;
     // std::cout << test41_load_library_basic() << std::endl;
 
-    //test35_cornell_with_light();
-    std::cout << test39_mesh_from_vsgf() << std::endl;
-    std::cout << test40_several_changes() << std::endl;
+    test35_cornell_with_light();
+    //std::cout << test39_mesh_from_vsgf() << std::endl;
+    //std::cout << test40_several_changes() << std::endl;
   
     //std::cout << test71_out_of_memory() << std::endl;
     
