@@ -93,9 +93,7 @@ SimpleMesh CreateTestMeshForSplit(float a_size)
 bool test98_motion_blur()
 {
   hrErrorCallerPlace(L"test_98");
-  //hrSceneLibraryOpen(L"/home/frol/PROG/HydraNLM/data/scenelib_anim/statex_00001.xml", HR_OPEN_EXISTING);
   hrSceneLibraryOpen(L"/home/frol/PROG/HydraNLM/data/scenelib_anim", HR_OPEN_EXISTING);
-  //hrSceneLibraryOpen(L"D:/PROG/HydraNLM/data/scenelib_anim", HR_OPEN_EXISTING);
   
   /////////////////////////////////////////////////////////
   HRRenderRef renderRef;
@@ -109,13 +107,16 @@ bool test98_motion_blur()
   //hrRenderLogDir(renderRef, L"/home/frol/hydra/", true);
   //hrRenderLogDir(renderRef, L"C:/[Hydra]/logs/", true);
   
-  const int samplesPerSubFrame = 32;
+  const int samplesPerSubFrame = 64;
+  const int numSubFrames       = 2;
+  const int samplesTotal       = samplesPerSubFrame*numSubFrames;
   
   hrRenderOpen(renderRef, HR_OPEN_EXISTING);
   {
     auto node = hrRenderParamNode(renderRef);
-    node.force_child(L"maxRaysPerPixel").text() = samplesPerSubFrame*2;
-    node.force_child(L"dont_run").text()        = 1;
+    node.force_child(L"maxRaysPerPixel").text()     = samplesTotal;
+    node.force_child(L"dont_run").text()            = 1;
+    node.force_child(L"forceGPUFrameBuffer").text() = 1;
   }
   hrRenderClose(renderRef);
   
@@ -125,43 +126,14 @@ bool test98_motion_blur()
   //
   {
     std::wstringstream strOut;
-    strOut << L"runhydra -cl_device_id 0 -contribsamples 32 -maxsamples 64 -statefile statex_00001.xml "; // << L"-contribsamples " << samplesPerSubFrame;
+    strOut << L"runhydra -cl_device_id 0 -contribsamples " << samplesPerSubFrame << " -maxsamples " << samplesPerSubFrame + 16 << " -statefile statex_00001.xml ";
     auto str = strOut.str();
     hrRenderCommand(renderRef, str.c_str());
   }
-
-  while (true)
-  {
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    
-    HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
-    
-    if (info.haveUpdateFB)
-    {
-      auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
-      std::cout.flush();
-      std::cout.precision(pres);
-    }
-    
-    if (info.progress >= 49.0f)
-    {
-      hrRenderCommand(renderRef, L"exitnow");
-      break;
-    }
-  }
   
-  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_98/z_out.png");
-  
-  //std::cout << "before sleep" << std::endl;
-  //std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-  //std::cout << "after sleep" << std::endl;
-  
-  // tell render to render subframe with exact samples number
-  //
   {
     std::wstringstream strOut;
-    strOut << L"runhydra -cl_device_id 0 -contribsamples 32 -maxsamples 64 -statefile statex_00009.xml "; // << L"-contribsamples " << samplesPerSubFrame;
+    strOut << L"runhydra -cl_device_id 1 -contribsamples " << samplesPerSubFrame << " -maxsamples " << samplesPerSubFrame + 16 << " -statefile statex_00009.xml ";
     auto str = strOut.str();
     hrRenderCommand(renderRef, str.c_str());
   }
@@ -181,10 +153,39 @@ bool test98_motion_blur()
     }
     
     if (info.finalUpdate)
+    {
+      hrRenderCommand(renderRef, L"exitnow");
       break;
+    }
   }
   
-  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_98/z_out2.png");
+  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_98/z_out.png");
+  
+  // tell render to render subframe with exact samples number
+  //
+  // {
+  //   std::wstringstream strOut;
+  //   strOut << L"runhydra -cl_device_id 0 -contribsamples " << samplesPerSubFrame << " -maxsamples " << samplesPerSubFrame*2 << " -statefile statex_00009.xml "; // << L"-contribsamples " << samplesPerSubFrame;
+  //   auto str = strOut.str();
+  //   hrRenderCommand(renderRef, str.c_str());
+  // }
+  //
+  // while (true)
+  // {
+  //   std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  //   HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
+  //   if (info.haveUpdateFB)
+  //   {
+  //     auto pres = std::cout.precision(2);
+  //     std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
+  //     std::cout.flush();
+  //     std::cout.precision(pres);
+  //   }
+  //   if (info.finalUpdate)
+  //     break;
+  // }
+  //
+  // hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_98/z_out2.png");
   
   return false;
   //return check_images("test_98", 2, 50);

@@ -335,6 +335,7 @@ bool test35_cornell_with_light()
   }
 
   //hrRenderEnableDevice(renderRef, 0, true);
+  //hrRenderEnableDevice(renderRef, 1, true);
   hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
