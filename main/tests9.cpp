@@ -136,7 +136,7 @@ namespace HRUtils
       auto node = hrRenderParamNode(renderRef);
       node.force_child(L"maxRaysPerPixel").text()     = samplesTotal;
       node.force_child(L"dont_run").text()            = 1;
-      node.force_child(L"forceGPUFrameBuffer").text() = 0;
+      node.force_child(L"forceGPUFrameBuffer").text() = 1;
     }
     hrRenderClose(renderRef);
   
@@ -177,7 +177,7 @@ namespace HRUtils
             std::cout.precision(pres);
           }
     
-          if (info.progress > 0.9995f*(frameProgress + progressStep))
+          if (info.finalUpdate || info.progress > 0.9995f*(frameProgress + progressStep))
           {
             hrRenderCommand(renderRef, L"exitnow");
             break;
