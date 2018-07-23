@@ -127,12 +127,16 @@ namespace HRUtils
     const int numSubFrames       = a_input.subFramesNum;
     const int samplesTotal       = samplesPerSubFrame*numSubFrames;
   
+    float progressStep  = 100.0f*float(a_input.devList.size())/float(numSubFrames); // we need this if GPU number in not equal to subframe number.
+    float frameProgress = 0.0f;
+    std::cout << "RenderAnimationWithMotionBlur, progressStep = " << progressStep << std::endl;
+    
     hrRenderOpen(renderRef, HR_OPEN_EXISTING);
     {
       auto node = hrRenderParamNode(renderRef);
       node.force_child(L"maxRaysPerPixel").text()     = samplesTotal;
       node.force_child(L"dont_run").text()            = 1;
-      node.force_child(L"forceGPUFrameBuffer").text() = 1;
+      node.force_child(L"forceGPUFrameBuffer").text() = 0;
     }
     hrRenderClose(renderRef);
   
@@ -147,7 +151,8 @@ namespace HRUtils
       for(int devId : a_input.devList)
       {
         std::wstringstream strOut;
-        strOut << L"runhydra -cl_device_id " << devId << L" -contribsamples " << samplesPerSubFrame << L" -maxsamples " << samplesPerSubFrame + 20;
+        //strOut << L"runhydra -cl_device_id " << devId << L" -contribsamples " << samplesPerSubFrame << L" -maxsamples " << samplesPerSubFrame + 20;
+        strOut << L"runhydra -cl_device_id " << devId << L" -contribsamples " << 1000000 << L" -maxsamples " << 1000000;
         strOut << L" -statefile " << a_input.allStates[topState].c_str();
         auto str = strOut.str();
         hrRenderCommand(renderRef, str.c_str());
@@ -172,7 +177,7 @@ namespace HRUtils
             std::cout.precision(pres);
           }
     
-          if (info.finalUpdate)
+          if (info.progress > 0.9995f*(frameProgress + progressStep))
           {
             hrRenderCommand(renderRef, L"exitnow");
             break;
@@ -190,7 +195,10 @@ namespace HRUtils
         hrRenderSaveFrameBufferLDR(renderRef, str.c_str());
         hrRenderCommand(renderRef, L"clearcolor");
         subFramesDone = 0;
+        frameProgress = 0.0f;
       }
+      else
+        frameProgress += progressStep;
   
       std::cout << "sleeping ... "; std::cout.flush();
       std::this_thread::sleep_for(std::chrono::milliseconds(2000));
