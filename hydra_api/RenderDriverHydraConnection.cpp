@@ -1085,6 +1085,16 @@ void RD_HydraConnection::ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out)
     RunSingleHydraHead(cmdArgs.c_str());
     return;
   }
+  else if (name == L"clearcolor")
+  {
+    delete m_pSharedImage;
+    m_pSharedImage = nullptr;
+    return;
+  }
+  else if (name == L"exitnow")
+  {
+    needToStopProcess = true;
+  }
   else if (name == L"pause")
   {
     if (m_pConnection == nullptr || m_pSharedImage == nullptr)
@@ -1162,7 +1172,6 @@ void RD_HydraConnection::ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out)
   
   if(needToStopProcess)
     m_pConnection->stopAllRenderProcesses();
-  
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -139,9 +139,9 @@ int main(int argc, const char** argv)
     //std::cout << test84_proc_texture2() << std::endl;
     
     //std::cout << test39_mesh_from_vsgf() << std::endl;
-    std::cout << test35_cornell_with_light() << std::endl;
+    //std::cout << test35_cornell_with_light() << std::endl;
   
-    //test98_motion_blur();
+    test98_motion_blur();
     
     //window_main_free_look(L"tests_f/test_167", L"opengl1Debug");
 

@@ -161,31 +161,46 @@ bool test98_motion_blur()
   
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_98/z_out.png");
   
+  std::cout << "sleep ... "; std::cout.flush();
+  std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+  std::cout << "finish" << std::endl; std::cout.flush();
+  
+  hrRenderCommand(renderRef, L"clearcolor");
+  
   // tell render to render subframe with exact samples number
   //
-  // {
-  //   std::wstringstream strOut;
-  //   strOut << L"runhydra -cl_device_id 0 -contribsamples " << samplesPerSubFrame << " -maxsamples " << samplesPerSubFrame*2 << " -statefile statex_00009.xml "; // << L"-contribsamples " << samplesPerSubFrame;
-  //   auto str = strOut.str();
-  //   hrRenderCommand(renderRef, str.c_str());
-  // }
-  //
-  // while (true)
-  // {
-  //   std::this_thread::sleep_for(std::chrono::milliseconds(50));
-  //   HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
-  //   if (info.haveUpdateFB)
-  //   {
-  //     auto pres = std::cout.precision(2);
-  //     std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
-  //     std::cout.flush();
-  //     std::cout.precision(pres);
-  //   }
-  //   if (info.finalUpdate)
-  //     break;
-  // }
-  //
-  // hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_98/z_out2.png");
+  {
+    std::wstringstream strOut;
+    strOut << L"runhydra -cl_device_id 0 -contribsamples " << samplesPerSubFrame << " -maxsamples " << samplesPerSubFrame + 16 << " -statefile statex_00021.xml ";
+    auto str = strOut.str();
+    hrRenderCommand(renderRef, str.c_str());
+  }
+  
+  {
+    std::wstringstream strOut;
+    strOut << L"runhydra -cl_device_id 1 -contribsamples " << samplesPerSubFrame << " -maxsamples " << samplesPerSubFrame + 16 << " -statefile statex_00029.xml ";
+    auto str = strOut.str();
+    hrRenderCommand(renderRef, str.c_str());
+  }
+  
+  while (true)
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
+    if (info.haveUpdateFB)
+    {
+      auto pres = std::cout.precision(2);
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
+      std::cout.flush();
+      std::cout.precision(pres);
+    }
+    if (info.finalUpdate)
+    {
+      hrRenderCommand(renderRef, L"exitnow");
+      break;
+    }
+  }
+  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_98/z_out2.png");
   
   return false;
   //return check_images("test_98", 2, 50);
