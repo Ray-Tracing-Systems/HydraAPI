@@ -88,8 +88,161 @@ SimpleMesh CreateTestMeshForSplit(float a_size)
   return cube;
 }
 
+namespace HRUtils
+{
+
+  struct MotionBlurInputParams
+  {
+    std::wstring              libpath;
+    std::vector<std::wstring> allStates;
+    std::vector<int>          devList;            // int current implementation devList.size() MUST BE EQUAL TO subFramesNum
+    
+    int                       subFramesNum;
+    int                       samplePerSubFrame;
+    
+    std::wstring              outLogsFolder;            // L"/home/frol/hydra/"
+    std::wstring              outImageName;
+    int                       outFrameStartNumber;
+  };
+  
+  
+  void RenderAnimationWithMotionBlur(const MotionBlurInputParams& a_input)
+  {
+    hrErrorCallerPlace(L"HRUtils::RenderAnimationWithMotionBlur");
+    hrSceneLibraryOpen(a_input.libpath.c_str(), HR_OPEN_EXISTING);
+  
+    /////////////////////////////////////////////////////////
+    HRRenderRef renderRef;
+    renderRef.id = 0;
+  
+    HRSceneInstRef scnRef;
+    scnRef.id = 0;
+    /////////////////////////////////////////////////////////
+  
+    hrRenderEnableDevice(renderRef, 0, true);
+    if(a_input.outLogsFolder != L"")
+      hrRenderLogDir(renderRef, a_input.outLogsFolder.c_str(), true);
+    
+    const int samplesPerSubFrame = a_input.samplePerSubFrame;
+    const int numSubFrames       = a_input.subFramesNum;
+    const int samplesTotal       = samplesPerSubFrame*numSubFrames;
+  
+    hrRenderOpen(renderRef, HR_OPEN_EXISTING);
+    {
+      auto node = hrRenderParamNode(renderRef);
+      node.force_child(L"maxRaysPerPixel").text()     = samplesTotal;
+      node.force_child(L"dont_run").text()            = 1;
+      node.force_child(L"forceGPUFrameBuffer").text() = 1;
+    }
+    hrRenderClose(renderRef);
+  
+    hrCommit(scnRef, renderRef);
+    
+    int topState      = 0;
+    int subFramesDone = 0;
+    while(topState < a_input.allStates.size())
+    {
+      // pop states/subframes from a_input.allStates; one for each render device;
+      //
+      for(int devId : a_input.devList)
+      {
+        std::wstringstream strOut;
+        strOut << L"runhydra -cl_device_id " << devId << L" -contribsamples " << samplesPerSubFrame << L" -maxsamples " << samplesPerSubFrame + 20;
+        strOut << L" -statefile " << a_input.allStates[topState].c_str();
+        auto str = strOut.str();
+        hrRenderCommand(renderRef, str.c_str());
+  
+        subFramesDone++;
+        topState++;
+        if(topState >= a_input.allStates.size() || subFramesDone >= a_input.subFramesNum)
+          break;
+      }
+    
+      // wait and render ...
+      {
+        while (true)
+        {
+          HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
+    
+          if (info.haveUpdateFB)
+          {
+            auto pres = std::cout.precision(2);
+            std::cout << "RenderAnimationWithMotionBlur, rendering progress = " << info.progress << "% \r"; std::cout.flush();
+            std::cout.flush();
+            std::cout.precision(pres);
+          }
+    
+          if (info.finalUpdate)
+          {
+            hrRenderCommand(renderRef, L"exitnow");
+            break;
+          }
+  
+          std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        }
+      }
+    
+      if(subFramesDone >= a_input.subFramesNum-1)
+      {
+        std::wstringstream namestream;
+        namestream  << std::fixed << a_input.outImageName.c_str() << std::setfill(L"0"[0]) << std::setw(5) << a_input.outFrameStartNumber + topState/a_input.subFramesNum << L".png";
+        auto str = namestream.str();
+        hrRenderSaveFrameBufferLDR(renderRef, str.c_str());
+        hrRenderCommand(renderRef, L"clearcolor");
+        subFramesDone = 0;
+      }
+  
+      std::cout << "sleeping ... "; std::cout.flush();
+      std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+      std::cout << "finish." << std::endl; std::cout.flush();
+    }
+    
+    
+  }
+  
+};
+
+bool test98_motion_blur()
+{
+  MotionBlurInputParams input;
+  
+  input.libpath = L"/home/frol/PROG/HydraNLM/data/scenelib_anim";
+  
+  input.allStates.push_back(L"statex_00001.xml");
+  input.allStates.push_back(L"statex_00003.xml");
+  input.allStates.push_back(L"statex_00005.xml");
+  input.allStates.push_back(L"statex_00007.xml");
+  
+  input.allStates.push_back(L"statex_00009.xml");
+  input.allStates.push_back(L"statex_00011.xml");
+  input.allStates.push_back(L"statex_00013.xml");
+  input.allStates.push_back(L"statex_00015.xml");
+  
+  input.allStates.push_back(L"statex_00017.xml");
+  input.allStates.push_back(L"statex_00019.xml");
+  input.allStates.push_back(L"statex_00021.xml");
+  input.allStates.push_back(L"statex_00023.xml");
+  
+  input.allStates.push_back(L"statex_00025.xml");
+  input.allStates.push_back(L"statex_00027.xml");
+  input.allStates.push_back(L"statex_00029.xml");
+  input.allStates.push_back(L"statex_00031.xml");
+  
+  input.devList.push_back(0);
+  input.devList.push_back(1);
+  input.subFramesNum        = 2;
+  input.outLogsFolder       = L"/home/frol/hydra/";
+  input.outImageName        = L"tests_images/test_98/car_";
+  input.outFrameStartNumber = 0;
+  input.samplePerSubFrame   = 64;
+  
+  RenderAnimationWithMotionBlur(input);
+  
+  return false;
+}
 
 
+/*
 bool test98_motion_blur()
 {
   hrErrorCallerPlace(L"test_98");
@@ -126,14 +279,14 @@ bool test98_motion_blur()
   //
   {
     std::wstringstream strOut;
-    strOut << L"runhydra -cl_device_id 0 -contribsamples " << samplesPerSubFrame << " -maxsamples " << samplesPerSubFrame + 16 << " -statefile statex_00001.xml ";
+    strOut << L"runhydra -cl_device_id 0 -contribsamples " << samplesPerSubFrame << L" -maxsamples " << samplesPerSubFrame + 20 << L" -statefile statex_00001.xml ";
     auto str = strOut.str();
     hrRenderCommand(renderRef, str.c_str());
   }
   
   {
     std::wstringstream strOut;
-    strOut << L"runhydra -cl_device_id 1 -contribsamples " << samplesPerSubFrame << " -maxsamples " << samplesPerSubFrame + 16 << " -statefile statex_00009.xml ";
+    strOut << L"runhydra -cl_device_id 1 -contribsamples " << samplesPerSubFrame << L" -maxsamples " << samplesPerSubFrame + 20 << L" -statefile statex_00009.xml ";
     auto str = strOut.str();
     hrRenderCommand(renderRef, str.c_str());
   }
@@ -171,14 +324,14 @@ bool test98_motion_blur()
   //
   {
     std::wstringstream strOut;
-    strOut << L"runhydra -cl_device_id 0 -contribsamples " << samplesPerSubFrame << " -maxsamples " << samplesPerSubFrame + 16 << " -statefile statex_00021.xml ";
+    strOut << L"runhydra -cl_device_id 0 -contribsamples " << samplesPerSubFrame << L" -maxsamples " << samplesPerSubFrame + 20 << L" -statefile statex_00021.xml ";
     auto str = strOut.str();
     hrRenderCommand(renderRef, str.c_str());
   }
   
   {
     std::wstringstream strOut;
-    strOut << L"runhydra -cl_device_id 1 -contribsamples " << samplesPerSubFrame << " -maxsamples " << samplesPerSubFrame + 16 << " -statefile statex_00029.xml ";
+    strOut << L"runhydra -cl_device_id 1 -contribsamples " << samplesPerSubFrame << L" -maxsamples " << samplesPerSubFrame + 20 << L" -statefile statex_00029.xml ";
     auto str = strOut.str();
     hrRenderCommand(renderRef, str.c_str());
   }
@@ -205,6 +358,7 @@ bool test98_motion_blur()
   return false;
   //return check_images("test_98", 2, 50);
 }
+*/
 
 bool test55_clear_scene()
 {
