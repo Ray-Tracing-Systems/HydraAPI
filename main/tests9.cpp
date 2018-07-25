@@ -88,9 +88,10 @@ SimpleMesh CreateTestMeshForSplit(float a_size)
   return cube;
 }
 
+
 namespace HRUtils
 {
-
+  
   struct MotionBlurInputParams
   {
     std::wstring              libpath;
@@ -110,15 +111,15 @@ namespace HRUtils
   {
     hrErrorCallerPlace(L"HRUtils::RenderAnimationWithMotionBlur");
     hrSceneLibraryOpen(a_input.libpath.c_str(), HR_OPEN_EXISTING);
-  
+    
     /////////////////////////////////////////////////////////
     HRRenderRef renderRef;
     renderRef.id = 0;
-  
+    
     HRSceneInstRef scnRef;
     scnRef.id = 0;
     /////////////////////////////////////////////////////////
-  
+    
     hrRenderEnableDevice(renderRef, 0, true);
     if(a_input.outLogsFolder != L"")
       hrRenderLogDir(renderRef, a_input.outLogsFolder.c_str(), true);
@@ -126,7 +127,7 @@ namespace HRUtils
     const int samplesPerSubFrame = a_input.samplePerSubFrame;
     const int numSubFrames       = a_input.subFramesNum;
     const int samplesTotal       = samplesPerSubFrame*numSubFrames;
-  
+    
     float progressStep  = 100.0f*float(a_input.devList.size())/float(numSubFrames); // we need this if GPU number in not equal to subframe number.
     float frameProgress = 0.0f;
     std::cout << "RenderAnimationWithMotionBlur, progressStep = " << progressStep << std::endl;
@@ -139,7 +140,7 @@ namespace HRUtils
       node.force_child(L"forceGPUFrameBuffer").text() = 1;
     }
     hrRenderClose(renderRef);
-  
+    
     hrCommit(scnRef, renderRef);
     
     int topState      = 0;
@@ -156,19 +157,19 @@ namespace HRUtils
         strOut << L" -statefile " << a_input.allStates[topState].c_str();
         auto str = strOut.str();
         hrRenderCommand(renderRef, str.c_str());
-  
+        
         subFramesDone++;
         topState++;
         if(topState >= a_input.allStates.size() || subFramesDone >= a_input.subFramesNum)
           break;
       }
-    
+      
       // wait and render ...
       {
         while (true)
         {
           HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
-    
+          
           if (info.haveUpdateFB)
           {
             auto pres = std::cout.precision(2);
@@ -176,21 +177,21 @@ namespace HRUtils
             std::cout.flush();
             std::cout.precision(pres);
           }
-    
+          
           if (info.finalUpdate || info.progress > 0.9995f*(frameProgress + progressStep))
           {
             hrRenderCommand(renderRef, L"exitnow");
             break;
           }
-  
+          
           std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }
       }
-    
+      
       if(subFramesDone >= a_input.subFramesNum-1)
       {
         std::wstringstream namestream;
-        namestream  << std::fixed << a_input.outImageName.c_str() << std::setfill(L"0"[0]) << std::setw(5) << a_input.outFrameStartNumber + topState/a_input.subFramesNum << L".png";
+        namestream  << std::fixed << a_input.outImageName.c_str() << std::setfill(L"0"[0]) << std::setw(4) << a_input.outFrameStartNumber + topState/a_input.subFramesNum << L".png";
         auto str = namestream.str();
         hrRenderSaveFrameBufferLDR(renderRef, str.c_str());
         hrRenderCommand(renderRef, L"clearcolor");
@@ -199,7 +200,7 @@ namespace HRUtils
       }
       else
         frameProgress += progressStep;
-  
+      
       std::cout << "sleeping ... "; std::cout.flush();
       std::this_thread::sleep_for(std::chrono::milliseconds(2000));
       std::cout << "finish." << std::endl; std::cout.flush();
@@ -208,15 +209,15 @@ namespace HRUtils
     
   }
   
-};
+}
 
 bool test98_motion_blur()
 {
   MotionBlurInputParams input;
   
-  input.libpath = L"/home/frol/PROG/HydraNLM/data/scenelib_anim";
+  input.libpath = L"/input/scenelib";
   
-  for(int i=1;i<33;i+=2)
+  for(int i=1;i<=800;i++)
   {
     std::wstringstream namestream;
     namestream  << std::fixed << L"statex_" << std::setfill(L"0"[0]) << std::setw(5) << i << L".xml";
@@ -225,11 +226,18 @@ bool test98_motion_blur()
   
   input.devList.push_back(0);
   input.devList.push_back(1);
-  input.subFramesNum        = int(input.devList.size()); // #TODO: change this! Currently, it is the only condition when motion blur will work.
-  input.outLogsFolder       = L"/home/frol/hydra/";
-  input.outImageName        = L"tests_images/test_98/car_";
-  input.samplePerSubFrame   = 256;
-  input.outFrameStartNumber = 200;
+  input.devList.push_back(2);
+  input.devList.push_back(3);
+  input.devList.push_back(4);
+  input.devList.push_back(5);
+  input.devList.push_back(6);
+  input.devList.push_back(7);
+  
+  input.subFramesNum           = int(input.devList.size()); // #TODO: change this! Currently, it is the only condition when motion blur will work.
+  input.outLogsFolder          = L"/root/logs/";
+  input.outImageName           = L"/output/car_sim";
+  input.samplePerSubFrame      = 384;
+  input.outFrameStartNumber    = 200;
   
   RenderAnimationWithMotionBlur(input);
   
