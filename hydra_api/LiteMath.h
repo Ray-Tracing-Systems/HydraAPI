@@ -18,7 +18,7 @@
 
 namespace HydraLiteMath 
 {
-
+  using std::isfinite;
   struct float2
   {
     float2() :x(0), y(0) {}
