@@ -1396,9 +1396,9 @@ static std::tuple<int, int> RecommendedTexResolutionFix(int w, int h, int rwidth
 {
 
   if(w == -1 || h == -1)
-    return {rwidth, rheight};
+    return std::tuple<int, int>(rwidth, rheight);
   else if(rwidth >= w || rheight >= h)
-    return {w, h};
+    return std::tuple<int, int>(w, h);
 
   if (rwidth < 256 || rheight < 256)
   {
@@ -1430,7 +1430,7 @@ static std::tuple<int, int> RecommendedTexResolutionFix(int w, int h, int rwidth
     rheight = h2;
   }
 
-  return {rwidth, rheight};
+  return std::tuple<int, int>(rwidth, rheight);
 }
 
 
