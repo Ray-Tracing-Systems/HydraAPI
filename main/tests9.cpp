@@ -217,7 +217,7 @@ bool test98_motion_blur()
   
   input.libpath = L"/input/scenelib";
   
-  for(int i=1;i<=800;i++)
+  for(int i=1;i<=(700*8);i++)
   {
     std::wstringstream namestream;
     namestream  << std::fixed << L"statex_" << std::setfill(L"0"[0]) << std::setw(5) << i << L".xml";
@@ -237,7 +237,7 @@ bool test98_motion_blur()
   input.outLogsFolder          = L"/root/logs/";
   input.outImageName           = L"/output/car_sim";
   input.samplePerSubFrame      = 384;
-  input.outFrameStartNumber    = 200;
+  input.outFrameStartNumber    = 300-1;
   
   RenderAnimationWithMotionBlur(input);
   
