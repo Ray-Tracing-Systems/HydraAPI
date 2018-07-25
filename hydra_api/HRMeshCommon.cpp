@@ -158,7 +158,9 @@ struct MeshVSGF : public IHRMesh
 
 
 uint64_t MeshVSGF::offset(const wchar_t* a_arrayname) const 
-{ 
+{
+  // auto node = this->xml_node_immediate();
+
   uint64_t offset1 = sizeof(HydraGeomData::Header);
   uint64_t offset2 = offset1 + m_vertNum*sizeof(float)*4; // after pos
   uint64_t offset3 = offset2 + m_vertNum*sizeof(float)*4; // after norm
@@ -202,7 +204,7 @@ std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndi
 {
   std::vector<HRBatchInfo> matDrawList;
 
-  if (matIndices.size() == 0)
+  if (matIndices.empty())
     return matDrawList;
 
   matDrawList.reserve(matIndices.size() / 4);
@@ -218,7 +220,7 @@ std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndi
     {
       // append current tri sequence withe the same material id
       //
-      HRBatchInfo elem;
+      HRBatchInfo elem = {0,0,0};
       elem.matId    = tMatId;
       elem.triBegin = tBegin;
       elem.triEnd   = uint32_t(i);
@@ -242,7 +244,7 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
 {
   const auto& input = pSysObj->m_input;
 
-  if (input.matIndices.size() == 0)
+  if (input.matIndices.empty())
   {
     HrError(L"CreateVSGFFromSimpleInputMesh: input.matIndices.size() == 0");
     return nullptr;
@@ -302,7 +304,7 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
 
   for (auto& arr : pSysObj->m_input.customArrays)
   {
-    if (arr.fdata.size() > 0)
+    if (!arr.fdata.empty())
       totalByteSizeCustom += arr.fdata.size() * sizeof(float);
     else
       totalByteSizeCustom += arr.idata.size() * sizeof(int);
@@ -342,7 +344,7 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
     std::wstring type = L"";
 
     size_t currSize = 0;
-    if (arr.fdata.size() > 0)
+    if (!arr.fdata.empty())
     {
       currSize = arr.fdata.size() * sizeof(float);
       memcpy(memory + currOffset, &arr.fdata[0], currSize);
@@ -379,11 +381,11 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
   {
     BBox box;
     box.x_min = std::numeric_limits<float>::max();
-    box.x_max = std::numeric_limits<float>::min();
+    box.x_max = std::numeric_limits<float>::lowest();
     box.y_min = std::numeric_limits<float>::max();
-    box.y_max = std::numeric_limits<float>::min();
+    box.y_max = std::numeric_limits<float>::lowest();
     box.z_min = std::numeric_limits<float>::max();
-    box.z_max = std::numeric_limits<float>::min();
+    box.z_max = std::numeric_limits<float>::lowest();
     for (int i = 0; i < input.verticesPos.size(); i += 4)
     {
       float x = input.verticesPos[i + 0];
@@ -413,34 +415,49 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
 
 std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromFile(HRMesh* pSysObj, const std::wstring& a_fileName, pugi::xml_node a_node)
 {
-  int64_t totalByteSize = a_node.attribute(L"bytesize").as_llong();
+  const int64_t totalByteSize = a_node.attribute(L"bytesize").as_llong();
 
   if(totalByteSize <= 0)
     return nullptr;
 
   std::shared_ptr<MeshVSGF> pMeshImpl = std::make_shared<MeshVSGF>(totalByteSize, -1);
-
+  pMeshImpl->m_vertNum     = a_node.attribute(L"vertNum").as_int();
+  pMeshImpl->m_indNum      = a_node.attribute(L"triNum").as_int()*3;
+  pMeshImpl->m_chunkId     = ChunkIdFromFileName(a_fileName.c_str());
+  
   pugi::xml_node mindicesNode = a_node.child(L"matindices");
   if(mindicesNode == nullptr)
     mindicesNode = a_node.child(L"mindices");
 
-  int64_t moffset = mindicesNode.attribute(L"offset").as_llong();
-  int64_t msize   = mindicesNode.attribute(L"bytesize").as_llong();
+  const int64_t moffset = mindicesNode.attribute(L"offset").as_llong();
+  const int64_t msize   = mindicesNode.attribute(L"bytesize").as_llong();
 
   std::vector<uint32_t> mindices(a_node.attribute(L"triNum").as_int());
 
-#ifdef WIN32
-  std::ifstream fin(a_fileName.c_str(), std::ios::binary);   
-#else
-  std::string fileIn(a_fileName.begin(), a_fileName.end());
-  std::ifstream fin(fileIn.c_str(), std::ios::binary);
-#endif
-  fin.seekg(moffset);
-  fin.read((char*)&mindices[0], msize);
-  fin.close();
-
-  pMeshImpl->m_vertNum     = a_node.attribute(L"vertNum").as_int();
-  pMeshImpl->m_indNum      = a_node.attribute(L"triNum").as_int()*3;
+  size_t totalChunks = g_objManager.scnData.m_vbCache.size();
+  
+  ChunkPointer chunk;
+  if(g_objManager.m_attachMode && pMeshImpl->m_chunkId >= 0 && pMeshImpl->m_chunkId < totalChunks)
+    chunk = g_objManager.scnData.m_vbCache.chunk_at(pMeshImpl->m_chunkId);
+  
+  if(chunk.InMemory())
+  {
+    const char* data = (const char*)chunk.GetMemoryNow();
+    memcpy(mindices.data(), data + moffset, msize);
+  }
+  else
+  {
+  #ifdef WIN32
+    std::ifstream fin(a_fileName.c_str(), std::ios::binary);
+  #else
+    std::string fileIn(a_fileName.begin(), a_fileName.end());
+    std::ifstream fin(fileIn.c_str(), std::ios::binary);
+  #endif
+    fin.seekg(moffset);
+    fin.read((char*)mindices.data(), msize);
+    fin.close();
+  }
+  
   pMeshImpl->m_matDrawList = FormMatDrawListRLE(mindices);
 
   BBox bbox;

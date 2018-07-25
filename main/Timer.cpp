@@ -67,12 +67,12 @@ long long int Timer::getElapsedTicks(void)
 
 #else
 
-float Timer::getElapsed(void)
+float Timer::getElapsed()
 {
   double elapsedTime = 0.0;
   
-  timeval t2;
-  gettimeofday(&t2, NULL);
+  timeval t2 = {0,0};
+  gettimeofday(&t2, nullptr);
 
   timeval t1 = m_timeVal;
 

@@ -57,7 +57,7 @@ void image_p_sandbox()
 
   auto settings1 = settingsDoc.append_child(L"settings");
   settings1.force_attribute(L"radius").set_value(1);
-  settings1.force_attribute(L"color_shift").set_value("0.1 0.0 0.05");
+  settings1.force_attribute(L"color_shift").set_value(L"0.1 0.0 0.05");
 
 
   // example of filter chain with pin-pong

@@ -13,10 +13,12 @@
 #include <unistd.h>
 #endif
 
-#include <math.h>
+#include <cmath>
 
-static constexpr bool gDebugMode     = true;
+static constexpr bool gDebugMode     = false;
 static constexpr bool gCopyCollector = false;
+
+bool SharedVirtualBufferIsEnabled() { return (gDebugMode == false); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -41,8 +43,10 @@ inline uint64_t roundBlocks(uint64_t elems, int threadsPerBlock)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-bool VirtualBuffer::Init(uint64_t a_sizeInBytes, const char* a_shmemName, std::vector<int>* a_pTempBuffer)
+bool VirtualBuffer::Init(uint64_t a_sizeInBytes, const char* a_shmemName, std::vector<int>* a_pTempBuffer, HRSystemMutex* a_mutex)
 {
+  m_pVBMutex = a_mutex;
+  
   if (a_sizeInBytes % 1024 != 0)
   {
     HrError(L"VirtualBuffer::FATAL ERROR: bad virtual buffer size");
@@ -58,8 +62,11 @@ bool VirtualBuffer::Init(uint64_t a_sizeInBytes, const char* a_shmemName, std::v
     a_sizeInBytes = totalMem / 4;
 #endif
   
+  
   m_totalSize   = a_sizeInBytes;
-  //a_sizeInBytes = gCopyCollector ? a_sizeInBytes : a_sizeInBytes / 2; //#NOTE: HACK
+  
+  if(a_sizeInBytes > 4096)                                        // don't init table if single page wa allocated, dummy virtual buffer.
+    a_sizeInBytes += (VB_CHUNK_TABLE_OFFS + VB_CHUNK_TABLE_SIZE); // alloc memory for both virtual buffer and chunks table
 
 #ifdef WIN32
   DWORD imageSizeL = a_sizeInBytes & 0x00000000FFFFFFFF;
@@ -100,7 +107,8 @@ bool VirtualBuffer::Init(uint64_t a_sizeInBytes, const char* a_shmemName, std::v
   else
   {
     m_fileDescriptor = shm_open(a_shmemName, O_CREAT | O_RDWR | O_TRUNC, 0777);
-    ftruncate(m_fileDescriptor, a_sizeInBytes);
+    if(ftruncate(m_fileDescriptor, a_sizeInBytes) == -1)
+      HrError(L"VirtualBuffer::FATAL ERROR: shmem file can not be resized (ftruncate error)");
 
     m_data = mmap(nullptr, a_sizeInBytes, PROT_READ | PROT_WRITE, MAP_SHARED, m_fileDescriptor, 0);
     if(m_data == MAP_FAILED)
@@ -116,10 +124,134 @@ bool VirtualBuffer::Init(uint64_t a_sizeInBytes, const char* a_shmemName, std::v
     return false;
   }
 #endif
-
+  
+  if(a_sizeInBytes > 4096) // don't init table if single page was allocated only, dummy virtual buffer.
+  {
+    m_chunkTable = (int64_t *) (((char *) m_data) + m_totalSize + VB_CHUNK_TABLE_OFFS);
+    memset(m_chunkTable, 0, VB_CHUNK_TABLE_SIZE);
+  }
+  
   Clear();
   m_pTempBuffer = a_pTempBuffer;
+  m_owner       = true;
   return true;
+}
+
+
+bool VirtualBuffer::Attach(uint64_t a_sizeInBytes, const char* a_shmemName, std::vector<int>* a_pTempBuffer)
+{
+  if (a_sizeInBytes % 1024 != 0)
+  {
+    HrError(L"VirtualBuffer::FATAL ERROR: bad virtual buffer size");
+    return false;
+  }
+  
+  m_totalSize = a_sizeInBytes;
+  if(a_sizeInBytes > 4096)                                        // don't init table if single page wa allocated, dummy virtual buffer.
+    a_sizeInBytes += (VB_CHUNK_TABLE_OFFS + VB_CHUNK_TABLE_SIZE); // alloc memory for both virtual buffer and chunks table
+
+#ifdef WIN32
+
+  m_fileHandle = OpenFileMappingA(FILE_MAP_READ | FILE_MAP_WRITE, 0, a_shmemName);
+  if (m_fileHandle == NULL)
+  {
+    HrError(L"VirtualBuffer::FATAL ERROR: shmem file can not attach (OpenFileMappingA)");
+    return false;
+  }
+
+  m_data = MapViewOfFile(m_fileHandle, FILE_MAP_WRITE | FILE_MAP_READ, 0, 0, 0);
+  if (m_data == nullptr)
+  {
+    CloseHandle(m_fileHandle); m_fileHandle = NULL;
+    HrError(L"VirtualBuffer::FATAL ERROR: shmem file can not be maped (MapViewOfFile)");
+    return false;
+  }
+
+#else
+  
+  shmemName = std::string(a_shmemName);
+  if (gDebugMode)
+    return false;
+  else
+  {
+    m_fileDescriptor = shm_open(a_shmemName, O_RDONLY, 0777);
+    if(m_fileDescriptor == -1)
+    {
+      HrError(L"VirtualBuffer::FATAL ERROR: can not attach to shmem file (shm_open)");
+      return false;
+    }
+    
+    m_data = mmap(nullptr, a_sizeInBytes, PROT_READ, MAP_SHARED, m_fileDescriptor, 0);
+    if(m_data == MAP_FAILED)
+    {
+      HrError(L"VirtualBuffer::FATAL ERROR: can not attach to shmem file (mmap)");
+      close(m_fileDescriptor);
+      return false;
+    }
+  }
+  
+  if (m_data == nullptr)
+  {
+    HrError(L"VirtualBuffer::FATAL ERROR: shmem file can not be mapped");
+    return false;
+  }
+  
+#endif
+  
+  if(a_sizeInBytes > 4096) // don't init table if single page was allocated only, dummy virtual buffer.
+  {
+    m_chunkTable = (int64_t *) (((char *) m_data) + m_totalSize + VB_CHUNK_TABLE_OFFS);
+  }
+  
+  Clear();
+  m_pTempBuffer = a_pTempBuffer;
+  m_owner       = false;
+  return true;
+}
+
+void VirtualBuffer::RestoreChunks()
+{
+  const int64_t* table = ChunksTablePtr();
+  if(table == nullptr)
+    return;
+
+  // (1) scan table to find last chunk
+  //
+  const auto maxChunks = (VB_CHUNK_TABLE_SIZE)/sizeof(int64_t) - 2;
+
+  int chunksNum = 0, chunkOffset = 1;
+  do {
+
+    chunksNum++;
+    chunkOffset = table[chunksNum];
+
+  } while(chunksNum < maxChunks && chunkOffset != 0);
+
+  // (2) restore chunk pointers (their localAddresses)
+  //
+  m_allChunks.resize(chunksNum);
+  
+  for(size_t j=0;j<m_allChunks.size()-1;j++)
+  {
+    m_allChunks[j].id           = j;
+    m_allChunks[j].localAddress = uint64_t(table[j]);
+    m_allChunks[j].sizeInBytes  = table[j+1] - table[j];
+    
+    if(m_allChunks[j].localAddress == uint64_t(-1))
+      m_allChunks[j].pVB = nullptr;
+    else
+      m_allChunks[j].pVB = this;
+  }
+
+  auto last = m_allChunks.size()-1;
+  
+  m_allChunks[last].id           = last;
+  m_allChunks[last].localAddress = uint64_t(table[last]);
+  m_allChunks[last].sizeInBytes  = 0;
+  if(m_allChunks[last].localAddress == uint64_t(-1))
+    m_allChunks[last].pVB = nullptr;
+  else
+    m_allChunks[last].pVB = this;
 }
 
 void VirtualBuffer::Destroy()
@@ -140,6 +272,7 @@ void VirtualBuffer::Destroy()
   if (!gDebugMode)
   {
     munmap(m_data, m_totalSizeAllocated);
+    //if(m_owner)
     shm_unlink(shmemName.c_str());
     close(m_fileDescriptor);
   }
@@ -183,7 +316,20 @@ void* VirtualBuffer::AllocInCache(uint64_t a_sizeInBytes)
     
     if (a_sizeInBytes < maxAllowedSize) // swap old objects to disc and put a new object to free memory 
     {
+      if(m_pVBMutex!=nullptr)
+        hr_lock_system_mutex(m_pVBMutex, VB_LOCK_WAIT_TIME_MS);
+      
       RunCopyingCollector();
+      
+      int64_t* chunkTable = ChunksTablePtr(); // we need to clear table right after collector works, because old data is invalid!
+      if(chunkTable != nullptr)               // we can do better of cource here, but clearing should be enought to work corretcly
+      {
+        for(size_t i=0;i<size();i++)
+          chunkTable[i] = int64_t(-1);
+      }
+
+      if(m_pVBMutex!=nullptr)
+        hr_unlock_system_mutex(m_pVBMutex);
       return AllocInCacheNow(a_sizeInBytes);
     }
     else // this object is too big. We can not allocate memory here. Need to store it on disk.
@@ -199,7 +345,21 @@ void* VirtualBuffer::AllocInCache(uint64_t a_sizeInBytes)
     
     if (a_sizeInBytes < maxAllowedSize) // swap old objects to disc and put a new object to free memory 
     {
+      if(m_pVBMutex!=nullptr)
+        hr_lock_system_mutex(m_pVBMutex, VB_LOCK_WAIT_TIME_MS);
+      
       RunCollector(div);
+  
+      int64_t* chunkTable = ChunksTablePtr(); // we need to clear table right after collector works, because old data is invalid!
+      if(chunkTable != nullptr)               // we can do better of cource here, but clearing should be enought to work corretcly
+      {
+        for(size_t i=0;i<size();i++)
+          chunkTable[i] = int64_t(-1);
+      }
+      
+      if(m_pVBMutex!=nullptr)
+        hr_unlock_system_mutex(m_pVBMutex);
+
       return AllocInCacheNow(a_sizeInBytes);
     }
     else // this object is too big. We can not allocate memory here. Need to store it on disk.
@@ -375,18 +535,14 @@ void VirtualBuffer::RunCollector(int a_divisor)
 
   if (m_pTempBuffer->size() > maxAccumulatedMemory) // free unneccesary memory of tempBuffer it it was allocated previously too much
     (*m_pTempBuffer) = std::vector<int>();
+
+  m_currTop = top;
 }
 
 void VirtualBuffer::FlushToDisc()
 {
-  for (size_t i = 0; i < m_chunksIdInMemory.size(); i++)
-  {
-    size_t id = m_chunksIdInMemory[i];
+  for (size_t id : m_chunksIdInMemory)
     m_allChunks[id].SwapToDisk();
-  }
-
-  // m_chunksIdInMemory.clear();
-  // m_currTop = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -394,6 +550,18 @@ void VirtualBuffer::FlushToDisc()
 
 
 void* ChunkPointer::GetMemoryNow()
+{
+  if (InMemory())
+  {
+    return pVB->m_dataHalfCurr + localAddress;
+  }
+  else
+  {
+    return nullptr; // #TODO: Swap chunk to memory (m_tempBuffer) and get fucking pointer
+  }
+}
+
+const void* ChunkPointer::GetMemoryNow() const
 {
   if (InMemory())
   {
@@ -443,6 +611,9 @@ void ChunkPointer::SwapToDisk()
     return;
   }
 
+  if (wasSaved)
+    return;
+
   const std::wstring name = ChunkName(*this);
 #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
   std::wstring s1(name);
@@ -453,8 +624,7 @@ void ChunkPointer::SwapToDisk()
 #endif
   fout.write(pVB->m_dataHalfCurr + localAddress, sizeInBytes);
   fout.close();
-
-  // localAddress = -1;
+  wasSaved = true;
 }
 
 

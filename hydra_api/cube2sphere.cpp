@@ -76,9 +76,6 @@ namespace HRUtils
 
   static inline int4 bilinearOffsets(const float ffx, const float ffy, const int w, const int h)
   {
-    const int sx = (ffx > 0.0f) ? 1 : -1;
-    const int sy = (ffy > 0.0f) ? 1 : -1;
-
     const int px = (int)(ffx);
     const int py = (int)(ffy);
 

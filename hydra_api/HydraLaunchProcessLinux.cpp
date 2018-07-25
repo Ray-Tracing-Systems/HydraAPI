@@ -4,17 +4,17 @@
 
 #include <unistd.h>
 #include <spawn.h>
-#include <signal.h>
+#include <csignal>
 #include "HydraLegacyUtils.h"
 
 struct HydraProcessLauncher : IHydraNetPluginAPI
 {
-  HydraProcessLauncher(const char* imageFileName, int width, int height, const char* connectionType, std::ostream* m_pLog = nullptr);
+  HydraProcessLauncher(const char* imageFileName, int width, int height, const char* connectionType, std::ostream* a_pLog = nullptr);
   ~HydraProcessLauncher();
 
   bool hasConnection() const override;
 
-  void runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydraRenderDevice>& a_devList, const std::vector<int>& activeDevices) override;
+  void runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydraRenderDevice>& a_devList, const std::vector<int>& a_activeDevices, bool a_appendMode) override;
   void stopAllRenderProcesses() override;
 
 protected:
@@ -36,8 +36,6 @@ static std::ofstream g_logMain;
 
 IHydraNetPluginAPI* CreateHydraServerConnection(int renderWidth, int renderHeight, bool inMatEditor)
 {
-  static int m_matRenderTimes = 0;
-
   IHydraNetPluginAPI* pImpl = nullptr;
   long ticks = sysconf(_SC_CLK_TCK);
 
@@ -85,7 +83,6 @@ HydraProcessLauncher::~HydraProcessLauncher()
   stopAllRenderProcesses();
 }
 
-
 bool HydraProcessLauncher::hasConnection() const
 {
   return true;
@@ -93,21 +90,144 @@ bool HydraProcessLauncher::hasConnection() const
 
 #include <thread>
 
-void CreateProcessUnix(const char* exePath, const char* allArgs, const bool a_debug, std::ostream* a_pLog, std::vector<pid_t>& a_mdProcessList)
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include <vector>
+#include <string>
+#include <cstring>
+#include <algorithm>
+
+void CommandLineToArgv(const std::string& line, int a_maxArgs,
+                       int& argc, char** argv)
 {
-  std::string command = std::string(exePath) + " " + std::string(allArgs) + " &";
-  system(command.c_str());
+  typedef std::vector<char*> CharPtrVector;
+  char const * WHITESPACE_STR = " \n\r\t";
+  char const SPACE = ' ';
+  char const TAB = '\t';
+  char const DQUOTE = '\"';
+  char const SQUOTE = '\'';
+  char const TERM = '\0';
+  
+  //--------------------------------------------------------------------------
+  // Copy the command line string to a character array.
+  // strdup() uses malloc() to get memory for the new string.
+#if defined( WIN32 )
+  char * pLine = _strdup( line.c_str() );
+#else
+  char * pLine = strdup( line.c_str() );
+#endif
+  
+  //--------------------------------------------------------------------------
+  // Crawl the character array and tokenize in place.
+  CharPtrVector tokens;
+  char * pCursor = pLine;
+  while ( *pCursor )
+  {
+    // Whitespace.
+    if ( *pCursor == SPACE || *pCursor == TAB )
+      ++pCursor;
+    else if ( *pCursor == DQUOTE ) // Double quoted token.
+    {
+      // Begin of token is one char past the begin quote.
+      // Replace the quote with whitespace.
+      tokens.push_back( pCursor + 1 );
+      *pCursor = SPACE;
+      
+      char * pEnd = strchr( pCursor + 1, DQUOTE );
+      if ( pEnd )
+      {
+        // End of token is one char before the end quote.
+        // Replace the quote with terminator, and advance cursor.
+        *pEnd = TERM;
+        pCursor = pEnd + 1;
+      }
+      else
+      {
+        // End of token is end of line.
+        break;
+      }
+    }
+    // Single quoted token.
+    else if ( *pCursor == SQUOTE )
+    {
+      // Begin of token is one char past the begin quote.
+      // Replace the quote with whitespace.
+      tokens.push_back( pCursor + 1 );
+      *pCursor = SPACE;
+      
+      char * pEnd = strchr( pCursor + 1, SQUOTE );
+      if ( pEnd )
+      {
+        // End of token is one char before the end quote.
+        // Replace the quote with terminator, and advance cursor.
+        *pEnd = TERM;
+        pCursor = pEnd + 1;
+      }
+      else
+      {
+        // End of token is end of line.
+        break;
+      }
+    }
+    // Unquoted token.
+    else
+    {
+      // Begin of token is at cursor.
+      tokens.push_back( pCursor );
+      
+      char * pEnd = strpbrk( pCursor + 1, WHITESPACE_STR );
+      if ( pEnd )
+      {
+        // End of token is one char before the next whitespace.
+        // Replace whitespace with terminator, and advance cursor.
+        *pEnd = TERM;
+        pCursor = pEnd + 1;
+      }
+      else
+      {
+        // End of token is end of line.
+        break;
+      }
+    }
+  }
+  
+  //--------------------------------------------------------------------------
+  // Fill the argv array.
+  argc = std::min<int>(int(tokens.size()), a_maxArgs);
+  int a = 0;
+  for (CharPtrVector::const_iterator it = tokens.begin(); it != tokens.end(); ++it )
+    argv[a++] = (*it);
 }
 
-void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydraRenderDevice>& a_devList, const std::vector<int>& a_activeDevices)
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+int CreateProcessUnix(const char* exePath, const char* allArgs, const bool a_debug, std::ostream* a_pLog)
 {
-  const char* imageFileName = m_imageFileName.c_str();
+  //std::string command = std::string(exePath) + " " + std::string(allArgs) + " &";
+  //system(command.c_str());
+  
+  std::vector<char*> argv(256);
+  int argc = 0;
+  
+  argv[0] = (char*)exePath;
+  CommandLineToArgv(allArgs, 256,
+                    argc, argv.data() + 1);
+  
+  int pid = fork();
+  if(pid == 0)
+  {
+    execvp(exePath, argv.data());
+    exit(0);
+    return 0;
+  }
+  else
+    return pid;
+  
+}
 
-  int width = m_width;
-  int height = m_height;
-
-  //m_mdProcessList.resize(a_devList.size());
-
+void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydraRenderDevice>& a_devList, const std::vector<int>& a_activeDevices, bool a_appendMode)
+{
   if (m_connectionType == "main")
   {
     char user_name[L_cuserid];
@@ -131,17 +251,17 @@ void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params
       ss << a_params.customExeArgs.c_str();
       if(!a_params.customLogFold.empty())
         ss << " -logdir \"" << a_params.customLogFold.c_str() << "\" ";
-
-
+      
       std::string basicCmd = ss.str();
 
       m_hydraServerStarted = true;
       std::ofstream fout(hydraPath + "zcmd.txt");
-
-      for (size_t i = 0; i < a_activeDevices.size(); i++)
+  
+      if(!a_appendMode)
+        m_mdProcessList.resize(0);
+      
+      for (int devId : a_activeDevices)
       {
-        int devId = a_activeDevices[i];
-
         ss.str(std::string());
         ss << " -cl_device_id " << devId;
 
@@ -149,7 +269,7 @@ void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params
         std::string hydraExe(hydraPath + "hydra");
   
         if(!a_params.debug)
-          CreateProcessUnix(hydraExe.c_str(), cmdFull.c_str(), a_params.debug, m_pLog, m_mdProcessList);
+          m_mdProcessList.push_back(CreateProcessUnix(hydraExe.c_str(), cmdFull.c_str(), a_params.debug, m_pLog));
         fout << cmdFull.c_str() << std::endl;
       }
 
@@ -162,12 +282,14 @@ void HydraProcessLauncher::stopAllRenderProcesses()
 {
   if (m_hydraServerStarted)
   {
-    for (auto i = 0; i < m_mdProcessList.size(); i++)
+    for (auto pid : m_mdProcessList)
     {
-      if (m_mdProcessList[i] <= 0)
+      if (pid <= 0)
         continue;
 
-      kill(m_mdProcessList[i], SIGKILL);
+      kill(pid, SIGILL);
     }
+  
+    m_mdProcessList.resize(0);
   }
 }

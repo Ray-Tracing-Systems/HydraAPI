@@ -25,7 +25,7 @@ extern HRObjectManager   g_objManager;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-HAPI bool hrRenderGetFrameBufferHDR4f(const HRRenderRef a_pRender, int w, int h, float* imgData, const wchar_t* a_layerName) // (w,h) is strongly related to viewport size; return true if image was final  
+HAPI bool hrRenderGetFrameBufferHDR4f(HRRenderRef a_pRender, int w, int h, float* imgData, const wchar_t* a_layerName) // (w,h) is strongly related to viewport size; return true if image was final
 {
   HRRender* pRender = g_objManager.PtrById(a_pRender);
 
@@ -47,7 +47,7 @@ HAPI bool hrRenderGetFrameBufferHDR4f(const HRRenderRef a_pRender, int w, int h,
 }
 
 
-HAPI bool hrRenderGetFrameBufferLDR1i(const HRRenderRef a_pRender, int w, int h, int32_t* imgData)
+HAPI bool hrRenderGetFrameBufferLDR1i(HRRenderRef a_pRender, int w, int h, int32_t* imgData)
 {
   HRRender* pRender = g_objManager.PtrById(a_pRender);
 
@@ -68,7 +68,7 @@ HAPI bool hrRenderGetFrameBufferLDR1i(const HRRenderRef a_pRender, int w, int h,
   return true;
 }
 
-HAPI bool hrRenderGetFrameBufferLineHDR4f(const HRRenderRef a_pRender, int a_begin, int a_end, int a_y, float* imgData, const wchar_t* a_layerName)
+HAPI bool hrRenderGetFrameBufferLineHDR4f(HRRenderRef a_pRender, int a_begin, int a_end, int a_y, float* imgData, const wchar_t* a_layerName)
 {
   HRRender* pRender = g_objManager.PtrById(a_pRender);
 
@@ -94,7 +94,7 @@ HAPI bool hrRenderGetFrameBufferLineHDR4f(const HRRenderRef a_pRender, int a_beg
   return true;
 }
 
-HAPI bool hrRenderGetFrameBufferLineLDR1i(const HRRenderRef a_pRender, int a_begin, int a_end, int a_y, int32_t* imgData)
+HAPI bool hrRenderGetFrameBufferLineLDR1i(HRRenderRef a_pRender, int a_begin, int a_end, int a_y, int32_t* imgData)
 {
   HRRender* pRender = g_objManager.PtrById(a_pRender);
   if (pRender == nullptr)
@@ -122,7 +122,7 @@ HAPI bool hrRenderGetFrameBufferLineLDR1i(const HRRenderRef a_pRender, int a_beg
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-HAPI bool hrRenderSaveFrameBufferLDR(const HRRenderRef a_pRender, const wchar_t* a_outFileName)
+HAPI bool hrRenderSaveFrameBufferLDR(HRRenderRef a_pRender, const wchar_t* a_outFileName)
 {
   HRRender* pRender = g_objManager.PtrById(a_pRender);
 
@@ -163,7 +163,7 @@ HAPI bool hrRenderSaveFrameBufferLDR(const HRRenderRef a_pRender, const wchar_t*
   return true;
 }
 
-HAPI bool hrRenderSaveFrameBufferHDR(const HRRenderRef a_pRender, const wchar_t* a_outFileName)
+HAPI bool hrRenderSaveFrameBufferHDR(HRRenderRef a_pRender, const wchar_t* a_outFileName)
 {
   HRRender* pRender = g_objManager.PtrById(a_pRender);
 
@@ -204,7 +204,7 @@ HAPI bool hrRenderSaveFrameBufferHDR(const HRRenderRef a_pRender, const wchar_t*
   return true;
 }
 
-HAPI void hrRenderCommand(const HRRenderRef a_pRender, const wchar_t* a_command, wchar_t* a_answer)
+HAPI void hrRenderCommand(HRRenderRef a_pRender, const wchar_t* a_command, wchar_t* a_answer)
 {
   HRRender* pRender = g_objManager.PtrById(a_pRender);
 
@@ -231,7 +231,7 @@ HAPI void hrRenderCommand(const HRRenderRef a_pRender, const wchar_t* a_command,
 
 }
 
-HAPI void hrRenderLogDir(const HRRenderRef a_pRender, const wchar_t* a_logDir, bool a_hrRenderLogDir)
+HAPI void hrRenderLogDir(HRRenderRef a_pRender, const wchar_t* a_logDir, bool a_hrRenderLogDir)
 {
   HRRender* pRender = g_objManager.PtrById(a_pRender);
   if (pRender == nullptr)

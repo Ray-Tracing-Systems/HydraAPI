@@ -28,8 +28,8 @@ class IFilter2D
 {
 public:
 
-  IFilter2D() {}
-  virtual ~IFilter2D() { memset(m_msg, 0, sizeof(m_msg)); }
+  IFilter2D() {  memset(m_msg, 0, sizeof(m_msg)); }
+  virtual ~IFilter2D() = default;
 
   IFilter2D(IFilter2D&& a_rhs)      = delete;
   IFilter2D(const IFilter2D& a_rhs) = delete;

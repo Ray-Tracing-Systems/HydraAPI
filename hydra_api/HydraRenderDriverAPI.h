@@ -20,7 +20,7 @@
 */
 struct HRTexResInfo
 {
-  HRTexResInfo() : id(0), w(0), h(0), rw(0), rh(0), bpp(4), usedAsBump(false) {}
+  HRTexResInfo() : id(0), w(0), h(0), rw(0), rh(0), aw(0), ah(0), bpp(4), usedAsBump(false) {}
   int id;           ///< texture id
   int w;            ///< texture width
   int h;            ///< texture height
@@ -147,11 +147,8 @@ struct HRBatchInfo
 */
 struct IHRRenderDriver
 {
-  IHRRenderDriver() {}
-  virtual ~IHRRenderDriver() 
-  {
-
-  }
+  IHRRenderDriver()          = default;
+  virtual ~IHRRenderDriver() = default;
 
   virtual void              ClearAll()                         = 0; ///< clear everethyng insidide render engine (render driver)
   virtual HRDriverAllocInfo AllocAll(HRDriverAllocInfo a_info) = 0; ///< actual destructor, COM-like (!!!)
@@ -341,8 +338,8 @@ struct IHRRenderDriver
 
 protected:
 
-  IHRRenderDriver(const IHRRenderDriver& a_val) {}
-  IHRRenderDriver& operator=(const IHRRenderDriver& a_val) { return (*this); }
+  IHRRenderDriver(const IHRRenderDriver& a_val)            = delete;
+  IHRRenderDriver& operator=(const IHRRenderDriver& a_val) = delete;
 
   HR_INFO_CALLBACK m_pInfoCallBack;
 };
@@ -355,8 +352,6 @@ IHRRenderDriver* CreateOpenGL32Forward_RenderDriver();
 IHRRenderDriver* CreateOpenGL32Deferred_RenderDriver();
 
 IHRRenderDriver* CreateOpenGL3_Utilty_RenderDriver();
-
-static constexpr bool LEGACY_DRIVER_DEBUG = false;
 
 static constexpr uint32_t MAX_TEXTURE_RESOLUTION = 16384;
 

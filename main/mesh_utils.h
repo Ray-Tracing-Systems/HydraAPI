@@ -4,8 +4,7 @@
 
 struct SimpleMesh
 {
-  SimpleMesh(){}
-
+  SimpleMesh()                                  = default;
   SimpleMesh(SimpleMesh&& a_in)                 = default;
   SimpleMesh(const SimpleMesh& a_in)            = default;
   SimpleMesh& operator=(SimpleMesh&& a_in)      = default;

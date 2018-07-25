@@ -16,9 +16,9 @@
 struct SharedAccumImageLinux : public IHRSharedAccumImage
 {
   SharedAccumImageLinux();
-  ~SharedAccumImageLinux();
+  ~SharedAccumImageLinux() override;
 
-  bool   Create(int w, int h, int d, const char* name, char errMsg[256]) override;
+  bool   Create(int a_width, int a_height, int a_depth, const char* a_name, char a_errMsg[256]) override;
   bool   Attach(const char* name, char errMsg[256]) override;
 
   void Clear() override;
@@ -29,12 +29,12 @@ struct SharedAccumImageLinux : public IHRSharedAccumImage
   HRSharedBufferHeader* Header() override;
   char*   MessageSendData() override;
   char*   MessageRcvData() override;
-  float*  ImageData(int layerNum) override;
+  float*  ImageData(int layerId) override;
 
 private:
 
   void Free();
-  void AttachTo(char* memory);
+  void AttachTo(char* a_memory);
 
   int m_buffDescriptor;
   sem_t* m_mutex;
@@ -52,7 +52,8 @@ private:
   bool m_ownThisResource;
 };
 
-SharedAccumImageLinux::SharedAccumImageLinux() : m_buffDescriptor(0), m_mutex(NULL), m_memory(nullptr), m_msgSend(nullptr), m_msgRcv(nullptr), m_images(nullptr), m_ownThisResource(false)
+SharedAccumImageLinux::SharedAccumImageLinux() : m_buffDescriptor(0), m_mutex(nullptr), m_memory(nullptr), m_msgSend(nullptr), m_msgRcv(nullptr), m_images(nullptr),
+                                                 m_ownThisResource(false), totalSize(0)
 {
 
 }
@@ -65,10 +66,10 @@ SharedAccumImageLinux::~SharedAccumImageLinux()
 void SharedAccumImageLinux::Free()
 {
   sem_close(m_mutex);
-  if(m_ownThisResource)
-    sem_unlink(m_mutexName.c_str());
+  //if(m_ownThisResource)
+  sem_unlink(m_mutexName.c_str());
   
-  m_mutex = NULL;
+  m_mutex = nullptr;
 
   if (m_memory != nullptr)
     munmap(m_memory, totalSize);
@@ -78,8 +79,8 @@ void SharedAccumImageLinux::Free()
     close(m_buffDescriptor);
   m_buffDescriptor = -1;
   
-  if(m_ownThisResource)
-    shm_unlink(m_shmemName.c_str());
+  //if(m_ownThisResource)
+  shm_unlink(m_shmemName.c_str());
 
   m_msgSend = nullptr;
   m_msgRcv  = nullptr;
@@ -116,8 +117,7 @@ bool SharedAccumImageLinux::Create(int a_width, int a_height, int a_depth, const
     Free();
 
     m_mutex = sem_open (m_mutexName.c_str(), O_CREAT | O_EXCL, 0775, 1); //0775  | O_EXCL
-
-    if (m_mutex == NULL)
+    if (m_mutex == nullptr)
     {
       perror("sem_open");
       strcpy(a_errMsg, "FAILED to create mutex (shared_mutex_init)");
@@ -135,7 +135,6 @@ bool SharedAccumImageLinux::Create(int a_width, int a_height, int a_depth, const
     }
 
     m_memory = (char*)mmap(nullptr, totalSize + 1, PROT_READ | PROT_WRITE, MAP_SHARED, m_buffDescriptor, 0);
-
     if(m_memory == MAP_FAILED)
     {
       strcpy(a_errMsg, "FAILED to map shared memory (mmap)");
@@ -198,7 +197,7 @@ bool SharedAccumImageLinux::Attach(const char* name, char errMsg[256])
   m_shmemName = std::string(name);
 
   m_mutex = sem_open(m_mutexName.c_str(), 0);
-  if (m_mutex == NULL || m_mutex == SEM_FAILED)
+  if (m_mutex == nullptr || m_mutex == SEM_FAILED)
   {
     perror("sem_open");
     strcpy(errMsg, "FAILED to attach semaphore (sem_open)");
@@ -206,7 +205,6 @@ bool SharedAccumImageLinux::Attach(const char* name, char errMsg[256])
   }
 
   m_buffDescriptor = shm_open(m_shmemName.c_str(), O_RDWR, 0);
-
   if(m_buffDescriptor == -1)
   {
     perror("shm_open");
@@ -218,7 +216,6 @@ bool SharedAccumImageLinux::Attach(const char* name, char errMsg[256])
   totalSize = 0;
 
   m_memory = (char*)mmap(nullptr, totalSize + 1, PROT_READ | PROT_WRITE, MAP_SHARED, m_buffDescriptor, 0);
-
   if(m_memory == MAP_FAILED)
   {
     perror("mmap");
@@ -227,7 +224,7 @@ bool SharedAccumImageLinux::Attach(const char* name, char errMsg[256])
     return false;
   }
 
-  HRSharedBufferHeader* pHeader = (HRSharedBufferHeader*)m_memory;
+  auto* pHeader = (HRSharedBufferHeader*)m_memory;
 
   int a_width  = pHeader->width;
   int a_height = pHeader->height;
@@ -270,16 +267,16 @@ void SharedAccumImageLinux::Clear()
 
 void SharedAccumImageLinux::AttachTo(char* a_memory)
 {
-  HRSharedBufferHeader* pHeader = (HRSharedBufferHeader*)m_memory;
+  auto* pHeader = (HRSharedBufferHeader*)a_memory;
 
-  m_msgSend = m_memory + pHeader->messageSendOffset;
-  m_msgRcv  = m_memory + pHeader->messageRcvOffset;
-  m_images  = (float*)(m_memory + pHeader->imageDataOffset);
+  m_msgSend = a_memory + pHeader->messageSendOffset;
+  m_msgRcv  = a_memory + pHeader->messageRcvOffset;
+  m_images  = (float*)(a_memory + pHeader->imageDataOffset);
 }
 
 bool SharedAccumImageLinux::Lock(int a_miliseconds)
 {
-  struct timespec ts;
+  timespec ts;
   ts.tv_sec  = a_miliseconds / 1000;
   ts.tv_nsec = a_miliseconds * 1'000'000 - ts.tv_sec * 1'000'000'000;
 
@@ -304,7 +301,7 @@ void SharedAccumImageLinux::Unlock()
 
 float* SharedAccumImageLinux::ImageData(int layerId)
 {
-  HRSharedBufferHeader* pHeader = (HRSharedBufferHeader*)m_memory;
+  auto* pHeader = (HRSharedBufferHeader*)m_memory;
   return m_images + int64_t(pHeader->width*pHeader->height)*int64_t(layerId*4);
 }
 

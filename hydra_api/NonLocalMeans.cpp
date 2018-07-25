@@ -122,7 +122,7 @@ void NonLocalMeansGuidedTexNormDepthFilter(const HDRImage4f& inImage, const HDRI
   float windowArea = SQRF(2.0f * float(a_windowRadius) + 1.0f);
 
   int linesDone     = 0;
-  int linesDonePrev = 0;
+  //int linesDonePrev = 0;
 
   #pragma omp parallel for
   for (int y = 0; y < h; y++)
@@ -137,7 +137,7 @@ void NonLocalMeansGuidedTexNormDepthFilter(const HDRImage4f& inImage, const HDRI
 
       const float4 c0 = in_buff[y*w + x];
       const float4 n0 = nd_buff[y*w + x];
-      const float4 t0 = in_texc[y*w + x];
+      //const float4 t0 = in_texc[y*w + x];
 
       float ppSize = 1.0f*float(a_windowRadius)*projectedPixelSize(n0.w, m_fov, float(w), float(h));
 
@@ -154,7 +154,7 @@ void NonLocalMeansGuidedTexNormDepthFilter(const HDRImage4f& inImage, const HDRI
         {
           const float4 c1 = in_buff[y1*w + x1];
           const float4 n1 = nd_buff[y1*w + x1];
-          const float4 t1 = in_texc[y1*w + x1];
+          //const float4 t1 = in_texc[y1*w + x1];
 
           const int i = x1 - x;
           const int j = y1 - y;

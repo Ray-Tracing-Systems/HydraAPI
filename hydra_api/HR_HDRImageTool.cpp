@@ -32,7 +32,7 @@ static int HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* file
   fif = FreeImage_GetFileTypeU(filename, 0);
 #else
   char filename_s[256];
-  size_t len = wcstombs(filename_s, filename, sizeof(filename_s));
+  wcstombs(filename_s, filename, sizeof(filename_s));
   fif = FreeImage_GetFileType(filename_s, 0);
 #endif
 
@@ -85,7 +85,7 @@ static bool HRUtils_GetImageDataFromFreeImageObject(FIBITMAP* converted, char* d
   auto height = FreeImage_GetHeight(converted);
   auto bitsPerPixel = FreeImage_GetBPP(converted);
 
-  if ((bits == 0) || (width == 0) || (height == 0))
+  if (bits == nullptr || width == 0 || height == 0)
     return false;
 
   if (bitsPerPixel <= 32)
@@ -141,7 +141,7 @@ static void FreeImageErrorHandlerHydraInternal(FREE_IMAGE_FORMAT fif, const char
   std::wstringstream strOut;
   strOut << L"(FIF = " << fif << L")";
   const std::wstring wstr = std::wstring(L"[FreeImage ") + strOut.str() + std::wstring(L"]: ") + s2ws(message);
-  HrError(wstr.c_str());
+  HrError(wstr);
 }
 
 
@@ -158,10 +158,9 @@ bool HR_SaveHDRImageToFileHDR_WithFreeImage(const wchar_t* a_fileName, int w, in
   for (int i = 0; i < w*h; i++)
   {
     float4 src = data[i];
-    float3 dst;
-    dst.x = src.x*a_scale;
-    dst.y = src.y*a_scale;
-    dst.z = src.z*a_scale;
+    float3 dst = {src.x*a_scale,
+                  src.y*a_scale,
+                  src.z*a_scale};
     tempData[i] = dst;
   }
 
@@ -177,7 +176,7 @@ bool HR_SaveHDRImageToFileHDR_WithFreeImage(const wchar_t* a_fileName, int w, in
   if (!FreeImage_SaveU(FIF_HDR, dib, a_fileName))
   #else
   char filename_s[256];
-  size_t len = wcstombs(filename_s, a_fileName, sizeof(filename_s));
+  wcstombs(filename_s, a_fileName, sizeof(filename_s));
   if (!FreeImage_Save(FIF_HDR, dib, filename_s))
   #endif
   {
@@ -273,7 +272,7 @@ void HR_MyDebugSaveBMP(const wchar_t* fname, const int* pixels, int w, int h)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-std::wstring CutFileExt(const std::wstring fileName)
+std::wstring CutFileExt(const std::wstring& fileName)
 {
   auto pos = fileName.find_last_of(L".");
   if (pos == std::wstring::npos)
@@ -433,7 +432,7 @@ namespace HydraRender
     g_objManager.m_pImgTool->SaveLDRImageToFileLDR(a_fileName.c_str(), w, h, (const int*)data);
   }
 
-  void SaveImageToFile(const std::wstring& a_fileName, const HDRImage4f& image, const float a_gamma)
+  void SaveImageToFile(const std::wstring& a_fileName, const HDRImage4f& image, float a_gamma)
   {
     std::vector<unsigned int> ldrImageData(image.width()*image.height());
 
@@ -455,7 +454,7 @@ namespace HydraRender
     SaveImageToFile(a_fileName, image.width(), image.height(), &ldrImageData[0]);
   }
 
-  void SaveImageToFile(const std::string& a_fileName, const HDRImage4f& image, const float a_gamma)
+  void SaveImageToFile(const std::string& a_fileName, const HDRImage4f& image, float a_gamma)
   {
     const std::wstring fileNameW = s2ws(a_fileName);
     SaveImageToFile(fileNameW, image, a_gamma);
@@ -507,8 +506,7 @@ namespace HydraRender
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
+  
   class FreeImageTool : public IHRImageTool
   {
   public:
@@ -529,10 +527,27 @@ namespace HydraRender
     std::unique_ptr<InternalImageTool> m_pInternal;
 
   };
-
+  
+  class GentooFix_SaveBMP : public FreeImageTool
+  {
+  public:
+    void SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, const int*   a_data) override
+    {
+      auto fileExt = CutFileExt(a_fileName);
+      if(fileExt == L".bmp" || fileExt == L".BMP")
+        HR_MyDebugSaveBMP(a_fileName, a_data, w, h);
+      else
+        FreeImageTool::SaveLDRImageToFileLDR(a_fileName, w, h, a_data);
+    }
+  };
+  
   std::unique_ptr<IHRImageTool> CreateImageTool()
   {
+  #ifdef GENTOO_FIX_SAVE_BMP
+    return std::move(std::make_unique<GentooFix_SaveBMP>());
+  #else
     return std::move(std::make_unique<FreeImageTool>()); // C++ equals shit, std::unique_ptr equals shit
+  #endif
   }
 
  
@@ -556,8 +571,6 @@ namespace HydraRender
     FIBITMAP *dib(NULL), *converted(NULL);
     
     int bytesPerPixel = HRUtils_LoadImageFromFileToPairOfFreeImageObjects(a_fileName, dib, converted, &fif);
-    int bitsPerPixel  = bytesPerPixel * 8;
-    
     if (bytesPerPixel == 0)
     {
       HrError(L"FreeImage failed to load image: ", a_fileName);
@@ -646,12 +659,8 @@ namespace HydraRender
       return false;
     }
 
-    unsigned int bitsPerPixel = FreeImage_GetBPP(dib);
+    converted = FreeImage_ConvertToRGBF(dib);
 
-    int bytesPerPixel = 4;
-
-    converted     = FreeImage_ConvertToRGBF(dib);
-    bytesPerPixel = 16;
 
     bits   = FreeImage_GetBits(converted);
     width  = FreeImage_GetWidth(converted);
@@ -711,7 +720,7 @@ namespace HydraRender
       if (!FreeImage_SaveU(FIF_HDR, dib, a_fileName))
       #else
       char filename_s[256];
-      size_t len = wcstombs(filename_s, a_fileName, sizeof(filename_s));
+      wcstombs(filename_s, a_fileName, sizeof(filename_s));
       if (!FreeImage_Save(FIF_HDR, dib, filename_s))
       #endif
       {
@@ -759,7 +768,7 @@ namespace HydraRender
       if (!FreeImage_SaveU(imageFileFormat, dib, a_fileName))
       #else
       char filename_s[256];
-      size_t len = wcstombs(filename_s, a_fileName, sizeof(filename_s));
+      wcstombs(filename_s, a_fileName, sizeof(filename_s));
       if (!FreeImage_Save(imageFileFormat, dib, filename_s))
       #endif
       {

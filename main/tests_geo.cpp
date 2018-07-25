@@ -9,13 +9,13 @@
 #include <GLFW/glfw3.h>
 #pragma comment(lib, "glfw3dll.lib")
 #pragma comment(lib, "FreeImage.lib")
-
 #else
 #include <FreeImage.h>
 #include <GLFW/glfw3.h>
 #endif
 
 #include "mesh_utils.h"
+#include "simplerandom.h"
 
 #include "../hydra_api/HR_HDRImageTool.h"
 #include "../hydra_api/HydraXMLHelpers.h"
@@ -243,7 +243,7 @@ namespace GEO_TESTS
         glDrawPixels(TEST_IMG_SIZE, TEST_IMG_SIZE, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
-        std::cout << "rendering progress = " << info.progress << "% \r";
+        std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
         glfwSwapBuffers(g_window);
@@ -410,7 +410,7 @@ namespace GEO_TESTS
         glDrawPixels(TEST_IMG_SIZE, TEST_IMG_SIZE, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
-        std::cout << "rendering progress = " << info.progress << "% \r";
+        std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
         glfwSwapBuffers(g_window);
@@ -610,7 +610,7 @@ namespace GEO_TESTS
         glDrawPixels(TEST_IMG_SIZE, TEST_IMG_SIZE, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
-        std::cout << "rendering progress = " << info.progress << "% \r";
+        std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
         glfwSwapBuffers(g_window);
@@ -813,7 +813,7 @@ namespace GEO_TESTS
 
     hrMeshInstance(scnRef, planeRef, &matrixT2[0][0]);
 
-    srand(779);
+    auto rgen = simplerandom::RandomGenInit(878976);
 
     for (int i = -5; i <= 5; i++)
     {
@@ -827,12 +827,12 @@ namespace GEO_TESTS
         mat4x4_identity(mRes);
 
         mat4x4_translate(mTranslate, xCoord, 0.1f, yCoord);
-        mat4x4_rotate_X(mRot1, mRot1, rnd(0.0f, 360.0f)*DEG_TO_RAD);
-        mat4x4_rotate_Y(mRot1, mRot1, rnd(0.0f, 360.0f)*DEG_TO_RAD*0.5f);
+        mat4x4_rotate_X(mRot1, mRot1, simplerandom::rnd(rgen, 0.0f, 360.0f)*DEG_TO_RAD);
+        mat4x4_rotate_Y(mRot1, mRot1, simplerandom::rnd(rgen, 0.0f, 360.0f)*DEG_TO_RAD*0.5f);
         mat4x4_mul(mRes, mTranslate, mRot1);
         mat4x4_transpose(matrixT, mRes); // this fucking math library swap rows and columns
 
-        hrMeshInstance(scnRef, refs[rand() % 3], &matrixT[0][0]);
+        hrMeshInstance(scnRef, refs[simplerandom::rand(rgen) % 3], &matrixT[0][0]);
       }
     }
 
@@ -919,7 +919,7 @@ namespace GEO_TESTS
         glDrawPixels(TEST_IMG_SIZE, TEST_IMG_SIZE, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
-        std::cout << "rendering progress = " << info.progress << "% \r";
+        std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
         glfwSwapBuffers(g_window);
@@ -953,14 +953,14 @@ namespace GEO_TESTS
     // Materials
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    HRMaterialRef matGray = hrMaterialCreate(L"matGray");
-    HRMaterialRef matTrunk = hrMaterialCreate(L"Trunk");
+    HRMaterialRef matGray     = hrMaterialCreate(L"matGray");
+    HRMaterialRef matTrunk    = hrMaterialCreate(L"Trunk");
     HRMaterialRef matWigglers = hrMaterialCreate(L"Wigglers");
     HRMaterialRef matBranches = hrMaterialCreate(L"Branches");
     HRMaterialRef matPllarRts = hrMaterialCreate(L"PillarRoots");
-    HRMaterialRef matLeaves = hrMaterialCreate(L"Leaves");
-    HRMaterialRef matCanopy = hrMaterialCreate(L"Canopy");
-    HRMaterialRef matCube = hrMaterialCreate(L"CubeMap");
+    HRMaterialRef matLeaves   = hrMaterialCreate(L"Leaves");
+    HRMaterialRef matCanopy   = hrMaterialCreate(L"Canopy");
+    HRMaterialRef matCube     = hrMaterialCreate(L"CubeMap");
 
     hrMaterialOpen(matCube, HR_WRITE_DISCARD);
     {
@@ -1051,13 +1051,13 @@ namespace GEO_TESTS
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Meshes
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    HRMeshRef cubeR = HRMeshFromSimpleMesh(L"cubeR", CreateCube(2.0f), matCube.id);
-    HRMeshRef pillar = HRMeshFromSimpleMesh(L"pillar", CreateCube(1.0f), matGray.id);
-    HRMeshRef sphereG = HRMeshFromSimpleMesh(L"sphereG", CreateSphere(4.0f, 64), matTrunk.id);
-    HRMeshRef torusB = HRMeshFromSimpleMesh(L"torusB", CreateTorus(0.8f, 2.0f, 64, 64), matTrunk.id);
+    HRMeshRef cubeR    = HRMeshFromSimpleMesh(L"cubeR", CreateCube(2.0f), matCube.id);
+    HRMeshRef pillar   = HRMeshFromSimpleMesh(L"pillar", CreateCube(1.0f), matGray.id);
+    HRMeshRef sphereG  = HRMeshFromSimpleMesh(L"sphereG", CreateSphere(4.0f, 64), matTrunk.id);
+    HRMeshRef torusB   = HRMeshFromSimpleMesh(L"torusB", CreateTorus(0.8f, 2.0f, 64, 64), matTrunk.id);
     HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane", CreatePlane(10000.0f), matGray.id);
 
-    HRMeshRef treeRef = hrMeshCreateFromFileDL(L"data/meshes/bigtree.vsgf");
+    HRMeshRef treeRef  = hrMeshCreateFromFileDL(L"data/meshes/bigtree.vsgf");
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Light
@@ -1180,7 +1180,7 @@ namespace GEO_TESTS
 
     hrMeshInstance(scnRef, cubeR, mRes.L());
 
-    srand(1008);
+    auto rgen = simplerandom::RandomGenInit(125);
 
     {
       const float dist1 = 40.0f;
@@ -1190,12 +1190,12 @@ namespace GEO_TESTS
       {
         for (int j = -SQUARESIZE1; j < SQUARESIZE1; j++)
         {
-          const float2 randOffset = float2(HydraLiteMath::rnd(-1.0f, 1.0f), HydraLiteMath::rnd(-1.0f, 1.0f));
-          const float3 pos = dist1*float3(float(i), 0.0f, float(j)) + dist1*1.0f*float3(randOffset.x, 0.0f, randOffset.y);
+          const float2 randOffset = float2(simplerandom::rnd(rgen, -1.0f, 1.0f), simplerandom::rnd(rgen, -1.0f, 1.0f));
+          const float3 pos        = dist1*float3(float(i), 0.0f, float(j)) + dist1*1.0f*float3(randOffset.x, 0.0f, randOffset.y);
 
           mTranslate = translate4x4(float3(pos.x, 1.0f, pos.z));
-          mRot = rotate_Y_4x4(HydraLiteMath::rnd(-180.0f*DEG_TO_RAD, +180.0f*DEG_TO_RAD));
-          mRes = mul(mTranslate, mRot);
+          mRot       = rotate_Y_4x4(simplerandom::rnd(rgen, -180.0f*DEG_TO_RAD, +180.0f*DEG_TO_RAD));
+          mRes       = mul(mTranslate, mRot);
 
           hrMeshInstance(scnRef, cubeR, mRes.L());
         }
@@ -1211,15 +1211,15 @@ namespace GEO_TESTS
       {
         for (int j = -SQUARESIZE; j < SQUARESIZE; j++)
         {
-          const float2 randOffset = float2(HydraLiteMath::rnd(-1.0f, 1.0f), HydraLiteMath::rnd(-1.0f, 1.0f));
+          const float2 randOffset = float2(simplerandom::rnd(rgen, -1.0f, 1.0f), simplerandom::rnd(rgen, -1.0f, 1.0f));
           const float3 pos = dist*float3(float(i), 0.0f, float(j)) + dist*0.5f*float3(randOffset.x, 0.0f, randOffset.y);
 
           mTranslate = translate4x4(pos);
-          mScale = scale4x4(float3(5.0f, 5.0f, 5.0f));
-          mRot = rotate_Y_4x4(HydraLiteMath::rnd(-180.0f*DEG_TO_RAD, +180.0f*DEG_TO_RAD));
-          mRes = mul(mTranslate, mul(mRot, mScale));
+          mScale     = scale4x4(float3(5.0f, 5.0f, 5.0f));
+          mRot       = rotate_Y_4x4(simplerandom::rnd(rgen, -180.0f*DEG_TO_RAD, +180.0f*DEG_TO_RAD));
+          mRes       = mul(mTranslate, mul(mRot, mScale));
 
-          if ((HydraLiteMath::rnd(0.0f, 1.0f) > 0.5f))
+          if ((simplerandom::rnd(rgen, 0.0f, 1.0f) > 0.5f))
             hrMeshInstance(scnRef, treeRef, mRes.L());
         }
       }
@@ -1256,9 +1256,9 @@ namespace GEO_TESTS
     HRRenderRef renderRef = hrRenderCreate(L"HydraModern");
     hrRenderLogDir(renderRef, L"C:/[Hydra]/logs/", false);
 
-    hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
-    //hrRenderEnableDevice(renderRef, 0, true);
-    //hrRenderEnableDevice(renderRef, 1, true);
+    //hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
+    hrRenderEnableDevice(renderRef, 0, true);
+    hrRenderEnableDevice(renderRef, 1, true);
 
     hrRenderOpen(renderRef, HR_WRITE_DISCARD);
     {
@@ -1301,7 +1301,7 @@ namespace GEO_TESTS
         glDrawPixels(TEST_IMG_SIZE, TEST_IMG_SIZE, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
         auto pres = std::cout.precision(2);
-        std::cout << "rendering progress = " << info.progress << "% \r";
+        std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
         glfwSwapBuffers(g_window);

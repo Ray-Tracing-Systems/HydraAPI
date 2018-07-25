@@ -121,7 +121,7 @@ HAPI pugi::xml_node hrCameraParamNode(HRCameraRef a_camRef)
     return pugi::xml_node();
   }
 
-  return pCam->xml_node_next();
+  return pCam->xml_node_next(HR_OPEN_EXISTING);
 }
 
 HAPI HRCameraRef hrFindCameraByName(const wchar_t *a_cameraName)

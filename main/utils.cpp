@@ -1,11 +1,14 @@
 #include "tests.h"
-#include <math.h>
+#include <cmath>
+#include <cstring>
+
 #include <fstream>
 #include <vector>
-#include <string.h>
 #include <sstream>
-#include "../hydra_api/LiteMath.h"
 
+#include "simplerandom.h"
+
+#include "../hydra_api/LiteMath.h"
 #include "../hydra_api/HR_HDRImageTool.h"
 using HDRImage4f = HydraRender::HDRImage4f;
 using namespace HydraLiteMath;
@@ -74,12 +77,13 @@ namespace TEST_UTILS
   }
 
 
-  HRTextureNodeRef AddRandomTextureFromMemory(size_t& memTotal)
+  HRTextureNodeRef AddRandomTextureFromMemory(size_t& memTotal, simplerandom::RandomGen& rgen)
   {
-    int choice = rand() % 3;
+    
+    int choice = rand(rgen) % 3;
 
-    int w = rand() % 2048 + 1 + 128;
-    int h = rand() % 2048 + 1 + 128;
+    int w = rand(rgen) % 2048 + 1 + 128;
+    int h = rand(rgen) % 2048 + 1 + 128;
 
     if (choice == 0)      // add LDR texture
     {
@@ -251,10 +255,10 @@ namespace TEST_UTILS
     }
   }
 
-  HRTextureNodeRef CreateRandomStrippedTextureFromMemory(size_t& a_byteSize)
+  HRTextureNodeRef CreateRandomStrippedTextureFromMemory(size_t& a_byteSize, simplerandom::RandomGen& rgen)
   {
     int TXSZ = 1024;
-    int choice1 = rand() % 3;
+    int choice1 = simplerandom::rand(rgen) % 3;
     if (choice1 == 0)
     {
       a_byteSize += size_t(2048 * 2048 * 4);
@@ -271,7 +275,7 @@ namespace TEST_UTILS
       TXSZ = 1024;
     }
 
-    int choice = rand() % 10;
+    int choice = simplerandom::rand(rgen) % 10;
 
     if (choice == 0)
     {
@@ -346,23 +350,23 @@ namespace TEST_UTILS
   void CreateStripedImageFile(const char* a_fileName, unsigned int* a_colors, int a_stripsNum, int w, int h)
   {
     std::vector<unsigned int> imageData = CreateStripedImageData(a_colors, a_stripsNum, w, h);
-    HydraRender::SaveImageToFile(a_fileName, w, h, (unsigned int*)&imageData[0]);
+    HydraRender::SaveImageToFile(a_fileName, w, h, imageData.data());
   }
 
-  std::vector<HRMeshRef> CreateRandomMeshesArray(int a_size)
+  std::vector<HRMeshRef> CreateRandomMeshesArray(int a_size, simplerandom::RandomGen& rgen)
   {
     std::vector<HRMeshRef> meshes(a_size);
 
     for (size_t i = 0; i < meshes.size(); i++)
     {
-      int choice = rand() % 3;
+      int choice = simplerandom::rand(rgen) % 3;
 
       if (choice == 0)
-        meshes[i] = HRMeshFromSimpleMesh(L"my_cube", CreateCube(0.5f), rand() % 50);
+        meshes[i] = HRMeshFromSimpleMesh(L"my_cube", CreateCube(0.5f), simplerandom::rand(rgen) % 50);
       else if (choice == 1)
-        meshes[i] = HRMeshFromSimpleMesh(L"my_sphere", CreateSphere(0.5f, 128), rand() % 50);
+        meshes[i] = HRMeshFromSimpleMesh(L"my_sphere", CreateSphere(0.5f, 128), simplerandom::rand(rgen) % 50);
       else
-        meshes[i] = HRMeshFromSimpleMesh(L"my_torus2", CreateTorus(0.2f, 0.5f, 128, 128), rand() % 50);
+        meshes[i] = HRMeshFromSimpleMesh(L"my_torus2", CreateTorus(0.2f, 0.5f, 128, 128), simplerandom::rand(rgen) % 50);
 
       if (i % 20 == 0)
         std::cout << "[test_mbm]: MB, total meshes = " << i << "\r";

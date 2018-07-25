@@ -437,7 +437,7 @@ bool test64_several_changes_light_area()
       glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -485,7 +485,7 @@ bool test64_several_changes_light_area()
       glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -868,7 +868,7 @@ bool test65_several_changes_light_rect()
       glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -931,7 +931,7 @@ bool test65_several_changes_light_rect()
       glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -1040,7 +1040,7 @@ bool test65_several_changes_light_rect()
       glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -1262,7 +1262,7 @@ bool test66_fast_render_no_final_update()
       glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -1482,7 +1482,7 @@ bool test67_fast_empty_scene()
       glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -1920,7 +1920,7 @@ bool test96_save_temp_renders()
       hrRenderSaveFrameBufferLDR(renderRef, fileName.c_str());
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -2277,7 +2277,7 @@ bool test97_camera_from_matrices()
     if (info.haveUpdateFB)
     {
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
     }
 
@@ -2694,7 +2694,7 @@ bool test69_pause_and_resume()
       glDrawPixels(512, 384, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -2737,7 +2737,7 @@ bool test69_pause_and_resume()
       glDrawPixels(512, 384, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -3143,7 +3143,7 @@ bool test70_area_lights16()
       glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
@@ -3200,8 +3200,8 @@ bool test71_out_of_memory()
   hrMeshClose(cubeRef);
 
   const int texSize = numBytes / 16;
-  const int h       = int(sqrt(texSize));
-  const int w       = texSize / h;
+  const int h       = 2*int(sqrt(texSize));
+  const int w       = 2*texSize / h;
 
   //std::cout << "w = " << w << std::endl;
   //std::cout << "h = " << h << std::endl;

@@ -46,8 +46,8 @@ HRTextureNodeRef _hrTexture2DCreateFromNode(pugi::xml_node a_node)
   g_objManager.scnData.textures      [ref.id].update_this(a_node);
   g_objManager.scnData.m_textureCache[a_fileName2] = ref.id; // remember texture id for given file name
 
-  if (!std::wstring(a_chunkPath).empty())
-    texture.pImpl = g_objManager.m_pFactory->CreateTextureInfoFromChunkFile(&texture, a_chunkPath);
+  if (a_chunkPath != L"")
+    texture.pImpl = g_objManager.m_pFactory->CreateTextureInfoFromChunkFile(&texture, a_chunkPath, a_node);
 
   return ref;
 }
@@ -82,7 +82,6 @@ HAPI HRMeshRef _hrMeshCreateFromNode(pugi::xml_node a_node)
   mesh.name = std::wstring(a_objectName);
   mesh.id   = ref.id;
   g_objManager.scnData.meshes.push_back(mesh);
-
   g_objManager.scnData.meshes[ref.id].update_this(a_node);
   g_objManager.scnData.meshes[ref.id].id = ref.id;
 
@@ -318,6 +317,9 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
   g_objManager.scnData.clear();
   g_objManager.scnInst.clear();
 
+  if (g_objManager.m_attachMode)
+    HrPrint(HR_SEVERITY_INFO, L"HydraAPI, loading xml ... ");
+
   auto loadResult = g_objManager.scnData.m_xmlDoc.load_file(fileName.c_str());
 
   if (!loadResult)
@@ -326,11 +328,14 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
     return -1;
   }
 
-  g_objManager.scnData.init_existing(g_objManager.m_emptyVB);
+  if (g_objManager.m_attachMode)
+    HrPrint(HR_SEVERITY_INFO, L"HydraAPI, initialising virtual buffer");
+
+  g_objManager.scnData.init_existing(g_objManager.m_attachMode, g_objManager.m_pVBSysMutex);
 
   // (2) set change id to curr value
   //
-  g_objManager.scnData.changeId = stateId;
+  g_objManager.scnData.changeId   = stateId;
   g_objManager.scnData.m_commitId = stateId;
 
   // (3) load textures
@@ -340,6 +345,15 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
   g_objManager.scnData.lights.reserve(HRSceneData::LIGHTS_RESERVE);
   g_objManager.scnData.materials.reserve(HRSceneData::MATERIAL_RESERVE);
   g_objManager.scnData.cameras.reserve(HRSceneData::CAMERAS_RESERVE);
+
+  if (g_objManager.m_attachMode)
+    HrPrint(HR_SEVERITY_INFO, L"HydraAPI, before system mutex lock");
+
+  if(g_objManager.m_attachMode && g_objManager.m_pVBSysMutex != nullptr)
+    hr_lock_system_mutex(g_objManager.m_pVBSysMutex, VB_LOCK_WAIT_TIME_MS); // need to lock here because _hrMeshCreateFromNode may load data from virtual buffer
+  
+  if (g_objManager.m_attachMode)
+    HrPrint(HR_SEVERITY_INFO, L"HydraAPI, loading objects from xml ... ");
 
   for (pugi::xml_node node = g_objManager.scnData.m_texturesLib.first_child(); node != nullptr; node = node.next_sibling())
     _hrTexture2DCreateFromNode(node);
@@ -366,6 +380,11 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
 
   g_objManager.scnInst.resize(0);
   
+  if(g_objManager.m_attachMode && g_objManager.m_pVBSysMutex != nullptr)
+    hr_unlock_system_mutex(g_objManager.m_pVBSysMutex);
+
+  if (g_objManager.m_attachMode)
+    HrPrint(HR_SEVERITY_INFO, L"HydraAPI, generating instances");
 
   // (8) load instanced objects (i.e. scenes)
   //
@@ -403,11 +422,14 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
   for(pugi::xml_node renderSettings : g_objManager.scnData.m_settingsNode.children())
     _hrRenderSettingsFromNode(renderSettings);
 
-  // (10) load empty chunks to have correct chunk id for new objects
+  // (10) load empty chunks to have correct chunk id for new objects if we are not in 'attach mode'
   //
-  size_t chunks = size_t(g_objManager.scnData.m_geometryLib.attribute(L"total_chunks").as_llong());
-  g_objManager.scnData.m_vbCache.ResizeAndAllocEmptyChunks(chunks);
-
+  if(!g_objManager.m_attachMode)
+  {
+    size_t chunks = size_t(g_objManager.scnData.m_geometryLib.attribute(L"total_chunks").as_llong());
+    g_objManager.scnData.m_vbCache.ResizeAndAllocEmptyChunks(chunks);
+  }
+  
   return 0;
 }
 
@@ -438,7 +460,7 @@ void fixTextureIds(pugi::xml_node a_node, const std::wstring &a_libPath, const s
 }
 
 
-HRMaterialRef _hrMaterialMergeFromNode(pugi::xml_node a_node, const std::wstring &a_libPath, std::unordered_map<int32_t, int32_t> texIdUpdates,//int32_t numTexturesPreMerge,
+HRMaterialRef _hrMaterialMergeFromNode(pugi::xml_node a_node, const std::wstring &a_libPath, const std::unordered_map<int32_t, int32_t>& texIdUpdates,//int32_t numTexturesPreMerge,
                                        int32_t numMaterialsPreMerge, bool mergeDependencies = false, bool forceMerge = false)
 {
   const wchar_t* a_objectName = a_node.attribute(L"name").as_string();
@@ -640,7 +662,7 @@ void _hrInstanceMergeFromNode(HRSceneInstRef a_scn, pugi::xml_node a_node, int32
   if(mergeLights && nodeName == std::wstring(L"instance_light"))
   {
     int light_id = a_node.attribute(L"light_id").as_int();
-    int lgroup_id = a_node.attribute(L"lgroup_id").as_int();
+    //int lgroup_id = a_node.attribute(L"lgroup_id").as_int();
 
     HRLightRef ref;
     ref.id = light_id + numLightsPreMerge;
@@ -699,11 +721,11 @@ HRSceneInstRef HRUtils::MergeLibraryIntoLibrary(const wchar_t* a_libPath, bool m
     return mergedScn;
   }
 
-  auto numTexturesPreMerge  = int32_t(g_objManager.scnData.textures.size());
+  //auto numTexturesPreMerge  = int32_t(g_objManager.scnData.textures.size());
   auto numMaterialsPreMerge = int32_t(g_objManager.scnData.materials.size());
   auto numMeshesPreMerge  = int32_t(g_objManager.scnData.meshes.size());
   int32_t numLightsPreMerge = 0;
-  int32_t newTexturesMerged = 0;
+  //int32_t newTexturesMerged = 0;
 
   std::unordered_map<int32_t, int32_t> texIdUpdates;
 
@@ -796,7 +818,7 @@ HRTextureNodeRef HRUtils::MergeOneTextureIntoLibrary(const wchar_t* a_libPath, c
     return ref;
   }
 
-  auto numTexturesPreMerge = int32_t(g_objManager.scnData.textures.size());
+  //auto numTexturesPreMerge = int32_t(g_objManager.scnData.textures.size());
 
   for (pugi::xml_node node = docToMerge.child(L"textures_lib").first_child(); node != nullptr; node = node.next_sibling())
   {
@@ -837,7 +859,7 @@ HRMaterialRef HRUtils::MergeOneMaterialIntoLibrary(const wchar_t* a_libPath, con
     return ref;
   }
 
-  auto numTexturesPreMerge = int32_t(g_objManager.scnData.textures.size());
+  //auto numTexturesPreMerge = int32_t(g_objManager.scnData.textures.size());
   auto numMaterialsPreMerge = int32_t(g_objManager.scnData.materials.size());
 
   std::unordered_map<int32_t, int32_t> texIdsUpdate;
@@ -920,7 +942,7 @@ HRLightRef HRUtils::MergeOneLightIntoLibrary(const wchar_t* a_libPath, const wch
     return ref;
   }
 
-  auto numTexturesPreMerge = int32_t(g_objManager.scnData.textures.size());
+  //auto numTexturesPreMerge = int32_t(g_objManager.scnData.textures.size());
 
   std::unordered_map<int32_t, int32_t> texIdsUpdate;
 

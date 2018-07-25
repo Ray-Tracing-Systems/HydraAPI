@@ -20,7 +20,7 @@ namespace HydraVerify
 			std::wcout << a_msg << L"\nfile: " << a_file << L", line: " << a_line << std::endl << std::endl;
 	}
 
-  bool VerifyXMLParameter(const pugi::xml_node a_node, const char* a_file, int a_line)
+  bool VerifyXMLParameter(pugi::xml_node a_node, const char* a_file, int a_line)
   {
     const std::wstring tagName = a_node.name();
     //const std::wstring objType = a_node.attribute(L"type").as_string();
@@ -44,7 +44,7 @@ namespace HydraVerify
     }
   }
 
-	bool VerifyXMLParameter(const pugi::xml_node a_node, const wchar_t* a_file, int a_line)
+	bool VerifyXMLParameter(pugi::xml_node a_node, const wchar_t* a_file, int a_line)
 	{
 		const std::wstring tagName = a_node.name();
 		//const std::wstring objType = a_node.attribute(L"type").as_string();
@@ -65,7 +65,7 @@ namespace HydraVerify
 		}
 	}
 
-	static const std::wstring ObjectInfo(const pugi::xml_node a_node)
+	static const std::wstring ObjectInfo(pugi::xml_node a_node)
 	{
 		const std::wstring tagName = a_node.name();
 		const std::wstring id = a_node.attribute(L"id").as_string();
@@ -86,7 +86,7 @@ namespace HydraVerify
 		return std::isfinite(data[0]) && std::isfinite(data[1]) && std::isfinite(data[2]);
 	}
 
-	static bool VerifyHydraLightIntensity(const pugi::xml_node a_node, const wchar_t* a_file, int a_line)
+	static bool VerifyHydraLightIntensity(pugi::xml_node a_node, const wchar_t* a_file, int a_line)
 	{
 		const std::wstring ltype = a_node.attribute(L"type").as_string();
 		const std::wstring shape = a_node.attribute(L"shape").as_string();
@@ -112,7 +112,7 @@ namespace HydraVerify
 		return true;
 	}
 
-	bool VerifyLight(const pugi::xml_node a_node, const wchar_t* a_file, int a_line)
+	bool VerifyLight(pugi::xml_node a_node, const wchar_t* a_file, int a_line)
 	{
 		const std::wstring ltype = a_node.attribute(L"type").as_string();
 		const std::wstring shape = a_node.attribute(L"shape").as_string();
@@ -286,7 +286,7 @@ namespace HydraVerify
 	}
 
 	
-	static bool CheckColor(const pugi::xml_node a_node, const pugi::xml_node a_component, const wchar_t* a_file, int a_line)
+	static bool CheckColor(pugi::xml_node a_node, pugi::xml_node a_component, const wchar_t* a_file, int a_line)
 	{
 		if (a_component == nullptr)
 			return true;
@@ -313,7 +313,7 @@ namespace HydraVerify
 	}
 
 
-	bool VerifyMaterial(const pugi::xml_node a_node, const wchar_t* a_file, int a_line)
+	bool VerifyMaterial(pugi::xml_node a_node, const wchar_t* a_file, int a_line)
 	{
 		const std::wstring mtype = a_node.attribute(L"type").as_string();
 
@@ -343,7 +343,7 @@ namespace HydraVerify
 	}
 
 
-	static void CheckChildNotNull(const pugi::xml_node a_node, const wchar_t* a_str, const wchar_t* a_file, int a_line)
+	static void CheckChildNotNull(pugi::xml_node a_node, const wchar_t* a_str, const wchar_t* a_file, int a_line)
 	{
 		pugi::xml_node child = a_node.child(a_str);
 
@@ -355,7 +355,7 @@ namespace HydraVerify
 
 	}
 
-	static void CheckFloat3Val(const pugi::xml_node a_node, const wchar_t* a_str, const wchar_t* a_file, int a_line)
+	static void CheckFloat3Val(pugi::xml_node a_node, const wchar_t* a_str, const wchar_t* a_file, int a_line)
 	{
 		pugi::xml_node child = a_node.child(a_str);
 		if (child == nullptr)
@@ -371,7 +371,7 @@ namespace HydraVerify
 	}
 
 
-	bool VerifyCamera(const pugi::xml_node a_node, const wchar_t* a_file, int a_line)
+	bool VerifyCamera(pugi::xml_node a_node, const wchar_t* a_file, int a_line)
 	{
 		const std::wstring camType = a_node.attribute(L"type").as_string();
 		
@@ -399,7 +399,7 @@ namespace HydraVerify
 		return true;
 	}
 
-	bool VerifySettings(const pugi::xml_node a_node, const wchar_t* a_file, int a_line)
+	bool VerifySettings(pugi::xml_node a_node, const wchar_t* a_file, int a_line)
 	{
 		const std::wstring rtype = a_node.attribute(L"type").as_string();
 

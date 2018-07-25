@@ -19,8 +19,8 @@ class IFilter2DSpecial
 {
 public:
 
-  IFilter2DSpecial() {}
-  virtual ~IFilter2DSpecial() { }
+  IFilter2DSpecial()          = default;
+  virtual ~IFilter2DSpecial() = default;
 
   IFilter2DSpecial(IFilter2DSpecial&& a_rhs)      = delete;
   IFilter2DSpecial(const IFilter2DSpecial& a_rhs) = delete;

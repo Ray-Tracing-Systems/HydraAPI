@@ -46,9 +46,8 @@ bool meshHasDisplacementMat(HRMeshRef a_mesh, pugi::xml_node &displaceXMLNode)
   HRMesh::InputTriMesh &mesh = pMesh->m_input;
 
   std::set<int32_t> uniqueMatIndices;
-  for(int i=0;i<mesh.matIndices.size();i++)
+  for(auto mI : mesh.matIndices)
   {
-    auto mI  = mesh.matIndices[i];
     auto ins = uniqueMatIndices.insert(mI);
     if (ins.second)
     {
@@ -57,7 +56,7 @@ bool meshHasDisplacementMat(HRMeshRef a_mesh, pugi::xml_node &displaceXMLNode)
       auto mat = g_objManager.PtrById(tmpRef);
       if (mat != nullptr)
       {
-        auto d_node = mat->xml_node_next().child(L"displacement");
+        auto d_node = mat->xml_node_next(HR_OPEN_EXISTING).child(L"displacement");
 
         if (d_node.attribute(L"type").as_string() == std::wstring(L"true_displacement"))
         {
@@ -99,7 +98,7 @@ void hrMeshDisplace(HRMeshRef a_mesh)
       auto mat = g_objManager.PtrById(tmpRef);
       if(mat != nullptr)
       {
-        auto d_node = mat->xml_node_next().child(L"displacement");
+        auto d_node = mat->xml_node_next(HR_OPEN_EXISTING).child(L"displacement");
 
         if (d_node != nullptr &&
             std::wstring(d_node.attribute(L"type").as_string()) == std::wstring(L"true_displacement"))
@@ -144,7 +143,7 @@ void hrMeshDisplace(HRMeshRef a_mesh)
 
 float smoothing_coeff(uint32_t valence)
 {
-  return (4.0f - 2.0f * cosf(float(2.0f * 3.14159265358979323846f) / valence )) / 9.0f;
+  return (4.0f - 2.0f * cosf((2.0f * 3.14159265358979323846f) / valence )) / 9.0f;
 }
 
 std::vector<uint32_t> find_vertex_neighbours(int vertex_index, const HRMesh::InputTriMesh& mesh)
@@ -315,11 +314,11 @@ void hrMeshSubdivideSqrt3(HRMeshRef a_mesh, int a_iterations)
 
     uint32_t face_num = 0;
     //insert middle point
-    for (int i = 0; i < mesh.triIndices.size(); i += 3)
+    for (int j = 0; j < mesh.triIndices.size(); j += 3)
     {
-      uint32_t indA = mesh.triIndices[i + 0];
-      uint32_t indB = mesh.triIndices[i + 1];
-      uint32_t indC = mesh.triIndices[i + 2];
+      uint32_t indA = mesh.triIndices[j + 0];
+      uint32_t indB = mesh.triIndices[j + 1];
+      uint32_t indC = mesh.triIndices[j + 2];
 
       addEdge(indA, indB, face_num, edgeToTris);
       addEdge(indB, indC, face_num, edgeToTris);
@@ -410,37 +409,30 @@ void hrMeshSubdivideSqrt3(HRMeshRef a_mesh, int a_iterations)
     std::vector<float> tangent_new(old_vertex_count * 4, 0.0f);
     std::vector<float> uv_new(old_vertex_count * 2, 0.0f);
 
-    for (uint32_t i = 0; i < old_vertex_count; ++i)
+    for (uint32_t k = 0; k < old_vertex_count; ++k)
     {
       float4 pos;
       float4 normal;
       float4 tangent;
       float2 uv;
 
-      smooth_common_vertex_attributes(i, mesh, pos, normal, tangent, uv);
+      smooth_common_vertex_attributes(k, mesh, pos, normal, tangent, uv);
 
-      update_vertex_attrib_by_index_f4(pos, i, pos_new);
-      update_vertex_attrib_by_index_f4(normal, i, normal_new);
-      update_vertex_attrib_by_index_f4(tangent, i, tangent_new);
-      update_vertex_attrib_by_index_f2(uv, i, uv_new);
+      update_vertex_attrib_by_index_f4(pos, k, pos_new);
+      update_vertex_attrib_by_index_f4(normal, k, normal_new);
+      update_vertex_attrib_by_index_f4(tangent, k, tangent_new);
+      update_vertex_attrib_by_index_f2(uv, k, uv_new);
     }
 
-    for (int i = 0; i < pos_new.size(); ++i)
+    for (int ii = 0; ii < pos_new.size(); ++ii)
     {
-      mesh.verticesPos.at(i) = pos_new.at(i);
-      mesh.verticesNorm.at(i) = normal_new.at(i);
-      mesh.verticesTangent.at(i) = tangent_new.at(i);
+      mesh.verticesPos.at(ii)     = pos_new.at(ii);
+      mesh.verticesNorm.at(ii)    = normal_new.at(ii);
+      mesh.verticesTangent.at(ii) = tangent_new.at(ii);
 
-      if (i < pos_new.size() / 2)
-      {
-        mesh.verticesTexCoord.at(i) = uv_new.at(i);
-      }
+      if (ii < pos_new.size() / 2)
+        mesh.verticesTexCoord.at(ii) = uv_new.at(ii);
     }
-/*
-  std::copy(pos_new.begin(), pos_new.end(), mesh.verticesPos.begin());
-  std::copy(normal_new.begin(), normal_new.end(), mesh.verticesNorm.begin());
-  std::copy(tangent_new.begin(), tangent_new.end(), mesh.verticesTangent.begin());
-  std::copy(uv_new.begin(), uv_new.end(), mesh.verticesTexCoord.begin());*/
 
     mesh.triIndices = indices;
     mesh.matIndices = mat_indices;

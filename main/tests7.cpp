@@ -106,8 +106,8 @@ bool test42_load_library_basic()
 
   auto timeBeg = std::chrono::system_clock::now();
   
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
+  glViewport(0, 0, 1024, 1024);
+  std::vector<int32_t> image(1024 * 1024);
 
   while (true)
   {
@@ -117,10 +117,10 @@ bool test42_load_library_basic()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 1024, &image[0]);
       
       glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+      glDrawPixels(1024, 1024, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
@@ -311,7 +311,7 @@ bool test43_test_direct_light()
 
   hrMeshInstance(scnRef, planeRef, &matrixT2[0][0]);
 
-  srand(779);
+  auto rgen = simplerandom::RandomGenInit(12368754);
 
   for (int i = -5; i <= 5; i++)
   {
@@ -325,12 +325,12 @@ bool test43_test_direct_light()
       mat4x4_identity(mRes);
 
       mat4x4_translate(mTranslate, xCoord, 0.1f, yCoord);
-      mat4x4_rotate_X(mRot1, mRot1, rnd(0.0f, 360.0f)*DEG_TO_RAD);
-      mat4x4_rotate_Y(mRot1, mRot1, rnd(0.0f, 360.0f)*DEG_TO_RAD*0.5f);
+      mat4x4_rotate_X(mRot1, mRot1, simplerandom::rnd(rgen, 0.0f, 360.0f)*DEG_TO_RAD);
+      mat4x4_rotate_Y(mRot1, mRot1, simplerandom::rnd(rgen, 0.0f, 360.0f)*DEG_TO_RAD*0.5f);
       mat4x4_mul(mRes, mTranslate, mRot1);
       mat4x4_transpose(matrixT, mRes); // this fucking math library swap rows and columns
 
-      hrMeshInstance(scnRef, refs[rand() % 3], &matrixT[0][0]);
+      hrMeshInstance(scnRef, refs[simplerandom::rand(rgen) % 3], &matrixT[0][0]);
     }
   }
 
@@ -371,8 +371,8 @@ bool test43_test_direct_light()
   {
     pugi::xml_node node = hrRenderParamNode(renderRef);
 
-    node.append_child(L"width").text()  = L"1024";
-    node.append_child(L"height").text() = L"768";
+    node.append_child(L"width").text()  = 512;
+    node.append_child(L"height").text() = 512;
 
     node.append_child(L"method_primary").text()   = L"pathtracing";
     node.append_child(L"method_secondary").text() = L"pathtracing";
@@ -382,9 +382,6 @@ bool test43_test_direct_light()
 
     node.append_child(L"trace_depth").text()      = L"5";
     node.append_child(L"diff_trace_depth").text() = L"3";
-
-    node.append_child(L"pt_error").text()         = L"2";
-    node.append_child(L"minRaysPerPixel").text()  = L"256";
     node.append_child(L"maxRaysPerPixel").text()  = L"1024";
 
   }
@@ -395,8 +392,8 @@ bool test43_test_direct_light()
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
+  glViewport(0, 0, 512, 512);
+  std::vector<int32_t> image(512 * 512);
 
   while(true)
   {
@@ -406,13 +403,13 @@ bool test43_test_direct_light()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
       glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);

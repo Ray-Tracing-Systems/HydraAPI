@@ -137,7 +137,6 @@ namespace LGHT_TESTS
 
     float4x4 mRot;
     float4x4 mTranslate;
-    float4x4 mScale;
     float4x4 mRes;
 
     const float DEG_TO_RAD = 0.01745329251f; // float(3.14159265358979323846f) / 180.0f;
@@ -362,7 +361,6 @@ namespace LGHT_TESTS
 
     float4x4 mRot;
     float4x4 mTranslate;
-    float4x4 mScale;
     float4x4 mRes;
 
     const float DEG_TO_RAD = 0.01745329251f; // float(3.14159265358979323846f) / 180.0f;
@@ -555,7 +553,6 @@ namespace LGHT_TESTS
 
     float4x4 mRot;
     float4x4 mTranslate;
-    float4x4 mScale;
     float4x4 mRes;
 
     const float DEG_TO_RAD = 0.01745329251f; // float(3.14159265358979323846f) / 180.0f;
@@ -747,7 +744,6 @@ namespace LGHT_TESTS
 
     float4x4 mRot;
     float4x4 mTranslate;
-    float4x4 mScale;
     float4x4 mRes;
 
     const float DEG_TO_RAD = 0.01745329251f; // float(3.14159265358979323846f) / 180.0f;
@@ -942,7 +938,6 @@ namespace LGHT_TESTS
 
     float4x4 mRot;
     float4x4 mTranslate;
-    float4x4 mScale;
     float4x4 mRes;
 
     const float DEG_TO_RAD = 0.01745329251f; // float(3.14159265358979323846f) / 180.0f;
@@ -1458,7 +1453,6 @@ namespace LGHT_TESTS
 
     float4x4 mRot;
     float4x4 mTranslate;
-    float4x4 mScale;
     float4x4 mRes;
 
     const float DEG_TO_RAD = 0.01745329251f; // float(3.14159265358979323846f) / 180.0f;
@@ -1742,7 +1736,6 @@ namespace LGHT_TESTS
 
     float4x4 mRot;
     float4x4 mTranslate;
-    float4x4 mScale;
     float4x4 mRes;
 
     const float DEG_TO_RAD = 0.01745329251f; // float(3.14159265358979323846f) / 180.0f;
@@ -1943,7 +1936,6 @@ namespace LGHT_TESTS
 
     float4x4 mRot;
     float4x4 mTranslate;
-    float4x4 mScale;
     float4x4 mRes;
 
     const float DEG_TO_RAD = 0.01745329251f; // float(3.14159265358979323846f) / 180.0f;
@@ -2211,7 +2203,7 @@ namespace LGHT_TESTS
 
     using namespace HydraLiteMath;
 
-    float4x4 mRot, mRot2;
+    float4x4 mRot;
     float4x4 mTranslate;
     float4x4 mScale;
     float4x4 mRes;
@@ -2500,7 +2492,6 @@ namespace LGHT_TESTS
 
     float4x4 mRot;
     float4x4 mTranslate;
-    float4x4 mScale;
     float4x4 mRes;
 
     const float DEG_TO_RAD = 0.01745329251f; // float(3.14159265358979323846f) / 180.0f;

@@ -22,6 +22,7 @@
 #endif
 
 #include "mesh_utils.h"
+#include "simplerandom.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -242,12 +243,13 @@ bool test24_many_textures_big_data()
   textures[9] = hrTexture2DCreateFromFile(L"data/textures_gen/texture_big_z07.png");
   
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  srand(777);
+  
+  auto rgen = simplerandom::RandomGenInit(777);
+  
   size_t memTotal = 0;
   for (int i = 0; i < 500; i++)
   {
-    HRTextureNodeRef texRef = AddRandomTextureFromMemory(memTotal);
+    HRTextureNodeRef texRef = AddRandomTextureFromMemory(memTotal, rgen);
   
     if (i % 20 == 0)
       std::cout << "[test_mbg]: total mem = " << memTotal / size_t(1024 * 1024) << " MB, total textures = " << i << "\r";
@@ -318,12 +320,9 @@ bool test24_many_textures_big_data()
   hrRenderOpen(settingsRef, HR_WRITE_DISCARD);
   {
     pugi::xml_node node = hrRenderParamNode(settingsRef);
-
-    wchar_t temp[256];
-    swprintf(temp, 256, L"%d", 1024);
-    node.append_child(L"width").text().set(temp);
-    swprintf(temp, 256, L"%d", 768);
-    node.append_child(L"height").text().set(temp);
+    
+    node.append_child(L"width").text()  = 512;
+    node.append_child(L"height").text() = 512;
   }
   hrRenderClose(settingsRef);
 
@@ -508,12 +507,9 @@ bool test25_many_textures_big_data()
   hrRenderOpen(settingsRef, HR_WRITE_DISCARD);
   {
     pugi::xml_node node = hrRenderParamNode(settingsRef);
-
-    wchar_t temp[256];
-    swprintf(temp, 256, L"%d", 1024);
-    node.append_child(L"width").text().set(temp);
-    swprintf(temp, 256, L"%d", 768);
-    node.append_child(L"height").text().set(temp);
+    
+    node.append_child(L"width").text()  = 512;
+    node.append_child(L"height").text() = 512;
   }
   hrRenderClose(settingsRef);
 
@@ -698,12 +694,9 @@ bool test26_many_textures_big_data()
   hrRenderOpen(settingsRef, HR_WRITE_DISCARD);
   {
     pugi::xml_node node = hrRenderParamNode(settingsRef);
-
-    wchar_t temp[256];
-    swprintf(temp, 256, L"%d", 1024);
-    node.append_child(L"width").text().set(temp);
-    swprintf(temp, 256, L"%d", 768);
-    node.append_child(L"height").text().set(temp);
+    
+    node.append_child(L"width").text()  = 512;
+    node.append_child(L"height").text() = 512;
   }
   hrRenderClose(settingsRef);
 
@@ -815,12 +808,13 @@ bool test27_many_textures_big_data_from_mem()
   const int NMats = 20;
 
   HRTextureNodeRef textures[NMats];
-  srand(777);
+ 
+  auto rgen = simplerandom::RandomGenInit(768756);
 
   size_t memTotal = 0;
   for (int i = 0; i < 500; i++)
   {
-    HRTextureNodeRef texRef = CreateRandomStrippedTextureFromMemory(memTotal);
+    HRTextureNodeRef texRef = CreateRandomStrippedTextureFromMemory(memTotal, rgen);
     
     if (i < NMats)
       textures[i] = texRef;
@@ -853,17 +847,16 @@ bool test27_many_textures_big_data_from_mem()
 
   // geometry
   //
-  srand(888);
-
-  HRMeshRef cubeRef  = HRMeshFromSimpleMesh(L"my_cube",    CreateCube(0.5f), rand()%20);
+  
+  HRMeshRef cubeRef  = HRMeshFromSimpleMesh(L"my_cube",    CreateCube(0.5f), simplerandom::rand(rgen)%20);
                                                            
-  HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane",   CreatePlane(2.0f), rand() % 20);
-  HRMeshRef sphRef   = HRMeshFromSimpleMesh(L"my_sphere",  CreateSphere(0.5f, 32), rand()%20);
-  HRMeshRef torRef   = HRMeshFromSimpleMesh(L"my_torus",   CreateTorus(0.2f, 0.5f, 32, 32), rand()%20);
+  HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane",   CreatePlane(2.0f), simplerandom::rand(rgen) % 20);
+  HRMeshRef sphRef   = HRMeshFromSimpleMesh(L"my_sphere",  CreateSphere(0.5f, 32), simplerandom::rand(rgen)%20);
+  HRMeshRef torRef   = HRMeshFromSimpleMesh(L"my_torus",   CreateTorus(0.2f, 0.5f, 32, 32), simplerandom::rand(rgen)%20);
 
   HRMeshRef cubeRef2 = HRMeshFromSimpleMesh(L"my_cube2",   CreateCube(0.5f), 8);
   HRMeshRef sphRef2  = HRMeshFromSimpleMesh(L"my_sphere2", CreateSphere(0.5f, 32), 15);
-  HRMeshRef torRef2  = HRMeshFromSimpleMesh(L"my_torus2",  CreateTorus(0.2f, 0.5f, 32, 32), rand()%20);
+  HRMeshRef torRef2  = HRMeshFromSimpleMesh(L"my_torus2",  CreateTorus(0.2f, 0.5f, 32, 32), simplerandom::rand(rgen)%20);
 
   // camera
   //
@@ -890,12 +883,9 @@ bool test27_many_textures_big_data_from_mem()
   hrRenderOpen(settingsRef, HR_WRITE_DISCARD);
   {
     pugi::xml_node node = hrRenderParamNode(settingsRef);
-
-    wchar_t temp[256];
-    swprintf(temp, 256, L"%d", 1024);
-    node.append_child(L"width").text().set(temp);
-    swprintf(temp, 256, L"%d", 768);
-    node.append_child(L"height").text().set(temp);
+    
+    node.append_child(L"width").text()  = 512;
+    node.append_child(L"height").text() = 512;
   }
   hrRenderClose(settingsRef);
 
@@ -1007,12 +997,13 @@ bool test29_many_textures_and_meshes()
   const int NMats = 100;
 
   HRTextureNodeRef textures[NMats];
-  srand(123);
-
+  
+  auto rgen = simplerandom::RandomGenInit(123);
+  
   size_t memTotal = 0;
   for (int i = 0; i < 300; i++)
   {
-    HRTextureNodeRef texRef = CreateRandomStrippedTextureFromMemory(memTotal);
+    HRTextureNodeRef texRef = CreateRandomStrippedTextureFromMemory(memTotal, rgen);
 
     if (i < NMats)
       textures[i] = texRef;
@@ -1044,20 +1035,10 @@ bool test29_many_textures_and_meshes()
 
   // geometry
   //
-  srand(456);
-
-  HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane", CreatePlane(2.0f), rand() % 20);
-
-  std::vector<HRMeshRef> meshes = CreateRandomMeshesArray(1000);
   
-  // HRMeshRef cubeRef  = HRMeshFromSimpleMesh(L"my_cube",  CreateCube(0.5f), rand() % 20);
-  // 
-  // HRMeshRef sphRef   = HRMeshFromSimpleMesh(L"my_sphere", CreateSphere(0.5f, 32), rand() % 20);
-  // HRMeshRef torRef   = HRMeshFromSimpleMesh(L"my_torus",  CreateTorus(0.2f, 0.5f, 32, 32), rand() % 20);
-  // 
-  // HRMeshRef cubeRef2 = HRMeshFromSimpleMesh(L"my_cube2",   CreateCube(0.5f), 8);
-  // HRMeshRef sphRef2  = HRMeshFromSimpleMesh(L"my_sphere2", CreateSphere(0.5f, 32), 15);
-  // HRMeshRef torRef2  = HRMeshFromSimpleMesh(L"my_torus2",  CreateTorus(0.2f, 0.5f, 32, 32), rand() % 20);
+  HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane", CreatePlane(2.0f), simplerandom::rand(rgen) % 20);
+
+  std::vector<HRMeshRef> meshes = CreateRandomMeshesArray(1000, rgen);
 
   // camera
   //
@@ -1084,12 +1065,9 @@ bool test29_many_textures_and_meshes()
   hrRenderOpen(settingsRef, HR_WRITE_DISCARD);
   {
     pugi::xml_node node = hrRenderParamNode(settingsRef);
-
-    wchar_t temp[256];
-    swprintf(temp, 256, L"%d", 1024);
-    node.append_child(L"width").text().set(temp);
-    swprintf(temp, 256, L"%d", 768);
-    node.append_child(L"height").text().set(temp);
+    
+    node.append_child(L"width").text()  = 512;
+    node.append_child(L"height").text() = 512;
   }
   hrRenderClose(settingsRef);
 
@@ -1176,15 +1154,16 @@ bool test29_many_textures_and_meshes()
   {
     hrMeshInstance(scnRef, planeRef, &matrixT2[0][0]);
 
-    hrMeshInstance(scnRef, meshes[rand() % (meshes.size() / 2)], &matrixT[0][0]);
-    hrMeshInstance(scnRef, meshes[rand() % (meshes.size() / 2)], &matrixT3[0][0]);
-    hrMeshInstance(scnRef, meshes[rand() % (meshes.size() / 2)], &matrixT4[0][0]);
+    hrMeshInstance(scnRef, meshes[simplerandom::rand(rgen) % (meshes.size() / 2)], &matrixT[0][0]);
+    hrMeshInstance(scnRef, meshes[simplerandom::rand(rgen) % (meshes.size() / 2)], &matrixT3[0][0]);
+    hrMeshInstance(scnRef, meshes[simplerandom::rand(rgen) % (meshes.size() / 2)], &matrixT4[0][0]);
 
-    hrMeshInstance(scnRef, meshes[rand() % (meshes.size() / 2)], &matrixT5[0][0]);
-    hrMeshInstance(scnRef, meshes[rand() % (meshes.size() / 2)], &matrixT6[0][0]);
-    hrMeshInstance(scnRef, meshes[rand() % (meshes.size() / 2)], &matrixT7[0][0]);
+    hrMeshInstance(scnRef, meshes[simplerandom::rand(rgen) % (meshes.size() / 2)], &matrixT5[0][0]);
+    hrMeshInstance(scnRef, meshes[simplerandom::rand(rgen) % (meshes.size() / 2)], &matrixT6[0][0]);
+    hrMeshInstance(scnRef, meshes[simplerandom::rand(rgen) % (meshes.size() / 2)], &matrixT7[0][0]);
   }
   hrSceneClose(scnRef);
+
 
   hrFlush(scnRef, settingsRef);
   hrRenderSaveFrameBufferLDR(settingsRef, L"tests_images/test_29/z_out.png");
@@ -1201,12 +1180,13 @@ bool test30_many_textures_and_meshes()
   const int NMats = 100;
 
   HRTextureNodeRef textures[NMats];
-  srand(123);
 
+  auto rgen = simplerandom::RandomGenInit(123);
+  
   size_t memTotal = 0;
   for (int i = 0; i < 300; i++)
   {
-    HRTextureNodeRef texRef = CreateRandomStrippedTextureFromMemory(memTotal);
+    HRTextureNodeRef texRef = CreateRandomStrippedTextureFromMemory(memTotal, rgen);
 
     if (i < NMats)
       textures[i] = texRef;
@@ -1238,20 +1218,9 @@ bool test30_many_textures_and_meshes()
 
   // geometry
   //
-  srand(457);
+  HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane", CreatePlane(2.0f), simplerandom::rand(rgen) % 20);
 
-  HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane", CreatePlane(2.0f), rand() % 20);
-
-  std::vector<HRMeshRef> meshes = CreateRandomMeshesArray(600);
-
-  // HRMeshRef cubeRef  = HRMeshFromSimpleMesh(L"my_cube",  CreateCube(0.5f), rand() % 20);
-  // 
-  // HRMeshRef sphRef   = HRMeshFromSimpleMesh(L"my_sphere", CreateSphere(0.5f, 32), rand() % 20);
-  // HRMeshRef torRef   = HRMeshFromSimpleMesh(L"my_torus",  CreateTorus(0.2f, 0.5f, 32, 32), rand() % 20);
-  // 
-  // HRMeshRef cubeRef2 = HRMeshFromSimpleMesh(L"my_cube2",   CreateCube(0.5f), 8);
-  // HRMeshRef sphRef2  = HRMeshFromSimpleMesh(L"my_sphere2", CreateSphere(0.5f, 32), 15);
-  // HRMeshRef torRef2  = HRMeshFromSimpleMesh(L"my_torus2",  CreateTorus(0.2f, 0.5f, 32, 32), rand() % 20);
+  std::vector<HRMeshRef> meshes = CreateRandomMeshesArray(600, rgen);
 
   // camera
   //
@@ -1278,12 +1247,9 @@ bool test30_many_textures_and_meshes()
   hrRenderOpen(settingsRef, HR_WRITE_DISCARD);
   {
     pugi::xml_node node = hrRenderParamNode(settingsRef);
-
-    wchar_t temp[256];
-    swprintf(temp, 256, L"%d", 1024);
-    node.append_child(L"width").text().set(temp);
-    swprintf(temp, 256, L"%d", 768);
-    node.append_child(L"height").text().set(temp);
+    
+    node.append_child(L"width").text()  = 512;
+    node.append_child(L"height").text() = 512;
   }
   hrRenderClose(settingsRef);
 
@@ -1362,21 +1328,21 @@ bool test30_many_textures_and_meshes()
   mat4x4_mul(mRes, mTranslate, mRot1);
   mat4x4_transpose(matrixT7, mRes); // this fucking math library swap rows and columns
 
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
   // draw scene
   //
   hrSceneOpen(scnRef, HR_WRITE_DISCARD);
   {
     hrMeshInstance(scnRef, planeRef, &matrixT2[0][0]);
 
-    hrMeshInstance(scnRef, meshes[rand() % (meshes.size() / 2)], &matrixT[0][0]);
-    hrMeshInstance(scnRef, meshes[rand() % (meshes.size() / 2)], &matrixT3[0][0]);
-    hrMeshInstance(scnRef, meshes[rand() % (meshes.size() / 2)], &matrixT4[0][0]);
+    hrMeshInstance(scnRef, meshes[simplerandom::rand(rgen) % (meshes.size() / 2)], &matrixT[0][0]);
+    hrMeshInstance(scnRef, meshes[simplerandom::rand(rgen) % (meshes.size() / 2)], &matrixT3[0][0]);
+    hrMeshInstance(scnRef, meshes[simplerandom::rand(rgen) % (meshes.size() / 2)], &matrixT4[0][0]);
 
-    hrMeshInstance(scnRef, meshes[rand() % (meshes.size() / 2)], &matrixT5[0][0]);
-    hrMeshInstance(scnRef, meshes[rand() % (meshes.size() / 2)], &matrixT6[0][0]);
-    hrMeshInstance(scnRef, meshes[rand() % (meshes.size() / 2)], &matrixT7[0][0]);
+    hrMeshInstance(scnRef, meshes[simplerandom::rand(rgen) % (meshes.size() / 2)], &matrixT5[0][0]);
+    hrMeshInstance(scnRef, meshes[simplerandom::rand(rgen) % (meshes.size() / 2)], &matrixT6[0][0]);
+    hrMeshInstance(scnRef, meshes[simplerandom::rand(rgen) % (meshes.size() / 2)], &matrixT7[0][0]);
   }
   hrSceneClose(scnRef);
 
