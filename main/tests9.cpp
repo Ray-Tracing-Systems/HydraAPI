@@ -216,33 +216,20 @@ bool test98_motion_blur()
   
   input.libpath = L"/home/frol/PROG/HydraNLM/data/scenelib_anim";
   
-  input.allStates.push_back(L"statex_00001.xml");
-  input.allStates.push_back(L"statex_00003.xml");
-  input.allStates.push_back(L"statex_00005.xml");
-  input.allStates.push_back(L"statex_00007.xml");
-  
-  input.allStates.push_back(L"statex_00009.xml");
-  input.allStates.push_back(L"statex_00011.xml");
-  input.allStates.push_back(L"statex_00013.xml");
-  input.allStates.push_back(L"statex_00015.xml");
-  
-  input.allStates.push_back(L"statex_00017.xml");
-  input.allStates.push_back(L"statex_00019.xml");
-  input.allStates.push_back(L"statex_00021.xml");
-  input.allStates.push_back(L"statex_00023.xml");
-  
-  input.allStates.push_back(L"statex_00025.xml");
-  input.allStates.push_back(L"statex_00027.xml");
-  input.allStates.push_back(L"statex_00029.xml");
-  input.allStates.push_back(L"statex_00031.xml");
+  for(int i=1;i<33;i+=2)
+  {
+    std::wstringstream namestream;
+    namestream  << std::fixed << L"statex_" << std::setfill(L"0"[0]) << std::setw(5) << i << L".xml";
+    input.allStates.push_back(namestream.str());
+  }
   
   input.devList.push_back(0);
   input.devList.push_back(1);
-  input.subFramesNum        = 2;
+  input.subFramesNum        = int(input.devList.size()); // #TODO: change this! Currently, it is the only condition when motion blur will work.
   input.outLogsFolder       = L"/home/frol/hydra/";
   input.outImageName        = L"tests_images/test_98/car_";
-  input.outFrameStartNumber = 0;
-  input.samplePerSubFrame   = 64;
+  input.samplePerSubFrame   = 256;
+  input.outFrameStartNumber = 200;
   
   RenderAnimationWithMotionBlur(input);
   
