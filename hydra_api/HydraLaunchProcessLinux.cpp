@@ -228,6 +228,8 @@ int CreateProcessUnix(const char* exePath, const char* allArgs, const bool a_deb
 
 void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydraRenderDevice>& a_devList, const std::vector<int>& a_activeDevices, bool a_appendMode)
 {
+  signal(SIGCHLD, SIG_IGN); // Silently (and portably) reap children
+  
   if (m_connectionType == "main")
   {
     char user_name[L_cuserid];

@@ -1,9 +1,14 @@
 #include <iostream>
 #include <vector>
-//#include <zconf.h>
 
 #include "../hydra_api/HydraAPI.h"
 #include "tests.h"
+
+#ifdef WIN32
+#include <windows.h>
+#else
+
+#endif
 
 using pugi::xml_node;
 
@@ -60,6 +65,7 @@ void test_gl32_002_draw(void);
 
 void _hrDebugPrintVSGF(const wchar_t* a_fileNameIn, const wchar_t* a_fileNameOut);
 
+
 int main(int argc, const char** argv)
 {
   hrInit(L"-copy_textures_to_local_folder 0 -local_data_path 1 -sort_indices 1 -compute_bboxes 1");
@@ -86,7 +92,7 @@ int main(int argc, const char** argv)
     std::cout << "getcwd() error" <<std::endl;
 
   std::cout << sizeof(size_t) <<std::endl;
-
+  
 #endif
   
   try
@@ -97,8 +103,8 @@ int main(int argc, const char** argv)
     // run_all_mtl_tests();
     // run_all_ipp_tests();
   
-    //test39_mesh_from_vsgf();
-    //test42_load_library_basic(); // push test into compact
+    // test39_mesh_from_vsgf();
+    // test42_load_library_basic(); // push test into compact
     test98_motion_blur();
     
     //std::cout << PP_TESTS::test303_median_in_place() << std::endl;
