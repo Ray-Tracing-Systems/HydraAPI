@@ -1110,6 +1110,7 @@ void EstimateMemHungryLights(const ChangeList& a_objList, bool* pIsHDR, int* pHu
   (*pEnvSize)            = int(envMemAmount);
 }
 
+bool g_hydraApiDisableSceneLoadInfo = false;
 
 /////
 //
@@ -1198,13 +1199,13 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
   HR_DriverUpdateCamera(scn, a_pDriver);
   HR_DriverUpdateSettings(scn, a_pDriver);
 
-  if(g_objManager.m_attachMode)
+  if(g_objManager.m_attachMode && !g_hydraApiDisableSceneLoadInfo)
     HrPrint(HR_SEVERITY_INFO, L"HydraAPI, loading textures ... ");
   
   int32_t updatedTextures  = HR_DriverUpdateTextures (scn, objList, a_pDriver);
   int32_t updatedMaterials = HR_DriverUpdateMaterials(scn, objList, a_pDriver);
   
-  if(g_objManager.m_attachMode)
+  if(g_objManager.m_attachMode && !g_hydraApiDisableSceneLoadInfo)
     HrPrint(HR_SEVERITY_INFO, L"HydraAPI, loading meshes   ... ");
   
   int32_t updatedMeshes    = HR_DriverUpdateMeshes   (scn, objList, a_pDriver);
@@ -1215,7 +1216,7 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
   if(g_objManager.m_attachMode && g_objManager.m_pVBSysMutex != nullptr)
     hr_unlock_system_mutex(g_objManager.m_pVBSysMutex);
   
-  if(g_objManager.m_attachMode)
+  if(g_objManager.m_attachMode && !g_hydraApiDisableSceneLoadInfo)
     HrPrint(HR_SEVERITY_INFO, L"HydraAPI, begin scene ");
   
   const auto dInfo = a_pDriver->DependencyInfo();
@@ -1244,7 +1245,7 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
   auto timeEnd  = std::chrono::system_clock::now();
   auto msPassed = std::chrono::duration_cast<std::chrono::milliseconds>(timeEnd - timeBeg).count();
   
-  if(g_objManager.m_attachMode)
+  if(g_objManager.m_attachMode && !g_hydraApiDisableSceneLoadInfo)
     HrPrint(HR_SEVERITY_INFO, L"HydraAPI, end scene; total load time = ", float(msPassed)/1000.0f, " s");
   
   // reset dirty flag; now we don't need to Update the scene to driver untill this flag changes or
