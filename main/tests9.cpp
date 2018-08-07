@@ -244,8 +244,48 @@ bool test98_motion_blur()
   return false;
 }
 
+/*
+ *
+bool test98_motion_blur()
+{
+  MotionBlurInputParams input;
+  
+  input.libpath = L"/home/frol/PROG/HydraNLM/data/scenelib_anim";
+  
+  // for(int i=1;i<=;i++)
+  // {
+  //   std::wstringstream namestream;
+  //   namestream  << std::fixed << L"statex_" << std::setfill(L"0"[0]) << std::setw(5) << i << L".xml";
+  //   input.allStates.push_back(namestream.str());
+  // }
+  
+  input.allStates.push_back(L"statex_00001.xml");
+  input.allStates.push_back(L"statex_00009.xml");
+  
+  input.devList.push_back(0);
+  input.devList.push_back(1);
+
+  
+  input.subFramesNum           = int(input.devList.size()); // #TODO: change this! Currently, it is the only condition when motion blur will work.
+  input.outLogsFolder          = L"/home/frol/hydra/";
+  input.outImageName           = L"/home/frol/PROG/HydraAPI/main/tests_images/test_98";
+  input.samplePerSubFrame      = 32;
+  input.outFrameStartNumber    = 1;
+  
+  RenderAnimationWithMotionBlur(input);
+  
+  return false;
+}
+
+ 
+ */
+
+
 
 /*
+
+
+
 bool test98_motion_blur()
 {
   hrErrorCallerPlace(L"test_98");
