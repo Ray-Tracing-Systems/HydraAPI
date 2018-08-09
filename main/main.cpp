@@ -126,13 +126,12 @@ int main(int argc, const char** argv)
   
   try
   {
-    run_all_api_tests(82);
+    //run_all_api_tests(82);
 	  // run_all_geo_tests();
     // run_all_lgt_tests();
     // run_all_mtl_tests();
     // run_all_ipp_tests();
 
-    // std::cout << test84_proc_texture2() << std::endl;
     // std::cout << test41_load_library_basic() << std::endl;
   
     //std::cout << test82_proc_texture()  << std::endl;
@@ -142,8 +141,9 @@ int main(int argc, const char** argv)
     //std::cout << test40_several_changes() << std::endl;
   
     //std::cout << test71_out_of_memory() << std::endl;
-    
-    //test38_licence_plate();
+
+    test84_proc_texture2();
+
     //std::cout << test39_mesh_from_vsgf() << std::endl;
     //window_main_free_look(L"tests_f/test_167", L"opengl1Debug");
 
