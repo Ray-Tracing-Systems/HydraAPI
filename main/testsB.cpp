@@ -927,8 +927,8 @@ bool test84_proc_texture2()
   //
   HRTextureNodeRef texBitmap1 = hrTexture2DCreateFromFile(L"data/textures/texture1.bmp");
   HRTextureNodeRef texBitmap2 = hrTexture2DCreateFromFile(L"data/textures/300px-Bump2.jpg");
-  HRTextureNodeRef texProc    = hrTextureCreateAdvanced(L"proc", L"my_custom_falloff");
-  HRTextureNodeRef texProc2   = hrTextureCreateAdvanced(L"proc", L"my_show_normals");
+  HRTextureNodeRef texProc    = hrTextureCreateAdvanced(L"proc", L"my_mult");
+  HRTextureNodeRef texProc2   = hrTextureCreateAdvanced(L"proc", L"my_falloff");
 
   hrTextureNodeOpen(texProc, HR_WRITE_DISCARD);
   {
