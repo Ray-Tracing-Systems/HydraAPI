@@ -98,7 +98,7 @@ struct PerlinNoise
                              lerp(u, grad(p[AB + 1], x, y - 1, z - 1),
                                   grad(p[BB + 1], x - 1, y - 1, z - 1))));
 
-      return normalize01(res, -1, 1);
+      return normalize01(res, 0, 1);
     }
 
     float octave(float x, float y, float z, int octaves, float base_frequency, float persistence, float lacunarity)
@@ -225,10 +225,10 @@ float sampleNoise(pugi::xml_node noiseXMLNode, float3 attrib)
   {
     auto base_freq   = noiseXMLNode.attribute(L"base_freq").as_float();
     auto num_octaves = noiseXMLNode.attribute(L"octaves").as_int();
-    auto persistance = noiseXMLNode.attribute(L"persistance").as_float();
+    auto persistence = noiseXMLNode.attribute(L"persistence").as_float();
     auto lacunarity  = noiseXMLNode.attribute(L"lacunarity").as_float();
 
-    return pn.octave(attrib.x, attrib.y, attrib.z, num_octaves, base_freq, persistance, lacunarity);
+    return pn.octave(attrib.x, attrib.y, attrib.z, num_octaves, base_freq, persistence, lacunarity);
 
   }
   else

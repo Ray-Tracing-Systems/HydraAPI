@@ -526,47 +526,59 @@ void displaceByNoise(HRMesh *pMesh, const pugi::xml_node &noiseXMLNode, std::vec
   HRMesh::InputTriMesh &mesh = pMesh->m_input;
 
   float mult = noiseXMLNode.attribute(L"amount").as_float();
+  float noise_scale = noiseXMLNode.attribute(L"scale").as_float();
 
-  float3 texHeight(0.0f, 0.0f, 0.0f);
   std::set<uint32_t > displaced_indices;
-  // #pragma omp parallel for
-  for(int i=0;i<triangleList.size();i++)
+
+  float4x4 scale_pos = scale4x4(make_float3(noise_scale, noise_scale, noise_scale));
+
+
+  for(int i = 0; i < triangleList.size(); i++)
   {
     const auto& tri = triangleList[i];
 
-    float3 attrib1 = make_float3(vertex_attrib_by_index_f4("pos", tri.x, mesh));
-    float3 attrib2 = make_float3(vertex_attrib_by_index_f4("pos", tri.y, mesh));
-    float3 attrib3 = make_float3(vertex_attrib_by_index_f4("pos", tri.z, mesh));
+    float3 attrib1 = mul3x3(scale_pos, make_float3(vertex_attrib_by_index_f4("pos", tri.x, mesh)));
+    float3 attrib2 = mul3x3(scale_pos, make_float3(vertex_attrib_by_index_f4("pos", tri.y, mesh)));
+    float3 attrib3 = mul3x3(scale_pos, make_float3(vertex_attrib_by_index_f4("pos", tri.z, mesh)));
 
+    float3 offset = float3(10.0f, 10.0f, 10.0f);
+    
+    float3 texHeight(0.0f, 0.0f, 0.0f);
     auto ins = displaced_indices.insert(tri.x);
     if(ins.second)
     {
-      texHeight.x = sampleNoise(noiseXMLNode, attrib1);
+      texHeight.x = sampleNoise(noiseXMLNode, attrib1 + offset);
+      if (texHeight.x < 0.85) texHeight.x = 0.0f;
     }
 
     ins = displaced_indices.insert(tri.y);
     if(ins.second)
     {
-      texHeight.y = sampleNoise(noiseXMLNode, attrib2);
+      texHeight.y = sampleNoise(noiseXMLNode, attrib2 + offset);
+      if (texHeight.y < 0.85) texHeight.y = 0.0f;
     }
 
     ins = displaced_indices.insert(tri.z);
     if(ins.second)
     {
-      texHeight.z = sampleNoise(noiseXMLNode, attrib3);
+      texHeight.z = sampleNoise(noiseXMLNode, attrib3 + offset);
+      if (texHeight.z < 0.85) texHeight.z = 0.0f;
     }
 
-    mesh.verticesPos.at(tri.x * 4 + 0) += mesh.verticesNorm.at(tri.x * 4 + 0) * mult * texHeight.x;
-    mesh.verticesPos.at(tri.x * 4 + 1) += mesh.verticesNorm.at(tri.x * 4 + 1) * mult * texHeight.x;
-    mesh.verticesPos.at(tri.x * 4 + 2) += mesh.verticesNorm.at(tri.x * 4 + 2) * mult * texHeight.x;
+    auto normalX = vertex_attrib_by_index_f4("normal", tri.x, mesh);
+    mesh.verticesPos.at(tri.x * 4 + 0) += normalX.x * mult * texHeight.x;
+    mesh.verticesPos.at(tri.x * 4 + 1) += normalX.y * mult * texHeight.x;
+    mesh.verticesPos.at(tri.x * 4 + 2) += normalX.z * mult * texHeight.x;
 
-    mesh.verticesPos.at(tri.y * 4 + 0) += mesh.verticesNorm.at(tri.y * 4 + 0) * mult * texHeight.y;
-    mesh.verticesPos.at(tri.y * 4 + 1) += mesh.verticesNorm.at(tri.y * 4 + 1) * mult * texHeight.y;
-    mesh.verticesPos.at(tri.y * 4 + 2) += mesh.verticesNorm.at(tri.y * 4 + 2) * mult * texHeight.y;
+    auto normalY = vertex_attrib_by_index_f4("normal", tri.y, mesh);
+    mesh.verticesPos.at(tri.y * 4 + 0) += normalY.x * mult * texHeight.y;
+    mesh.verticesPos.at(tri.y * 4 + 1) += normalY.y * mult * texHeight.y;
+    mesh.verticesPos.at(tri.y * 4 + 2) += normalY.z * mult * texHeight.y;
 
-    mesh.verticesPos.at(tri.z * 4 + 0) += mesh.verticesNorm.at(tri.z * 4 + 0) * mult * texHeight.z;
-    mesh.verticesPos.at(tri.z * 4 + 1) += mesh.verticesNorm.at(tri.z * 4 + 1) * mult * texHeight.z;
-    mesh.verticesPos.at(tri.z * 4 + 2) += mesh.verticesNorm.at(tri.z * 4 + 2) * mult * texHeight.z;
+    auto normalZ = vertex_attrib_by_index_f4("normal", tri.z, mesh);
+    mesh.verticesPos.at(tri.z * 4 + 0) += normalZ.x * mult * texHeight.z;
+    mesh.verticesPos.at(tri.z * 4 + 1) += normalZ.y * mult * texHeight.z;
+    mesh.verticesPos.at(tri.z * 4 + 2) += normalZ.z * mult * texHeight.z;
 
     texHeight = float3(0.0f, 0.0f, 0.0f);
   }
@@ -709,7 +721,6 @@ void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::v
   {
     displaceByNoise(pMesh, noiseNode, triangleList);
   }
-
 }
 
 
