@@ -182,6 +182,7 @@ namespace HydraLiteMath
 #define SQR(x) ((x)*(x))
 
   static inline float4 make_float4(float a, float b, float c, float d) { return float4(a, b, c, d); }
+  static inline float4 make_float4_1(float a) { return float4(a, a, a, a); }
   static inline float3 make_float3(float a, float b, float c) { return float3(a, b, c); }
   static inline float3 make_float3(float4 f4) { return float3(f4.x, f4.y, f4.z); }
   static inline float2 make_float2(float a, float b) { return float2(a, b); }
@@ -196,8 +197,12 @@ namespace HydraLiteMath
   //**********************************************************************************
   static inline float4 operator * (const float4 & u, float v) { return make_float4(u.x * v, u.y * v, u.z * v, u.w * v); }
   static inline float4 operator / (const float4 & u, float v) { return make_float4(u.x / v, u.y / v, u.z / v, u.w / v); }
+  static inline float4 operator + (const float4 & u, float v) { return make_float4(u.x + v, u.y + v, u.z + v, u.w + v); }
+  static inline float4 operator - (const float4 & u, float v) { return make_float4(u.x - v, u.y - v, u.z - v, u.w - v); }
   static inline float4 operator * (float v, const float4 & u) { return make_float4(v * u.x, v * u.y, v * u.z, v * u.w); }
   static inline float4 operator / (float v, const float4 & u) { return make_float4(v / u.x, v / u.y, v / u.z, v / u.w); }
+  static inline float4 operator + (float v, const float4 & u) { return make_float4(u.x + v, u.y + v, u.z + v, u.w + v); }
+  static inline float4 operator - (float v, const float4 & u) { return make_float4(u.x - v, u.y - v, u.z - v, u.w - v); }
 
   static inline float4 operator + (const float4 & u, const float4 & v) { return make_float4(u.x + v.x, u.y + v.y, u.z + v.z, u.w + v.w); }
   static inline float4 operator - (const float4 & u, const float4 & v) { return make_float4(u.x - v.x, u.y - v.y, u.z - v.z, u.w - v.w); }
@@ -241,8 +246,12 @@ namespace HydraLiteMath
   //**********************************************************************************
   static inline float3 operator * (const float3 & u, float v) { return make_float3(u.x * v, u.y * v, u.z * v); }
   static inline float3 operator / (const float3 & u, float v) { return make_float3(u.x / v, u.y / v, u.z / v); }
+  static inline float3 operator + (const float3 & u, float v) { return make_float3(u.x + v, u.y + v, u.z + v); }
+  static inline float3 operator - (const float3 & u, float v) { return make_float3(u.x - v, u.y - v, u.z - v); }
   static inline float3 operator * (float v, const float3 & u) { return make_float3(v * u.x, v * u.y, v * u.z); }
   static inline float3 operator / (float v, const float3 & u) { return make_float3(v / u.x, v / u.y, v / u.z); }
+  static inline float3 operator + (float v, const float3 & u) { return make_float3(u.x + v, u.y + v, u.z + v); }
+  static inline float3 operator - (float v, const float3 & u) { return make_float3(u.x - v, u.y - v, u.z - v); }
 
   static inline float3 operator + (const float3 & u, const float3 & v) { return make_float3(u.x + v.x, u.y + v.y, u.z + v.z); }
   static inline float3 operator - (const float3 & u, const float3 & v) { return make_float3(u.x - v.x, u.y - v.y, u.z - v.z); }

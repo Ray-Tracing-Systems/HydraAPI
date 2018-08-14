@@ -142,7 +142,8 @@ int main(int argc, const char** argv)
   
     //std::cout << test71_out_of_memory() << std::endl;
 
-    test84_proc_texture2();
+    //test84_proc_texture2();
+    MTL_TESTS::test_166_displace_by_noise();
 
     //std::cout << test39_mesh_from_vsgf() << std::endl;
     //window_main_free_look(L"tests_f/test_167", L"opengl1Debug");
