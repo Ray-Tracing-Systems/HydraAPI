@@ -335,6 +335,7 @@ bool test35_cornell_with_light()
   }
 
   //hrRenderEnableDevice(renderRef, 0, true);
+  //hrRenderEnableDevice(renderRef, 1, true);
   hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1713,9 +1714,9 @@ bool test39_mesh_from_vsgf()
     pList = pList->next;
   }
 
-  //hrRenderEnableDevice(renderRef, 0, true);
-  //hrRenderEnableDevice(renderRef, 1, true);
-  hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
+  hrRenderEnableDevice(renderRef, 0, true);
+  hrRenderEnableDevice(renderRef, 1, true);
+  //hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1726,10 +1727,10 @@ bool test39_mesh_from_vsgf()
     node.append_child(L"width").text()  = 1024;
     node.append_child(L"height").text() = 768;
 
-    node.append_child(L"method_primary").text()   = L"lighttracing"; // L"pathtracing"; // L"lighttracing"; // IBPT
+    node.append_child(L"method_primary").text()   = L"pathtracing"; // L"pathtracing"; // L"lighttracing"; // IBPT
     node.append_child(L"trace_depth").text()      = 5;
     node.append_child(L"diff_trace_depth").text() = 3;
-    node.append_child(L"maxRaysPerPixel").text()  = 1024;
+    node.append_child(L"maxRaysPerPixel").text()  = 1024; //1024;
     node.append_child(L"evalgbuffer").text()      = 0;
   }
   hrRenderClose(renderRef);

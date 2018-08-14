@@ -1,9 +1,14 @@
 #include <iostream>
 #include <vector>
-//#include <zconf.h>
 
 #include "../hydra_api/HydraAPI.h"
 #include "tests.h"
+
+#ifdef WIN32
+#include <windows.h>
+#else
+
+#endif
 
 using pugi::xml_node;
 
@@ -16,7 +21,6 @@ IHRRenderDriver* CreateDriverRTE(const wchar_t* a_cfg) { return nullptr; }
 #include <windows.h> // for SetConsoleCtrlHandler
 #else
 #include <unistd.h>
-#include <signal.h>
 #endif
 
 void ErrorCallBack(const wchar_t* message, const wchar_t* callerPlace)
@@ -29,50 +33,28 @@ void InfoCallBack(const wchar_t* message, const wchar_t* callerPlace, HR_SEVERIT
   if (a_level >= HR_SEVERITY_WARNING)
   {
     if (a_level == HR_SEVERITY_WARNING)
-      std::wcerr << L"WARNING: " << callerPlace << L": " << message; // << std::endl;
+      std::wcout << L"WARNING: " << callerPlace << L": " << message << std::endl;
     else      
-      std::wcerr << L"ERROR  : " << callerPlace << L": " << message; // << std::endl;
+      std::wcout << L"ERROR  : " << callerPlace << L": " << message << std::endl;
   }
 }
 
 
 void destroy()
 {
-  std::cout << "call destroy() --> hrDestroy()" << std::endl;
   hrDestroy();
 }
 
-#ifdef WIN32
+#if defined WIN32
 BOOL WINAPI HandlerExit(_In_ DWORD fdwControl)
 {
   exit(0);
   return TRUE;
 }
-#else
-bool destroyedBySig = false;
-void sig_handler(int signo)
-{
-  if(destroyedBySig)
-    return;
-  switch(signo)
-  {
-    case SIGINT : std::cerr << "\nmain_app, SIGINT";      break;
-    case SIGABRT: std::cerr << "\nmain_app, SIGABRT";     break;
-    case SIGILL : std::cerr << "\nmain_app, SIGINT";      break;
-    case SIGTERM: std::cerr << "\nmain_app, SIGILL";      break;
-    case SIGSEGV: std::cerr << "\nmain_app, SIGSEGV";     break;
-    case SIGFPE : std::cerr << "\nmain_app, SIGFPE";      break;
-    default     : std::cerr << "\nmain_app, SIG_UNKNOWN"; break;
-    break;
-  }
-  std::cerr << " --> hrDestroy()" << std::endl;
-  hrDestroy();
-  destroyedBySig = true;
-}
 #endif
 
 extern float g_MSEOutput;
-void test02_draw();
+void test02_draw(void);
 void test02_init();
 
 void test_gl32_001_init(void);
@@ -82,6 +64,7 @@ void test_gl32_002_init(void);
 void test_gl32_002_draw(void);
 
 void _hrDebugPrintVSGF(const wchar_t* a_fileNameIn, const wchar_t* a_fileNameOut);
+
 
 int main(int argc, const char** argv)
 {
@@ -107,43 +90,26 @@ int main(int argc, const char** argv)
     std::cout << "[main]: curr_dir = " << cwd <<std::endl;
   else
     std::cout << "getcwd() error" <<std::endl;
+
+  std::cout << sizeof(size_t) <<std::endl;
   
-  {
-    struct sigaction sigIntHandler;
-    sigIntHandler.sa_handler = sig_handler;
-    sigemptyset(&sigIntHandler.sa_mask);
-    sigIntHandler.sa_flags = SA_RESETHAND;
-    sigaction(SIGINT,  &sigIntHandler, NULL);
-    sigaction(SIGABRT, &sigIntHandler, NULL);
-    sigaction(SIGILL,  &sigIntHandler, NULL);
-    sigaction(SIGTERM, &sigIntHandler, NULL);
-    sigaction(SIGSEGV, &sigIntHandler, NULL);
-    sigaction(SIGFPE,  &sigIntHandler, NULL);
-  }
 #endif
-  
-  std::cout << "sizeof(size_t) = " << sizeof(size_t) <<std::endl;
   
   try
   {
-    //run_all_api_tests(82);
+    // run_all_api_tests(81);
 	  // run_all_geo_tests();
     // run_all_lgt_tests();
     // run_all_mtl_tests();
     // run_all_ipp_tests();
-
-    // std::cout << test41_load_library_basic() << std::endl;
   
-    //std::cout << test82_proc_texture()  << std::endl;
-    //std::cout << test84_proc_texture2() << std::endl;
+    //test39_mesh_from_vsgf();
+    // test42_load_library_basic(); // push test into compact
+    // test98_motion_blur();
     
-    //std::cout << test39_mesh_from_vsgf() << std::endl;
-    //std::cout << test40_several_changes() << std::endl;
-  
-    //std::cout << test71_out_of_memory() << std::endl;
-
-    //test84_proc_texture2();
-    MTL_TESTS::test_166_displace_by_noise();
+    //std::cout << PP_TESTS::test303_median_in_place() << std::endl;
+    
+    test84_proc_texture2();
 
     //std::cout << test39_mesh_from_vsgf() << std::endl;
     //window_main_free_look(L"tests_f/test_167", L"opengl1Debug");

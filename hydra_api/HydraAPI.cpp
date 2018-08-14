@@ -829,7 +829,7 @@ HAPI const HRRenderDeviceInfoListElem* hrRenderGetDeviceList(HRRenderRef a_pRend
   return pDriver->DeviceList();
 }
 
-HAPI void hrRenderEnableDevice(HRRenderRef a_pRender, int32_t a_deviceId, bool a_enableOrDisable)
+HAPI void hrRenderEnableDevice(HRRenderRef a_pRender, int32_t a_deviceId, bool a_enable)
 {
   HRRender* pRender = g_objManager.PtrById(a_pRender);
 
@@ -843,7 +843,7 @@ HAPI void hrRenderEnableDevice(HRRenderRef a_pRender, int32_t a_deviceId, bool a
   if (pDriver == nullptr)
     return;
 
-  if (!pDriver->EnableDevice(a_deviceId, a_enableOrDisable))
+  if (!pDriver->EnableDevice(a_deviceId, a_enable))
   {
     std::wstringstream strOut;
     strOut << L"hrRenderEnableDevice, bad device id" << a_deviceId;
