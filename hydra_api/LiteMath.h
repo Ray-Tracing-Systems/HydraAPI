@@ -270,7 +270,6 @@ namespace HydraLiteMath
   static inline float3 & operator *= (float3 & u, float v) { u.x *= v; u.y *= v; u.z *= v; return u; }
   static inline float3 & operator /= (float3 & u, float v) { u.x /= v; u.y /= v; u.z /= v; return u; }
 
-
   static inline float3 catmullrom(const float3 & P0, const float3 & P1, const float3 & P2, const float3 & P3, float t)
   {
     const float ts = t * t;
@@ -294,6 +293,45 @@ namespace HydraLiteMath
 
   static inline float  maxcomp(const float3 & u) { return fmax(u.x, fmax(u.y, u.z)); }
   static inline float  mincomp(const float3 & u) { return fmin(u.x, fmin(u.y, u.z)); }
+
+
+  struct vertex_cache
+  {
+      float3 pos;
+      float3 normal;
+      float2 uv;
+
+      vertex_cache() = default;
+  };
+
+  struct vertex_cache_hash
+  {
+      std::size_t operator()(const vertex_cache &v) const
+      {
+        using std::size_t;
+        using std::hash;
+        return ((hash<int>()(int(v.pos.x * 73856093))) ^
+                (hash<int>()(int(v.pos.y * 19349663))) ^
+                (hash<int>()(int(v.pos.z * 83492791))) ^
+                (hash<int>()(int(v.normal.x * 12929173))) ^
+                (hash<int>()(int(v.normal.y * 15484457))) ^
+                (hash<int>()(int(v.normal.z * 26430499))) ^
+                (hash<int>()(int(v.uv.x * 30025883))) ^
+                (hash<int>()(int(v.uv.y * 41855327))));
+      }
+  };
+
+  struct float3_hash
+  {
+      std::size_t operator()(const float3& k) const
+      {
+        using std::size_t;
+        using std::hash;
+        return ((hash<int>()(int(k.x * 73856093))) ^
+                (hash<int>()(int(k.y * 19349663))) ^
+                (hash<int>()(int(k.z * 83492791))));
+      }
+  };
 
 
   //**********************************************************************************

@@ -31,6 +31,41 @@ extern HR_ERROR_CALLBACK g_pErrorCallback;
 extern HRObjectManager   g_objManager;
 
 
+struct vertex_cache_eq
+{
+    bool operator()(const vertex_cache & u, const vertex_cache & v) const
+    {
+      return (fabsf(u.pos.x - v.pos.x) < 1e-6) && (fabsf(u.pos.y - v.pos.y) < 1e-6) && (fabsf(u.pos.z - v.pos.z) < 1e-6) && //pos
+             (fabsf(u.normal.x - v.normal.x) < 1e-3) && (fabsf(u.normal.y - v.normal.y) < 1e-3) && (fabsf(u.normal.z - v.normal.z) < 1e-3) && //norm
+             (fabsf(u.uv.x - v.uv.x) < 1e-4) && (fabsf(u.uv.y - v.uv.y) < 1e-4); //uv
+    }
+};
+
+struct pos_eq
+{
+    bool operator()(const float3 & u, const float3 &v) const
+    {
+      return (fabsf(u.x - v.x) < 1e-6) && (fabsf(u.y - v.y) < 1e-6) && (fabsf(u.z - v.z) < 1e-6);
+    }
+};
+
+struct norm_eq
+{
+    bool operator()(const float3 & u, const float3 &v) const
+    {
+      return (fabsf(u.x - v.x) < 1e-3) && (fabsf(u.y - v.y) < 1e-3) && (fabsf(u.z - v.z) < 1e-3);
+    }
+};
+
+struct uv_eq
+{
+    bool operator()(const float2 & u, const float2 &v) const
+    {
+      return (fabsf(u.x - v.x) < 1e-5) && (fabsf(u.y - v.y) < 1e-5);
+    }
+};
+
+
 void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::vector<uint3> &triangleList);
 
 
@@ -548,21 +583,21 @@ void displaceByNoise(HRMesh *pMesh, const pugi::xml_node &noiseXMLNode, std::vec
     if(ins.second)
     {
       texHeight.x = sampleNoise(noiseXMLNode, attrib1 + offset);
-      if (texHeight.x < 0.85) texHeight.x = 0.0f;
+      if (texHeight.x < 0.5) texHeight.x = 0.0f;
     }
 
     ins = displaced_indices.insert(tri.y);
     if(ins.second)
     {
       texHeight.y = sampleNoise(noiseXMLNode, attrib2 + offset);
-      if (texHeight.y < 0.85) texHeight.y = 0.0f;
+      if (texHeight.y < 0.5) texHeight.y = 0.0f;
     }
 
     ins = displaced_indices.insert(tri.z);
     if(ins.second)
     {
       texHeight.z = sampleNoise(noiseXMLNode, attrib3 + offset);
-      if (texHeight.z < 0.85) texHeight.z = 0.0f;
+      if (texHeight.z < 0.5) texHeight.z = 0.0f;
     }
 
     auto normalX = vertex_attrib_by_index_f4("normal", tri.x, mesh);
@@ -580,7 +615,6 @@ void displaceByNoise(HRMesh *pMesh, const pugi::xml_node &noiseXMLNode, std::vec
     mesh.verticesPos.at(tri.z * 4 + 1) += normalZ.y * mult * texHeight.z;
     mesh.verticesPos.at(tri.z * 4 + 2) += normalZ.z * mult * texHeight.z;
 
-    texHeight = float3(0.0f, 0.0f, 0.0f);
   }
 }
 
@@ -838,4 +872,205 @@ std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
     return SaveFixedStateXML(stateToProcess, state_path, L"_meshes");
   else
     return state_path;
+}
+
+
+void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
+{
+  HRMesh *pMesh = g_objManager.PtrById(a_mesh);
+
+  if (pMesh == nullptr)
+  {
+    HrError(L"hrMeshWeldVertices: nullptr input");
+    return;
+  }
+
+  if (!pMesh->opened)
+  {
+    HrError(L"hrMeshWeldVertices: mesh is not opened, id = ", a_mesh.id);
+    return;
+  }
+
+  HRMesh::InputTriMesh &mesh = pMesh->m_input;
+  //const bool hasNormals  = (pMesh->m_inputPointers.normals != nullptr);
+
+  std::vector<uint32_t> indices_new;
+  //std::unordered_map<float3, uint32_t, float3_hash, pos_eq> vertex_hash;
+  std::unordered_map<vertex_cache, uint32_t, vertex_cache_hash, vertex_cache_eq> vertex_hash;
+
+  std::vector<float> vertices_new(mesh.verticesPos.size(), 0.0f);
+  std::vector<float> normals_new(mesh.verticesNorm.size(), 0.0f);
+  std::vector<float> uv_new(mesh.verticesTexCoord.size(), 0.0f);
+  std::vector<int32_t> mid_new;
+  mid_new.reserve(mesh.matIndices.size());
+
+  norm_eq norm_equality;
+
+  using vertHash = std::pair<float3, uint32_t>;
+  uint32_t index = 0;
+  for (auto i = 0u; i < mesh.triIndices.size(); i += 3)
+  {
+    uint32_t indA = mesh.triIndices[i + 0];
+    uint32_t indB = mesh.triIndices[i + 1];
+    uint32_t indC = mesh.triIndices[i + 2];
+
+    if (indA == indB || indA == indC || indB == indC)
+      continue;
+
+    auto old_mid = mesh.matIndices.at(i / 3);
+    mid_new.push_back(old_mid);
+
+    float4 tmp = vertex_attrib_by_index_f4("pos", indA, mesh);
+    float3 A(tmp.x, tmp.y, tmp.z);
+    tmp = vertex_attrib_by_index_f4("normal", indA, mesh);
+    float3 A_normal(tmp.x, tmp.y, tmp.z);
+    float2 tmp2 = vertex_attrib_by_index_f2("uv", indA, mesh);
+    float2 A_uv(tmp2.x, tmp2.y);
+
+    vertex_cache A_cache;
+    A_cache.pos = A;
+    A_cache.normal = A_normal;
+    A_cache.uv = A_uv;
+
+    auto it = vertex_hash.find(A_cache);
+
+    if(it != vertex_hash.end())
+    {
+      indices_new.push_back(it->second);
+    }
+    else
+    {
+      vertex_hash[A_cache] = index;
+      indices_new.push_back(index);
+
+      vertices_new.at(index * 4 + 0) = A.x;
+      vertices_new.at(index * 4 + 1) = A.y;
+      vertices_new.at(index * 4 + 2) = A.z;
+      vertices_new.at(index * 4 + 3) = 1.0f;
+
+      normals_new.at(index * 4 + 0) = A_normal.x;
+      normals_new.at(index * 4 + 1) = A_normal.y;
+      normals_new.at(index * 4 + 2) = A_normal.z;
+      normals_new.at(index * 4 + 3) = 1.0f;
+
+      uv_new.at(index * 2 + 0) = A_uv.x;
+      uv_new.at(index * 2 + 1) = A_uv.y;
+
+      index++;
+    }
+
+
+    tmp = vertex_attrib_by_index_f4("pos", indB, mesh);
+    float3 B(tmp.x, tmp.y, tmp.z);
+    tmp = vertex_attrib_by_index_f4("normal", indB, mesh);
+    float3 B_normal(tmp.x, tmp.y, tmp.z);
+    tmp2 = vertex_attrib_by_index_f2("uv", indB, mesh);
+    float2 B_uv(tmp2.x, tmp2.y);
+
+    vertex_cache B_cache;
+    B_cache.pos = B;
+    B_cache.normal = B_normal;
+    B_cache.uv = B_uv;
+
+    it = vertex_hash.find(B_cache);
+    if(it != vertex_hash.end())
+    {
+      indices_new.push_back(it->second);
+    }
+    else
+    {
+      vertex_hash[B_cache] = index;
+      indices_new.push_back(index);
+
+      vertices_new.at(index * 4 + 0) = B.x;
+      vertices_new.at(index * 4 + 1) = B.y;
+      vertices_new.at(index * 4 + 2) = B.z;
+      vertices_new.at(index * 4 + 3) = 1.0f;
+
+      normals_new.at(index * 4 + 0) = B_normal.x;
+      normals_new.at(index * 4 + 1) = B_normal.y;
+      normals_new.at(index * 4 + 2) = B_normal.z;
+      normals_new.at(index * 4 + 3) = 1.0f;
+
+      uv_new.at(index * 2 + 0) = B_uv.x;
+      uv_new.at(index * 2 + 1) = B_uv.y;
+
+      index++;
+    }
+
+    tmp = vertex_attrib_by_index_f4("pos", indC, mesh);
+    float3 C(tmp.x, tmp.y, tmp.z);
+    tmp = vertex_attrib_by_index_f4("normal", indC, mesh);
+    float3 C_normal(tmp.x, tmp.y, tmp.z);
+    tmp2 = vertex_attrib_by_index_f2("uv", indC, mesh);
+    float2 C_uv(tmp2.x, tmp2.y);
+
+    vertex_cache C_cache;
+    C_cache.pos = C;
+    C_cache.normal = C_normal;
+    C_cache.uv = C_uv;
+
+
+    it = vertex_hash.find(C_cache);
+    if(it != vertex_hash.end())
+    {
+      indices_new.push_back(it->second);
+    }
+    else
+    {
+      vertex_hash[C_cache] = index;
+      indices_new.push_back(index);
+
+      vertices_new.at(index * 4 + 0) = C.x;
+      vertices_new.at(index * 4 + 1) = C.y;
+      vertices_new.at(index * 4 + 2) = C.z;
+      vertices_new.at(index * 4 + 3) = 1.0f;
+
+      normals_new.at(index * 4 + 0) = C_normal.x;
+      normals_new.at(index * 4 + 1) = C_normal.y;
+      normals_new.at(index * 4 + 2) = C_normal.z;
+      normals_new.at(index * 4 + 3) = 1.0f;
+
+      uv_new.at(index * 2 + 0) = C_uv.x;
+      uv_new.at(index * 2 + 1) = C_uv.y;
+
+      index++;
+    }
+
+  }
+
+  vertices_new.resize(index * 4);
+  normals_new.resize(index * 4);
+  uv_new.resize(index * 2);
+
+  //indices_new.resize(index - 1 );
+
+  //std::cout << "vert old : " << mesh.verticesPos.size() << "  vert new :" << vertices_new.size() << std::endl;
+
+  pMesh->m_inputPointers.normals = nullptr;
+  pMesh->m_inputPointers.tangents = nullptr;
+
+  mesh.verticesPos.clear();
+  mesh.verticesPos.resize(vertices_new.size());
+  std::copy(vertices_new.begin(), vertices_new.end(), mesh.verticesPos.begin());
+
+  mesh.verticesNorm.clear();
+  mesh.verticesNorm.resize(normals_new.size());
+  std::copy(normals_new.begin(), normals_new.end(), mesh.verticesNorm.begin());
+
+  mesh.verticesTexCoord.clear();
+  mesh.verticesTexCoord.resize(uv_new.size());
+  std::copy(uv_new.begin(), uv_new.end(), mesh.verticesTexCoord.begin());
+
+  mesh.triIndices.clear();
+  mesh.triIndices.resize(indices_new.size());
+  std::copy(indices_new.begin(), indices_new.end(), mesh.triIndices.begin());
+
+  mesh.matIndices.clear();
+  mesh.matIndices.resize(mid_new.size());
+  std::copy(mid_new.begin(), mid_new.end(), mesh.matIndices.begin());
+
+
+
+  indexNum = indices_new.size();
 }

@@ -421,7 +421,7 @@ float sampleNoise(pugi::xml_node noiseXMLNode, float3 attrib)
     auto persistence = noiseXMLNode.attribute(L"persistence").as_float();
     auto lacunarity  = noiseXMLNode.attribute(L"lacunarity").as_float();
 
-    return octave(attrib, num_octaves, persistence, base_freq, lacunarity);
+    return 0.5f * (octave(attrib, num_octaves, persistence, base_freq, lacunarity) + 1.0f);
 
   }
   else
