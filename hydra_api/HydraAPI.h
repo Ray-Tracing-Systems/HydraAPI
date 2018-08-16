@@ -760,7 +760,7 @@ HAPI void              hrMeshMaterialId(HRMeshRef a_pMesh, int matId);
 \param a_pMesh - pointer to mesh
 
 */
-HAPI void              hrMeshAppendTriangles3(HRMeshRef a_pMesh, int indNum, const int* indices);
+HAPI void              hrMeshAppendTriangles3(HRMeshRef a_pMesh, int indNum, const int* indices, bool weld_vertices = true);
 
 
 

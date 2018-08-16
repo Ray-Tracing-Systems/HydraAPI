@@ -766,7 +766,7 @@ static void AddCustomAttributesFromPointers(HRMesh* pMesh, int maxVertexId)
 }
 
 
-HAPI void hrMeshAppendTriangles3(HRMeshRef a_mesh, int indNum, const int* indices)
+HAPI void hrMeshAppendTriangles3(HRMeshRef a_mesh, int indNum, const int* indices, bool weld_vertices)
 {
   HRMesh* pMesh = g_objManager.PtrById(a_mesh);
 
@@ -846,7 +846,8 @@ HAPI void hrMeshAppendTriangles3(HRMeshRef a_mesh, int indNum, const int* indice
       pMesh->m_input.matIndices.push_back(matId);
   }
 
-  hrMeshWeldVertices(a_mesh, indNum);
+  if(weld_vertices)
+    hrMeshWeldVertices(a_mesh, indNum);
 }
 
 HAPI void hrMeshMaterialId(HRMeshRef a_mesh, int a_matId)

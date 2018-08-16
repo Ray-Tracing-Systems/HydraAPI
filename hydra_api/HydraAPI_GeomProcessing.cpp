@@ -838,7 +838,7 @@ std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
         hrMeshVertexAttribPointer4f(mesh_ref_new, L"norm", &verticesNorm[0]);
         hrMeshVertexAttribPointer2f(mesh_ref_new, L"texcoord", &verticesTexCoord[0]);
         hrMeshPrimitiveAttribPointer1i(mesh_ref_new, L"mind", (int *) (&matIndices[0]));
-        hrMeshAppendTriangles3(mesh_ref_new, int(triIndices.size()), (int *) (&triIndices[0]));
+        hrMeshAppendTriangles3(mesh_ref_new, int(triIndices.size()), (int *) (&triIndices[0]), false);
 
         int subdivs = displaceXMLNode.attribute(L"subdivs").as_int();
 
