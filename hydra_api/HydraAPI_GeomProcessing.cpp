@@ -105,7 +105,46 @@ bool meshHasDisplacementMat(HRMeshRef a_mesh, pugi::xml_node &displaceXMLNode)
   return false;
 }
 
-void hrMeshDisplace(HRMeshRef a_mesh)
+bool instanceHasDisplacementMat(HRMeshRef a_meshRef, const std::unordered_map<uint32_t, uint32_t> &remapList,
+                                pugi::xml_node &displaceXMLNode)
+{
+  HRMesh *pMesh = g_objManager.PtrById(a_meshRef);
+  if (pMesh == nullptr)
+  {
+    HrError(L"meshHasDisplacementMat: nullptr input");
+    return false;
+  }
+
+  HRMesh::InputTriMesh &mesh = pMesh->m_input;
+
+  std::set<int32_t> uniqueMatIndices;
+  for(auto mI : mesh.matIndices)
+  {
+    if(remapList.find(mI) != remapList.end())
+      mI = remapList.at(mI);
+    auto ins = uniqueMatIndices.insert(mI);
+    if (ins.second)
+    {
+      HRMaterialRef tmpRef;
+      tmpRef.id = mI;
+      auto mat = g_objManager.PtrById(tmpRef);
+      if (mat != nullptr)
+      {
+        auto d_node = mat->xml_node_next(HR_OPEN_EXISTING).child(L"displacement");
+
+        if (d_node.attribute(L"type").as_string() == std::wstring(L"true_displacement"))
+        {
+          displaceXMLNode = d_node;
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+void hrMeshDisplace(HRMeshRef a_mesh, const std::unordered_map<uint32_t, uint32_t> &remapList, pugi::xml_document &stateToProcess)
 {
   HRMesh *pMesh = g_objManager.PtrById(a_mesh);
   if (pMesh == nullptr)
@@ -122,12 +161,17 @@ void hrMeshDisplace(HRMeshRef a_mesh)
   std::set<int32_t> uniqueMatIndices;
   std::unordered_map<int32_t, pugi::xml_node> matsWithDisplacement;
   std::unordered_map<int, std::pair<pugi::xml_node, std::vector<uint3> > > dMatToTriangles;
+
   for(unsigned int i = 0; i < mesh.matIndices.size(); ++i)
   {
     int mI = mesh.matIndices.at(i);
+    if(remapList.find(mI) != remapList.end())
+      mI = remapList.at(mI);
+
     auto ins = uniqueMatIndices.insert(mI);
     if(ins.second)
     {
+
       HRMaterialRef tmpRef;
       tmpRef.id = mI;
       auto mat = g_objManager.PtrById(tmpRef);
@@ -154,7 +198,8 @@ void hrMeshDisplace(HRMeshRef a_mesh)
         std::vector<uint3> tmp;
         tmp.push_back(triangle);
         dMatToTriangles[mI] = std::pair<pugi::xml_node, std::vector<uint3> >(mat->second, tmp);
-      } else
+      }
+      else
       {
         dMatToTriangles[mI].second.push_back(triangle);
       }
@@ -783,11 +828,40 @@ void InsertFixedMeshesInfoIntoXML(pugi::xml_document &stateToProcess, std::unord
       }
     }
   }
+}
 
+void InsertFixedMeshesAndInstancesXML(pugi::xml_document &stateToProcess,
+                                      std::unordered_map<uint32_t, uint32_t> &instToFixedMesh, int32_t sceneId)
+{
+  auto geolib = stateToProcess.child(L"geometry_lib");
+  std::vector <pugi::xml_node> tmp_nodes;
+  if (geolib != nullptr)
+  {
+    for (auto& meshMap : instToFixedMesh)
+    {
+      auto geoLib_ch = g_objManager.scnData.m_geometryLibChanges;
+
+      auto mesh_node = geoLib_ch.find_child_by_attribute(L"id", std::to_wstring(meshMap.second).c_str());
+      tmp_nodes.push_back(mesh_node);
+
+      auto sceneNode = stateToProcess.child(L"scenes").find_child_by_attribute(L"scene", L"id", std::to_wstring(sceneId).c_str());
+      if (sceneNode != nullptr)
+      {
+        auto node = sceneNode.find_child_by_attribute(L"instance", L"id", std::to_wstring(meshMap.first).c_str());
+        if(node != nullptr)
+        {
+          node.attribute(L"mesh_id").set_value(meshMap.second);
+        }
+      }
+    }
+  }
+  for (auto& node : tmp_nodes)
+    geolib.append_copy(node);
 }
 
 
-std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
+/*
+std::wstring HR_PreprocessMeshes_old(const wchar_t *state_path)
 {
   std::wstring new_state_path;
 
@@ -819,6 +893,8 @@ std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
 
       pugi::xml_node displaceXMLNode;
 
+      //instanceHasDisplacementMat(mesh_ref, remapList, displaceXMLNode);
+
       hrMeshOpen(mesh_ref, HR_TRIANGLE_IND3, HR_OPEN_READ_ONLY);
       if (meshHasDisplacementMat(mesh_ref, displaceXMLNode))
       {
@@ -848,7 +924,7 @@ std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
         //std::cout << "Subdivision time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms" <<std::endl;
 
         //begin = std::chrono::steady_clock::now();
-        hrMeshDisplace(mesh_ref_new);
+        hrMeshDisplace(mesh_ref_new, stateToProcess);
         //end = std::chrono::steady_clock::now();
         //std::cout << "Displacement time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms" <<std::endl;
 
@@ -866,6 +942,131 @@ std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
     }
     if(anyChanges)
       InsertFixedMeshesInfoIntoXML(stateToProcess, meshTofixedMesh);
+  }
+
+  if(anyChanges)
+    return SaveFixedStateXML(stateToProcess, state_path, L"_meshes");
+  else
+    return state_path;
+}
+
+*/
+std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
+{
+  std::wstring new_state_path;
+
+  if (state_path == std::wstring(L"") || state_path == nullptr)
+  {
+    HrError(L"No state for HR_PreprocessMeshes at location: ", state_path);
+    return new_state_path;
+  }
+
+  pugi::xml_document stateToProcess;
+
+  auto loadResult = stateToProcess.load_file(state_path);
+
+  if (!loadResult)
+  {
+    HrError(L"HR_PreprocessMeshes, pugixml load: ", loadResult.description());
+    return new_state_path;
+  }
+
+  bool anyChanges = false;
+  if (g_objManager.m_currSceneId < g_objManager.scnInst.size())
+  {
+    auto scn = g_objManager.scnInst[g_objManager.m_currSceneId];
+
+    std::vector<std::unordered_map<uint32_t, uint32_t> > remapLists;
+    std::unordered_map<uint32_t, uint32_t> instToFixedMesh;
+    auto sceneNode = stateToProcess.child(L"scenes").find_child_by_attribute(L"scene", L"id", std::to_wstring(g_objManager.m_currSceneId).c_str());
+    if (sceneNode != nullptr && sceneNode.child(L"remap_lists") != nullptr)
+    {
+      for(auto listNode = sceneNode.child(L"remap_lists").first_child(); listNode != nullptr; listNode = listNode.next_sibling())
+      {
+        int listSize = listNode.attribute(L"size").as_int();
+
+        std::unordered_map<uint32_t, uint32_t> remapList;
+        const wchar_t* listStr = listNode.attribute(L"val").as_string();
+        if(listStr != nullptr)
+        {
+          std::wstringstream inputStream(listStr);
+          for(int i = 0; i < listSize; i += 2)
+          {
+            uint32_t a = 0;
+            uint32_t b = 0;
+
+            inputStream >> a;
+            inputStream >> b;
+
+            remapList[a] = b;
+          }
+        }
+        remapLists.emplace_back(remapList);
+      }
+    }
+
+    for(int i = 0; i < scn.drawList.size(); ++i)
+    {
+      auto inst = scn.drawList.at(i);
+      HRMeshRef mesh_ref;
+      mesh_ref.id = inst.meshId;
+
+      auto inst_id = i;
+      auto inst_id_str = std::to_wstring(inst_id);
+
+      std::unordered_map<uint32_t, uint32_t> remap_list;
+      if(inst.remapListId >= 0)
+        remap_list = remapLists[inst.remapListId];
+
+      pugi::xml_node displaceXMLNode;
+
+      hrMeshOpen(mesh_ref, HR_TRIANGLE_IND3, HR_OPEN_READ_ONLY);
+      if(instanceHasDisplacementMat(mesh_ref, remap_list, displaceXMLNode))
+      {
+        HRMesh& mesh = g_objManager.scnData.meshes[inst.meshId];
+        std::vector<float> verticesPos(mesh.m_input.verticesPos);       ///< float4
+        std::vector<float> verticesNorm(mesh.m_input.verticesNorm);      ///< float4
+        std::vector<float> verticesTexCoord(mesh.m_input.verticesTexCoord);  ///< float2
+        std::vector<float> verticesTangent(mesh.m_input.verticesTangent);   ///< float4
+        std::vector<uint32_t> triIndices(mesh.m_input.triIndices);        ///< size of 3*triNum
+        std::vector<uint32_t> matIndices(mesh.m_input.matIndices);        ///< size of 1*triNum
+        auto mesh_name = mesh.name;
+        hrMeshClose(mesh_ref);
+
+        std::wstring new_mesh_name = mesh_name.append(L"_fixed_").append(inst_id_str);
+        HRMeshRef mesh_ref_new = hrMeshCreate(new_mesh_name.c_str());
+        hrMeshOpen(mesh_ref_new, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
+        hrMeshVertexAttribPointer4f(mesh_ref_new, L"pos", &verticesPos[0]);
+        hrMeshVertexAttribPointer4f(mesh_ref_new, L"norm", &verticesNorm[0]);
+        hrMeshVertexAttribPointer2f(mesh_ref_new, L"texcoord", &verticesTexCoord[0]);
+        hrMeshPrimitiveAttribPointer1i(mesh_ref_new, L"mind", (int *) (&matIndices[0]));
+        hrMeshAppendTriangles3(mesh_ref_new, int(triIndices.size()), (int *) (&triIndices[0]), false);
+
+        int subdivs = displaceXMLNode.attribute(L"subdivs").as_int();
+
+        //std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+        hrMeshSubdivideSqrt3(mesh_ref_new, max(subdivs, 0));
+        //std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+        //std::cout << "Subdivision time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms" <<std::endl;
+
+        //begin = std::chrono::steady_clock::now();
+        hrMeshDisplace(mesh_ref_new, remap_list, stateToProcess);
+        //end = std::chrono::steady_clock::now();
+        //std::cout << "Displacement time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms" <<std::endl;
+
+        hrMeshClose(mesh_ref_new);
+
+
+        instToFixedMesh[inst_id] = mesh_ref_new.id;
+        anyChanges = true;
+      }
+      else
+      {
+        hrMeshClose(mesh_ref);
+      }
+    }
+    if(anyChanges)
+      InsertFixedMeshesAndInstancesXML(stateToProcess, instToFixedMesh, g_objManager.m_currSceneId);
   }
 
   if(anyChanges)
@@ -1043,8 +1244,6 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
   normals_new.resize(index * 4);
   uv_new.resize(index * 2);
 
-  //indices_new.resize(index - 1 );
-
   //std::cout << "vert old : " << mesh.verticesPos.size() << "  vert new :" << vertices_new.size() << std::endl;
 
   pMesh->m_inputPointers.normals = nullptr;
@@ -1069,8 +1268,6 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
   mesh.matIndices.clear();
   mesh.matIndices.resize(mid_new.size());
   std::copy(mid_new.begin(), mid_new.end(), mesh.matIndices.begin());
-
-
 
   indexNum = indices_new.size();
 }

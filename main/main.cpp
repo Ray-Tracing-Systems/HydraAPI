@@ -104,12 +104,16 @@ int main(int argc, const char** argv)
     // run_all_ipp_tests();
   
     //test39_mesh_from_vsgf();
-    // test42_load_library_basic(); // push test into compact
+     //test42_load_library_basic(); // push test into compact
     // test98_motion_blur();
+
+//    MTL_TESTS::test_166_displace_by_noise();
+   test_x1_displace_car_by_noise();
     
     //std::cout << PP_TESTS::test303_median_in_place() << std::endl;
     
-    test84_proc_texture2();
+    //test84_proc_texture2();
+    //MTL_TESTS::test_166_displace_by_noise();
 
     //std::cout << test39_mesh_from_vsgf() << std::endl;
     //window_main_free_look(L"tests_f/test_167", L"opengl1Debug");
@@ -133,14 +137,14 @@ int main(int argc, const char** argv)
     //window_main_free_look(L"tests/lucy_deferred", L"opengl32Deferred", &test_gl32_001_init, &test_gl32_001_draw);
     //window_main_free_look(L"tests/lucy_deferred", L"opengl3Utility", &test_gl32_001_init, &test_gl32_001_draw);
     //window_main_free_look(L"tests/test_gl32_002_", L"opengl3Utility", &test_gl32_002_init, &test_gl32_002_draw);
-    //window_main_free_look(L"C:/[Hydra]/pluginFiles/scenelib", L"opengl1Debug", nullptr, &test02_draw);
+  //window_main_free_look(L"tests/test_x1", L"opengl1Debug");
     //window_main_free_look(L"tests/zgl1_test_cube", L"opengl32Forward", &test_gl32_001_init, &test_gl32_001_draw);
     //window_main_free_look(L"D:/PROG/HydraCore/hydra_app/tests/test_42", L"opengl1DrawRays");
     //test_gl32_002();
     //window_main_free_look(L"tests/test_gl32_002", L"opengl32Deferred");
-
-    //_hrDebugPrintVSGF(L"D:/temp/TestRenderFromPhil/data/chunk_00022.vsgf",   L"z_mesh_phil.txt");
-    //_hrDebugPrintVSGF(L"D:/temp/TestRenderFromSergey/data/chunk_00022.vsgf", L"z_mesh_serg.txt");
+//
+//    _hrDebugPrintVSGF(L"/home/vsan/tmp/test_x1/data/chunk_00045.vsgf", L"z_mesh_before.txt");
+//    _hrDebugPrintVSGF(L"/home/vsan/tmp/test_x1/data/chunk_00090.vsgf", L"z_mesh_after.txt");
 
 	  //test_console_render(L"D:/Downloads/test(1)/test", L"D:/Downloads/test(1)/test/zzz.bmp");
 	  //test02_simple_gl1_render(L"opengl1Debug");

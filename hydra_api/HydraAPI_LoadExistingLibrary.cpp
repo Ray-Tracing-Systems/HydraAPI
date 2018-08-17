@@ -76,16 +76,21 @@ HAPI HRMeshRef _hrMeshCreateFromNode(pugi::xml_node a_node)
   const wchar_t* a_fileName   = (dl == L"1") ? a_node.attribute(L"path").as_string() : loc.c_str();
 
   HRMeshRef ref;
-  ref.id = HR_IDType(g_objManager.scnData.meshes.size());
+
+  ref.id = a_node.attribute(L"id").as_int();//HR_IDType(g_objManager.scnData.meshes.size());
+
+  if(ref.id == 43)
+    std::cout <<"1";
 
   HRMesh mesh;
   mesh.name = std::wstring(a_objectName);
   mesh.id   = ref.id;
+  mesh.update_this(a_node);
   g_objManager.scnData.meshes.push_back(mesh);
-  g_objManager.scnData.meshes[ref.id].update_this(a_node);
-  g_objManager.scnData.meshes[ref.id].id = ref.id;
+//  g_objManager.scnData.meshes[ref.id].update_this(a_node);
+//  g_objManager.scnData.meshes[ref.id].id = ref.id;
 
-  HRMesh* pMesh = &g_objManager.scnData.meshes[ref.id];
+  HRMesh* pMesh = &g_objManager.scnData.meshes.back();
   pMesh->pImpl  = g_objManager.m_pFactory->CreateVSGFFromFile(pMesh, a_fileName, a_node); //#TODO: load custom attributes somewhere inside
 
   if (pMesh->pImpl == nullptr)
@@ -367,6 +372,10 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
   //
   for (pugi::xml_node node = g_objManager.scnData.m_geometryLib.first_child(); node != nullptr; node = node.next_sibling())
     _hrMeshCreateFromNode(node);
+
+  std::sort(
+          g_objManager.scnData.meshes.begin(), g_objManager.scnData.meshes.end(),
+          [&](auto a, auto b) { return a.id < b.id; });
 
   // (6) load lights
   //

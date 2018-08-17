@@ -2754,8 +2754,8 @@ bool MTL_TESTS::test_166_displace_by_noise()
     displacement.append_attribute(L"subdivs").set_value(1);
 
     auto noiseNode   = displacement.append_child(L"noise");
-    noiseNode.append_attribute(L"scale").set_value(0.05f);
-    noiseNode.append_attribute(L"amount").set_value(0.05f);
+    noiseNode.append_attribute(L"scale").set_value(1.0f);
+    noiseNode.append_attribute(L"amount").set_value(0.15f);
     noiseNode.append_attribute(L"base_freq").set_value(4.0f);
     noiseNode.append_attribute(L"octaves").set_value(4);
     noiseNode.append_attribute(L"persistence").set_value(0.75f);
@@ -2768,13 +2768,28 @@ bool MTL_TESTS::test_166_displace_by_noise()
     auto matNode = hrMaterialParamNode(mat2);
 
     auto diffuse = matNode.append_child(L"diffuse");
-    diffuse.append_child(L"color").append_attribute(L"val").set_value(L"0.0 0.0 1.0");
+    diffuse.append_child(L"color").append_attribute(L"val").set_value(L"0.0 0.5 0.5");
+
+    auto refl = matNode.append_child(L"reflectivity");
+
+    refl.append_attribute(L"brdf_type").set_value(L"torranse_sparrow");
+    refl.append_child(L"color").append_attribute(L"val").set_value(L"0.8 0.8 0.8");
+    refl.append_child(L"glossiness").append_attribute(L"val").set_value(L"0.95");
+    refl.append_child(L"extrusion").append_attribute(L"val").set_value(L"maxcolor");
+    refl.append_child(L"fresnel").append_attribute(L"val").set_value(1);
+    refl.append_child(L"fresnel_ior").append_attribute(L"val").set_value(8.0f);
 
     auto displacement = matNode.append_child(L"displacement");
-    auto heightNode   = displacement.append_child(L"height_map");
-
     displacement.append_attribute(L"type").set_value(L"true_displacement");
-    heightNode.append_attribute(L"amount").set_value(1.5f);
+    displacement.append_attribute(L"subdivs").set_value(1);
+
+    auto noiseNode   = displacement.append_child(L"noise");
+    noiseNode.append_attribute(L"scale").set_value(0.75f);
+    noiseNode.append_attribute(L"amount").set_value(0.1f);
+    noiseNode.append_attribute(L"base_freq").set_value(4.0f);
+    noiseNode.append_attribute(L"octaves").set_value(8);
+    noiseNode.append_attribute(L"persistence").set_value(0.75f);
+    noiseNode.append_attribute(L"lacunarity").set_value(1.5f);
 
   }
   hrMaterialClose(mat2);
@@ -2887,11 +2902,19 @@ bool MTL_TESTS::test_166_displace_by_noise()
   mTranslate.identity();
   mRes.identity();
 
-  mTranslate = translate4x4(float3(0.0f, -40.0f, 0.0f));
-  mScale = scale4x4(float3(15.01f, 15.01f, 15.01f));
+  mTranslate = translate4x4(float3(-15.0f, -40.0f, 0.0f));
+  mScale = scale4x4(float3(10.01f, 10.01f, 10.01f));
   mRes = mul(mTranslate, mScale);
 
   hrMeshInstance(scnRef, tess, mRes.L());
+
+  mTranslate = translate4x4(float3(15.0f, -40.0f, 0.0f));
+  mScale = scale4x4(float3(10.01f, 10.01f, 10.01f));
+  mRes = mul(mTranslate, mScale);
+
+  int32_t remapList1[2] = { mat1.id, mat2.id };
+
+  hrMeshInstance(scnRef, tess, mRes.L(), remapList1, sizeof(remapList1)/sizeof(int32_t));
 
   ///////////
 
