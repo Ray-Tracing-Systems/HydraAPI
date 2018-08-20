@@ -891,9 +891,8 @@ namespace GEO_TESTS
       node.append_child(L"trace_depth").text() = L"5";
       node.append_child(L"diff_trace_depth").text() = L"3";
 
-      node.append_child(L"pt_error").text() = L"2";
-      node.append_child(L"minRaysPerPixel").text() = L"256";
       node.append_child(L"maxRaysPerPixel").text() = L"1024";
+      node.append_child(L"offline_pt").text()      = L"1";
     }
     hrRenderClose(renderRef);
 

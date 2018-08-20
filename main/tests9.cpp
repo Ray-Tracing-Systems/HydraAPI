@@ -153,8 +153,7 @@ namespace HRUtils
       for(int devId : a_input.devList)
       {
         std::wstringstream strOut;
-        //strOut << L"runhydra -cl_device_id " << devId << L" -contribsamples " << samplesPerSubFrame << L" -maxsamples " << samplesPerSubFrame + 20;
-        strOut << L"runhydra -cl_device_id " << devId << L" -contribsamples " << 1000000 << L" -maxsamples " << 1000000;
+        strOut << L"runhydra -cl_device_id " << devId << L" -contribsamples " << a_input.samplePerSubFrame;
         strOut << L" -statefile " << a_input.allStates[topState].c_str();
         auto str = strOut.str();
         hrRenderCommand(renderRef, str.c_str());
