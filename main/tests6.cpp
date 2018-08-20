@@ -1308,14 +1308,8 @@ bool test38_test_for_mlt()
 
     node.append_child(L"trace_depth").text()      = L"8";
     node.append_child(L"diff_trace_depth").text() = L"4";
-
-    node.append_child(L"pt_error").text()        = L"2";
-    node.append_child(L"minRaysPerPixel").text() = L"256";
+    
     node.append_child(L"maxRaysPerPixel").text() = L"1024";
-
-    node.append_child(L"mlt_plarge").text()     = L"0.25";
-    node.append_child(L"mlt_iters_mult").text() = L"2";
-    node.append_child(L"mlt_burn_iters").text() = L"256";
   }
   hrRenderClose(renderRef);
 
@@ -1426,6 +1420,7 @@ bool test38_test_for_mlt()
   return check_images("test_38", 1, 25.0f);
 }
 
+#include "Timer.h"
 
 bool test39_mesh_from_vsgf()
 {
@@ -1715,8 +1710,7 @@ bool test39_mesh_from_vsgf()
   }
 
   hrRenderEnableDevice(renderRef, 0, true);
-  hrRenderEnableDevice(renderRef, 1, true);
-  //hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
+  hrRenderEnableDevice(renderRef, 1, true); // CURR_RENDER_DEVICE
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1732,9 +1726,13 @@ bool test39_mesh_from_vsgf()
     node.append_child(L"diff_trace_depth").text() = 3;
     node.append_child(L"maxRaysPerPixel").text()  = 1024; //1024;
     node.append_child(L"evalgbuffer").text()      = 0;
+  
+    node.append_child(L"offline_pt").text()       = 1;
   }
   hrRenderClose(renderRef);
-
+  
+  hrRenderLogDir(renderRef, L"/home/frol/hydra/", true);
+  
   // create scene
   //
   HRSceneInstRef scnRef = hrSceneCreate(L"my scene");
@@ -1785,6 +1783,8 @@ bool test39_mesh_from_vsgf()
   glViewport(0, 0, 1024, 768);
   std::vector<int32_t> image(1024 * 768);
   
+  Timer timer(true);
+  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(250));
@@ -1809,6 +1809,10 @@ bool test39_mesh_from_vsgf()
     if (info.finalUpdate)
       break;
   }
+  
+  auto oldPrecision = std::cout.precision(3);
+  std::cout << "[test_39], rendering time = " << timer.getElapsed() << "s " << std::endl;
+  std::cout.precision(oldPrecision);
   
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_39/z_out.bmp");
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_39/z_out.png");

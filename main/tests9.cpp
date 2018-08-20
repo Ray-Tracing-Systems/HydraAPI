@@ -137,7 +137,8 @@ namespace HRUtils
       auto node = hrRenderParamNode(renderRef);
       node.force_child(L"maxRaysPerPixel").text()     = samplesTotal;
       node.force_child(L"dont_run").text()            = 1;
-      node.force_child(L"forceGPUFrameBuffer").text() = 1;
+      //node.force_child(L"forceGPUFrameBuffer").text() = 0;
+      node.force_child(L"offline_pt").text()          = 1;
     }
     hrRenderClose(renderRef);
     
@@ -211,6 +212,7 @@ namespace HRUtils
   
 }
 
+/*
 bool test98_motion_blur()
 {
   MotionBlurInputParams input;
@@ -243,9 +245,8 @@ bool test98_motion_blur()
   
   return false;
 }
+*/
 
-/*
- *
 bool test98_motion_blur()
 {
   MotionBlurInputParams input;
@@ -268,8 +269,8 @@ bool test98_motion_blur()
   
   input.subFramesNum           = int(input.devList.size()); // #TODO: change this! Currently, it is the only condition when motion blur will work.
   input.outLogsFolder          = L"/home/frol/hydra/";
-  input.outImageName           = L"/home/frol/PROG/HydraAPI/main/tests_images/test_98";
-  input.samplePerSubFrame      = 32;
+  input.outImageName           = L"/home/frol/PROG/HydraAPI/main/tests_images/test_98/z_out";
+  input.samplePerSubFrame      = 256;
   input.outFrameStartNumber    = 1;
   
   RenderAnimationWithMotionBlur(input);
@@ -277,14 +278,9 @@ bool test98_motion_blur()
   return false;
 }
 
- 
- */
-
 
 
 /*
-
-
 
 bool test98_motion_blur()
 {

@@ -178,8 +178,7 @@ namespace HydraLiteMath
   static inline int max(int a, int b) { return a > b ? a : b; }
   static inline int min(int a, int b) { return a < b ? a : b; }
 
-
-#define SQR(x) ((x)*(x))
+  #define SQR(x) ((x)*(x))
 
   static inline float4 make_float4(float a, float b, float c, float d) { return float4(a, b, c, d); }
   static inline float3 make_float3(float a, float b, float c) { return float3(a, b, c); }

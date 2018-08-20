@@ -5052,6 +5052,7 @@ bool test77_save_gbuffer_layers()
     node.append_child(L"diff_trace_depth").text() = 3;
     node.append_child(L"maxRaysPerPixel").text()  = 512;
     node.append_child(L"evalgbuffer").text()      = 1;
+    node.append_child(L"offline_pt").text()       = 1;
   }
   hrRenderClose(renderRef);
 
