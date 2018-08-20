@@ -7,7 +7,7 @@
 #include "HydraAPI.h"
 
 
-float fitRange(float x, float src_a, float src_b, float dest_a, float dest_b)
+static float fitRange(float x, float src_a, float src_b, float dest_a, float dest_b)
 {
   x = x > src_b ? src_b : x;
   x = x < src_a ? src_a : x;
@@ -19,122 +19,122 @@ float fitRange(float x, float src_a, float src_b, float dest_a, float dest_b)
   return tmp * range2 + dest_a;
 }
 
-float clampf(float x, float minval, float maxval)
+static float clampf(float x, float minval, float maxval)
 {
   return fmaxf(fminf(x,maxval),minval);
 }
 
-int clampi(int x, int minval, int maxval)
+static int clampi(int x, int minval, int maxval)
 {
   return max(min(x,maxval),minval);
 }
 
-float3 abs3(float3 a)
+static float3 abs3(float3 a)
 {
   return make_float3(fabsf(a.x), fabsf(a.y), fabsf(a.z));
 }
 
-float4 abs4(float4 a)
+static float4 abs4(float4 a)
 {
   return make_float4(fabsf(a.x), fabsf(a.y), fabsf(a.z), fabsf(a.w));
 }
 
-float3 floor3(float3 v)
+static float3 floor3(float3 v)
 {
   return make_float3(floorf(v.x), floorf(v.y), floorf(v.z));
 }
 
-float4 floor4(float4 v)
+static float4 floor4(float4 v)
 {
   return make_float4(floorf(v.x), floorf(v.y), floorf(v.z), floorf(v.w));
 }
 
-float fract(float v)
+static float fract(float v)
 {
   return v - floorf(v);
 }
 
-float3 fract3(float3 v)
+static float3 fract3(float3 v)
 {
   return v - floor3(v);
 }
 
-float4 fract4(float4 v)
+static float4 fract4(float4 v)
 {
   return v - floor4(v);
 }
 
-float3 mod289f3(float3 x)
+static float3 mod289f3(float3 x)
 {
   return x - floor3(x * (1.0 / 289.0)) * 289.0;
 }
 
-float4 mod289f4(float4 x)
+static float4 mod289f4(float4 x)
 {
   return x - floor4(x * (1.0 / 289.0)) * 289.0;
 }
 
-float4 permute(float4 x)
+static float4 permute(float4 x)
 {
   return mod289f4((x * 34.0f + 1.0f) * x);
 }
 
-float4 taylorInvSqrt(float4 r)
+static float4 taylorInvSqrt(float4 r)
 {
   return 1.79284291400159f - 0.85373472095314f * r;
 }
 
-float3 fade(float3 t)
+static float3 fade(float3 t)
 {
   return t*t*t*(t*(t*6.0 - 15.0) + 10.0);
 }
 
-float mix(float x, float y, float a)
+static float mix(float x, float y, float a)
 {
   return x*(1.0f - a) + y*a;
 }
 
-float2 mix2(float2 x, float2 y, float a)
+static float2 mix2(float2 x, float2 y, float a)
 {
   return make_float2(mix(x.x, y.x, a), mix(x.y, y.y, a));
 }
 
-float3 mix3(float3 x, float3 y, float a)
+static float3 mix3(float3 x, float3 y, float a)
 {
   return make_float3(mix(x.x, y.x, a), mix(x.y, y.y, a), mix(x.z, y.z, a));
 }
 
-float4 mix4(float4 x, float4 y, float a)
+static float4 mix4(float4 x, float4 y, float a)
 {
   return make_float4(mix(x.x, y.x, a), mix(x.y, y.y, a), mix(x.z, y.z, a), mix(x.w, y.w, a));
 }
 
-float step(float edge, float x)
+static float step(float edge, float x)
 {
   return x < edge ? 0.0f : 1.0f;
 }
 
-float4 step4(float edge, float4 x)
+static float4 step4(float edge, float4 x)
 {
   return make_float4(x.x < edge ? 0.0f : 1.0f, x.y < edge ? 0.0f : 1.0f,
                      x.z < edge ? 0.0f : 1.0f, x.w < edge ? 0.0f : 1.0f);
 }
 
-float4 step4_(float4 edge, float4 x)
+static float4 step4_(float4 edge, float4 x)
 {
   return make_float4(x.x < edge.x ? 0.0f : 1.0f, x.y < edge.y ? 0.0f : 1.0f,
                      x.z < edge.z ? 0.0f : 1.0f, x.w < edge.w ? 0.0f : 1.0f);
 }
 
 
-float rand(float n){return fract(sinf(n) * 43758.5453123f);}
+static float rand(float n){return fract(sinf(n) * 43758.5453123f);}
 /*float rand(vec2 co){
     return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
 }
 */
 
 // Classic Perlin noise
-float cnoise(float3 P)
+static float cnoise(float3 P)
 {
   float3 Pi0 = floor3(P); // Integer part for indexing
   float3 Pi1 = Pi0 + make_float3(1.0, 1.0, 1.0); // Integer part + 1
@@ -203,7 +203,7 @@ float cnoise(float3 P)
   return n_xyz;
 }
 
-float octave(float3 pos, int octaves, float persistence, float frequency, float lacunarity)
+static float octave(float3 pos, int octaves, float persistence, float frequency, float lacunarity)
 {
   float total = 0.0f;
   float amplitude = 1.0f;
@@ -222,7 +222,7 @@ float octave(float3 pos, int octaves, float persistence, float frequency, float 
   return total / maxValue;
 }
 
-float noise_musgrave_fBm(float3 p, float H, float lacunarity, float octaves)
+static float noise_musgrave_fBm(float3 p, float H, float lacunarity, float octaves)
 {
   float rmd;
   float value = 0.0;
@@ -245,14 +245,14 @@ float noise_musgrave_fBm(float3 p, float H, float lacunarity, float octaves)
 }
 
 
-float unsigned_perlin(float3 pos)
+static float unsigned_perlin(float3 pos)
 {
   float n = cnoise(pos);
 
   return 0.5f * n + 0.5f;
 }
 
-float noise_turbulence(float3 p, float details, int hard)
+static float noise_turbulence(float3 p, float details, int hard)
 {
   float fscale = 1.0;
   float amp = 1.0;
@@ -297,7 +297,7 @@ float noise_turbulence(float3 p, float details, int hard)
   }
 }
 
-float noise(float3 p, float distortion, float detail)
+static float noise(float3 p, float distortion, float detail)
 {
   float3 r;
   int hard = 0;

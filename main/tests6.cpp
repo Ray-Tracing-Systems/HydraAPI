@@ -1731,7 +1731,7 @@ bool test39_mesh_from_vsgf()
   }
   hrRenderClose(renderRef);
   
-  hrRenderLogDir(renderRef, L"/home/frol/hydra/", true);
+  //hrRenderLogDir(renderRef, L"/home/frol/hydra/", true);
   
   // create scene
   //

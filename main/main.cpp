@@ -103,12 +103,12 @@ int main(int argc, const char** argv)
     // run_all_mtl_tests();
     // run_all_ipp_tests();
   
-    //test39_mesh_from_vsgf();
+    test39_mesh_from_vsgf();
      //test42_load_library_basic(); // push test into compact
     // test98_motion_blur();
 
 //    MTL_TESTS::test_166_displace_by_noise();
-   test_x1_displace_car_by_noise();
+  // test_x1_displace_car_by_noise();
     
     //std::cout << PP_TESTS::test303_median_in_place() << std::endl;
     
