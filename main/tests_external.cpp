@@ -193,7 +193,7 @@ bool test_x1_displace_car_by_noise()
 
   hrSceneClose(scnRef);
 
-  std::wstring car_path(L"/home/vsan/Yandex.Disk/samsungdata/cars-lib/002");
+  std::wstring car_path(L"/cars-lib/002");
 
   auto merged_car = MergeLibraryIntoLibrary(car_path.c_str(), false, true);
   hrCommit(scnRef);
