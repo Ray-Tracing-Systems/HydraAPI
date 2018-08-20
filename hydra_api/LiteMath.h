@@ -181,6 +181,7 @@ namespace HydraLiteMath
   #define SQR(x) ((x)*(x))
 
   static inline float4 make_float4(float a, float b, float c, float d) { return float4(a, b, c, d); }
+  static inline float4 make_float4_1(float a) { return float4(a, a, a, a); }
   static inline float3 make_float3(float a, float b, float c) { return float3(a, b, c); }
   static inline float3 make_float3(float4 f4) { return float3(f4.x, f4.y, f4.z); }
   static inline float2 make_float2(float a, float b) { return float2(a, b); }
@@ -195,8 +196,12 @@ namespace HydraLiteMath
   //**********************************************************************************
   static inline float4 operator * (const float4 & u, float v) { return make_float4(u.x * v, u.y * v, u.z * v, u.w * v); }
   static inline float4 operator / (const float4 & u, float v) { return make_float4(u.x / v, u.y / v, u.z / v, u.w / v); }
+  static inline float4 operator + (const float4 & u, float v) { return make_float4(u.x + v, u.y + v, u.z + v, u.w + v); }
+  static inline float4 operator - (const float4 & u, float v) { return make_float4(u.x - v, u.y - v, u.z - v, u.w - v); }
   static inline float4 operator * (float v, const float4 & u) { return make_float4(v * u.x, v * u.y, v * u.z, v * u.w); }
   static inline float4 operator / (float v, const float4 & u) { return make_float4(v / u.x, v / u.y, v / u.z, v / u.w); }
+  static inline float4 operator + (float v, const float4 & u) { return make_float4(u.x + v, u.y + v, u.z + v, u.w + v); }
+  static inline float4 operator - (float v, const float4 & u) { return make_float4(u.x - v, u.y - v, u.z - v, u.w - v); }
 
   static inline float4 operator + (const float4 & u, const float4 & v) { return make_float4(u.x + v.x, u.y + v.y, u.z + v.z, u.w + v.w); }
   static inline float4 operator - (const float4 & u, const float4 & v) { return make_float4(u.x - v.x, u.y - v.y, u.z - v.z, u.w - v.w); }
@@ -240,8 +245,12 @@ namespace HydraLiteMath
   //**********************************************************************************
   static inline float3 operator * (const float3 & u, float v) { return make_float3(u.x * v, u.y * v, u.z * v); }
   static inline float3 operator / (const float3 & u, float v) { return make_float3(u.x / v, u.y / v, u.z / v); }
+  static inline float3 operator + (const float3 & u, float v) { return make_float3(u.x + v, u.y + v, u.z + v); }
+  static inline float3 operator - (const float3 & u, float v) { return make_float3(u.x - v, u.y - v, u.z - v); }
   static inline float3 operator * (float v, const float3 & u) { return make_float3(v * u.x, v * u.y, v * u.z); }
   static inline float3 operator / (float v, const float3 & u) { return make_float3(v / u.x, v / u.y, v / u.z); }
+  static inline float3 operator + (float v, const float3 & u) { return make_float3(u.x + v, u.y + v, u.z + v); }
+  static inline float3 operator - (float v, const float3 & u) { return make_float3(u.x - v, u.y - v, u.z - v); }
 
   static inline float3 operator + (const float3 & u, const float3 & v) { return make_float3(u.x + v.x, u.y + v.y, u.z + v.z); }
   static inline float3 operator - (const float3 & u, const float3 & v) { return make_float3(u.x - v.x, u.y - v.y, u.z - v.z); }
@@ -259,7 +268,6 @@ namespace HydraLiteMath
   static inline float3 & operator -= (float3 & u, float v) { u.x -= v; u.y -= v; u.z -= v; return u; }
   static inline float3 & operator *= (float3 & u, float v) { u.x *= v; u.y *= v; u.z *= v; return u; }
   static inline float3 & operator /= (float3 & u, float v) { u.x /= v; u.y /= v; u.z /= v; return u; }
-
 
   static inline float3 catmullrom(const float3 & P0, const float3 & P1, const float3 & P2, const float3 & P3, float t)
   {
@@ -284,6 +292,45 @@ namespace HydraLiteMath
 
   static inline float  maxcomp(const float3 & u) { return fmax(u.x, fmax(u.y, u.z)); }
   static inline float  mincomp(const float3 & u) { return fmin(u.x, fmin(u.y, u.z)); }
+
+
+  struct vertex_cache
+  {
+      float3 pos;
+      float3 normal;
+      float2 uv;
+
+      vertex_cache() = default;
+  };
+
+  struct vertex_cache_hash
+  {
+      std::size_t operator()(const vertex_cache &v) const
+      {
+        using std::size_t;
+        using std::hash;
+        return ((hash<int>()(int(v.pos.x * 73856093))) ^
+                (hash<int>()(int(v.pos.y * 19349663))) ^
+                (hash<int>()(int(v.pos.z * 83492791))) ^
+                (hash<int>()(int(v.normal.x * 12929173))) ^
+                (hash<int>()(int(v.normal.y * 15484457))) ^
+                (hash<int>()(int(v.normal.z * 26430499))) ^
+                (hash<int>()(int(v.uv.x * 30025883))) ^
+                (hash<int>()(int(v.uv.y * 41855327))));
+      }
+  };
+
+  struct float3_hash
+  {
+      std::size_t operator()(const float3& k) const
+      {
+        using std::size_t;
+        using std::hash;
+        return ((hash<int>()(int(k.x * 73856093))) ^
+                (hash<int>()(int(k.y * 19349663))) ^
+                (hash<int>()(int(k.z * 83492791))));
+      }
+  };
 
 
   //**********************************************************************************

@@ -760,7 +760,7 @@ HAPI void              hrMeshMaterialId(HRMeshRef a_pMesh, int matId);
 \param a_pMesh - pointer to mesh
 
 */
-HAPI void              hrMeshAppendTriangles3(HRMeshRef a_pMesh, int indNum, const int* indices);
+HAPI void              hrMeshAppendTriangles3(HRMeshRef a_pMesh, int indNum, const int* indices, bool weld_vertices = true);
 
 
 
@@ -869,7 +869,7 @@ HAPI const HRRenderDeviceInfoListElem* hrRenderGetDeviceList(HRRenderRef a_pRend
 /**
 \brief enable or disable target device by id. 
 */
-HAPI void hrRenderEnableDevice(HRRenderRef a_pRender, int32_t a_deviceId, bool a_enableOrDisable);
+HAPI void hrRenderEnableDevice(HRRenderRef a_pRender, int32_t a_deviceId, bool a_enable);
 
 /**
 \brief these struct is returned by hrRenderHaveUpdate

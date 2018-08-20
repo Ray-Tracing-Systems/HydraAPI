@@ -387,6 +387,8 @@ bool test1015_merge_scene_with_remaps();
 bool test1016_merge_scene_remap_override();
 bool test1017_merge_scene_scene_id_mask();
 
+bool test_x1_displace_car_by_noise();
+
 
 void run_all_api_tests(const int startTestId = 0);
 void run_all_geo_tests();
@@ -395,7 +397,7 @@ void run_all_lgt_tests(int a_start = 0);
 void run_all_ipp_tests(int a_start = 0);
 void terminate_opengl();
 
-static const int CURR_RENDER_DEVICE = 1;
+static const int CURR_RENDER_DEVICE = 0;
 
 //void image_p_sandbox();
 

@@ -765,7 +765,8 @@ static void AddCustomAttributesFromPointers(HRMesh* pMesh, int maxVertexId)
 
 }
 
-HAPI void hrMeshAppendTriangles3(HRMeshRef a_mesh, int indNum, const int* indices)
+
+HAPI void hrMeshAppendTriangles3(HRMeshRef a_mesh, int indNum, const int* indices, bool weld_vertices)
 {
   HRMesh* pMesh = g_objManager.PtrById(a_mesh);
 
@@ -817,13 +818,13 @@ HAPI void hrMeshAppendTriangles3(HRMeshRef a_mesh, int indNum, const int* indice
 	// now append triangle indices ...
 	//
 	for (int i = 0; i < indNum; i++)
-		pMesh->m_input.triIndices.push_back(int(oldVertexNum) + indices[i]);
+    pMesh->m_input.triIndices.push_back(int(oldVertexNum) + indices[i]);
 
   const bool hasNormals  = (pMesh->m_inputPointers.normals != nullptr);
   const bool hasTangents = (pMesh->m_inputPointers.tangents != nullptr);
 
-	if (!hasNormals)
-		hrMeshComputeNormals(a_mesh, indNum); //specify 3rd parameter as "true" to use facenormals
+  if (!hasNormals)
+    hrMeshComputeNormals(a_mesh, indNum); //specify 3rd parameter as "true" to use facenormals
 
   if(!hasTangents)
     hrMeshComputeTangents(a_mesh, indNum);
@@ -844,6 +845,9 @@ HAPI void hrMeshAppendTriangles3(HRMeshRef a_mesh, int indNum, const int* indice
     for (int i = 0; i < (indNum / 3); i++)
       pMesh->m_input.matIndices.push_back(matId);
   }
+
+  if(weld_vertices)
+    hrMeshWeldVertices(a_mesh, indNum);
 }
 
 HAPI void hrMeshMaterialId(HRMeshRef a_mesh, int a_matId)
@@ -1011,9 +1015,9 @@ void hrMeshComputeNormals(HRMeshRef a_mesh, const int indexNum, bool useFaceNorm
       const float lenB = length(cross(edge1B, edge2B));
       const float lenC = length(cross(edge1C, edge2C));
       
-      float wA = fmax(lenA*fabsf(std::acos(dotA)), 1e-5f);
-      float wB = fmax(lenB*fabsf(std::acos(dotB)), 1e-5f);
-      float wC = fmax(lenC*fabsf(std::acos(dotC)), 1e-5f);
+      float wA = fmaxf(lenA*fabsf(std::acos(dotA)), 1e-5f);
+      float wB = fmaxf(lenB*fabsf(std::acos(dotB)), 1e-5f);
+      float wC = fmaxf(lenC*fabsf(std::acos(dotC)), 1e-5f);
 
      // float face_area = std::abs((A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y)) / 2.0f);
 
