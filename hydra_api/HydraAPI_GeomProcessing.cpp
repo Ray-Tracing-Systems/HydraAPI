@@ -37,7 +37,7 @@ struct vertex_cache_eq
     {
       return (fabsf(u.pos.x - v.pos.x) < 1e-6) && (fabsf(u.pos.y - v.pos.y) < 1e-6) && (fabsf(u.pos.z - v.pos.z) < 1e-6) && //pos
              (fabsf(u.normal.x - v.normal.x) < 1e-3) && (fabsf(u.normal.y - v.normal.y) < 1e-3) && (fabsf(u.normal.z - v.normal.z) < 1e-3) && //norm
-             (fabsf(u.uv.x - v.uv.x) < 1e-4) && (fabsf(u.uv.y - v.uv.y) < 1e-4); //uv
+             (fabsf(u.uv.x - v.uv.x) < 1e-5) && (fabsf(u.uv.y - v.uv.y) < 1e-5); //uv
     }
 };
 
@@ -155,8 +155,8 @@ void hrMeshDisplace(HRMeshRef a_mesh, const std::unordered_map<uint32_t, uint32_
 
   HRMesh::InputTriMesh &mesh = pMesh->m_input;
 
-  const int vertexCount = int(mesh.verticesPos.size() / 4);
-  const int triangleCount = int(mesh.triIndices.size() / 3);
+  const auto vertexCount = int(mesh.verticesPos.size() / 4);
+  const auto triangleCount = int(mesh.triIndices.size() / 3);
 
   std::set<int32_t> uniqueMatIndices;
   std::unordered_map<int32_t, pugi::xml_node> matsWithDisplacement;
@@ -382,8 +382,8 @@ void hrMeshSubdivideSqrt3(HRMeshRef a_mesh, int a_iterations)
   for(int i = 0; i < a_iterations; ++i)
   {
 
-    const uint32_t old_vertex_count = uint32_t(mesh.verticesPos.size() / 4);
-    const uint32_t old_tri_count = uint32_t(mesh.triIndices.size() / 3);
+    const auto old_vertex_count = uint32_t(mesh.verticesPos.size() / 4);
+    const auto old_tri_count = uint32_t(mesh.triIndices.size() / 3);
 
     std::vector<uint32_t> indices;
     indices.reserve(mesh.triIndices.size() * 3);
@@ -504,7 +504,7 @@ void hrMeshSubdivideSqrt3(HRMeshRef a_mesh, int a_iterations)
       update_vertex_attrib_by_index_f2(uv, k, uv_new);
     }
 
-    for (int ii = 0; ii < pos_new.size(); ++ii)
+    for (uint32_t ii = 0; ii < pos_new.size(); ++ii)
     {
       mesh.verticesPos.at(ii)     = pos_new.at(ii);
       mesh.verticesNorm.at(ii)    = normal_new.at(ii);
@@ -530,8 +530,8 @@ void hrMeshSubdivide(HRMeshRef a_mesh, int a_iterations)
 
   HRMesh::InputTriMesh &mesh = pMesh->m_input;
 
-  const int vertexCount = int(mesh.verticesPos.size() / 4);
-  const int triangleCount = int(mesh.triIndices.size() / 3);
+//  const auto vertexCount = int(mesh.verticesPos.size() / 4);
+//  const auto triangleCount = int(mesh.triIndices.size() / 3);
 
   std::vector<uint32_t> indices;
   indices.reserve(mesh.triIndices.size() * 3);
@@ -627,21 +627,21 @@ void displaceByNoise(HRMesh *pMesh, const pugi::xml_node &noiseXMLNode, std::vec
     auto ins = displaced_indices.insert(tri.x);
     if(ins.second)
     {
-      texHeight.x = sampleNoise(noiseXMLNode, attrib1 + offset);
+      texHeight.x = HRTextureUtils::sampleNoise(noiseXMLNode, attrib1 + offset);
       if (texHeight.x < 0.5) texHeight.x = 0.0f;
     }
 
     ins = displaced_indices.insert(tri.y);
     if(ins.second)
     {
-      texHeight.y = sampleNoise(noiseXMLNode, attrib2 + offset);
+      texHeight.y = HRTextureUtils::sampleNoise(noiseXMLNode, attrib2 + offset);
       if (texHeight.y < 0.5) texHeight.y = 0.0f;
     }
 
     ins = displaced_indices.insert(tri.z);
     if(ins.second)
     {
-      texHeight.z = sampleNoise(noiseXMLNode, attrib3 + offset);
+      texHeight.z = HRTextureUtils::sampleNoise(noiseXMLNode, attrib3 + offset);
       if (texHeight.z < 0.5) texHeight.z = 0.0f;
     }
 
@@ -661,6 +661,68 @@ void displaceByNoise(HRMesh *pMesh, const pugi::xml_node &noiseXMLNode, std::vec
     mesh.verticesPos.at(tri.z * 4 + 2) += normalZ.z * mult * texHeight.z;
 
   }
+}
+
+void displaceCustom(HRMesh *pMesh, const pugi::xml_node &customNode, std::vector<uint3> &triangleList)
+{
+  HRMesh::InputTriMesh &mesh = pMesh->m_input;
+
+  auto texNode = customNode.child(L"texture");
+  pugi::xml_node texLibNode;
+  HRTextureNode texture;
+  if(texNode != nullptr)
+  {
+    auto id = texNode.attribute(L"id").as_int();
+    texture = g_objManager.scnData.textures[id];
+  }
+
+  std::set<uint32_t > displaced_indices;
+  for(int i = 0; i < triangleList.size(); i++)
+  {
+    const auto& tri = triangleList[i];
+
+    float3 pos = make_float3(vertex_attrib_by_index_f4("pos", tri.x, mesh));
+    float3 norm = make_float3(vertex_attrib_by_index_f4("normal", tri.x, mesh));
+    float displace_vec[3] = {0.0f, 0.0f, 0.0f};
+
+    auto ins = displaced_indices.insert(tri.x);
+    if(ins.second)
+    {
+      texture.displaceCallback((const float*)&pos, (const float*)&norm, displace_vec, texture.customData,
+                               texture.customDataSize);
+      mesh.verticesPos.at(tri.x * 4 + 0) += displace_vec[0];
+      mesh.verticesPos.at(tri.x * 4 + 1) += displace_vec[1];
+      mesh.verticesPos.at(tri.x * 4 + 2) += displace_vec[2];
+    }
+
+    pos = make_float3(vertex_attrib_by_index_f4("pos", tri.y, mesh));
+    norm = make_float3(vertex_attrib_by_index_f4("normal", tri.y, mesh));
+    displace_vec[0] = 0.0f, displace_vec[1] = 0.0f, displace_vec[2] = 0.0f;
+    ins = displaced_indices.insert(tri.y);
+    if(ins.second)
+    {
+      texture.displaceCallback((const float *) &pos, (const float *) &norm, displace_vec, texture.customData,
+                               texture.customDataSize);
+      mesh.verticesPos.at(tri.y * 4 + 0) += displace_vec[0];
+      mesh.verticesPos.at(tri.y * 4 + 1) += displace_vec[1];
+      mesh.verticesPos.at(tri.y * 4 + 2) += displace_vec[2];
+    }
+
+    pos = make_float3(vertex_attrib_by_index_f4("pos", tri.z, mesh));
+    norm = make_float3(vertex_attrib_by_index_f4("normal", tri.z, mesh));
+    displace_vec[0] = 0.0f, displace_vec[1] = 0.0f, displace_vec[2] = 0.0f;
+    ins = displaced_indices.insert(tri.z);
+    if(ins.second)
+    {
+      texture.displaceCallback((const float *) &pos, (const float *) &norm, displace_vec, texture.customData,
+                               texture.customDataSize);
+      mesh.verticesPos.at(tri.z * 4 + 0) += displace_vec[0];
+      mesh.verticesPos.at(tri.z * 4 + 1) += displace_vec[1];
+      mesh.verticesPos.at(tri.z * 4 + 2) += displace_vec[2];
+    }
+  }
+
+
 }
 
 void displaceByHeightMap(HRMesh *pMesh, const pugi::xml_node &heightXMLNode, std::vector<uint3> &triangleList)
@@ -744,27 +806,27 @@ void displaceByHeightMap(HRMesh *pMesh, const pugi::xml_node &heightXMLNode, std
       if(ins.second)
       {
         if(isLDR)
-          texHeight.x = sampleHeightMapLDR(imageDataLDR, w, h, uv1, matrix);
+          texHeight.x = HRTextureUtils::sampleHeightMapLDR(imageDataLDR, w, h, uv1, matrix);
         if(isHDR)
-          texHeight.x = sampleHeightMapHDR(imageDataHDR, w, h, uv1, matrix);
+          texHeight.x = HRTextureUtils::sampleHeightMapHDR(imageDataHDR, w, h, uv1, matrix);
       }
 
       ins = displaced_indices.insert(tri.y);
       if(ins.second)
       {
         if(isLDR)
-          texHeight.y = sampleHeightMapLDR(imageDataLDR, w, h, uv2, matrix);
+          texHeight.y = HRTextureUtils::sampleHeightMapLDR(imageDataLDR, w, h, uv2, matrix);
         if(isHDR)
-          texHeight.y = sampleHeightMapHDR(imageDataHDR, w, h, uv2, matrix);
+          texHeight.y = HRTextureUtils::sampleHeightMapHDR(imageDataHDR, w, h, uv2, matrix);
       }
 
       ins = displaced_indices.insert(tri.z);
       if(ins.second)
       {
         if(isLDR)
-          texHeight.z = sampleHeightMapLDR(imageDataLDR, w, h, uv3, matrix);
+          texHeight.z = HRTextureUtils::sampleHeightMapLDR(imageDataLDR, w, h, uv3, matrix);
         if(isHDR)
-          texHeight.z = sampleHeightMapHDR(imageDataHDR, w, h, uv3, matrix);
+          texHeight.z = HRTextureUtils::sampleHeightMapHDR(imageDataHDR, w, h, uv3, matrix);
       }
     }
 
@@ -792,6 +854,8 @@ void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::v
 
   auto noiseNode = displaceXMLNode.child(L"noise");
 
+  auto customNode = displaceXMLNode.child(L"custom");
+
   if(heightNode != nullptr)
   {
     displaceByHeightMap(pMesh, heightNode, triangleList);
@@ -799,6 +863,10 @@ void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::v
   else if(noiseNode != nullptr)
   {
     displaceByNoise(pMesh, noiseNode, triangleList);
+  }
+  else if(customNode != nullptr)
+  {
+    displaceCustom(pMesh, customNode, triangleList);
   }
 }
 
@@ -834,7 +902,8 @@ void InsertFixedMeshesAndInstancesXML(pugi::xml_document &stateToProcess,
                                       std::unordered_map<uint32_t, uint32_t> &instToFixedMesh, int32_t sceneId)
 {
   auto geolib = stateToProcess.child(L"geometry_lib");
-  std::vector <pugi::xml_node> tmp_nodes;
+  std::vector <std::pair<int, pugi::xml_node> > tmp_nodes;
+
   if (geolib != nullptr)
   {
     for (auto& meshMap : instToFixedMesh)
@@ -842,7 +911,8 @@ void InsertFixedMeshesAndInstancesXML(pugi::xml_document &stateToProcess,
       auto geoLib_ch = g_objManager.scnData.m_geometryLibChanges;
 
       auto mesh_node = geoLib_ch.find_child_by_attribute(L"id", std::to_wstring(meshMap.second).c_str());
-      tmp_nodes.push_back(mesh_node);
+      std::pair<int, pugi::xml_node> p(meshMap.second, mesh_node);
+      tmp_nodes.push_back(p);
 
       auto sceneNode = stateToProcess.child(L"scenes").find_child_by_attribute(L"scene", L"id", std::to_wstring(sceneId).c_str());
       if (sceneNode != nullptr)
@@ -855,8 +925,13 @@ void InsertFixedMeshesAndInstancesXML(pugi::xml_document &stateToProcess,
       }
     }
   }
+
+
+  std::sort(tmp_nodes.begin(), tmp_nodes.end(),
+          [&](auto a, auto b) { return a.first < b.first; });
+
   for (auto& node : tmp_nodes)
-    geolib.append_copy(node);
+    geolib.append_copy(node.second);
 }
 
 
@@ -951,6 +1026,27 @@ std::wstring HR_PreprocessMeshes_old(const wchar_t *state_path)
 }
 
 */
+/*
+bool isFixedMesh(HRMeshRef mesh_ref, const pugi::xml_document &stateToProcess)
+{
+  auto geolib = stateToProcess.child(L"geometry_lib");
+  auto mesh_node = geolib.find_child_by_attribute(L"mesh", L"id", (std::to_wstring(mesh_ref.id)).c_str());
+  if(mesh_node != nullptr)
+  {
+    std::wstring mesh_name = mesh_node.attribute(L"name").as_string();
+    std::size_t found = mesh_name.find_last_of(L"/\\");
+
+    std::string::size_type isFixed = mesh_name.substr(found+1).find(L"fixed");
+    if (isFixed != std::string::npos)
+      return true;
+    else
+      return false;
+  }
+  else
+    return false;
+
+}*/
+
 std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
 {
   std::wstring new_state_path;
@@ -1059,6 +1155,7 @@ std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
 
         instToFixedMesh[inst_id] = mesh_ref_new.id;
         anyChanges = true;
+
       }
       else
       {
@@ -1099,9 +1196,9 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
   //std::unordered_map<float3, uint32_t, float3_hash, pos_eq> vertex_hash;
   std::unordered_map<vertex_cache, uint32_t, vertex_cache_hash, vertex_cache_eq> vertex_hash;
 
-  std::vector<float> vertices_new(mesh.verticesPos.size(), 0.0f);
-  std::vector<float> normals_new(mesh.verticesNorm.size(), 0.0f);
-  std::vector<float> uv_new(mesh.verticesTexCoord.size(), 0.0f);
+  std::vector<float> vertices_new(mesh.verticesPos.size()*2, 0.0f);
+  std::vector<float> normals_new(mesh.verticesNorm.size()*2, 0.0f);
+  std::vector<float> uv_new(mesh.verticesTexCoord.size()*2, 0.0f);
   std::vector<int32_t> mid_new;
   mid_new.reserve(mesh.matIndices.size());
 
@@ -1159,7 +1256,6 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
 
       index++;
     }
-
 
     tmp = vertex_attrib_by_index_f4("pos", indB, mesh);
     float3 B(tmp.x, tmp.y, tmp.z);

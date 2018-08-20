@@ -526,11 +526,11 @@ HAPI void hrTextureNodeClose(HRTextureNodeRef a_pNode)
 
     // shitty code; #TODO: refactor it
     //
-    std::wstring dapaFolderPath = LocalDataPathOfCurrentSceneLibrary();
+    std::wstring dataFolderPath = LocalDataPathOfCurrentSceneLibrary();
 
     std::wstringstream namestream, namestream2;
     namestream  << std::fixed << L"data/"               << L"proctex_" << std::setfill(L"0"[0]) << std::setw(5) << texNode.attribute(L"id").as_string() << L".c";
-    namestream2 << std::fixed << dapaFolderPath.c_str() << L"proctex_" << std::setfill(L"0"[0]) << std::setw(5) << texNode.attribute(L"id").as_string() << L".c";
+    namestream2 << std::fixed << dataFolderPath.c_str() << L"proctex_" << std::setfill(L"0"[0]) << std::setw(5) << texNode.attribute(L"id").as_string() << L".c";
     std::wstring locName  = namestream.str();
     std::wstring locName2 = namestream2.str();
 

@@ -8,10 +8,10 @@
 
 #include "simplerandom.h"
 
-#include "../hydra_api/LiteMath.h"
 #include "../hydra_api/HR_HDRImageTool.h"
+#include "../hydra_api/HydraTextureUtils.h"
+
 using HDRImage4f = HydraRender::HDRImage4f;
-using namespace HydraLiteMath;
 
 #pragma warning(disable:4838)
 
@@ -174,6 +174,59 @@ namespace TEST_UTILS
         a_buffer[(y*w + x) * 4 + 3] = 1.0;
       }
     }
+  }
+
+
+  void customDisplacement1(const float *pos, const float *normal, float displace_vec[3],
+                           void* a_customData, uint32_t a_customDataSize)
+  {
+
+    auto *data = (displace_data_1 *) a_customData;
+
+    float3 N(normal[0], normal[1], normal[2]);
+
+    auto tmp = cross(data->global_dir, N);
+    auto d = cross(N, tmp);
+
+    d = normalize(d);
+
+    float mult = 5.0f - pos[1];
+    if(mult < 0.0f) mult = 0.0f;
+
+    displace_vec[0] = d.x * data->mult * mult;
+    displace_vec[1] = d.y * data->mult * mult;
+    displace_vec[2] = d.z * data->mult * mult;
+  }
+
+  void customDisplacementSpots(const float *pos, const float *normal, float displace_vec[3],
+                               void* a_customData, uint32_t a_customDataSize)
+  {
+
+    auto *data = (displace_data_1 *) a_customData;
+
+    float3 N(normal[0], normal[1], normal[2]);
+    float3 position(pos[0], pos[1], pos[2]-2.2f);
+
+    float spots_scale = 120.0f;
+    float spots_detail = 0.1f;
+    float spots_thr = 0.58;
+    float n2 = HRTextureUtils::noise(position * spots_scale, 0.0f, spots_detail) - spots_thr;
+    n2 = clamp(n2, 0.0f, 1.0f);
+    n2 = powf(n2, 0.15f);
+
+    /*float y_gen = (position.y) / 8.1f; //bbox_y = 8.1f
+
+    n2 = clamp(n2, 0.0f, 1.0f) * (1.0f - HRTextureUtils::fitRange(y_gen, 0.4, 1.0f, 0.0f, 1.0f));
+*/
+//
+//    float mult = 1.0f - pos[1];
+//    if(mult < 0.0f) mult = 0.0f;
+
+    auto d = N * n2;
+
+    displace_vec[0] = d.x * data->mult;
+    displace_vec[1] = d.y * data->mult;
+    displace_vec[2] = d.z * data->mult;
   }
 
   void CreateTestBigTexturesFilesIfNeeded()

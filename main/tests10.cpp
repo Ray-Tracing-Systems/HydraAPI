@@ -1982,7 +1982,7 @@ bool test1011_merge_scene()
   hrSceneClose(scnRef);
 
 
-  HRSceneInstRef scnRef2 = HRUtils::MergeLibraryIntoLibrary(L"tests_f/test_131", true, true);
+  HRSceneInstRef scnRef2 = HRUtils::MergeLibraryIntoLibrary(L"/home/vsan/repos/HydraAPI/main/tests/test_x1", true, true); //L"tests_f/test_131
 
   mTranslate = translate4x4(float3(0.0f, 5.0f, 0.0f));
 

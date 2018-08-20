@@ -287,12 +287,14 @@ Any parameters (for fixed function or programmable nodes) can be set via sequenc
 struct HRTextureNode : public HRObject<IHRTextureNode>
 {
   HRTextureNode() : pImpl(nullptr), m_loadedFromFile(false), customData(nullptr), customDataSize(0),
-                    ldrCallback(nullptr), hdrCallback(nullptr) {}
+                    ldrCallback(nullptr), hdrCallback(nullptr), displaceCallback(nullptr) {}
 
   ~HRTextureNode() {free(customData);}
 
-  HRTextureNode(const HRTextureNode& other) : HRObject(other), m_loadedFromFile(other.m_loadedFromFile), ldrCallback(other.ldrCallback),
-                                        hdrCallback(other.hdrCallback), customDataSize(other.customDataSize), pImpl(other.pImpl)
+  HRTextureNode(const HRTextureNode& other) : HRObject(other), m_loadedFromFile(other.m_loadedFromFile),
+                                              ldrCallback(other.ldrCallback), hdrCallback(other.hdrCallback),
+                                              displaceCallback(other.displaceCallback), customDataSize(other.customDataSize),
+                                              pImpl(other.pImpl)
   {
       customData = malloc(customDataSize);
       memcpy(customData, other.customData, customDataSize);
@@ -306,10 +308,11 @@ struct HRTextureNode : public HRObject<IHRTextureNode>
   bool m_loadedFromFile;
 
   void *customData;
-  int32_t customDataSize;
+  uint32_t customDataSize;
 
   HR_TEXTURE2D_PROC_LDR_CALLBACK ldrCallback;
   HR_TEXTURE2D_PROC_HDR_CALLBACK hdrCallback;
+  HRExtensions::HR_TEXTURE_DISPLACEMENT_CALLBACK displaceCallback;
 };
 
 
