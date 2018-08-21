@@ -1164,7 +1164,7 @@ std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
     if(anyChanges)
     {
       InsertFixedMeshesAndInstancesXML(stateToProcess, instToFixedMesh, g_objManager.m_currSceneId);
-     // removeDisplacementFromMaterials(stateToProcess, displacementMatIDs);
+      removeDisplacementFromMaterials(stateToProcess, displacementMatIDs);
     }
   }
 
