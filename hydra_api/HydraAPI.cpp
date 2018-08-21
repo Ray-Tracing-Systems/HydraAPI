@@ -582,7 +582,9 @@ HAPI void hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh,
   HRMesh *pMesh = g_objManager.PtrById(a_pMesh);
   if(g_objManager.m_computeBBoxes && pMesh->pImpl != nullptr)
   {
-    auto inst_bbox = transformBBox(pMesh->pImpl->getBBox(), HydraLiteMath::float4x4(a_mat));
+    auto bbox = pMesh->pImpl->getBBox();
+    auto mat = HydraLiteMath::float4x4(a_mat);
+    auto inst_bbox = transformBBox(bbox, mat);
     pScn->m_bbox = mergeBBoxes(pScn->m_bbox, inst_bbox);
   }
 

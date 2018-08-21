@@ -8,6 +8,9 @@
 
 #include "../hydra_api/HydraAPI.h"
 #include "../hydra_api/HydraXMLVerify.h"
+#include "../hydra_api/LiteMath.h"
+
+using namespace HydraLiteMath;
 
 #include "mesh_utils.h"
 #include "simplerandom.h"
@@ -52,6 +55,19 @@ namespace TEST_UTILS
   void CreateStripedImageFile(const char* a_fileName, unsigned int* a_colors, int a_stripsNum, int w, int h);
   void procTexCheckerHDR(float* a_buffer, int w, int h, void* a_repeat);
   void procTexCheckerLDR(unsigned char* a_buffer, int w, int h, void* a_repeat);
+
+  //displacement
+  struct displace_data_1
+  {
+      float mult = 1.0f;
+      float3 global_dir = float3(0.0f, 1.0f, 0.0f);
+  };
+
+  void customDisplacement1(const float *pos, const float *normal, float displace_vec[3],
+                           void* a_customData, uint32_t a_customDataSize);
+  void customDisplacementSpots(const float *pos, const float *normal, float displace_vec[3],
+                               void* a_customData, uint32_t a_customDataSize);
+
 
   //geometry
   std::vector<HRMeshRef> CreateRandomMeshesArray(int a_size, simplerandom::RandomGen& rgen);
@@ -276,7 +292,7 @@ namespace MTL_TESTS
   bool test_166_displace_by_noise();
   bool test_167_subdiv();
   bool test_168_diffuse_texture_recommended_res2();
-
+  bool test_169_displace_custom_callback();
 
 }
 

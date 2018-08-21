@@ -71,8 +71,9 @@ else()
                                      HydraLaunchProcessLinux.cpp)
 endif()
 
-		
-		
+
+set(HR_EXTENSIONS HRExtensions.cpp)
+
 set(MODERN_GL_RENDER_DRIVER
         glad.c
         RenderDriverOpenGL32Forward.h RenderDriverOpenGL32Forward.cpp
@@ -109,7 +110,7 @@ endif()
 
 
 #build hydra API static library
-add_library(hydra_api STATIC ${SOURCE_FILES} ${POST_PROC} ${MODERN_GL_RENDER_DRIVER})
+add_library(hydra_api STATIC ${SOURCE_FILES} ${POST_PROC} ${MODERN_GL_RENDER_DRIVER} ${HR_EXTENSIONS})
 target_include_directories (hydra_api PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${OPENGL_INCLUDE_DIR})
 
 

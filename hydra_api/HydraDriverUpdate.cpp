@@ -1359,7 +1359,8 @@ void CreatePrecompProcTex(pugi::xml_document &doc, resolution_dict &dict)
       delete[] imageData;
 
       isProc = true;
-    } else if (texture.ldrCallback != nullptr)
+    }
+    else if (texture.ldrCallback != nullptr)
     {
       auto *imageData = new unsigned char[w * h * bpp];
 
