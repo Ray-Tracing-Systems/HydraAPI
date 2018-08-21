@@ -1120,6 +1120,7 @@ std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
         //displacementMats.
         displacementMatIDs.insert(matRef.id);
         HRMesh& mesh = g_objManager.scnData.meshes[inst.meshId];
+        HRUtils::BBox bbox_old = mesh.pImpl->getBBox();
         std::vector<float> verticesPos(mesh.m_input.verticesPos);       ///< float4
         std::vector<float> verticesNorm(mesh.m_input.verticesNorm);      ///< float4
         std::vector<float> verticesTexCoord(mesh.m_input.verticesTexCoord);  ///< float2
@@ -1145,7 +1146,6 @@ std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
         //std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
         //std::cout << "Subdivision time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms" <<std::endl;
 
-        const auto bbox_old = mesh.pImpl->getBBox();
         //begin = std::chrono::steady_clock::now();
         hrMeshDisplace(mesh_ref_new, remap_list, stateToProcess, bbox_old);
         //end = std::chrono::steady_clock::now();
