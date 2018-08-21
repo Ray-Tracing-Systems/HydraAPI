@@ -1118,7 +1118,8 @@ namespace HRUtils
 
 namespace HRExtensions
 {
-    typedef void(*HR_TEXTURE_DISPLACEMENT_CALLBACK)(const float *pos, const float *normal, float displace_vec[3],
+    typedef void(*HR_TEXTURE_DISPLACEMENT_CALLBACK)(const float *pos, const float *normal, const HRUtils::BBox &bbox,
+                                                    float displace_vec[3],
                                                     void* a_customData, uint32_t a_customDataSize);
 
     HAPI HRTextureNodeRef hrTextureDisplacementCustom(HR_TEXTURE_DISPLACEMENT_CALLBACK a_proc, void* a_customData,

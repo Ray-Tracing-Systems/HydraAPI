@@ -66,7 +66,8 @@ struct uv_eq
 };
 
 
-void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::vector<uint3> &triangleList);
+void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::vector<uint3> &triangleList,
+                    const HRUtils::BBox &bbox);
 
 
 bool meshHasDisplacementMat(HRMeshRef a_mesh, pugi::xml_node &displaceXMLNode)
@@ -144,7 +145,8 @@ bool instanceHasDisplacementMat(HRMeshRef a_meshRef, const std::unordered_map<ui
   return false;
 }
 
-void hrMeshDisplace(HRMeshRef a_mesh, const std::unordered_map<uint32_t, uint32_t> &remapList, pugi::xml_document &stateToProcess)
+void hrMeshDisplace(HRMeshRef a_mesh, const std::unordered_map<uint32_t, uint32_t> &remapList,
+                    pugi::xml_document &stateToProcess, const HRUtils::BBox &bbox)
 {
   HRMesh *pMesh = g_objManager.PtrById(a_mesh);
   if (pMesh == nullptr)
@@ -214,7 +216,7 @@ void hrMeshDisplace(HRMeshRef a_mesh, const std::unordered_map<uint32_t, uint32_
   //#pragma omp parallel for
   for(auto& dTris : dMatToTriangles)
   {
-    doDisplacement(pMesh, dTris.second.first, dTris.second.second);
+    doDisplacement(pMesh, dTris.second.first, dTris.second.second, bbox);
   }
 
 
@@ -663,17 +665,17 @@ void displaceByNoise(HRMesh *pMesh, const pugi::xml_node &noiseXMLNode, std::vec
   }
 }
 
-void displaceCustom(HRMesh *pMesh, const pugi::xml_node &customNode, std::vector<uint3> &triangleList)
+void displaceCustom(HRMesh *pMesh, const pugi::xml_node &customNode, std::vector<uint3> &triangleList, const HRUtils::BBox &bbox)
 {
   HRMesh::InputTriMesh &mesh = pMesh->m_input;
 
   auto texNode = customNode.child(L"texture");
   pugi::xml_node texLibNode;
-  HRTextureNode texture;
+  HRTextureNode *texture;
   if(texNode != nullptr)
   {
     auto id = texNode.attribute(L"id").as_int();
-    texture = g_objManager.scnData.textures[id];
+    texture = &g_objManager.scnData.textures[id];
   }
 
   std::set<uint32_t > displaced_indices;
@@ -688,8 +690,8 @@ void displaceCustom(HRMesh *pMesh, const pugi::xml_node &customNode, std::vector
     auto ins = displaced_indices.insert(tri.x);
     if(ins.second)
     {
-      texture.displaceCallback((const float*)&pos, (const float*)&norm, displace_vec, texture.customData,
-                               texture.customDataSize);
+      texture->displaceCallback((const float*)&pos, (const float*)&norm, bbox, displace_vec, texture->customData,
+                               texture->customDataSize);
       mesh.verticesPos.at(tri.x * 4 + 0) += displace_vec[0];
       mesh.verticesPos.at(tri.x * 4 + 1) += displace_vec[1];
       mesh.verticesPos.at(tri.x * 4 + 2) += displace_vec[2];
@@ -701,8 +703,8 @@ void displaceCustom(HRMesh *pMesh, const pugi::xml_node &customNode, std::vector
     ins = displaced_indices.insert(tri.y);
     if(ins.second)
     {
-      texture.displaceCallback((const float *) &pos, (const float *) &norm, displace_vec, texture.customData,
-                               texture.customDataSize);
+      texture->displaceCallback((const float *) &pos, (const float *) &norm, bbox, displace_vec, texture->customData,
+                               texture->customDataSize);
       mesh.verticesPos.at(tri.y * 4 + 0) += displace_vec[0];
       mesh.verticesPos.at(tri.y * 4 + 1) += displace_vec[1];
       mesh.verticesPos.at(tri.y * 4 + 2) += displace_vec[2];
@@ -714,8 +716,8 @@ void displaceCustom(HRMesh *pMesh, const pugi::xml_node &customNode, std::vector
     ins = displaced_indices.insert(tri.z);
     if(ins.second)
     {
-      texture.displaceCallback((const float *) &pos, (const float *) &norm, displace_vec, texture.customData,
-                               texture.customDataSize);
+      texture->displaceCallback((const float *) &pos, (const float *) &norm, bbox, displace_vec, texture->customData,
+                               texture->customDataSize);
       mesh.verticesPos.at(tri.z * 4 + 0) += displace_vec[0];
       mesh.verticesPos.at(tri.z * 4 + 1) += displace_vec[1];
       mesh.verticesPos.at(tri.z * 4 + 2) += displace_vec[2];
@@ -846,7 +848,8 @@ void displaceByHeightMap(HRMesh *pMesh, const pugi::xml_node &heightXMLNode, std
   }
 }
 
-void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::vector<uint3> &triangleList)
+void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::vector<uint3> &triangleList,
+                    const HRUtils::BBox &bbox)
 {
   HRMesh::InputTriMesh &mesh = pMesh->m_input;
 
@@ -866,7 +869,7 @@ void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::v
   }
   else if(customNode != nullptr)
   {
-    displaceCustom(pMesh, customNode, triangleList);
+    displaceCustom(pMesh, customNode, triangleList, bbox);
   }
 }
 
@@ -899,7 +902,7 @@ void InsertFixedMeshesInfoIntoXML(pugi::xml_document &stateToProcess, std::unord
 }
 
 void InsertFixedMeshesAndInstancesXML(pugi::xml_document &stateToProcess,
-                                      std::unordered_map<uint32_t, uint32_t> &instToFixedMesh, int32_t sceneId)
+                                      std::unordered_map<uint32_t, int32_t> &instToFixedMesh, int32_t sceneId)
 {
   auto geolib = stateToProcess.child(L"geometry_lib");
   std::vector <std::pair<int, pugi::xml_node> > tmp_nodes;
@@ -1066,7 +1069,7 @@ std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
     auto scn = g_objManager.scnInst[g_objManager.m_currSceneId];
 
     std::vector<std::unordered_map<uint32_t, uint32_t> > remapLists;
-    std::unordered_map<uint32_t, uint32_t> instToFixedMesh;
+    std::unordered_map<uint32_t, int32_t> instToFixedMesh;
     auto sceneNode = stateToProcess.child(L"scenes").find_child_by_attribute(L"scene", L"id", std::to_wstring(g_objManager.m_currSceneId).c_str());
     if (sceneNode != nullptr && sceneNode.child(L"remap_lists") != nullptr)
     {
@@ -1142,8 +1145,9 @@ std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
         //std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
         //std::cout << "Subdivision time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms" <<std::endl;
 
+        const auto bbox_old = mesh.pImpl->getBBox();
         //begin = std::chrono::steady_clock::now();
-        hrMeshDisplace(mesh_ref_new, remap_list, stateToProcess);
+        hrMeshDisplace(mesh_ref_new, remap_list, stateToProcess, bbox_old);
         //end = std::chrono::steady_clock::now();
         //std::cout << "Displacement time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms" <<std::endl;
 
@@ -1160,7 +1164,7 @@ std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
     if(anyChanges)
     {
       InsertFixedMeshesAndInstancesXML(stateToProcess, instToFixedMesh, g_objManager.m_currSceneId);
-      removeDisplacementFromMaterials(stateToProcess, displacementMatIDs);
+     // removeDisplacementFromMaterials(stateToProcess, displacementMatIDs);
     }
   }
 

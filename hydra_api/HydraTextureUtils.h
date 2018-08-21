@@ -20,6 +20,8 @@ namespace HRTextureUtils
 
     float noise(float3 p, float distortion, float detail);
 
+    float noise_musgrave_fBm(float3 p, float H, float lacunarity, float octaves);
+
     float fitRange(float x, float src_a, float src_b, float dest_a, float dest_b);
 }
 
