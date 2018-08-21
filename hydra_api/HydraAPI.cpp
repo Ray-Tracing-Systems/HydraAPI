@@ -1044,11 +1044,8 @@ HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pC
     if (g_objManager.m_pDriver->Info().supportUtilityPrepass && doPrepass)
       fixed_state = HR_UtilityDriverStart(newPath.c_str());
 
-    bool doDisplacement = false;
-    if (settings.child(L"evalDisplacement") != nullptr)
-      doDisplacement = settings.child(L"evalDisplacement").text().as_bool();
 //#ifdef IN_DEBUG
-    if (g_objManager.m_pDriver->Info().supportDisplacement && doDisplacement)
+    if (g_objManager.m_pDriver->Info().supportDisplacement)
       fixed_state = HR_PreprocessMeshes(fixed_state.c_str());
 //#endif
   }

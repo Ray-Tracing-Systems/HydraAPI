@@ -106,7 +106,7 @@ bool meshHasDisplacementMat(HRMeshRef a_mesh, pugi::xml_node &displaceXMLNode)
 }
 
 bool instanceHasDisplacementMat(HRMeshRef a_meshRef, const std::unordered_map<uint32_t, uint32_t> &remapList,
-                                pugi::xml_node &displaceXMLNode)
+                                pugi::xml_node &displaceXMLNode, HRMaterialRef &matRef)
 {
   HRMesh *pMesh = g_objManager.PtrById(a_meshRef);
   if (pMesh == nullptr)
@@ -125,9 +125,9 @@ bool instanceHasDisplacementMat(HRMeshRef a_meshRef, const std::unordered_map<ui
     auto ins = uniqueMatIndices.insert(mI);
     if (ins.second)
     {
-      HRMaterialRef tmpRef;
-      tmpRef.id = mI;
-      auto mat = g_objManager.PtrById(tmpRef);
+      //HRMaterialRef tmpRef;
+      matRef.id = mI;
+      auto mat = g_objManager.PtrById(matRef);
       if (mat != nullptr)
       {
         auto d_node = mat->xml_node_next(HR_OPEN_EXISTING).child(L"displacement");
@@ -1026,26 +1026,19 @@ std::wstring HR_PreprocessMeshes_old(const wchar_t *state_path)
 }
 
 */
-/*
-bool isFixedMesh(HRMeshRef mesh_ref, const pugi::xml_document &stateToProcess)
+
+void removeDisplacementFromMaterials(const pugi::xml_document &stateToProcess, std::set<int32_t > &materialIDs)
 {
-  auto geolib = stateToProcess.child(L"geometry_lib");
-  auto mesh_node = geolib.find_child_by_attribute(L"mesh", L"id", (std::to_wstring(mesh_ref.id)).c_str());
-  if(mesh_node != nullptr)
+  auto matlib = stateToProcess.child(L"materials_lib");
+  for (auto &mat_id :materialIDs)
   {
-    std::wstring mesh_name = mesh_node.attribute(L"name").as_string();
-    std::size_t found = mesh_name.find_last_of(L"/\\");
-
-    std::string::size_type isFixed = mesh_name.substr(found+1).find(L"fixed");
-    if (isFixed != std::string::npos)
-      return true;
-    else
-      return false;
+    auto mat_node = matlib.find_child_by_attribute(L"material", L"id", (std::to_wstring(mat_id)).c_str());
+    if (mat_node != nullptr)
+    {
+      mat_node.remove_child(L"displacement");
+    }
   }
-  else
-    return false;
-
-}*/
+}
 
 std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
 {
@@ -1101,6 +1094,7 @@ std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
       }
     }
 
+    std::set<int32_t > displacementMatIDs;
     for(int i = 0; i < scn.drawList.size(); ++i)
     {
       auto inst = scn.drawList.at(i);
@@ -1115,10 +1109,13 @@ std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
         remap_list = remapLists[inst.remapListId];
 
       pugi::xml_node displaceXMLNode;
+      HRMaterialRef matRef;
 
       hrMeshOpen(mesh_ref, HR_TRIANGLE_IND3, HR_OPEN_READ_ONLY);
-      if(instanceHasDisplacementMat(mesh_ref, remap_list, displaceXMLNode))
+      if(instanceHasDisplacementMat(mesh_ref, remap_list, displaceXMLNode, matRef))
       {
+        //displacementMats.
+        displacementMatIDs.insert(matRef.id);
         HRMesh& mesh = g_objManager.scnData.meshes[inst.meshId];
         std::vector<float> verticesPos(mesh.m_input.verticesPos);       ///< float4
         std::vector<float> verticesNorm(mesh.m_input.verticesNorm);      ///< float4
@@ -1152,10 +1149,8 @@ std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
 
         hrMeshClose(mesh_ref_new);
 
-
         instToFixedMesh[inst_id] = mesh_ref_new.id;
         anyChanges = true;
-
       }
       else
       {
@@ -1163,7 +1158,10 @@ std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
       }
     }
     if(anyChanges)
+    {
       InsertFixedMeshesAndInstancesXML(stateToProcess, instToFixedMesh, g_objManager.m_currSceneId);
+      removeDisplacementFromMaterials(stateToProcess, displacementMatIDs);
+    }
   }
 
   if(anyChanges)
