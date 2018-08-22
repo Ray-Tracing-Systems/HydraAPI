@@ -1110,6 +1110,7 @@ void EstimateMemHungryLights(const ChangeList& a_objList, bool* pIsHDR, int* pHu
   (*pEnvSize)            = int(envMemAmount);
 }
 
+bool g_hydraApiDisableSceneLoadInfo = false;
 
 /////
 //
@@ -1198,13 +1199,13 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
   HR_DriverUpdateCamera(scn, a_pDriver);
   HR_DriverUpdateSettings(scn, a_pDriver);
 
-  if(g_objManager.m_attachMode)
+  if(g_objManager.m_attachMode && !g_hydraApiDisableSceneLoadInfo)
     HrPrint(HR_SEVERITY_INFO, L"HydraAPI, loading textures ... ");
   
   int32_t updatedTextures  = HR_DriverUpdateTextures (scn, objList, a_pDriver);
   int32_t updatedMaterials = HR_DriverUpdateMaterials(scn, objList, a_pDriver);
   
-  if(g_objManager.m_attachMode)
+  if(g_objManager.m_attachMode && !g_hydraApiDisableSceneLoadInfo)
     HrPrint(HR_SEVERITY_INFO, L"HydraAPI, loading meshes   ... ");
   
   int32_t updatedMeshes    = HR_DriverUpdateMeshes   (scn, objList, a_pDriver);
@@ -1215,7 +1216,7 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
   if(g_objManager.m_attachMode && g_objManager.m_pVBSysMutex != nullptr)
     hr_unlock_system_mutex(g_objManager.m_pVBSysMutex);
   
-  if(g_objManager.m_attachMode)
+  if(g_objManager.m_attachMode && !g_hydraApiDisableSceneLoadInfo)
     HrPrint(HR_SEVERITY_INFO, L"HydraAPI, begin scene ");
   
   const auto dInfo = a_pDriver->DependencyInfo();
@@ -1244,7 +1245,7 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
   auto timeEnd  = std::chrono::system_clock::now();
   auto msPassed = std::chrono::duration_cast<std::chrono::milliseconds>(timeEnd - timeBeg).count();
   
-  if(g_objManager.m_attachMode)
+  if(g_objManager.m_attachMode && !g_hydraApiDisableSceneLoadInfo)
     HrPrint(HR_SEVERITY_INFO, L"HydraAPI, end scene; total load time = ", float(msPassed)/1000.0f, " s");
   
   // reset dirty flag; now we don't need to Update the scene to driver untill this flag changes or
@@ -1358,7 +1359,8 @@ void CreatePrecompProcTex(pugi::xml_document &doc, resolution_dict &dict)
       delete[] imageData;
 
       isProc = true;
-    } else if (texture.ldrCallback != nullptr)
+    }
+    else if (texture.ldrCallback != nullptr)
     {
       auto *imageData = new unsigned char[w * h * bpp];
 
@@ -1396,9 +1398,9 @@ static std::tuple<int, int> RecommendedTexResolutionFix(int w, int h, int rwidth
 {
 
   if(w == -1 || h == -1)
-    return {rwidth, rheight};
+    return std::tuple<int, int>(rwidth, rheight);
   else if(rwidth >= w || rheight >= h)
-    return {w, h};
+    return std::tuple<int, int>(w, h);
 
   if (rwidth < 256 || rheight < 256)
   {
@@ -1430,7 +1432,7 @@ static std::tuple<int, int> RecommendedTexResolutionFix(int w, int h, int rwidth
     rheight = h2;
   }
 
-  return {rwidth, rheight};
+  return std::tuple<int, int>(rwidth, rheight);
 }
 
 

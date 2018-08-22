@@ -8,6 +8,9 @@
 
 #include "../hydra_api/HydraAPI.h"
 #include "../hydra_api/HydraXMLVerify.h"
+#include "../hydra_api/LiteMath.h"
+
+using namespace HydraLiteMath;
 
 #include "mesh_utils.h"
 #include "simplerandom.h"
@@ -52,6 +55,22 @@ namespace TEST_UTILS
   void CreateStripedImageFile(const char* a_fileName, unsigned int* a_colors, int a_stripsNum, int w, int h);
   void procTexCheckerHDR(float* a_buffer, int w, int h, void* a_repeat);
   void procTexCheckerLDR(unsigned char* a_buffer, int w, int h, void* a_repeat);
+
+  //displacement
+  struct displace_data_1
+  {
+      float mult = 1.0f;
+      float3 global_dir = float3(0.0f, 1.0f, 0.0f);
+  };
+
+  void customDisplacement1(const float *pos, const float *normal, const HRUtils::BBox &bbox, float displace_vec[3],
+                           void* a_customData, uint32_t a_customDataSize);
+  void customDisplacementSpots(const float *pos, const float *normal, const HRUtils::BBox &bbox, float displace_vec[3],
+                               void* a_customData, uint32_t a_customDataSize);
+
+  void customDisplacementFBM(const float *p, const float *normal, const HRUtils::BBox &bbox, float displace_vec[3],
+                             void* a_customData, uint32_t a_customDataSize);
+
 
   //geometry
   std::vector<HRMeshRef> CreateRandomMeshesArray(int a_size, simplerandom::RandomGen& rgen);
@@ -276,7 +295,7 @@ namespace MTL_TESTS
   bool test_166_displace_by_noise();
   bool test_167_subdiv();
   bool test_168_diffuse_texture_recommended_res2();
-
+  bool test_169_displace_custom_callback();
 
 }
 
@@ -387,6 +406,8 @@ bool test1015_merge_scene_with_remaps();
 bool test1016_merge_scene_remap_override();
 bool test1017_merge_scene_scene_id_mask();
 
+bool test_x1_displace_car_by_noise();
+
 
 void run_all_api_tests(const int startTestId = 0);
 void run_all_geo_tests();
@@ -395,7 +416,7 @@ void run_all_lgt_tests(int a_start = 0);
 void run_all_ipp_tests(int a_start = 0);
 void terminate_opengl();
 
-static const int CURR_RENDER_DEVICE = 1;
+static const int CURR_RENDER_DEVICE = 0;
 
 //void image_p_sandbox();
 

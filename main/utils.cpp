@@ -8,10 +8,10 @@
 
 #include "simplerandom.h"
 
-#include "../hydra_api/LiteMath.h"
 #include "../hydra_api/HR_HDRImageTool.h"
+#include "../hydra_api/HydraTextureUtils.h"
+
 using HDRImage4f = HydraRender::HDRImage4f;
-using namespace HydraLiteMath;
 
 #pragma warning(disable:4838)
 
@@ -174,6 +174,111 @@ namespace TEST_UTILS
         a_buffer[(y*w + x) * 4 + 3] = 1.0;
       }
     }
+  }
+
+
+  void customDisplacement1(const float *pos, const float *normal, const HRUtils::BBox &bbox, float displace_vec[3],
+                           void* a_customData, uint32_t a_customDataSize)
+  {
+
+    auto *data = (displace_data_1 *) a_customData;
+
+    float3 N(normal[0], normal[1], normal[2]);
+
+    auto tmp = cross(data->global_dir, N);
+    auto d = cross(N, tmp);
+
+    d = normalize(d);
+
+    float mult = 5.0f - pos[1];
+    if(mult < 0.0f) mult = 0.0f;
+
+    displace_vec[0] = d.x * data->mult * mult;
+    displace_vec[1] = d.y * data->mult * mult;
+    displace_vec[2] = d.z * data->mult * mult;
+  }
+
+  void customDisplacementSpots(const float *pos, const float *normal, const HRUtils::BBox &bbox, float displace_vec[3],
+                               void* a_customData, uint32_t a_customDataSize)
+  {
+
+    auto *data = (displace_data_1 *) a_customData;
+
+    float3 N(normal[0], normal[1], normal[2]);
+    float3 position(pos[0], pos[1], pos[2]-2.2f);
+
+    float spots_scale = 120.0f;
+    float spots_detail = 0.1f;
+    float spots_thr = 0.58;
+    float n2 = HRTextureUtils::noise(position * spots_scale, 0.0f, spots_detail) - spots_thr;
+    n2 = clamp(n2, 0.0f, 1.0f);
+    n2 = powf(n2, 0.15f);
+
+    /*float y_gen = (position.y) / 8.1f; //bbox_y = 8.1f
+
+    n2 = clamp(n2, 0.0f, 1.0f) * (1.0f - HRTextureUtils::fitRange(y_gen, 0.4, 1.0f, 0.0f, 1.0f));
+*/
+//
+//    float mult = 1.0f - pos[1];
+//    if(mult < 0.0f) mult = 0.0f;
+
+    auto d = N * n2;
+
+    displace_vec[0] = d.x * data->mult;
+    displace_vec[1] = d.y * data->mult;
+    displace_vec[2] = d.z * data->mult;
+  }
+
+  void customDisplacementFBM(const float *p, const float *normal, const HRUtils::BBox &bbox, float displace_vec[3],
+                               void* a_customData, uint32_t a_customDataSize)
+  {
+
+    auto *data = (displace_data_1 *) a_customData;
+
+    float3 N(normal[0], normal[1], normal[2]);
+    float3 pos(p[0]+0.45f, p[1]-0.5f, p[2]);
+
+    //float3 gen_pos = make_float3(pos.x/(bbox.x_max - bbox.x_min), pos.y/(bbox.y_max - bbox.y_min), pos.z/(bbox.z_max - bbox.z_min));
+    float3 gen_pos = make_float3(HRTextureUtils::fitRange(pos.x, bbox.x_min, bbox.x_max, 0.0f, 1.0f)-0.15f,
+                                 HRTextureUtils::fitRange(pos.y, bbox.y_min, bbox.y_max, 0.0f, 1.0f),
+                                 HRTextureUtils::fitRange(pos.z, bbox.z_min, bbox.z_max, 0.0f, 1.0f));
+    float scale = 0.750f;
+    float dimension = 0.1f;
+    float octaves = 8;
+    float lacunarity = 2*1.5f;
+
+    gen_pos = gen_pos * scale;
+
+//  float n = octave(gen_pos, 8, 0.5f, 2.0, 5.0f);
+    float n1 = HRTextureUtils::noise_musgrave_fBm(gen_pos, dimension, lacunarity, octaves);
+    float n2 = HRTextureUtils::noise_musgrave_fBm(gen_pos/(scale), dimension, 4.0f, 4);
+
+    int tmp = 0;
+    if(n1 < -0.5f)
+      tmp = 1;
+    float w = n2 / (tmp - n1);
+    if(gen_pos.y / scale < 1.25f)
+    {
+      w = w / (gen_pos.y / scale);
+    }
+    else if(gen_pos.y / scale > 1.25f)
+      w = 0.0f;
+
+    float mult = 1.25f - gen_pos.y;
+    if(mult < 0.0f) mult = 0.0f;
+
+    if (pos.z < -2.0f && pos.x > 0.3f)
+      mult *= 5.0f;
+    else
+      mult /=5.0f;
+
+    w = clamp(w, 0.0, 1.0);
+
+    auto d = N * w;
+
+    displace_vec[0] = d.x * data->mult * mult;
+    displace_vec[1] = d.y * data->mult * mult;
+    displace_vec[2] = d.z * data->mult * mult;
   }
 
   void CreateTestBigTexturesFilesIfNeeded()
@@ -416,12 +521,9 @@ namespace TEST_UTILS
 
       node.append_child(L"trace_depth").text()      = L"6";
       node.append_child(L"diff_trace_depth").text() = L"3";
-
-      node.append_child(L"pt_error").text()        = 1.0f; // 1.0%
-      node.append_child(L"minRaysPerPixel").text() = minRays;
-      node.append_child(L"maxRaysPerPixel").text() = maxRays;
-      node.append_child(L"resources_path").text() = L"..";
-
+      node.append_child(L"maxRaysPerPixel").text()  = maxRays;
+      node.append_child(L"resources_path").text()   = L"..";
+      node.append_child(L"offline_pt").text()       = 0;
     }
     hrRenderClose(renderRef);
 

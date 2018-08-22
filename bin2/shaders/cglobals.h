@@ -235,8 +235,6 @@ enum MEGATEX_USAGE{ MEGATEX_SHADING      = 1,
     #endif
 
     #undef  M_PI
-    #include <math.h>
-    #undef  M_PI
     #define M_PI 3.14159265358979323846f
     
     #include "../../HydraAPI/hydra_api/LiteMath.h"  
@@ -333,7 +331,7 @@ enum FLAG_BITS{HRT_COMPUTE_SHADOWS                 = 1,
                HRT_DIFFUSE_REFLECTION              = 4,
                HRT_UNIFIED_IMAGE_SAMPLING          = 8,
 
-               HRT_DUMMY1                          = 16,  
+               HRT_PRODUCTION_IMAGE_SAMPLING       = 16, // 256 coherent rays per pixel.
                HRT_USE_MIS                         = 32,
                HRT_DUMMY2                          = 64, 
                HRT_STORE_SUBPIXELS                 = 128,
@@ -361,7 +359,7 @@ enum FLAG_BITS{HRT_COMPUTE_SHADOWS                 = 1,
 enum VARIABLE_NAMES { // int vars
                       //
                       HRT_ENABLE_DOF               = 0,
-                      HRT_DEBUG_DRAW_LAYER         = 1,
+                      HRT_VAR_INT_DUMMY1           = 1,
                       HRT_FIRST_BOUNCE_STORE_CACHE = 2,
                       HRT_ENABLE_MRAYS_COUNTERS    = 3,
                       HRT_DEBUG_OUTPUT             = 4,
@@ -396,6 +394,9 @@ enum VARIABLE_NAMES { // int vars
                       HRT_MLT_BURN_ITERS           = 33,
                       HRT_MMLT_FIRST_BOUNCE        = 34,
                       HRT_SHADOW_MATTE_BACK        = 35,
+                      HRT_MAX_SAMPLES_PER_PIXEL    = 36,
+                      HRT_CONTRIB_SAMPLES          = 37,
+                      HRT_BOX_MODE_ON              = 38,
 };
 
 enum VARIABLE_FLOAT_NAMES{ // float vars
@@ -403,9 +404,9 @@ enum VARIABLE_FLOAT_NAMES{ // float vars
                            HRT_DOF_LENS_RADIUS                     = 0,
                            HRT_DOF_FOCAL_PLANE_DIST                = 1,
                            
-                           HRT_TILT_ROT_X                        = 2,
+                           HRT_TILT_ROT_X                          = 2,
                            HRT_TRACE_PROCEEDINGS_TRESHOLD          = 3, 
-                           HRT_TILT_ROT_Y                        = 4,
+                           HRT_TILT_ROT_Y                          = 4,
                            HRT_CAUSTIC_POWER_MULT                  = 5,
                            
                            HRT_IMAGE_GAMMA                         = 6,
@@ -438,10 +439,10 @@ enum VARIABLE_FLOAT_NAMES{ // float vars
                            HRT_ABLOW_OFFSET_Y                      = 28,
                            HRT_ABLOW_SCALE_X                       = 29,
                            HRT_ABLOW_SCALE_Y                       = 30,
-
-                           HRT_IMG_AVG_LUM                         = 31,
+  
+                           HRT_VAR_FLOAT_DUMMY31                   = 31,
                            HRT_MLT_PLARGE                          = 32,
-                           HRT_MLT_BKELEMEN                        = 33,
+                           HRT_VAR_FLOAT_DUMMY33                   = 33,
                            HRT_MLT_SCREEN_SCALE_X                  = 34,
                            HRT_MLT_SCREEN_SCALE_Y                  = 35,
                            HRT_BACK_TEXINPUT_GAMMA                 = 36,
@@ -2003,6 +2004,7 @@ static inline void initGBufferAll(__private GBufferAll* a_pElem)
 }
 
 #define GBUFFER_SAMPLES 16
+#define PMPIX_SAMPLES   256 // Production Mode Pixel Samples
 
 static inline float4 packGBuffer1(GBuffer1 a_input)
 {
@@ -2119,6 +2121,25 @@ static inline float gbuffDiffObj(GBufferAll s1, GBufferAll s2, const float a_fov
   const float matDiff = (s1.data1.matId  == s2.data1.matId) ? 0.0f : 1.0f;
 
   return objDiff + matDiff;
+}
+
+
+static inline int reverseBits(int a_input, int a_maxSize)
+{
+  int maxBit = 0;
+  while (a_maxSize >>= 1)
+    ++maxBit;
+  
+  int result = 0;
+  
+  for (int i = 0; i < maxBit; i++)
+  {
+    const int j = maxBit - i - 1;
+    const int inputMask = (0x00000001 << j);
+    result |= ((a_input & inputMask) >> j) << i;
+  }
+  
+  return result;
 }
 
 
@@ -2529,6 +2550,10 @@ static inline bool MaterialHaveAO2(__global const PlainMaterial* a_pMat)
   return as_int(a_pMat->data[PROC_TEX_AO_TYPE]) != AO_TYPE_NONE && as_int(a_pMat->data[PROC_TEX_AO_TYPE2]) != AO_TYPE_NONE;
 }
 
+
+
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2723,6 +2748,10 @@ static inline int remapMaterialId(int a_mId, int a_instId,
 
 
 #define AO_RAYS_PACKED 4
+
+
+
+
 
 
 #endif

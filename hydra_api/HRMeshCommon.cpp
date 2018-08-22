@@ -127,7 +127,7 @@ BBox mergeBBoxes(const BBox &A, const BBox &B)
 struct MeshVSGF : public IHRMesh
 {
   MeshVSGF(size_t a_sz, size_t a_chId) : m_sizeInBytes(a_sz), m_chunkId(a_chId), m_vertNum(0),
-                                                      m_indNum(0), m_bbox() { m_matDrawList.reserve(100); }
+                                                      m_indNum(0), m_bbox(BBox()) { m_matDrawList.reserve(100); }
 
   uint64_t chunkId() const override { return uint64_t(m_chunkId); }
   uint64_t offset (const wchar_t* a_arrayname) const override;

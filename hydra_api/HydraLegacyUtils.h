@@ -53,8 +53,13 @@ struct IHydraNetPluginAPI
   \param a_params
   \param a_devList     -- all device list
   \param activeDevices -- list of active device id (that may not be equal to id in 'a_devList' array)
+  \param a_appendMode  -- don't clear internal process list, append new processes to it instead
   */
-  virtual void runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydraRenderDevice>& a_devList, const std::vector<int>& activeDevices) = 0;
+  virtual void runAllRenderProcesses(RenderProcessRunParams a_params,
+                                     const std::vector<HydraRenderDevice>& a_devList,
+                                     const std::vector<int>& activeDevices,
+                                     bool a_appendMode = false) = 0;
+  
   virtual void stopAllRenderProcesses() = 0;
 };
 

@@ -76,16 +76,21 @@ HAPI HRMeshRef _hrMeshCreateFromNode(pugi::xml_node a_node)
   const wchar_t* a_fileName   = (dl == L"1") ? a_node.attribute(L"path").as_string() : loc.c_str();
 
   HRMeshRef ref;
-  ref.id = HR_IDType(g_objManager.scnData.meshes.size());
+
+  ref.id = a_node.attribute(L"id").as_int();//HR_IDType(g_objManager.scnData.meshes.size());
+
+  if(ref.id == 43)
+    std::cout <<"1";
 
   HRMesh mesh;
   mesh.name = std::wstring(a_objectName);
   mesh.id   = ref.id;
+  mesh.update_this(a_node);
   g_objManager.scnData.meshes.push_back(mesh);
-  g_objManager.scnData.meshes[ref.id].update_this(a_node);
-  g_objManager.scnData.meshes[ref.id].id = ref.id;
+//  g_objManager.scnData.meshes[ref.id].update_this(a_node);
+//  g_objManager.scnData.meshes[ref.id].id = ref.id;
 
-  HRMesh* pMesh = &g_objManager.scnData.meshes[ref.id];
+  HRMesh* pMesh = &g_objManager.scnData.meshes.back();
   pMesh->pImpl  = g_objManager.m_pFactory->CreateVSGFFromFile(pMesh, a_fileName, a_node); //#TODO: load custom attributes somewhere inside
 
   if (pMesh->pImpl == nullptr)
@@ -368,6 +373,10 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
   for (pugi::xml_node node = g_objManager.scnData.m_geometryLib.first_child(); node != nullptr; node = node.next_sibling())
     _hrMeshCreateFromNode(node);
 
+  std::sort(
+          g_objManager.scnData.meshes.begin(), g_objManager.scnData.meshes.end(),
+          [&](auto a, auto b) { return a.id < b.id; });
+
   // (6) load lights
   //
   for (pugi::xml_node node = g_objManager.scnData.m_lightsLib.first_child(); node != nullptr; node = node.next_sibling())
@@ -469,10 +478,10 @@ HRMaterialRef _hrMaterialMergeFromNode(pugi::xml_node a_node, const std::wstring
   int notBlend = matType.compare(std::wstring(L"hydra_blend"));
   HRMaterialRef ref;
 
-  auto isLightMat = (a_node.attribute(L"light_id") != nullptr);
+  /*auto isLightMat = (a_node.attribute(L"light_id") != nullptr);
 
   if(isLightMat && !forceMerge)
-    return HRMaterialRef();
+    return HRMaterialRef();*/
 
   if(notBlend)
   {
@@ -592,6 +601,8 @@ HRMeshRef _hrMeshMergeFromNode(pugi::xml_node a_node, const std::wstring &a_libP
 
   auto isLightMesh = (a_node.attribute(L"light_id") != nullptr);
 
+  //std::cout << "mesh : " << ws2s(a_objectName) << std::endl;
+
   if(isLightMesh && !forceMerge)
     return HRMeshRef();
 
@@ -608,6 +619,8 @@ HRMeshRef _hrMeshMergeFromNode(pugi::xml_node a_node, const std::wstring &a_libP
   }
 
   HRMeshRef ref = hrMeshCreateFromFileDL(a_fileName.c_str());
+
+  //std::cout << "mesh : " << ws2s(a_fileName) << std::endl;
 
   hrMeshOpen(ref, HR_TRIANGLE_IND3, HR_OPEN_EXISTING);
   {
@@ -652,7 +665,8 @@ HRMeshRef _hrMeshMergeFromNode(pugi::xml_node a_node, const std::wstring &a_libP
 }
 
 void _hrInstanceMergeFromNode(HRSceneInstRef a_scn, pugi::xml_node a_node, int32_t numMeshesPreMerge,
-                              const std::vector<std::vector<int> > &remap_lists, bool mergeLights = false, int32_t numLightsPreMerge = 0)
+                              const std::vector<std::vector<int> > &remap_lists, bool mergeLights = false,
+                              int32_t numLightsPreMerge = 0)
 {
   std::wstring nodeName = a_node.name();
 
@@ -680,7 +694,6 @@ void _hrInstanceMergeFromNode(HRSceneInstRef a_scn, pugi::xml_node a_node, int32
 
     if(!isLightMesh)
     {
-
       HRMeshRef ref;
       ref.id = mesh_id + numMeshesPreMerge;
 
@@ -745,8 +758,10 @@ HRSceneInstRef HRUtils::MergeLibraryIntoLibrary(const wchar_t* a_libPath, bool m
 
   //int32_t newMaterialsMerged = int32_t(g_objManager.scnData.materials.size()) - numMaterialsPreMerge;
 
+
   for (pugi::xml_node node = docToMerge.child(L"geometry_lib").first_child(); node != nullptr; node = node.next_sibling())
     _hrMeshMergeFromNode(node, std::wstring(a_libPath), numMaterialsPreMerge);
+
 
   //int32_t newMeshesMerged = int32_t(g_objManager.scnData.meshes.size()) - numMeshesPreMerge;
 

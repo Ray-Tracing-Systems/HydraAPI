@@ -177,6 +177,9 @@
     <ClCompile Include="NonLocalMeans.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="HRExtensions.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LiteMath.h">

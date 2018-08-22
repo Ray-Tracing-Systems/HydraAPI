@@ -645,7 +645,7 @@ void RD_HydraConnection::RunSingleHydraHead(const char* a_cmdLine)
   params.customExeArgs += " ";
   params.customExeArgs += a_cmdLine;
 
-  m_pConnection->runAllRenderProcesses(params, m_devList, devs);
+  m_pConnection->runAllRenderProcesses(params, m_devList, devs, true);
 }
 
 void RD_HydraConnection::BeginScene(pugi::xml_node a_sceneNode)
@@ -1068,7 +1068,8 @@ void RD_HydraConnection::ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out)
   std::wstring name, value;
   inputStream >> name >> value;
   
-  bool needToRunProcess = false;
+  bool needToRunProcess  = false;
+  bool needToStopProcess = false;
 
   if (name == L"runhydra" && m_width != 0) // this is special command to run _single_ hydra process
   {
@@ -1083,6 +1084,16 @@ void RD_HydraConnection::ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out)
     const std::string cmdArgs = strOut.str();
     RunSingleHydraHead(cmdArgs.c_str());
     return;
+  }
+  else if (name == L"clearcolor")
+  {
+    delete m_pSharedImage;
+    m_pSharedImage = nullptr;
+    return;
+  }
+  else if (name == L"exitnow")
+  {
+    needToStopProcess = true;
   }
   else if (name == L"pause")
   {
@@ -1109,6 +1120,7 @@ void RD_HydraConnection::ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out)
     // (2) finish all render processes
     //
     inputA = "exitnow";
+    needToStopProcess = true;
   }
   else if (name == L"resume")
   {
@@ -1142,21 +1154,28 @@ void RD_HydraConnection::ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out)
   if (m_pConnection == nullptr)
     return;
 
-  auto* header = m_pSharedImage->Header();
-
-  std::stringstream sout2;
-  sout2 << "-node_t A" << " -sid 0 -layer color -action " << inputA.c_str();
   
-  std::string message = sout2.str();
-  strncpy(m_pSharedImage->MessageSendData(), message.c_str(), 256);
-  header->counterSnd++;
-
-  if(needToRunProcess)
+  if(m_pSharedImage != nullptr)
   {
-    RunAllHydraHeads();  // #NOTE: we don't call CreateAndClearSharedImage();
+    auto *header = m_pSharedImage->Header();
+  
+    std::stringstream sout2;
+    sout2 << "-node_t A" << " -sid 0 -layer color -action " << inputA.c_str();
+  
+    std::string message = sout2.str();
     strncpy(m_pSharedImage->MessageSendData(), message.c_str(), 256);
     header->counterSnd++;
+  
+    if (needToRunProcess)
+    {
+      RunAllHydraHeads();  // #NOTE: we don't call CreateAndClearSharedImage();
+      strncpy(m_pSharedImage->MessageSendData(), message.c_str(), 256);
+      header->counterSnd++;
+    }
   }
+  
+  if(needToStopProcess && m_pConnection != nullptr)
+    m_pConnection->stopAllRenderProcesses();
   
 }
 

@@ -137,34 +137,35 @@ Called each time when any error rises.
 typedef void(*HR_INFO_CALLBACK)(const wchar_t* message, const wchar_t* callerPlace, HR_SEVERITY_LEVEL a_level);
 
 /**
-\brief 2D procedurar texture rendering callback for HDR images
+\brief 2D procedural texture rendering callback for HDR images
 \param a_buffer a float buffer of size w*h*4. Write your pixels here.
-\param w - desired width of texure. Always power of 2.
+\param w - desired width of texture. Always power of 2.
 \param h - desired height of texture. Always power of 2.
 \param a_customData - a pointer to your custom data structure (needed for rendering texture to bitmap) that callback knows.
  
  Because render API is abstracted from concrete HW (and basically, targeted for a GPU), the tradition approach to procedural textures, generated on the fly is nearly impossible.
- However, if procedural texture depends only on texure coords (i.e. classical, 2D texture), render can precompute bitmap with the desired resolution.
- The resolution is automaticly determined by the renderer and the way that happends is not specified.
+ However, if procedural texture depends only on texture coords (i.e. classical, 2D texture), render can precompute bitmap with the desired resolution.
+ The resolution is automatically determined by the renderer and the way that happens is not specified.
  Due to that your call back must be able to render bitmap from procedural representation in any power of 2 resolutions.
 
 */
 typedef void(*HR_TEXTURE2D_PROC_HDR_CALLBACK)(float* a_buffer, int w, int h, void* a_customData);
 
 /**
-\brief 2D procedurar texture rendering callback for LDR images
+\brief 2D procedural texture rendering callback for LDR images
 \param a_buffer - unsigned char buffer of size w*h*4. Write your pixels here.
-\param w - desired width of texure. Always power of 2.
+\param w - desired width of texture. Always power of 2.
 \param h - desired height of texture. Always power of 2.
 \param a_customData - a pointer to your custom data structure (needed for rendering texture to bitmap) that callback knows.
 
  Because render API is abstracted from concrete HW (and basically, targeted for a GPU), the tradition approach to procedural textures, generated on the fly is nearly impossible.
- However, if procedural texture depends only on texure coords (i.e. classical, 2D texture), render can precompute bitmap with the desired resolution.
- The resolution is automaticly determined by the renderer and the way that happends is not specified.
+ However, if procedural texture depends only on texture coords (i.e. classical, 2D texture), render can precompute bitmap with the desired resolution.
+ The resolution is automatically determined by the renderer and the way that happens is not specified.
  Due to that your call back must be able to render bitmap from procedural representation in any power of 2 resolutions.
 
 */
 typedef void(*HR_TEXTURE2D_PROC_LDR_CALLBACK)(unsigned char* a_buffer, int w, int h, void* a_customData);
+
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -431,23 +432,23 @@ HAPI void hrTexture2DGetDataLDR(HRTextureNodeRef a_tex, int* pW, int* pH, int* p
 HAPI void hrTexture2DGetDataHDR(HRTextureNodeRef a_tex, int* pW, int* pH, float* pData);
 
 /**
-\brief create spetial object, called "Advanced Texture".
+\brief create special object, called "Advanced Texture".
 \param pScnData  - scene data object ptr.
-\param a_texType - Advanced texture type. Can be "faloff" or "dirt"
+\param a_texType - Advanced texture type. Can be "falloff" or "dirt"
 \param a_objName - object name. can be set to "" or nullptr
 
 The "Advanced Textures" in fact are not textures at all. They are special objects with very special behavior.
 
-For the considerations of common artist functionality (espetially in 3ds max) we have to expose this functionality, incapsulated in separate object type called "Advanced Texture".
+For the considerations of common artist functionality (especially in 3ds max) we have to expose this functionality, incapsulated in separate object type called "Advanced Texture".
 
 The reason for we still call them "textures" is that almost any artist GUI does this. And because we have to "put" them in material slots, like a common textures.
 
-The first example is "faloff" - a blend of 2 textures depends on dot(viewVector,normal).
+The first example is "falloff" - a blend of 2 textures depends on dot(viewVector,normal).
 
-Next, a "dirt" which use ambient occlusion approximation but can further can go to any material stot.
+Next, a "dirt" which use ambient occlusion approximation but can further can go to any material slot.
 
-The internal implementation of "faloff", "dirt" and other is very different from traditional approaches and can be changed in future.
-For example, "faloff" can be transformed to BRDF Blend when constructing BRDF tree from HydraMaterial.
+The internal implementation of "falloff", "dirt" and other is very different from traditional approaches and can be changed in future.
+For example, "falloff" can be transformed to BRDF Blend when constructing BRDF tree from HydraMaterial.
 
 */
 
@@ -760,7 +761,7 @@ HAPI void              hrMeshMaterialId(HRMeshRef a_pMesh, int matId);
 \param a_pMesh - pointer to mesh
 
 */
-HAPI void              hrMeshAppendTriangles3(HRMeshRef a_pMesh, int indNum, const int* indices);
+HAPI void              hrMeshAppendTriangles3(HRMeshRef a_pMesh, int indNum, const int* indices, bool weld_vertices = true);
 
 
 
@@ -869,7 +870,7 @@ HAPI const HRRenderDeviceInfoListElem* hrRenderGetDeviceList(HRRenderRef a_pRend
 /**
 \brief enable or disable target device by id. 
 */
-HAPI void hrRenderEnableDevice(HRRenderRef a_pRender, int32_t a_deviceId, bool a_enableOrDisable);
+HAPI void hrRenderEnableDevice(HRRenderRef a_pRender, int32_t a_deviceId, bool a_enable);
 
 /**
 \brief these struct is returned by hrRenderHaveUpdate
@@ -1114,6 +1115,16 @@ namespace HRUtils
 
   HRTextureNodeRef MergeOneTextureIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_texName, int a_texId = -1);
 };
+
+namespace HRExtensions
+{
+    typedef void(*HR_TEXTURE_DISPLACEMENT_CALLBACK)(const float *pos, const float *normal, const HRUtils::BBox &bbox,
+                                                    float displace_vec[3],
+                                                    void* a_customData, uint32_t a_customDataSize);
+
+    HAPI HRTextureNodeRef hrTextureDisplacementCustom(HR_TEXTURE_DISPLACEMENT_CALLBACK a_proc, void* a_customData,
+                                                      uint32_t a_customDataSize);
+}
 
 
 /**

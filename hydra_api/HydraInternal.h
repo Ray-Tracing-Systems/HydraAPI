@@ -65,6 +65,7 @@ std::vector< HydraLiteMath::float4> getVerticesFromBBox(const BBox &a_bbox);
 
 std::wstring HR_PreprocessMeshes(const wchar_t *state_path);
 void hrMeshComputeNormals(HRMeshRef a_mesh, int indexNum, bool useFaceNormals = false);
+void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum);
 
 
 struct IHRMesh : public IHRObject ///< Not empty Data (reimplement DataSerialize/DataDeserialize)
