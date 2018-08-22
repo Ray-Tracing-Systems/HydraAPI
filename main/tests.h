@@ -63,10 +63,13 @@ namespace TEST_UTILS
       float3 global_dir = float3(0.0f, 1.0f, 0.0f);
   };
 
-  void customDisplacement1(const float *pos, const float *normal, float displace_vec[3],
+  void customDisplacement1(const float *pos, const float *normal, const HRUtils::BBox &bbox, float displace_vec[3],
                            void* a_customData, uint32_t a_customDataSize);
-  void customDisplacementSpots(const float *pos, const float *normal, float displace_vec[3],
+  void customDisplacementSpots(const float *pos, const float *normal, const HRUtils::BBox &bbox, float displace_vec[3],
                                void* a_customData, uint32_t a_customDataSize);
+
+  void customDisplacementFBM(const float *p, const float *normal, const HRUtils::BBox &bbox, float displace_vec[3],
+                             void* a_customData, uint32_t a_customDataSize);
 
 
   //geometry

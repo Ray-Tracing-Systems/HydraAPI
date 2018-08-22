@@ -177,7 +177,7 @@ namespace TEST_UTILS
   }
 
 
-  void customDisplacement1(const float *pos, const float *normal, float displace_vec[3],
+  void customDisplacement1(const float *pos, const float *normal, const HRUtils::BBox &bbox, float displace_vec[3],
                            void* a_customData, uint32_t a_customDataSize)
   {
 
@@ -198,7 +198,7 @@ namespace TEST_UTILS
     displace_vec[2] = d.z * data->mult * mult;
   }
 
-  void customDisplacementSpots(const float *pos, const float *normal, float displace_vec[3],
+  void customDisplacementSpots(const float *pos, const float *normal, const HRUtils::BBox &bbox, float displace_vec[3],
                                void* a_customData, uint32_t a_customDataSize)
   {
 
@@ -227,6 +227,58 @@ namespace TEST_UTILS
     displace_vec[0] = d.x * data->mult;
     displace_vec[1] = d.y * data->mult;
     displace_vec[2] = d.z * data->mult;
+  }
+
+  void customDisplacementFBM(const float *p, const float *normal, const HRUtils::BBox &bbox, float displace_vec[3],
+                               void* a_customData, uint32_t a_customDataSize)
+  {
+
+    auto *data = (displace_data_1 *) a_customData;
+
+    float3 N(normal[0], normal[1], normal[2]);
+    float3 pos(p[0]+0.45f, p[1]-0.5f, p[2]);
+
+    //float3 gen_pos = make_float3(pos.x/(bbox.x_max - bbox.x_min), pos.y/(bbox.y_max - bbox.y_min), pos.z/(bbox.z_max - bbox.z_min));
+    float3 gen_pos = make_float3(HRTextureUtils::fitRange(pos.x, bbox.x_min, bbox.x_max, 0.0f, 1.0f)-0.15f,
+                                 HRTextureUtils::fitRange(pos.y, bbox.y_min, bbox.y_max, 0.0f, 1.0f),
+                                 HRTextureUtils::fitRange(pos.z, bbox.z_min, bbox.z_max, 0.0f, 1.0f));
+    float scale = 0.750f;
+    float dimension = 0.1f;
+    float octaves = 8;
+    float lacunarity = 2*1.5f;
+
+    gen_pos = gen_pos * scale;
+
+//  float n = octave(gen_pos, 8, 0.5f, 2.0, 5.0f);
+    float n1 = HRTextureUtils::noise_musgrave_fBm(gen_pos, dimension, lacunarity, octaves);
+    float n2 = HRTextureUtils::noise_musgrave_fBm(gen_pos/(scale), dimension, 4.0f, 4);
+
+    int tmp = 0;
+    if(n1 < -0.5f)
+      tmp = 1;
+    float w = n2 / (tmp - n1);
+    if(gen_pos.y / scale < 1.25f)
+    {
+      w = w / (gen_pos.y / scale);
+    }
+    else if(gen_pos.y / scale > 1.25f)
+      w = 0.0f;
+
+    float mult = 1.25f - gen_pos.y;
+    if(mult < 0.0f) mult = 0.0f;
+
+    if (pos.z < -2.0f && pos.x > 0.3f)
+      mult *= 5.0f;
+    else
+      mult /=5.0f;
+
+    w = clamp(w, 0.0, 1.0);
+
+    auto d = N * w;
+
+    displace_vec[0] = d.x * data->mult * mult;
+    displace_vec[1] = d.y * data->mult * mult;
+    displace_vec[2] = d.z * data->mult * mult;
   }
 
   void CreateTestBigTexturesFilesIfNeeded()
