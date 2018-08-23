@@ -759,9 +759,9 @@ bool test91_proc_tex_bump()
 bool test92_proc_tex_bump2()
 {
   initGLIfNeeded();
-  hrErrorCallerPlace(L"test_91");
+  hrErrorCallerPlace(L"test_92");
   
-  hrSceneLibraryOpen(L"tests/test_91", HR_WRITE_DISCARD);
+  hrSceneLibraryOpen(L"tests/test_92", HR_WRITE_DISCARD);
   
   SimpleMesh sphere   = CreateSphere(2.0f, 128);
   SimpleMesh cubeOpen = CreateCubeOpen(4.0f);
@@ -800,7 +800,7 @@ bool test92_proc_tex_bump2()
     xml_node texNode = hrTextureParamNode(texProcNM);
     
     xml_node code_node = texNode.append_child(L"code");
-    code_node.append_attribute(L"file") = L"data/code/normal_from_height.c";
+    code_node.append_attribute(L"file") = L"data/code/normal_from_noise.c";
     code_node.append_attribute(L"main") = L"main";
   }
   hrTextureNodeClose(texProcNM);

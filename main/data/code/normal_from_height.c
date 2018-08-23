@@ -4,13 +4,6 @@ float getHeight(const float4 inVal)
   return fmax(res.x, fmax(res.y, res.z));
 }
 
-float2 toNormalizedCoord(const float3 input, const float2 multInv)
-{
-  const float x1 = input.x + 0.5f;
-  const float y1 = input.y + 0.5f;
-  return make_float2(x1, y1)*multInv;
-}
-
 float4 main(const SurfaceInfo* sHit, sampler2D texHeight, float2 invTexRes)
 {
   const float2 texCoord  = readAttr(sHit,"TexCoord0");
