@@ -828,6 +828,7 @@ HAPI void hrMeshAppendTriangles3(HRMeshRef a_mesh, int indNum, const int* indice
 
   if(!hasTangents)
     hrMeshComputeTangents(a_mesh, indNum);
+//  runTSpaceCalc(a_mesh, true);
 
   // append per triangle material id
   //
@@ -845,7 +846,7 @@ HAPI void hrMeshAppendTriangles3(HRMeshRef a_mesh, int indNum, const int* indice
     for (int i = 0; i < (indNum / 3); i++)
       pMesh->m_input.matIndices.push_back(matId);
   }
-
+//
   if(weld_vertices)
     hrMeshWeldVertices(a_mesh, indNum);
 }

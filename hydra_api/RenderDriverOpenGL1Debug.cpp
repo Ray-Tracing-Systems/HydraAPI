@@ -335,7 +335,7 @@ void RD_OGL1_Debug::InstanceMeshes(int32_t a_mesh_id, const float* a_matrices, i
 		  glCallList(m_displayLists + m_meshNum + GLuint(a_mesh_id));
     
     glColor3f(0.0f, 1.0f, 0.0f);
-    if (m_drawTangents)
+    if (true)//(m_drawTangents)
       glCallList(m_displayLists + 2*m_meshNum + GLuint(a_mesh_id));
    
     //glLineWidth(1.0f);

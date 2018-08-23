@@ -25,10 +25,13 @@ using namespace HydraLiteMath;
 #include "HydraXMLHelpers.h"
 #include "HydraTextureUtils.h"
 
+#include "../mikktspace/mikktspace.h"
+
 extern std::wstring      g_lastError;
 extern std::wstring      g_lastErrorCallerPlace;
 extern HR_ERROR_CALLBACK g_pErrorCallback;
 extern HRObjectManager   g_objManager;
+
 
 
 struct vertex_cache_eq
@@ -37,31 +40,9 @@ struct vertex_cache_eq
     {
       return (fabsf(u.pos.x - v.pos.x) < 1e-6) && (fabsf(u.pos.y - v.pos.y) < 1e-6) && (fabsf(u.pos.z - v.pos.z) < 1e-6) && //pos
              (fabsf(u.normal.x - v.normal.x) < 1e-3) && (fabsf(u.normal.y - v.normal.y) < 1e-3) && (fabsf(u.normal.z - v.normal.z) < 1e-3) && //norm
-             (fabsf(u.uv.x - v.uv.x) < 1e-5) && (fabsf(u.uv.y - v.uv.y) < 1e-5); //uv
-    }
-};
-
-struct pos_eq
-{
-    bool operator()(const float3 & u, const float3 &v) const
-    {
-      return (fabsf(u.x - v.x) < 1e-6) && (fabsf(u.y - v.y) < 1e-6) && (fabsf(u.z - v.z) < 1e-6);
-    }
-};
-
-struct norm_eq
-{
-    bool operator()(const float3 & u, const float3 &v) const
-    {
-      return (fabsf(u.x - v.x) < 1e-3) && (fabsf(u.y - v.y) < 1e-3) && (fabsf(u.z - v.z) < 1e-3);
-    }
-};
-
-struct uv_eq
-{
-    bool operator()(const float2 & u, const float2 &v) const
-    {
-      return (fabsf(u.x - v.x) < 1e-5) && (fabsf(u.y - v.y) < 1e-5);
+             (fabsf(u.uv.x - v.uv.x) < 1e-5) && (fabsf(u.uv.y - v.uv.y) < 1e-5) &&
+             (fabsf(u.tangent.x - v.tangent.x) < 1e-3) && (fabsf(u.tangent.y - v.tangent.y) < 1e-3) && (fabsf(u.tangent.z - v.tangent.z) < 1e-3) &&
+             (fabsf(u.tangent.w - v.tangent.w) < 1e-1); //tangents
     }
 };
 
@@ -1201,12 +1182,10 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
   std::vector<float> vertices_new(mesh.verticesPos.size()*2, 0.0f);
   std::vector<float> normals_new(mesh.verticesNorm.size()*2, 0.0f);
   std::vector<float> uv_new(mesh.verticesTexCoord.size()*2, 0.0f);
+  std::vector<float> tangents_new(mesh.verticesTangent.size()*2, 0.0f);
   std::vector<int32_t> mid_new;
   mid_new.reserve(mesh.matIndices.size());
 
-  norm_eq norm_equality;
-
-  using vertHash = std::pair<float3, uint32_t>;
   uint32_t index = 0;
   for (auto i = 0u; i < mesh.triIndices.size(); i += 3)
   {
@@ -1226,11 +1205,13 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
     float3 A_normal(tmp.x, tmp.y, tmp.z);
     float2 tmp2 = vertex_attrib_by_index_f2("uv", indA, mesh);
     float2 A_uv(tmp2.x, tmp2.y);
+    float4 A_tan = vertex_attrib_by_index_f4("tangent", indA, mesh);
 
     vertex_cache A_cache;
     A_cache.pos = A;
     A_cache.normal = A_normal;
     A_cache.uv = A_uv;
+    A_cache.tangent = A_tan;
 
     auto it = vertex_hash.find(A_cache);
 
@@ -1256,6 +1237,11 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
       uv_new.at(index * 2 + 0) = A_uv.x;
       uv_new.at(index * 2 + 1) = A_uv.y;
 
+      tangents_new.at(index * 4 + 0) = A_tan.x;
+      tangents_new.at(index * 4 + 1) = A_tan.y;
+      tangents_new.at(index * 4 + 2) = A_tan.z;
+      tangents_new.at(index * 4 + 3) = A_tan.w;
+
       index++;
     }
 
@@ -1265,11 +1251,13 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
     float3 B_normal(tmp.x, tmp.y, tmp.z);
     tmp2 = vertex_attrib_by_index_f2("uv", indB, mesh);
     float2 B_uv(tmp2.x, tmp2.y);
+    float4 B_tan = vertex_attrib_by_index_f4("tangent", indB, mesh);
 
     vertex_cache B_cache;
     B_cache.pos = B;
     B_cache.normal = B_normal;
     B_cache.uv = B_uv;
+    B_cache.tangent = B_tan;
 
     it = vertex_hash.find(B_cache);
     if(it != vertex_hash.end())
@@ -1294,6 +1282,11 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
       uv_new.at(index * 2 + 0) = B_uv.x;
       uv_new.at(index * 2 + 1) = B_uv.y;
 
+      tangents_new.at(index * 4 + 0) = B_tan.x;
+      tangents_new.at(index * 4 + 1) = B_tan.y;
+      tangents_new.at(index * 4 + 2) = B_tan.z;
+      tangents_new.at(index * 4 + 3) = B_tan.w;
+
       index++;
     }
 
@@ -1303,11 +1296,13 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
     float3 C_normal(tmp.x, tmp.y, tmp.z);
     tmp2 = vertex_attrib_by_index_f2("uv", indC, mesh);
     float2 C_uv(tmp2.x, tmp2.y);
+    float4 C_tan = vertex_attrib_by_index_f4("tangent", indC, mesh);
 
     vertex_cache C_cache;
     C_cache.pos = C;
     C_cache.normal = C_normal;
     C_cache.uv = C_uv;
+    C_cache.tangent = C_tan;
 
 
     it = vertex_hash.find(C_cache);
@@ -1333,6 +1328,11 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
       uv_new.at(index * 2 + 0) = C_uv.x;
       uv_new.at(index * 2 + 1) = C_uv.y;
 
+      tangents_new.at(index * 4 + 0) = C_tan.x;
+      tangents_new.at(index * 4 + 1) = C_tan.y;
+      tangents_new.at(index * 4 + 2) = C_tan.z;
+      tangents_new.at(index * 4 + 3) = C_tan.w;
+
       index++;
     }
 
@@ -1341,6 +1341,7 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
   vertices_new.resize(index * 4);
   normals_new.resize(index * 4);
   uv_new.resize(index * 2);
+  tangents_new.resize(index * 4);
 
   //std::cout << "vert old : " << mesh.verticesPos.size() << "  vert new :" << vertices_new.size() << std::endl;
 
@@ -1359,6 +1360,10 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
   mesh.verticesTexCoord.resize(uv_new.size());
   std::copy(uv_new.begin(), uv_new.end(), mesh.verticesTexCoord.begin());
 
+  mesh.verticesTangent.clear();
+  mesh.verticesTangent.resize(tangents_new.size());
+  std::copy(tangents_new.begin(), tangents_new.end(), mesh.verticesTangent.begin());
+
   mesh.triIndices.clear();
   mesh.triIndices.resize(indices_new.size());
   std::copy(indices_new.begin(), indices_new.end(), mesh.triIndices.begin());
@@ -1368,4 +1373,122 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
   std::copy(mid_new.begin(), mid_new.end(), mesh.matIndices.begin());
 
   indexNum = indices_new.size();
+}
+
+
+//***Tangent Space calc******************************************************************
+
+// Return number of primitives in the geometry.
+int getNumFaces(const SMikkTSpaceContext *context)
+{
+  HRMesh *pMesh = static_cast <HRMesh *> (context->m_pUserData);
+
+  return pMesh->m_input.triIndices.size()/3;
+}
+
+// Return number of vertices in the primitive given by index.
+int getNumVerticesOfFace(const SMikkTSpaceContext *context, const int primnum)
+{
+  return 3;
+}
+
+// Write 3-float position of the vertex's point.
+void getPosition(const SMikkTSpaceContext *context, float outpos[], const int primnum, const int vtxnum)
+{
+  HRMesh *pMesh = static_cast <HRMesh *> (context->m_pUserData);
+  auto index = pMesh->m_input.triIndices.at(primnum * 3 + vtxnum);
+
+  outpos[0] = pMesh->m_input.verticesPos.at(index * 4 + 0);
+  outpos[1] = pMesh->m_input.verticesPos.at(index * 4 + 1);
+  outpos[2] = pMesh->m_input.verticesPos.at(index * 4 + 2);
+}
+
+// Write 3-float vertex normal.
+void getNormal(const SMikkTSpaceContext *context, float outnormal[], const int primnum, const int vtxnum)
+{
+  HRMesh *pMesh = static_cast <HRMesh *> (context->m_pUserData);
+  auto index = pMesh->m_input.triIndices.at(primnum * 3 + vtxnum);
+
+  outnormal[0] = pMesh->m_input.verticesNorm.at(index * 4 + 0);
+  outnormal[1] = pMesh->m_input.verticesNorm.at(index * 4 + 1);
+  outnormal[2] = pMesh->m_input.verticesNorm.at(index * 4 + 2);
+}
+
+// Write 2-float vertex uv.
+void getTexCoord(const SMikkTSpaceContext *context, float outuv[], const int primnum, const int vtxnum)
+{
+  HRMesh *pMesh = static_cast <HRMesh *> (context->m_pUserData);
+  auto index = pMesh->m_input.triIndices.at(primnum * 3 + vtxnum);
+
+  outuv[0] = pMesh->m_input.verticesNorm.at(index * 2 + 0);
+  outuv[1] = pMesh->m_input.verticesNorm.at(index * 2 + 1);
+}
+
+// Compute and set attributes on the geometry vertex. Basic version.
+void setTSpaceBasic(const SMikkTSpaceContext *context,
+                    const float tangentu[],
+                    const float sign,
+                    const int primnum,
+                    const int vtxnum)
+{
+  HRMesh *pMesh = static_cast <HRMesh *> (context->m_pUserData);
+  auto index = pMesh->m_input.triIndices.at(primnum * 3 + vtxnum);
+
+//  if(sign < 0.0f)
+//  {
+//    pMesh->m_input.verticesTangent[index * 4 + 0] = -1.0f * tangentu[0];
+//    pMesh->m_input.verticesTangent[index * 4 + 1] = -1.0f * tangentu[1];
+//    pMesh->m_input.verticesTangent[index * 4 + 2] = -1.0f * tangentu[2];
+//  }
+//  else
+  {
+    pMesh->m_input.verticesTangent.at(index * 4 + 0) = tangentu[0];
+    pMesh->m_input.verticesTangent.at(index * 4 + 1) = tangentu[1];
+    pMesh->m_input.verticesTangent.at(index * 4 + 2) = tangentu[2];
+  }
+  pMesh->m_input.verticesTangent.at(index * 4 + 3) = sign;
+}
+
+void setTSpace(const SMikkTSpaceContext *context,
+               const float tangentu[],
+               const float tangentv[],
+               const float magu,
+               const float magv,
+               const tbool keep,
+               const int primnum,
+               const int vtxnum)
+{
+  HRMesh *pMesh = static_cast <HRMesh *> (context->m_pUserData);
+  auto index = pMesh->m_input.triIndices[primnum * 3 + vtxnum];
+
+  pMesh->m_input.verticesTangent[index * 4 + 0] = tangentv[0];
+  pMesh->m_input.verticesTangent[index * 4 + 1] = tangentv[1];
+  pMesh->m_input.verticesTangent[index * 4 + 2] = tangentv[2];
+  pMesh->m_input.verticesTangent[index * 4 + 3] = 1.0f;
+}
+
+void runTSpaceCalc(HRMeshRef mesh_ref, bool basic)
+{
+  HRMesh* pMesh = g_objManager.PtrById(mesh_ref);
+  if (pMesh == nullptr)
+  {
+    HrError(L"runTSpaceCalc: nullptr input");
+    return;
+  }
+
+  SMikkTSpaceInterface iface;
+  iface.m_getNumFaces = getNumFaces;
+  iface.m_getNumVerticesOfFace = getNumVerticesOfFace;
+  iface.m_getPosition = getPosition;
+  iface.m_getNormal = getNormal;
+  iface.m_getTexCoord = getTexCoord;
+  iface.m_setTSpaceBasic = basic ? setTSpaceBasic : nullptr;
+  iface.m_setTSpace = basic ? nullptr : setTSpace;
+
+  SMikkTSpaceContext context;
+  context.m_pInterface = &iface;
+  context.m_pUserData = pMesh;
+  pMesh->m_input.verticesTangent.resize(pMesh->m_input.verticesPos.size());
+
+  genTangSpaceDefault(&context);
 }
