@@ -363,6 +363,9 @@ std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTextureInfoFromChunkFi
 
   auto id = a_node.attribute(L"id").as_int();
   
+  if(std::wstring(a_node.attribute(L"type").as_string()) == L"proc")
+    return nullptr;
+  
   if(wh[0] == 0 || wh[1] == 0)
   {
     HrError(L"HydraFactoryCommon::CreateTextureInfoFromChunkFile, unknown image resolution is not allowed! TexId = ", id);

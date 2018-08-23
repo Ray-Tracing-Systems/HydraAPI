@@ -130,6 +130,7 @@
   <ItemGroup>
     <ClCompile Include="cube2sphere.cpp" />
     <ClCompile Include="glad.c" />
+    <ClCompile Include="HRExtensions.cpp" />
     <ClCompile Include="HRMeshCommon.cpp" />
     <ClCompile Include="HRTextureCommon.cpp" />
     <ClCompile Include="HR_AccumImageWin.cpp" />

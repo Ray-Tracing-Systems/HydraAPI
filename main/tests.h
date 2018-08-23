@@ -193,8 +193,8 @@ bool test87_proc_texture_reflect();
 bool test88_proc_texture_convex_rust();
 bool test89_proc_texture_dirty();
 
-bool test90_check_xml_fail_lights();
-bool test91_check_xml_fail_lights();
+bool test90_proc_tex_normalmap();
+bool test91_proc_tex_bump();
 bool test92_check_xml_fail_lights();
 
 bool test93_check_xml_fail_materials();
