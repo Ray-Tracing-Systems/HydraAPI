@@ -298,6 +298,7 @@ namespace HydraLiteMath
   {
       float3 pos;
       float3 normal;
+      float4 tangent;
       float2 uv;
 
       vertex_cache() = default;
@@ -316,7 +317,11 @@ namespace HydraLiteMath
                 (hash<int>()(int(v.normal.y * 15484457))) ^
                 (hash<int>()(int(v.normal.z * 26430499))) ^
                 (hash<int>()(int(v.uv.x * 30025883))) ^
-                (hash<int>()(int(v.uv.y * 41855327))));
+                (hash<int>()(int(v.uv.y * 41855327))) ^
+                (hash<int>()(int(v.tangent.x * 50040937))) ^
+                (hash<int>()(int(v.tangent.y * 57208453))) ^
+                (hash<int>()(int(v.tangent.z * 60352007))) ^
+                (hash<int>()(int(v.tangent.w * 67432663))) );
       }
   };
 

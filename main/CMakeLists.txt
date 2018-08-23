@@ -74,7 +74,7 @@ if(WIN32)
   target_link_libraries(main LINK_PUBLIC ${OPENGL_gl_LIBRARY} hydra_api glfw3dll )
 else()
   target_compile_options(main PRIVATE -fpermissive -Wnarrowing)
-  target_link_libraries(main LINK_PUBLIC Threads::Threads  ${OPENGL_gl_LIBRARY} ${LIBS} hydra_api glfw )
+  target_link_libraries(main LINK_PUBLIC Threads::Threads  ${OPENGL_gl_LIBRARY} ${LIBS} hydra_api glfw)
 endif()
 
 
