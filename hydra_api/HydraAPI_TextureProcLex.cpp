@@ -41,6 +41,15 @@ std::string ReplaceAttr(std::string a_line)
   a_line = std::regex_replace(a_line, std::regex("readAttr\\(sHit\\,\\s*\"ShadeNorm\"\\)"), "readAttr_ShadeNorm(sHit)");
   a_line = std::regex_replace(a_line, std::regex("readAttr\\(sHit\\,\\s*\"Normal\"\\)"),    "readAttr_ShadeNorm(sHit)");
   a_line = std::regex_replace(a_line, std::regex("readAttr\\(sHit\\,\\s*\"Norm\"\\)"),      "readAttr_ShadeNorm(sHit)");
+  
+  a_line = std::regex_replace(a_line, std::regex("readAttr\\(sHit\\,\\s*\"Tangent\"\\)"),   "readAttr_Tangent(sHit)");
+  a_line = std::regex_replace(a_line, std::regex("readAttr\\(sHit\\,\\s*\"Tang\"\\)"),      "readAttr_Tangent(sHit)");
+  a_line = std::regex_replace(a_line, std::regex("readAttr\\(sHit\\,\\s*\"Tan\"\\)"),       "readAttr_Tangent(sHit)");
+  
+  a_line = std::regex_replace(a_line, std::regex("readAttr\\(sHit\\,\\s*\"Bitangent\"\\)"), "readAttr_Bitangent(sHit)");
+  a_line = std::regex_replace(a_line, std::regex("readAttr\\(sHit\\,\\s*\"Bitang\"\\)"),    "readAttr_Bitangent(sHit)");
+  a_line = std::regex_replace(a_line, std::regex("readAttr\\(sHit\\,\\s*\"Bitan\"\\)"),     "readAttr_Bitangent(sHit)");
+  a_line = std::regex_replace(a_line, std::regex("readAttr\\(sHit\\,\\s*\"Binorm\"\\)"),    "readAttr_Bitangent(sHit)");
 
   a_line = std::regex_replace(a_line, std::regex("readAttr\\(sHit\\,\\s*\"AO\"\\)"),        "readAttr_AO(sHit)");
   a_line = std::regex_replace(a_line, std::regex("readAttr\\(sHit\\,\\s*\"AO0\"\\)"),       "readAttr_AO(sHit)");

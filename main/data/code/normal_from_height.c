@@ -32,24 +32,11 @@ float4 main(const SurfaceInfo* sHit, sampler2D texHeight, float2 invTexRes)
   diff[7] = hThisPixel - getHeight( texture2D(texHeight, texCoord + make_float2(+1.0f, +1.0f)*invTexRes, TEX_CLAMP_U | TEX_CLAMP_V) ); 
 
   const float allDiffSumm = fabs(diff[0]) + fabs(diff[1]) + fabs(diff[2]) + fabs(diff[3]) + fabs(diff[4]) + fabs(diff[5]) + fabs(diff[6]) + fabs(diff[7]);
-  
-  const float scale = kScale;
 
-  float3 v38[8];
-  v38[0] = make_float3(-diff[0], -diff[0], scale);
-  v38[1] = make_float3(0.f, -diff[1], scale);
-  v38[2] = make_float3(diff[2], -diff[2], scale);
-  v38[3] = make_float3(-diff[3], 0.f, scale);
-  v38[4] = make_float3(diff[4], 0.f, scale);
-  v38[5] = make_float3(-diff[5], diff[5], scale);
-  v38[6] = make_float3(0.f, diff[6], scale);
-  v38[7] = make_float3(diff[7], diff[7], scale);
-
-  float3 res = make_float3(0, 0, 0);
-  for (int i = 0; i<8; i++)
-    res += v38[i];
-
-  res = res*(1.0f / 8.0f);
+  float3 res = (1.0f / 8.0f)*(make_float3(-diff[0], -diff[0], kScale) + make_float3(0.f, -diff[1], kScale)     + 
+                              make_float3(diff[2], -diff[2], kScale)  + make_float3(-diff[3], 0.f, kScale)     + 
+                              make_float3(diff[4], 0.f, kScale)       + make_float3(-diff[5], diff[5], kScale) + 
+                              make_float3(0.f, diff[6], kScale)       + make_float3(diff[7], diff[7],  kScale));
 
   res.x *= -1.0f;
   res.y *= -1.0f;
@@ -70,13 +57,6 @@ float4 main(const SurfaceInfo* sHit, sampler2D texHeight, float2 invTexRes)
     res.z = 1.0f;
   }
 
-  const float zeroPointFive = 0.49995f; // this is due to on NV and AMD 0.5 saved to 8 bit textures in different way - 127 on NV and 128 on AMD
-
-  const float resX = clamp(0.5f*res.x + zeroPointFive, 0.0f, 1.0f);
-  const float resY = clamp(0.5f*res.y + zeroPointFive, 0.0f, 1.0f);
-  const float resZ = clamp(1.0f*res.z + 0.0f, 0.0f, 1.0f);
-  const float resW = clamp((255.0f - hThisPixel) / 255.0f, 0.0f, 1.0f);
-
-  return make_float4(resX,resY,resZ,resW);
+  return StoreNormal(res, NORMAL_IN_TANGENT_SPACE);
 }
 

@@ -7,6 +7,6 @@ float4 main(const SurfaceInfo* sHit, sampler2D texNorm)
   if(texCoord.x < 0.5f)
     return texColor;
   else
-    return make_float4(0,0,1,0);
+    return StoreNormal(make_float3(0,0,1), NORMAL_IN_TANGENT_SPACE); 
 }
 

@@ -195,7 +195,7 @@ bool test89_proc_texture_dirty();
 
 bool test90_proc_tex_normalmap();
 bool test91_proc_tex_bump();
-bool test92_check_xml_fail_lights();
+bool test92_proc_tex_bump2();
 
 bool test93_check_xml_fail_materials();
 bool test94_check_xml_fail_camera();
