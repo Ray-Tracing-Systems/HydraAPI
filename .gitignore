@@ -46,3 +46,7 @@ ies_parser/x64/
 /papers/comp_prog_2018_rus/main_rus.aux
 hydra_api/.vs/
 main/data/textures_gen/
+main/x64/
+PostProcessDLL/x64/
+PostProcessDLLExample/x64/
+mikktspace/x64/
