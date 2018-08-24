@@ -6,7 +6,7 @@ set(SOURCE_FILES
     )
 
 
-add_library(mikttspace STATIC ${SOURCE_FILES})
+add_library(mikktspace STATIC ${SOURCE_FILES})
 
-set_property(TARGET mikttspace PROPERTY POSITION_INDEPENDENT_CODE ON)
+set_property(TARGET mikktspace PROPERTY POSITION_INDEPENDENT_CODE ON)
 
