@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2027
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HydraAPI", "HydraNewAPI1.vcxproj", "{C05FF9EA-3D61-48B7-ABEA-4353253691DC}"
 EndProject
@@ -17,6 +17,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PostProcess", "..\PostProcessDLL\PostProcessDLLTrofimm.vcxproj", "{999F34F2-BF3C-4D55-AFDF-75235335B1A1}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PostProcessDLLExample", "..\PostProcessDLLExample\PostProcessDLLExample.vcxproj", "{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mikktspace", "..\mikktspace\mikktspace.vcxproj", "{7844C04D-F5D4-4C90-B080-6744A10C3332}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -100,6 +102,18 @@ Global
 		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Release|Win32.Build.0 = Release|Win32
 		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Release|x64.ActiveCfg = Release|x64
 		{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}.Release|x64.Build.0 = Release|x64
+		{7844C04D-F5D4-4C90-B080-6744A10C3332}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{7844C04D-F5D4-4C90-B080-6744A10C3332}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{7844C04D-F5D4-4C90-B080-6744A10C3332}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7844C04D-F5D4-4C90-B080-6744A10C3332}.Debug|Win32.Build.0 = Debug|Win32
+		{7844C04D-F5D4-4C90-B080-6744A10C3332}.Debug|x64.ActiveCfg = Debug|x64
+		{7844C04D-F5D4-4C90-B080-6744A10C3332}.Debug|x64.Build.0 = Debug|x64
+		{7844C04D-F5D4-4C90-B080-6744A10C3332}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{7844C04D-F5D4-4C90-B080-6744A10C3332}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{7844C04D-F5D4-4C90-B080-6744A10C3332}.Release|Win32.ActiveCfg = Release|Win32
+		{7844C04D-F5D4-4C90-B080-6744A10C3332}.Release|Win32.Build.0 = Release|Win32
+		{7844C04D-F5D4-4C90-B080-6744A10C3332}.Release|x64.ActiveCfg = Release|x64
+		{7844C04D-F5D4-4C90-B080-6744A10C3332}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

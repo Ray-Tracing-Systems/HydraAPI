@@ -760,6 +760,10 @@ HAPI void              hrMeshMaterialId(HRMeshRef a_pMesh, int matId);
 \brief like glDrawArrays
 \param a_pMesh - pointer to mesh
 
+\param indNum        - input triangle indices num
+\param indices       - input triangle indices
+\param weld_vertices - flag for enable vertex cache i.e. collapse "same" vertices together.
+
 */
 HAPI void              hrMeshAppendTriangles3(HRMeshRef a_pMesh, int indNum, const int* indices, bool weld_vertices = true);
 
