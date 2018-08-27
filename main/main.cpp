@@ -142,12 +142,12 @@ int main(int argc, const char** argv)
   
     //std::cout << test71_out_of_memory() << std::endl;
 
-    //test84_proc_texture2();
+    test86_proc_texture_ao_dirt();
     //test90_proc_tex_normalmap();
     //test91_proc_tex_bump();
     //test92_proc_tex_bump2();
 
-    std::cout << test39_mesh_from_vsgf() << std::endl;
+    //std::cout << test39_mesh_from_vsgf() << std::endl;
     //window_main_free_look(L"tests_f/test_167", L"opengl1Debug");
 
     //MTL_TESTS::test_162_shadow_matte_back1();
