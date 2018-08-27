@@ -127,11 +127,11 @@ float4 main(const SurfaceInfo* sHit, sampler2D texHeight, float2 invTexRes)
 {
   const float3 pos  = readAttr(sHit,"WorldPos");
   const float3 norm = readAttr(sHit,"Normal");
-  //const float3 tang = readAttr(sHit,"Tangent");
-  //const float3 btan = readAttr(sHit,"Bitangent");
+  const float3 tang = readAttr(sHit,"Tangent");
+  const float3 btan = readAttr(sHit,"Bitangent");
   
-  float3 tang, btan;
-  CoordinateSystem(norm, &tang, &btan);
+  //float3 tang, btan;
+  //CoordinateSystem(norm, &tang, &btan);
 
   const float2 offs0 = make_float2(-1.0f, -1.0f);
   const float2 offs1 = make_float2(0.0f,  -1.0f);
@@ -158,7 +158,7 @@ float4 main(const SurfaceInfo* sHit, sampler2D texHeight, float2 invTexRes)
   diff[7] = h_origin - ov(pos + scale*(tang*offs7.x + btan*offs7.y));
  
 
-  const float kScale = 0.00390625f;
+  const float kScale = 0.1f;
   float3 res = (1.0f / 8.0f)*(make_float3(-diff[0], -diff[0], kScale) + make_float3(0.f, -diff[1], kScale)     + 
                               make_float3(diff[2], -diff[2], kScale)  + make_float3(-diff[3], 0.f, kScale)     + 
                               make_float3(diff[4], 0.f, kScale)       + make_float3(-diff[5], diff[5], kScale) + 
