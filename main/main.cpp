@@ -126,10 +126,10 @@ int main(int argc, const char** argv)
   
   try
   {
-    //run_all_api_tests(82);
+    //run_all_api_tests();
 	  //run_all_geo_tests();
     //run_all_lgt_tests();
-    //run_all_mtl_tests(9);
+    //run_all_mtl_tests();
     //run_all_ipp_tests();
 
     //std::cout << test41_load_library_basic() << std::endl;
@@ -137,13 +137,13 @@ int main(int argc, const char** argv)
     //std::cout << test82_proc_texture()  << std::endl;
     //std::cout << test84_proc_texture2() << std::endl;
     
-    //std::cout << test39_mesh_from_vsgf() << std::endl;
+    std::cout << test39_mesh_from_vsgf() << std::endl;
     //std::cout << test40_several_changes() << std::endl;
   
     //std::cout << test71_out_of_memory() << std::endl;
 
     //test86_proc_texture_ao_dirt();
-    test90_proc_tex_normalmap();
+    //test90_proc_tex_normalmap();
     //test91_proc_tex_bump();
     //test90_proc_tex_normalmap();
     //test91_proc_tex_bump();
@@ -153,7 +153,7 @@ int main(int argc, const char** argv)
     //window_main_free_look(L"tests_f/test_167", L"opengl1Debug");
 
     //MTL_TESTS::test_162_shadow_matte_back1();
-    //MTL_TESTS::test_154_proc_checker_precomp();
+    //MTL_TESTS::test_159_proc_dirt2();
     //LGHT_TESTS::test_223_rotated_area_light();
     
     //PP_TESTS::test305_fbi_from_render();    
