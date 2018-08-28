@@ -97,7 +97,42 @@ bool test90_proc_tex_normalmap()
   HRMaterialRef mat1 = hrMaterialCreate(L"red");
   HRMaterialRef mat2 = hrMaterialCreate(L"green");
   HRMaterialRef mat3 = hrMaterialCreate(L"white");
-  
+  HRMaterialRef mat4 = hrMaterialCreate(L"normalmaptest");
+
+  hrMaterialOpen(mat4, HR_WRITE_DISCARD);
+  {
+    auto matNode = hrMaterialParamNode(mat4);
+
+    auto diffuse = matNode.append_child(L"diffuse");
+    diffuse.append_child(L"color").append_attribute(L"val").set_value(L"0.5 0.5 0.5");
+
+    auto displacement = matNode.append_child(L"displacement");
+    auto heightNode = displacement.append_child(L"normal_map");
+
+    displacement.append_attribute(L"type").set_value(L"normal_bump");
+
+    auto invert = heightNode.append_child(L"invert");
+    invert.append_attribute(L"x").set_value(0);
+    invert.append_attribute(L"y").set_value(0);
+
+    auto texNode = hrTextureBind(texNormal, heightNode);
+
+    texNode.append_attribute(L"matrix");
+    float samplerMatrix[16] = { 2, 0, 0, 0,
+                                0, 2, 0, 0,
+                                0, 0, 1, 0,
+                                0, 0, 0, 1 };
+
+    texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
+    texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
+    texNode.append_attribute(L"input_gamma").set_value(1.0f);              // !!! this is important for normalmap !!!
+    texNode.append_attribute(L"input_alpha").set_value(L"rgb");
+
+    HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
+    VERIFY_XML(matNode);
+  }
+  hrMaterialClose(mat4);
+
   hrMaterialOpen(mat0, HR_WRITE_DISCARD);
   {
     xml_node matNode = hrMaterialParamNode(mat0);
@@ -149,7 +184,8 @@ bool test90_proc_tex_normalmap()
     
     colorNode.append_attribute(L"val") = L"0.5 0.0 0.0";
     colorNode.append_attribute(L"tex_apply_mode") = L"replace";
-  
+
+    /*
     // bind proc texture to diffuse slot
     {
       auto texNode = hrTextureBind(texProc, colorNode);
@@ -178,28 +214,64 @@ bool test90_proc_tex_normalmap()
       p1.append_attribute(L"size") = 1;
       p1.append_attribute(L"val") = L"1 1 1 1";
     }
-  
-    // bind proc texture to normals slot
-    {
-      auto displacement = matNode.append_child(L"displacement");
-      auto heightNode   = displacement.append_child(L"normal_map");
-    
-      displacement.append_attribute(L"type").set_value(L"normal_bump");
-    
+    */
+
+    auto displacement = matNode.append_child(L"displacement");
+    displacement.append_attribute(L"type").set_value(L"normal_bump");
+    auto heightNode = displacement.append_child(L"normal_map");
+
+    /*{
       auto invert = heightNode.append_child(L"invert");
       invert.append_attribute(L"x").set_value(0);
       invert.append_attribute(L"y").set_value(0);
-    
-      //auto nmTexNode = hrTextureBind(texNormal, heightNode);
-      auto nmTexNode = hrTextureBind(texProcNM, heightNode);
-  
-      xml_node p1 = nmTexNode.append_child(L"arg");
+
+      auto texNode = hrTextureBind(texNormal, heightNode);
+
+      texNode.append_attribute(L"matrix");
+      float samplerMatrix[16] = { 2, 0, 0, 0,
+                                  0, 2, 0, 0,
+                                  0, 0, 1, 0,
+                                  0, 0, 0, 1 };
+
+      texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
+      texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
+      texNode.append_attribute(L"input_gamma").set_value(1.0f);              // !!! this is important for normalmap !!!
+      texNode.append_attribute(L"input_alpha").set_value(L"rgb");
+
+      HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
+      VERIFY_XML(matNode);
+    }*/
+
+
+    {
+      auto invert = heightNode.append_child(L"invert");
+      invert.append_attribute(L"x").set_value(0);
+      invert.append_attribute(L"y").set_value(0);
+
+      //auto texNode = hrTextureBind(texNormal, heightNode);
+      auto texNode = hrTextureBind(texProcNM, heightNode);
+
+      texNode.append_attribute(L"matrix");
+      float samplerMatrix[16] = { 2, 0, 0, 0,
+                                  0, 2, 0, 0,
+                                  0, 0, 1, 0,
+                                  0, 0, 0, 1 };
+
+      texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
+      texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
+      texNode.append_attribute(L"input_gamma").set_value(1.0f);              // !!! this is important for normalmap !!!
+      texNode.append_attribute(L"input_alpha").set_value(L"rgb");
+
+      HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
+
+      xml_node p1 = texNode.append_child(L"arg");
       p1.append_attribute(L"id")   = 0;
       p1.append_attribute(L"name") = L"texNorm";
       p1.append_attribute(L"type") = L"sampler2D";
       p1.append_attribute(L"size") = 1;
       p1.append_attribute(L"val")  = texNormal.id;
     }
+
   }
   hrMaterialClose(mat1);
   
@@ -238,7 +310,7 @@ bool test90_proc_tex_normalmap()
     hrMeshVertexAttribPointer4f(cubeOpenRef, L"norm", &cubeOpen.vNorm[0]);
     hrMeshVertexAttribPointer2f(cubeOpenRef, L"texcoord", &cubeOpen.vTexCoord[0]);
     
-    int cubeMatIndices[10] = { mat3.id, mat3.id, mat3.id, mat3.id, mat3.id, mat3.id, mat2.id, mat2.id, mat1.id, mat1.id };
+    int cubeMatIndices[10] = { mat3.id, mat3.id, mat3.id, mat3.id, mat0.id, mat0.id, mat2.id, mat2.id, mat1.id, mat1.id };
     
     //hrMeshMaterialId(cubeRef, 0);
     hrMeshPrimitiveAttribPointer1i(cubeOpenRef, L"mind", cubeMatIndices);
@@ -253,7 +325,7 @@ bool test90_proc_tex_normalmap()
     hrMeshVertexAttribPointer2f(sphereRef, L"texcoord", &sphere.vTexCoord[0]);
     
     for (size_t i = 0; i < sphere.matIndices.size(); i++)
-      sphere.matIndices[i] = mat0.id;
+      sphere.matIndices[i] = mat1.id;
     
     hrMeshPrimitiveAttribPointer1i(sphereRef, L"mind", &sphere.matIndices[0]);
     hrMeshAppendTriangles3(sphereRef, int32_t(sphere.triIndices.size()), &sphere.triIndices[0]);

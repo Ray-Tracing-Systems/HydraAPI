@@ -1255,9 +1255,7 @@ namespace GEO_TESTS
     HRRenderRef renderRef = hrRenderCreate(L"HydraModern");
     hrRenderLogDir(renderRef, L"C:/[Hydra]/logs/", false);
 
-    //hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
-    hrRenderEnableDevice(renderRef, 0, true);
-    hrRenderEnableDevice(renderRef, 1, true);
+    hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
 
     hrRenderOpen(renderRef, HR_WRITE_DISCARD);
     {
