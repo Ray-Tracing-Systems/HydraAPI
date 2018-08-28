@@ -1103,6 +1103,7 @@ HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, int indexNum)
     float t2 = w3.y - w1.y;
 
     float r = 1.0f / (s1 * t2 - s2 * t1);
+
     float4 sdir((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r, 1);
     float4 tdir((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r, 1);
 
@@ -1128,6 +1129,10 @@ HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, int indexNum)
 
     // Gram-Schmidt orthogonalization
     verticesTang[a] = to_float4(normalize(t1 - n1 * dot(n1, t1)), 0.0f);
+
+    verticesTang[a].x = isnanf(verticesTang[a].x) || isinff(verticesTang[a].x) ? 0 : verticesTang[a].x;
+    verticesTang[a].y = isnanf(verticesTang[a].y) || isinff(verticesTang[a].y) ? 0 : verticesTang[a].y;
+    verticesTang[a].z = isnanf(verticesTang[a].z) || isinff(verticesTang[a].z) ? 0 : verticesTang[a].z;
 
     // Calculate handedness
     verticesTang[a].w = (dot(cross(n1, t1), to_float3(tan2[a])) < 0.0f) ? -1.0f : 1.0f;
