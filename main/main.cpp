@@ -129,7 +129,7 @@ int main(int argc, const char** argv)
     //run_all_api_tests(82);
 	  //run_all_geo_tests();
     //run_all_lgt_tests();
-    //run_all_mtl_tests();
+    //run_all_mtl_tests(9);
     //run_all_ipp_tests();
 
     //std::cout << test41_load_library_basic() << std::endl;

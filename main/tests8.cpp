@@ -65,8 +65,8 @@ bool test90_proc_tex_normalmap()
     xml_node texNode = hrTextureParamNode(texProc);
     
     xml_node code_node = texNode.append_child(L"code");
-    code_node.append_attribute(L"file") = L"data/code/mul_tex_coord2.c";
-    code_node.append_attribute(L"main") = L"userProc";
+    code_node.append_attribute(L"file") = L"data/code/show_normals.c";
+    code_node.append_attribute(L"main") = L"mainNorm";
   }
   hrTextureNodeClose(texProc);
   
@@ -185,7 +185,7 @@ bool test90_proc_tex_normalmap()
     colorNode.append_attribute(L"val") = L"0.5 0.0 0.0";
     colorNode.append_attribute(L"tex_apply_mode") = L"replace";
 
-    /*
+
     // bind proc texture to diffuse slot
     {
       auto texNode = hrTextureBind(texProc, colorNode);
@@ -214,7 +214,7 @@ bool test90_proc_tex_normalmap()
       p1.append_attribute(L"size") = 1;
       p1.append_attribute(L"val") = L"1 1 1 1";
     }
-    */
+
 
     auto displacement = matNode.append_child(L"displacement");
     displacement.append_attribute(L"type").set_value(L"normal_bump");
