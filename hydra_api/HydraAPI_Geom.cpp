@@ -27,6 +27,8 @@ extern std::wstring      g_lastErrorCallerPlace;
 extern HR_ERROR_CALLBACK g_pErrorCallback;
 extern HRObjectManager   g_objManager;
 
+using std::isnan;
+using std::isinf;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1130,9 +1132,9 @@ HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, int indexNum)
     // Gram-Schmidt orthogonalization
     verticesTang[a] = to_float4(normalize(t1 - n1 * dot(n1, t1)), 0.0f);
 
-    verticesTang[a].x = isnanf(verticesTang[a].x) || isinff(verticesTang[a].x) ? 0 : verticesTang[a].x;
-    verticesTang[a].y = isnanf(verticesTang[a].y) || isinff(verticesTang[a].y) ? 0 : verticesTang[a].y;
-    verticesTang[a].z = isnanf(verticesTang[a].z) || isinff(verticesTang[a].z) ? 0 : verticesTang[a].z;
+    verticesTang[a].x = isnan(verticesTang[a].x) || isinf(verticesTang[a].x) ? 0 : verticesTang[a].x;
+    verticesTang[a].y = isnan(verticesTang[a].y) || isinf(verticesTang[a].y) ? 0 : verticesTang[a].y;
+    verticesTang[a].z = isnan(verticesTang[a].z) || isinf(verticesTang[a].z) ? 0 : verticesTang[a].z;
 
     // Calculate handedness
     verticesTang[a].w = (dot(cross(n1, t1), to_float3(tan2[a])) < 0.0f) ? -1.0f : 1.0f;
