@@ -10,7 +10,7 @@
 #include <fstream>
 #include <iomanip>
 
-//#include "HydraObjectManager.h"
+#include "HydraObjectManager.h"
 #include "HydraLegacyUtils.h"
 #include "xxhash.h"
 
@@ -185,7 +185,10 @@ std::vector<Arg> ParseProcMainArgs(const std::string& fname, const std::string& 
   std::regex funcDelc(FunctionDeclRegex(fname));
   std::regex_search(allString, m, funcDelc);
 
-  PopArgument(m[3].str(), res);
+  if(m.size() >= 4)
+    PopArgument(m[3].str(), res);
+  else
+    HrPrint(HR_SEVERITY_ERROR, "can't find main function with name ", fname.c_str());
 
   return res;
 }

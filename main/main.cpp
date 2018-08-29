@@ -137,13 +137,13 @@ int main(int argc, const char** argv)
     //std::cout << test82_proc_texture()  << std::endl;
     //std::cout << test84_proc_texture2() << std::endl;
     
-    std::cout << test39_mesh_from_vsgf() << std::endl;
+    //std::cout << test39_mesh_from_vsgf() << std::endl;
     //std::cout << test40_several_changes() << std::endl;
   
     //std::cout << test71_out_of_memory() << std::endl;
 
     //test86_proc_texture_ao_dirt();
-    //test90_proc_tex_normalmap();
+    test90_proc_tex_normalmap();
     //test91_proc_tex_bump();
     //test90_proc_tex_normalmap();
     //test91_proc_tex_bump();
