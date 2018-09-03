@@ -1709,8 +1709,10 @@ bool test39_mesh_from_vsgf()
     pList = pList->next;
   }
 
-  hrRenderEnableDevice(renderRef, 0, true);
-  hrRenderEnableDevice(renderRef, 1, true); // CURR_RENDER_DEVICE
+  // hrRenderEnableDevice(renderRef, 0, true);
+  // hrRenderEnableDevice(renderRef, 1, true); // CURR_RENDER_DEVICE
+
+  hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true); // 
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
