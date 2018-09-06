@@ -1566,9 +1566,22 @@ std::wstring HR_UtilityDriverStart(const wchar_t* state_path)
     _hr_UtilityDriverUpdate(g_objManager.scnInst[g_objManager.m_currSceneId], utilityDriver.get());
 
     auto mipLevelsDict = getMipLevelsFromUtilityDriver(utilityDriver.get());
+//
+//#ifdef IN_DEBUG
+//    auto pImgTool = g_objManager.m_pImgTool;
+//    auto& imgData = g_objManager.m_tempBuffer;
+//    if (imgData.size() < 1024*1024)
+//      imgData.resize(1024*1024);
+//
+//    utilityDriver->GetFrameBufferLDR(1024, 1024, imgData.data());
+//    pImgTool->SaveLDRImageToFileLDR(L"tests_images/z_out.png", 1024, 1024, imgData.data());
+//
+//    if (imgData.size() > TEMP_BUFFER_MAX_SIZE_DONT_FREE) // free temp buffer if it's too large
+//      imgData = g_objManager.EmptyBuffer();
+//#endif
 
-    for (auto elem : mipLevelsDict)
-      std::cout << " " << elem.first << ":" << elem.second << std::endl;
+//    for (auto elem : mipLevelsDict)
+//      std::cout << " " << elem.first << ":" << elem.second << std::endl;
 
 #ifdef WIN32
     HydraDestroyHiddenWindow();

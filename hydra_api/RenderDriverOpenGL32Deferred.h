@@ -75,10 +75,12 @@ protected:
   void CreateLightSettingsUBO();
 
   std::wstring m_libPath;
+  std::vector<std::unordered_map<uint32_t, uint32_t> > m_remapLists;
+  using meshData = std::pair<GLuint, std::unordered_map<int, std::pair<int, int>> > ; // vao, {matId -> triBegin, triEnd}
 
-  using meshData = std::unordered_map<int, std::pair<GLuint, int>>;
+  std::unordered_map<int32_t, meshData> m_objects; //meshId -> vao, {matId -> triBegin, triEnd}
+  std::vector<GLuint> m_allVBOs;
 
-  std::unordered_map<int32_t, meshData> m_objects; //meshId -> {matId -> vao, indicesNum}
   ShaderProgram m_gBufferProgram;
   ShaderProgram m_lightPassProgram;
   ShaderProgram m_stencilProgram;
