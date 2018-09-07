@@ -832,7 +832,7 @@ HAPI void              hrSceneClose(HRSceneInstRef pScn);
 \param a_mmList - multimaterial remap pairs array;             @ALWAYS must be multiple of 2
 \param a_mmListSize - size of multimaterial remap pairs array; @EXAMPLE: [0,1,3,4,7,5] means [0-->1; 3-->4; 7-->5;]
 */
-HAPI void              hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh, float a_mat[16], 
+HAPI int              hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh, float a_mat[16], 
                                       const int32_t* a_mmListm = nullptr, int32_t a_mmListSize = 0);
 /**
 \brief like glDrawArraysInstanced, but for lights
