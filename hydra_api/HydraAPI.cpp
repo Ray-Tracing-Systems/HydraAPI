@@ -394,6 +394,24 @@ HAPI void hrSceneOpen(HRSceneInstRef a_pScn, HR_OPEN_MODE a_mode)
   pScn->openMode  = a_mode;
 }
 
+HAPI pugi::xml_node hrSceneParamNode(HRSceneInstRef a_pScn)
+{
+  HRSceneInst* pScn = g_objManager.PtrById(a_pScn);
+  if (pScn == nullptr)
+  {
+    HrError(L"hrSceneParamNode: nullptr input");
+    return pugi::xml_node();
+  }
+
+  if (!pScn->opened)
+  {
+    HrError(L"hrSceneParamNode: scene is not opened yet!");
+    return pugi::xml_node();
+  }
+
+  return pScn->xml_node_next(pScn->openMode); // pScn->_xml_node_curr();  // 
+}
+
 HAPI void hrSceneClose(HRSceneInstRef a_pScn)
 {
   HRSceneInst* pScn = g_objManager.PtrById(a_pScn);

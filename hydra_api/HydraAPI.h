@@ -806,7 +806,6 @@ struct HROpenedMeshInfo
 */
 HAPI HROpenedMeshInfo  hrMeshGetInfo(HRMeshRef a_mesh);
 
-
 /**
 \brief get params node for mesh
 \param a_pMesh - pointer to mesh
@@ -823,6 +822,12 @@ HAPI HRSceneInstRef    hrSceneCreate(const wchar_t* a_objectName);
 HAPI void              hrSceneOpen(HRSceneInstRef pScn, HR_OPEN_MODE a_mode);
 HAPI void              hrSceneClose(HRSceneInstRef pScn);
 
+/**
+\brief get params node for scene
+\param a_pScn - pointer to scene
+
+*/
+HAPI pugi::xml_node  hrSceneParamNode(HRSceneInstRef a_pScn);
 
 /**
 \brief like glDrawArraysInstanced
