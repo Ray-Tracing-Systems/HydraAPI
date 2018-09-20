@@ -204,6 +204,8 @@ bool test96_save_temp_renders();
 bool test97_camera_from_matrices();
 
 bool test98_motion_blur();
+bool test99_triplanar();
+bool test99_hexaplanar();
 
 bool test100_dummy_hydra_exec();
 

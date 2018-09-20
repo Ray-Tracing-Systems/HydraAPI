@@ -1729,7 +1729,7 @@ bool test39_mesh_from_vsgf()
     node.append_child(L"maxRaysPerPixel").text()  = 1024; //1024;
     node.append_child(L"evalgbuffer").text()      = 0;
   
-    node.append_child(L"offline_pt").text()       = 1;
+    //node.append_child(L"offline_pt").text()       = 1;
   }
   hrRenderClose(renderRef);
   
