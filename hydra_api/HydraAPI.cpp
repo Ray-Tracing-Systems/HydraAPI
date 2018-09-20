@@ -394,6 +394,24 @@ HAPI void hrSceneOpen(HRSceneInstRef a_pScn, HR_OPEN_MODE a_mode)
   pScn->openMode  = a_mode;
 }
 
+HAPI pugi::xml_node hrSceneParamNode(HRSceneInstRef a_pScn)
+{
+  HRSceneInst* pScn = g_objManager.PtrById(a_pScn);
+  if (pScn == nullptr)
+  {
+    HrError(L"hrSceneParamNode: nullptr input");
+    return pugi::xml_node();
+  }
+
+  if (!pScn->opened)
+  {
+    HrError(L"hrSceneParamNode: scene is not opened yet!");
+    return pugi::xml_node();
+  }
+
+  return pScn->xml_node_next(pScn->openMode); // pScn->_xml_node_curr();  // 
+}
+
 HAPI void hrSceneClose(HRSceneInstRef a_pScn)
 {
   HRSceneInst* pScn = g_objManager.PtrById(a_pScn);
@@ -515,26 +533,26 @@ HAPI void hrSceneClose(HRSceneInstRef a_pScn)
   pScn->driverDirtyFlag = true;
 }
 
-HAPI void hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh, 
+HAPI int hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh, 
                          float a_mat[16], const int32_t* a_mmListm, int32_t a_mmListSize)
 {
   HRSceneInst* pScn = g_objManager.PtrById(a_pScn);
   if (pScn == nullptr)
   {
     HrError(L"hrMeshInstance: nullptr input");
-    return;
+    return 0;
   }
 
   if (!pScn->opened)
   {
     HrError(L"hrMeshInstance: scene is not opened");
-    return;
+    return 0;
   }
 
   if (a_pMesh.id == -1)
   {
     HrError(L"hrMeshInstance: mesh with id == -1");
-    return;
+    return -1;
   }
 
   int32_t mmId = -1;
@@ -588,6 +606,7 @@ HAPI void hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh,
     pScn->m_bbox = mergeBBoxes(pScn->m_bbox, inst_bbox);
   }
 
+  return int(pScn->drawList.size() - 1); // number current instance
 }
 
 static void _hrLightInstance(HRSceneInstRef a_pScn, HRLightRef a_pLight, float a_mat[16], int32_t a_lightGroupInstanceId, const wchar_t* a_customAttribs)

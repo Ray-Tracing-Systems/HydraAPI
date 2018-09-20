@@ -806,7 +806,6 @@ struct HROpenedMeshInfo
 */
 HAPI HROpenedMeshInfo  hrMeshGetInfo(HRMeshRef a_mesh);
 
-
 /**
 \brief get params node for mesh
 \param a_pMesh - pointer to mesh
@@ -823,6 +822,12 @@ HAPI HRSceneInstRef    hrSceneCreate(const wchar_t* a_objectName);
 HAPI void              hrSceneOpen(HRSceneInstRef pScn, HR_OPEN_MODE a_mode);
 HAPI void              hrSceneClose(HRSceneInstRef pScn);
 
+/**
+\brief get params node for scene
+\param a_pScn - pointer to scene
+
+*/
+HAPI pugi::xml_node  hrSceneParamNode(HRSceneInstRef a_pScn);
 
 /**
 \brief like glDrawArraysInstanced
@@ -832,7 +837,7 @@ HAPI void              hrSceneClose(HRSceneInstRef pScn);
 \param a_mmList - multimaterial remap pairs array;             @ALWAYS must be multiple of 2
 \param a_mmListSize - size of multimaterial remap pairs array; @EXAMPLE: [0,1,3,4,7,5] means [0-->1; 3-->4; 7-->5;]
 */
-HAPI void              hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh, float a_mat[16], 
+HAPI int              hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh, float a_mat[16], 
                                       const int32_t* a_mmListm = nullptr, int32_t a_mmListSize = 0);
 /**
 \brief like glDrawArraysInstanced, but for lights
