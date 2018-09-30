@@ -65,9 +65,10 @@ protected:
 
     std::vector<std::unordered_map<uint32_t, uint32_t> > m_remapLists;
 
-    using meshData = std::unordered_map<int, std::pair<GLuint, int>>;
+    //using meshData = std::unordered_map<int, std::pair<GLuint, int>>;
+    using meshData = std::pair<GLuint, std::unordered_map<int, std::pair<int, int>> > ; // vao, {matId -> triBegin, triEnd}
 
-    std::unordered_map<int32_t, meshData> m_objects; //meshId -> {matId -> vao, indicesNum}
+    std::unordered_map<int32_t, meshData> m_objects; //meshId -> vao, {matId -> triBegin, triEnd}
     std::vector<GLuint> m_allVBOs;
     ShaderProgram m_lodBufferProgram;
     ShaderProgram m_quadProgram;

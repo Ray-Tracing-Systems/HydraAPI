@@ -44,8 +44,7 @@ void RD_OGL32_Utility::ClearAll()
 
   for(auto& obj : m_objects)
   {
-    for(auto& batch : obj.second)
-      glDeleteVertexArrays(1, &batch.second.first);
+    glDeleteVertexArrays(1, &obj.second.first);
   }
 
   m_objects.clear();
@@ -415,87 +414,70 @@ bool RD_OGL32_Utility::UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode, c
   }
   //TODO: maybe try MultiDrawIndirect
 
+  GLuint vertexPosBufferObject;
+  GLuint vertexNormBufferObject;
+  GLuint vertexTexCoordsBufferObject;
+
+  GLuint indexBufferObject;
+  GLuint vertexArrayObject;
+
+// vertex positions
+  glGenBuffers(1, &vertexPosBufferObject);
+  glBindBuffer(GL_ARRAY_BUFFER, vertexPosBufferObject);
+  glBufferData(GL_ARRAY_BUFFER, a_input.vertNum * 4 * sizeof(GLfloat), a_input.pos4f, GL_STATIC_DRAW);
+
+  // vertex normals
+  glGenBuffers(1, &vertexNormBufferObject);
+  glBindBuffer(GL_ARRAY_BUFFER, vertexNormBufferObject);
+  glBufferData(GL_ARRAY_BUFFER, a_input.vertNum * 4 * sizeof(GLfloat), a_input.norm4f, GL_STATIC_DRAW);
+
+  // vertex texture coordinates
+  glGenBuffers(1, &vertexTexCoordsBufferObject);
+  glBindBuffer(GL_ARRAY_BUFFER, vertexTexCoordsBufferObject);
+  glBufferData(GL_ARRAY_BUFFER, a_input.vertNum * 2 * sizeof(GLfloat), a_input.texcoord2f, GL_STATIC_DRAW);
+
+  // index buffer
+  glGenBuffers(1, &indexBufferObject);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, a_input.triNum * 3 * sizeof(GLuint), a_input.indices, GL_STATIC_DRAW);
+
+  m_allVBOs.push_back(vertexPosBufferObject);
+  m_allVBOs.push_back(vertexNormBufferObject);
+  m_allVBOs.push_back(vertexTexCoordsBufferObject);
+
+  glGenVertexArrays(1, &vertexArrayObject);
+  glBindVertexArray(vertexArrayObject);
+
+  glBindBuffer(GL_ARRAY_BUFFER, vertexPosBufferObject);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+  glBindBuffer(GL_ARRAY_BUFFER, vertexNormBufferObject);
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+  glBindBuffer(GL_ARRAY_BUFFER, vertexTexCoordsBufferObject);
+  glEnableVertexAttribArray(2);
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+//     glBindBuffer(GL_ARRAY_BUFFER, matIDBufferObject);
+//     glEnableVertexAttribArray(4);
+//     glVertexAttribPointer(4, 1, GL_INT, GL_FALSE, 0, nullptr);
+
+
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
+
+  glBindVertexArray(0); GL_CHECK_ERRORS;
+
   meshData batchMeshData;
+  batchMeshData.first = vertexArrayObject;
   for (int32_t batchId = 0; batchId < a_listSize; ++batchId)
   {
     HRBatchInfo batch = a_batchList[batchId];
-
-    GLuint vertexPosBufferObject;
-    GLuint vertexNormBufferObject;
-    GLuint vertexTexCoordsBufferObject;
-    //   GLuint matIDBufferObject;
-
-    GLuint indexBufferObject;
-    GLuint vertexArrayObject;
-
-    std::vector<float> batchPos;
-    std::vector<float> batchNorm;
-    std::vector<float> batchTangent;
-    std::vector<float> batchTexCoord;
-    std::vector<int>   batchIndices;
-
-    CreateGeometryFromBatch(batch, a_input, batchPos, batchNorm, batchTangent, batchTexCoord, batchIndices);
-
-    //   std::vector<int>   matIDs(batchPos.size() / 4, batch.matId);
-
-    // vertex positions
-    glGenBuffers(1, &vertexPosBufferObject);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexPosBufferObject);
-    glBufferData(GL_ARRAY_BUFFER, batchPos.size() * sizeof(GLfloat), &batchPos[0], GL_STATIC_DRAW);
-
-    // vertex normals
-    glGenBuffers(1, &vertexNormBufferObject);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexNormBufferObject);
-    glBufferData(GL_ARRAY_BUFFER, batchNorm.size() * sizeof(GLfloat), &batchNorm[0], GL_STATIC_DRAW);
-
-    // vertex texture coordinates
-    glGenBuffers(1, &vertexTexCoordsBufferObject);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexTexCoordsBufferObject);
-    glBufferData(GL_ARRAY_BUFFER, batchTexCoord.size() * sizeof(GLfloat), &batchTexCoord[0], GL_STATIC_DRAW);
-
-    //matID
-/*    glGenBuffers(1, &matIDBufferObject);
-    glBindBuffer(GL_ARRAY_BUFFER, matIDBufferObject);
-    glBufferData(GL_ARRAY_BUFFER, matIDs.size() * sizeof(GLint), &matIDs[0], GL_STATIC_DRAW);
-*/
-    // index buffer
-    glGenBuffers(1, &indexBufferObject);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, batchIndices.size() * sizeof(GLuint), &batchIndices[0], GL_STATIC_DRAW);
-
-    m_allVBOs.push_back(vertexPosBufferObject);
-    m_allVBOs.push_back(vertexNormBufferObject);
-    m_allVBOs.push_back(vertexTexCoordsBufferObject);
-
-    glGenVertexArrays(1, &vertexArrayObject);
-    glBindVertexArray(vertexArrayObject);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vertexPosBufferObject);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vertexNormBufferObject);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vertexTexCoordsBufferObject);
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-    /*   glBindBuffer(GL_ARRAY_BUFFER, matIDBufferObject);
-       glEnableVertexAttribArray(4);
-       glVertexAttribPointer(4, 1, GL_INT, GL_FALSE, 0, nullptr);
-   
-       */
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
-
-    glBindVertexArray(0); GL_CHECK_ERRORS;
-
-    std::pair<GLuint, int> tmp;
-    tmp.first = vertexArrayObject;
-    tmp.second = int(batchIndices.size());
-
-    batchMeshData[batch.matId] = tmp;
+    std::pair<int, int> tmp;
+    tmp.first = batch.triBegin;
+    tmp.second = batch.triEnd;
+    batchMeshData.second[batch.matId] = tmp;
   }
 
   m_objects[a_meshId] = batchMeshData;
@@ -635,7 +617,7 @@ void RD_OGL32_Utility::EndScene()
 
   m_quad->Draw();
 
-  //m_quadProgram.StopUseShader();
+  m_quadProgram.StopUseShader();
 
   /* Direct copy of render texture to the default framebuffer */
   /*
@@ -655,6 +637,8 @@ void RD_OGL32_Utility::InstanceMeshes(int32_t a_mesh_id, const float *a_matrices
 {
   // std::cout << "InstanceMeshes" <<std::endl;
 
+  auto batchMeshData = m_objects[a_mesh_id];
+  glBindVertexArray(batchMeshData.first);
   for (int32_t i = 0; i < a_instNum; i++)
   {
     float modelM[16];
@@ -663,8 +647,7 @@ void RD_OGL32_Utility::InstanceMeshes(int32_t a_mesh_id, const float *a_matrices
     int remapId = *(a_remapId + i);
 
     m_lodBufferProgram.SetUniform("model", float4x4(modelM));
-
-    for(auto batch : m_objects[a_mesh_id])
+    for(auto batch : batchMeshData.second)
     {
       int matId = batch.first;
 
@@ -677,17 +660,16 @@ void RD_OGL32_Utility::InstanceMeshes(int32_t a_mesh_id, const float *a_matrices
       bindTextureBuffer(m_lodBufferProgram, 1, "materials2", m_materialsTBOs[1], m_materialsTBOTexIds[1], GL_RGBA32I);
       bindTextureBuffer(m_lodBufferProgram, 2, "materials_matrix", m_materialsTBOs[2], m_materialsTBOTexIds[2], GL_RGBA32F);
 
-      auto vao = batch.second.first;
-      auto indices = batch.second.second;
+      auto triBegin = batch.second.first;
+      auto triEnd   = batch.second.second;
+      auto indices  = 3 * int(triEnd - triBegin);
 
-      glBindVertexArray(vao);
-      glDrawElements(GL_TRIANGLES, indices, GL_UNSIGNED_INT, nullptr);
-      glBindVertexArray(0); GL_CHECK_ERRORS;
 
+      glDrawElements(GL_TRIANGLES, indices, GL_UNSIGNED_INT, (void*)(3 * triBegin * sizeof(GLuint)));
       m_lodBufferProgram.SetUniform("matID", -1);
     }
-
   }
+  glBindVertexArray(0); GL_CHECK_ERRORS;
 }
 
 

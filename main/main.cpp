@@ -149,7 +149,7 @@ int main(int argc, const char** argv)
     //test91_proc_tex_bump();
     //test92_proc_tex_bump2();
 
-    //std::cout << test39_mesh_from_vsgf() << std::endl;
+    std::cout << test99_hexaplanar() << std::endl;
     //window_main_free_look(L"tests_f/test_167", L"opengl1Debug");
 
     //MTL_TESTS::test_162_shadow_matte_back1();
