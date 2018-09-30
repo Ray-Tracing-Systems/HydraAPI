@@ -640,3 +640,31 @@ namespace HydraRender
 
 };
 
+std::tuple<double, double, double> HydraRender::ColorSummImage4f(const float* a_image4f, int a_width, int a_height)
+{
+  double summ[3] = {0,0,0};
+
+  #pragma omp parallel for
+  for(int j=0;j<a_height;j++)
+  {
+    double lineSumm[3] = {0, 0, 0};
+
+    const int yOffs = j*a_width*4;
+    for(int i=0;i<a_width;i++)
+    {
+      lineSumm[0] += double(a_image4f[yOffs + i*4 + 0]);
+      lineSumm[1] += double(a_image4f[yOffs + i*4 + 1]);
+      lineSumm[2] += double(a_image4f[yOffs + i*4 + 2]);
+    }
+
+    #pragma omp atomic
+    summ[0] += lineSumm[0];
+    #pragma omp atomic
+    summ[1] += lineSumm[1];
+    #pragma omp atomic
+    summ[2] += lineSumm[2];
+  }
+
+  return std::tuple<double, double, double>(summ[0],summ[1], summ[2]);
+};
+

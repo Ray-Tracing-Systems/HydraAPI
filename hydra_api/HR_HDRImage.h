@@ -12,6 +12,8 @@
 #include <cstring>
 #include "alloc16.h"
 
+#include <tuple>
+
 namespace HydraRender
 {
 
@@ -69,7 +71,6 @@ namespace HydraRender
 
   };
 
-
   struct LDRImage1i
   {
   public:
@@ -118,6 +119,7 @@ namespace HydraRender
 
   };
 
+  std::tuple<double, double, double> ColorSummImage4f(const float* a_image4f, int a_width, int a_height);
 };
 
 /**

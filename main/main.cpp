@@ -142,8 +142,8 @@ int main(int argc, const char** argv)
   
     //std::cout << test71_out_of_memory() << std::endl;
 
-    //test86_proc_texture_ao_dirt();
-    test90_proc_tex_normalmap();
+    test86_proc_texture_ao_dirt();
+    //test90_proc_tex_normalmap();
     //test91_proc_tex_bump();
     //test90_proc_tex_normalmap();
     //test91_proc_tex_bump();
