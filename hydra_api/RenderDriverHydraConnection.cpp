@@ -175,9 +175,17 @@ protected:
 
 };
 
+static inline float contribFunc(float colorX, float colorY, float colorZ)
+{
+  return fmax(0.33334f*(colorX + colorY + colorZ), 0.0f);
+}
+
 int RD_HydraConnection::MLT_FrameBufferUpdateLoop()
 {
   size_t iter = 0;
+
+  const float* indirect = m_pSharedImage->ImageData(0);
+  const float* direct   = m_pSharedImage->ImageData(1);
 
   while(!m_mltFrameBufferUpdate_ExitNow)
   {
@@ -189,24 +197,23 @@ int RD_HydraConnection::MLT_FrameBufferUpdateLoop()
     if(!HaveUpdateNow(m_lastMaxRaysPerPixel).haveUpdateFB)
       continue;
 
-    float testColor[4] = {1,0,0,0};
-    if(iter%3 == 1)
-    {
-      testColor[0] = 0.0f;
-      testColor[1] = 1.0f;
-    }
-    else if(iter%3 == 2)
-    {
-      testColor[0] = 0.0f;
-      testColor[2] = 1.0f;
-    }
+    double summ[3];
+    std::tie(summ[0], summ[1], summ[2]) = HydraRender::ColorSummImage4f(indirect, m_width, m_height);
+    double avgDiv       = 1.0/double(m_width*m_height);
+    float avgBrightness = contribFunc(avgDiv*summ[0], avgDiv*summ[1], avgDiv*summ[2]);
+    const float normC   = m_pSharedImage->Header()->avgImageB / fmax(avgBrightness, 1e-30f);
+    const float normDL  = 1.0f/float(m_pSharedImage->Header()->spp);
 
     for(size_t i=0;i<m_colorMLTFinal.size(); i+=4)
     {
-      m_colorMLTFinal[i + 0] = testColor[0];
-      m_colorMLTFinal[i + 1] = testColor[1];
-      m_colorMLTFinal[i + 2] = testColor[2];
-      m_colorMLTFinal[i + 3] = testColor[3];
+      const float R = direct[i+0]*normDL + indirect[i+0]*normC;
+      const float G = direct[i+1]*normDL + indirect[i+1]*normC;
+      const float B = direct[i+2]*normDL + indirect[i+2]*normC;
+
+      m_colorMLTFinal[i + 0] = R;
+      m_colorMLTFinal[i + 1] = G;
+      m_colorMLTFinal[i + 2] = B;
+      m_colorMLTFinal[i + 3] = 0.0f;
     }
 
     iter++;
