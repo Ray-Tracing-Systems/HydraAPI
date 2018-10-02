@@ -386,6 +386,11 @@ struct HRSharedBufferHeader
   int   counterRcv;
   int   counterSnd;
   int   gbufferIsEmpty;
+
+  float avgImageB;
+  float sppDL;
+  int   dummy2;
+  int   dummy1;
 };
 
 struct IHRSharedAccumImage

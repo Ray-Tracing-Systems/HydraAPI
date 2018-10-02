@@ -163,8 +163,60 @@ protected:
   bool m_threadFinished;
   bool haveUpdateFromMT;
   bool hadFinalUpdate;
+
+  // MLT/MMLT asynchronous frame buffer update
+  //
+  std::vector<float, aligned16<float> > m_colorMLTFinal;
+  std::future<int>                      m_mltFrameBufferUpdateThread;
+  bool                                  m_mltFrameBufferUpdate_ExitNow;
+  int                                   m_lastMaxRaysPerPixel;
+
+  int MLT_FrameBufferUpdateLoop();
+
 };
 
+int RD_HydraConnection::MLT_FrameBufferUpdateLoop()
+{
+  size_t iter = 0;
+
+  while(!m_mltFrameBufferUpdate_ExitNow)
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+    if(m_mltFrameBufferUpdate_ExitNow)
+      break;
+
+    if(!HaveUpdateNow(m_lastMaxRaysPerPixel).haveUpdateFB)
+      continue;
+
+    float testColor[4] = {1,0,0,0};
+    if(iter%3 == 1)
+    {
+      testColor[0] = 0.0f;
+      testColor[1] = 1.0f;
+    }
+    else if(iter%3 == 2)
+    {
+      testColor[0] = 0.0f;
+      testColor[2] = 1.0f;
+    }
+
+    for(size_t i=0;i<m_colorMLTFinal.size(); i+=4)
+    {
+      m_colorMLTFinal[i + 0] = testColor[0];
+      m_colorMLTFinal[i + 1] = testColor[1];
+      m_colorMLTFinal[i + 2] = testColor[2];
+      m_colorMLTFinal[i + 3] = testColor[3];
+    }
+
+    iter++;
+  }
+
+  std::cout << "exit from MLT_FrameBufferUpdateLoop" << std::endl;
+  std::cout.flush();
+
+  return 0;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -417,11 +469,6 @@ bool RD_HydraConnection::UpdateSettings(pugi::xml_node a_settingsNode)
 {
   m_width     = a_settingsNode.child(L"width").text().as_int();
   m_height    = a_settingsNode.child(L"height").text().as_int();
-
-  m_enableMLT = (std::wstring(a_settingsNode.child(L"enable_mlt").text().as_string())       == L"1")   || 
-                (std::wstring(a_settingsNode.child(L"method_secondary").text().as_string()) == L"mlt") || 
-                (std::wstring(a_settingsNode.child(L"method_tertiary").text().as_string())  == L"mlt") ||
-                (std::wstring(a_settingsNode.child(L"method_caustic").text().as_string())   == L"mlt");
  
   m_needGbuff = (std::wstring(a_settingsNode.child(L"evalgbuffer").text().as_string()) == L"1");
 
@@ -445,6 +492,14 @@ bool RD_HydraConnection::UpdateSettings(pugi::xml_node a_settingsNode)
     m_dontRun = true;
   else
     m_dontRun = false;
+
+  m_enableMLT = false;
+  if(a_settingsNode.child(L"method_secondary") != nullptr)
+  {
+    if (std::wstring(a_settingsNode.child(L"method_secondary").text().as_string()) == L"mmlt" ||
+        std::wstring(a_settingsNode.child(L"method_secondary").text().as_string()) == L"mlt")
+      m_enableMLT = true;
+  }
 
   return true;
 }
@@ -517,10 +572,10 @@ std::string RD_HydraConnection::MakeRenderCommandLine(const std::string& hydraIm
 
 int RD_HydraConnection::GetCurrSharedImageLayersNum()
 {
-  const bool runMLT = false;
+  const bool runMLT      = m_enableMLT;
   const bool needGBuffer = m_needGbuff;
 
-  int layersNum = 1;
+  int layersNum;
   if (runMLT && needGBuffer)
     layersNum = 4;
   else if (needGBuffer)
@@ -681,9 +736,28 @@ void RD_HydraConnection::EndFlush()
   if (m_pSharedImage == nullptr)
     return;
 
+  // sent message to render that it can finally start
+  //
   std::string firstMsg = "-node_t A -sid 0 -layer color -action start";
   strncpy(m_pSharedImage->MessageSendData(), firstMsg.c_str(), 256); // #TODO: (sid, mid) !!!
   m_pSharedImage->Header()->counterSnd++;
+
+  // run async framebuffer update loop if MLT is used
+  //
+  if(m_enableMLT)
+  {
+    m_colorMLTFinal.resize(m_width*m_height*4);
+    for(size_t i=0;i<m_colorMLTFinal.size();i+=4)
+    {
+      m_colorMLTFinal[i+0] = 1.0f;
+      m_colorMLTFinal[i+1] = 0.0f;
+      m_colorMLTFinal[i+2] = 0.0f;
+      m_colorMLTFinal[i+3] = 0.0f;
+    }
+  }
+  m_lastMaxRaysPerPixel          = 1000000;
+  m_mltFrameBufferUpdate_ExitNow = false;
+  m_mltFrameBufferUpdateThread   = std::async(std::launch::async, &RD_HydraConnection::MLT_FrameBufferUpdateLoop, this);
 }
 
 void RD_HydraConnection::Draw()
@@ -703,6 +777,8 @@ void RD_HydraConnection::InstanceLights(int32_t a_light_id, const float* a_matri
 
 HRRenderUpdateInfo RD_HydraConnection::HaveUpdateNow(int a_maxRaysPerPixel)
 {
+  m_lastMaxRaysPerPixel = a_maxRaysPerPixel;
+
   HRRenderUpdateInfo result;
   result.finalUpdate   = false;
   result.progress      = 0.0f; 
@@ -742,8 +818,10 @@ HRRenderUpdateInfo RD_HydraConnection::HaveUpdateNow(int a_maxRaysPerPixel)
   result.finalUpdate = (result.progress >= 100.0f);
 
   if(result.finalUpdate)
+  {
+    m_mltFrameBufferUpdate_ExitNow = true;
     this->ExecuteCommand(L"exitnow", nullptr);
-  
+  }
   return result;
 }
 
@@ -843,6 +921,8 @@ void RD_HydraConnection::GetFrameBufferLineHDR(int32_t a_xBegin, int32_t a_xEnd,
     return;
 
   const float* data = m_pSharedImage->ImageData(0); // index depends on a_layerName
+  if(m_enableMLT)
+    data = m_colorMLTFinal.data();
   if (data == nullptr)
     return;
 
@@ -851,7 +931,7 @@ void RD_HydraConnection::GetFrameBufferLineHDR(int32_t a_xBegin, int32_t a_xEnd,
 
   data = data + y*m_width*4;
 
-  const float invSpp = 1.0f / m_pSharedImage->Header()->spp;
+  const float invSpp = m_enableMLT ? 1.0f : 1.0f / m_pSharedImage->Header()->spp;
   const __m128 mult  = _mm_set_ps1(invSpp);
   auto intptr        = reinterpret_cast<std::uintptr_t>(data);
 
@@ -905,6 +985,8 @@ void RD_HydraConnection::GetFrameBufferLineLDR(int32_t a_xBegin, int32_t a_xEnd,
     return;
 
   const float* data = m_pSharedImage->ImageData(0); // index depends on a_layerName
+  if(m_enableMLT)
+    data = m_colorMLTFinal.data();
   if (data == nullptr)
     return;
 
@@ -917,7 +999,7 @@ void RD_HydraConnection::GetFrameBufferLineLDR(int32_t a_xBegin, int32_t a_xEnd,
   const float4* dataHDR = (const float4*)data;
 
   const float invGamma  = 1.0f / 2.2f;
-  const float normConst = 1.0f / m_pSharedImage->Header()->spp;
+  const float normConst = m_enableMLT ? 1.0f : 1.0f / m_pSharedImage->Header()->spp;
 
   // not sse version
   //
@@ -957,16 +1039,9 @@ void RD_HydraConnection::GetFrameBufferHDR(int32_t w, int32_t h, float* a_out, c
 
 void RD_HydraConnection::GetFrameBufferLDR(int32_t w, int32_t h, int32_t* a_out)
 {
-  /*auto res = m_pSharedImage->Lock(100);
-
-  if(res)
-  {*/
-    #pragma omp parallel for
-    for (int y = 0; y < h; y++)
-      GetFrameBufferLineLDR(0, w, y, a_out + y * w);
- /*   m_pSharedImage->Unlock();
-  }*/
-
+  #pragma omp parallel for
+  for (int y = 0; y < h; y++)
+    GetFrameBufferLineLDR(0, w, y, a_out + y * w);
 }
 
 
@@ -1094,6 +1169,7 @@ void RD_HydraConnection::ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out)
   else if (name == L"exitnow")
   {
     needToStopProcess = true;
+    m_mltFrameBufferUpdate_ExitNow = true;
   }
   else if (name == L"pause")
   {
@@ -1121,6 +1197,7 @@ void RD_HydraConnection::ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out)
     //
     inputA = "exitnow";
     needToStopProcess = true;
+    m_mltFrameBufferUpdate_ExitNow = true;
   }
   else if (name == L"resume")
   {

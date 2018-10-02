@@ -1724,7 +1724,8 @@ bool test39_mesh_from_vsgf()
     node.append_child(L"height").text() = 768;
 
     node.append_child(L"method_primary").text()   = L"pathtracing"; // L"pathtracing"; // L"lighttracing"; // IBPT
-    node.append_child(L"trace_depth").text()      = 5;
+    node.append_child(L"method_secondary").text() = L"mmlt";
+    node.append_child(L"trace_depth").text()      = 6;
     node.append_child(L"diff_trace_depth").text() = 3;
     node.append_child(L"maxRaysPerPixel").text()  = 1024; //1024;
     node.append_child(L"evalgbuffer").text()      = 0;
