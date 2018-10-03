@@ -1964,6 +1964,7 @@ void run_all_ipp_tests(int a_start)
     &PP_TESTS::test310_post_process_hydra1_desaturation,
     &PP_TESTS::test311_post_process_hydra1_saturation,
     &PP_TESTS::test312_post_process_hydra1_whiteBalance,
+    &PP_TESTS::test312_2_post_process_hydra1_whitePointColor,
     &PP_TESTS::test313_post_process_hydra1_uniformContrast,
     &PP_TESTS::test314_post_process_hydra1_normalize,
     &PP_TESTS::test315_post_process_hydra1_vignette,

@@ -419,6 +419,45 @@ void ConvertLmsToXyz(float4* data)
   data->z = 1.0893f * S;
 }
 
+void ConvertXyzToLmsPower(float4 * data, const float power)
+{
+  float L = 0.4002f * data->x + 0.7075f * data->y + -0.0807f * data->z;
+  float M = -0.2280f * data->x + 1.1500f * data->y + 0.0612f * data->z;
+  float S = 0.9184f * data->z;
+
+  const float a = power;
+
+  if (L >= 0.0f) L = pow(L, a);
+  else if (L <  0.0f) L = -pow(-L, a);
+  if (M >= 0.0f) M = pow(M, a);
+  else if (M <  0.0f) M = -pow(-M, a);
+  if (S >= 0.0f) S = pow(S, a);
+  else if (S <  0.0f) S = -pow(-S, a);
+
+  data->x = L;
+  data->y = M;
+  data->z = S;
+}
+void ConvertLmsToXyzPower(float4* data)
+{
+  float L = data->x;
+  float M = data->y;
+  float S = data->z;
+
+  const float a = 2.3255819f; //  = 1.0f / 0.43f;
+
+  if (L >= 0.0f) L = pow(L, a);
+  else if (L <  0.0f) L = -pow(-L, a);
+  if (M >= 0.0f) M = pow(M, a);
+  else if (M <  0.0f) M = -pow(-M, a);
+  if (S >= 0.0f) S = pow(S, a);
+  else if (S <  0.0f) S = -pow(-S, a);
+
+  data->x = 1.8493f * L + -1.1383f * M + 0.2381f * S;
+  data->y = 0.3660f * L + 0.6444f * M + -0.010f  * S;
+  data->z = 1.0893f * S;
+}
+
 void ConvertLmsToIpt(float4* data)
 {
   const float I = 0.4000f * data->x + 0.4000f * data->y + 0.2000f * data->z;

@@ -504,14 +504,19 @@ void ExecutePostProcessHydra1(
         rgbDataComp.z /= pow((1.0f + pow(rgbDataComp.z, knee)), antiKnee);
       }
 
-      // Compress in RGB, but result equal compress in LMS or IPT
-      const float lum = image4out[i].x + image4out[i].y + image4out[i].z;
-      const float lumMean = pow(lum, 2.4f) + 1.0f;
-      const float mult = powf((lum / 3.0f + 1.0f) / lumMean, 0.4166f);
+      ConvertSrgbToXyz(&image4out[i]);
+      ConvertXyzToLmsPower(&image4out[i], 0.43f);
+      ConvertLmsToIpt(&image4out[i]);
 
-      image4out[i].x *= mult;
-      image4out[i].y *= mult;
-      image4out[i].z *= mult;
+      image4out[i].x = pow(image4out[i].x, 2.0f);
+      image4out[i].x /= (1.0f + image4out[i].x);
+      image4out[i].y *= (1.0f - image4out[i].x);
+      image4out[i].z *= (1.0f - image4out[i].x);
+      image4out[i].x = pow(image4out[i].x, 0.5f);
+
+      ConvertIptToLms(&image4out[i]);
+      ConvertLmsToXyzPower(&image4out[i]);
+      ConvertXyzToSrgb(&image4out[i]);
 
       // Return to main array
       const float mix = 1.0f - a_compress;
@@ -538,17 +543,17 @@ void ExecutePostProcessHydra1(
     {
       float4 rgbData = image4out[i];
 
-      rgbData.x = pow(rgbData.x, 4.0f);
-      rgbData.y = pow(rgbData.y, 4.0f);
-      rgbData.z = pow(rgbData.z, 4.0f);
+      rgbData.x = pow(rgbData.x, 6.0f);
+      rgbData.y = pow(rgbData.y, 6.0f);
+      rgbData.z = pow(rgbData.z, 6.0f);
 
       rgbData.x /= (1.0f + rgbData.x);
       rgbData.y /= (1.0f + rgbData.y);
       rgbData.z /= (1.0f + rgbData.z);
 
-      rgbData.x = pow(rgbData.x, 0.25f);
-      rgbData.y = pow(rgbData.y, 0.25f);
-      rgbData.z = pow(rgbData.z, 0.25f);
+      rgbData.x = pow(rgbData.x, 0.16666f);
+      rgbData.y = pow(rgbData.y, 0.16666f);
+      rgbData.z = pow(rgbData.z, 0.16666f);
 
       // Return to main array
       Blend(image4out[i].x, rgbData.x, a_compress);
