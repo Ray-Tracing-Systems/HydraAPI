@@ -487,6 +487,19 @@ void ExecutePostProcessHydra1(
       ClampMinusToZero(&image4out[i]);
     }
 
+    // ----- Saturation  -----
+    if (a_saturation != 1.0f)
+    {
+      const float lum = Luminance(&image4out[i]);
+
+      // Return to main array
+      image4out[i].x = lum + (image4out[i].x - lum) * a_saturation;
+      image4out[i].y = lum + (image4out[i].y - lum) * a_saturation;
+      image4out[i].z = lum + (image4out[i].z - lum) * a_saturation;
+
+      ClampMinusToZero(image4out, i);
+    }
+
     // ----- Compress -----
     if (a_compress > 0.0f && maxRgbSource > 1.01f)
     {
@@ -523,45 +536,23 @@ void ExecutePostProcessHydra1(
       Blend(image4out[i].x, rgbDataComp.x, mix);
       Blend(image4out[i].y, rgbDataComp.y, mix);
       Blend(image4out[i].z, rgbDataComp.z, mix);
+
+      // Addition little compress
+      image4out[i].x = pow(image4out[i].x, 6.0f);
+      image4out[i].y = pow(image4out[i].y, 6.0f);
+      image4out[i].z = pow(image4out[i].z, 6.0f);
+
+      image4out[i].x /= (1.0f + image4out[i].x);
+      image4out[i].y /= (1.0f + image4out[i].y);
+      image4out[i].z /= (1.0f + image4out[i].z);
+
+      image4out[i].x = pow(image4out[i].x, 0.16666f);
+      image4out[i].y = pow(image4out[i].y, 0.16666f);
+      image4out[i].z = pow(image4out[i].z, 0.16666f);
     }
 
-    // ----- Saturation  -----
-    if (a_saturation != 1.0f)
-    {
-      const float lum = Luminance(&image4out[i]);
 
-      // Return to main array
-      image4out[i].x = lum + (image4out[i].x - lum) * a_saturation;
-      image4out[i].y = lum + (image4out[i].y - lum) * a_saturation;
-      image4out[i].z = lum + (image4out[i].z - lum) * a_saturation;
-
-      ClampMinusToZero(image4out, i);
-    }
-
-    // Addition little compress
-    if (a_compress > 0.0f && maxRgbSource > 1.01f)
-    {
-      float4 rgbData = image4out[i];
-
-      rgbData.x = pow(rgbData.x, 6.0f);
-      rgbData.y = pow(rgbData.y, 6.0f);
-      rgbData.z = pow(rgbData.z, 6.0f);
-
-      rgbData.x /= (1.0f + rgbData.x);
-      rgbData.y /= (1.0f + rgbData.y);
-      rgbData.z /= (1.0f + rgbData.z);
-
-      rgbData.x = pow(rgbData.x, 0.16666f);
-      rgbData.y = pow(rgbData.y, 0.16666f);
-      rgbData.z = pow(rgbData.z, 0.16666f);
-
-      // Return to main array
-      Blend(image4out[i].x, rgbData.x, a_compress);
-      Blend(image4out[i].y, rgbData.y, a_compress);
-      Blend(image4out[i].z, rgbData.z, a_compress);
-    }
-
-    //// ----- Contrast -----
+    // ----- Contrast -----
     if (a_contrast > 1.0f)
     {
       float4 contrastData = image4out[i];
