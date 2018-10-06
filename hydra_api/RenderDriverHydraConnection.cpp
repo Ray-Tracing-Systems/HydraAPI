@@ -145,6 +145,7 @@ protected:
     int  maxrays;
     bool allocImageB;
     bool allocImageBOnGPU;
+    int  mmltThreads;
   } m_presets;
 
   bool m_firstUpdate;
@@ -508,6 +509,10 @@ bool RD_HydraConnection::UpdateSettings(pugi::xml_node a_settingsNode)
       m_enableMLT = true;
   }
 
+  if (a_settingsNode.child(L"mmlt_threads") != nullptr)
+    m_presets.mmltThreads = a_settingsNode.child(L"mmlt_threads").text().as_int();
+  else
+    m_presets.mmltThreads = 0;
   return true;
 }
 
@@ -569,6 +574,13 @@ std::string RD_HydraConnection::MakeRenderCommandLine(const std::string& hydraIm
   else
     auxInput << "-cpu_fb 1 ";
   
+  if (m_enableMLT)
+  {
+    auxInput << "-enable_mlt 1 ";
+    if (m_presets.mmltThreads != 0)
+      auxInput << "-mmltthreads " << m_presets.mmltThreads << " ";
+  }
+
   if (needGBuffer)
     auxInput << "-evalgbuffer 1 ";
   

@@ -57,9 +57,9 @@ namespace HydraRender
   void HDRImage4f::loadFromImage4f(const std::string& a_fileName)
   {
     unsigned int wh[2];
-
+    
     std::ifstream fin(a_fileName.c_str(), std::ios::binary);
-
+    
     if (!fin.is_open())
     {
       std::cerr << "LoadImageFromImagef4: can't open file " << a_fileName.c_str() << std::endl;
@@ -67,28 +67,29 @@ namespace HydraRender
       m_height = 0;
       return;
     }
-
+    
     fin.read((char*)wh, sizeof(int) * 2);
-
+    
     m_width = wh[0];
     m_height = wh[1];
-
+    
     m_data.resize(m_width*m_height * 4);
-
+    
     fin.read((char*)&m_data[0], wh[0] * wh[1] * 4 * sizeof(float));
+    
     fin.close();
   }
-
 
   void HDRImage4f::saveToImage4f(const std::string& a_fileName)
   {
     int wh[2] = { m_width, m_height };
-
+  
     std::ofstream fout(a_fileName.c_str(), std::ios::binary);
     fout.write((char*)wh, sizeof(int) * 2);
     fout.write((char*)&m_data[0], wh[0] * wh[1] * 4 * sizeof(float));
     fout.close();
   }
+
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -659,10 +660,13 @@ std::tuple<double, double, double> HydraRender::ColorSummImage4f(const float* a_
 
     #pragma omp atomic
     summ[0] += lineSumm[0];
+    
     #pragma omp atomic
     summ[1] += lineSumm[1];
+    
     #pragma omp atomic
     summ[2] += lineSumm[2];
+    
   }
 
   return std::tuple<double, double, double>(summ[0],summ[1], summ[2]);

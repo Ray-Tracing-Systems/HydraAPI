@@ -194,7 +194,6 @@ void hrMeshDisplace(HRMeshRef a_mesh, const std::unordered_map<uint32_t, uint32_
     std::cout << "id : " << dTris.first << " triangles : " << dTris.second.second.size() <<std::endl;
   }*/
 
-  //#pragma omp parallel for
   for(auto& dTris : dMatToTriangles)
   {
     doDisplacement(pMesh, dTris.second.first, dTris.second.second, bbox);
@@ -774,7 +773,6 @@ void displaceByHeightMap(HRMesh *pMesh, const pugi::xml_node &heightXMLNode, std
 
 
   std::set<uint32_t > displaced_indices;
-  // #pragma omp parallel for
   for(int i=0;i<triangleList.size();i++)
   {
     const auto& tri = triangleList[i];
