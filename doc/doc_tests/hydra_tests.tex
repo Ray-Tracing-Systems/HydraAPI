@@ -1,0 +1,1900 @@
+\title{Функциональность Hydra Renderer}
+\author{Ray Tracing Systems}
+\date{\today}
+
+\documentclass[12pt]{article}
+
+\usepackage[
+  a4paper, mag=1000, includefoot,
+  left=3cm, right=1cm, top=2cm, bottom=2cm, headsep=1cm, footskip=1cm
+]{geometry}
+\usepackage[T2A]{fontenc}
+\usepackage[cp1251]{inputenc}
+\usepackage[russian,english]{babel} 	
+\usepackage{float}
+\usepackage[section]{placeins}
+
+\usepackage{hyperref}
+\hypersetup{pdfborder={0 0 0}, colorlinks=true, urlcolor=blue} % Specify a color for hyperlinks
+\usepackage{todonotes} % Required for the boxes that questions appear in
+\usepackage{tocloft} % Required to give customize the table of contents to display questions
+\usepackage{enumitem}
+
+
+\renewcommand{\baselinestretch}{1.25}
+
+
+\usepackage{xcolor} % for setting colors
+\definecolor{gray}{rgb}{0.4,0.4,0.4}
+\definecolor{darkblue}{rgb}{0.0,0.0,0.6}
+\definecolor{cyan}{rgb}{0.0,0.5,0.5}
+\definecolor{maroon}{rgb}{0.5,0,0}
+\definecolor{darkgreen}{rgb}{0.0,0.5,0.0}
+
+\usepackage{listings}
+\lstdefinelanguage{XML}
+{
+	basicstyle=\ttfamily\footnotesize,
+	morestring=[b]",
+	moredelim=[s][\bfseries\color{darkblue}]{<}{\ },
+	moredelim=[s][\bfseries\color{darkblue}]{</}{>},
+	moredelim=[l][\bfseries\color{darkblue}]{/>},
+	moredelim=[l][\bfseries\color{darkblue}]{>},
+	morecomment=[s]{<?}{?>},
+	morecomment=[s]{<!--}{-->},
+	commentstyle=\color{darkgreen},
+	stringstyle=\color{black},
+	identifierstyle=\color{cyan},
+	commentstyle=\color{gray}\upshape,
+	keywordstyle=\color{cyan}\underbar,
+	morekeywords={ver, type, brdf_type, shape, distribution}% list your attributes here
+}
+
+% set the default code style
+\lstset{
+	frame=leftline,                 % draw line on left of code
+	tabsize=4,                      % tab space width
+	showstringspaces=false,         % don't mark spaces in strings
+	xleftmargin=2em,
+	framexleftmargin=2em
+}
+
+% Create the command used for removed procs
+\newcommand{\listreqname}{}
+\newlistof{req}{def2}{\listreqname}
+
+
+\newcommand{\reqirenment}[1]{%
+	\refstepcounter{req}%
+	\par\noindent 
+	\phantomsection % Needed for hyperref compatibility with the \addcontensline command
+	%\addcontentsline{def2}{figure}{#1} % Adds the question to the list of questions
+	\addcontentsline{def2}{figure}
+	{\protect\numberline{\thesection.\thereq}#1}\par
+	\todo[inline, color=green!25]{\textbf{\thereq:} \textbf{#1} \hyperref[ruleslist]{(to list)}} % Uses the todonotes package to create a fancy box to put the question
+	\vspace{1em} % White space after the question before the start of the answer
+}
+
+
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Данный документ содержит описание функциональности рендер-системы Hydra Renderer на основе функциональных тестов. Каждая функциональность (фича) может тестироваться одним или более тестом. Каждый тест способен протестировать одну или более функциональностей.  Таким образом, набор функциональностей рендер-системы определяется набором проходящих успешно тестов.
+
+\end{abstract}
+
+\section{Список тестов}\label{ruleslist}
+
+\listofreq
+
+\section{Материалы}\label{materials}
+
+
+\addtocounter{section}{-2}
+
+\reqirenment{test\_101\_diffuse\_lambert}
+
+Базовая поддержка Ламбертовских отражений. Рис \ref{fig:test_101_image} и листинг \ref{lambertxml}.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_101/w_ref.png}           
+	\caption{\label{fig:test_101_image}
+     Изображение-эталон для теста \textnumero 101. Серая сфера соответствует описанию в листинге \ref{lambertxml}.  }   
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Lambert material definition in Hydra XML standart, label=lambertxml, captionpos=b]
+<material id="0" name="mysimplemat" type="hydra_material">
+  <diffuse brdf_type="lambert">
+    <color val="0.5 0.5 0.5" />
+  </diffuse>
+</material>
+\end{lstlisting}
+
+\reqirenment{test\_102\_diffuse\_orennayar}
+
+Поддержка модели Орен-Наяра для диффузных отражений. Слева направо представлены сферы с различным значением roughess: (0, 0.3, 0.8). 
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_102/w_ref.png}           
+	\caption{\label{fig:test_102_image}
+		Изображение-эталон для теста \textnumero 102. XML для центральной сферы представлен в листинге \ref{orenxml}.  }   
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Модель BRDF Orennayar для диффузных материалов, label=orenxml, captionpos=b]
+<material id="1" name="mat03" type="hydra_material">
+  <diffuse brdf_type="orennayar">
+    <color val="0.35 0.35 0.35" />
+    <roughness val="0.3" />
+  </diffuse>
+</material>
+
+\end{lstlisting}
+
+\reqirenment{test\_103\_diffuse\_texture}
+
+Поддержка наложения текстур для диффузных отражений. На куб, сферу и тор для диффузного отражения наложена шахматная текстура в режиме умножения на цвет объекта, а на плоскость текстура наложена в режиме замещения цвета объекта.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_103/w_ref.png}           
+	\caption{\label{fig:test_103_image}
+		Изображение-эталон для теста \textnumero 103. XML для сферы представлен в листинге \ref{difftexxml}.  }   
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Наложение текстуры для диффузных материалов, label=difftexxml, captionpos=b]
+<material id="1" name="matG" type="hydra_material">
+  <diffuse brdf_type="lambert">
+    <color val="0.05 0.95 0.05" tex_apply_mode="multiply">
+    <texture id="2" type="texref" matrix="4 0 0 0 0 4 0 0 0 0 1 0 0 0 0 1" addressing_mode_u="wrap" addressing_mode_v="wrap" input_gamma="2.20000005" input_alpha="rgb" />
+    </color>
+  </diffuse>
+</material>
+
+\end{lstlisting}
+
+
+\reqirenment{test\_152\_texture\_color\_replace\_mode}
+
+Тест на режим наложения текстуры в режиме вытеснения цвета. Для трех сфер заданы диффузные материалы с шахматной текстурой, для центральной сферы текстура наложена в режиме замещения цвета материала, а для двух других сфер - в режиме умножения на цвет материала.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_152/w_ref.png}           
+	\caption{\label{fig:test_152_image}
+		Изображение-эталон для теста \textnumero 152. XML для центральной сферы представлен в листинге \ref{difftexmultxml}.}  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Текстура в режиме вытеснения цвета, label=difftexmultxml, captionpos=b]
+<material id="1" name="matG" type="hydra_material">
+<diffuse brdf_type="lambert">
+<color val="0.05 0.95 0.05" tex_apply_mode="replace">
+<texture id="1" type="texref" matrix="4 0 0 -0.5 0 4 0 -0.5 0 0 1 0 0 0 0 1" addressing_mode_u="wrap" addressing_mode_v="wrap" input_gamma="2.20000005" input_alpha="rgb" />
+</color>
+</diffuse>
+</material>
+\end{lstlisting}
+
+
+\reqirenment{test\_104\_reflect\_phong}
+
+Поддержка модели Фонга для зеркальных отражений. Слева направо представлены сферы с различными цветами отражений и различным значением glossiness: (1.0, 0.7, 0.95).
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_104/w_ref.png}           
+	\caption{\label{fig:test_104_image}
+		Изображение-эталон для теста \textnumero 104. XML для центрального шарика представлен в листинге \ref{phongxml}.  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Модель Фонга для отражений, label=phongxml, captionpos=b]
+<material id="1" name="matPlasticMatte" type="hydra_material">
+  <diffuse brdf_type="lambert">
+    <color val="0.0 0.8 0.0" />
+  </diffuse>
+  <reflectivity brdf_type="phong">
+    <color val="0.5 0.5 0.5" />
+    <glossiness val="0.7" />
+    <extrusion val="maxcolor" />
+    <fresnel val="1" />
+    <fresnel_ior val="1.5" />
+  </reflectivity>
+</material>
+
+\end{lstlisting}
+
+
+\reqirenment{test\_105\_reflect\_microfacet}
+
+Поддержка Microfacet (Torranse-Sparrow) модели для зеркальных отражений. Слева направо представлены сферы с различными цветами отражений, различным значением glossiness: (0.99, 0.75, 0.85) и коэффициента Френеля: (8.0, 8.0, 1.5).
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_105/w_ref.png}           
+	\caption{\label{fig:test_105_image}
+		Изображение-эталон для теста \textnumero 105. XML для центрального шарика представлен в листинге \ref{microfacetxml}.  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Модель Torranse-Sparrow для отражений, label=microfacetxml, captionpos=b]
+<material id="1" name="matMetalBrushed" type="hydra_material">
+  <reflectivity brdf_type="torranse_sparrow">
+    <color val="0.8 0.8 0.8" />
+    <glossiness val="0.75" />
+    <extrusion val="maxcolor" />
+    <fresnel val="1" />
+    <fresnel_ior val="8" />
+  </reflectivity>
+</material>
+
+\end{lstlisting}
+
+\reqirenment{test\_106\_reflect\_fresnel\_ior}
+
+Поддержка коэффициента Френеля для зеркальных отражений. Слева направо представлены сферы с различными значениями коэффициента Френеля: (1.5, 4.0, 16.0).
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_106/w_ref.png}           
+	\caption{\label{fig:test_106_image}
+		Изображение-эталон для теста \textnumero 106. XML для центрального шарика представлен в листинге \ref{fresnelxml}.  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Коэффициент Френеля для отражений, label=fresnelxml, captionpos=b]
+<material id="1" name="mat4" type="hydra_material">
+  <reflectivity brdf_type="torranse_sparrow">
+    <color val="0.8 0.8 0.8" />
+    <glossiness val="1.0" />
+    <extrusion val="maxcolor" />
+    <fresnel val="1" />
+    <fresnel_ior val="4" />
+  </reflectivity>
+</material>
+
+\end{lstlisting}
+
+\reqirenment{test\_107\_reflect\_extrusion}
+
+Поддержка нескольких режимов смешивания диффузных и зеркальных отражений. Слева направо представлены сферы, отличающиеся только режимом смешивания диффузной и зеркальной составляющей: (maxcolor, luminance, colored).
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_107/w_ref.png}           
+	\caption{\label{fig:test_107_image}
+		Изображение-эталон для теста \textnumero 107. XML для центрального шарика представлен в листинге \ref{extrusionxml}.  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Режимы смешивания диффузных и зеркальных отражений, label=extrusionxml, captionpos=b]
+<material id="1" name="matLuminance" type="hydra_material">
+  <diffuse brdf_type="lambert">
+    <color val="0.9 0.9 0.0" />
+  </diffuse>
+  <reflectivity brdf_type="torranse_sparrow">
+    <color val="0.95 0.0 0.0" />
+    <glossiness val="0.8" />
+    <extrusion val="luminance" />
+    <fresnel val="0" />
+  </reflectivity>
+</material>
+
+\end{lstlisting}
+
+\reqirenment{test\_108\_reflect\_texture}
+
+Поддержка текстур для зеркальных отражений. На куб, сферу и тор для зеркального отражения наложена шахматная текстура в режиме умножения на цвет объекта.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_108/w_ref.png}           
+	\caption{\label{fig:test_108_image}
+		Изображение-эталон для теста \textnumero 108. XML для сферы представлен в листинге \ref{refltexxml}.  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Текстура для зеркальных отражений, label=refltexxml, captionpos=b]
+<material id="1" name="matG" type="hydra_material">
+  <diffuse brdf_type="lambert">
+    <color val="0.01 0.01 0.01" />
+  </diffuse>
+  <reflectivity brdf_type="torranse_sparrow">
+    <color val="0.05 0.95 0.05">
+      <texture id="1" type="texref" matrix="4 0 0 0 0 4 0 0 0 0 1 0 0 0 0 1" addressing_mode_u="wrap" addressing_mode_v="wrap" input_gamma="2.20000005" input_alpha="rgb" />
+    </color>
+    <glossiness val="0.95" />
+    <extrusion val="maxcolor" />
+    <fresnel val="1" />
+    <fresnel_ior val="8" />
+  </reflectivity>
+</material>
+
+\end{lstlisting}
+
+
+\reqirenment{test\_109\_reflect\_glossiness\_texture}
+
+Поддержка текстур для glossiness зеркальных отражений. Для сферы заданы различные значения glossiness: (0.2, 0.4, 0.6, 0.8, 1.0) и наложена шахматная текстура, умножающаяся на это значение. Для прямоугольника задано значение glossiness равное 1.0 и задана градиентная текстура. 
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_109/w_ref.png}           
+	\caption{\label{fig:test_109_image}
+		Изображение-эталон для теста \textnumero 109. XML для прямоугольника представлен в листинге \ref{glosstexxml}.  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Текстура для зеркальных отражений, label=glosstexxml, captionpos=b]
+<material id="5" name="matGlossyGrad" type="hydra_material">
+  <reflectivity brdf_type="phong">
+    <color val="1.0 1.0 1.0" />
+    <glossiness val="1.0">
+      <texture id="3" type="texref" matrix="1 0 0 0 0 -1 0 0 0 0 1 0 0 0 0 1" addressing_mode_u="wrap" addressing_mode_v="wrap" input_gamma="2.20000005" input_alpha="rgb" />
+    </glossiness>
+    <extrusion val="maxcolor" />
+    <fresnel val="0" />
+    <fresnel_ior val="8" />
+  </reflectivity>
+</material>
+
+\end{lstlisting}
+
+\reqirenment{test\_110\_texture\_sampler}
+
+Поддержка текстурных матриц (на примере диффузных отражений). Для идентичной диффузной текстуры для сфер заданы различные текстурные матрицы. 
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_110/w_ref.png}           
+	\caption{\label{fig:test_110_image}
+		Изображение-эталон для теста \textnumero 110. XML для центральной сферы представлен в листинге \ref{texsamplerxml}.  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Текстурные матрицы для диффузных отражений, label=texsamplerxml, captionpos=b]
+<material id="1" name="matG" type="hydra_material">
+  <diffuse brdf_type="lambert">
+    <color val="0.05 0.95 0.05">
+      <texture id="1" type="texref" matrix="4 0 0 -0.5 0 4 0 -0.5 0 0 1 0 0 0 0 1" addressing_mode_u="wrap" addressing_mode_v="wrap" input_gamma="2.20000005" input_alpha="rgb" />
+    </color>
+  </diffuse>
+</material>
+
+\end{lstlisting}
+
+
+\reqirenment{test\_111\_glossiness\_texture\_sampler}
+
+Поддержка текстурных матриц (на примере glossiness). Для идентичной текстуры в слоте glossiness для куба, сферы и тора заданы различные текстурные матрицы. 
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_111/w_ref.png}           
+	\caption{\label{fig:test_111_image}
+		Изображение-эталон для теста \textnumero 111. XML для сферы представлен в листинге \ref{texsampler2xml}.  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Текстурные матрицы для glossiness, label=texsampler2xml, captionpos=b]
+<material id="1" name="matG" type="hydra_material">
+  <diffuse brdf_type="lambert">
+    <color val="0.05 0.05 0.05" />
+  </diffuse>
+  <reflectivity brdf_type="torranse_sparrow">
+    <color val="0.05 0.95 0.05" />
+    <glossiness val="0.3">
+      <texture id="1" type="texref" matrix="4 0 0 -0.5 0 4 0 -0.5 0 0 1 0 0 0 0 1" addressing_mode_u="wrap" addressing_mode_v="wrap" input_gamma="2.20000005" input_alpha="rgb" />
+    </glossiness>
+    <extrusion val="maxcolor" />
+    <fresnel val="1" />
+    <fresnel_ior val="8" />
+  </reflectivity>
+</material>
+
+\end{lstlisting}
+
+\reqirenment{test\_112\_transparency}
+
+Поддержка прозрачных материалов.  Для трех параллелепипедов заданы различные значения цвета прозрачности, glossiness: (1.0, 0.89, 1.0). Для синего параллелепипеда отсутствует компонента зеркальных отражений. 
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_112/w_ref.png}           
+	\caption{\label{fig:test_112_image}
+		Изображение-эталон для теста \textnumero 112.XML для зеленого параллелепипеда представлен в листинге \ref{transpxml}.  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Прозрачные материалы, label=transpxml, captionpos=b]
+<material id="1" name="matGlossy" type="hydra_material">
+  <reflectivity brdf_type="phong">
+    <color val="1.0 1.0 1.0" />
+    <glossiness val="1" />
+    <extrusion val="maxcolor" />
+    <fresnel val="1" />
+    <fresnel_ior val="1.5" />
+  </reflectivity>
+  <transparency brdf_type="phong">
+    <color val="0.5 1.0 0.5" />
+    <glossiness val="0.899999976" />
+    <thin_walled val="0" />
+    <fog_color val="1.0 1.0 1.0" />
+    <fog_multiplier val="1" />
+    <ior val="1.5" />
+  </transparency>
+</material>
+
+\end{lstlisting}
+
+
+\reqirenment{test\_113\_transparency\_ior}
+
+Коэффициент преломления для прозрачных материалов. Для трех сфер заданы различные значения коэффициента преломления Френеля: (1.05, 1.33, 2.41). 
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_113/w_ref.png}           
+	\caption{\label{fig:test_113_image}
+		Изображение-эталон для теста \textnumero 113. XML для центральной сферы представлен в листинге \ref{iorxml}.  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Коэффициент преломления, label=iorxml, captionpos=b]
+<material id="1" name="mat133" type="hydra_material">
+  <reflectivity brdf_type="phong">
+    <color val="1.0 1.0 1.0" />
+    <glossiness val="1" />
+    <extrusion val="maxcolor" />
+    <fresnel val="1" />
+    <fresnel_ior val="1.33000004" />
+  </reflectivity>
+  <transparency brdf_type="phong">
+    <color val="1.0 1.0 1.0" />
+    <glossiness val="1" />
+    <thin_walled val="0" />
+    <fog_color val="1.0 1.0 1.0" />
+    <fog_multiplier val="1" />
+    <ior val="1.33000004" />
+  </transparency>
+</material>
+
+\end{lstlisting}
+
+\reqirenment{test\_114\_transparency\_fog}
+
+Затухание для прозрачных материалов. Для трех сфер с одинаковым цветом прозрачности заданы различные значения цвета затухания (fog color) - красный, зеленый и синий. 
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_114/w_ref.png}           
+	\caption{\label{fig:test_114_image}
+		Изображение-эталон для теста \textnumero 114. XML для центральной сферы представлен в листинге \ref{fogcolorxml}.  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Затухание для прозрачных материалов, label=fogcolorxml, captionpos=b]
+<material id="1" name="matG" type="hydra_material">
+  <reflectivity brdf_type="phong">
+    <color val="1.0 1.0 1.0" />
+    <glossiness val="1" />
+    <extrusion val="maxcolor" />
+    <fresnel val="1" />
+    <fresnel_ior val="1.33000004" />
+  </reflectivity>
+  <transparency brdf_type="phong">
+    <color val="1.0 0.25 0.25" />
+    <glossiness val="1" />
+    <thin_walled val="0" />
+    <fog_color val="0.0 1.0 0.0" />
+    <fog_multiplier val="1" />
+    <ior val="1.33000004" />
+  </transparency>
+</material>
+
+\end{lstlisting}
+
+
+\reqirenment{test\_115\_transparency\_fog\_mult}
+
+Множитель для затухания в прозрачных материалах. Для трех сфер с одинаковыми цветами прозрачности и затухания заданы различные значения множителя затухания: (0.5, 2.0, 4.0). 
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_115/w_ref.png}           
+	\caption{\label{fig:test_115_image}
+		Изображение-эталон для теста \textnumero 115. XML для центральной сферы представлен в листинге \ref{fogmultxml}.  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Множитель затухания для прозрачных материалов, label=fogmultxml, captionpos=b]
+<material id="1" name="mat20" type="hydra_material">
+  <reflectivity brdf_type="phong">
+    <color val="1.0 1.0 1.0" />
+    <glossiness val="1" />
+    <extrusion val="maxcolor" />
+    <fresnel val="1" />
+    <fresnel_ior val="1.33000004" />
+  </reflectivity>
+  <transparency brdf_type="phong">
+    <color val="1.0 1.0 1.0" />
+    <glossiness val="1" />
+    <thin_walled val="0" />
+    <fog_color val="0.0 1.0 0.0" />
+    <fog_multiplier val="2" />
+    <ior val="1.33000004" />
+  </transparency>
+</material>
+
+\end{lstlisting}
+
+
+\reqirenment{test\_116\_transparency\_thin}
+
+Прозрачные материалы без преломлений. Слева направо: первая сфера - "обычная" прозрачность, вторая и третья сферы - прозрачность без преломлений.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_116/w_ref.png}           
+	\caption{\label{fig:test_116_image}
+		Изображение-эталон для теста \textnumero 116. XML для второй сферы представлен в листинге \ref{thinxml}.  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Прозрачные материалы без преломлений, label=thinxml, captionpos=b]
+<material id="1" name="matThinGlass" type="hydra_material">
+  <reflectivity brdf_type="phong">
+    <color val="1.0 1.0 1.0" />
+    <glossiness val="1" />
+    <extrusion val="maxcolor" />
+    <fresnel val="1" />
+    <fresnel_ior val="2.41000009" />
+  </reflectivity>
+  <transparency brdf_type="phong">
+    <color val="1.0 1.0 1.0" />
+    <glossiness val="1" />
+    <thin_walled val="1" />
+    <fog_color val="1.0 1.0 1.0" />
+    <fog_multiplier val="0" />
+    <ior val="2.41000009" />
+  </transparency>
+</material>
+
+\end{lstlisting}
+
+\reqirenment{test\_117\_transparency\_texture}
+
+Текстуры для прозрачных материалов. Для трех сфер наложены текстуры в слот прозрачности у режиме умножения на цвет. 
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_117/w_ref.png}           
+	\caption{\label{fig:test_117_image}
+		Изображение-эталон для теста \textnumero 117. XML для второй сферы представлен в листинге \ref{transptexxml}.  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Текстура для прозрачности, label=transptexxml, captionpos=b]
+<material id="1" name="matG" type="hydra_material">
+  <diffuse>
+    <color val="0.5 1.0 0.5" />
+  </diffuse>
+  <transparency brdf_type="phong">
+    <color val="0.7 0.9 0.7" tex_apply_mode="multiply">
+      <texture id="2" type="texref" matrix="4 0 0 0 0 4 0 0 0 0 1 0 0 0 0 1" addressing_mode_u="wrap" addressing_mode_v="wrap" input_gamma="2.20000005" input_alpha="rgb" />
+    </color>
+    <glossiness val="1" />
+    <thin_walled val="0" />
+    <fog_color val="1.0 1.0 1.0" />
+    <fog_multiplier val="1" />
+    <ior val="1.04999995" />
+  </transparency>
+</material>
+
+\end{lstlisting}
+
+
+\reqirenment{test\_118\_transparency\_glossiness\_texture}
+
+Текстуры в glossiness для прозрачных материалов. Для трех сфер наложены текстуры в слот glossiness для прозрачности и заданы различные значения glossiness: (2.0, 0.9, 0.8). 
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_118/w_ref.png}           
+	\caption{\label{fig:test_118_image}
+		Изображение-эталон для теста \textnumero 118. XML для второй сферы представлен в листинге \ref{transpglosstexxml}.  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Текстуры в glossiness для прозрачных материалов, label=transpglosstexxml, captionpos=b]
+<material id="1" name="matG" type="hydra_material">
+  <transparency brdf_type="phong">
+    <color val="0.7 1.0 0.7" />
+    <glossiness val="0.90000000000000002">
+      <texture id="2" type="texref" matrix="2 0 0 0 0 2 0 0 0 0 1 0 0 0 0 1" addressing_mode_u="wrap" addressing_mode_v="wrap" input_gamma="2.20000005" input_alpha="rgb" />
+    </glossiness>
+    <thin_walled val="0" />
+    <fog_color val="1.0 1.0 1.0" />
+    <fog_multiplier val="1" />
+    <ior val="1.04999995" />
+  </transparency>
+</material>
+
+\end{lstlisting}
+
+\reqirenment{test\_119\_opacity\_texture}
+
+Материалы с opacity. Для трех сфер с различающимися диффузными цветами наложена идентичная текстура в слот opacity. 
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_119/w_ref.png}           
+	\caption{\label{fig:test_119_image}
+		Изображение-эталон для теста \textnumero 119. XML для второй сферы представлен в листинге \ref{opacitytexxml}.  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Материалы с opacity, label=opacitytexxml, captionpos=b]
+<material id="1" name="matG" type="hydra_material">
+  <diffuse>
+    <color val="0.5 1.0 0.5" />
+  </diffuse>
+  <opacity>
+    <skip_shadow val="1" />
+    <texture id="2" type="texref" matrix="3 0 0 0 0 3 0 0 0 0 1 0 0 0 0 1" addressing_mode_u="wrap" addressing_mode_v="wrap" input_gamma="2.20000005" input_alpha="rgb" />
+  </opacity>
+</material>
+
+\end{lstlisting}
+
+
+\reqirenment{test\_141\_opacity\_smooth}
+
+Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами наложена идентичная текстура в слот opacity. Для левой сферы текстура используется "как есть", а для центральной и правой сферы используется размытая текстура. 
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_141/w_ref.png}           
+	\caption{\label{fig:test_141_image}
+		Изображение-эталон для теста \textnumero 141. XML для центральной сферы представлен в листинге \ref{opacitytexblurxml}.  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Opacity с размытием текстуры, label=opacitytexblurxml, captionpos=b]
+<material id="1" name="matG" type="hydra_material">
+  <diffuse>
+    <color val="0.5 1.0 0.5" />
+  </diffuse>
+  <opacity smooth="1">
+    <skip_shadow val="0" />
+    <texture id="2" type="texref" matrix="3 0 0 0 0 3 0 0 0 0 1 0 0 0 0 1" addressing_mode_u="wrap" addressing_mode_v="wrap" input_gamma="2.20000005" input_alpha="rgb" />
+  </opacity>
+</material>
+
+\end{lstlisting}
+
+
+\reqirenment{test\_120\_shadow\_matte}
+
+Тест на специальный прозрачный материал, называемый <<shadow catcher>> или <<shadow matte>>. Данный материал используется для встраивания объектов в панораму.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_120/w_ref.png}           
+	\caption{\label{fig:test_120_image}
+		Изображение-эталон для теста \textnumero 120. Для плоскости задан специальный тип материала "shadow catcher". XML представлен в листинге \ref{shadowcatcherxml}.  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Материал shadow catcher, label=shadowcatcherxml, captionpos=b]
+<material id="1" name="matG" type="shadow_catcher" />
+
+\end{lstlisting}
+
+
+\reqirenment{test\_121\_translucency}
+
+Материал с компонентой транслюсцентности. Для трех пластинок задан транслюсцентный материал разных цветов. 
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_121/w_ref.png}           
+	\caption{\label{fig:test_121_image}
+		Изображение-эталон для теста \textnumero 121. XML для центральной пластинки представлен в листинге \ref{translucentxml}.  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Транслюсцентный материал, label=translucentxml, captionpos=b]
+<material id="1" name="matG" type="hydra_material">
+  <translucency>
+    <color val="0.15 1.0 0.15" />
+  </translucency>
+</material>
+
+\end{lstlisting}
+
+\reqirenment{test\_122\_translucency\_texture}
+
+Материал с текстурой в слоте транслюсцентности. Для трех пластинок задан транслюсцентный материал разных цветов с шахматной текстурой, умножающейся на цвет.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_122/w_ref.png}           
+	\caption{\label{fig:test_122_image}
+		Изображение-эталон для теста \textnumero 122. XML для центральной пластинки представлен в листинге \ref{translucenttexxml}.  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Транслюсцентный материал с текстурой, label=translucenttexxml, captionpos=b]
+<material id="1" name="matG" type="hydra_material">
+  <translucency>
+    <color val="0.15 1.0 0.15" tex_apply_mode="multiply">
+      <texture id="1" type="texref" matrix="8 0 0 0 0 8 0 0 0 0 1 0 0 0 0 1" addressing_mode_u="wrap" addressing_mode_v="wrap" input_gamma="2.20000005" input_alpha="rgb" />
+    </color>
+  </translucency>
+</material>
+\end{lstlisting}
+
+
+\reqirenment{test\_123\_emission}
+
+Самосветящийся материал. Для трех сфер задан самосветящийся материал разных цветов. 
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_123/w_ref.png}           
+	\caption{\label{fig:test_123_image}
+		Изображение-эталон для теста \textnumero 123. XML для центральной сферы представлен в листинге \ref{emissionxml}.  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Самосветящийся материал, label=emissionxml, captionpos=b]
+<material id="1" name="matG" type="hydra_material">
+  <emission>
+    <color val="0.0 1.0 0.0" />
+    <multiplier val="2" />
+  </emission>
+</material>
+\end{lstlisting}
+
+
+
+\reqirenment{test\_124\_emission\_texture}
+
+Самосветящийся материал с текстурой. Для трех сфер задан самосветящийся материал разных цветов с текстурой в режиме умножения на цвет. 
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_124/w_ref.png}           
+	\caption{\label{fig:test_124_image}
+		Изображение-эталон для теста \textnumero 124. XML для центральной сферы представлен в листинге \ref{emissiontexxml}.  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Самосветящийся материал с текстурой, label=emissiontexxml, captionpos=b]
+<material id="1" name="matG" type="hydra_material">
+  <emission>
+    <multiplier val="1" />
+    <color val="0.0 1.0 0.0" tex_apply_mode ="multiply">
+      <texture id="1" type="texref" matrix="8 0 0 0 0 8 0 0 0 0 1 0 0 0 0 1" addressing_mode_u="wrap" addressing_mode_v="wrap" input_gamma="2.20000005" input_alpha="rgb" />
+    </color>
+  </emission>
+</material>
+\end{lstlisting}
+
+
+\reqirenment{test\_125\_emission\_cast\_gi}
+
+Тест проверяет возможность отключения "освещения" от самосветящихся материалов. Для левой и правой сферы задан самосветящийся материал. При этом правая сфера, в отличие от левой, не освещает поверхность пола. 
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_125/w_ref.png}           
+	\caption{\label{fig:test_125_image}
+		Изображение-эталон для теста \textnumero 125. XML для правой сферы представлен в листинге \ref{castgixml}.  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Параметр Cast GI для самосветящегося материала, label=castgixml, captionpos=b]
+<material id="2" name="matB" type="hydra_material">
+  <emission>
+    <multiplier val="4" />
+    <cast_gi val="0" />
+    <color val="0.0 0.7 1.0" tex_apply_mode ="multiply">
+      <texture id="2" type="texref" matrix="2 0 0 0 0 2 0 0 0 0 1 0 0 0 0 1" addressing_mode_u="wrap" addressing_mode_v="wrap" input_gamma="2.20000005" input_alpha="rgb" />
+    </color>
+  </emission>
+</material>
+\end{lstlisting}
+
+
+\reqirenment{test\_126\_bump\_amount}
+
+Тест проверяет работу компоненты имитации микрорельефа поверхности с помощью карты высот. Для трех сфер задана идентичная карта высот с различными значениями множителя: (0.25, 0.5, 0.9). 
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_126/w_ref.png}           
+	\caption{\label{fig:test_126_image}
+		Изображение-эталон для теста \textnumero 126. XML для центральной сферы представлен в листинге \ref{bumpxml}.  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Карта высот, label=bumpxml, captionpos=b]
+<material id="1" name="mat050" type="hydra_material">
+  <diffuse>
+    <color val="0.5 0.5 0.5" />
+  </diffuse>
+  <displacement type="height_bump">
+    <height_map amount="0.5">
+      <texture id="2" type="texref" matrix="2 0 0 0 0 2 0 0 0 0 1 0 0 0 0 1" addressing_mode_u="wrap" addressing_mode_v="wrap" input_gamma="2.20000005" input_alpha="rgb" />
+    </height_map>
+  </displacement>
+</material>
+\end{lstlisting}
+
+
+\reqirenment{test\_127\_normal\_map\_height}
+
+Тест проверяет работу компоненты имитации микрорельефа поверхности с помощью карты нормалей. Для трех сфер заданы карты нормалей с различными значениями множителя: (0.25, 0.5, 0.9). 
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_127/w_ref.png}           
+	\caption{\label{fig:test_127_image}
+		Изображение-эталон для теста \textnumero 127. XML для центральной сферы представлен в листинге \ref{normalxml}.  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Карта нормалей, label=normalxml, captionpos=b]
+<material id="1" name="mat050" type="hydra_material">
+  <diffuse>
+    <color val="0.5 0.5 0.5" />
+  </diffuse>
+  <displacement type="normal_bump">
+    <normal_map>
+      <invert x="0" y="0" />
+      <texture id="3" type="texref" matrix="2 0 0 0 0 2 0 0 0 0 1 0 0 0 0 1" addressing_mode_u="wrap" addressing_mode_v="wrap" input_gamma="1" input_alpha="rgb" />
+    </normal_map>
+  </displacement>
+</material>
+\end{lstlisting}
+
+
+
+\reqirenment{test\_128\_bump\_radius}
+
+Тест проверяет работу параметра размытия для карты высот. Для трех сфер заданы карты высот с различными значениями параметра размытия: (0.1, 0.2, 0.5). 
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_128/w_ref.png}           
+	\caption{\label{fig:test_128_image}
+		Изображение-эталон для теста \textnumero 128. XML для центральной сферы представлен в листинге \ref{bumpradiusxml}.  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Размытие карты высот, label=bumpradiusxml, captionpos=b]
+<material id="1" name="mat25" type="hydra_material">
+  <diffuse>
+    <color val="0.5 0.5 0.5" />
+  </diffuse>
+  <displacement type="height_bump">
+    <height_map amount="1" smooth_lvl="0.200000003">
+      <texture id="2" type="texref" matrix="4 0 0 0 0 4 0 0 0 0 1 0 0 0 0 1" addressing_mode_u="wrap" addressing_mode_v="wrap" input_gamma="2.20000005" input_alpha="rgb" />
+    </height_map>
+  </displacement>
+</material>
+\end{lstlisting}
+
+
+\reqirenment{test\_130\_bump\_invert\_normalYs}
+
+Тест проверяет возможность инвертирования осей для карты нормалей. Для трех сфер задана идентичная карта нормалей, для центральной сферы инвертирована ось X, а для правой сферы - ось Y. 
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_130/w_ref.png}           
+	\caption{\label{fig:test_130_image}
+		Изображение-эталон для теста \textnumero 130. XML для центральной сферы представлен в листинге \ref{invertnormalxml}.  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Инвертирования осей в карте нормалей, label=invertnormalxml, captionpos=b]
+<material id="1" name="mat2" type="hydra_material">
+  <diffuse>
+    <color val="0.5 0.5 0.5" />
+  </diffuse>
+  <reflectivity brdf_type="torranse_sparrow">
+    <color val="1.0 1.0 1.0" />
+    <glossiness val="0.9" />
+    <extrusion val="maxcolor" />
+    <fresnel val="1" />
+    <fresnel_ior val="8" />
+  </reflectivity>
+  <displacement type="normal_bump">
+    <normal_map>
+      <invert x="1" y="0" />
+      <texture id="2" type="texref" matrix="2 0 0 0 0 2 0 0 0 0 1 0 0 0 0 1" addressing_mode_u="wrap" addressing_mode_v="wrap" input_gamma="1" input_alpha="rgb" />
+    </normal_map>
+  </displacement>
+</material>
+\end{lstlisting}
+
+
+\reqirenment{test\_131\_blend\_simple}
+
+Тест проверяет возможность смешивания различных материалов по текстурной маске. Для трех сфер заданы составные материалы из двух обычных материалов, смешивающиеся по текстуре. 
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_131/w_ref.png}           
+	\caption{\label{fig:test_131_image}
+		Изображение-эталон для теста \textnumero 131. XML для центральной сферы представлен в листинге \ref{blendsimplexml}. Первым в листинге приведен материал смешения, а затем два смешиваемых материала (в реальном xml порядок записи материалов был бы обратным).  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Смешение материалов по текстуре, label=blendsimplexml, captionpos=b]
+<material id="8" name="matBlend2" type="hydra_blend" node_top="2" node_bottom="3">
+  <blend type="mask_blend">
+    <mask val="1">
+      <texture matrix="4 0 0 0 0 4 0 0 0 0 1 0 0 0 0 1" addressing_mode_u="wrap" addressing_mode_v="wrap" input_gamma="2.20000005" input_alpha="rgb" id="2" type="texref" />
+    </mask>
+  </blend>
+</material>
+<material id="2" name="matLacquer" type="hydra_material">
+  <diffuse brdf_type="lambert">
+    <color val="0.05 0.05 0.05" />
+  </diffuse>
+  <reflectivity brdf_type="phong">
+    <color val="0.5 0.5 0.5" />
+    <glossiness val="1.0" />
+    <extrusion val="maxcolor" />
+    <fresnel val="1" />
+    <fresnel_IOR val="1.5" />
+  </reflectivity>
+</material>
+<material id="3" name="matGlass" type="hydra_material">
+  <reflectivity brdf_type="phong">
+    <color val="0.1 0.1 0.1 " />
+    <glossiness val="1" />
+    <extrusion val="maxcolor" />
+    <fresnel val="1" />
+    <fresnel_IOR val="1.5" />
+  </reflectivity>
+  <transparency brdf_type="phong">
+    <color val="1.0 1.0 1.0" />
+    <glossiness val="1" />
+    <thin_walled val="0" />
+    <fog_color val="0.9 0.9 1.0" />
+    <fog_multiplier val="1" />
+    <IOR val="1.5" />
+  </transparency>
+</material>
+\end{lstlisting}
+
+
+\reqirenment{test\_132\_blend\_recursive}
+
+Тест проверяет возможность рекурсивного смешивания материалов - в качестве одного из смешиваемых материалов может выступать материал, который сам является продуктом смешения других материалов.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_132/w_ref.png}           
+	\caption{\label{fig:test_132_image}
+		Изображение-эталон для теста \textnumero 132. Для трех сфер заданы рекурсивные составные материалы. XML для центральной сферы представлен в листинге \ref{blendrecursivexml}. Первым в листинге приведен "корневой" материал смешения, а затем два его компонента.  }  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Рекурсивное смешение материалов, label=blendrecursivexml, captionpos=b]
+<material name="matBlendR2" type="hydra_blend" id="8">
+  <node_top type="material_id" val="5" />
+  <node_bottom type="material_id" val="2" />
+  <blend type="simple_blend">
+    <mask val="1">
+      <texture matrix="4 0 0 0 0 4 0 0 0 0 1 0 0 0 0 1" addressing_mode_u="wrap" addressing_mode_v="wrap" input_gamma="2.20000005" input_alpha="rgb" id="2" type="texref" />
+    </mask>
+  </blend>
+</material>
+<material name="matBlend1" type="hydra_blend" id="5">
+  <node_top type="material_id" val="0" />
+  <node_bottom type="material_id" val="1" />
+  <blend type="simple_blend">
+    <mask val="1">
+      <texture matrix="8 0 0 0 0 8 0 0 0 0 1 0 0 0 0 1" addressing_mode_u="wrap" addressing_mode_v="wrap" input_gamma="2.20000005" input_alpha="rgb" id="1" type="texref" />
+    </mask>
+  </blend>
+</material>
+<material name="matBricks1" type="hydra_material" id="2">
+  <diffuse brdf_type="lambert">
+    <color val="0.2 0.2 0.75">
+      <texture id="1" type="texref" matrix="16 0 0 0 0 16 0 0 0 0 1 0 0 0 0 1" addressing_mode_u="wrap" addressing_mode_v="wrap" input_gamma="2.20000005" input_alpha="rgb" />
+    </color>
+  </diffuse>
+</material>
+\end{lstlisting}
+
+
+\reqirenment{test\_133\_emissive\_and\_diffuse}
+
+Тест проверяет корректное совмещение самосветящейся и диффузной компоненты. Для трех сфер заданы самосветящиеся материалы с текстурой и диффузной компонентой. 
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_133/w_ref.png}           
+	\caption{\label{fig:test_133_image}
+		Изображение-эталон для теста \textnumero 133. XML для центральной сферы представлен в листинге \ref{diffemixml}.}  
+\end{figure}
+
+\FloatBarrier
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Самосветящаяся и диффузная компонента, label=diffemixml, captionpos=b]
+<material id="1" name="matG" type="hydra_material">
+  <diffuse>
+    <color val="0.5 0.5 0.0" />
+  </diffuse>
+  <emission>
+    <multiplier val="0.649999976" />
+    <color val="0.0 1.0 0.0" tex_apply_mode ="multiply">
+      <texture id="1" type="texref" matrix="8 0 0 0 0 8 0 0 0 0 1 0 0 0 0 1" addressing_mode_u="wrap" addressing_mode_v="wrap" input_gamma="2.20000005" input_alpha="rgb" />
+    </color>
+  </emission>
+</material>
+\end{lstlisting}
+
+\reqirenment{test\_134\_diff\_refl\_transp}
+
+Совмещение диффузных отражений, зеркальных отражений и прозрачности.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_134/w_ref.png}           
+	\caption{\label{fig:test_134_image}
+		Изображение-эталон для теста \textnumero 134. }  
+\end{figure}
+
+\FloatBarrier
+
+
+\reqirenment{test\_135\_opacity\_metal}
+
+Совмещение Opacity и зеркальных отражений.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_135/w_ref.png}           
+	\caption{\label{fig:test_135_image}
+		Изображение-эталон для теста \textnumero 135. }  
+\end{figure}
+
+\FloatBarrier
+
+
+\reqirenment{test\_136\_opacity\_glass}
+
+Совмещение Opacity, зеркальных отражений и прозрачности.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_136/w_ref.png}           
+	\caption{\label{fig:test_136_image}
+		Изображение-эталон для теста \textnumero 136. }  
+\end{figure}
+
+\FloatBarrier
+
+
+\reqirenment{test\_138\_translucency\_and\_diffuse}
+
+Совмещение транслюсцентности и диффузных отражений.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_138/w_ref.png}           
+	\caption{\label{fig:test_138_image}
+		Изображение-эталон для теста \textnumero 138. }  
+\end{figure}
+
+\FloatBarrier
+
+
+\reqirenment{test\_139\_glass\_and\_bump}
+
+Совмещение прозрачности, зеркальных отражений и микрорельефа.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_139/w_ref.png}           
+	\caption{\label{fig:test_139_image}
+		Изображение-эталон для теста \textnumero 139. }  
+\end{figure}
+
+\FloatBarrier
+
+
+\reqirenment{test\_140\_blend\_emission}
+
+Смешивание материалов с самосвечением.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_140/w_ref.png}           
+	\caption{\label{fig:test_140_image}
+		Изображение-эталон для теста \textnumero 140. }  
+\end{figure}
+
+\FloatBarrier
+
+
+
+\reqirenment{test\_142\_blend\_normalmap\_heightmap}
+
+Смешивание карты нормалей и карты высот.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_142/w_ref.png}           
+	\caption{\label{fig:test_142_image}
+		Изображение-эталон для теста \textnumero 142. }  
+\end{figure}
+
+\FloatBarrier
+
+
+\reqirenment{test\_150\_gloss\_mirror\_cos\_div}
+
+Тест на корректный расчет модели зеркальных отражений Фонга для материалов со значением glossiness: 0.5 < glossiness < 1.0.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_150/w_ref.png}           
+	\caption{\label{fig:test_150_image}
+		Изображение-эталон для теста \textnumero 150. }  
+\end{figure}
+
+\FloatBarrier
+
+
+\reqirenment{test\_151\_gloss\_mirror\_cos\_div2}
+
+Тест на корректный расчет модели зеркальных отражений Torrance-Sparrow для материалов со значением glossiness: 0.5 < glossiness < 1.0.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_151/w_ref.png}           
+	\caption{\label{fig:test_151_image}
+		Изображение-эталон для теста \textnumero 151. }  
+\end{figure}
+
+\FloatBarrier
+
+
+
+\section{Источники}\label{lights}
+
+\reqirenment{test\_200\_spot}
+
+Площадный истоник с прожекторным (spot) распределением. Данный тест проверяет одновременно работу формы диска для площадного источника и прожекторного распределения. Обратите внимание что в отличие от теста \textnumero 201 поверхности источников цветные. С.м. описание теста \textnumero 206.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_200/w_ref.png}           
+	\caption{\label{fig:test_200_image}
+		Изображение-эталон для теста \textnumero 200. XML представлен в листинге \ref{diskspot}.  }   
+\end{figure}
+
+\lstset{language=XML}
+\begin{lstlisting}[caption=Площадный источник в форме диска с прожекторным распределением, label=diskspot, captionpos=b]
+<light id="1" name="spot2" type="area" shape="disk" distribution="spot" 
+              visible="1">
+  <size radius="1" />
+  <intensity>
+    <color val="0.5 1 0.5" />
+    <multiplier val="8.0" />
+  </intensity>
+  <falloff_angle val="90" />
+  <falloff_angle2 val="60" />
+</light>
+\end{lstlisting}
+
+\reqirenment{test\_201\_sphere}
+
+Сферический источник света. Такой источник в настоящий момент поддерживает только равномерное распределение света. Обратите внимание что поверхность источника отображается белым из-за засветки сенсора экрана (т.е. в HDR изображении она на самом деле не белая).
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_201/w_ref.png}           
+	\caption{\label{fig:test_201_image}
+		Изображение-эталон для теста \textnumero 201. XML представлен в листинге \ref{xml201}.  }   
+\end{figure}
+
+\FloatBarrier
+
+\begin{lstlisting}[caption=Описание сферического источника света, label=xml201, captionpos=b]
+<light id="0" name="sphere1" type="area" shape="sphere" distribution="uniform" visible="1">
+  <intensity>
+  <color val="1 0.5 1" />
+    <multiplier val="8.0" />
+  </intensity>
+  <size radius="0.5" />
+</light>
+\end{lstlisting}
+
+
+\reqirenment{test\_202\_sky\_color}
+
+Тест на одноцветную панораму-источник (environment, окружение). 
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_202/w_ref.png}           
+	\caption{\label{fig:test_202_image}
+		Изображение-эталон для теста \textnumero 202. XML представлен в листинге \ref{xml202}.  }   
+\end{figure}
+
+\FloatBarrier
+
+\begin{lstlisting}[caption=Описание простого одноцветного панорамного источника света. Значение , label=xml202, captionpos=b]
+<light id="0" name="sky" type="sky">
+  <intensity>
+    <color val="0.75 0.75 1" />
+    <multiplier val="1" />
+  </intensity>
+</light>
+\end{lstlisting}
+
+\reqirenment{test\_203\_sky\_hdr}
+
+Тест на HDR панораму-источник (environment, окружение). 
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_203/w_ref.png}           
+	\caption{\label{fig:test_203_image}
+		Изображение-эталон для теста \textnumero 203. XML представлен в листинге \ref{xml203}.  }   
+\end{figure}
+
+\FloatBarrier
+
+\begin{lstlisting}[caption=Описание панорамного источника света c текстурой. Значение , label=xml203, captionpos=b]
+<light id="0" name="sky" type="sky" distribution="map">
+  <intensity>
+    <color val="1 1 1">
+      <texture id="1" type="texref"/>
+    </color>
+    <multiplier val="1.0" />
+  </intensity>
+</light>
+\end{lstlisting}
+
+
+\reqirenment{test\_204\_sky\_hdr\_rotate}
+
+Тест на HDR панораму-источник с текстурой и поворотом.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_204/w_ref.png}           
+	\caption{\label{fig:test_204_image}
+		Изображение-эталон для теста \textnumero 204. XML представлен в листинге \ref{xml204}.  }   
+\end{figure}
+
+\FloatBarrier
+
+\begin{lstlisting}[caption=Описание панорамного источника света c текстурой и поворотом. Значение , label=xml204, captionpos=b]
+<light id="0" name="sky" type="sky" distribution="map">
+  <intensity>
+    <color val="1 1 1">
+      <texture id="1" type="texref" 
+               matrix="1 0 0 -0.4 0 1 0 0 0 0 1 0 0 0 0 1" 
+               addressing_mode_u="wrap" addressing_mode_v="wrap" />
+    </color>
+    <multiplier val="1.0" />
+  </intensity>
+</light>
+\end{lstlisting}
+
+
+\reqirenment{test\_205\_sky\_and\_directional\_sun}
+
+Тест на комбинацию панорамы и направленного источника.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_205/w_ref.png}           
+	\caption{\label{fig:test_205_image}
+		Изображение-эталон для теста \textnumero 205.  }   
+\end{figure}
+
+\FloatBarrier
+
+
+\reqirenment{test\_206\_ies1}
+
+Тест на использование ies файла (гониограмма) для задания распределения у источника. Необходимо обратить внимание на то что видимый цвет источника (то есть цвет его поверхности) моделируется несколько искусственно. Причина этого в том что с точки зрения мат. модели было бы более корректно рисовать источник чёрным, т.к. в заданном направлении камеры он не светит (это определяется его ies файлом). Однако чёрные источники плохо воспринимаются большинством пользователей, поэтому \textbf{поверхность источника с заданной гониограммой} рисуется нормализованным цветом источника (а не значением его яркости, как для остальных площадных источников из-за чего они засвечиваются и выглядят белыми!).
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_206/w_ref.png}           
+	\caption{\label{fig:test_206_image}
+		Изображение-эталон для теста \textnumero 206. XML представлен в листинге \ref{xml206}.  }   
+\end{figure}
+
+\FloatBarrier
+
+\begin{lstlisting}[caption=Площадный источник света с ies файлом., label=xml206, captionpos=b]
+<light id="0" name="light1" type="area" shape="rect" distribution="ies">
+  <ies data="data/ies/ies_1.ies" matrix="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1" />
+  <size half_length="0.125" half_width="0.125" />
+  <intensity>
+    <color val="0.5 1.0 0.5" />
+    <multiplier val="1000.0" />
+  </intensity>
+</light>
+\end{lstlisting}
+
+
+\reqirenment{test\_207\_ies2}
+
+Тест на использование ies файла (гониограмма) для задания распределения у источника. См. описание к тесту \textnumero 206.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_207/w_ref.png}           
+	\caption{\label{fig:test_207_image}
+		Изображение-эталон для теста \textnumero 207.  }   
+\end{figure}
+
+\FloatBarrier
+
+\reqirenment{test\_208\_ies3}
+
+Тест на использование ies файла (гониограмма) для задания распределения у источника. См. описание к тесту \textnumero 206.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_208/w_ref.png}           
+	\caption{\label{fig:test_208_image}
+		Изображение-эталон для теста \textnumero 208.  }   
+\end{figure}
+
+\FloatBarrier
+
+
+\reqirenment{test\_209\_skyportal}
+
+Небесные порталы с заданным цветом. Следует обратить внимание на то, что за порталом находится окружение (панораммный источник).
+
+В данном тесте напротив окон ставятся источники света, имитирующие свет от внешнего окружения, проникающий через окно. Такой источник называется 'Небесным Порталом' (Sky Portal). При правильной реализации 'Небесный Портал' является полностью корректным решением. Такой источник света является специализированным средством расчета освещения от окружения при помощи явной стратегии (стратегии сэмплирования источников света).
+Иными словами, 'Небесный Портал' является не самостоятельным источник света, а всего лишь подсказкой для Монте-Карло трассировки лучей, позволяющей вычислять освещение от окружения более эффективно в тех случаях когда изнутри помещения видима относительно-небольшая часть окружения. 
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_209/w_ref.png}           
+	\caption{\label{fig:test_209_image}
+		Изображение-эталон для теста \textnumero 209. XML представлен в листинге \ref{xml209}.  }   
+\end{figure}
+
+\FloatBarrier
+
+\begin{lstlisting}[caption=Описание панорамного источника и привязанного к нему небесного портала., label=xml209, captionpos=b]
+<light id="0" name="sky" type="sky" shape="point" distribution="omni">
+  <intensity>
+    <color val="0.75 0.75 1" />
+    <multiplier val="5.0" />
+  </intensity>
+</light>
+<light id="1" name="portal1" type="area" shape="rect" distribution="uniform">
+<size half_length="4" half_width="6" />
+  <intensity>
+    <color val="1 0 0" />
+    <multiplier val="3.0" />
+  </intensity>
+  <sky_portal val="1" source_id="0" />
+</light>
+\end{lstlisting}
+
+\reqirenment{test\_210\_skyportal\_hdr}
+
+Небесные порталы и HDR панорамма за ними.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_210/w_ref.png}           
+	\caption{\label{fig:test_210_image}
+		Изображение-эталон для теста \textnumero 210.  }   
+\end{figure}
+
+\FloatBarrier
+
+\reqirenment{test\_211\_sky\_and\_sun\_perez}
+
+Тест на симуляцию атмосферного рассеивания в небе на основе модели perez. Обратитве внимание что небо ссылается на источник-солнце, чтобы получить из него направление на солнце. Это важно для корректной симуляции неба.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_211/w_ref.png}           
+	\caption{\label{fig:test_211_image}
+		Изображение-эталон для теста \textnumero 211. XML представлен в листинге \ref{xml211}.  }   
+\end{figure}
+
+\FloatBarrier
+
+\begin{lstlisting}[caption=Описание панорамного источника и привязанного к нему солнца., label=xml211, captionpos=b]
+<light id="0" name="sky" type="sky" shape="point" distribution="perez" >
+  <intensity>
+    <color val="1 1 1" />
+    <multiplier val="1.0" />
+  </intensity>
+  <perez sun_id="1" turbidity="2" />
+</light>
+<light id="1" name="sun" type="directional" shape="point" distribution="directional">
+  <size inner_radius="0.0" outer_radius="1000.0" />
+  <intensity>
+    <color val="1.0 0.85 0.64" />
+    <multiplier val="2.0" />
+  </intensity>
+<shadow_softness val="1" />
+</light>
+\end{lstlisting}
+
+\reqirenment{test\_212\_skyportal\_sun}
+Тест на  взаимодействие небесных порталов с солнцем и небом в модели perez.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_212/w_ref.png}           
+	\caption{\label{fig:test_212_image}
+		Изображение-эталон для теста \textnumero 212.  }   
+\end{figure}
+
+\FloatBarrier
+
+\reqirenment{test\_213\_point\_omni}
+
+Тест на простый точечные источники.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_213/w_ref.png}           
+	\caption{\label{fig:test_213_image}
+		Изображение-эталон для теста \textnumero 213. XML представлен в листинге \ref{xml213}.  }   
+\end{figure}
+
+\FloatBarrier
+
+\begin{lstlisting}[caption=Описание точечного источника, label=xml213, captionpos=b]
+<light id="0" name="sphere1" type="point" shape="point" distribution="uniform">
+  <intensity>
+    <color val="8 4 8" />
+  </intensity>
+</light>
+\end{lstlisting}
+
+\reqirenment{test\_214\_sky\_ldr}
+
+Тест на панораммный источник с LDR текстурой.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_214/w_ref.png}           
+	\caption{\label{fig:test_214_image}
+		Изображение-эталон для теста \textnumero 214.  }   
+\end{figure}
+
+\FloatBarrier
+
+\reqirenment{test\_215\_light\_scale\_intensity}
+
+Тест на 4 инстанса одного источника различными матрицами масштабирования. Яркость всех источников должна быть одинакова независимо преобразований.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_215/w_ref.png}           
+	\caption{\label{fig:test_215_image}
+		Изображение-эталон для теста \textnumero 215. XML представлен в листинге \ref{xml215}.  }   
+\end{figure}
+
+\FloatBarrier
+
+\begin{lstlisting}[caption=Описание инстансов источников с разными матрицами, label=xml215, captionpos=b]
+<scene id="0" name="my scene" discard="1">
+  <instance_light id="0" light_id="0" 
+                  matrix="0.5 0 0 -3.5 0 0.5 0 3.85 0 0 0.5 -1.5 0 0 0 1 " />
+  <instance_light id="1" light_id="0" 
+                  matrix="2 0 0 2 0 2 0 3.85 0 0 2 -2 0 0 0 1 " />
+  <instance_light id="2" light_id="0" 
+                  matrix="0.5 0 0 -3.5 0 1 0 3.85 0 0 2 2 0 0 0 1 " />
+  <instance_light id="3" light_id="0" 
+                  matrix="2 0 0 2.5 0 1 0 3.85 0 0 0.5 2 0 0 0 1 " />
+</scene>
+\end{lstlisting}
+
+
+\reqirenment{test\_216\_ies4}
+
+Тест на повёрнутые источники с гониограммой.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_216/w_ref.png}           
+	\caption{\label{fig:test_216_image}
+		Изображение-эталон для теста \textnumero 216. }   
+\end{figure}
+
+\FloatBarrier
+
+\reqirenment{test\_217\_cylinder}
+
+Тест на цилиндрический источник.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_217/w_ref.png}           
+	\caption{\label{fig:test_217_image}
+		Изображение-эталон для теста \textnumero 217.  XML представлен в листинге \ref{xml217}. }   
+\end{figure}
+
+\FloatBarrier
+
+\begin{lstlisting}[caption=Описание цилиндрического источника, label=xml217, captionpos=b]
+<light id="0" name="spot2" type="area" shape="cylinder" 
+                           distribution="diffuse" visible="1">
+  <size radius="0.5" height="4" angle="360" />
+  <intensity>
+    <color val="1 1 1" />
+    <multiplier val="1.0" />
+  </intensity>
+</light>
+\end{lstlisting}
+
+\reqirenment{test\_218\_cylinder2}
+
+Тест на повёрнутый цилиндрический источник.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_218/w_ref.png}           
+	\caption{\label{fig:test_218_image}
+		Изображение-эталон для теста \textnumero 218.  }   
+\end{figure}
+
+\FloatBarrier
+
+\reqirenment{test\_219\_cylinder\_tex}
+
+Тест на цилиндрический источник с одномерной HDR текстурой яркости (массив значений типа float).
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_219/w_ref.png}           
+	\caption{\label{fig:test_219_image}
+		Изображение-эталон для теста \textnumero 219.  XML представлен в листинге \ref{xml219}. }   
+\end{figure}
+
+\FloatBarrier
+
+\begin{lstlisting}[caption=Описание цилиндрического источника с одномерной текстурой яркости, label=xml219, captionpos=b]
+<light id="0" name="spot2" type="area" shape="cylinder" 
+                           distribution="diffuse" visible="1">
+  <size radius="0.5" height="4" angle="360" />
+  <intensity>
+    <color val="1 1 1">
+      <texture id="1" type="texref" 
+               addressing_mode_u="wrap" addressing_mode_v="wrap" />
+    </color>
+  <multiplier val="1.0" />
+  </intensity>
+</light>
+\end{lstlisting}
+
+\reqirenment{test\_220\_cylinder\_tex2}
+
+Тест на цилиндрический источник с двумерной HDR текстурой яркости.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_220/w_ref.png}           
+	\caption{\label{fig:test_220_image}
+		Изображение-эталон для теста \textnumero 220.  }   
+\end{figure}
+
+\FloatBarrier
+
+\reqirenment{test\_221\_cylinder\_tex3}
+
+Тест на цилиндрический источник с одномерной HDR текстурой яркости с большими перепадами яркости.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_221/w_ref.png}           
+	\caption{\label{fig:test_221_image}
+		Изображение-эталон для теста \textnumero 221.  }   
+\end{figure}
+
+\FloatBarrier
+
+
+\reqirenment{test\_222\_cylinder\_with\_end\_face}
+
+Тест на цилиндрический источник с торцами. Данный источник реализован через комбинацию цилиндрического источника и дисков. В API данный источник представлен как источник-комбайнер, что обеспечивает автоматический рассчёт положений дисков-торцов относительно цилиндра.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_222/w_ref.png}           
+	\caption{\label{fig:test_222_image}
+		Изображение-эталон для теста \textnumero 222. XML представлен в листинге \ref{xml222}  }   
+\end{figure}
+
+\FloatBarrier
+
+\begin{lstlisting}[caption=Описание цилиндрического источника с торцами, label=xml222, captionpos=b]
+
+<light id="0" name="MyLight_cylinder_face" type="area" 
+              shape="cylinder" distribution="diffuse" visible="1">
+  <size radius="0.5" height="4" angle="360" />
+  <intensity>
+    <color val="1 1 1" />
+    <multiplier val="1.0" />
+  </intensity>
+</light>
+<light id="1" name="MyLight_end_face_plus" type="area" 
+              shape="disk" distribution="diffuse" visible="1">
+  <size radius="0.5" />
+  <intensity>
+    <color val="0 1 1" />
+    <multiplier val="1.0" />
+  </intensity>
+</light>
+<light id="2" name="MyLight_end_face_minus" type="area" 
+              shape="disk" distribution="diffuse" visible="1">
+  <size radius="0.5" />
+  <intensity>
+    <color val="1 0 0" />
+    <multiplier val="1.0" />
+  </intensity>
+</light>
+
+\end{lstlisting}
+
+\section{Геометрия}\label{geom}
+
+\reqirenment{test\_001\_mesh\_from\_memory}
+
+Базовый тест на меш сформированный из памяти меш.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_001/w_ref.png}           
+	\caption{\label{fig:test_001_image}
+		Изображение-эталон для теста \textnumero 001.  }   
+\end{figure}
+
+\FloatBarrier
+
+\reqirenment{test\_002\_mesh\_from\_vsgf}
+
+Базовый тест на поддержку загрузки меша из файла во внутреннем формате рендера vsgf.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_002/w_ref.png}           
+	\caption{\label{fig:test_002_image}
+		Изображение-эталон для теста \textnumero 002.  }   
+\end{figure}
+
+\FloatBarrier
+
+
+\reqirenment{test\_003\_compute\_normals}
+
+Тест на внутреннюю функциональность рендера по расчёту нормалей. 
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_003/w_ref.png}           
+	\caption{\label{fig:test_003_image}
+		Изображение-эталон для теста \textnumero 003.  Для обоих моделей нормали не заданы. Для чайника расчёт нормалей невозможне в силу его топологии (уже <<уже>> порезанные треугольники).  }   
+\end{figure}
+
+\FloatBarrier
+
+\reqirenment{test\_004\_dof}
+
+Базовый тест на глубину резкости.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_004/w_ref.png}           
+	\caption{\label{fig:test_004_image}
+		Изображение-эталон для теста \textnumero 004.  }   
+\end{figure}
+
+\FloatBarrier
+
+\reqirenment{test\_005\_instancing}
+
+Инстансинг. Рендеринг множества однотипных объектов.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_005/w_ref.png}           
+	\caption{\label{fig:test_005_image}
+		Изображение-эталон для теста \textnumero 005.  }   
+\end{figure}
+
+\FloatBarrier
+
+
+\section{Пост обработка}\label{pprocess}
+
+\reqirenment{numThreads}
+
+Параметр указывающий количество процессоров участвующих в некотороых расчётах.
+numThreads = 0 - использует максимальное доступное кол-во процессоров.
+
+\begin{lstlisting}
+settings.append_attribute(L"numThreads") = 0;
+\end{lstlisting}
+
+\reqirenment{test301\_resample}
+
+Тест на использования фильтра для ресайза/ресэмплинга изображения - изменения его разрешения с сохранением содержания.
+
+\reqirenment{test302\_median}
+
+Тест на медианный фильтр.
+
+\reqirenment{test303\_median\_in\_place}
+
+Тест на медианный фильтр, у которого вход и выход совпадают.
+
+
+\reqirenment{test304\_obsolete\_tone\_mapping}
+
+Тест, демонстрирующий написание собственых DLL плагинов для пост процесса на примере простого но более не используемого тон маппинга.
+
+\reqirenment{test305\_fbi\_from\_render}
+
+Тест на подключение пост-процесса непосредственно к выходу рендера.
+
+\reqirenment{test306\_post\_process\_hydra1\_exposure05}
+
+Тест на уменьшение экспозиции (яркости изображения) в 2 раза.
+
+\reqirenment{test307\_post\_process\_hydra1\_exposure2}
+
+Тест на увеличение экспозиции (яркости изображения) в 2 раза.
+
+\reqirenment{test308\_post\_process\_hydra1\_compress}
+
+Тест на компрессию высокого динамического диапазона (HRD) до низного (LDR), для полного охвата цветов монитором. 
+
+\reqirenment{test309\_post\_process\_hydra1\_contrast}
+
+Тест на увеличение контраста изображения.
+
+\reqirenment{test310\_post\_process\_hydra1\_desaturation}
+
+Тест на уменьшение насыщенности (полное обесцвечивание) изображения.
+
+\reqirenment{test311\_post\_process\_hydra1\_saturation}
+
+Тест на увеличение насыщенности изображения.
+
+\reqirenment{test312\_post\_process\_hydra1\_whiteBalance}
+
+Тест на автоматическую коррекцию тональности изображения, до усреднённого по всем каналам, для имитации биологического механизма цветопостоянства.
+
+\reqirenment{test312\_2\_post\_process\_hydra1\_whitePointColor}
+
+Тест на баланс белого, с указанной в ручную точкой белого.
+
+\reqirenment{test313\_post\_process\_hydra1\_uniformContrast}
+
+Тест на равномерное распределение контрастности изображения, методом эквализации гистограммы.
+
+\reqirenment{test314\_post\_process\_hydra1\_normalize}
+
+Тест на линейное растягивание яркости изображения на максимальный LDR диапазон, с игнорированием редких отклонений яркости в тенях и светах. 
+
+Рекомендуется использовать после тональной компрессии, т.к. сжатие осуществляется по максимальному найденному значению яркости, которое может составлять лишь очень малую часть изображения, например яркий, точечный блик. Всё изображение потеряет яркость из-за этого блика, которым можно в большинстве случаев пренебречь, т.к. он не несёт полезной информации, в силу своего маленького размера. Нормализация призвана растянуть обратно яркостный диапазон, в пределах монитора (LDR), проигнорировав эти мелкие отклонения.
+
+\reqirenment{test315\_post\_process\_hydra1\_vignette}
+
+Тест на моделирование явления частичного ограничения (затемнения) наклонных пучков света оправой или диафрагмами оптической системы. Выражается в затемнении углов изображения.
+
+\reqirenment{test316\_post\_process\_hydra1\_chromAberr}
+
+Тест на моделирование аберрации оптической системы, выраженная в хроматических отклонениях волн света разной длинны.
+
+В реальной фотографии с эффектами виньентирования (vignette) и хроматической аберрацией (chromAberr) как правило борятся, т.к. они по праву считаются побочными эффектами несовершенной конструкции оптики и фотоэлементов. Но в мире стерильных синтетических изображений (рендерах) этот эффект придаёт некоторое сходство с реальной фотографией, что несколько компенсирует недостаток реалистичности, если таковой имеется на изображении. Так же они могут использоваться как художественные приёмы.
+
+\reqirenment{test317\_post\_process\_hydra1\_sharpness}
+
+Тест на увеличение резкости изображения.
+
+\reqirenment{test318\_post\_process\_hydra1\_ECCSWUNSVC}
+
+Тест на одновременное использование: Exposure, Compress, Contrast, Saturation, WhiteBalance, UniformContrast, Normalize, Sharpness, Vignette, ChromAberr.
+
+\reqirenment{test319\_post\_process\_hydra1\_diffStars}
+
+Тест на использование диффракционных звёзд.
+
+
+\end{document}

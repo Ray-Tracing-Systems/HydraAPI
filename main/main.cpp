@@ -83,6 +83,8 @@ void test_gl32_002_draw(void);
 
 void _hrDebugPrintVSGF(const wchar_t* a_fileNameIn, const wchar_t* a_fileNameOut);
 
+void demo_01_plane_box();
+
 int main(int argc, const char** argv)
 {
   hrInit(L"-copy_textures_to_local_folder 0 -local_data_path 1 -sort_indices 1 -compute_bboxes 1");
@@ -126,6 +128,8 @@ int main(int argc, const char** argv)
   
   try
   {
+    demo_01_plane_box();
+    
     //run_all_api_tests();
 	  //run_all_geo_tests();
     //run_all_lgt_tests();
@@ -140,7 +144,7 @@ int main(int argc, const char** argv)
     //std::cout << test39_mesh_from_vsgf() << std::endl;
     //std::cout << test40_several_changes() << std::endl;
   
-    std::cout << test99_bump() << std::endl;
+    //std::cout << test99_bump() << std::endl;
     
     //std::cout << test71_out_of_memory() << std::endl;
 
@@ -206,4 +210,3 @@ int main(int argc, const char** argv)
 
   return 0;
 }
-
