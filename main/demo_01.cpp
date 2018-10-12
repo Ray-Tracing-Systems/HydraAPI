@@ -228,9 +228,7 @@ void demo_01_plane_box()
     
       if (info.haveUpdateFB)
       {
-        auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
-        std::cout.precision(pres);
         std::cout.flush();
       }
     
