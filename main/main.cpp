@@ -83,6 +83,8 @@ void test_gl32_002_draw(void);
 
 void _hrDebugPrintVSGF(const wchar_t* a_fileNameIn, const wchar_t* a_fileNameOut);
 
+void demo_01_plane_box();
+
 int main(int argc, const char** argv)
 {
   hrInit(L"-copy_textures_to_local_folder 0 -local_data_path 1 -sort_indices 1 -compute_bboxes 1");
@@ -126,6 +128,10 @@ int main(int argc, const char** argv)
   
   try
   {
+    //GEO_TESTS::test_001_mesh_from_memory();
+    demo_01_plane_box();
+    //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/demos/demo_01", L"opengl1", nullptr, &test02_draw);
+    
     //run_all_api_tests();
 	  //run_all_geo_tests();
     //run_all_lgt_tests();
@@ -137,9 +143,11 @@ int main(int argc, const char** argv)
     //std::cout << test82_proc_texture()  << std::endl;
     //std::cout << test84_proc_texture2() << std::endl;
     
-    std::cout << test39_mesh_from_vsgf() << std::endl;
+    //std::cout << test39_mesh_from_vsgf() << std::endl;
     //std::cout << test40_several_changes() << std::endl;
   
+    //std::cout << test99_bump() << std::endl;
+    
     //std::cout << test71_out_of_memory() << std::endl;
 
     //test86_proc_texture_ao_dirt();
@@ -172,7 +180,7 @@ int main(int argc, const char** argv)
     //window_main_free_look(L"tests/lucy_deferred", L"opengl32Deferred", &test_gl32_001_init, &test_gl32_001_draw);
     //window_main_free_look(L"tests/lucy_deferred", L"opengl3Utility", &test_gl32_001_init, &test_gl32_001_draw);
     //window_main_free_look(L"tests/test_gl32_002_", L"opengl3Utility", &test_gl32_002_init, &test_gl32_002_draw);
-    //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_90", L"opengl1Debug", nullptr, &test02_draw);
+    //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/demos/demo_01", L"opengl1", nullptr, &test02_draw);
 
     //window_main_free_look(L"tests/zgl1_test_cube", L"opengl32Forward", &test_gl32_001_init, &test_gl32_001_draw);
     //window_main_free_look(L"D:/PROG/HydraCore/hydra_app/tests/test_42", L"opengl1DrawRays");
@@ -204,4 +212,3 @@ int main(int argc, const char** argv)
 
   return 0;
 }
-

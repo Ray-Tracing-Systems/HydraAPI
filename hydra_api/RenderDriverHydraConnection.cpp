@@ -773,10 +773,12 @@ void RD_HydraConnection::EndFlush()
       m_colorMLTFinal[i+2] = 0.0f;
       m_colorMLTFinal[i+3] = 0.0f;
     }
+    
+    m_mltFrameBufferUpdateThread   = std::async(std::launch::async, &RD_HydraConnection::MLT_FrameBufferUpdateLoop, this);
+    m_lastMaxRaysPerPixel          = 1000000;
+    m_mltFrameBufferUpdate_ExitNow = false;
   }
-  m_lastMaxRaysPerPixel          = 1000000;
-  m_mltFrameBufferUpdate_ExitNow = false;
-  m_mltFrameBufferUpdateThread   = std::async(std::launch::async, &RD_HydraConnection::MLT_FrameBufferUpdateLoop, this);
+ 
 }
 
 void RD_HydraConnection::Draw()
