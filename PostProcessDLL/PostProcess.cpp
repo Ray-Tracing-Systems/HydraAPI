@@ -262,48 +262,34 @@ void ExecutePostProcessHydra1(
 
   float  minAllHistBin = 0.0f;
   float  maxAllHistBin = 1.0f;
-  float  minHistRbin = 0.0f;
-  float  minHistGbin = 0.0f;
-  float  minHistBbin = 0.0f;
-  float  maxHistRbin = histogramBin;
-  float  maxHistGbin = histogramBin;
-  float  maxHistBbin = histogramBin;
+  float3 minHistBin(0.0f, 0.0f, 0.0f);
+  float3 maxHistBin(histogramBin, histogramBin, histogramBin);
 
   // arrays
-  float* bigBlurPass = NULL;
-  float* chromAbberR = NULL;
-  float* chromAbberG = NULL;
-  float* lumForSharp = NULL;
-  float* diffrStarsR = NULL;
-  float* diffrStarsG = NULL;
-  float* diffrStarsB = NULL;
+  float* bigBlurPass = nullptr;
+  float* chromAbberR = nullptr;
+  float* chromAbberG = nullptr;
+  float* lumForSharp = nullptr;
+  float* noiseStruct = nullptr;
+  float3* diffrStars = nullptr;
+  float3* histogram = nullptr;
 
-  tagHistogram histogram;
-  histogram.r = NULL;
-  histogram.g = NULL;
-  histogram.b = NULL;
 
   if (a_chromAberr > 0.0f)
   {
     chromAbberR = (float*)calloc(sizeImage, sizeof(float));
     chromAbberG = (float*)calloc(sizeImage, sizeof(float));
   }
+
   if (a_normalize > 0.0f)
-  {
-    histogram.r = (float*)calloc(histogramBin, sizeof(float));
-    histogram.g = (float*)calloc(histogramBin, sizeof(float));
-    histogram.b = (float*)calloc(histogramBin, sizeof(float));
-  }
+    histogram = (float3*)calloc(histogramBin, sizeof(float3));
+
   if (a_sharpness > 0.0f)
-  {
     lumForSharp = (float*)calloc(sizeImage, sizeof(float));
-  }
+
   if (a_sizeStar > 0.0f)
-  {
-    diffrStarsR = (float*)calloc(sizeImage, sizeof(float));
-    diffrStarsG = (float*)calloc(sizeImage, sizeof(float));
-    diffrStarsB = (float*)calloc(sizeImage, sizeof(float));
-  }
+    diffrStars = (float3*)calloc(sizeImage, sizeof(float3));
+
 
   //////////////////////////////////////////////////////////////////////////////////////
 
@@ -340,9 +326,7 @@ void ExecutePostProcessHydra1(
       if (a_whiteBalance > 0.0f)
       {
         if (autoWhiteBalance && image4out[i].x < 1.0f && image4out[i].y < 1.0f && image4out[i].z < 1.0f)
-        {
           SummValueOnField(image4out, &summRgb, i);
-        }
       }
 
       // ----- Vignette -----
@@ -355,18 +339,19 @@ void ExecutePostProcessHydra1(
       // ----- Difraction stars -----
       if (a_sizeStar > 0.0f && image4out[i].x > 50.0f || image4out[i].y > 50.0f || image4out[i].z > 50.0f)
       {
-        DiffractionStars(image4out, diffrStarsR, diffrStarsG, diffrStarsB, a_sizeStar,
-          a_numRay, a_rotateRay, a_randomAngle, a_sprayRay, a_width, a_height, sizeImage, radiusImage,
-          x, y, i);
+        DiffractionStars(image4out, diffrStars, a_sizeStar, a_numRay, a_rotateRay,
+          a_randomAngle, a_sprayRay, a_width, a_height, sizeImage, radiusImage, x, y, i);
       }
 
       // ----- Chromatic aberration -----
       if (a_chromAberr > 0.0f)
       {
-        ChrommAberr(image4out, chromAbberR, chromAbberG, a_width, a_height, sizeImage, a_chromAberr, x, y, i);
+        ChrommAberr(image4out, chromAbberR, chromAbberG, a_width, a_height, sizeImage,
+          a_chromAberr, x, y, i);
       }
     }
   }
+
 
   // ----- Chromatic aberration -----
   if (a_chromAberr > 0.0f)
@@ -379,76 +364,17 @@ void ExecutePostProcessHydra1(
     }
   }
 
+
   // ----- Sharpness -----
   if (a_sharpness > 0.0f)
-  {
-    #pragma omp parallel for
-    for (int y = 0; y < (int)a_height; ++y)
-    {
-      for (int x = 0; x < (int)a_width; ++x)
-      {
-        const unsigned int i = y * a_width + x;
+    Sharp(image4out, lumForSharp, a_sharpness, a_width, a_height);
 
-        float mean = 0.0f;
-
-        for (int i = -1; i <= 1; ++i)
-        {
-          for (int j = -1; j <= 1; ++j)
-          {
-            int Y = y + i;
-            int X = x + j;
-
-            if      (Y < 0)         Y = 1;
-            else if (Y >= (int)a_height) Y = a_height - 1;
-            if      (X < 0)         X = 1;
-            else if (X >= (int)a_width)  X = a_width - 1;
-
-            mean += lumForSharp[Y * a_width + X];
-          }
-        }
-        mean /= 9.0f;
-
-        float dispers = 0.0f;
-        for (int i = -1; i <= 1; i++)
-        {
-          for (int j = -1; j <= 1; j++)
-          {
-            int Y = y + i;
-            int X = x + j;
-
-            if      (Y < 0)         Y = 1;
-            else if (Y >= (int)a_height) Y = a_height - 1;
-            if      (X < 0)         X = 1;
-            else if (X >= (int)a_width)  X = a_width - 1;
-
-            float a = lumForSharp[Y * a_width + X] - mean;
-            dispers += abs(a);
-          }
-        }
-
-        dispers /= (1.0f + dispers);
-        const float lumCompr = lumForSharp[i] / (1.0f + lumForSharp[i]);
-        const float meanCompr = mean / (1.0f + mean);
-        float hiPass = (lumForSharp[i] - mean) * 5.0f + 1.0f;
-        hiPass = pow(hiPass, 2);
-
-        float sharp = 1.0f;
-        Blend(sharp, hiPass, a_sharpness * (1.0f - dispers));
-
-        image4out[i].x *= sharp;
-        image4out[i].y *= sharp;
-        image4out[i].z *= sharp;
-      }
-    }
-  }
 
   // ----- White point for white balance -----
   if (a_whiteBalance > 0.0f)
   {
     if (autoWhiteBalance)
-    {
       ComputeWhitePoint(summRgb, &a_whitePointColor, sizeImage);
-    }
 
     ConvertSrgbToXyz(&a_whitePointColor);
     MatrixCat02(&a_whitePointColor);
@@ -472,9 +398,9 @@ void ExecutePostProcessHydra1(
     // ----- Diffraction stars -----
     if (a_sizeStar > 0.0f)
     {
-      image4out[i].x += diffrStarsR[i];
-      image4out[i].y += diffrStarsG[i];
-      image4out[i].z += diffrStarsB[i];
+      image4out[i].x += diffrStars[i].x;
+      image4out[i].y += diffrStars[i].y;
+      image4out[i].z += diffrStars[i].z;
     }
 
     // ----- White balance -----
@@ -538,17 +464,17 @@ void ExecutePostProcessHydra1(
       Blend(image4out[i].z, rgbDataComp.z, mix);
 
       // Addition little compress
-      image4out[i].x = pow(image4out[i].x, 6.0f);
-      image4out[i].y = pow(image4out[i].y, 6.0f);
-      image4out[i].z = pow(image4out[i].z, 6.0f);
+      //image4out[i].x = pow(image4out[i].x, 6.0f);
+      //image4out[i].y = pow(image4out[i].y, 6.0f);
+      //image4out[i].z = pow(image4out[i].z, 6.0f);
 
-      image4out[i].x /= (1.0f + image4out[i].x);
-      image4out[i].y /= (1.0f + image4out[i].y);
-      image4out[i].z /= (1.0f + image4out[i].z);
+      //image4out[i].x /= (1.0f + image4out[i].x);
+      //image4out[i].y /= (1.0f + image4out[i].y);
+      //image4out[i].z /= (1.0f + image4out[i].z);
 
-      image4out[i].x = pow(image4out[i].x, 0.16666f);
-      image4out[i].y = pow(image4out[i].y, 0.16666f);
-      image4out[i].z = pow(image4out[i].z, 0.16666f);
+      //image4out[i].x = pow(image4out[i].x, 0.16666f);
+      //image4out[i].y = pow(image4out[i].y, 0.16666f);
+      //image4out[i].z = pow(image4out[i].z, 0.16666f);
     }
 
 
@@ -625,18 +551,18 @@ void ExecutePostProcessHydra1(
     #pragma omp parallel for
     for (int i = 0; i < sizeImage; ++i)
     {
-      CalculateHistogram(image4out[i].x, &histogram.r[0], histogramBin, iterrHistogramBin);
-      CalculateHistogram(image4out[i].y, &histogram.g[0], histogramBin, iterrHistogramBin);
-      CalculateHistogram(image4out[i].z, &histogram.b[0], histogramBin, iterrHistogramBin);
+      CalculateHistogram(image4out[i].x, &histogram[0].x, histogramBin, iterrHistogramBin);
+      CalculateHistogram(image4out[i].y, &histogram[0].y, histogramBin, iterrHistogramBin);
+      CalculateHistogram(image4out[i].z, &histogram[0].z, histogramBin, iterrHistogramBin);
     }
 
     // Calculate min/max histogram for a_normalize
-    MinMaxHistBin(&histogram.r[0], minHistRbin, maxHistRbin, sizeImage, histogramBin);
-    MinMaxHistBin(&histogram.g[0], minHistGbin, maxHistGbin, sizeImage, histogramBin);
-    MinMaxHistBin(&histogram.b[0], minHistBbin, maxHistBbin, sizeImage, histogramBin);
+    MinMaxHistBin(&histogram[0].x, minHistBin.x, maxHistBin.x, sizeImage, histogramBin);
+    MinMaxHistBin(&histogram[0].y, minHistBin.y, maxHistBin.y, sizeImage, histogramBin);
+    MinMaxHistBin(&histogram[0].z, minHistBin.z, maxHistBin.z, sizeImage, histogramBin);
 
-    minAllHistBin = Min3(minHistRbin, minHistGbin, minHistBbin);
-    maxAllHistBin = Max3(maxHistRbin, maxHistGbin, maxHistBbin);
+    minAllHistBin = Min3(minHistBin.x, minHistBin.y, minHistBin.z);
+    maxAllHistBin = Max3(maxHistBin.x, maxHistBin.y, maxHistBin.z);
 
     // Normalize 
     #pragma omp parallel for
@@ -663,32 +589,23 @@ void ExecutePostProcessHydra1(
   {
     free(chromAbberR);
     free(chromAbberG);
-    chromAbberR = NULL;
-    chromAbberG = NULL;
+    chromAbberR = nullptr;
+    chromAbberG = nullptr;
   }
   if (a_sharpness > 0.0f)
   {
     free(lumForSharp);
-    lumForSharp = NULL;
+    lumForSharp = nullptr;
   }
   if (a_sizeStar > 0.0f)
   {
-    free(diffrStarsR);
-    free(diffrStarsG);
-    free(diffrStarsB);
-    diffrStarsR = NULL;
-    diffrStarsG = NULL;
-    diffrStarsB = NULL;
+    free(diffrStars);
+    diffrStars = nullptr;
   }
-  if (a_normalize > 0.0f)
+  if (a_normalize > 0.0f )
   {
-    free(histogram.r);
-    free(histogram.g);
-    free(histogram.b);
-
-    histogram.r = NULL;
-    histogram.g = NULL;
-    histogram.b = NULL;
+    free(histogram);
+    histogram = nullptr;
   }
 }
 
