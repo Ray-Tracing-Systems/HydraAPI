@@ -1303,7 +1303,7 @@ bool MTL_TESTS::test_170_fresnel_blend()
   
     auto blend = matNode.append_child(L"blend");
     blend.append_attribute(L"type").set_value(L"fresnel_blend");
-    blend.append_child(L"fresnel_ior").append_attribute(L"val") = 2.0f;
+    blend.append_child(L"fresnel_ior").append_attribute(L"val") = 5.0f;
    
     VERIFY_XML(matNode);
   }
