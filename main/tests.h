@@ -300,6 +300,7 @@ namespace MTL_TESTS
   bool test_168_diffuse_texture_recommended_res2();
   bool test_169_displace_custom_callback();
   bool test_170_fresnel_blend();
+  bool test_171_simple_displacement_triplanar();
 
 }
 

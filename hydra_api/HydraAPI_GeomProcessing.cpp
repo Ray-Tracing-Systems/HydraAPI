@@ -729,10 +729,10 @@ void displaceByHeightMap(HRMesh *pMesh, const pugi::xml_node &heightXMLNode, std
 
   std::vector<int> imageDataLDR;
   std::vector<float> imageDataHDR;
-  auto location = texLibNode.attribute(L"loc").as_string();
+  auto location = std::wstring(texLibNode.attribute(L"loc").as_string());
   float3 texHeight(1.0f, 1.0f, 1.0f);
   float4x4 matrix;
-  if(location != L"")
+  if(!location.empty())
   {
     int bpp = 0;
 
@@ -827,6 +827,274 @@ void displaceByHeightMap(HRMesh *pMesh, const pugi::xml_node &heightXMLNode, std
   }
 }
 
+void displaceByHeightMapTriPlanar(HRMesh *pMesh, const pugi::xml_node &heightXMLNode, std::vector<uint3> &triangleList)
+{
+  HRMesh::InputTriMesh &mesh = pMesh->m_input;
+
+  float mult = heightXMLNode.attribute(L"amount").as_float();
+
+  auto texNode = heightXMLNode.child(L"textures_hexaplanar");
+  pugi::xml_node texLibNodes[6];
+  int texIds[6];
+  if(texNode != nullptr)
+  {
+    auto id = texNode.attribute(L"texX").as_string();
+    texIds[0] = texNode.attribute(L"texX").as_int();
+    texLibNodes[0] = g_objManager.scnData.m_texturesLib.find_child_by_attribute(L"id", id);
+
+    id = texNode.attribute(L"texX2").as_string();
+    texIds[1] = texNode.attribute(L"texX2").as_int();
+    texLibNodes[1] = g_objManager.scnData.m_texturesLib.find_child_by_attribute(L"id", id);
+
+    id = texNode.attribute(L"texY").as_string();
+    texIds[2] = texNode.attribute(L"texY").as_int();
+    texLibNodes[2] = g_objManager.scnData.m_texturesLib.find_child_by_attribute(L"id", id);
+
+    id = texNode.attribute(L"texY2").as_string();
+    texIds[3] = texNode.attribute(L"texY2").as_int();
+    texLibNodes[3] = g_objManager.scnData.m_texturesLib.find_child_by_attribute(L"id", id);
+
+    id = texNode.attribute(L"texZ").as_string();
+    texIds[4] = texNode.attribute(L"texZ").as_int();
+    texLibNodes[4] = g_objManager.scnData.m_texturesLib.find_child_by_attribute(L"id", id);
+
+    id = texNode.attribute(L"texZ2").as_string();
+    texIds[5] = texNode.attribute(L"texZ2").as_int();
+    texLibNodes[5] = g_objManager.scnData.m_texturesLib.find_child_by_attribute(L"id", id);
+  }
+
+  bool sampleTexture = false;
+  bool isLDR = false;
+  bool isHDR = false;
+
+  std::vector<std::vector<int> > imageDataLDR(6, std::vector<int>());
+  std::vector<std::vector<float> > imageDataHDR(6, std::vector<float>());
+  std::wstring locations[6] = {std::wstring(texLibNodes[0].attribute(L"loc").as_string()),
+                               std::wstring(texLibNodes[1].attribute(L"loc").as_string()),
+                               std::wstring(texLibNodes[2].attribute(L"loc").as_string()),
+                               std::wstring(texLibNodes[3].attribute(L"loc").as_string()),
+                               std::wstring(texLibNodes[4].attribute(L"loc").as_string()),
+                               std::wstring(texLibNodes[5].attribute(L"loc").as_string())};
+  float3 texHeight(1.0f, 1.0f, 1.0f);
+  float4x4 matrix;
+  int2 texSizes[6];
+  for(int i = 0; i < 6; ++i)
+  {
+    auto location = locations[i];
+    if (!location.empty())
+    {
+      int bpp = 0;
+
+      HRTextureNodeRef texRef;
+      texRef.id = texIds[i];
+      int w = 0;
+      int h = 0;
+      hrTexture2DGetSize(texRef, &w, &h, &bpp);
+      texSizes[i].x = w;
+      texSizes[i].y = h;
+      if (bpp > 4)
+      {
+        isHDR = true;
+        imageDataHDR.at(i).resize(w * h * 4);
+        hrTextureNodeOpen(texRef, HR_OPEN_READ_ONLY);
+        {
+          hrTexture2DGetDataHDR(texRef, &w, &h, &imageDataHDR.at(i)[0]);
+        }
+        hrTextureNodeClose(texRef);
+      }
+      else
+      {
+        isLDR = true;
+        imageDataLDR.at(i).resize(w * h);
+
+        hrTextureNodeOpen(texRef, HR_OPEN_READ_ONLY);
+        {
+          hrTexture2DGetDataLDR(texRef, &w, &h, &imageDataLDR.at(i)[0]);
+        }
+        hrTextureNodeClose(texRef);
+      }
+
+      float mat[16];
+      HydraXMLHelpers::ReadMatrix4x4(texNode, L"matrix", mat);
+
+      matrix = float4x4(mat);
+
+      sampleTexture = true;
+      texHeight = float3(0.0f, 0.0f, 0.0f);
+    }
+  }
+
+  std::set<uint32_t > displaced_indices;
+  for(int i = 0; i < triangleList.size(); ++i)
+  {
+    const auto& tri = triangleList[i];
+
+    float4 norm1 = vertex_attrib_by_index_f4("normal", tri.x, mesh);
+    float4 norm2 = vertex_attrib_by_index_f4("normal", tri.y, mesh);
+    float4 norm3 = vertex_attrib_by_index_f4("normal", tri.z, mesh);
+
+    float4 pos1 = vertex_attrib_by_index_f4("pos", tri.x, mesh);
+    float4 pos2 = vertex_attrib_by_index_f4("pos", tri.y, mesh);
+    float4 pos3 = vertex_attrib_by_index_f4("pos", tri.z, mesh);
+    float sharpness = 10.0f;
+
+    int2 sampledTexSizes_v1[3];
+    int2 sampledTexSizes_v2[3];
+    int2 sampledTexSizes_v3[3];
+
+    auto& texX_v1_ldr = norm1.x < 0 ? imageDataLDR[0] : imageDataLDR[1];
+    auto& texY_v1_ldr = norm1.y < 0 ? imageDataLDR[2] : imageDataLDR[3];
+    auto& texZ_v1_ldr = norm1.z < 0 ? imageDataLDR[4] : imageDataLDR[5];
+
+    auto& texX_v2_ldr = norm2.x < 0 ? imageDataLDR[0] : imageDataLDR[1];
+    auto& texY_v2_ldr = norm2.y < 0 ? imageDataLDR[2] : imageDataLDR[3];
+    auto& texZ_v2_ldr = norm2.z < 0 ? imageDataLDR[4] : imageDataLDR[5];
+
+    auto& texX_v3_ldr = norm3.x < 0 ? imageDataLDR[0] : imageDataLDR[1];
+    auto& texY_v3_ldr = norm3.y < 0 ? imageDataLDR[2] : imageDataLDR[3];
+    auto& texZ_v3_ldr = norm3.z < 0 ? imageDataLDR[4] : imageDataLDR[5];
+
+    auto& texX_v1_hdr = norm1.x < 0 ? imageDataHDR[0] : imageDataHDR[1];
+    auto& texY_v1_hdr = norm1.y < 0 ? imageDataHDR[2] : imageDataHDR[3];
+    auto& texZ_v1_hdr = norm1.z < 0 ? imageDataHDR[4] : imageDataHDR[5];
+
+    auto& texX_v2_hdr = norm2.x < 0 ? imageDataHDR[0] : imageDataHDR[1];
+    auto& texY_v2_hdr = norm2.y < 0 ? imageDataHDR[2] : imageDataHDR[3];
+    auto& texZ_v2_hdr = norm2.z < 0 ? imageDataHDR[4] : imageDataHDR[5];
+
+    auto& texX_v3_hdr = norm3.x < 0 ? imageDataHDR[0] : imageDataHDR[1];
+    auto& texY_v3_hdr = norm3.y < 0 ? imageDataHDR[2] : imageDataHDR[3];
+    auto& texZ_v3_hdr = norm3.z < 0 ? imageDataHDR[4] : imageDataHDR[5];
+
+
+    sampledTexSizes_v1[0] = norm1.x < 0 ? texSizes[0] : texSizes[1];
+    sampledTexSizes_v1[1] = norm1.y < 0 ? texSizes[2] : texSizes[3];
+    sampledTexSizes_v1[2] = norm1.z < 0 ? texSizes[4] : texSizes[5];
+
+    sampledTexSizes_v2[0] = norm2.x < 0 ? texSizes[0] : texSizes[1];
+    sampledTexSizes_v2[1] = norm2.y < 0 ? texSizes[2] : texSizes[3];
+    sampledTexSizes_v2[2] = norm2.z < 0 ? texSizes[4] : texSizes[5];
+
+    sampledTexSizes_v3[0] = norm3.x < 0 ? texSizes[0] : texSizes[1];
+    sampledTexSizes_v3[1] = norm3.y < 0 ? texSizes[2] : texSizes[3];
+    sampledTexSizes_v3[2] = norm3.z < 0 ? texSizes[4] : texSizes[5];
+
+
+    float3 w_v1 = abs_f3(norm1);
+    float3 w_v2 = abs_f3(norm2);
+    float3 w_v3 = abs_f3(norm3);
+
+    w_v1 = pow_f3(w_v1, sharpness);
+    w_v2 = pow_f3(w_v2, sharpness);
+    w_v3 = pow_f3(w_v3, sharpness);
+
+    w_v1 = max_f3_scalar(w_v1, 0.00001f) / dot(w_v1, w_v1);
+    w_v2 = max_f3_scalar(w_v2, 0.00001f) / dot(w_v2, w_v2);
+    w_v3 = max_f3_scalar(w_v3, 0.00001f) / dot(w_v3, w_v3);
+
+    float b_v1 = (w_v1.x + w_v1.y + w_v1.z);
+    float b_v2 = (w_v2.x + w_v2.y + w_v2.z);
+    float b_v3 = (w_v3.x + w_v3.y + w_v3.z);
+    w_v1 = w_v1 / b_v1;
+    w_v2 = w_v2 / b_v2;
+    w_v3 = w_v3 / b_v3;
+
+    float tex_scale = 1.0f;
+
+    float2 y_uv_v1 = make_float2(pos1.x * tex_scale, pos1.z * tex_scale);
+    float2 x_uv_v1 = make_float2(pos1.z * tex_scale, pos1.y * tex_scale);
+    float2 z_uv_v1 = make_float2(pos1.x * tex_scale, pos1.y * tex_scale);
+
+    float2 y_uv_v2 = make_float2(pos2.x * tex_scale, pos2.z * tex_scale);
+    float2 x_uv_v2 = make_float2(pos2.z * tex_scale, pos2.y * tex_scale);
+    float2 z_uv_v2 = make_float2(pos2.x * tex_scale, pos2.y * tex_scale);
+
+    float2 y_uv_v3 = make_float2(pos3.x * tex_scale, pos3.z * tex_scale);
+    float2 x_uv_v3 = make_float2(pos3.z * tex_scale, pos3.y * tex_scale);
+    float2 z_uv_v3 = make_float2(pos3.x * tex_scale, pos3.y * tex_scale);
+
+    if(sampleTexture)
+    {
+      auto ins = displaced_indices.insert(tri.x);
+      if(ins.second)
+      {
+        if(isLDR)
+        {
+          float texColX = HRTextureUtils::sampleHeightMapLDR(texX_v1_ldr, sampledTexSizes_v1[0].x, sampledTexSizes_v1[0].y, x_uv_v1, matrix);
+          float texColY = HRTextureUtils::sampleHeightMapLDR(texY_v1_ldr, sampledTexSizes_v1[1].x, sampledTexSizes_v1[1].y, y_uv_v1, matrix);
+          float texColZ = HRTextureUtils::sampleHeightMapLDR(texZ_v1_ldr, sampledTexSizes_v1[2].x, sampledTexSizes_v1[2].y, z_uv_v1, matrix);
+
+          texHeight.x = texColX * w_v1.x + texColY * w_v1.y + texColZ * w_v1.z;
+        }
+        if(isHDR)
+        {
+          float texColX = HRTextureUtils::sampleHeightMapHDR(texX_v1_hdr, sampledTexSizes_v1[0].x, sampledTexSizes_v1[0].y, x_uv_v1, matrix);
+          float texColY = HRTextureUtils::sampleHeightMapHDR(texY_v1_hdr, sampledTexSizes_v1[1].x, sampledTexSizes_v1[1].y, y_uv_v1, matrix);
+          float texColZ = HRTextureUtils::sampleHeightMapHDR(texZ_v1_hdr, sampledTexSizes_v1[2].x, sampledTexSizes_v1[2].y, z_uv_v1, matrix);
+
+          texHeight.x = texColX * w_v1.x + texColY * w_v1.y + texColZ * w_v1.z;
+        }
+      }
+
+      ins = displaced_indices.insert(tri.y);
+      if(ins.second)
+      {
+        if(isLDR)
+        {
+          float texColX = HRTextureUtils::sampleHeightMapLDR(texX_v2_ldr, sampledTexSizes_v2[0].x, sampledTexSizes_v2[0].y, x_uv_v2, matrix);
+          float texColY = HRTextureUtils::sampleHeightMapLDR(texY_v2_ldr, sampledTexSizes_v2[1].x, sampledTexSizes_v2[1].y, y_uv_v2, matrix);
+          float texColZ = HRTextureUtils::sampleHeightMapLDR(texZ_v2_ldr, sampledTexSizes_v2[2].x, sampledTexSizes_v2[2].y, z_uv_v2, matrix);
+
+          texHeight.y = texColX * w_v2.x + texColY * w_v2.y + texColZ * w_v2.z;
+        }
+        if(isHDR)
+        {
+          float texColX = HRTextureUtils::sampleHeightMapHDR(texX_v2_hdr, sampledTexSizes_v2[0].x, sampledTexSizes_v2[0].y, x_uv_v2, matrix);
+          float texColY = HRTextureUtils::sampleHeightMapHDR(texY_v2_hdr, sampledTexSizes_v2[1].x, sampledTexSizes_v2[1].y, y_uv_v2, matrix);
+          float texColZ = HRTextureUtils::sampleHeightMapHDR(texZ_v2_hdr, sampledTexSizes_v2[2].x, sampledTexSizes_v2[2].y, z_uv_v2, matrix);
+
+          texHeight.y = texColX * w_v2.x + texColY * w_v2.y + texColZ * w_v2.z;
+        }
+      }
+
+      ins = displaced_indices.insert(tri.z);
+      if(ins.second)
+      {
+        if(isLDR)
+        {
+          float texColX = HRTextureUtils::sampleHeightMapLDR(texX_v3_ldr, sampledTexSizes_v3[0].x, sampledTexSizes_v3[0].y, x_uv_v3, matrix);
+          float texColY = HRTextureUtils::sampleHeightMapLDR(texY_v3_ldr, sampledTexSizes_v3[1].x, sampledTexSizes_v3[1].y, y_uv_v3, matrix);
+          float texColZ = HRTextureUtils::sampleHeightMapLDR(texZ_v3_ldr, sampledTexSizes_v3[2].x, sampledTexSizes_v3[2].y, z_uv_v3, matrix);
+
+          texHeight.z = texColX * w_v3.x + texColY * w_v3.y + texColZ * w_v3.z;
+        }
+        if(isHDR)
+        {
+          float texColX = HRTextureUtils::sampleHeightMapHDR(texX_v3_hdr, sampledTexSizes_v3[0].x, sampledTexSizes_v3[0].y, x_uv_v3, matrix);
+          float texColY = HRTextureUtils::sampleHeightMapHDR(texY_v3_hdr, sampledTexSizes_v3[1].x, sampledTexSizes_v3[1].y, y_uv_v3, matrix);
+          float texColZ = HRTextureUtils::sampleHeightMapHDR(texZ_v3_hdr, sampledTexSizes_v3[2].x, sampledTexSizes_v3[2].y, z_uv_v3, matrix);
+
+          texHeight.z = texColX * w_v3.x + texColY * w_v3.y + texColZ * w_v3.z;
+        }
+      }
+    }
+
+    mesh.verticesPos.at(tri.x * 4 + 0) += mesh.verticesNorm.at(tri.x * 4 + 0) * mult * texHeight.x;
+    mesh.verticesPos.at(tri.x * 4 + 1) += mesh.verticesNorm.at(tri.x * 4 + 1) * mult * texHeight.x;
+    mesh.verticesPos.at(tri.x * 4 + 2) += mesh.verticesNorm.at(tri.x * 4 + 2) * mult * texHeight.x;
+
+    mesh.verticesPos.at(tri.y * 4 + 0) += mesh.verticesNorm.at(tri.y * 4 + 0) * mult * texHeight.y;
+    mesh.verticesPos.at(tri.y * 4 + 1) += mesh.verticesNorm.at(tri.y * 4 + 1) * mult * texHeight.y;
+    mesh.verticesPos.at(tri.y * 4 + 2) += mesh.verticesNorm.at(tri.y * 4 + 2) * mult * texHeight.y;
+
+    mesh.verticesPos.at(tri.z * 4 + 0) += mesh.verticesNorm.at(tri.z * 4 + 0) * mult * texHeight.z;
+    mesh.verticesPos.at(tri.z * 4 + 1) += mesh.verticesNorm.at(tri.z * 4 + 1) * mult * texHeight.z;
+    mesh.verticesPos.at(tri.z * 4 + 2) += mesh.verticesNorm.at(tri.z * 4 + 2) * mult * texHeight.z;
+
+    texHeight = float3(0.0f, 0.0f, 0.0f);
+  }
+}
+
 void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::vector<uint3> &triangleList,
                     const HRUtils::BBox &bbox)
 {
@@ -838,9 +1106,15 @@ void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::v
 
   auto customNode = displaceXMLNode.child(L"custom");
 
+  auto heightNodeTri = displaceXMLNode.child(L"height_map_triplanar");
+
   if(heightNode != nullptr)
   {
     displaceByHeightMap(pMesh, heightNode, triangleList);
+  }
+  else if(heightNodeTri != nullptr)
+  {
+    displaceByHeightMapTriPlanar(pMesh, heightNodeTri, triangleList);
   }
   else if(noiseNode != nullptr)
   {

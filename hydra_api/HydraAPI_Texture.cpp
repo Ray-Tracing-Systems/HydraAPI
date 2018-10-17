@@ -547,7 +547,7 @@ HAPI void hrTextureNodeClose(HRTextureNodeRef a_pNode)
   }
 
   pData->opened = false;
-  pData->pImpl  = nullptr;
+ // pData->pImpl  = nullptr;
 }
 
 

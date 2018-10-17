@@ -376,6 +376,13 @@ namespace HydraLiteMath
   static inline float  dot(const float2 & u, const float2 & v) { return (u.x*v.x + u.y*v.y); }
   static inline float2 clamp(const float2 & u, float a, float b) { return make_float2(clamp(u.x, a, b), clamp(u.y, a, b)); }
 
+  static inline float3 abs_f3(const float3 &u){return make_float3(fabsf(u.x), fabsf(u.y), fabsf(u.z));}
+  static inline float3 abs_f3(const float4 &u){return make_float3(fabsf(u.x), fabsf(u.y), fabsf(u.z));}
+
+  static inline float3 pow_f3(const float3 &u, const float &exp){return make_float3(powf(u.x, exp), powf(u.y, exp), powf(u.z, exp));}
+  static inline float3 pow_f3(const float4 &u, const float &exp){return make_float3(powf(u.x, exp), powf(u.y, exp), powf(u.z, exp));}
+
+  static inline float3 max_f3_scalar(const float3 &u, const float &v){ return make_float3(fmaxf(u.x, v), fmaxf(u.y, v), fmaxf(u.z, v));}
 
   static inline float  length(const float2 & u) { return sqrtf(SQR(u.x) + SQR(u.y)); }
   static inline float2 normalize(const float2 & u) { return u / length(u); }

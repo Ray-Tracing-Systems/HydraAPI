@@ -161,8 +161,10 @@ int main(int argc, const char** argv)
 //    std::cout << test99_hexaplanar() << std::endl;
     //std::cout << test99_bump() << std::endl;
     //window_main_free_look(L"tests_f/test_167", L"opengl1Debug");
+//    MTL_TESTS::test_165_simple_displacement_mesh();
+    MTL_TESTS::test_171_simple_displacement_triplanar();
 
-    MTL_TESTS::test_170_fresnel_blend();
+    //MTL_TESTS::test_170_fresnel_blend();
     //MTL_TESTS::test_159_proc_dirt2();
     //LGHT_TESTS::test_223_rotated_area_light();
     
