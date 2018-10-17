@@ -299,6 +299,7 @@ namespace MTL_TESTS
   bool test_167_subdiv();
   bool test_168_diffuse_texture_recommended_res2();
   bool test_169_displace_custom_callback();
+  bool test_170_fresnel_blend();
 
 }
 

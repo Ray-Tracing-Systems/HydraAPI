@@ -420,7 +420,7 @@ bool test82_proc_texture()
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   HRMeshRef cubeOpenRef = hrMeshCreate(L"my_box");
-  HRMeshRef planeRef = hrMeshCreate(L"my_plane");
+  //HRMeshRef planeRef = hrMeshCreate(L"my_plane");
   HRMeshRef sphereRef = hrMeshCreate(L"my_sphere");
 
   hrMeshOpen(cubeOpenRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
@@ -503,6 +503,7 @@ bool test82_proc_texture()
   //
   HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1
   hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
+  hrRenderLogDir(renderRef, L"/home/frol/temp/", true);
 
   hrRenderOpen(renderRef, HR_WRITE_DISCARD);
   {
