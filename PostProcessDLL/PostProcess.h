@@ -1058,6 +1058,71 @@ std::vector<float> createGaussKernelWeights1D_HDRImage2(const int size, const fl
 
   return gKernel;
 }
+void Sharp(float4 image4out[], const float lumForSharp[], const float a_sharpness, const int a_width, const int a_height)
+{
+#pragma omp parallel for
+  for (int y = 0; y < a_height; ++y)
+  {
+    for (int x = 0; x < a_width; ++x)
+    {
+      const int i = y * a_width + x;
+
+      if (image4out[i].x < 0.0f) image4out[i].x = 0.0f;
+      if (image4out[i].y < 0.0f) image4out[i].y = 0.0f;
+      if (image4out[i].z < 0.0f) image4out[i].z = 0.0f;
+
+      float mean = 0.0f;
+
+      for (int i = -1; i <= 1; ++i)
+      {
+        for (int j = -1; j <= 1; ++j)
+        {
+          int Y = y + i;
+          int X = x + j;
+
+          if (Y < 0)         Y = 1;
+          else if (Y >= a_height) Y = a_height - 1;
+          if (X < 0)         X = 1;
+          else if (X >= a_width)  X = a_width - 1;
+
+          mean += lumForSharp[Y * a_width + X];
+        }
+      }
+      mean /= 9.0f;
+
+      float dispers = 0.0f;
+      for (int i = -1; i <= 1; i++)
+      {
+        for (int j = -1; j <= 1; j++)
+        {
+          int Y = y + i;
+          int X = x + j;
+
+          if (Y < 0)         Y = 1;
+          else if (Y >= a_height) Y = a_height - 1;
+          if (X < 0)         X = 1;
+          else if (X >= a_width)  X = a_width - 1;
+
+          float a = lumForSharp[Y * a_width + X] - mean;
+          dispers += abs(a);
+        }
+      }
+
+      dispers /= (1.0f + dispers);
+      const float lumCompr = lumForSharp[i] / (1.0f + lumForSharp[i]);
+      const float meanCompr = mean / (1.0f + mean);
+      float hiPass = (lumForSharp[i] - mean) * 5 + 1.0f;
+      hiPass = pow(hiPass, 2);
+
+      float sharp = 1.0f;
+      Blend(sharp, hiPass, a_sharpness * (1.0f - dispers));
+
+      image4out[i].x *= sharp;
+      image4out[i].y *= sharp;
+      image4out[i].z *= sharp;
+    }
+  }
+}
 void Blur(float inData[], int blurRadius, const int m_width, const int m_height, const int sizeImage)
 {
   const float diagonalImage = Distance(0, 0, (float)m_width, (float)m_height);
@@ -1134,8 +1199,7 @@ float ConvertAngleToRad(int angle)
   return angle * 0.01745329252f;
 }
 
-void DiffractionStars(float4* inData, float diffrStarsR[], float diffrStarsG[], float diffrStarsB[],
-  const float a_sizeStar, const int a_numRay, const int a_RotateRay, const float a_randomAngle,
+void DiffractionStars(float4* inData, float3 diffrStars[], const float a_sizeStar, const int a_numRay, const int a_RotateRay, const float a_randomAngle,
   const float a_sprayRay, const int m_width, const int m_height, const int sizeImage, const float radiusImage, const int x, const int y, const int i)
 {
   const float PI = 3.141592f;
@@ -1183,9 +1247,9 @@ void DiffractionStars(float4* inData, float diffrStarsR[], float diffrStarsG[], 
       if (newX > 0 && newX < m_width && newY > 0 && newY < m_height)
       {
         const float I = pow((sinf(u) / u), 2) * multDist;
-        Bilinear(inData[i].x * I, diffrStarsR, newX, newY, m_width, m_height, sizeImage);
-        Bilinear(inData[i].y * I, diffrStarsG, newX, newY, m_width, m_height, sizeImage);
-        Bilinear(inData[i].z * I, diffrStarsB, newX, newY, m_width, m_height, sizeImage);
+        Bilinear(inData[i].x * I, &diffrStars[0].x, newX * 3.0f, newY, m_width * 3.0f, m_height, sizeImage);
+        Bilinear(inData[i].y * I, &diffrStars[0].y, newX * 3.0f, newY, m_width * 3.0f, m_height, sizeImage);
+        Bilinear(inData[i].z * I, &diffrStars[0].z, newX * 3.0f, newY, m_width * 3.0f, m_height, sizeImage);
       }
     }
   }
