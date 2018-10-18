@@ -139,7 +139,7 @@ void demo_01_plane_box()
   //HRRenderRef renderRef = hrRenderCreate(L"opengl1");
   
   HRRenderRef renderRef = hrRenderCreate(L"HydraModern");
-  hrRenderEnableDevice(renderRef, 0, true);
+  hrRenderEnableDevice(renderRef, 1, true);
   
   hrRenderOpen(renderRef, HR_WRITE_DISCARD);
   {
@@ -150,10 +150,6 @@ void demo_01_plane_box()
     
     node.append_child(L"method_primary").text()   = L"pathtracing";
     node.append_child(L"method_secondary").text() = L"pathtracing";
-    node.append_child(L"method_tertiary").text()  = L"pathtracing";
-    node.append_child(L"method_caustic").text()   = L"pathtracing";
-    node.append_child(L"shadows").text()          = L"1";
-    
     node.append_child(L"trace_depth").text()      = L"6";
     node.append_child(L"diff_trace_depth").text() = L"3";
     node.append_child(L"maxRaysPerPixel").text()  = 256;

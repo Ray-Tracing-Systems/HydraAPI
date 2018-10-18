@@ -375,6 +375,7 @@ struct HRSceneData : public HRObject<IHRSceneData>
   void init(bool a_emptyvb, HRSystemMutex* a_pVBSysMutexLock);
   void init_existing(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock);
   void clear();
+  void clear_changes();
 
   int32_t m_commitId;
   std::wstring m_path;

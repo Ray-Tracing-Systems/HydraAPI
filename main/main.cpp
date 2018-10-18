@@ -129,7 +129,7 @@ int main(int argc, const char** argv)
   try
   {
     //GEO_TESTS::test_001_mesh_from_memory();
-    //demo_01_plane_box();
+    demo_01_plane_box();
     //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/demos/demo_01", L"opengl1", nullptr, &test02_draw);
     
     // run_all_api_tests();
@@ -162,7 +162,7 @@ int main(int argc, const char** argv)
     //std::cout << test99_bump() << std::endl;
     //window_main_free_look(L"tests_f/test_167", L"opengl1Debug");
 //    MTL_TESTS::test_165_simple_displacement_mesh();
-    MTL_TESTS::test_171_simple_displacement_triplanar();
+    //MTL_TESTS::test_171_simple_displacement_triplanar();
 
     //MTL_TESTS::test_170_fresnel_blend();
     //MTL_TESTS::test_159_proc_dirt2();

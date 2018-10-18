@@ -723,3 +723,29 @@ void HRSceneData::clear()
   m_materialToMeshDependency.clear();
   m_shadowCatchers.clear();
 }
+
+void HRSceneData::clear_changes()
+{
+  for(size_t i=0;i<textures.size();i++)
+    textures[i].update_next(pugi::xml_node());
+  clear_node_childs(m_texturesLibChanges);
+  
+  for(size_t i=0;i<materials.size();i++)
+    materials[i].update_next(pugi::xml_node());
+  clear_node_childs(m_materialsLibChanges);
+  
+  for(size_t i=0;i<lights.size();i++)
+    lights[i].update_next(pugi::xml_node());
+  clear_node_childs(m_lightsLibChanges);
+  
+  for(size_t i=0;i<cameras.size();i++)
+    cameras[i].update_next(pugi::xml_node());
+  clear_node_childs(m_cameraLibChanges);
+  
+  for(size_t i=0;i<meshes.size();i++)
+    meshes[i].update_next(pugi::xml_node());
+  clear_node_childs(m_geometryLibChanges);
+  
+  //clear_node_childs(m_settingsNodeChanges);
+  //clear_node_childs(m_sceneNodeChanges);
+}
