@@ -851,10 +851,8 @@ HRRenderUpdateInfo RD_HydraConnection::HaveUpdateNow(int a_maxRaysPerPixel)
   {
     m_mltFrameBufferUpdate_ExitNow = true;
     this->ExecuteCommand(L"exitnow", nullptr);
-    if(m_enableMLT)
-      m_mltFrameBufferUpdateThread.get();
   }
-  
+
   return result;
 }
 
