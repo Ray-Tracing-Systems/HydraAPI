@@ -129,55 +129,26 @@ int main(int argc, const char** argv)
   try
   {
     //GEO_TESTS::test_001_mesh_from_memory();
-    demo_01_plane_box();
+    //demo_01_plane_box();
     //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/demos/demo_01", L"opengl1", nullptr, &test02_draw);
     
-    // run_all_api_tests();
+    run_all_api_tests();
 	  // run_all_geo_tests();
     // run_all_lgt_tests();
     // run_all_mtl_tests();
     // run_all_ipp_tests();
-
-    //std::cout << test41_load_library_basic() << std::endl;
-  
-    //std::cout << test82_proc_texture()  << std::endl;
-    //std::cout << test84_proc_texture2() << std::endl;
     
+    //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
     //std::cout << test39_mesh_from_vsgf() << std::endl;
     //std::cout << test40_several_changes() << std::endl;
-  
-    //std::cout << test99_bump() << std::endl;
     
-    //std::cout << test71_out_of_memory() << std::endl;
-  
-    //test82_proc_texture();
-    //test86_proc_texture_ao_dirt();
-    //test90_proc_tex_normalmap();
-    //test91_proc_tex_bump();
-//    test90_proc_tex_normalmap();
-//    test91_proc_tex_bump();
-    //test92_proc_tex_bump2();
-//test99_triplanar();
-//    std::cout << test99_hexaplanar() << std::endl;
-    //std::cout << test99_bump() << std::endl;
-    //window_main_free_look(L"tests_f/test_167", L"opengl1Debug");
-//    MTL_TESTS::test_165_simple_displacement_mesh();
-    //MTL_TESTS::test_171_simple_displacement_triplanar();
-
     //MTL_TESTS::test_170_fresnel_blend();
     //MTL_TESTS::test_159_proc_dirt2();
     //LGHT_TESTS::test_223_rotated_area_light();
     
-    //PP_TESTS::test305_fbi_from_render();    
-    //PP_TESTS::test312_2_post_process_hydra1_whitePointColor();
-
+    //PP_TESTS::test305_fbi_from_render();
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
-
     //window_main_free_look(L"tests_f/test_241", L"opengl1Debug");
-
-    //std::cout << PP_TESTS::test301_resample() << std::endl;
-
-    //test100_dummy_hydra_exec();
 
     //window_main_free_look(L"tests/test_gl32_002_", L"opengl32Deferred", &test_gl32_002_init, &test_gl32_002_draw);
     //window_main_free_look(L"tests/lucy_deferred", L"opengl32Deferred", &test_gl32_001_init, &test_gl32_001_draw);

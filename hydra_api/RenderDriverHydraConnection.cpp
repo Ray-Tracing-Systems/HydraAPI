@@ -778,6 +778,10 @@ void RD_HydraConnection::EndFlush()
     m_lastMaxRaysPerPixel          = 1000000;
     m_mltFrameBufferUpdate_ExitNow = false;
   }
+  else
+  {
+    m_mltFrameBufferUpdate_ExitNow = true;
+  }
  
 }
 
@@ -832,17 +836,25 @@ HRRenderUpdateInfo RD_HydraConnection::HaveUpdateNow(int a_maxRaysPerPixel)
   {
     result.haveUpdateFB = fabs(m_oldSPP - m_pSharedImage->Header()->spp) > 1e-5f;
     result.progress     = 100.0f*m_pSharedImage->Header()->spp / float(a_maxRaysPerPixel);
+    if(m_enableMLT)
+      result.progress *= (2.0f); // MMLT sample indirect light 2 times more than direct light.
     m_oldCounter        = pHeader->counterRcv;
     m_oldSPP            = m_pSharedImage->Header()->spp;
   }
 
   result.finalUpdate = (result.progress >= 100.0f);
+  
+  if(!result.finalUpdate && m_enableMLT && m_mltFrameBufferUpdate_ExitNow)
+    result.finalUpdate = true;
 
   if(result.finalUpdate)
   {
     m_mltFrameBufferUpdate_ExitNow = true;
     this->ExecuteCommand(L"exitnow", nullptr);
+    if(m_enableMLT)
+      m_mltFrameBufferUpdateThread.get();
   }
+  
   return result;
 }
 

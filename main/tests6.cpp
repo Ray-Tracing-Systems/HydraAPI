@@ -1727,12 +1727,12 @@ bool test39_mesh_from_vsgf()
     node.append_child(L"method_secondary").text() = L"mmlt"; // L"mmlt";
     node.append_child(L"trace_depth").text()      = 6;
     node.append_child(L"diff_trace_depth").text() = 3;
-    node.append_child(L"maxRaysPerPixel").text()  = 1024; //1024;
+    node.append_child(L"maxRaysPerPixel").text()  = 1024;
     node.append_child(L"evalgbuffer").text()      = 0;
   
-    node.append_child(L"mmlt_burn_iters").text()     = 1024;    // [1024, 2048, 4096, 8192, 16384, 65536]
-    node.append_child(L"mmlt_sds_fixed_prob").text() = 0;       // [0, 0.25, 0.5, 0,75, 0 85, 0.9, 0.95 ]
-    node.append_child(L"mmlt_threads").text()        = 262144;  // [524288, 262144, 131072(?), 65536, 16384]   
+    node.append_child(L"mmlt_burn_iters").text()     = 256;    // [1024, 2048, 4096, 8192, 16384, 65536]
+    node.append_child(L"mmlt_sds_fixed_prob").text() = 0;      // [0, 0.25, 0.5, 0,75, 0 85, 0.9, 0.95 ]
+    node.append_child(L"mmlt_threads").text()        = 262144; // [524288, 262144, 131072(?), 65536, 16384]
     //node.append_child(L"offline_pt").text()       = 1;
   }
   hrRenderClose(renderRef);
