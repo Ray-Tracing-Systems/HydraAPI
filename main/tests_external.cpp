@@ -38,6 +38,7 @@
 
 using namespace TEST_UTILS;
 
+namespace hlm = HydraLiteMath;
 extern GLFWwindow* g_window;
 
 using HydraLiteMath::float2;
@@ -120,8 +121,8 @@ bool test_x1_displace_car_by_noise()
     camNode.append_child(L"farClipPlane").text().set(L"100.0");
 
     camNode.append_child(L"up").text().set(L"0 1 0");
-    camNode.append_child(L"position").text().set(L"2 1.5 -4");
-    camNode.append_child(L"look_at").text().set(L"-0.5 0.5 0");
+    camNode.append_child(L"position").text().set(L"3 1.5 -1");
+    camNode.append_child(L"look_at").text().set(L"-0.0 0.85 0.0");
   }
   hrCameraClose(camRef);
 
@@ -129,7 +130,10 @@ bool test_x1_displace_car_by_noise()
   // Render settings
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 1024, 512, 512);
+  int w = 800;
+  int h = 800;
+
+  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, w, h, 512, 512);
   hrRenderOpen(renderRef, HR_OPEN_EXISTING);
   {
     auto node = hrRenderParamNode(renderRef);
@@ -193,7 +197,7 @@ bool test_x1_displace_car_by_noise()
 
   hrSceneClose(scnRef);
 
-  std::wstring car_path(L"/cars-lib/002");
+  std::wstring car_path(L"/home/vs/Yandex.Disk/samsungdata/CarsLibSeparate/002");
 
   auto merged_car = MergeLibraryIntoLibrary(car_path.c_str(), false, true);
   hrCommit(scnRef);
@@ -243,8 +247,8 @@ bool test_x1_displace_car_by_noise()
 
   hrFlush(scnRef, renderRef, camRef);
 
-  glViewport(0, 0, 1024, 1024);
-  std::vector<int32_t> image(1024 * 1024);
+  glViewport(0, 0, w, h);
+  std::vector<int32_t> image(w * h);
 
   while (true)
   {
@@ -254,10 +258,10 @@ bool test_x1_displace_car_by_noise()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 1024, &image[0]);
+      hrRenderGetFrameBufferLDR1i(renderRef, w, h, &image[0]);
 
       glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 1024, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+      glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
@@ -277,3 +281,236 @@ bool test_x1_displace_car_by_noise()
 }
 
 
+bool test_x2_car_displacement_triplanar()
+{
+    initGLIfNeeded();
+
+    hrErrorCallerPlace(L"test_x2");
+
+    hrSceneLibraryOpen(L"tests/test_x2", HR_WRITE_DISCARD);
+
+    HRTextureNodeRef texX = hrTexture2DCreateFromFile(L"data/textures/blur_pattern.bmp");
+    HRTextureNodeRef texY  = hrTexture2DCreateFromFile(L"data/textures/MapleLeaf.TGA");
+    HRTextureNodeRef texZ  = hrTexture2DCreateFromFile(L"data/textures/texture1.bmp");
+    HRTextureNodeRef texX2 = hrTexture2DCreateFromFile(L"data/textures/yinyang.png");
+    HRTextureNodeRef texY2  = hrTexture2DCreateFromFile(L"data/textures/MapleLeaf.TGA");
+    HRTextureNodeRef texZ2  = hrTexture2DCreateFromFile(L"data/textures/yinyang.png");
+
+    HRTextureNodeRef texEnv = hrTexture2DCreateFromFile(L"data/textures/kitchen.hdr");
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Light
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    HRLightRef sky = hrLightCreate(L"sky");
+
+    hrLightOpen(sky, HR_WRITE_DISCARD);
+    {
+        auto lightNode = hrLightParamNode(sky);
+
+        lightNode.attribute(L"type").set_value(L"sky");
+        lightNode.attribute(L"distribution").set_value(L"map");
+
+        auto intensityNode = lightNode.append_child(L"intensity");
+
+        intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
+        intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"1.0");
+
+        auto texNode = hrTextureBind(texEnv, intensityNode.child(L"color"));
+
+        texNode.append_attribute(L"matrix");
+        float samplerMatrix[16] = { 1, 0, 0, 0,
+                                    0, 1, 0, 0,
+                                    0, 0, 1, 0,
+                                    0, 0, 0, 1 };
+
+        texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
+        texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
+
+        HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
+
+        VERIFY_XML(lightNode);
+    }
+    hrLightClose(sky);
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Camera
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    HRCameraRef camRef = hrCameraCreate(L"my camera");
+
+    hrCameraOpen(camRef, HR_WRITE_DISCARD);
+    {
+        auto camNode = hrCameraParamNode(camRef);
+
+        camNode.append_child(L"fov").text().set(L"45");
+        camNode.append_child(L"nearClipPlane").text().set(L"0.01");
+        camNode.append_child(L"farClipPlane").text().set(L"100.0");
+
+        camNode.append_child(L"up").text().set(L"0 1 0");
+        camNode.append_child(L"position").text().set(L"3 5 -1");
+        camNode.append_child(L"look_at").text().set(L"-0.0 0.85 0.0");
+    }
+    hrCameraClose(camRef);
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Render settings
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    int w = 800;
+    int h = 800;
+
+    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, w, h, 256, 256);
+    hrRenderOpen(renderRef, HR_OPEN_EXISTING);
+    {
+        auto node = hrRenderParamNode(renderRef);
+        node.append_child(L"evalDisplacement").text() = true;
+    };
+    hrRenderClose(renderRef);
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Create scene
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    HRSceneInstRef scnRef = hrSceneCreate(L"my scene");
+
+    using namespace HydraLiteMath;
+
+    float4x4 mRot;
+    float4x4 mTranslate;
+    float4x4 mScale;
+    float4x4 mRes;
+
+    hrSceneOpen(scnRef, HR_WRITE_DISCARD);
+
+//  ///////////
+//  mTranslate.identity();
+//  mRes.identity();
+//
+//  mTranslate = translate4x4(float3(-15.0f, -40.0f, 0.0f));
+//  mScale = scale4x4(float3(10.01f, 10.01f, 10.01f));
+//  mRes = mul(mTranslate, mScale);
+//
+//  hrMeshInstance(scnRef, tess, mRes.L());
+//
+//  mTranslate = translate4x4(float3(15.0f, -40.0f, 0.0f));
+//  mScale = scale4x4(float3(10.01f, 10.01f, 10.01f));
+//  mRes = mul(mTranslate, mScale);
+//
+//  int32_t remapList1[2] = { mat1.id, mat2.id };
+//
+//  hrMeshInstance(scnRef, tess, mRes.L(), remapList1, sizeof(remapList1)/sizeof(int32_t));
+
+    mTranslate = translate4x4(float3(0.0f, 0.0f, 0.0f));
+//  hrMeshInstance(scnRef, planeRef, mTranslate.L());
+
+
+    ///////////
+
+    mTranslate.identity();
+    mRes.identity();
+
+    mTranslate = translate4x4(float3(0, 0.0f, 0.0));
+    mRes = mul(mTranslate, mRes);
+
+    hrLightInstance(scnRef, sky, mRes.L());
+
+
+    ///////////
+
+    hrSceneClose(scnRef);
+
+    std::wstring car_path(L"/CarsLibSeparate/006");
+
+    auto merged_car = MergeLibraryIntoLibrary(car_path.c_str(), false, true);
+    hrCommit(scnRef);
+
+    auto materials = HydraXMLHelpers::GetMaterialNameToIdMap();
+
+    int body_mat_id = 0;
+    for(auto& mat :materials)
+    {
+        if(mat.first == "outside_body")
+        {
+            body_mat_id = mat.second;
+            break;
+        }
+    }
+
+    auto newBodyMat = MergeOneMaterialIntoLibrary(car_path.c_str(), L"outside_body");
+
+    hrMaterialOpen(newBodyMat, HR_WRITE_DISCARD);
+    {
+        xml_node matNode = hrMaterialParamNode(newBodyMat);
+        xml_node diff = matNode.append_child(L"diffuse");
+
+        diff.append_attribute(L"brdf_type").set_value(L"lambert");
+        auto colorNode = diff.append_child(L"color");
+
+        colorNode.append_attribute(L"val") = L"0.5 0.5 0.5";
+
+        auto displacement = matNode.append_child(L"displacement");
+        auto heightNode   = displacement.append_child(L"height_map_triplanar");
+
+        displacement.append_attribute(L"type").set_value(L"true_displacement");
+        heightNode.append_attribute(L"amount").set_value(0.035f);
+        displacement.append_attribute(L"subdivs").set_value(2);
+
+        auto texNode = heightNode.append_child(L"textures_hexaplanar");
+
+        texNode.append_attribute(L"texX").set_value(texX.id);
+        texNode.append_attribute(L"texX2").set_value(texX.id);
+        texNode.append_attribute(L"texY").set_value(texX.id);
+        texNode.append_attribute(L"texY2").set_value(texX.id);
+        texNode.append_attribute(L"texZ").set_value(texX.id);
+        texNode.append_attribute(L"texZ2").set_value(texX.id);
+
+        texNode.append_attribute(L"matrix");
+        float samplerMatrix[16] = { 1, 0, 0, 0,
+                                    0, 1, 0, 0,
+                                    0, 0, 1, 0,
+                                    0, 0, 0, 1 };
+        HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
+    }
+    hrMaterialClose(newBodyMat);
+
+    int32_t remapList1[2] = { body_mat_id, newBodyMat.id };
+    mRes.identity();
+
+    auto bbox = HRUtils::InstanceSceneIntoScene(merged_car, scnRef, mRes.L(), false, remapList1, 2);
+
+    hrFlush(scnRef, renderRef, camRef);
+
+    glViewport(0, 0, w, h);
+    std::vector<int32_t> image(w * h);
+
+    while (true)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+        HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
+
+        if (info.haveUpdateFB)
+        {
+            hrRenderGetFrameBufferLDR1i(renderRef, w, h, &image[0]);
+
+            glDisable(GL_TEXTURE_2D);
+            glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+
+            auto pres = std::cout.precision(2);
+            std::cout << "rendering progress = " << info.progress << "% \r";
+            std::cout.precision(pres);
+
+            glfwSwapBuffers(g_window);
+            glfwPollEvents();
+        }
+
+        if (info.finalUpdate)
+            break;
+    }
+
+    hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_x2/z_out.png");
+
+    return check_images("test_x2", 1, 30);
+}
