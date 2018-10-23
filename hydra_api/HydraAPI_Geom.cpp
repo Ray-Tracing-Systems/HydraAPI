@@ -270,12 +270,15 @@ static std::vector<T> ReadArrayFromMeshNode(pugi::xml_node meshNode, ChunkPointe
 
 void OpenHRMesh(HRMesh* pMesh, pugi::xml_node nodeXml)
 {
+  pMesh->m_input.clear();
+  
+  if(pMesh->pImpl == nullptr)
+    return;
+  
   // form m_input from serialized representation ... 
   //
   auto chunkId = pMesh->pImpl->chunkId();
   auto chunk   = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
-
-  pMesh->m_input.clear();
 
   if (chunk.InMemory())
   {
