@@ -160,9 +160,13 @@ struct HRMesh : public HRObject<IHRMesh>
       verticesNorm.reserve(vNum * 4 + 10);
       verticesTangent.reserve(vNum * 4 + 10);
       verticesTexCoord.reserve(vNum * 2 + 10);
-      triIndices.reserve(indNum + 10);
-      matIndices.reserve(indNum / 3 + 10);
-
+      
+      if(triIndices.capacity() < indNum + 10)
+        triIndices.reserve(indNum + 10);
+      
+      if(matIndices.capacity() < indNum / 3 + 10)
+        matIndices.reserve(indNum / 3 + 10);
+      
       for (auto& arr : customArrays)
       {
         arr.idata.reserve(1*vNum);

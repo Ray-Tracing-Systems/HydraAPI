@@ -3195,7 +3195,7 @@ bool test71_out_of_memory()
     hrMeshVertexAttribPointer2f(cubeRef, L"texcoord", texcoord);
 
     hrMeshMaterialId(cubeRef, 0);
-    hrMeshAppendTriangles3(cubeRef, numIndices, indices);
+    hrMeshAppendTriangles3(cubeRef, numIndices, indices, false);
   }
   hrMeshClose(cubeRef);
 

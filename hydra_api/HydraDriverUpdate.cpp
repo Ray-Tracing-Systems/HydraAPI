@@ -910,7 +910,7 @@ int64_t EstimateGeometryMem(const ChangeList& a_objList)
     memAmount += (byteSize + trisNum*sizeof(float));
   }
 
-  return memAmount;
+  return memAmount + int64_t(1*1024*1024);
 }
 
 int64_t EstimateTexturesMem(const ChangeList& a_objList, std::unordered_map<int32_t, HRTexResInfo>& out_texInfo)
