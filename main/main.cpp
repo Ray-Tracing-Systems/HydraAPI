@@ -132,16 +132,18 @@ int main(int argc, const char** argv)
     //demo_01_plane_box();
     //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/demos/demo_01", L"opengl1", nullptr, &test02_draw);
     
-    // run_all_api_tests();
+    run_all_api_tests();
 	  // run_all_geo_tests();
     // run_all_lgt_tests();
     // run_all_mtl_tests();
     // run_all_ipp_tests();
 
-    std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
-    std::cout << test39_mesh_from_vsgf() << std::endl;
-    std::cout << test40_several_changes() << std::endl;
-
+    //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
+    //std::cout << test39_mesh_from_vsgf() << std::endl;
+    //std::cout << test40_several_changes() << std::endl;
+    
+    // std::cout << test71_out_of_memory() << std::endl;
+    
     //MTL_TESTS::test_170_fresnel_blend();
     //MTL_TESTS::test_159_proc_dirt2();
     //LGHT_TESTS::test_223_rotated_area_light();
