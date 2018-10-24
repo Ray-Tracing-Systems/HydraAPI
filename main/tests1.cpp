@@ -1669,9 +1669,11 @@ void run_all_api_tests(const int startTestId)
                        &test92_proc_tex_bump2,
                        &dummy_test,
                        &dummy_test,
-                       &dummy_test,
-                       &dummy_test,
+                       &test95_bump,
+                       &test96_hexaplanar,
                        &test97_camera_from_matrices,
+                       &dummy_test,                  // correct implementation of motion blur is not yet finished
+                       &test99_triplanar,
   };
 
 

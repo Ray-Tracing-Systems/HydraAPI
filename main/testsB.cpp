@@ -3461,26 +3461,26 @@ bool test99_triplanar()
   return check_images("test_99", 1, 10);
 }
 
-bool test99_hexaplanar()
+bool test96_hexaplanar()
 {
   initGLIfNeeded();
 
-  hrErrorCallerPlace(L"test_99_hexa");
+  hrErrorCallerPlace(L"test_96");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  hrSceneLibraryOpen(L"tests/test_99_hexa", HR_WRITE_DISCARD);
+  hrSceneLibraryOpen(L"tests/test_96", HR_WRITE_DISCARD);
 
   // textures
   //
-  HRTextureNodeRef texX = hrTexture2DCreateFromFile(L"data/textures/chess_red.bmp");
+  HRTextureNodeRef texX  = hrTexture2DCreateFromFile(L"data/textures/chess_red.bmp");
   HRTextureNodeRef texY  = hrTexture2DCreateFromFile(L"data/textures/yinyang.png");
   HRTextureNodeRef texZ  = hrTexture2DCreateFromFile(L"data/textures/tiles2.png");
   HRTextureNodeRef texX2 = hrTexture2DCreateFromFile(L"data/textures/chess_red_green_blue.bmp");
-  HRTextureNodeRef texY2  = hrTexture2DCreateFromFile(L"data/textures/MapleLeaf.TGA");
-  HRTextureNodeRef texZ2  = hrTexture2DCreateFromFile(L"data/textures/ornament.jpg");
+  HRTextureNodeRef texY2 = hrTexture2DCreateFromFile(L"data/textures/MapleLeaf.TGA");
+  HRTextureNodeRef texZ2 = hrTexture2DCreateFromFile(L"data/textures/ornament.jpg");
 
   HRTextureNodeRef texProc1 = hrTextureCreateAdvanced(L"proc", L"hexaplanar");
 
@@ -3774,31 +3774,31 @@ bool test99_hexaplanar()
       break;
   }
 
-  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_99_hex/z_out.png");
+  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_96/z_out.png");
 
-  return check_images("test_99_hex", 1, 10);
+  return check_images("test_96", 1, 30);
 }
 
-bool test99_bump()
+bool test95_bump()
 {
   initGLIfNeeded();
 
-  hrErrorCallerPlace(L"test_99_bump");
+  hrErrorCallerPlace(L"test_95");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  hrSceneLibraryOpen(L"tests/test_99_bump", HR_WRITE_DISCARD);
+  hrSceneLibraryOpen(L"tests/test_95", HR_WRITE_DISCARD);
 
   // textures
   //
-  HRTextureNodeRef texX = hrTexture2DCreateFromFile(L"data/textures/chess_red.bmp");
+  HRTextureNodeRef texX  = hrTexture2DCreateFromFile(L"data/textures/chess_red.bmp");
   HRTextureNodeRef texY  = hrTexture2DCreateFromFile(L"data/textures/yinyang.png");
   HRTextureNodeRef texZ  = hrTexture2DCreateFromFile(L"data/textures/tiles2.png");
   HRTextureNodeRef texX2 = hrTexture2DCreateFromFile(L"data/textures/chess_red_green_blue.bmp");
-  HRTextureNodeRef texY2  = hrTexture2DCreateFromFile(L"data/textures/MapleLeaf.TGA");
-  HRTextureNodeRef texZ2  = hrTexture2DCreateFromFile(L"data/textures/ornament.jpg");
+  HRTextureNodeRef texY2 = hrTexture2DCreateFromFile(L"data/textures/MapleLeaf.TGA");
+  HRTextureNodeRef texZ2 = hrTexture2DCreateFromFile(L"data/textures/ornament.jpg");
 
   HRTextureNodeRef texProc1 = hrTextureCreateAdvanced(L"proc", L"hexaplanar");
   HRTextureNodeRef texProc2 = hrTextureCreateAdvanced(L"proc", L"hexaplanar_bump");
@@ -4021,8 +4021,7 @@ bool test99_bump()
   HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1
   hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
   hrRenderLogDir(renderRef, L"/tmp/hydra_logs", true);
-
-
+  
   const int w = 1024;
   const int h = 1024;
 
@@ -4033,17 +4032,15 @@ bool test99_bump()
     node.append_child(L"width").text()  = w;
     node.append_child(L"height").text() = h;
 
-    node.append_child(L"method_primary").text() = L"pathtracing";
+    node.append_child(L"method_primary").text()   = L"pathtracing";
     node.append_child(L"method_secondary").text() = L"pathtracing";
-    node.append_child(L"method_tertiary").text() = L"pathtracing";
-    node.append_child(L"method_caustic").text() = L"pathtracing";
-    node.append_child(L"shadows").text() = L"1";
+    node.append_child(L"method_tertiary").text()  = L"pathtracing";
+    node.append_child(L"method_caustic").text()   = L"pathtracing";
+    node.append_child(L"shadows").text()          = L"1";
 
-    node.append_child(L"trace_depth").text() = L"4";
+    node.append_child(L"trace_depth").text()      = L"4";
     node.append_child(L"diff_trace_depth").text() = L"4";
-    node.append_child(L"pt_error").text() = L"2.0";
-    node.append_child(L"minRaysPerPixel").text() = L"256";
-    node.append_child(L"maxRaysPerPixel").text() = L"512";
+    node.append_child(L"maxRaysPerPixel").text()  = 2048;
   }
   hrRenderClose(renderRef);
 
@@ -4113,7 +4110,7 @@ bool test99_bump()
       break;
   }
 
-  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_99_bump/z_out.png");
+  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_95/z_out.png");
 
-  return check_images("test_99_bump", 1, 10);
+  return check_images("test_95", 1, 40);
 }
