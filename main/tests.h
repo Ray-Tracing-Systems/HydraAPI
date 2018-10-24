@@ -126,20 +126,20 @@ bool test27_many_textures_big_data_from_mem();
 bool test28_compute_normals();
 bool test29_many_textures_and_meshes();
 bool test30_many_textures_and_meshes();
-bool test31_procedural_texture_LDR(); //doesn't work because opengl1 render doesn't support utilityPrepass // #TODO: change to realistic render!!!
-bool test32_procedural_texture_HDR(); //doesn't work because opengl1 render doesn't support utilityPrepass // #TODO: change to realistic render!!!
+bool test31_procedural_texture_LDR();
+bool test32_procedural_texture_HDR();
 bool test33_update_from_file();
 bool test34_delayed_textures_does_not_exists();
 bool test35_cornell_with_light();
 bool test36_update_from_memory();
 bool test37_cornell_with_light_different_image_layers();
 
-bool test38_licence_plate();          // not used, to change
-bool test39_mesh_from_vsgf();         // not used (Why ???)
+bool test38_licence_plate();          // not used, to change, #TODO: get back MLT test here
+bool test39_mmlt_or_ibpt();
 bool test40_several_changes();
 
 bool test41_load_library_basic();
-bool test42_load_library_basic();    // not used (Why ???)
+bool test42_load_library_basic();     // not used (Why ???),  #TODO: get back scene load tests here
 
 bool test43_test_direct_light();
 bool test44_four_lights();

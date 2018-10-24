@@ -139,14 +139,14 @@ int main(int argc, const char** argv)
     //run_all_ipp_tests();
 
     //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
-    //std::cout << test39_mesh_from_vsgf() << std::endl;
+    //std::cout << test39_mmlt_or_ibpt() << std::endl;
     //std::cout << test40_several_changes() << std::endl;
     
-    std::cout << test32_procedural_texture_HDR() << std::endl;
+    //std::cout << test63_cornell_with_caustic_from_torus() << std::endl;
     //std::cout << "g_MSE = " << g_MSEOutput << std::endl;
     
     //MTL_TESTS::test_170_fresnel_blend();
-    //MTL_TESTS::test_159_proc_dirt2();
+    MTL_TESTS::test_159_proc_dirt2();
     //LGHT_TESTS::test_223_rotated_area_light();
     
     //PP_TESTS::test305_fbi_from_render();

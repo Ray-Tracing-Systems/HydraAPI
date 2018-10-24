@@ -1,0 +1,46 @@
+light_test_200	PASSED!	
+light_test_201	PASSED!	
+light_test_202	FAILED! :-: MSE = 176.803207 // dark edges
+light_test_203	FAILED! :-: MSE = 74.017395  // dark edges
+light_test_204	FAILED! :-: MSE = 65.651634  // dark edges
+light_test_205	FAILED! :-: MSE = 154.357361 // dark edges 
+light_test_206	PASSED!	
+light_test_207	PASSED!	
+light_test_208	PASSED!	
+light_test_209	FAILED! :-: MSE = 50.792156   // sky portal
+light_test_210	FAILED! :-: MSE = 4838.277832 // sky portal
+light_test_211	FAILED! :-: MSE = 75.866295   // dark edges
+light_test_212	PASSED!	
+light_test_213	PASSED!	
+light_test_214	PASSED!	
+light_test_215	PASSED!	
+light_test_216	PASSED!	
+light_test_217	PASSED!	
+light_test_218	PASSED!	
+light_test_219	PASSED!	
+light_test_220	PASSED!	
+light_test_221	PASSED!	
+light_test_222	PASSED!	
+light_test_223	PASSED!	
+light_test_224	FAILED! :-: MSE = 40.628155 // error is ok, image is ok, dark IBPT glossy!!!!
+light_test_225	PASSED!	
+light_test_226	PASSED!	
+light_test_227	PASSED!	
+light_test_228	PASSED!	
+light_test_229	PASSED!	
+light_test_230	PASSED!	
+light_test_231	PASSED!	
+light_test_232	PASSED!	
+light_test_233	PASSED!	
+light_test_234	PASSED!	
+light_test_235	FAILED! :-: MSE = 0.000000 // not implemented
+light_test_236	PASSED!	
+light_test_237	PASSED!	
+light_test_238	PASSED!	
+light_test_239	PASSED!	
+light_test_240	FAILED! :-: MSE = 42.583523 // error is ok, image is ok
+light_test_241	FAILED! :-: MSE = 42.204140 // error is ok, image is ok
+light_test_242	PASSED!	
+light_test_243	PASSED!	
+light_test_244	PASSED!	
+light_test_245	PASSED!	

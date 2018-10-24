@@ -2797,9 +2797,8 @@ bool test63_cornell_with_caustic_from_torus()
     std::wcout << L"device id = " << pList->id << L", name = " << pList->name << L", driver = " << pList->driver << std::endl;
     pList = pList->next;
   }
-
-  hrRenderEnableDevice(renderRef, 1, true);
-  //hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
+  
+  hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true); // CURR_RENDER_DEVICE
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -2807,22 +2806,20 @@ bool test63_cornell_with_caustic_from_torus()
   {
     pugi::xml_node node = hrRenderParamNode(renderRef);
 
-    node.append_child(L"width").text() = L"1024";
-    node.append_child(L"height").text() = L"768";
+    node.append_child(L"width").text()  = 1024;
+    node.append_child(L"height").text() = 1024;
 
     node.append_child(L"method_primary").text()   = L"pathtracing";
-    node.append_child(L"method_secondary").text() = L"pathtracing";
-    node.append_child(L"method_tertiary").text()  = L"pathtracing";
-    node.append_child(L"method_caustic").text()   = L"pathtracing";
-    node.append_child(L"shadows").text() = L"1";
-
-    node.append_child(L"trace_depth").text()      = L"10";
-    node.append_child(L"diff_trace_depth").text() = L"3";
-
-    node.append_child(L"pt_error").text()        = L"2";
-    node.append_child(L"minRaysPerPixel").text() = L"256";
-    node.append_child(L"maxRaysPerPixel").text() = L"1024";
-
+    node.append_child(L"method_secondary").text() = L"mmlt";
+    node.append_child(L"shadows").text()          = L"1";
+  
+    node.append_child(L"mmlt_burn_iters").text()     = 1024;    // [1024, 2048, 4096, 8192, 16384, 65536]
+    node.append_child(L"mmlt_sds_fixed_prob").text() = 0.75;    // [0, 0.25, 0.5, 0,75, 0 85, 0.9, 0.95 ]
+    node.append_child(L"mmlt_threads").text()        = 262144;  // [524288, 262144, 131072(?), 65536, 16384]
+    
+    node.append_child(L"trace_depth").text()      = 8;
+    node.append_child(L"diff_trace_depth").text() = 3;
+    node.append_child(L"maxRaysPerPixel").text()  = 4096;
   }
   hrRenderClose(renderRef);
 
@@ -2869,8 +2866,8 @@ bool test63_cornell_with_caustic_from_torus()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
+  glViewport(0, 0, 1024, 1024);
+  std::vector<int32_t> image(1024 * 1024);
 
   while (true)
   {
@@ -2880,10 +2877,10 @@ bool test63_cornell_with_caustic_from_torus()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
+      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 1024, &image[0]);
 
       glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+      glDrawPixels(1024, 1024, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
