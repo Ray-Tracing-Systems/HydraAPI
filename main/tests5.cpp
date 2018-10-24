@@ -66,10 +66,10 @@ bool test31_procedural_texture_LDR()
 	int rep3 = 4;
 	int rep4 = 2;
 
-	HRTextureNodeRef testTex1 = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep1), 128, 128);
-	HRTextureNodeRef testTex2 = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep2), 64, 64);
-	HRTextureNodeRef testTex3 = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep3), 32, 32);
-	HRTextureNodeRef testTex4 = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep4), 16, 16);
+	HRTextureNodeRef testTex1 = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep1), 0, 128, 128);
+	HRTextureNodeRef testTex2 = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep2), 0, 64, 64);
+	HRTextureNodeRef testTex3 = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep3), 0, 32, 32);
+	HRTextureNodeRef testTex4 = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep4), 0, 16, 16);
 
 	//CreateStripedImageFile("tests_images/test_23/TexFromMemory.png", colors, 4, 128, 128);
 
@@ -180,6 +180,13 @@ bool test31_procedural_texture_LDR()
   
   HRRenderRef settingsRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 2048);
 
+  //hrRenderOpen(settingsRef, HR_OPEN_EXISTING);
+  //{
+  //  auto node = hrRenderParamNode(settingsRef);
+  //  node.force_child(L"scenePrepass").text() = 1;
+  //}
+  //hrRenderClose(settingsRef);
+
 	// create scene
 	//
 	scnRef = hrSceneCreate(L"my scene");
@@ -229,8 +236,9 @@ bool test31_procedural_texture_LDR()
 	mat4x4_transpose(matrixT4, mRes); // this fucking math library swap rows and columns
 	
   mat4x4_identity(mTranslate);
-  mat4x4_translate(mTranslate, 0.0f, 5.0, 0.0f);
-  mat4x4_transpose(mTranslate, mRes3);  // this fucking math library swap rows and columns
+  mat4x4_identity(mRes3);
+  mat4x4_translate(mTranslate, 0.0f, 5.0, -5.0f);
+  mat4x4_transpose(mRes3, mTranslate);  // this fucking math library swap rows and columns
 
 	// draw scene
 	//
@@ -245,7 +253,7 @@ bool test31_procedural_texture_LDR()
 	}
 	hrSceneClose(scnRef);
 
-	hrFlush(scnRef, settingsRef);
+	hrFlush(scnRef, settingsRef, camRef);
   
   glViewport(0, 0, 512, 512);
   std::vector<int32_t> image(512 * 512);
@@ -288,7 +296,6 @@ bool test32_procedural_texture_HDR()
 
 	HRCameraRef    camRef;
 	HRSceneInstRef scnRef;
-	HRRenderRef    settingsRef;
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -311,10 +318,10 @@ bool test32_procedural_texture_HDR()
 	int rep3 = 4;
 	int rep4 = 2;
 
-	HRTextureNodeRef testTex1 = hrTexture2DCreateFromProcHDR(&procTexCheckerHDR, (void*)(&rep1), 128, 128);
-	HRTextureNodeRef testTex2 = hrTexture2DCreateFromProcHDR(&procTexCheckerHDR, (void*)(&rep2), 64, 64);
-	HRTextureNodeRef testTex3 = hrTexture2DCreateFromProcHDR(&procTexCheckerHDR, (void*)(&rep3), 32, 32);
-	HRTextureNodeRef testTex4 = hrTexture2DCreateFromProcHDR(&procTexCheckerHDR, (void*)(&rep4), 16, 16);
+	HRTextureNodeRef testTex1 = hrTexture2DCreateFromProcHDR(&procTexCheckerHDR, (void*)(&rep1), 0, 128, 128);
+	HRTextureNodeRef testTex2 = hrTexture2DCreateFromProcHDR(&procTexCheckerHDR, (void*)(&rep2), 0, 64, 64);
+	HRTextureNodeRef testTex3 = hrTexture2DCreateFromProcHDR(&procTexCheckerHDR, (void*)(&rep3), 0, 32, 32);
+	HRTextureNodeRef testTex4 = hrTexture2DCreateFromProcHDR(&procTexCheckerHDR, (void*)(&rep4), 0, 16, 16);
 
 	//CreateStripedImageFile("tests_images/test_23/TexFromMemory.png", colors, 4, 128, 128);
 
@@ -393,22 +400,56 @@ bool test32_procedural_texture_HDR()
 		camNode.append_child(L"look_at").text().set(L"0 0 -1");
 	}
 	hrCameraClose(camRef);
-
-	// set up render settings
-	//
-	settingsRef = hrRenderCreate(L"opengl1");
-
-	hrRenderOpen(settingsRef, HR_WRITE_DISCARD);
-	{
-		pugi::xml_node node = hrRenderParamNode(settingsRef);
-
-		wchar_t temp[256];
-		swprintf(temp, 256, L"%d", 1024);
-		node.append_child(L"width").text().set(temp);
-		swprintf(temp, 256, L"%d", 768);
-		node.append_child(L"height").text().set(temp);
-	}
-	hrRenderClose(settingsRef);
+  
+  
+  HRLightRef rectLight = hrLightCreate(L"my_area_light");
+  
+  hrLightOpen(rectLight, HR_WRITE_DISCARD);
+  {
+    auto lightNode = hrLightParamNode(rectLight);
+    
+    lightNode.attribute(L"type").set_value(L"area");
+    lightNode.attribute(L"shape").set_value(L"rect");
+    lightNode.attribute(L"distribution").set_value(L"diffuse");
+    
+    auto sizeNode = lightNode.append_child(L"size");
+    
+    sizeNode.append_attribute(L"half_length").set_value(1.0f);
+    sizeNode.append_attribute(L"half_width").set_value(1.0f);
+    
+    auto intensityNode = lightNode.append_child(L"intensity");
+    
+    intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"10.0");
+    
+    VERIFY_XML(lightNode);
+  }
+  hrLightClose(rectLight);
+  
+  
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Render settings
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
+  //HRRenderRef settingsRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 2048);
+  //hrRenderOpen(settingsRef, HR_OPEN_EXISTING);
+  //{
+  //  auto node = hrRenderParamNode(settingsRef);
+  //  node.force_child(L"scenePrepass").text() = 1;
+  //}
+  //hrRenderClose(settingsRef);
+  
+  HRRenderRef settingsRef = hrRenderCreate(L"opengl1");
+  
+  hrRenderOpen(settingsRef, HR_WRITE_DISCARD);
+  {
+    pugi::xml_node node = hrRenderParamNode(settingsRef);
+    
+    node.append_child(L"width").text()  = 512;
+    node.append_child(L"height").text() = 512;
+  }
+  hrRenderClose(settingsRef);
+  
 
 	// create scene
 	//
@@ -469,8 +510,36 @@ bool test32_procedural_texture_HDR()
 	}
 	hrSceneClose(scnRef);
 
-	hrFlush(scnRef, settingsRef);
-
+	hrFlush(scnRef, settingsRef, camRef);
+  
+  glViewport(0, 0, 512, 512);
+  std::vector<int32_t> image(512 * 512);
+  
+  while (true)
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    
+    HRRenderUpdateInfo info = hrRenderHaveUpdate(settingsRef);
+    
+    if (info.haveUpdateFB)
+    {
+      hrRenderGetFrameBufferLDR1i(settingsRef, 512, 512, &image[0]);
+      
+      glDisable(GL_TEXTURE_2D);
+      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+      
+      auto pres = std::cout.precision(2);
+      std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
+      std::cout.precision(pres);
+      
+      glfwSwapBuffers(g_window);
+      glfwPollEvents();
+    }
+    
+    if (info.finalUpdate)
+      break;
+  }
+	
 	hrRenderSaveFrameBufferLDR(settingsRef, L"tests_images/test_32/z_out.png");
 
 	return check_images("test_32");

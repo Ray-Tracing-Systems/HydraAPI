@@ -582,8 +582,9 @@ HAPI pugi::xml_node hrTextureBind(HRTextureNodeRef a_pTexNode, pugi::xml_node a_
 }
 
 
-HAPI HRTextureNodeRef  hrTexture2DCreateFromProcLDR(HR_TEXTURE2D_PROC_LDR_CALLBACK a_proc, void* a_customData,
-                                                    int customDataSize, int w, int h)
+HAPI HRTextureNodeRef  hrTexture2DCreateFromProcLDR(HR_TEXTURE2D_PROC_LDR_CALLBACK a_proc,
+                                                    void* a_customData, int customDataSize,
+                                                    int w, int h)
 {
 
   if (a_proc == nullptr || (a_customData == nullptr && customDataSize > 0))
