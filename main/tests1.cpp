@@ -1605,15 +1605,15 @@ void run_all_api_tests(const int startTestId)
                        &test28_compute_normals,
                        &test29_many_textures_and_meshes,
                        &test30_many_textures_and_meshes,
-                       &dummy_test, //&test31_procedural_texture_LDR,
-                       &dummy_test, //&test32_procedural_texture_HDR,
+                       &test31_procedural_texture_LDR,
+                       &test32_procedural_texture_HDR,
 											 &test33_update_from_file,
                        &test34_delayed_textures_does_not_exists,
                        &test35_cornell_with_light,
 											 &test36_update_from_memory,
                        &test37_cornell_with_light_different_image_layers,
                        &dummy_test,
-                       &dummy_test, // &test39_mesh_from_vsgf,
+                       &test39_mmlt_or_ibpt,
                        &test40_several_changes,
                        &test41_load_library_basic,
                        &dummy_test,
@@ -1669,9 +1669,11 @@ void run_all_api_tests(const int startTestId)
                        &test92_proc_tex_bump2,
                        &dummy_test,
                        &dummy_test,
-                       &dummy_test,
-                       &dummy_test,
+                       &test95_bump,
+                       &test96_hexaplanar,
                        &test97_camera_from_matrices,
+                       &dummy_test,                  // correct implementation of motion blur is not yet finished
+                       &test99_triplanar,
   };
 
 

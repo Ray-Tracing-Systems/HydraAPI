@@ -353,28 +353,30 @@ HAPI HRTextureNodeRef  hrArray1DCreateFromMemory(const float* data, int a_size);
 \param pScnData     - scene data object ptr.
 \param a_proc       - a callback that must be abble to render procedural texture in any power of 2 resolution
 \param a_customData - a pointer to custom data that will be passed to callback.
-\param w - texture width; optional. should be set as a hint for renderer if you know desired texture resolution.
-\param h - texture height; optional. should be set as a hint for renderer if you know desired texture resolution.
+\param w            - texture width; optional.  should be set as a hint for renderer if you know desired texture resolution.
+\param h            - texture height; optional. should be set as a hint for renderer if you know desired texture resolution.
 
  See description of HR_TEXTURE2D_PROC_HDR_CALLBACK for more details.
-
+ If you don't know desired resolution please set "-1" for both width and height!
+ 
 */
-HAPI HRTextureNodeRef  hrTexture2DCreateFromProcHDR(HR_TEXTURE2D_PROC_HDR_CALLBACK a_proc, void* a_customData,
-                                                    int customDataSize, int w = -1, int h = -1);
+HAPI HRTextureNodeRef  hrTexture2DCreateFromProcHDR(HR_TEXTURE2D_PROC_HDR_CALLBACK a_proc,
+                                                    void* a_customData, int customDataSize, int w = -1, int h = -1);
 
 /**
 \brief create procedural 2D texture with callback.
 \param pScnData     - scene data object ptr.
 \param a_proc       - a callback that must be abble to render procedural texture in any power of 2 resolution
 \param a_customData - a pointer to custom data that will be passed to callback.
-\param w - texture width; optional. should be set as a hint for renderer if you know desired texture resolution.
-\param h - texture height; optional. should be set as a hint for renderer if you know desired texture resolution.
+\param w            - texture width; optional.  should be set as a hint for renderer if you know desired texture resolution.
+\param h            - texture height; optional. should be set as a hint for renderer if you know desired texture resolution.
 
 See description of HR_TEXTURE2D_PROC_LDR_CALLBACK for more details.
+If you don't know desired resolution please set "-1" for both width and height!
 
 */
-HAPI HRTextureNodeRef  hrTexture2DCreateFromProcLDR(HR_TEXTURE2D_PROC_LDR_CALLBACK a_proc, void* a_customData,
-                                                    int customDataSize, int w = -1, int h = -1);
+HAPI HRTextureNodeRef  hrTexture2DCreateFromProcLDR(HR_TEXTURE2D_PROC_LDR_CALLBACK a_proc,
+                                                    void* a_customData, int customDataSize, int w = -1, int h = -1);
 
 /**
 \brief Update 2D texture from callback

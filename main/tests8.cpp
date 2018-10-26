@@ -1301,38 +1301,6 @@ bool test94_check_xml_fail_camera()
 	return false;
 }
 
-bool test95_check_xml_fail_render()
-{
-	HRRenderRef renderRef = hrRenderCreate(L"HydraModern");
-
-	hrRenderOpen(renderRef, HR_WRITE_DISCARD);
-	{
-		auto node = hrRenderParamNode(renderRef);
-
-		node.append_child(L"width").text()  = 1024;
-		node.append_child(L"height").text() = 768;
-
-		node.append_child(L"method_primary").text()   = L"pathtracing";
-		node.append_child(L"method_secondary").text() = L"pathtracing";
-		node.append_child(L"method_tertiary").text()  = L"pathtracing";
-		node.append_child(L"method_caustic").text()   = L"none";
-		node.append_child(L"shadows").text()          = L"1";
-
-		//node.append_child(L"trace_depth").text() = L"5";						// error introduced here
-		//node.append_child(L"diff_trace_depth").text() = L"3";				// error introduced here
-
-		node.append_child(L"pt_error").text()        = L"2";
-		node.append_child(L"minRaysPerPixel").text() = 1024;
-		node.append_child(L"maxRaysPerPixel").text() = 1024;
-
-		VERIFY_XML(node);
-	}
-	hrRenderClose(renderRef);
-
-	return false;
-}
-
-
 bool test_126_debug_bump()
 {
   initGLIfNeeded();

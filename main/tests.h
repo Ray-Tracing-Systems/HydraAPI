@@ -126,20 +126,20 @@ bool test27_many_textures_big_data_from_mem();
 bool test28_compute_normals();
 bool test29_many_textures_and_meshes();
 bool test30_many_textures_and_meshes();
-bool test31_procedural_texture_LDR(); //doesn't work because opengl1 render doesn't support utilityPrepass
-bool test32_procedural_texture_HDR(); //doesn't work because opengl1 render doesn't support utilityPrepass
+bool test31_procedural_texture_LDR();
+bool test32_procedural_texture_HDR();
 bool test33_update_from_file();
 bool test34_delayed_textures_does_not_exists();
 bool test35_cornell_with_light();
 bool test36_update_from_memory();
 bool test37_cornell_with_light_different_image_layers();
-//bool test38_test_for_mlt();
-bool test38_licence_plate();
-bool test39_mesh_from_vsgf();
+
+bool test38_licence_plate();          // not used, to change, #TODO: get back MLT test here
+bool test39_mmlt_or_ibpt();
 bool test40_several_changes();
 
 bool test41_load_library_basic();
-bool test42_load_library_basic(); 
+bool test42_load_library_basic();     // not used (Why ???),  #TODO: get back scene load tests here
 
 bool test43_test_direct_light();
 bool test44_four_lights();
@@ -170,11 +170,11 @@ bool test65_several_changes_light_rect();
 bool test66_fast_render_no_final_update();
 bool test67_fast_empty_scene();
 bool test68_scene_library_file_info();
-bool test69_pause_and_resume();                      //#TODO: implement image save an load;
+bool test69_pause_and_resume();
 bool test70_area_lights16();
 bool test71_out_of_memory();
-bool test72_load_library_single_teapot_with_opacity();
-bool test73_big_resolution();
+bool test72_load_library_single_teapot_with_opacity(); // not used, to change it for something useful
+bool test73_big_resolution();                          // not used in automatic mode due to large image size
 bool test74_frame_buffer_line();
 bool test75_repeated_render();
 bool test76_empty_mesh();
@@ -197,24 +197,22 @@ bool test90_proc_tex_normalmap();
 bool test91_proc_tex_bump();
 bool test92_proc_tex_bump2();
 
-bool test93_check_xml_fail_materials();
-bool test94_check_xml_fail_camera();
-bool test95_check_xml_fail_render();
-bool test96_save_temp_renders();
+bool test93_check_xml_fail_materials();   // not used in automatic mode
+bool test94_check_xml_fail_camera();      // not used in automatic mode
+
+bool test95_bump();
+bool test96_hexaplanar();
 bool test97_camera_from_matrices();
-
-bool test98_motion_blur();
+bool test98_motion_blur();                // not implemented
 bool test99_triplanar();
-bool test99_hexaplanar();
-bool test99_bump();
 
-bool test100_dummy_hydra_exec();
+bool test100_dummy_hydra_exec();          // not used
 
 namespace GEO_TESTS
 {
   bool test_001_mesh_from_memory();
   bool test_002_mesh_from_vsgf();
-  bool test_003_compute_normals(); //bug - normals computation 
+  bool test_003_compute_normals(); // bug - normals computation
   bool test_004_dof();
   bool test_005_instancing();
 }

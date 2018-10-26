@@ -1,0 +1,97 @@
+api_test_01	PASSED!	
+api_test_02	PASSED!	
+api_test_03	PASSED!	
+api_test_04	PASSED!	
+api_test_05	PASSED!	
+api_test_06	PASSED!	
+api_test_07	PASSED!	
+api_test_08	PASSED!	
+api_test_09	PASSED!	
+api_test_10	PASSED!	
+api_test_11	PASSED!	
+api_test_12	PASSED!	
+api_test_13	PASSED!	
+api_test_14	PASSED!	
+api_test_15	PASSED!	
+api_test_16	PASSED!	
+api_test_17	PASSED!	
+api_test_18	PASSED!	
+api_test_19	PASSED!	
+api_test_20	PASSED!	
+api_test_21	PASSED!	
+api_test_22	PASSED!	
+api_test_23	PASSED!	
+api_test_24	PASSED!	
+api_test_25	PASSED!	
+api_test_26	PASSED!	
+api_test_27	PASSED!	
+api_test_28	PASSED!	
+api_test_29	PASSED!	
+api_test_30	PASSED!	
+api_test_31	SKIPPED! // fixed
+api_test_32	SKIPPED! // fixed
+api_test_33	PASSED!	
+api_test_34	PASSED!	
+api_test_35	PASSED!	
+api_test_36	PASSED!	
+api_test_37	PASSED!	
+api_test_38	SKIPPED!
+api_test_39	SKIPPED!
+api_test_40	PASSED!	
+api_test_41	PASSED!	
+api_test_42	SKIPPED!
+api_test_43	PASSED!	
+api_test_44	PASSED!	
+api_test_45	PASSED!	
+api_test_46	PASSED!	
+api_test_47	PASSED!	
+api_test_48	PASSED!	
+api_test_49	FAILED! :-: MSE = 20.299812 // fixed
+api_test_50	PASSED!	
+api_test_51	SKIPPED!
+api_test_52	SKIPPED!
+api_test_53	SKIPPED!
+api_test_54	SKIPPED!
+api_test_55	PASSED!	
+api_test_56	FAILED! :-: MSE = 498.216309 // bug, mesh change, low priority
+api_test_57	PASSED!	
+api_test_58	SKIPPED!
+api_test_59	SKIPPED!
+api_test_60	SKIPPED!
+api_test_61	PASSED!	
+api_test_62	SKIPPED!
+api_test_63	SKIPPED!
+api_test_64	FAILED! :-: MSE = 177.213837 // dark edges, need to figure out ... 
+api_test_65	PASSED!	
+api_test_66	PASSED!	
+api_test_67	PASSED!	
+api_test_68	PASSED!	
+api_test_69	PASSED!	
+api_test_70	PASSED!	
+api_test_71	PASSED!	
+api_test_72	SKIPPED!
+api_test_73	SKIPPED!
+api_test_74	PASSED!	
+api_test_75	FAILED! :-: MSE = 48.327816 // error is ok, image is ok, fixed
+api_test_76	PASSED!	
+api_test_77	PASSED!	
+api_test_78	PASSED!	
+api_test_79	PASSED!	
+api_test_80	FAILED! :-: MSE = 2641.152344 // ok, lt render black lights in this release
+api_test_81	FAILED! :-: MSE = 123.392746  // custom mesh attributes bu, low priority
+api_test_82	PASSED!	
+api_test_83	PASSED!	
+api_test_84	PASSED!	
+api_test_85	PASSED!	
+api_test_86	PASSED!	
+api_test_87	PASSED!	
+api_test_88	PASSED!	
+api_test_89	PASSED!	
+api_test_90	FAILED! :-: MSE = 37.851048 // images are ok, error is ok
+api_test_91	FAILED! :-: MSE = 75.045883 // different result for proc texture on NV and AMD; images are ok;
+api_test_92	FAILED! :-: MSE = 75.045883 // inverse normalmap height; now it is ok, need to check this on AMD !!!
+api_test_93	SKIPPED!
+api_test_94	SKIPPED!
+api_test_95	SKIPPED!
+api_test_96	SKIPPED!
+api_test_97	PASSED!	
