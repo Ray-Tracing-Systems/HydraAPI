@@ -1830,6 +1830,10 @@ void run_all_mtl_tests(int a_start)
                        &dummy_test, // test_166_displace_by_noise
                        &test_167_subdiv,
                        &test_168_diffuse_texture_recommended_res2,
+                       &dummy_test,
+                       &test_170_fresnel_blend,
+                       &dummy_test,
+
 	                   };
 
 

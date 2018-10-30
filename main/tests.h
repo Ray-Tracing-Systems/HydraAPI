@@ -299,7 +299,8 @@ namespace MTL_TESTS
   bool test_169_displace_custom_callback();
   bool test_170_fresnel_blend();
   bool test_171_simple_displacement_triplanar();
-
+  bool test_172_glossy_dark_edges_phong();
+  bool test_173_glossy_dark_edges_microfacet();
 }
 
 namespace LGHT_TESTS
