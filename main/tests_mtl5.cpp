@@ -1689,8 +1689,8 @@ bool MTL_TESTS::test_172_glossy_dark_edges_phong()
 bool MTL_TESTS::test_173_glossy_dark_edges_microfacet()
 {
   initGLIfNeeded();
-  hrErrorCallerPlace(L"test_172");
-  hrSceneLibraryOpen(L"tests_f/test_172", HR_WRITE_DISCARD);
+  hrErrorCallerPlace(L"test_173");
+  hrSceneLibraryOpen(L"tests_f/test_173", HR_WRITE_DISCARD);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Materials
@@ -1875,9 +1875,7 @@ bool MTL_TESTS::test_173_glossy_dark_edges_microfacet()
       break;
   }
 
-  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_172/z_out.png");
-
+  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_173/z_out.png");
   //return check_images("test_202", 1, 10);
-
   return false;
 }
