@@ -1821,11 +1821,11 @@ void run_all_mtl_tests(int a_start)
                        &test_159_proc_dirt2,
                        &test_160_proc_dirt3,
 
-                       &test_161_simple_displacement,
+                       &dummy_test, // test_161_simple_displacement, this test is disabled
                        &test_162_shadow_matte_back1,
                        &test_163_diffuse_texture_recommended_res,
 
-                       &test_164_simple_displacement_proctex,
+                       &dummy_test, // test_164_simple_displacement_proctex, this test is disabled
                        &test_165_simple_displacement_mesh,
                        &test_166_displace_by_noise,
                        &test_167_subdiv,

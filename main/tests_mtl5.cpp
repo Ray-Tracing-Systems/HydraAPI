@@ -1681,9 +1681,7 @@ bool MTL_TESTS::test_172_glossy_dark_edges_phong()
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_172/z_out.png");
 
-  //return check_images("test_202", 1, 10);
-
-  return false;
+  return check_images("test_172", 1, 20);
 }
 
 bool MTL_TESTS::test_173_glossy_dark_edges_microfacet()
@@ -1876,6 +1874,5 @@ bool MTL_TESTS::test_173_glossy_dark_edges_microfacet()
   }
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_173/z_out.png");
-  //return check_images("test_202", 1, 10);
-  return false;
+  return check_images("test_173", 1, 20);
 }
