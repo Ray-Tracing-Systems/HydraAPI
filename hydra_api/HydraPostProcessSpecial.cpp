@@ -80,7 +80,7 @@ bool MedianFilter2D::Eval(ArgArray1& argsHDR, ArgArray2& argsLDR, pugi::xml_node
 
   float threshold = settings.attribute(L"threshold").as_float();
 
-  outImagePtr->medianFilter(threshold);
+  outImagePtr->medianFilterInPlace(threshold);
 
   return true;
 }
@@ -116,10 +116,13 @@ bool MedianFilter2DN::Eval(ArgArray1& argsHDR, ArgArray2& argsLDR, pugi::xml_nod
     return false;
   }
 
+  if (inImagePtr != outImagePtr)
+    (*outImagePtr) = (*inImagePtr);
+
   float threshold = settings.attribute(L"threshold").as_float();
   int pixelsNum   = settings.attribute(L"pixels_num").as_float();
 
-  //inImagePtr->medianFilterMostlyBadPixels(threshold, pixelsNum, (*outImagePtr)); 
+  outImagePtr->medianFilterInPlace(threshold, 1);
 
   return true;
 }

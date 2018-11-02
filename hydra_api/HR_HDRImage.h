@@ -52,7 +52,8 @@ namespace HydraRender
     void convertToLDR(float a_gamma, std::vector<unsigned int>& outData);
     void convertFromLDR(float a_gamma, const unsigned int* inData, int a_size);
 
-    void medianFilter(float a_thresholdValue);
+    void medianFilterInPlace(float a_thresholdValue);  // #NOTE: median filter works better when it is in place!!!
+    void medianFilterInPlace(float a_thresholdValue, int a_windowSize);
     void gaussBlur(int BLUR_RADIUS2, float a_sigma);
 
   private:

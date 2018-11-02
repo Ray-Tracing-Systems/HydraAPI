@@ -151,9 +151,10 @@ int main(int argc, const char** argv)
 
 
     std::cout << PP_TESTS::test301_resample()        << std::endl;
-    std::cout << PP_TESTS::test303_median_in_place() << std::endl;
+    std::cout << PP_TESTS::test302_median()          << std::endl;
     std::cout << PP_TESTS::test303_median_in_place() << std::endl;
     std::cout << PP_TESTS::test320_blur()            << std::endl;
+    std::cout << PP_TESTS::test321_median_mostly_bad_pixels() << std::endl;
 
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
     //window_main_free_look(L"tests_f/test_241", L"opengl1Debug");

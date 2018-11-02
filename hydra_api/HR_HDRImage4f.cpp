@@ -38,7 +38,7 @@ namespace HydraRender
   }
 
 
-  HDRImage4f::~HDRImage4f() = default;
+  HDRImage4f::~HDRImage4f() { }
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -286,7 +286,7 @@ namespace HydraRender
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  void HDRImage4f::medianFilter(float a_thresholdValue)
+  void HDRImage4f::medianFilterInPlace(float a_thresholdValue)
   {
     cvex::set_ftz();
 
@@ -389,6 +389,77 @@ namespace HydraRender
 
   }
 
+
+  void HDRImage4f::medianFilterInPlace(float a_thresholdValue, int a_windowSize)
+  {
+    cvex::set_ftz();
+
+    constexpr int maxWindowsSize = 7;
+    constexpr int maxWindowWidth = 2*maxWindowsSize + 1;
+
+    if (a_windowSize > maxWindowsSize)
+      a_windowSize = maxWindowsSize;
+
+    const int windowWidth = 2 * a_windowSize + 1;
+
+    const int w = width();
+    const int h = height();
+
+    // const float ts2 = a_thresholdValue*a_thresholdValue;
+    // const vfloat4 invEight = cvex::splat(1.0f / 8.0f);
+    // const vfloat4 threshold = { ts2, ts2, ts2, 100000.0f };
+
+    float* pData = data();
+
+    float red       [maxWindowWidth*maxWindowWidth];
+    float green     [maxWindowWidth*maxWindowWidth];
+    float blue      [maxWindowWidth*maxWindowWidth];
+
+    for (int j = 0; j < h; ++j)
+    {
+      const int minY = std::max(j - a_windowSize, 0);
+      const int maxY = std::min(j + a_windowSize, h - 1);
+
+      for (int i = 0; i < w; ++i)
+      {
+        const int minX = std::max(i - a_windowSize, 0);
+        const int maxX = std::min(i + a_windowSize, w - 1);
+
+        const vfloat4 curr = cvex::load(pData + (j*w + i)*4);
+
+        ///////////////////////////////////////////////////////////////////////////////////////
+        for (int y = minY; y <= maxY; y++)
+        {
+          for (int x = minX; x <= maxX; x++)
+          {
+            const vfloat4 p_xy = cvex::load(pData + (y*w + x)*4);
+
+            const int offset = (y - minY)*windowWidth + (x - minX);
+
+            cvex::store_s(red   + offset, p_xy);
+            cvex::store_s(green + offset, cvex::splat_1(p_xy));
+            cvex::store_s(blue  + offset, cvex::splat_2(p_xy));
+          }
+        }
+        ///////////////////////////////////////////////////////////////////////////////////////
+
+        std::sort(red,   red   + windowWidth*windowWidth);
+        std::sort(green, green + windowWidth*windowWidth);
+        std::sort(blue,  blue  + windowWidth*windowWidth);
+
+        const int medId = (windowWidth*windowWidth) / 2 + 1;
+
+        const vfloat4 filtered = { red[medId], green[medId], blue[medId], 1.0f };
+        //const vfloat4 diff     = (curr - filtered);
+        //const float diffVal    = sqrtf(cvex::dot3f(diff, diff));
+
+        cvex::store(pData + (j*w + i) * 4, filtered);
+
+      } // for (int i = 0; i < w; ++i)
+
+    } //  for (int j = 0; j < h; ++j)
+
+  }
 
 
   std::vector<float> createGaussKernelWeights1D_HDRImage(int size, float a_sigma)
