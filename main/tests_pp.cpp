@@ -63,7 +63,7 @@ bool PP_TESTS::test302_median()
   pugi::xml_document docSettings;
   pugi::xml_node settings = docSettings.append_child(L"settings");
 
-  settings.append_attribute(L"threshold") = 0.02f; // for LDR images is like 0.02*255 = 5 bit differense; for HDR is just 0.02
+  settings.append_attribute(L"threshold") = 0.2f; // for LDR images is like 0.02*255 = 5 bit differense; for HDR is just 0.02
 
   hrFilterApply(L"median",    settings, HRRenderRef(),
                 L"in_color",  image1,            
@@ -81,7 +81,7 @@ bool PP_TESTS::test303_median_in_place()
   pugi::xml_document docSettings;
   pugi::xml_node settings = docSettings.append_child(L"settings");
 
-  settings.append_attribute(L"threshold") = 0.02f; // for LDR images is like 0.02*255 = 5 bit difference; for HDR is just 0.02
+  settings.append_attribute(L"threshold") = 0.2f; // for LDR images is like 0.02*255 = 5 bit difference; for HDR is just 0.02
 
   hrFilterApply(L"median",    settings, HRRenderRef(), //
                 L"in_color",  image1,                  // image1; special case (!!!); median filter can work in place; Most filers can not!

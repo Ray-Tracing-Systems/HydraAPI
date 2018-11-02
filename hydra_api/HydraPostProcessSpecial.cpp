@@ -86,7 +86,7 @@ bool MedianFilter2D::Eval(ArgArray1& argsHDR, ArgArray2& argsLDR, pugi::xml_node
   if (inImagePtr != outImagePtr)
     (*outImagePtr) = (*inImagePtr); // #TODO: implement this more effitiently! Don't make a copy!
 
-  outImagePtr->medianFilterInPlace(100.0f*threshold, 0.0f); // last parameter is some for MLT. 0 tells that we don't have to change threshold depend on average brightness
+  outImagePtr->medianFilterInPlace(threshold, 0.0f); // last parameter is some for MLT. 0 tells that we don't have to change threshold depend on average brightness
 
   return true;
 }

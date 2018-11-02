@@ -294,15 +294,9 @@ namespace HydraRender
     const int w = width();
     const int h = height();
 
-    const float ts2        = a_thresholdValue*a_thresholdValue;
-    const vfloat4 invEight = cvex::splat(1.0f / 8.0f);
-    const vfloat4 eps      = cvex::splat(1e-5f);
-
-    const vfloat4 mthreshold    = {ts2,      ts2,       ts2,       1000.0f };
-    const vfloat4 mthresholdMin = {ts2*0.01f,ts2*0.01f, ts2*0.01f, 1000.0f};
-    const vfloat4 mthresholdMax = {ts2*4.0f, ts2*4.0f,  ts2*4.0f,  1000.0f};
-    const vfloat4 mAvgB         = cvex::splat(avgB);
-    const vfloat4 mAvgBInv      = 1.0f/mAvgB;
+    const float ts2         = a_thresholdValue*a_thresholdValue;
+    const vfloat4 invEight  = cvex::splat(1.0f / 8.0f);
+    const vfloat4 threshold = {ts2, ts2, ts2, 100000.0f};
 
     float* pData = data();
 
@@ -342,23 +336,7 @@ namespace HydraRender
         const vfloat4 x6 = cvex::load(pData + offsetY2 + offsetX0);
         const vfloat4 x7 = cvex::load(pData + offsetY2 + offsetX2);
 
-        const vfloat4 sumColorOthers = (x0 + x1 + x2 + x3) + (x4 + x5 + x6 + x7);
-        const vfloat4 avgColorOthers = invEight*sumColorOthers;
-
-        vfloat4 threshold = mthreshold;
-
-        if (avgB > 1e-6f) // change threshold value, tune it for MLT
-        {
-          const vfloat4 avgColorLenSquare = cvex::dot3v(avgColorOthers, avgColorOthers); //
-          if (cvex::cmpgt_all_x(avgColorLenSquare, eps))                                 // if color leng square > epsilon
-          {
-            const vfloat4 avgColorSquare = avgColorOthers*avgColorOthers;
-            threshold = threshold*(avgColorSquare*mAvgBInv);
-            threshold = cvex::min(mthresholdMax, cvex::max(mthresholdMin, threshold));
-          }
-        }
-        else
-          threshold = mthresholdMin;
+        const vfloat4 avgColorOthers = invEight*((x0 + x1 + x2 + x3) + (x4 + x5 + x6 + x7));
 
         const vfloat4 diff0 = xm - x0;
         const vfloat4 diff1 = xm - x1;
@@ -386,18 +364,13 @@ namespace HydraRender
 
         if (numFailed >= 3)
         {
-          const vfloat4 x4 = cvex::load(pData + offsetY0 + offsetX0);
-          const vfloat4 x5 = cvex::load(pData + offsetY0 + offsetX2);
-          const vfloat4 x6 = cvex::load(pData + offsetY2 + offsetX0);
-          const vfloat4 x7 = cvex::load(pData + offsetY2 + offsetX2);
-
           const vfloat4 xi[9] = { xm, x0, x1, x2, x3, x4, x5, x6, x7 };
 
           float red  [9];
           float green[9];
           float blue [9];
 
-          #pragma GCC ivdep
+          #pragma gcc ivdep
           for (int i = 0; i < 9; i++)
           {
             const vfloat4 xc = xi[i];
@@ -407,13 +380,13 @@ namespace HydraRender
             cvex::store_s(blue  + i, cvex::splat_2(xc));
           }
 
-          std::sort(red,   red   + 9);
+          std::sort(red, red + 9);
           std::sort(green, green + 9);
-          std::sort(blue,  blue  + 9);
+          std::sort(blue, blue + 9);
 
-          const vfloat4 res = {red[4], green[4], blue[4], 0.0f};
-
-          cvex::store(pData + offsetY1 + offsetX1, res);
+          pData[offsetY1 + offsetX1 + 0] = red  [4];
+          pData[offsetY1 + offsetX1 + 1] = green[4];
+          pData[offsetY1 + offsetX1 + 2] = blue [4];
         }
 
       }
