@@ -287,18 +287,22 @@ namespace HydraRender
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-  void HDRImage4f::medianFilterInPlace(float a_thresholdValue, float avgB)
+  void HDRImage4f::medianFilter(float a_thresholdValue, HDRImage4f &a_outImage)
   {
     cvex::set_ftz();
 
     const int w = width();
     const int h = height();
 
+    if(a_outImage.width() != w || a_outImage.height() != h)
+      a_outImage.resize(w,h);
+
     const float ts2         = a_thresholdValue*a_thresholdValue;
     const vfloat4 invEight  = cvex::splat(1.0f / 8.0f);
     const vfloat4 threshold = {ts2, ts2, ts2, 100000.0f};
 
-    float* pData = data();
+    const float* pData = data();
+    float* pDataOut    = a_outImage.data();
 
     for (int j = 0; j < h; ++j)
     {
@@ -331,22 +335,10 @@ namespace HydraRender
         const vfloat4 x2 = cvex::load(pData + offsetY0 + offsetX1);
         const vfloat4 x3 = cvex::load(pData + offsetY2 + offsetX1);
 
-        const vfloat4 x4 = cvex::load(pData + offsetY0 + offsetX0);
-        const vfloat4 x5 = cvex::load(pData + offsetY0 + offsetX2);
-        const vfloat4 x6 = cvex::load(pData + offsetY2 + offsetX0);
-        const vfloat4 x7 = cvex::load(pData + offsetY2 + offsetX2);
-
-        const vfloat4 avgColorOthers = invEight*((x0 + x1 + x2 + x3) + (x4 + x5 + x6 + x7));
-
-        const vfloat4 diff0 = xm - x0;
-        const vfloat4 diff1 = xm - x1;
-        const vfloat4 diff2 = xm - x2;
-        const vfloat4 diff3 = xm - x3;
-
-        const vfloat4 diff0sq = diff0*diff0; // add _mm_and_ps with mask to discard w component ...
-        const vfloat4 diff1sq = diff1*diff1;
-        const vfloat4 diff2sq = diff2*diff2;
-        const vfloat4 diff3sq = diff3*diff3;
+        const vfloat4 diff0sq = (xm - x0)*(xm - x0);
+        const vfloat4 diff1sq = (xm - x1)*(xm - x1);
+        const vfloat4 diff2sq = (xm - x2)*(xm - x2);
+        const vfloat4 diff3sq = (xm - x3)*(xm - x3);
 
         int numFailed = 0;
 
@@ -364,6 +356,11 @@ namespace HydraRender
 
         if (numFailed >= 3)
         {
+          const vfloat4 x4 = cvex::load(pData + offsetY0 + offsetX0);
+          const vfloat4 x5 = cvex::load(pData + offsetY0 + offsetX2);
+          const vfloat4 x6 = cvex::load(pData + offsetY2 + offsetX0);
+          const vfloat4 x7 = cvex::load(pData + offsetY2 + offsetX2);
+
           const vfloat4 xi[9] = { xm, x0, x1, x2, x3, x4, x5, x6, x7 };
 
           float red  [9];
@@ -380,13 +377,13 @@ namespace HydraRender
             cvex::store_s(blue  + i, cvex::splat_2(xc));
           }
 
-          std::sort(red, red + 9);
+          std::sort(red,   red   + 9);
           std::sort(green, green + 9);
-          std::sort(blue, blue + 9);
+          std::sort(blue,  blue  + 9);
 
-          pData[offsetY1 + offsetX1 + 0] = red  [4];
-          pData[offsetY1 + offsetX1 + 1] = green[4];
-          pData[offsetY1 + offsetX1 + 2] = blue [4];
+          pDataOut[offsetY1 + offsetX1 + 0] = red  [4];
+          pDataOut[offsetY1 + offsetX1 + 1] = green[4];
+          pDataOut[offsetY1 + offsetX1 + 2] = blue [4];
         }
 
       }

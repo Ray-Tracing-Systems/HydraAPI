@@ -75,18 +75,9 @@ bool MedianFilter2D::Eval(ArgArray1& argsHDR, ArgArray2& argsLDR, pugi::xml_node
     return false;
   }
 
-  if (outImagePtr->width() != inImagePtr->width() || outImagePtr->height() != inImagePtr->height())
-  {
-    m_err = L"median: input and uputut image size not equal";
-    return false;
-  }
-
   float threshold = settings.attribute(L"threshold").as_float();
 
-  if (inImagePtr != outImagePtr)
-    (*outImagePtr) = (*inImagePtr); // #TODO: implement this more effitiently! Don't make a copy!
-
-  outImagePtr->medianFilterInPlace(threshold, 0.0f); // last parameter is some for MLT. 0 tells that we don't have to change threshold depend on average brightness
+  inImagePtr->medianFilter(threshold, (*outImagePtr)); // last parameter is some for MLT. 0 tells that we don't have to change threshold depend on average brightness
 
   return true;
 }
