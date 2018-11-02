@@ -390,7 +390,7 @@ namespace HydraRender
   }
 
 
-  void HDRImage4f::medianFilterInPlace(float a_thresholdValue, int a_windowSize)
+  void HDRImage4f::medianFilterInPlace(float a_thresholdValue, int a_windowSize, const int a_pixelsNum)
   {
     cvex::set_ftz();
 
@@ -405,11 +405,26 @@ namespace HydraRender
     const int w = width();
     const int h = height();
 
-    // const float ts2 = a_thresholdValue*a_thresholdValue;
-    // const vfloat4 invEight = cvex::splat(1.0f / 8.0f);
-    // const vfloat4 threshold = { ts2, ts2, ts2, 100000.0f };
+    HDRImage4f tempImage = (*this);
 
-    float* pData = data();
+    /////////////////////////////////////////////////////////////////////////////////////
+    struct ALIGN(16) Pixel
+    {
+      bool operator<(const Pixel& p2) const { return (diff > p2.diff); }
+
+      int x;
+      int y;
+      int dummy;
+      float diff;
+      vfloat4 color;
+    };
+
+    std::vector<Pixel, aligned16<Pixel> > badPixels;
+    badPixels.reserve(w*h);
+    //////////////////////////////////////////////////////////////////////////////////////
+
+
+    float* pData = tempImage.data();
 
     float red       [maxWindowWidth*maxWindowWidth];
     float green     [maxWindowWidth*maxWindowWidth];
@@ -450,8 +465,19 @@ namespace HydraRender
         const int medId = counter / 2;
 
         const vfloat4 filtered = { red[medId], green[medId], blue[medId], 1.0f };
-        //const vfloat4 diff     = (curr - filtered);
-        //const float diffVal    = sqrtf(cvex::dot3f(diff, diff));
+        const vfloat4 diff     = (curr - filtered);
+        const float diffVal    = sqrtf(cvex::dot3f(diff, diff));
+
+        if (diffVal > a_thresholdValue)
+        {
+          Pixel pix;
+          pix.x     = i;
+          pix.y     = j;
+          pix.dummy = 0;
+          pix.diff  = diffVal;
+          pix.color = filtered;
+          badPixels.push_back(pix);
+        }
 
         cvex::store(pData + (j*w + i) * 4, filtered);
 
@@ -459,6 +485,19 @@ namespace HydraRender
 
     } //  for (int j = 0; j < h; ++j)
 
+    std::cout << "badPixels.size() = " << badPixels.size() << std::endl;
+
+    std::sort(badPixels.begin(), badPixels.end());
+
+    float* pData2 = data();
+
+    for (int i = 0; i < a_pixelsNum; i++)
+    {
+      const Pixel& pix = badPixels[i];
+      cvex::store(pData2 + 4*(pix.y*w + pix.x), pix.color);
+    }
+
+    //(*this) = tempImage;
   }
 
 

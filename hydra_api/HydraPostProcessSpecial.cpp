@@ -101,7 +101,7 @@ public:
 
 bool MedianFilter2DN::Eval(ArgArray1& argsHDR, ArgArray2& argsLDR, pugi::xml_node settings, std::shared_ptr<IHRRenderDriver> a_pDriver)
 {
-  auto inImagePtr = argsHDR[L"in_color"];
+  auto inImagePtr  = argsHDR[L"in_color"];
   auto outImagePtr = argsHDR[L"out_color"];
 
   if (inImagePtr == nullptr)
@@ -122,7 +122,7 @@ bool MedianFilter2DN::Eval(ArgArray1& argsHDR, ArgArray2& argsLDR, pugi::xml_nod
   float threshold = settings.attribute(L"threshold").as_float();
   int pixelsNum   = settings.attribute(L"pixels_num").as_float();
 
-  outImagePtr->medianFilterInPlace(threshold, 2);
+  outImagePtr->medianFilterInPlace(threshold, 1, 300);
 
   return true;
 }
