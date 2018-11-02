@@ -122,7 +122,7 @@ bool MedianFilter2DN::Eval(ArgArray1& argsHDR, ArgArray2& argsLDR, pugi::xml_nod
   float threshold = settings.attribute(L"threshold").as_float();
   int pixelsNum   = settings.attribute(L"pixels_num").as_float();
 
-  outImagePtr->medianFilterInPlace(threshold, 1);
+  outImagePtr->medianFilterInPlace(threshold, 2);
 
   return true;
 }

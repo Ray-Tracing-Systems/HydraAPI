@@ -428,26 +428,26 @@ namespace HydraRender
         const vfloat4 curr = cvex::load(pData + (j*w + i)*4);
 
         ///////////////////////////////////////////////////////////////////////////////////////
+        int counter = 0;
         for (int y = minY; y <= maxY; y++)
         {
           for (int x = minX; x <= maxX; x++)
           {
             const vfloat4 p_xy = cvex::load(pData + (y*w + x)*4);
 
-            const int offset = (y - minY)*windowWidth + (x - minX);
-
-            cvex::store_s(red   + offset, p_xy);
-            cvex::store_s(green + offset, cvex::splat_1(p_xy));
-            cvex::store_s(blue  + offset, cvex::splat_2(p_xy));
+            cvex::store_s(red   + counter, p_xy);
+            cvex::store_s(green + counter, cvex::splat_1(p_xy));
+            cvex::store_s(blue  + counter, cvex::splat_2(p_xy));
+            counter++;
           }
         }
         ///////////////////////////////////////////////////////////////////////////////////////
 
-        std::sort(red,   red   + windowWidth*windowWidth);
-        std::sort(green, green + windowWidth*windowWidth);
-        std::sort(blue,  blue  + windowWidth*windowWidth);
+        std::sort(red,   red   + counter);
+        std::sort(green, green + counter);
+        std::sort(blue,  blue  + counter);
 
-        const int medId = (windowWidth*windowWidth) / 2 + 1;
+        const int medId = counter / 2;
 
         const vfloat4 filtered = { red[medId], green[medId], blue[medId], 1.0f };
         //const vfloat4 diff     = (curr - filtered);
