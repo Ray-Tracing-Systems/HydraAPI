@@ -155,7 +155,7 @@ bool PP_TESTS::test321_median_mostly_bad_pixels()
   pugi::xml_node settings = docSettings.append_child(L"settings");
 
   settings.append_attribute(L"threshold")  = 0.2f; // for LDR images is like 0.02*255 = 5 bit differense; for HDR is just 0.02
-  settings.append_attribute(L"pixels_num") = 256;
+  settings.append_attribute(L"pixels_num") = 100;
 
   hrFilterApply(L"median_n", settings, HRRenderRef(),
                 L"in_color", image1,

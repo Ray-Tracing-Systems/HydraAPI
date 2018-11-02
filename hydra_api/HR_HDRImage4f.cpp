@@ -293,7 +293,6 @@ namespace HydraRender
     const int w = width();
     const int h = height();
 
-
     const float ts2         = a_thresholdValue*a_thresholdValue;
     const vfloat4 invEight  = cvex::splat(1.0f / 8.0f);
     const vfloat4 threshold = {ts2, ts2, ts2, 100000.0f};
@@ -423,6 +422,9 @@ namespace HydraRender
     badPixels.reserve(w*h);
     //////////////////////////////////////////////////////////////////////////////////////
 
+    const float ts2 = a_thresholdValue*a_thresholdValue;
+    const vfloat4 invEight = cvex::splat(1.0f / 8.0f);
+    const vfloat4 threshold = { ts2, ts2, ts2, 100000.0f };
 
     float* pData = tempImage.data();
 
@@ -435,10 +437,59 @@ namespace HydraRender
       const int minY = std::max(j - a_windowSize, 0);
       const int maxY = std::min(j + a_windowSize, h - 1);
 
+      int offsetY0 = (j - 1)*w * 4;
+      int offsetY1 = (j + 0)*w * 4;
+      int offsetY2 = (j + 1)*w * 4;
+
+      if (j - 1 < 0)
+        offsetY0 = offsetY1;
+
+      if (j + 1 >= h)
+        offsetY2 = offsetY1;
+
       for (int i = 0; i < w; ++i)
       {
         const int minX = std::max(i - a_windowSize, 0);
         const int maxX = std::min(i + a_windowSize, w - 1);
+
+        int offsetX0 = (i - 1) * 4;
+        int offsetX1 = (i + 0) * 4;
+        int offsetX2 = (i + 1) * 4;
+
+        if (i - 1 < 0)
+          offsetX0 = offsetX1;
+
+        if (i + 1 >= w)
+          offsetX2 = offsetX1;
+
+        const vfloat4 xm = cvex::load(pData + offsetY1 + offsetX1);
+
+        const vfloat4 x0 = cvex::load(pData + offsetY1 + offsetX0);
+        const vfloat4 x1 = cvex::load(pData + offsetY1 + offsetX2);
+        const vfloat4 x2 = cvex::load(pData + offsetY0 + offsetX1);
+        const vfloat4 x3 = cvex::load(pData + offsetY2 + offsetX1);
+
+        const vfloat4 diff0sq = (xm - x0)*(xm - x0);
+        const vfloat4 diff1sq = (xm - x1)*(xm - x1);
+        const vfloat4 diff2sq = (xm - x2)*(xm - x2);
+        const vfloat4 diff3sq = (xm - x3)*(xm - x3);
+
+        int numFailed = 0;
+
+        if (cvex::cmpgt_any(diff0sq, threshold))
+          numFailed++;
+
+        if (cvex::cmpgt_any(diff1sq, threshold))
+          numFailed++;
+
+        if (cvex::cmpgt_any(diff2sq, threshold))
+          numFailed++;
+
+        if (cvex::cmpgt_any(diff3sq, threshold))
+          numFailed++;
+
+        if (numFailed < 3)
+          continue;
 
         const vfloat4 curr = cvex::load(pData + (j*w + i)*4);
 
