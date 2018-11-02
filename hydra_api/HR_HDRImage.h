@@ -52,7 +52,7 @@ namespace HydraRender
     void convertToLDR(float a_gamma, std::vector<unsigned int>& outData);
     void convertFromLDR(float a_gamma, const unsigned int* inData, int a_size);
 
-    void medianFilter(float a_thresholdValue, HDRImage4f &a_outImage);
+    void medianFilter(float a_thresholdValue);
     void gaussBlur(int BLUR_RADIUS2, float a_sigma);
 
   private:

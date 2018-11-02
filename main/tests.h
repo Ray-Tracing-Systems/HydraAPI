@@ -386,6 +386,7 @@ namespace PP_TESTS
   bool test319_post_process_hydra1_diffStars();
 
   bool test320_blur();
+  bool test321_median_mostly_bad_pixels();
 
 };
 

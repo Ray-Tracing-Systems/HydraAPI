@@ -286,23 +286,19 @@ namespace HydraRender
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-  void HDRImage4f::medianFilter(float a_thresholdValue, HDRImage4f &a_outImage)
+  void HDRImage4f::medianFilter(float a_thresholdValue)
   {
     cvex::set_ftz();
 
     const int w = width();
     const int h = height();
 
-    if(a_outImage.width() != w || a_outImage.height() != h)
-      a_outImage.resize(w,h);
 
     const float ts2         = a_thresholdValue*a_thresholdValue;
     const vfloat4 invEight  = cvex::splat(1.0f / 8.0f);
     const vfloat4 threshold = {ts2, ts2, ts2, 100000.0f};
 
-    const float* pData = data();
-    float* pDataOut    = a_outImage.data();
+    float* pData = data();
 
     for (int j = 0; j < h; ++j)
     {
@@ -381,17 +377,18 @@ namespace HydraRender
           std::sort(green, green + 9);
           std::sort(blue,  blue  + 9);
 
-          pDataOut[offsetY1 + offsetX1 + 0] = red  [4];
-          pDataOut[offsetY1 + offsetX1 + 1] = green[4];
-          pDataOut[offsetY1 + offsetX1 + 2] = blue [4];
+          pData[offsetY1 + offsetX1 + 0] = red  [4];
+          pData[offsetY1 + offsetX1 + 1] = green[4];
+          pData[offsetY1 + offsetX1 + 2] = blue [4];
+          pData[offsetY1 + offsetX1 + 3] = 1.0f;
         }
 
-      }
+      } // for (int i = 0; i < w; ++i)
 
-    }
-
+    } //  for (int j = 0; j < h; ++j)
 
   }
+
 
 
   std::vector<float> createGaussKernelWeights1D_HDRImage(int size, float a_sigma)

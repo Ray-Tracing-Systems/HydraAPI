@@ -142,6 +142,31 @@ bool PP_TESTS::test320_blur()
   return false; // this test is not ready due to boundaries does not processed now
 }
 
+bool PP_TESTS::test321_median_mostly_bad_pixels()
+{
+  HRFBIRef image1 = hrFBICreateFromFile(L"data/textures/texture1_nosy.bmp");
+
+  int w, h;
+  hrFBIGetData(image1, &w, &h, nullptr);
+
+  HRFBIRef image2 = hrFBICreate(L"temp", w, h, 16);
+
+  pugi::xml_document docSettings;
+  pugi::xml_node settings = docSettings.append_child(L"settings");
+
+  settings.append_attribute(L"threshold")  = 0.2f; // for LDR images is like 0.02*255 = 5 bit differense; for HDR is just 0.02
+  settings.append_attribute(L"pixels_num") = 256;
+
+  hrFilterApply(L"median_n", settings, HRRenderRef(),
+                L"in_color", image1,
+                L"out_color", image2);
+
+  hrFBISaveToFile(image2, L"tests_images/test_321/z_out.png");
+
+  return false;
+  //return check_images("test_321");
+}
+
 bool PP_TESTS::test306_post_process_hydra1_exposure05()
 {
   HRFBIRef image1 = hrFBICreateFromFile(L"data/textures/kitchen.hdr");

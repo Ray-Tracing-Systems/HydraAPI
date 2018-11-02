@@ -49,7 +49,7 @@ void _hrInitPostProcess()
 
   // do init here
   //
-  std::wstring filtersSpecial[] = { L"resample", L"median", L"NLMPut", L"blur" };
+  std::wstring filtersSpecial[] = { L"resample", L"median", L"median_n", L"NLMPut", L"blur" };
 
   for(const auto& name : filtersSpecial)
     g_spetialFilters[name] = CreateSpecialFilter(name.c_str());
