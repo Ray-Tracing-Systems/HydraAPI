@@ -49,7 +49,7 @@ void _hrInitPostProcess()
 
   // do init here
   //
-  std::wstring filtersSpecial[] = { L"resample", L"median", L"NLMPut" };
+  std::wstring filtersSpecial[] = { L"resample", L"median", L"NLMPut", L"blur" };
 
   for(const auto& name : filtersSpecial)
     g_spetialFilters[name] = CreateSpecialFilter(name.c_str());
@@ -219,13 +219,13 @@ void hrFBILoadFromFile(HRFBIRef a_image, const wchar_t* a_fileName, int a_desire
     }
     else
     {
-#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
+      #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
       std::wstring s1(a_fileName);
       std::string  s2(s1.begin(), s1.end());
       std::ifstream fout(s2.c_str(), std::ios::binary);
-#elif defined WIN32
-      std::ifstream fout(a_fileName, std::ios::binary);
-#endif
+      #elif defined WIN32
+            std::ifstream fout(a_fileName, std::ios::binary);
+      #endif
 
       if (!fout.is_open())
       {

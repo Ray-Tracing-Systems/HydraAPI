@@ -78,7 +78,6 @@ bool PP_TESTS::test303_median_in_place()
 {
   HRFBIRef image1 = hrFBICreateFromFile(L"data/textures/texture1_nosy.bmp");
 
-
   pugi::xml_document docSettings;
   pugi::xml_node settings = docSettings.append_child(L"settings");
 
@@ -117,6 +116,30 @@ bool PP_TESTS::test304_obsolete_tone_mapping()
   hrFBISaveToFile(image2, L"tests_images/test_304/z_out.png");
 
   return check_images("test_304");
+}
+
+bool PP_TESTS::test320_blur()
+{
+  HRFBIRef image1 = hrFBICreateFromFile(L"data/textures/texture1.bmp");
+
+  int w, h;
+  hrFBIGetData(image1, &w, &h, nullptr);
+
+  HRFBIRef image2 = hrFBICreate(L"temp", w / 2, h / 2, 16);
+
+  pugi::xml_document docSettings;
+  pugi::xml_node settings = docSettings.append_child(L"settings");
+
+  settings.append_attribute(L"radius") = 7;
+  settings.append_attribute(L"sigma")  = 2.0f;
+
+  hrFilterApply(L"blur",      settings, HRRenderRef(), // empty settimgs and render, will resample to width and height of the second image
+                L"in_color",  image1,
+                L"out_color", image2);
+
+  hrFBISaveToFile(image2, L"tests_images/test_320/z_out.png");
+
+  return false; // this test is not ready due to boundaries does not processed now
 }
 
 bool PP_TESTS::test306_post_process_hydra1_exposure05()

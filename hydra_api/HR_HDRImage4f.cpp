@@ -12,20 +12,11 @@
 #include <cstring> // memcpy in linux
 #include <cmath>   // sqrt, exp, fmax, fmin
 
-#ifndef _MM_DENORMALS_ZERO_MASK
-  #define _MM_DENORMALS_ZERO_MASK	0x0040
-#endif
-
-#ifndef _MM_DENORMALS_ZERO_ON
-  #define _MM_DENORMALS_ZERO_ON		0x0040
-#endif
-
-#ifndef _MM_SET_DENORMALS_ZERO_MODE
-#define _MM_SET_DENORMALS_ZERO_MODE(mode) _mm_setcsr((_mm_getcsr() & ~_MM_DENORMALS_ZERO_MASK) | (mode))
-#endif
+#include "vfloat4_x64.h"
 
 namespace HydraRender
 {
+  using namespace cvex;
 
   HDRImage4f::HDRImage4f() : m_width(0), m_height(0)
   {
@@ -163,7 +154,7 @@ namespace HydraRender
   }
 
 
-  inline __m128 read_imagef_sse(const float* data, int w, int h, float a_texCoordX, float a_texCoordY)
+  inline vfloat4 read_imagef_vex(const float *data, int w, int h, float a_texCoordX, float a_texCoordY)
   {
     const float fw = (float)(w);
     const float fh = (float)(h);
@@ -179,38 +170,32 @@ namespace HydraRender
     const int px1 = (px < w - 1) ? px + 1 : px;
     const int py1 = (py < h - 1) ? py + 1 : py;
 
-    int offset0 = (px + py*stride) * 4;
-    int offset1 = (px1 + py*stride) * 4;
-    int offset2 = (px + py1*stride) * 4;
-    int offset3 = (px1 + py1*stride) * 4;
+    const int offset0 = (px + py*stride) * 4;
+    const int offset1 = (px1 + py*stride) * 4;
+    const int offset2 = (px + py1*stride) * 4;
+    const int offset3 = (px1 + py1*stride) * 4;
 
-    float  alpha = ffx - (float)px;
-    float  beta = ffy - (float)py;
-    float  gamma = 1.0f - alpha;
-    float  delta = 1.0f - beta;
+    const float  alpha = ffx - (float)px;
+    const float  beta  = ffy - (float)py;
+    const float  gamma = 1.0f - alpha;
+    const float  delta = 1.0f - beta;
 
-    __m128 alphaV = _mm_set_ps(alpha, alpha, alpha, alpha);
-    __m128 betaV = _mm_set_ps(beta, beta, beta, beta);
-    __m128 gammaV = _mm_set_ps(gamma, gamma, gamma, gamma);
-    __m128 deltaV = _mm_set_ps(delta, delta, delta, delta);
+    const vfloat4 alphaV   = cvex::splat(alpha);
+    const vfloat4 betaV    = cvex::splat(beta );
+    const vfloat4 gammaV   = cvex::splat(gamma);
+    const vfloat4 deltaV   = cvex::splat(delta);
 
-    __m128 samplesA = _mm_mul_ps(_mm_load_ps(data + offset0), gammaV);
-    __m128 samplesB = _mm_mul_ps(_mm_load_ps(data + offset1), alphaV);
-    __m128 samplesC = _mm_mul_ps(_mm_load_ps(data + offset2), gammaV);
-    __m128 samplesD = _mm_mul_ps(_mm_load_ps(data + offset3), alphaV);
+    const vfloat4 samplesA = cvex::load(data + offset0)*gammaV;
+    const vfloat4 samplesB = cvex::load(data + offset1)*alphaV;
+    const vfloat4 samplesC = cvex::load(data + offset2)*gammaV;
+    const vfloat4 samplesD = cvex::load(data + offset3)*alphaV;
 
-    __m128 resultX0 = _mm_add_ps(samplesA, samplesB);
-    __m128 resultX1 = _mm_add_ps(samplesC, samplesD);
-    __m128 resultY0 = _mm_mul_ps(resultX0, deltaV);
-    __m128 resultY1 = _mm_mul_ps(resultX1, betaV);
+    const vfloat4 resultX0 = samplesA + samplesB;
+    const vfloat4 resultX1 = samplesC + samplesD;
+    const vfloat4 resultY0 = resultX0*deltaV;
+    const vfloat4 resultY1 = resultX1*betaV;
 
-    return _mm_add_ps(resultY0, resultY1);
-  }
-
-
-  __m128 HDRImage4f::sample(float x, float y) const
-  {
-    return read_imagef_sse(&m_data[0], m_width, m_height, x, y);
+    return resultY0 + resultY1;
   }
 
 
@@ -247,7 +232,7 @@ namespace HydraRender
 
     if (w * 2 == pInputImage->width() && h * 2 == pInputImage->height())    // special case, simple and fast
     {
-      const __m128 oneQuater = _mm_set_ps(0.25f, 0.25f, 0.25f, 0.25f);
+      const vfloat4 oneQuater = _mm_set_ps(0.25f, 0.25f, 0.25f, 0.25f);
       float* dataOld = pInputImage->data();
 
       #pragma omp parallel for
@@ -265,16 +250,14 @@ namespace HydraRender
           const int offsetX0 = (i * 2 + 0) * 4;
           const int offsetX1 = (i * 2 + 1) * 4;
 
-          const __m128 x0 = _mm_load_ps(dataOld + offsetY0 + offsetX0);
-          const __m128 x1 = _mm_load_ps(dataOld + offsetY0 + offsetX1);
-          const __m128 x2 = _mm_load_ps(dataOld + offsetY1 + offsetX0);
-          const __m128 x3 = _mm_load_ps(dataOld + offsetY1 + offsetX1);
+          const vfloat4 x0 = cvex::load(dataOld + offsetY0 + offsetX0);
+          const vfloat4 x1 = cvex::load(dataOld + offsetY0 + offsetX1);
+          const vfloat4 x2 = cvex::load(dataOld + offsetY1 + offsetX0);
+          const vfloat4 x3 = cvex::load(dataOld + offsetY1 + offsetX1);
 
-          const  __m128 filtered = _mm_mul_ps(oneQuater, _mm_add_ps(_mm_add_ps(x0, x1), _mm_add_ps(x2, x3)));
-          _mm_store_ps(dataNew + offsetY + offsetX, filtered);
-
+          const  vfloat4 filtered = oneQuater*((x0 + x1) + (x2 + x3));
+          cvex::store(dataNew + offsetY + offsetX, filtered);
         }
-
       }
 
     }
@@ -283,14 +266,14 @@ namespace HydraRender
       #pragma omp parallel for
       for (int j = 0; j < h; ++j)
       {
-        float texCoordY = (float(j) + 0.5f)*fhInv;
-        int   offsetY = j*w * 4;
+        const float texCoordY = (float(j) + 0.5f)*fhInv;
+        const int   offsetY   = j*w * 4;
 
         for (int i = 0; i < w; ++i)
         {
-          float texCoordX = (float(i) + 0.5f)*fwInv;
-          __m128 filtered = pInputImage->sample(texCoordX, texCoordY);
-          _mm_store_ps(dataNew + offsetY + i * 4, filtered);
+          const float texCoordX = (float(i) + 0.5f)*fwInv;
+          const vfloat4 filtered = read_imagef_vex(&m_data[0], m_width, m_height, texCoordX, texCoordY); //pInputImage->sample(texCoordX, texCoordY);
+          cvex::store(dataNew + offsetY + i * 4, filtered);
         }
       }
 
@@ -303,28 +286,23 @@ namespace HydraRender
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  inline __m128 sse_dot3(__m128 a, __m128 b) // please don't use _mm_dp_ps! It is from SSE 4.1 !!! Don't work on AMD Phenom
-  {
-    const __m128 mult  = _mm_mul_ps(a, b);
-    const __m128 shuf1 = _mm_shuffle_ps(mult, mult, _MM_SHUFFLE(0, 3, 2, 1));
-    const __m128 shuf2 = _mm_shuffle_ps(mult, mult, _MM_SHUFFLE(1, 0, 3, 2));
-    return _mm_add_ss(_mm_add_ss(mult, shuf1), shuf2);
-  }
 
   void HDRImage4f::medianFilterInPlace(float a_thresholdValue, float avgB)
   {
-    int w = width();
-    int h = height();
+    cvex::set_ftz();
 
-    const float ts2       = a_thresholdValue*a_thresholdValue;
-    const __m128 invEight = _mm_set_ps(1.0f / 8.0f, 1.0f / 8.0f, 1.0f / 8.0f, 1.0f / 8.0f);
-    const __m128 eps      = _mm_set_ps(1e-5f, 1e-5f, 1e-5f, 1e-5f);
+    const int w = width();
+    const int h = height();
 
-    const __m128 mthreshold    = _mm_set_ps(1000.0f, ts2, ts2, ts2);
-    const __m128 mthresholdMin = _mm_set_ps(1000.0f, ts2*0.01f, ts2*0.01f, ts2*0.01f);
-    const __m128 mthresholdMax = _mm_set_ps(1000.0f, ts2*4.0f, ts2*4.0f, ts2*4.0f);
+    const float ts2        = a_thresholdValue*a_thresholdValue;
+    const vfloat4 invEight = cvex::splat(1.0f / 8.0f);
+    const vfloat4 eps      = cvex::splat(1e-5f);
 
-    const __m128 mAvgB = _mm_set_ps(avgB, avgB, avgB, avgB);
+    const vfloat4 mthreshold    = {1000.0f, ts2, ts2, ts2 };
+    const vfloat4 mthresholdMin = {1000.0f, ts2*0.01f, ts2*0.01f, ts2*0.01f};
+    const vfloat4 mthresholdMax = {1000.0f, ts2*4.0f, ts2*4.0f, ts2*4.0f};
+    const vfloat4 mAvgB         = cvex::splat(avgB);
+    const vfloat4 mAvgBInv      = 1.0f/mAvgB;
 
     float* pData = data();
 
@@ -352,87 +330,90 @@ namespace HydraRender
         if (i + 1 >= w)
           offsetX2 = offsetX1;
 
-        const __m128 xm = _mm_load_ps(pData + offsetY1 + offsetX1);
+        const vfloat4 xm = cvex::load(pData + offsetY1 + offsetX1);
 
-        const __m128 x0 = _mm_load_ps(pData + offsetY1 + offsetX0);
-        const __m128 x1 = _mm_load_ps(pData + offsetY1 + offsetX2);
-        const __m128 x2 = _mm_load_ps(pData + offsetY0 + offsetX1);
-        const __m128 x3 = _mm_load_ps(pData + offsetY2 + offsetX1);
+        const vfloat4 x0 = cvex::load(pData + offsetY1 + offsetX0);
+        const vfloat4 x1 = cvex::load(pData + offsetY1 + offsetX2);
+        const vfloat4 x2 = cvex::load(pData + offsetY0 + offsetX1);
+        const vfloat4 x3 = cvex::load(pData + offsetY2 + offsetX1);
 
-        const __m128 x4 = _mm_load_ps(pData + offsetY0 + offsetX0);
-        const __m128 x5 = _mm_load_ps(pData + offsetY0 + offsetX2);
-        const __m128 x6 = _mm_load_ps(pData + offsetY2 + offsetX0);
-        const __m128 x7 = _mm_load_ps(pData + offsetY2 + offsetX2);
+        const vfloat4 x4 = cvex::load(pData + offsetY0 + offsetX0);
+        const vfloat4 x5 = cvex::load(pData + offsetY0 + offsetX2);
+        const vfloat4 x6 = cvex::load(pData + offsetY2 + offsetX0);
+        const vfloat4 x7 = cvex::load(pData + offsetY2 + offsetX2);
 
-        const __m128 sumColorOthers = _mm_add_ps(_mm_add_ps(_mm_add_ps(x0, x1), _mm_add_ps(x2, x3)), _mm_add_ps(_mm_add_ps(x4, x5), _mm_add_ps(x6, x7)));
-        const __m128 avgColorOthers = _mm_mul_ps(invEight, sumColorOthers);
+        const vfloat4 sumColorOthers = (x0 + x1 + x2 + x3) + (x4 + x5 + x6 + x7);
+        const vfloat4 avgColorOthers = invEight*sumColorOthers;
 
-        __m128 threshold = mthreshold;
+        vfloat4 threshold = mthreshold;
 
         if (avgB > 1e-6f) // change threshold value, tune it for MLT
         {
-          const __m128 avgColorLenSquare = sse_dot3(avgColorOthers, avgColorOthers); // 
-          if (_mm_movemask_ps(_mm_cmpgt_ss(avgColorLenSquare, eps)))                 // if color leng square > epsilon
+          const vfloat4 avgColorLenSquare = cvex::dot3v(avgColorOthers, avgColorOthers); //
+          if (cvex::cmpgt_all_x(avgColorLenSquare, eps))                                 // if color leng square > epsilon
           {
-            const __m128 avgColorSquare = _mm_mul_ps(avgColorOthers, avgColorOthers);
-            threshold = _mm_mul_ps(threshold, _mm_div_ps(avgColorSquare, mAvgB));
-            threshold = _mm_min_ps(mthresholdMax, _mm_max_ps(mthresholdMin, threshold));
+            const vfloat4 avgColorSquare = avgColorOthers*avgColorOthers;
+            threshold = threshold*(avgColorSquare*mAvgBInv);
+            threshold = cvex::min(mthresholdMax, cvex::max(mthresholdMin, threshold));
           }
         }
         else
           threshold = mthresholdMin;
 
-        const __m128 diff0 = _mm_sub_ps(xm, x0);
-        const __m128 diff1 = _mm_sub_ps(xm, x1);
-        const __m128 diff2 = _mm_sub_ps(xm, x2);
-        const __m128 diff3 = _mm_sub_ps(xm, x3);
+        const vfloat4 diff0 = xm - x0;
+        const vfloat4 diff1 = xm - x1;
+        const vfloat4 diff2 = xm - x2;
+        const vfloat4 diff3 = xm - x3;
 
-        const __m128 diff0sq = _mm_mul_ps(diff0, diff0); // add _mm_and_ps with mask to discard w component ... 
-        const __m128 diff1sq = _mm_mul_ps(diff1, diff1);
-        const __m128 diff2sq = _mm_mul_ps(diff2, diff2);
-        const __m128 diff3sq = _mm_mul_ps(diff3, diff3);
+        const vfloat4 diff0sq = diff0*diff0; // add _mm_and_ps with mask to discard w component ...
+        const vfloat4 diff1sq = diff1*diff1;
+        const vfloat4 diff2sq = diff2*diff2;
+        const vfloat4 diff3sq = diff3*diff3;
 
         int numFailed = 0;
 
-        if (_mm_movemask_ps(_mm_cmpgt_ps(diff0sq, threshold)))
+        if (cvex::cmpgt_any(diff0sq, threshold))
           numFailed++;
 
-        if (_mm_movemask_ps(_mm_cmpgt_ps(diff1sq, threshold)))
+        if (cvex::cmpgt_any(diff1sq, threshold))
           numFailed++;
 
-        if (_mm_movemask_ps(_mm_cmpgt_ps(diff2sq, threshold)))
+        if (cvex::cmpgt_any(diff2sq, threshold))
           numFailed++;
 
-        if (_mm_movemask_ps(_mm_cmpgt_ps(diff3sq, threshold)))
+        if (cvex::cmpgt_any(diff3sq, threshold))
           numFailed++;
 
         if (numFailed >= 3)
         {
-          const __m128 x4 = _mm_load_ps(pData + offsetY0 + offsetX0);
-          const __m128 x5 = _mm_load_ps(pData + offsetY0 + offsetX2);
-          const __m128 x6 = _mm_load_ps(pData + offsetY2 + offsetX0);
-          const __m128 x7 = _mm_load_ps(pData + offsetY2 + offsetX2);
+          const vfloat4 x4 = cvex::load(pData + offsetY0 + offsetX0);
+          const vfloat4 x5 = cvex::load(pData + offsetY0 + offsetX2);
+          const vfloat4 x6 = cvex::load(pData + offsetY2 + offsetX0);
+          const vfloat4 x7 = cvex::load(pData + offsetY2 + offsetX2);
 
-          const __m128 xi[9] = { xm, x0, x1, x2, x3, x4, x5, x6, x7 };
+          const vfloat4 xi[9] = { xm, x0, x1, x2, x3, x4, x5, x6, x7 };
 
-          float red[9];
+          float red  [9];
           float green[9];
-          float blue[9];
+          float blue [9];
 
+          #pragma GCC ivdep
           for (int i = 0; i < 9; i++)
           {
-            const __m128 xc = xi[i];
+            const vfloat4 xc = xi[i];
 
-            _mm_store_ss(red + i, xc);
-            _mm_store_ss(green + i, _mm_shuffle_ps(xc, xc, _MM_SHUFFLE(1, 1, 1, 1)));
-            _mm_store_ss(blue + i, _mm_shuffle_ps(xc, xc, _MM_SHUFFLE(2, 2, 2, 2)));
+            cvex::store_s(red   + i, xc);
+            cvex::store_s(green + i, cvex::splat_1(xc));
+            cvex::store_s(blue  + i, cvex::splat_2(xc));
           }
 
-          std::sort(red, red + 9);
+          std::sort(red,   red   + 9);
           std::sort(green, green + 9);
-          std::sort(blue, blue + 9);
+          std::sort(blue,  blue  + 9);
 
-          _mm_store_ps(pData + offsetY1 + offsetX1, _mm_set_ps(0.0f, blue[4], green[4], red[4]));
+          const vfloat4 res = {red[4], green[4], blue[4], 0.0f};
+
+          cvex::store(pData + offsetY1 + offsetX1, res);
         }
 
       }
@@ -474,25 +455,24 @@ namespace HydraRender
 
   void HDRImage4f::gaussBlur(int BLUR_RADIUS2, float a_sigma)
   {
-    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-    _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+    cvex::set_ftz();
 
-    size_t imSize = size_t(m_width)*size_t(m_height) * sizeof(__m128);
+    size_t imSize = size_t(m_width)*size_t(m_height) * sizeof(vfloat4);
 
     float sigma = a_sigma; // = 0.85f + 0.05f*float(BLUR_RADIUS2);
     std::vector<float> kernel = createGaussKernelWeights1D_HDRImage(BLUR_RADIUS2 * 2 + 1, sigma);
 
     // init weights
     //
-    __m128 weights[64];
+    vfloat4 weights[64];
 
     for (int i = 0; i < 64; i++)
-      weights[i] = _mm_set_ps(0, 0, 0, 0);
+      weights[i] = cvex::splat(0.0f);
 
     for (int i = 0; i < kernel.size(); i++)
     {
       float w = kernel[i] * 1.0f;
-      weights[i] = _mm_set_ps(w, w, w, w);
+      weights[i] = cvex::splat(w);
     }
 
     const float* m_dataInBrightPixels = this->data();
@@ -512,16 +492,16 @@ namespace HydraRender
 
       for (int x = BLUR_RADIUS2; x < m_width - BLUR_RADIUS2; x++)
       {
-        __m128 summ = _mm_mul_ps(weights[BLUR_RADIUS2], _mm_load_ps(m_dataInBrightPixels + offset + (x + 0) * 4));
+        vfloat4 summ = weights[BLUR_RADIUS2]*cvex::load(m_dataInBrightPixels + offset + (x + 0) * 4);
 
         for (int wid = 1; wid < BLUR_RADIUS2; wid++)
         {
-          __m128 p0 = _mm_mul_ps(weights[wid + BLUR_RADIUS2], _mm_load_ps(m_dataInBrightPixels + offset + (x - wid) * 4));
-          __m128 p1 = _mm_mul_ps(weights[wid + BLUR_RADIUS2], _mm_load_ps(m_dataInBrightPixels + offset + (x + wid) * 4));
-          summ = _mm_add_ps(summ, _mm_add_ps(p0, p1));
+          vfloat4 p0 = weights[wid + BLUR_RADIUS2]*cvex::load(m_dataInBrightPixels + offset + (x - wid) * 4);
+          vfloat4 p1 = weights[wid + BLUR_RADIUS2]*cvex::load(m_dataInBrightPixels + offset + (x + wid) * 4);
+          summ = summ + (p0 + p1);
         }
 
-        _mm_store_ps(tmpData + offset + x * 4, summ);
+        cvex::store(tmpData + offset + x * 4, summ);
       }
 
     }
@@ -534,23 +514,20 @@ namespace HydraRender
     {
       for (int y = BLUR_RADIUS2; y < m_height - BLUR_RADIUS2; y++)
       {
-        __m128 summ = _mm_mul_ps(weights[BLUR_RADIUS2], _mm_load_ps(tmpData + y*m_width * 4 + x * 4));
+        vfloat4 summ = weights[BLUR_RADIUS2]*cvex::load(tmpData + y*m_width * 4 + x * 4);
 
         for (int wid = 1; wid < BLUR_RADIUS2; wid++)
         {
-          __m128 p0 = _mm_mul_ps(weights[wid + BLUR_RADIUS2], _mm_load_ps(tmpData + 4 * (y - wid)*m_width + x * 4));
-          __m128 p1 = _mm_mul_ps(weights[wid + BLUR_RADIUS2], _mm_load_ps(tmpData + 4 * (y + wid)*m_width + x * 4));
-          summ = _mm_add_ps(summ, _mm_add_ps(p0, p1));
+          vfloat4 p0 = weights[wid + BLUR_RADIUS2]*cvex::load(tmpData + 4 * (y - wid)*m_width + x * 4);
+          vfloat4 p1 = weights[wid + BLUR_RADIUS2]*cvex::load(tmpData + 4 * (y + wid)*m_width + x * 4);
+          summ = summ + (p0 + p1);
         }
 
-        _mm_store_ps(m_dataOut + y*m_width * 4 + x * 4, summ);
+        cvex::store(m_dataOut + y*m_width * 4 + x * 4, summ);
       }
     }
 
-
   }
-
-
 
   unsigned int HR_HDRImage4f_RealColorToUint32(float a_r, float a_g, float a_b, float a_alpha)
   {
@@ -611,33 +588,29 @@ namespace HydraRender
     return res;
   }
 
-  static inline __m128 unpackColor(unsigned int rgba, const __m128& a_mulInv)
+  static inline vfloat4 unpackColor(unsigned int rgba, const vfloat4& a_mulInv)
   {
-    const __m128i intData = _mm_set_epi32((rgba & 0xFF000000) >> 24,
-                                          (rgba & 0x00FF0000) >> 16, 
-                                          (rgba & 0x0000FF00) >> 8, 
-                                           rgba & 0x000000FF
-                                         );
-    return _mm_mul_ps(_mm_cvtepi32_ps(intData), a_mulInv);
+    const vint4 intData = cvex::make_vint(rgba & 0x000000FF, (rgba & 0x0000FF00) >> 8, (rgba & 0x00FF0000) >> 16, (rgba & 0xFF000000) >> 24);
+
+    return cvex::to_float32(intData)*a_mulInv;
   }
 
   void HDRImage4f::convertFromLDR(float a_gamma, const unsigned int* dataLDR, int a_size) //#TODO: accelerate with SSE !!!
   {
-    const __m128 powps  = _mm_set_ps(a_gamma, a_gamma, a_gamma, a_gamma);
-    const __m128 mulInv = _mm_set_ps((1.0f / 255.0f), (1.0f / 255.0f), (1.0f / 255.0f), (1.0f / 255.0f));
+    const vfloat4 powps  = cvex::splat(a_gamma);
+    const vfloat4 mulInv = cvex::splat((1.0f / 255.0f));
 
     float* out = data();
 
     #pragma omp parallel for
     for (int i = 0; i < a_size; i++)
     {
-      const __m128 colorps  = unpackColor(dataLDR[i], mulInv);
-      const __m128 colorps2 = HydraSSE::powf4(colorps, powps);
-      _mm_store_ps(out + i*4, colorps2);
+      const vfloat4 colorps  = unpackColor(dataLDR[i], mulInv);
+      const vfloat4 colorps2 = HydraSSE::powf4(colorps, powps);
+      cvex::store(out + i*4, colorps2);
     }
 
   }
-
 
 };
 

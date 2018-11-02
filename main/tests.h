@@ -368,6 +368,7 @@ namespace PP_TESTS
   bool test303_median_in_place();
   bool test304_obsolete_tone_mapping();
   bool test305_fbi_from_render();
+
   bool test306_post_process_hydra1_exposure05();
   bool test307_post_process_hydra1_exposure2();
   bool test308_post_process_hydra1_compress();
@@ -383,6 +384,9 @@ namespace PP_TESTS
   bool test317_post_process_hydra1_sharpness();
   bool test318_post_process_hydra1_ECCSWUNSVC();
   bool test319_post_process_hydra1_diffStars();
+
+  bool test320_blur();
+
 };
 
 //These tests need some scene library to exist in their respective folders

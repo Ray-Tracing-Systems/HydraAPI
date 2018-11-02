@@ -84,9 +84,52 @@ bool MedianFilter2D::Eval(ArgArray1& argsHDR, ArgArray2& argsLDR, pugi::xml_node
   float threshold = settings.attribute(L"threshold").as_float();
 
   if (inImagePtr != outImagePtr)
-    (*outImagePtr) = (*inImagePtr);
+    (*outImagePtr) = (*inImagePtr); // #TODO: implement this more effitiently! Don't make a copy!
 
   outImagePtr->medianFilterInPlace(100.0f*threshold, 0.0f); // last parameter is some for MLT. 0 tells that we don't have to change threshold depend on average brightness
+
+  return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class GaussBlur2D : public IFilter2DSpecial
+{
+public:
+  GaussBlur2D()  = default;
+  ~GaussBlur2D() = default;
+
+  bool Eval(ArgArray1& argsHDR, ArgArray2& argsLDR, pugi::xml_node settings, std::shared_ptr<IHRRenderDriver> a_pDriver) override;
+};
+
+bool GaussBlur2D::Eval(ArgArray1& argsHDR, ArgArray2& argsLDR, pugi::xml_node settings, std::shared_ptr<IHRRenderDriver> a_pDriver)
+{
+  auto inImagePtr  = argsHDR[L"in_color"];
+  auto outImagePtr = argsHDR[L"out_color"];
+
+  if (inImagePtr == nullptr)
+  {
+    m_err = L"GaussBlur2D: arg 'in_color' not found";
+    return false;
+  }
+
+  if (outImagePtr == nullptr)
+  {
+    m_err = L"GaussBlur2D: arg 'out_color' not found";
+    return false;
+  }
+
+  if (outImagePtr->width() != inImagePtr->width() || outImagePtr->height() != inImagePtr->height())
+    outImagePtr->resize(inImagePtr->width(), inImagePtr->height());
+
+  const float sigma = settings.attribute(L"sigma").as_float();
+  const int radius  = settings.attribute(L"radius").as_int();
+
+  if (inImagePtr != outImagePtr)
+    (*outImagePtr) = (*inImagePtr);        // #TODO: implement this more effitiently! Don't make a copy!
+
+  outImagePtr->gaussBlur(radius, sigma);   //
 
   return true;
 }
@@ -221,6 +264,8 @@ std::shared_ptr<IFilter2DSpecial> CreateSpecialFilter(const wchar_t* a_filterNam
     return std::make_shared<ResampleFilter2D>();
   else if (inName == L"median")
     return std::make_shared<MedianFilter2D>();
+  else if (inName == L"blur" || inName == L"gauss_blur")
+    return std::make_shared<GaussBlur2D>();
   else if (inName == L"NLMPut")
     return std::make_shared<NLMDenoiserPut>();
   else

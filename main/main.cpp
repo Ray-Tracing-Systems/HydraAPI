@@ -145,12 +145,15 @@ int main(int argc, const char** argv)
     
     //std::cout << test63_cornell_with_caustic_from_torus() << std::endl;
     //std::cout << "g_MSE = " << g_MSEOutput << std::endl;
-    std::cout << MTL_TESTS::test_162_shadow_matte_back1()      << std::endl;
+    //std::cout << MTL_TESTS::test_162_shadow_matte_back1()      << std::endl;
     //std::cout << MTL_TESTS::test_173_glossy_dark_edges_microfacet() << std::endl;
     //LGHT_TESTS::test_223_rotated_area_light();
 
 
-    //PP_TESTS::test305_fbi_from_render();
+    std::cout << PP_TESTS::test301_resample()        << std::endl;
+    std::cout << PP_TESTS::test303_median_in_place() << std::endl;
+    std::cout << PP_TESTS::test320_blur()            << std::endl;
+
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
     //window_main_free_look(L"tests_f/test_241", L"opengl1Debug");
 
