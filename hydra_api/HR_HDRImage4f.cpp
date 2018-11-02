@@ -298,9 +298,9 @@ namespace HydraRender
     const vfloat4 invEight = cvex::splat(1.0f / 8.0f);
     const vfloat4 eps      = cvex::splat(1e-5f);
 
-    const vfloat4 mthreshold    = {1000.0f, ts2, ts2, ts2 };
-    const vfloat4 mthresholdMin = {1000.0f, ts2*0.01f, ts2*0.01f, ts2*0.01f};
-    const vfloat4 mthresholdMax = {1000.0f, ts2*4.0f, ts2*4.0f, ts2*4.0f};
+    const vfloat4 mthreshold    = {ts2,      ts2,       ts2,       1000.0f };
+    const vfloat4 mthresholdMin = {ts2*0.01f,ts2*0.01f, ts2*0.01f, 1000.0f};
+    const vfloat4 mthresholdMax = {ts2*4.0f, ts2*4.0f,  ts2*4.0f,  1000.0f};
     const vfloat4 mAvgB         = cvex::splat(avgB);
     const vfloat4 mAvgBInv      = 1.0f/mAvgB;
 
