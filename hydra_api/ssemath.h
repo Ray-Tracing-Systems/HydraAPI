@@ -53,7 +53,7 @@ namespace HydraSSE
 
   static inline __m128 powf4(__m128 x, __m128 y)
   {
-    return exp2f4(log2f4(x)*y);
+    return exp2f4(_mm_mul_ps(log2f4(x),y));
   }
 
   // those are is self-implemented

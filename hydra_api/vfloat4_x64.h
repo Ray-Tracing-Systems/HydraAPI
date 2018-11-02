@@ -41,6 +41,15 @@ namespace cvex
   typedef __m128  vfloat4;
   typedef __m128i vint4;
 
+  #ifdef WIN32 // MVSC does not define operators !!!
+
+  static inline vfloat4 operator+(const vfloat4 a, const vfloat4 b) { return _mm_add_ps(a, b); }
+  static inline vfloat4 operator-(const vfloat4 a, const vfloat4 b) { return _mm_sub_ps(a, b); }
+  static inline vfloat4 operator*(const vfloat4 a, const vfloat4 b) { return _mm_mul_ps(a, b); }
+  static inline vfloat4 operator/(const vfloat4 a, const vfloat4 b) { return _mm_div_ps(a, b); }
+
+  #endif
+
   static inline void set_ftz() { _MM_SET_ROUNDING_MODE(_MM_ROUND_TOWARD_ZERO);}
 
   static inline void store(float* data, vfloat4 a_val)   { _mm_store_ps(data, a_val);  }
@@ -166,6 +175,7 @@ namespace cvex
   static inline vfloat4 mul_s(vfloat4 a, vfloat4 b) { return _mm_mul_ss(a,b); } // #NOTE: assume you will never use .yzw coordinates!; only .x is valid!
   static inline vfloat4 div_s(vfloat4 a, vfloat4 b) { return _mm_div_ss(a,b); } // #NOTE: assume you will never use .yzw coordinates!; only .x is valid!
   static inline vfloat4 rcp_s(vfloat4 a)            { return _mm_rcp_ss(a);   } // #NOTE: assume you will never use .yzw coordinates!; only .x is valid!
+
 
 };
 
