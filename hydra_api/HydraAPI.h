@@ -360,8 +360,8 @@ HAPI HRTextureNodeRef  hrArray1DCreateFromMemory(const float* data, int a_size);
  If you don't know desired resolution please set "-1" for both width and height!
  
 */
-HAPI HRTextureNodeRef  hrTexture2DCreateFromProcHDR(HR_TEXTURE2D_PROC_HDR_CALLBACK a_proc,
-                                                    void* a_customData, int customDataSize, int w = -1, int h = -1);
+HAPI HRTextureNodeRef  hrTexture2DCreateBakedHDR(HR_TEXTURE2D_PROC_HDR_CALLBACK a_proc,
+                                                 void *a_customData, int customDataSize, int w = -1, int h = -1);
 
 /**
 \brief create procedural 2D texture with callback.
@@ -375,8 +375,8 @@ See description of HR_TEXTURE2D_PROC_LDR_CALLBACK for more details.
 If you don't know desired resolution please set "-1" for both width and height!
 
 */
-HAPI HRTextureNodeRef  hrTexture2DCreateFromProcLDR(HR_TEXTURE2D_PROC_LDR_CALLBACK a_proc,
-                                                    void* a_customData, int customDataSize, int w = -1, int h = -1);
+HAPI HRTextureNodeRef  hrTexture2DCreateBakedLDR(HR_TEXTURE2D_PROC_LDR_CALLBACK a_proc,
+                                                 void *a_customData, int customDataSize, int w = -1, int h = -1);
 
 /**
 \brief Update 2D texture from callback
@@ -387,8 +387,8 @@ HAPI HRTextureNodeRef  hrTexture2DCreateFromProcLDR(HR_TEXTURE2D_PROC_LDR_CALLBA
 \param h - texture height; optional. should be set as a hint for renderer if you know desired texture resolution.
 
 */
-HAPI HRTextureNodeRef  hrTexture2DUpdateFromProcHDR(HRTextureNodeRef currentRef, HR_TEXTURE2D_PROC_HDR_CALLBACK a_proc,
-                                                    void* a_customData, int customDataSize, int w, int h);
+HAPI HRTextureNodeRef  hrTexture2DUpdateBakedHDR(HRTextureNodeRef currentRef, HR_TEXTURE2D_PROC_HDR_CALLBACK a_proc,
+                                                 void *a_customData, int customDataSize, int w, int h);
 
 /**
 \brief Update 2D texture from callback
@@ -399,8 +399,8 @@ HAPI HRTextureNodeRef  hrTexture2DUpdateFromProcHDR(HRTextureNodeRef currentRef,
 \param h - texture height; optional. should be set as a hint for renderer if you know desired texture resolution.
 
 */
-HAPI HRTextureNodeRef  hrTexture2DUpdateFromProcLDR(HRTextureNodeRef currentRef, HR_TEXTURE2D_PROC_LDR_CALLBACK a_proc,
-                                                    void* a_customData, int customDataSize, int w, int h);
+HAPI HRTextureNodeRef  hrTexture2DUpdateBakedLDR(HRTextureNodeRef currentRef, HR_TEXTURE2D_PROC_LDR_CALLBACK a_proc,
+                                                 void *a_customData, int customDataSize, int w, int h);
 
 
 /**

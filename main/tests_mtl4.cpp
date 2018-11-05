@@ -2254,7 +2254,7 @@ bool MTL_TESTS::test_164_simple_displacement_proctex()
 
   //HRTextureNodeRef texChecker = hrTexture2DCreateFromFile(L"data/textures/chess_white.bmp");
   //HRTextureNodeRef tex = hrTexture2DCreateFromFile(L"data/textures/ornament.jpg");
-  HRTextureNodeRef tex = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep), sizeof(int), 32, 32);
+  HRTextureNodeRef tex = hrTexture2DCreateBakedLDR(&procTexCheckerLDR, (void *) (&rep), sizeof(int), 32, 32);
 
   hrMaterialOpen(mat1, HR_WRITE_DISCARD);
   {
@@ -2490,7 +2490,7 @@ bool MTL_TESTS::test_165_simple_displacement_mesh()
 
   //HRTextureNodeRef texChecker = hrTexture2DCreateFromFile(L"data/textures/chess_white.bmp");
   HRTextureNodeRef tex = hrTexture2DCreateFromFile(L"data/textures/blur_pattern.bmp");
-  //HRTextureNodeRef tex = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep), sizeof(int), 256, 256);
+  //HRTextureNodeRef tex = hrTexture2DCreateBakedLDR(&procTexCheckerLDR, (void*)(&rep), sizeof(int), 256, 256);
 
   hrMaterialOpen(mat1, HR_WRITE_DISCARD);
   {
