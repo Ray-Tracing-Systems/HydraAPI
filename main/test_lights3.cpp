@@ -88,7 +88,7 @@ namespace LGHT_TESTS
       auto intensityNode = lightNode.append_child(L"intensity");
 
       intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-			intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"100");
+			intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"700");
 
       lightNode.append_child(L"falloff_angle").append_attribute(L"val").set_value(100);
       lightNode.append_child(L"falloff_angle2").append_attribute(L"val").set_value(60);

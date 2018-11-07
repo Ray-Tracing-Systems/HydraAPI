@@ -1776,7 +1776,7 @@ namespace LGHT_TESTS
 
       refl.append_attribute(L"brdf_type").set_value(L"phong");
       refl.append_child(L"color").append_attribute(L"val").set_value(L"0.4 0.4 0.4");
-      refl.append_child(L"glossiness").append_attribute(L"val").set_value(L"0.75");
+      refl.append_child(L"glossiness").append_attribute(L"val").set_value(L"0.85");
     }
     hrMaterialClose(mat9);
 
@@ -1798,7 +1798,7 @@ namespace LGHT_TESTS
       hrMeshVertexAttribPointer4f(cubeOpenRef, L"norm", &cubeOpen.vNorm[0]);
       hrMeshVertexAttribPointer2f(cubeOpenRef, L"texcoord", &cubeOpen.vTexCoord[0]);
 
-      int cubeMatIndices[10] = { mat8.id, mat8.id, mat8.id, mat8.id, mat9.id, mat9.id, mat7.id, mat7.id, mat6.id, mat6.id };
+      int cubeMatIndices[10] = { mat8.id, mat8.id, mat8.id, mat9.id, mat9.id, mat9.id, mat7.id, mat7.id, mat6.id, mat6.id };
 
       //hrMeshMaterialId(cubeRef, 0);
       hrMeshPrimitiveAttribPointer1i(cubeOpenRef, L"mind", cubeMatIndices);
@@ -1953,13 +1953,12 @@ namespace LGHT_TESTS
     mat4x4_identity(mTranslate);
     mat4x4_identity(mRes);
 
-    mat4x4_translate(mTranslate, 0.0f, -0.70f*3.65f, 0.0f);
-    mat4x4_scale(mRot1, mRot1, 3.65f);
-    mat4x4_mul(mRes, mTranslate, mRot1);
-    mat4x4_transpose(matrixT, mRes); // this fucking math library swap rows and columns
-    matrixT[3][3] = 1.0f;
-
-    hrMeshInstance(scnRef, teapotRef, &matrixT[0][0]);
+    //mat4x4_translate(mTranslate, 0.0f, -0.70f*3.65f, 0.0f);
+    //mat4x4_scale(mRot1, mRot1, 3.65f);
+    //mat4x4_mul(mRes, mTranslate, mRot1);
+    //mat4x4_transpose(matrixT, mRes); // this fucking math library swap rows and columns
+    //matrixT[3][3] = 1.0f;
+    //hrMeshInstance(scnRef, teapotRef, &matrixT[0][0]);
 
     mat4x4_identity(mRot1);
     mat4x4_rotate_Y(mRot1, mRot1, 180.0f*DEG_TO_RAD);
@@ -1973,9 +1972,9 @@ namespace LGHT_TESTS
     mat4x4_identity(mRot1);
     mat4x4_identity(mRot2);
 
-    mat4x4_translate(mTranslate, -3.0f, 3.25f, -1.5);
+    mat4x4_translate(mTranslate, -3.25f, 3.25f, -2.0);
     mat4x4_rotate_Y(mRot1, mRot1, -20.0f*DEG_TO_RAD);
-    mat4x4_rotate_X(mRot2, mRot2, 25.0f*DEG_TO_RAD);
+    mat4x4_rotate_X(mRot2, mRot2, 30.0f*DEG_TO_RAD);
     mat4x4_mul(mRot1, mRot2, mRot1);
     mat4x4_mul(mRes, mTranslate, mRot1);
     mat4x4_transpose(matrixT, mRes);

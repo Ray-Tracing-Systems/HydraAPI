@@ -132,21 +132,14 @@ int main(int argc, const char** argv)
     //demo_01_plane_box();
     //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_31", L"opengl1", nullptr, &test02_draw);
     
-    run_all_api_tests();
+    //run_all_api_tests();
 	  //run_all_geo_tests();
-    //run_all_mtl_tests();
     //run_all_lgt_tests();
+    //run_all_mtl_tests();
     //run_all_ipp_tests();
-
-    //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
-    //std::cout << test39_mmlt_or_ibpt() << std::endl;
-    //std::cout << test40_several_changes() << std::endl;
-    
-    //std::cout << test63_cornell_with_caustic_from_torus() << std::endl;
-    //std::cout << "g_MSE = " << g_MSEOutput << std::endl;
-    //std::cout << MTL_TESTS::test_162_shadow_matte_back1()      << std::endl;
-    //std::cout << MTL_TESTS::test_173_glossy_dark_edges_microfacet() << std::endl;
-    //LGHT_TESTS::test_223_rotated_area_light();
+  
+    //LGHT_TESTS::test_225_point_spot_simple();
+    LGHT_TESTS::test_226_area_spot_simple();
 
     //std::cout << PP_TESTS::test301_resample()        << std::endl;
     //std::cout << PP_TESTS::test302_median()          << std::endl;
