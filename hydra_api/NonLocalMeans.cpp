@@ -320,7 +320,7 @@ bool NonLocalMeansLDR::Eval()
   HDRImage4f inImage(m_width, m_height, m_data);
   HDRImage4f outImage = inImage;
 
-  inImage.medianFilterInPlace(10.0f*0.35f, 0.0f);
+  inImage.medianFilter(10.0f*0.35f, 0.0f);
 
   NonLocalMeansGuidedTexNormDepthFilter(inImage, texColors, normDepth, outImage, 7, 1, m_noiseLvl);
 

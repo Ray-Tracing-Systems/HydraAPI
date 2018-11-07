@@ -299,7 +299,8 @@ namespace MTL_TESTS
   bool test_169_displace_custom_callback();
   bool test_170_fresnel_blend();
   bool test_171_simple_displacement_triplanar();
-
+  bool test_172_glossy_dark_edges_phong();
+  bool test_173_glossy_dark_edges_microfacet();
 }
 
 namespace LGHT_TESTS
@@ -367,6 +368,7 @@ namespace PP_TESTS
   bool test303_median_in_place();
   bool test304_obsolete_tone_mapping();
   bool test305_fbi_from_render();
+
   bool test306_post_process_hydra1_exposure05();
   bool test307_post_process_hydra1_exposure2();
   bool test308_post_process_hydra1_compress();
@@ -382,6 +384,10 @@ namespace PP_TESTS
   bool test317_post_process_hydra1_sharpness();
   bool test318_post_process_hydra1_ECCSWUNSVC();
   bool test319_post_process_hydra1_diffStars();
+
+  bool test320_blur();
+  bool test321_median_mostly_bad_pixels();
+
 };
 
 //These tests need some scene library to exist in their respective folders

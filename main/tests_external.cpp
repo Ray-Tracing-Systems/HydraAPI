@@ -198,7 +198,7 @@ bool test_x1_displace_car_by_noise()
 
   hrSceneClose(scnRef);
 
-  std::wstring car_path(L"/home/vs/Yandex.Disk/samsungdata/CarsLibSeparate/002");
+  std::wstring car_path(L"/CarsLibSeparate/002");
 
   auto merged_car = MergeLibraryIntoLibrary(car_path.c_str(), false, true);
   hrCommit(scnRef);
@@ -582,28 +582,28 @@ bool test_x3_car_fresnel_ice()
     transp.append_child(L"fog_color").append_attribute(L"val").set_value(L"1.0 1.0 1.0");
     transp.append_child(L"fog_multiplier").append_attribute(L"val").set_value(0.0f);
     transp.append_child(L"ior").append_attribute(L"val").set_value(2.41f);
-
-    auto texNode = hrTextureBind(texPattern, transp.child(L"glossiness"));
-
-    texNode.append_attribute(L"matrix");
-    float samplerMatrix1[16] = { 16, 0, 0, 0,
-                                0, 16, 0, 0,
-                                0, 0, 1, 0,
-                                0, 0, 0, 1 };
-    texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
-    texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
-    texNode.append_attribute(L"input_gamma").set_value(2.2f);
-    texNode.append_attribute(L"input_alpha").set_value(L"rgb");
-
-    HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix1);
+//
+//    auto texNode = hrTextureBind(texPattern, transp.child(L"glossiness"));
+//
+//    texNode.append_attribute(L"matrix");
+//    float samplerMatrix1[16] = { 16, 0, 0, 0,
+//                                0, 16, 0, 0,
+//                                0, 0, 1, 0,
+//                                0, 0, 0, 1 };
+//    texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
+//    texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
+//    texNode.append_attribute(L"input_gamma").set_value(2.2f);
+//    texNode.append_attribute(L"input_alpha").set_value(L"rgb");
+//
+//    HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix1);
 
     auto displacement = matNode.append_child(L"displacement");
     auto heightNode   = displacement.append_child(L"height_map");
 
     displacement.append_attribute(L"type").set_value(L"height_bump");
-    heightNode.append_attribute(L"amount").set_value(1.5f);
+    heightNode.append_attribute(L"amount").set_value(1.0f);
 
-    texNode = hrTextureBind(texBump, heightNode);
+    auto texNode = hrTextureBind(texBump, heightNode);
 
     texNode.append_attribute(L"matrix");
     float samplerMatrix[16] = { 2, 0, 0, 0,
@@ -683,8 +683,8 @@ bool test_x3_car_fresnel_ice()
   // Render settings
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  int w = 2048;
-  int h = 2048;
+  int w = 1024;
+  int h = 1024;
 
   HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, w, h, 1024, 1024);
   hrRenderOpen(renderRef, HR_OPEN_EXISTING);
@@ -747,7 +747,7 @@ bool test_x3_car_fresnel_ice()
 
   hrSceneClose(scnRef);
 
-  std::wstring car_path(L"CarsLibSeparate/006");
+  std::wstring car_path(L"CarsLibSeparate/045");
 
   auto merged_car = MergeLibraryIntoLibrary(car_path.c_str(), false, true);
   hrCommit(scnRef);
@@ -782,7 +782,7 @@ bool test_x3_car_fresnel_ice()
     auto matNode = hrMaterialParamNode(newBodyMat);
 
     auto diff = matNode.child(L"diffuse");
-    diff.child(L"color").attribute(L"val").set_value(L"0.0 0.0 0.99");
+    diff.child(L"color").attribute(L"val").set_value(L"0.987 0.985 0.99");
 
     VERIFY_XML(matNode);
   }

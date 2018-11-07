@@ -108,7 +108,7 @@
     <ClCompile Include="tests_mtl4.cpp">
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>
-    <ClCompile Include="test_mtl5.cpp">
+    <ClCompile Include="tests_mtl5.cpp">
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>
   </ItemGroup>
