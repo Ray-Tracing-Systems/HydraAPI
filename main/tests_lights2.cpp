@@ -1899,7 +1899,7 @@ namespace LGHT_TESTS
       camNode.append_child(L"farClipPlane").text().set(L"100.0");
 
       camNode.append_child(L"up").text().set(L"0 1 0");
-      camNode.append_child(L"position").text().set(L"0 0 15");
+      camNode.append_child(L"position").text().set(L"0 0 14");
       camNode.append_child(L"look_at").text().set(L"0 0 0");
     }
     hrCameraClose(camRef);
@@ -1953,12 +1953,12 @@ namespace LGHT_TESTS
     mat4x4_identity(mTranslate);
     mat4x4_identity(mRes);
 
-    //mat4x4_translate(mTranslate, 0.0f, -0.70f*3.65f, 0.0f);
-    //mat4x4_scale(mRot1, mRot1, 3.65f);
-    //mat4x4_mul(mRes, mTranslate, mRot1);
-    //mat4x4_transpose(matrixT, mRes); // this fucking math library swap rows and columns
-    //matrixT[3][3] = 1.0f;
-    //hrMeshInstance(scnRef, teapotRef, &matrixT[0][0]);
+    mat4x4_translate(mTranslate, 0.0f, -0.70f*3.65f, 0.0f);
+    mat4x4_scale(mRot1, mRot1, 3.65f);
+    mat4x4_mul(mRes, mTranslate, mRot1);
+    mat4x4_transpose(matrixT, mRes); // this fucking math library swap rows and columns
+    matrixT[3][3] = 1.0f;
+    hrMeshInstance(scnRef, teapotRef, &matrixT[0][0]);
 
     mat4x4_identity(mRot1);
     mat4x4_rotate_Y(mRot1, mRot1, 180.0f*DEG_TO_RAD);
@@ -2019,8 +2019,53 @@ namespace LGHT_TESTS
     }
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_224/z_out.png");
-
-    return check_images("test_224", 1, 40.0f);
+  
+  
+    hrRenderOpen(renderRef, HR_OPEN_EXISTING);
+    {
+      pugi::xml_node node = hrRenderParamNode(renderRef);
+      
+      node.force_child(L"method_primary").text()   = L"pathtracing";
+      node.force_child(L"method_secondary").text() = L"mmlt";
+  
+      node.force_child(L"mmlt_burn_iters").text()     = 1024;   // [1024, 2048, 4096, 8192, 16384, 65536]
+      node.force_child(L"mmlt_sds_fixed_prob").text() = 0;      // [0, 0.25, 0.5, 0,75, 0 85, 0.9, 0.95 ]
+      node.force_child(L"mmlt_threads").text()        = 262144; // [524288, 262144, 131072(?), 65536, 16384]
+  
+      node.force_child(L"maxRaysPerPixel").text()     = 8192;
+    }
+    hrRenderClose(renderRef);
+  
+    hrFlush(scnRef, renderRef);
+  
+    while (true)
+    {
+      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    
+      HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
+    
+      if (info.haveUpdateFB)
+      {
+        hrRenderGetFrameBufferLDR1i(renderRef, TEST_SCREEN_SIZE, TEST_SCREEN_SIZE, &image[0]);
+      
+        glDisable(GL_TEXTURE_2D);
+        glDrawPixels(TEST_SCREEN_SIZE, TEST_SCREEN_SIZE, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+      
+        auto pres = std::cout.precision(2);
+        std::cout << "rendering progress = " << info.progress << "% \r";
+        std::cout.precision(pres);
+      
+        glfwSwapBuffers(g_window);
+        glfwPollEvents();
+      }
+    
+      if (info.finalUpdate)
+        break;
+    }
+  
+    hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_224/z_out2.png");
+    
+    return check_images("test_224", 2, 40.0f);
   }
 
 

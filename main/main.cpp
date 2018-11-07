@@ -137,9 +137,8 @@ int main(int argc, const char** argv)
     //run_all_lgt_tests();
     //run_all_mtl_tests();
     //run_all_ipp_tests();
-  
-    //LGHT_TESTS::test_225_point_spot_simple();
-    LGHT_TESTS::test_227_point_spot_glossy_wall();
+    
+    std::cout << LGHT_TESTS::test_224_rotated_area_light2() << std::endl;
 
     //std::cout << PP_TESTS::test301_resample()        << std::endl;
     //std::cout << PP_TESTS::test302_median()          << std::endl;
