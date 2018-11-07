@@ -139,7 +139,7 @@ int main(int argc, const char** argv)
     //run_all_ipp_tests();
   
     //LGHT_TESTS::test_225_point_spot_simple();
-    LGHT_TESTS::test_226_area_spot_simple();
+    LGHT_TESTS::test_227_point_spot_glossy_wall();
 
     //std::cout << PP_TESTS::test301_resample()        << std::endl;
     //std::cout << PP_TESTS::test302_median()          << std::endl;
