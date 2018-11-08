@@ -133,12 +133,12 @@ int main(int argc, const char** argv)
     //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_31", L"opengl1", nullptr, &test02_draw);
     
     //run_all_api_tests();
-	  //run_all_geo_tests();
-    //run_all_lgt_tests();
-    //run_all_mtl_tests();
+	  run_all_geo_tests();
+    run_all_mtl_tests();
+    run_all_lgt_tests();
     //run_all_ipp_tests();
     
-    std::cout << LGHT_TESTS::test_224_rotated_area_light2() << std::endl;
+    //std::cout << LGHT_TESTS::test_224_rotated_area_light2() << std::endl;
 
     //std::cout << PP_TESTS::test301_resample()        << std::endl;
     //std::cout << PP_TESTS::test302_median()          << std::endl;
