@@ -2012,6 +2012,80 @@ void run_all_ipp_tests(int a_start)
   fout.close();
 }
 
+void run_all_mictofacet()
+{
+  using namespace LGHT_TESTS;
+  using namespace MTL_TESTS;
+  
+  TestFunc tests[] = {
+                       &test_202_sky_color,
+                       &test_203_sky_hdr,
+                       &test_204_sky_hdr_rotate,
+
+                       &test_105_reflect_microfacet,
+                       &test_107_reflect_extrusion,
+                       &test_108_reflect_texture,
+                       &test_109_reflect_glossiness_texture,
+                       &test_111_glossiness_texture_sampler,
+                       
+                       &test_130_bump_invert_normalY,
+                       &test_135_opacity_metal,
+                       &test_151_gloss_mirror_cos_div2,
+                       &test_166_displace_by_noise,
+                       &test_169_displace_custom_callback,
+  };
+  
+  
+  std::string names[] = {
+    "test_202_sky_color",
+    "test_203_sky_hdr",
+    "test_204_sky_hdr_rotate",
+  
+    "test_105_reflect_microfacet",
+    "test_107_reflect_extrusion",
+    "test_108_reflect_texture",
+    "test_109_reflect_glossiness_texture",
+    "test_111_glossiness_texture_sampler",
+  
+    "test_130_bump_invert_normalY",
+    "test_135_opacity_metal",
+    "test_151_gloss_mirror_cos_div2",
+    "test_166_displace_by_noise",
+    "test_169_displace_custom_callback",
+  };
+  
+  
+  std::ofstream fout("z_microfacet.txt");
+  
+  const int testNum = sizeof(tests) / sizeof(TestFunc);
+  
+  for (int i = 0; i < testNum; i++)
+  {
+    bool res = tests[i]();
+    if (res)
+    {
+      std::cout          << names[i].c_str() << " " << std::setfill('0') << std::setw(3) << 200 + i << "\tPASSED!\t\n";
+      fout << std::fixed << names[i].c_str() << " " << std::setfill('0') << std::setw(3) << 200 + i << "\tPASSED!\t\n";
+    }
+    else if (g_testWasIgnored)
+    {
+      std::cout          << names[i].c_str() << " " << std::setfill('0') << std::setw(3) << 200 + i << "\tSKIPPED!\t\n";
+      fout << std::fixed << names[i].c_str() << " " << std::setfill('0') << std::setw(3) << 200 + i << "\tSKIPPED!\t\n";
+    }
+    else
+    {
+      std::cout          << names[i].c_str() << " " << std::setfill('0') << std::setw(3) << 200 + i << "\tFAILED! :-: MSE = " << g_MSEOutput << std::endl;
+      fout << std::fixed << names[i].c_str() << " " << std::setfill('0') << std::setw(3) << 200 + i << "\tFAILED! :-: MSE = " << g_MSEOutput << std::endl;
+    }
+    
+    fout.flush();
+    
+    g_testWasIgnored = false;
+  }
+  
+  fout.close();
+}
+
 void terminate_opengl()
 {
 	glfwTerminate();

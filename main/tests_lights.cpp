@@ -544,7 +544,7 @@ namespace LGHT_TESTS
 
       auto refl = matNode.append_child(L"reflectivity");
       refl.append_attribute(L"brdf_type").set_value(L"torranse_sparrow");
-      refl.append_child(L"color").append_attribute(L"val").set_value(L"0.8 0.8 0.8");
+      refl.append_child(L"color").append_attribute(L"val").set_value(L"0.9 0.9 0.9");
       refl.append_child(L"glossiness").append_attribute(L"val").set_value(L"0.98");
       refl.append_child(L"extrusion").append_attribute(L"val").set_value(L"maxcolor");
       refl.append_child(L"fresnel").append_attribute(L"val").set_value(1);
@@ -759,7 +759,7 @@ namespace LGHT_TESTS
 
       auto refl = matNode.append_child(L"reflectivity");
       refl.append_attribute(L"brdf_type").set_value(L"torranse_sparrow");
-      refl.append_child(L"color").append_attribute(L"val").set_value(L"0.8 0.8 0.8");
+      refl.append_child(L"color").append_attribute(L"val").set_value(L"0.9 0.9 0.9");
       refl.append_child(L"glossiness").append_attribute(L"val").set_value(L"0.98");
       refl.append_child(L"extrusion").append_attribute(L"val").set_value(L"maxcolor");
       refl.append_child(L"fresnel").append_attribute(L"val").set_value(1);
@@ -988,7 +988,7 @@ namespace LGHT_TESTS
 
       auto refl = matNode.append_child(L"reflectivity");
       refl.append_attribute(L"brdf_type").set_value(L"torranse_sparrow");
-      refl.append_child(L"color").append_attribute(L"val").set_value(L"0.8 0.8 0.8");
+      refl.append_child(L"color").append_attribute(L"val").set_value(L"0.9 0.9 0.9");
       refl.append_child(L"glossiness").append_attribute(L"val").set_value(L"0.98");
       refl.append_child(L"extrusion").append_attribute(L"val").set_value(L"maxcolor");
       refl.append_child(L"fresnel").append_attribute(L"val").set_value(1);
@@ -1000,9 +1000,9 @@ namespace LGHT_TESTS
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Meshes
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    HRMeshRef cubeR = HRMeshFromSimpleMesh(L"cubeR", CreateCube(2.0f), matGray.id);
-    HRMeshRef sphereG = HRMeshFromSimpleMesh(L"sphereG", CreateSphere(4.0f, 64), matRefl.id);
-    HRMeshRef torusB = HRMeshFromSimpleMesh(L"torusB", CreateTorus(0.8f, 2.0f, 64, 64), matGray.id);
+    HRMeshRef cubeR    = HRMeshFromSimpleMesh(L"cubeR", CreateCube(2.0f), matGray.id);
+    HRMeshRef sphereG  = HRMeshFromSimpleMesh(L"sphereG", CreateSphere(4.0f, 64), matRefl.id);
+    HRMeshRef torusB   = HRMeshFromSimpleMesh(L"torusB", CreateTorus(0.8f, 2.0f, 64, 64), matGray.id);
     HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane", CreatePlane(20.0f), matGray.id);
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Light

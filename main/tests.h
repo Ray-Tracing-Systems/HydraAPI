@@ -430,4 +430,6 @@ static const int CURR_RENDER_DEVICE = 0;
 
 //void image_p_sandbox();
 
+void run_all_mictofacet();
+
 #endif
