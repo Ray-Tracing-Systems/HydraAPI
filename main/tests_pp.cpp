@@ -63,7 +63,7 @@ bool PP_TESTS::test302_median()
   pugi::xml_document docSettings;
   pugi::xml_node settings = docSettings.append_child(L"settings");
 
-  settings.append_attribute(L"threshold") = 0.02f; // for LDR images is like 0.02*255 = 5 bit differense; for HDR is just 0.02
+  settings.append_attribute(L"threshold") = 0.2f; // for LDR images is like 0.02*255 = 5 bit differense; for HDR is just 0.02
 
   hrFilterApply(L"median",    settings, HRRenderRef(),
                 L"in_color",  image1,            
@@ -78,11 +78,10 @@ bool PP_TESTS::test303_median_in_place()
 {
   HRFBIRef image1 = hrFBICreateFromFile(L"data/textures/texture1_nosy.bmp");
 
-
   pugi::xml_document docSettings;
   pugi::xml_node settings = docSettings.append_child(L"settings");
 
-  settings.append_attribute(L"threshold") = 0.02f; // for LDR images is like 0.02*255 = 5 bit difference; for HDR is just 0.02
+  settings.append_attribute(L"threshold") = 0.2f; // for LDR images is like 0.02*255 = 5 bit difference; for HDR is just 0.02
 
   hrFilterApply(L"median",    settings, HRRenderRef(), //
                 L"in_color",  image1,                  // image1; special case (!!!); median filter can work in place; Most filers can not!
@@ -117,6 +116,55 @@ bool PP_TESTS::test304_obsolete_tone_mapping()
   hrFBISaveToFile(image2, L"tests_images/test_304/z_out.png");
 
   return check_images("test_304");
+}
+
+bool PP_TESTS::test320_blur()
+{
+  HRFBIRef image1 = hrFBICreateFromFile(L"data/textures/texture1.bmp");
+
+  int w, h;
+  hrFBIGetData(image1, &w, &h, nullptr);
+
+  HRFBIRef image2 = hrFBICreate(L"temp", w / 2, h / 2, 16);
+
+  pugi::xml_document docSettings;
+  pugi::xml_node settings = docSettings.append_child(L"settings");
+
+  settings.append_attribute(L"radius") = 7;
+  settings.append_attribute(L"sigma")  = 2.0f;
+
+  hrFilterApply(L"blur",      settings, HRRenderRef(), // empty settimgs and render, will resample to width and height of the second image
+                L"in_color",  image1,
+                L"out_color", image2);
+
+  hrFBISaveToFile(image2, L"tests_images/test_320/z_out.png");
+
+  return false; // this test is not ready due to boundaries does not processed now
+}
+
+bool PP_TESTS::test321_median_mostly_bad_pixels()
+{
+  HRFBIRef image1 = hrFBICreateFromFile(L"data/textures/texture1_nosy.bmp");
+
+  int w, h;
+  hrFBIGetData(image1, &w, &h, nullptr);
+
+  HRFBIRef image2 = hrFBICreate(L"temp", w, h, 16);
+
+  pugi::xml_document docSettings;
+  pugi::xml_node settings = docSettings.append_child(L"settings");
+
+  settings.append_attribute(L"threshold")  = 0.2f; // for LDR images is like 0.02*255 = 5 bit differense; for HDR is just 0.02
+  settings.append_attribute(L"pixels_num") = 100;
+
+  hrFilterApply(L"median_n", settings, HRRenderRef(),
+                L"in_color", image1,
+                L"out_color", image2);
+
+  hrFBISaveToFile(image2, L"tests_images/test_321/z_out.png");
+
+  return false;
+  //return check_images("test_321");
 }
 
 bool PP_TESTS::test306_post_process_hydra1_exposure05()

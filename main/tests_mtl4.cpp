@@ -2254,7 +2254,7 @@ bool MTL_TESTS::test_164_simple_displacement_proctex()
 
   //HRTextureNodeRef texChecker = hrTexture2DCreateFromFile(L"data/textures/chess_white.bmp");
   //HRTextureNodeRef tex = hrTexture2DCreateFromFile(L"data/textures/ornament.jpg");
-  HRTextureNodeRef tex = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep), sizeof(int), 32, 32);
+  HRTextureNodeRef tex = hrTexture2DCreateBakedLDR(&procTexCheckerLDR, (void *) (&rep), sizeof(int), 32, 32);
 
   hrMaterialOpen(mat1, HR_WRITE_DISCARD);
   {
@@ -2490,7 +2490,7 @@ bool MTL_TESTS::test_165_simple_displacement_mesh()
 
   //HRTextureNodeRef texChecker = hrTexture2DCreateFromFile(L"data/textures/chess_white.bmp");
   HRTextureNodeRef tex = hrTexture2DCreateFromFile(L"data/textures/blur_pattern.bmp");
-  //HRTextureNodeRef tex = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep), sizeof(int), 256, 256);
+  //HRTextureNodeRef tex = hrTexture2DCreateBakedLDR(&procTexCheckerLDR, (void*)(&rep), sizeof(int), 256, 256);
 
   hrMaterialOpen(mat1, HR_WRITE_DISCARD);
   {
@@ -2635,7 +2635,7 @@ bool MTL_TESTS::test_165_simple_displacement_mesh()
   // Render settings
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 1024, 256, 512);
+  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 1024);
 
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2682,8 +2682,8 @@ bool MTL_TESTS::test_165_simple_displacement_mesh()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 1024, 1024);
-  std::vector<int32_t> image(1024 * 1024);
+  glViewport(0, 0, 512, 512);
+  std::vector<int32_t> image(512 * 512);
 
   while (true)
   {
@@ -2693,10 +2693,10 @@ bool MTL_TESTS::test_165_simple_displacement_mesh()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 1024, &image[0]);
+      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
       glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 1024, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
@@ -2880,7 +2880,7 @@ bool MTL_TESTS::test_166_displace_by_noise()
   // Render settings
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 1024, 256, 256);
+  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 1024);
 
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2935,8 +2935,8 @@ bool MTL_TESTS::test_166_displace_by_noise()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 1024, 1024);
-  std::vector<int32_t> image(1024 * 1024);
+  glViewport(0, 0, 512, 512);
+  std::vector<int32_t> image(512 * 512);
 
   while (true)
   {
@@ -2946,10 +2946,10 @@ bool MTL_TESTS::test_166_displace_by_noise()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 1024, &image[0]);
+      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
       glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 1024, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
@@ -3492,7 +3492,7 @@ bool MTL_TESTS::test_169_displace_custom_callback()
   // Render settings
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 1024, 256, 256);
+  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 1025);
 
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3547,8 +3547,8 @@ bool MTL_TESTS::test_169_displace_custom_callback()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 1024, 1024);
-  std::vector<int32_t> image(1024 * 1024);
+  glViewport(0, 0, 512, 512);
+  std::vector<int32_t> image(512 * 512);
 
   while (true)
   {
@@ -3558,10 +3558,10 @@ bool MTL_TESTS::test_169_displace_custom_callback()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 1024, &image[0]);
+      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
 
       glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 1024, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
@@ -3577,7 +3577,7 @@ bool MTL_TESTS::test_169_displace_custom_callback()
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_169/z_out.png");
 
-  return check_images("test_169", 1, 30);
+  return check_images("test_169", 1, 20);
 }
 
 bool MTL_TESTS::test_171_simple_displacement_triplanar()
@@ -3747,8 +3747,8 @@ bool MTL_TESTS::test_171_simple_displacement_triplanar()
   hrRenderLogDir(renderRef, L"/tmp/hydra_logs", true);
 
 
-  const int w = 1024;
-  const int h = 1024;
+  const int w = 512;
+  const int h = 512;
 
   hrRenderOpen(renderRef, HR_WRITE_DISCARD);
   {
@@ -3757,17 +3757,16 @@ bool MTL_TESTS::test_171_simple_displacement_triplanar()
     node.append_child(L"width").text()  = w;
     node.append_child(L"height").text() = h;
 
-    node.append_child(L"method_primary").text() = L"pathtracing";
+    node.append_child(L"method_primary").text()   = L"pathtracing";
     node.append_child(L"method_secondary").text() = L"pathtracing";
-    node.append_child(L"method_tertiary").text() = L"pathtracing";
-    node.append_child(L"method_caustic").text() = L"pathtracing";
+    node.append_child(L"method_tertiary").text()  = L"pathtracing";
+    node.append_child(L"method_caustic").text()   = L"pathtracing";
     node.append_child(L"shadows").text() = L"1";
 
-    node.append_child(L"trace_depth").text() = L"4";
-    node.append_child(L"diff_trace_depth").text() = L"4";
-    node.append_child(L"pt_error").text() = L"2.0";
-    node.append_child(L"minRaysPerPixel").text() = L"256";
-    node.append_child(L"maxRaysPerPixel").text() = L"512";
+    node.append_child(L"trace_depth").text()      = 5;
+    node.append_child(L"diff_trace_depth").text() = 4;
+    node.append_child(L"minRaysPerPixel").text()  = 256;
+    node.append_child(L"maxRaysPerPixel").text()  = 1024;
   }
   hrRenderClose(renderRef);
 
@@ -3839,5 +3838,5 @@ bool MTL_TESTS::test_171_simple_displacement_triplanar()
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_171/z_out.png");
 
-  return check_images("test_171", 1, 10);
+  return check_images("test_171", 1, 20);
 }

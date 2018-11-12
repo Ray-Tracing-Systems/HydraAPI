@@ -88,7 +88,7 @@ namespace LGHT_TESTS
       auto intensityNode = lightNode.append_child(L"intensity");
 
       intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-			intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"100");
+			intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"700");
 
       lightNode.append_child(L"falloff_angle").append_attribute(L"val").set_value(100);
       lightNode.append_child(L"falloff_angle2").append_attribute(L"val").set_value(60);
@@ -230,7 +230,6 @@ namespace LGHT_TESTS
     initGLIfNeeded();
 
     hrErrorCallerPlace(L"test_227");
-
     hrSceneLibraryOpen(L"tests_f/test_227", HR_WRITE_DISCARD);
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -348,8 +347,26 @@ namespace LGHT_TESTS
     // Render settings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, TESTS_IMG_SIZE, TESTS_IMG_SIZE, 512, 8192);
-
+    HRRenderRef renderRef = hrRenderCreate(L"HydraModern");
+  
+    hrRenderOpen(renderRef, HR_WRITE_DISCARD);
+    {
+      auto node = hrRenderParamNode(renderRef);
+    
+      node.append_child(L"width").text()  = 512;
+      node.append_child(L"height").text() = 512;
+    
+      node.append_child(L"method_primary").text()   = L"IBPT";
+      node.append_child(L"method_secondary").text() = L"IBPT";
+      node.append_child(L"shadows").text()          = L"1";
+    
+      node.append_child(L"trace_depth").text()      = L"6";
+      node.append_child(L"diff_trace_depth").text() = L"3";
+      node.append_child(L"maxRaysPerPixel").text()  = 1024;
+      node.append_child(L"resources_path").text()   = L"..";
+      node.append_child(L"offline_pt").text()       = 0;
+    }
+    hrRenderClose(renderRef);
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Create scene
@@ -435,6 +452,7 @@ namespace LGHT_TESTS
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
+        std::cout.flush();
 
         glfwSwapBuffers(g_window);
         glfwPollEvents();

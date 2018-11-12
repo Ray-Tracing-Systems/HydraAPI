@@ -1821,15 +1821,20 @@ void run_all_mtl_tests(int a_start)
                        &test_159_proc_dirt2,
                        &test_160_proc_dirt3,
 
-                       &test_161_simple_displacement,
+                       &dummy_test, // test_161_simple_displacement, this test is disabled
                        &test_162_shadow_matte_back1,
                        &test_163_diffuse_texture_recommended_res,
 
-                       &test_164_simple_displacement_proctex,
+                       &dummy_test, // test_164_simple_displacement_proctex, this test is disabled
                        &test_165_simple_displacement_mesh,
-                       &dummy_test, // test_166_displace_by_noise
+                       &test_166_displace_by_noise,
                        &test_167_subdiv,
                        &test_168_diffuse_texture_recommended_res2,
+                       &test_169_displace_custom_callback,
+                       &test_170_fresnel_blend,
+                       &test_171_simple_displacement_triplanar,
+                       &test_172_glossy_dark_edges_phong,
+                       &test_173_glossy_dark_edges_microfacet,
 	                   };
 
 
@@ -2004,6 +2009,80 @@ void run_all_ipp_tests(int a_start)
     g_testWasIgnored = false;
   }
 
+  fout.close();
+}
+
+void run_all_mictofacet()
+{
+  using namespace LGHT_TESTS;
+  using namespace MTL_TESTS;
+  
+  TestFunc tests[] = {
+                       &test_202_sky_color,
+                       &test_203_sky_hdr,
+                       &test_204_sky_hdr_rotate,
+
+                       &test_105_reflect_microfacet,
+                       &test_107_reflect_extrusion,
+                       &test_108_reflect_texture,
+                       &test_109_reflect_glossiness_texture,
+                       &test_111_glossiness_texture_sampler,
+                       
+                       &test_130_bump_invert_normalY,
+                       &test_135_opacity_metal,
+                       &test_151_gloss_mirror_cos_div2,
+                       &test_166_displace_by_noise,
+                       &test_169_displace_custom_callback,
+  };
+  
+  
+  std::string names[] = {
+    "test_202_sky_color",
+    "test_203_sky_hdr",
+    "test_204_sky_hdr_rotate",
+  
+    "test_105_reflect_microfacet",
+    "test_107_reflect_extrusion",
+    "test_108_reflect_texture",
+    "test_109_reflect_glossiness_texture",
+    "test_111_glossiness_texture_sampler",
+  
+    "test_130_bump_invert_normalY",
+    "test_135_opacity_metal",
+    "test_151_gloss_mirror_cos_div2",
+    "test_166_displace_by_noise",
+    "test_169_displace_custom_callback",
+  };
+  
+  
+  std::ofstream fout("z_microfacet.txt");
+  
+  const int testNum = sizeof(tests) / sizeof(TestFunc);
+  
+  for (int i = 0; i < testNum; i++)
+  {
+    bool res = tests[i]();
+    if (res)
+    {
+      std::cout          << names[i].c_str() << " " << std::setfill('0') << std::setw(3) << 200 + i << "\tPASSED!\t\n";
+      fout << std::fixed << names[i].c_str() << " " << std::setfill('0') << std::setw(3) << 200 + i << "\tPASSED!\t\n";
+    }
+    else if (g_testWasIgnored)
+    {
+      std::cout          << names[i].c_str() << " " << std::setfill('0') << std::setw(3) << 200 + i << "\tSKIPPED!\t\n";
+      fout << std::fixed << names[i].c_str() << " " << std::setfill('0') << std::setw(3) << 200 + i << "\tSKIPPED!\t\n";
+    }
+    else
+    {
+      std::cout          << names[i].c_str() << " " << std::setfill('0') << std::setw(3) << 200 + i << "\tFAILED! :-: MSE = " << g_MSEOutput << std::endl;
+      fout << std::fixed << names[i].c_str() << " " << std::setfill('0') << std::setw(3) << 200 + i << "\tFAILED! :-: MSE = " << g_MSEOutput << std::endl;
+    }
+    
+    fout.flush();
+    
+    g_testWasIgnored = false;
+  }
+  
   fout.close();
 }
 

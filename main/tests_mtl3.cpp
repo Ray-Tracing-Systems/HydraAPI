@@ -1316,10 +1316,10 @@ bool MTL_TESTS::test_154_proc_checker_precomp()
   int rep3 = 4;
   int rep4 = 2;
 
-  HRTextureNodeRef testTex1 = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep1), sizeof(int), -1, -1);
-  HRTextureNodeRef testTex2 = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep2), sizeof(int), -1, -1);
-  HRTextureNodeRef testTex3 = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep3), sizeof(int), -1, -1);
-  HRTextureNodeRef testTex4 = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep4), sizeof(int), 16, 16);
+  HRTextureNodeRef testTex1 = hrTexture2DCreateBakedLDR(&procTexCheckerLDR, (void *) (&rep1), sizeof(int), -1, -1);
+  HRTextureNodeRef testTex2 = hrTexture2DCreateBakedLDR(&procTexCheckerLDR, (void *) (&rep2), sizeof(int), -1, -1);
+  HRTextureNodeRef testTex3 = hrTexture2DCreateBakedLDR(&procTexCheckerLDR, (void *) (&rep3), sizeof(int), -1, -1);
+  HRTextureNodeRef testTex4 = hrTexture2DCreateBakedLDR(&procTexCheckerLDR, (void *) (&rep4), sizeof(int), 16, 16);
 
 
   hrMaterialOpen(matR, HR_WRITE_DISCARD);
@@ -1647,10 +1647,10 @@ bool MTL_TESTS::test_155_proc_checker_HDR_precomp()
   int rep3 = 8;
   int rep4 = 2;
 
-  HRTextureNodeRef testTex1 = hrTexture2DCreateFromProcHDR(&procTexCheckerHDR, (void*)(&rep1), sizeof(int), -1, -1);
-  HRTextureNodeRef testTex2 = hrTexture2DCreateFromProcHDR(&procTexCheckerHDR, (void*)(&rep2), sizeof(int), -1, -1);
-  HRTextureNodeRef testTex3 = hrTexture2DCreateFromProcHDR(&procTexCheckerHDR, (void*)(&rep3), sizeof(int), -1, -1);
-  HRTextureNodeRef testTex4 = hrTexture2DCreateFromProcHDR(&procTexCheckerHDR, (void*)(&rep4), sizeof(int), 16, 16);
+  HRTextureNodeRef testTex1 = hrTexture2DCreateBakedHDR(&procTexCheckerHDR, (void *) (&rep1), sizeof(int), -1, -1);
+  HRTextureNodeRef testTex2 = hrTexture2DCreateBakedHDR(&procTexCheckerHDR, (void *) (&rep2), sizeof(int), -1, -1);
+  HRTextureNodeRef testTex3 = hrTexture2DCreateBakedHDR(&procTexCheckerHDR, (void *) (&rep3), sizeof(int), -1, -1);
+  HRTextureNodeRef testTex4 = hrTexture2DCreateBakedHDR(&procTexCheckerHDR, (void *) (&rep4), sizeof(int), 16, 16);
 
 
   hrMaterialOpen(matR, HR_WRITE_DISCARD);
@@ -1975,10 +1975,10 @@ bool MTL_TESTS::test_156_proc_checker_precomp_update()
   int rep3 = 16;
   int rep4 = 2;
 
-  HRTextureNodeRef testTex1 = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep1), sizeof(int), -1, -1);
-  HRTextureNodeRef testTex2 = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep2), sizeof(int), -1, -1);
-  HRTextureNodeRef testTex3 = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep3), sizeof(int), -1, -1);
-  HRTextureNodeRef testTex4 = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep4), sizeof(int), 16, 16);
+  HRTextureNodeRef testTex1 = hrTexture2DCreateBakedLDR(&procTexCheckerLDR, (void *) (&rep1), sizeof(int), -1, -1);
+  HRTextureNodeRef testTex2 = hrTexture2DCreateBakedLDR(&procTexCheckerLDR, (void *) (&rep2), sizeof(int), -1, -1);
+  HRTextureNodeRef testTex3 = hrTexture2DCreateBakedLDR(&procTexCheckerLDR, (void *) (&rep3), sizeof(int), -1, -1);
+  HRTextureNodeRef testTex4 = hrTexture2DCreateBakedLDR(&procTexCheckerLDR, (void *) (&rep4), sizeof(int), 16, 16);
 
 
   hrMaterialOpen(matR, HR_WRITE_DISCARD);
@@ -2108,9 +2108,9 @@ bool MTL_TESTS::test_156_proc_checker_precomp_update()
   rep2 = 2;
   rep3 = 2;
 
-  testTex1 = hrTexture2DUpdateFromProcLDR(testTex1, &procTexCheckerLDR, (void*)(&rep1), sizeof(int), -1, -1);
-  testTex2 = hrTexture2DUpdateFromProcLDR(testTex2, &procTexCheckerLDR, (void*)(&rep2), sizeof(int), -1, -1);
-  testTex3 = hrTexture2DUpdateFromProcLDR(testTex3, &procTexCheckerLDR, (void*)(&rep3), sizeof(int), -1, -1);
+  testTex1 = hrTexture2DUpdateBakedLDR(testTex1, &procTexCheckerLDR, (void *) (&rep1), sizeof(int), -1, -1);
+  testTex2 = hrTexture2DUpdateBakedLDR(testTex2, &procTexCheckerLDR, (void *) (&rep2), sizeof(int), -1, -1);
+  testTex3 = hrTexture2DUpdateBakedLDR(testTex3, &procTexCheckerLDR, (void *) (&rep3), sizeof(int), -1, -1);
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Meshes
@@ -2312,9 +2312,9 @@ bool MTL_TESTS::test_157_proc_checker_precomp_remap()
   int rep2 = 16;
   int rep3 = 32;
 
-  HRTextureNodeRef testTex1 = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep1), sizeof(int), -1, -1);
-  HRTextureNodeRef testTex2 = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep2), sizeof(int), -1, -1);
-  HRTextureNodeRef testTex3 = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep3), sizeof(int), -1, -1);
+  HRTextureNodeRef testTex1 = hrTexture2DCreateBakedLDR(&procTexCheckerLDR, (void *) (&rep1), sizeof(int), -1, -1);
+  HRTextureNodeRef testTex2 = hrTexture2DCreateBakedLDR(&procTexCheckerLDR, (void *) (&rep2), sizeof(int), -1, -1);
+  HRTextureNodeRef testTex3 = hrTexture2DCreateBakedLDR(&procTexCheckerLDR, (void *) (&rep3), sizeof(int), -1, -1);
 
 
   hrMaterialOpen(matR, HR_WRITE_DISCARD);
