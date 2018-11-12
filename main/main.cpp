@@ -128,21 +128,27 @@ int main(int argc, const char** argv)
   
   try
   {
-    //GEO_TESTS::test_001_mesh_from_memory();
+    GEO_TESTS::test_001_mesh_from_memory();
     //demo_01_plane_box();
     //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_31", L"opengl1", nullptr, &test02_draw);
     
     //run_all_api_tests();
-	  run_all_geo_tests();
-    run_all_lgt_tests();
-    run_all_mtl_tests();
+	  //run_all_geo_tests();
+    //run_all_lgt_tests();
+    //run_all_mtl_tests();
     //run_all_ipp_tests();
 
-    //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
+//    std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
     //std::cout << test39_mmlt_or_ibpt() << std::endl;
     //std::cout << test40_several_changes() << std::endl;
-    
-    //std::cout << test63_cornell_with_caustic_from_torus() << std::endl;
+
+
+//    MTL_TESTS::test_164_simple_displacement_proctex();
+//    test_x1_displace_car_by_noise();
+//    test_x2_car_displacement_triplanar();
+//    test_x3_car_fresnel_ice();
+    //test_x4_car_triplanar();
+//    std::cout << test86_proc_texture_ao_dirt() << std::endl;
     //std::cout << "g_MSE = " << g_MSEOutput << std::endl;
     
     //MTL_TESTS::test_170_fresnel_blend();
@@ -151,7 +157,7 @@ int main(int argc, const char** argv)
     
     //PP_TESTS::test305_fbi_from_render();
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
-    //window_main_free_look(L"tests_f/test_241", L"opengl1Debug");
+//    window_main_free_look(L"tests/test_x3", L"opengl1Debug");
 
     //window_main_free_look(L"tests/test_gl32_002_", L"opengl32Deferred", &test_gl32_002_init, &test_gl32_002_draw);
     //window_main_free_look(L"tests/lucy_deferred", L"opengl32Deferred", &test_gl32_001_init, &test_gl32_001_draw);
@@ -160,7 +166,7 @@ int main(int argc, const char** argv)
     //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/demos/demo_01", L"opengl1", nullptr, &test02_draw);
 
     //window_main_free_look(L"tests/zgl1_test_cube", L"opengl32Forward", &test_gl32_001_init, &test_gl32_001_draw);
-    //window_main_free_look(L"D:/PROG/HydraCore/hydra_app/tests/test_42", L"opengl1DrawRays");
+//    window_main_free_look(L"D:/PROG/HydraCore/hydra_app/tests/test_42", L"opengl1DrawRays");
     //test_gl32_002();
     //window_main_free_look(L"tests/test_gl32_002", L"opengl32Deferred");
 
