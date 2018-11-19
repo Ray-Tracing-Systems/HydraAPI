@@ -132,14 +132,14 @@ int main(int argc, const char** argv)
     //demo_01_plane_box();
     //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_31", L"opengl1", nullptr, &test02_draw);
     
-    //run_all_api_tests();
-	  //run_all_geo_tests();
-    //run_all_mtl_tests();
-    //run_all_lgt_tests();
-    //run_all_ipp_tests();
+    run_all_api_tests();
+	  run_all_geo_tests();
+    run_all_mtl_tests();
+    run_all_lgt_tests();
+    run_all_ipp_tests();
     
-    //std::cout <<MTL_TESTS::test_169_displace_custom_callback() << std::endl;
-
+    //std::cout << MTL_TESTS::test_167_subdiv() << std::endl;
+    
     //std::cout << PP_TESTS::test301_resample()        << std::endl;
     //std::cout << PP_TESTS::test302_median()          << std::endl;
     //std::cout << PP_TESTS::test303_median_in_place() << std::endl;
