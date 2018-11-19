@@ -2154,7 +2154,7 @@ bool MTL_TESTS::test_161_simple_displacement()
   // Render settings
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 1024, 256, 1024);
+  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 1024, 256, 2048);
 
   hrRenderOpen(renderRef, HR_OPEN_EXISTING);
   {
@@ -2237,7 +2237,7 @@ bool MTL_TESTS::test_161_simple_displacement()
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_161/z_out.png");
 
-  return check_images("test_161", 1, 30);
+  return check_images("test_161", 1, 50);
 }
 
 bool MTL_TESTS::test_164_simple_displacement_proctex()
