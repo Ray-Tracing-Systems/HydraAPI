@@ -146,6 +146,7 @@ protected:
     bool allocImageB;
     bool allocImageBOnGPU;
     int  mmltThreads;
+    float mmltMultBrightness;
   } m_presets;
 
   bool m_firstUpdate;
@@ -202,7 +203,8 @@ int RD_HydraConnection::MLT_FrameBufferUpdateLoop()
     std::tie(summ[0], summ[1], summ[2]) = HydraRender::ColorSummImage4f(indirect, m_width, m_height);
     double avgDiv       = 1.0/double(m_width*m_height);
     float avgBrightness = contribFunc(avgDiv*summ[0], avgDiv*summ[1], avgDiv*summ[2]);
-    const float normC   = m_pSharedImage->Header()->avgImageB / fmax(avgBrightness, 1e-30f);
+    // normC надо умножить на коэффициент multBrightness из 3д макса.
+    const float normC   = m_pSharedImage->Header()->avgImageB / fmax(avgBrightness, 1e-30f) * m_presets.mmltMultBrightness;
     const float normDL  = 1.0f/float(m_pSharedImage->Header()->spp);
 
     for(size_t i=0;i<m_colorMLTFinal.size(); i+=4)
@@ -513,6 +515,12 @@ bool RD_HydraConnection::UpdateSettings(pugi::xml_node a_settingsNode)
     m_presets.mmltThreads = a_settingsNode.child(L"mmlt_threads").text().as_int();
   else
     m_presets.mmltThreads = 0;
+
+  if (a_settingsNode.child(L"mmlt_multBrightness") != nullptr)
+    m_presets.mmltMultBrightness = a_settingsNode.child(L"mmlt_multBrightness").text().as_float();
+  else
+    m_presets.mmltMultBrightness = 1.0f;
+
   return true;
 }
 
