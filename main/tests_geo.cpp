@@ -1050,14 +1050,21 @@ namespace GEO_TESTS
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Meshes
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    std::cout << "test_005 (1) " << std::endl;
+    
     HRMeshRef cubeR    = HRMeshFromSimpleMesh(L"cubeR", CreateCube(2.0f), matCube.id);
     HRMeshRef pillar   = HRMeshFromSimpleMesh(L"pillar", CreateCube(1.0f), matGray.id);
     HRMeshRef sphereG  = HRMeshFromSimpleMesh(L"sphereG", CreateSphere(4.0f, 64), matTrunk.id);
     HRMeshRef torusB   = HRMeshFromSimpleMesh(L"torusB", CreateTorus(0.8f, 2.0f, 64, 64), matTrunk.id);
     HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane", CreatePlane(10000.0f), matGray.id);
-
+  
+    std::cout << "test_005 (2) " << std::endl;
+    
     HRMeshRef treeRef  = hrMeshCreateFromFileDL(L"data/meshes/bigtree.vsgf");
-
+  
+    std::cout << "test_005 (3) " << std::endl;
+    
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Light
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1246,15 +1253,19 @@ namespace GEO_TESTS
     hrLightInstance(scnRef, sun, mRes.L());
 
     ///////////
-
+  
+    std::cout << "test_005 (4) " << std::endl;
+    
     hrSceneClose(scnRef);
-
+  
+  
+    std::cout << "test_005 (5) " << std::endl;
+    
     // hrFlush(scnRef);
     //return false;
 
     HRRenderRef renderRef = hrRenderCreate(L"HydraModern");
-    hrRenderLogDir(renderRef, L"C:/[Hydra]/logs/", false);
-
+    
     hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
 
     hrRenderOpen(renderRef, HR_WRITE_DISCARD);
@@ -1278,9 +1289,13 @@ namespace GEO_TESTS
       node.append_child(L"maxRaysPerPixel").text() = 2048;
     }
     hrRenderClose(renderRef);
-
+  
+    std::cout << "test_005 (6) " << std::endl;
+    
     hrFlush(scnRef, renderRef);
-
+  
+    std::cout << "test_005 (7) " << std::endl;
+    
     glViewport(0, 0, TEST_IMG_SIZE, TEST_IMG_SIZE);
     std::vector<int32_t> image(TEST_IMG_SIZE * TEST_IMG_SIZE);
 
