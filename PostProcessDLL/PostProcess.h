@@ -779,6 +779,53 @@ void Bilinear(const float inData, float outData[], float newPosX, float newPosY,
     outData[dxy4] += inData * multBrightness4;
   }
 }
+void Bilinear3(const float3 inData, float3 outData[], float newPosX, float newPosY, const int m_width, const int m_height, const int sizeImage)
+{
+  // |------|------|
+  // | dxy3 | dxy4 |
+  // |------|------|
+  // | dxy1 | dxy2 |
+  // |------|------|
+
+  const int floorY = floor(newPosY);
+  const int floorX = floor(newPosX);
+
+  const int     dxy1 = floorY * m_width + floorX;
+  int           dxy2 = dxy1 + 1;
+  if (dxy1 < 0) dxy2 = dxy1 - 1;
+  const int     dxy3 = (floorY + 1) * m_width + floorX;
+  int           dxy4 = dxy3 + 1;
+  if (dxy3 < 0) dxy4 = dxy3 - 1;
+
+  float dx = newPosX - (int)newPosX;
+  float dy = newPosY - (int)newPosY;
+
+  if (dx < 0.0f) dx = 1.0f - abs(dx);
+  if (dy < 0.0f) dy = 1.0f - abs(dy);
+
+  float multBrightness1 = (1.0f - dx) * (1.0f - dy);
+  float multBrightness2 = dx * (1.0f - dy);
+  float multBrightness3 = dy * (1.0f - dx);
+  float multBrightness4 = dx * dy;
+
+  if (floorY >= 0.0f && floorX >= 0.0f && floorY < m_height - 1 && floorX < m_width - 1)
+  {
+    outData[dxy1].x += inData.x * multBrightness1;
+    outData[dxy2].x += inData.x * multBrightness2;
+    outData[dxy3].x += inData.x * multBrightness3;
+    outData[dxy4].x += inData.x * multBrightness4;
+
+    outData[dxy1].y += inData.y * multBrightness1;
+    outData[dxy2].y += inData.y * multBrightness2;
+    outData[dxy3].y += inData.y * multBrightness3;
+    outData[dxy4].y += inData.y * multBrightness4;
+
+    outData[dxy1].z += inData.z * multBrightness1;
+    outData[dxy2].z += inData.z * multBrightness2;
+    outData[dxy3].z += inData.z * multBrightness3;
+    outData[dxy4].z += inData.z * multBrightness4;
+  }
+}
 void ClampMinusToZero(float4* data4, const int i)
 {
   if (data4[i].x < 0) data4[i].x = 0;
@@ -1241,9 +1288,9 @@ void DiffractionStars(float4* inData, float3 diffrStars[], const float a_sizeSta
       if (newX > 0 && newX < m_width && newY > 0 && newY < m_height)
       {
         const float I = pow((sinf(u) / u), 2) * multDist;
-        Bilinear(inData[i].x * I, &diffrStars[0].x, newX * 3.0f, newY, m_width * 3.0f, m_height, sizeImage);
-        Bilinear(inData[i].y * I, &diffrStars[0].y, newX * 3.0f, newY, m_width * 3.0f, m_height, sizeImage);
-        Bilinear(inData[i].z * I, &diffrStars[0].z, newX * 3.0f, newY, m_width * 3.0f, m_height, sizeImage);
+        const float3 color = { inData[i].x * I, inData[i].y * I ,inData[i].z * I };
+
+        Bilinear3(color, diffrStars, newX, newY, m_width, m_height, sizeImage);
       }
     }
   }
