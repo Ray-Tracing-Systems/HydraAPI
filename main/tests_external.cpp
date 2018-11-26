@@ -875,14 +875,14 @@ bool test_x4_car_triplanar()
 
   hrSceneLibraryOpen(L"tests/test_x4", HR_WRITE_DISCARD);
 
-  HRTextureNodeRef texX = hrTexture2DCreateFromFile(L"data/textures/blur_pattern.bmp");
-  HRTextureNodeRef texY  = hrTexture2DCreateFromFile(L"data/textures/MapleLeaf.TGA");
-  HRTextureNodeRef texZ  = hrTexture2DCreateFromFile(L"data/textures/texture1.bmp");
-  HRTextureNodeRef texX2 = hrTexture2DCreateFromFile(L"data/textures/yinyang.png");
-  HRTextureNodeRef texY2  = hrTexture2DCreateFromFile(L"data/textures/MapleLeaf.TGA");
-  HRTextureNodeRef texZ2  = hrTexture2DCreateFromFile(L"data/textures/yinyang.png");
+  HRTextureNodeRef texX = hrTexture2DCreateFromFile(L"d:/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/Germany/Police_side.png"); // side
+  HRTextureNodeRef texY  = hrTexture2DCreateFromFile(L"d:/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/Test_Top.png"); // bottom
+  HRTextureNodeRef texZ  = hrTexture2DCreateFromFile(L"d:/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/Germany/Police_back.png"); // back
+  HRTextureNodeRef texX2 = hrTexture2DCreateFromFile(L"d:/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/Germany/Police_side.png"); // side
+  HRTextureNodeRef texY2  = hrTexture2DCreateFromFile(L"d:/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/Germany/Police_top.png"); // top
+  HRTextureNodeRef texZ2  = hrTexture2DCreateFromFile(L"d:/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/White80.png"); // front
 
-  HRTextureNodeRef texEnv = hrTexture2DCreateFromFile(L"data/textures/kitchen.hdr");
+  HRTextureNodeRef texEnv = hrTexture2DCreateFromFile(L"data/textures/building.hdr");
 
   HRTextureNodeRef texProc1 = hrTextureCreateAdvanced(L"proc", L"hexaplanar");
 
@@ -911,7 +911,7 @@ bool test_x4_car_triplanar()
     auto intensityNode = lightNode.append_child(L"intensity");
 
     intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"1.0");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"0.5");
 
     auto texNode = hrTextureBind(texEnv, intensityNode.child(L"color"));
 
@@ -946,8 +946,9 @@ bool test_x4_car_triplanar()
     camNode.append_child(L"farClipPlane").text().set(L"100.0");
 
     camNode.append_child(L"up").text().set(L"0 1 0");
-    camNode.append_child(L"position").text().set(L"3 5 -1");
-    camNode.append_child(L"look_at").text().set(L"-0.0 0.85 0.0");
+    //camNode.append_child(L"position").text().set(L"4 2 5"); // front and side
+	  camNode.append_child(L"position").text().set(L"4 2 -5"); // back and side
+    camNode.append_child(L"look_at").text().set(L"0.0 1 0");
   }
   hrCameraClose(camRef);
 
@@ -1000,7 +1001,7 @@ bool test_x4_car_triplanar()
 
   hrSceneClose(scnRef);
 
-  std::wstring car_path(L"CarsLibSeparate/002");
+  std::wstring car_path(L"d:/Samsung/01_CarsRoadsSigns/CarsLibSeparate/004");
 
   auto merged_car = MergeLibraryIntoLibrary(car_path.c_str(), false, true);
   hrCommit(scnRef);
@@ -1018,6 +1019,8 @@ bool test_x4_car_triplanar()
   }
 
   auto newBodyMat = MergeOneMaterialIntoLibrary(car_path.c_str(), L"outside_body");
+  xml_node p8;
+  xml_node p9;
 
   hrMaterialOpen(newBodyMat, HR_OPEN_EXISTING);
   {
@@ -1028,7 +1031,7 @@ bool test_x4_car_triplanar()
     colorNode.append_attribute(L"tex_apply_mode") = L"replace";
 
     auto texNode = hrTextureBind(texProc1, colorNode);
-    texNode.append_attribute(L"input_gamma") = 1.0f;
+    texNode.append_attribute(L"input_gamma") = 2.2f;
 //
     xml_node p1 = texNode.append_child(L"arg");
     xml_node p2 = texNode.append_child(L"arg");
@@ -1037,6 +1040,9 @@ bool test_x4_car_triplanar()
     xml_node p5 = texNode.append_child(L"arg");
     xml_node p6 = texNode.append_child(L"arg");
     xml_node p7 = texNode.append_child(L"arg");
+	p8 = texNode.append_child(L"arg");
+	p9 = texNode.append_child(L"arg");
+
 //
     p1.append_attribute(L"id")   = 0;
     p1.append_attribute(L"name") = L"texX1";
@@ -1078,8 +1084,19 @@ bool test_x4_car_triplanar()
     p7.append_attribute(L"name") = L"tex_scale";
     p7.append_attribute(L"type") = L"float3";
     p7.append_attribute(L"size") = 1;
-    p7.append_attribute(L"val")  = L"10.0 1.0 1.0";
+    p7.append_attribute(L"val")  = L"1 1 1";
 
+	p8.append_attribute(L"id") = 7;
+	p8.append_attribute(L"name") = L"minXYZ";
+	p8.append_attribute(L"type") = L"float3";
+	p8.append_attribute(L"size") = 1;
+	p8.append_attribute(L"val") = L"1 1 1";
+
+	p9.append_attribute(L"id") = 8;
+	p9.append_attribute(L"name") = L"maxXYZ";
+	p9.append_attribute(L"type") = L"float3";
+	p9.append_attribute(L"size") = 1;
+	p9.append_attribute(L"val") = L"1 1 1";
   }
   hrMaterialClose(newBodyMat);
 
@@ -1087,6 +1104,17 @@ bool test_x4_car_triplanar()
   mRes.identity();
 
   auto bbox = HRUtils::InstanceSceneIntoScene(merged_car, scnRef, mRes.L(), false, remapList1, 2);
+
+  hrMaterialOpen(newBodyMat, HR_OPEN_EXISTING);
+  {
+	  std::wstring bboxMin = std::to_wstring(bbox.x_min) + L" " + std::to_wstring(bbox.y_min) + L" " + std::to_wstring(bbox.z_min);
+	  p8.attribute(L"val") = bboxMin.c_str();
+
+	  std::wstring bboxMax = std::to_wstring(bbox.x_max) + L" " + std::to_wstring(bbox.y_max) + L" " + std::to_wstring(bbox.z_max);
+	  p9.attribute(L"val") = bboxMax.c_str();
+  }
+  hrMaterialClose(newBodyMat);
+
 
   hrFlush(scnRef, renderRef, camRef);
 

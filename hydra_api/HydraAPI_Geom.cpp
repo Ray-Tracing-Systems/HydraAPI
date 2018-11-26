@@ -1033,10 +1033,11 @@ void hrMeshComputeNormals(HRMeshRef a_mesh, const int indexNum, bool useFaceNorm
 //      float face_area = 0.5f * sqrtf(powf(edge1A.y * edge2A.z - edge1A.z * edge2A.y, 2) +
 //                                     powf(edge1A.z * edge2A.x - edge1A.x * edge2A.z, 2) +
 //                                     powf(edge1A.x * edge2A.y - edge1A.y * edge2A.x, 2));
+      float face_area = 1.0f;
 
-      float3 normalA = face_normal * wA;// * face_area;
-      float3 normalB = face_normal * wB;// * face_area;
-      float3 normalC = face_normal * wC;// * face_area;
+      float3 normalA = face_normal * wA * face_area;
+      float3 normalB = face_normal * wB * face_area;
+      float3 normalC = face_normal * wC * face_area;
 
       vertexNormals.at(mesh.triIndices.at(3 * i + 0)) += normalA;
       vertexNormals.at(mesh.triIndices.at(3 * i + 1)) += normalB;
