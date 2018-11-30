@@ -867,7 +867,7 @@ bool test_x3_car_fresnel_ice()
 }
 
 
-bool test_x4_car_triplanar()
+bool test_x4_car_triplanar(const int i)
 {
   initGLIfNeeded();
 
@@ -875,12 +875,12 @@ bool test_x4_car_triplanar()
 
   hrSceneLibraryOpen(L"tests/test_x4", HR_WRITE_DISCARD);
 
-  HRTextureNodeRef texX = hrTexture2DCreateFromFile(L"d:/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/Germany/Police_side.png"); // side
-  HRTextureNodeRef texY  = hrTexture2DCreateFromFile(L"d:/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/Test_Top.png"); // bottom
-  HRTextureNodeRef texZ  = hrTexture2DCreateFromFile(L"d:/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/Germany/Police_back.png"); // back
-  HRTextureNodeRef texX2 = hrTexture2DCreateFromFile(L"d:/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/Germany/Police_side.png"); // side
-  HRTextureNodeRef texY2  = hrTexture2DCreateFromFile(L"d:/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/Germany/Police_top.png"); // top
-  HRTextureNodeRef texZ2  = hrTexture2DCreateFromFile(L"d:/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/White80.png"); // front
+  HRTextureNodeRef texX = hrTexture2DCreateFromFile(L"d:/Works/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/Taxi_side_v1.png"); // side
+  HRTextureNodeRef texX2 = hrTexture2DCreateFromFile(L"d:/Works/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/Taxi_side_v1.png"); // side
+  HRTextureNodeRef texY2  = hrTexture2DCreateFromFile(L"d:/Works/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/Taxi_top_v1.png"); // top
+  HRTextureNodeRef texY  = hrTexture2DCreateFromFile(L"d:/Works/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/Taxi_bottom_v1.png"); // bottom
+  HRTextureNodeRef texZ2  = hrTexture2DCreateFromFile(L"d:/Works/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/Taxi_front_v1.png"); // front
+  HRTextureNodeRef texZ  = hrTexture2DCreateFromFile(L"d:/Works/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/Taxi_back_v1.png"); // back
 
   HRTextureNodeRef texEnv = hrTexture2DCreateFromFile(L"data/textures/building.hdr");
 
@@ -936,6 +936,9 @@ bool test_x4_car_triplanar()
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   HRCameraRef camRef = hrCameraCreate(L"my camera");
+  enum cameraView { CAM_FRONT, CAM_BACK }camView;
+  camView = CAM_FRONT;
+  std::string strCamView;
 
   hrCameraOpen(camRef, HR_WRITE_DISCARD);
   {
@@ -946,8 +949,22 @@ bool test_x4_car_triplanar()
     camNode.append_child(L"farClipPlane").text().set(L"100.0");
 
     camNode.append_child(L"up").text().set(L"0 1 0");
+    switch (camView)
+    {
+    case CAM_FRONT:
+      camNode.append_child(L"position").text().set(L"4 2 5"); // front and side
+      strCamView = "front";
+      break;
+    case CAM_BACK:
+      camNode.append_child(L"position").text().set(L"4 2 -5"); // back and side
+      strCamView = "back";
+      break;
+
+    default:
+      break;
+    }
     //camNode.append_child(L"position").text().set(L"4 2 5"); // front and side
-	  camNode.append_child(L"position").text().set(L"4 2 -5"); // back and side
+	  //camNode.append_child(L"position").text().set(L"4 2 -5"); // back and side
     camNode.append_child(L"look_at").text().set(L"0.0 1 0");
   }
   hrCameraClose(camRef);
@@ -1001,9 +1018,10 @@ bool test_x4_car_triplanar()
 
   hrSceneClose(scnRef);
 
-  std::wstring car_path(L"d:/Samsung/01_CarsRoadsSigns/CarsLibSeparate/004");
+  std::wstringstream car_path;
+  car_path << "d:/Works/Samsung/01_CarsRoadsSigns/CarsLibSeparate/00" << i;
 
-  auto merged_car = MergeLibraryIntoLibrary(car_path.c_str(), false, true);
+  auto merged_car = MergeLibraryIntoLibrary(car_path.str().c_str(), false, true);
   hrCommit(scnRef);
 
   auto materials = HydraXMLHelpers::GetMaterialNameToIdMap();
@@ -1018,7 +1036,7 @@ bool test_x4_car_triplanar()
     }
   }
 
-  auto newBodyMat = MergeOneMaterialIntoLibrary(car_path.c_str(), L"outside_body");
+  auto newBodyMat = MergeOneMaterialIntoLibrary(car_path.str().c_str(), L"outside_body");
   xml_node p8;
   xml_node p9;
 
@@ -1145,8 +1163,9 @@ bool test_x4_car_triplanar()
     if (info.finalUpdate)
       break;
   }
-
-  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_x4/z_out.png");
+  std::wstringstream outImgNum;
+  outImgNum << "tests_images/test_x4/Taxi" << i << "_" << strCamView.c_str() << ".png";
+  hrRenderSaveFrameBufferLDR(renderRef, outImgNum.str().c_str());// L"tests_images/test_x4/z_out.png");
 
   return check_images("test_x4", 1, 30);
 }
