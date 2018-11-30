@@ -219,7 +219,7 @@ void ProcessProcTexFile(const std::wstring& in_file, const std::wstring& out_fil
 
   if (!fin.is_open())
   {
-    std::cout << "can't open file" << std::endl;
+    std::cout << "Can't find procedural texture: " << in_fileS.c_str() << std::endl;
     return;
   }
 
