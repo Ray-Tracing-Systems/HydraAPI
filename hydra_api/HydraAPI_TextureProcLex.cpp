@@ -126,7 +126,7 @@ int SizeOfInputTypeInWords(const std::string& a_type)
 void PopArgument(const std::string& argList, std::vector<Arg>& a_outList)
 {
   std::smatch m;  //
-  std::regex args("([a-zA-Z_][a-zA-Z0-9_]*)\\**([\\n|\\s]+)\\**([a-zA-Z_][a-zA-Z0-9_]*)\\**(\\[[0-9_]\\])*(\\,|\\))(.*)");
+  std::regex args("([a-zA-Z_][a-zA-Z0-9_]*)\\**([\\n|\\s]+)\\**([a-zA-Z_][a-zA-Z0-9_]*)\\**(\\[[0-9_]+\\])*(\\,|\\))(.*)");
   std::regex_search(argList, m, args);
   
   //for(int i=0;i<m.size();i++)
