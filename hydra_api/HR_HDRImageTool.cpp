@@ -80,9 +80,9 @@ static int HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* file
 
 static bool HRUtils_GetImageDataFromFreeImageObject(FIBITMAP* converted, char* data)
 {
-  auto bits = FreeImage_GetBits(converted);
-  auto width = FreeImage_GetWidth(converted);
-  auto height = FreeImage_GetHeight(converted);
+  auto bits         = FreeImage_GetBits(converted);
+  auto width        = FreeImage_GetWidth(converted);
+  auto height       = FreeImage_GetHeight(converted);
   auto bitsPerPixel = FreeImage_GetBPP(converted);
 
   if (bits == nullptr || width == 0 || height == 0)
@@ -147,48 +147,6 @@ static void FreeImageErrorHandlerHydraInternal(FREE_IMAGE_FORMAT fif, const char
 
 static inline float clamp(float u, float a, float b) { float r = fmax(a, u); return fmin(r, b); }
 
-bool HR_SaveHDRImageToFileHDR_WithFreeImage(const wchar_t* a_fileName, int w, int h, const float* a_data, const float a_scale = 1.0f)
-{
-  struct float3 { float x, y, z; };
-  struct float4 { float x, y, z, w; };
-
-  const float4* data = (const float4*)a_data;
-
-  std::vector<float3> tempData(w*h);
-  for (int i = 0; i < w*h; i++)
-  {
-    float4 src = data[i];
-    float3 dst = {src.x*a_scale,
-                  src.y*a_scale,
-                  src.z*a_scale};
-    tempData[i] = dst;
-  }
-
-  FIBITMAP* dib = FreeImage_AllocateT(FIT_RGBF, w, h);
-
-  BYTE* bits = FreeImage_GetBits(dib);
-
-  memcpy(bits, &tempData[0], sizeof(float3)*w*h);
-
-  FreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);
-
-  #if defined WIN32
-  if (!FreeImage_SaveU(FIF_HDR, dib, a_fileName))
-  #else
-  char filename_s[256];
-  wcstombs(filename_s, a_fileName, sizeof(filename_s));
-  if (!FreeImage_Save(FIF_HDR, dib, filename_s))
-  #endif
-  {
-    FreeImage_Unload(dib);
-    HrError(L"SaveImageToFile(): FreeImage_Save error: ", a_fileName);
-    return false;
-  }
-
-  FreeImage_Unload(dib);
-
-  return true;
-}
 
 void HR_MyDebugSaveBMP(const wchar_t* fname, const int* pixels, int w, int h)
 {
@@ -693,35 +651,41 @@ namespace HydraRender
       m_pInternal->SaveHDRImageToFileHDR(a_fileName, w, h, a_data);
     else
     {
-      struct float3 { float x, y, z; };
-      struct float4 { float x, y, z, w; };
+      //struct float3 { float x, y, z; };
+      //struct float4 { float x, y, z, w; };
+      //const float4* data = (const float4*)a_data;
+      //std::vector<float3> tempData(w*h);
+      //for (int i = 0; i < w*h; i++)
+      //{
+      //  float4 src = data[i];
+      //  float3 dst;
+      //  dst.x = src.x;
+      //  dst.y = src.y;
+      //  dst.z = src.z;
+      //  tempData[i] = dst;
+      //}
+      //FIBITMAP* dib = FreeImage_AllocateT(FIT_RGBF, w, h);
+      //BYTE* bits    = FreeImage_GetBits(dib);
+      //memcpy(bits, &tempData[0], sizeof(float3)*w*h);
 
-      const float4* data = (const float4*)a_data;
 
-      std::vector<float3> tempData(w*h);
-      for (int i = 0; i < w*h; i++)
-      {
-        float4 src = data[i];
-        float3 dst;
-        dst.x = src.x;
-        dst.y = src.y;
-        dst.z = src.z;
-        tempData[i] = dst;
-      }
-
-      FIBITMAP* dib = FreeImage_AllocateT(FIT_RGBF, w, h);
-      BYTE* bits    = FreeImage_GetBits(dib);
-
-      memcpy(bits, &tempData[0], sizeof(float3)*w*h);
+      FIBITMAP *dib = FreeImage_ConvertFromRawBitsEx(FALSE, (BYTE*)a_data, FIT_RGBAF, w, h, 4*4*w, 4*32, FI_RGBA_BLUE_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_RED_MASK, FALSE);
 
       FreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);
 
+      auto imageType = FIF_HDR;
+      std::wstring fname(a_fileName);
+      if(fname.find(L".exr") != std::wstring::npos)
+        imageType = FIF_EXR;
+      else if (fname.find(L".tiff") != std::wstring::npos)
+        imageType = FIF_TIFF;
+
       #if defined WIN32
-      if (!FreeImage_SaveU(FIF_HDR, dib, a_fileName))
+      if (!FreeImage_SaveU(imageType, dib, a_fileName))
       #else
       char filename_s[256];
       wcstombs(filename_s, a_fileName, sizeof(filename_s));
-      if (!FreeImage_Save(FIF_HDR, dib, filename_s))
+      if (!FreeImage_Save(imageType, dib, filename_s))
       #endif
       {
         FreeImage_Unload(dib);
@@ -740,6 +704,11 @@ namespace HydraRender
       m_pInternal->SaveLDRImageToFileLDR(a_fileName, w, h, a_data);
     else
     {
+      //BYTE* bits = (BYTE*)a_data;
+      //for (int i = 0; i<w*h; i++)
+      //  bits[4 * i + 3] = 255;
+      // FIBITMAP *dib = FreeImage_ConvertFromRawBits((BYTE*)a_data, w, h, 4 * w, 32, FI_RGBA_BLUE_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_RED_MASK, FALSE);
+
       FIBITMAP* dib = FreeImage_Allocate(w, h, 32);
       BYTE* bits    = FreeImage_GetBits(dib);
       //memcpy(bits, data, w*h*sizeof(int32_t));
