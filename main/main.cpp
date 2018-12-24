@@ -134,30 +134,25 @@ int main(int argc, const char** argv)
     
     //run_all_api_tests();
 	  //run_all_geo_tests();
+    run_all_mtl_tests(60);
     //run_all_lgt_tests();
-    //run_all_mtl_tests();
     //run_all_ipp_tests();
+    
+    //std::cout << MTL_TESTS::test_167_subdiv() << std::endl;
+    
+    //std::cout << PP_TESTS::test301_resample()        << std::endl;
+    //std::cout << PP_TESTS::test302_median()          << std::endl;
+    //std::cout << PP_TESTS::test303_median_in_place() << std::endl;
+    //std::cout << PP_TESTS::test320_blur()            << std::endl;
+    //std::cout << PP_TESTS::test321_median_mostly_bad_pixels() << std::endl;
 
-    //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
-    //std::cout << test39_mmlt_or_ibpt() << std::endl;
-    //std::cout << test40_several_changes() << std::endl;
-    
-    //std::cout << test63_cornell_with_caustic_from_torus() << std::endl;
-    //std::cout << "g_MSE = " << g_MSEOutput << std::endl;
-    
-    //MTL_TESTS::test_170_fresnel_blend();
-    MTL_TESTS::test_159_proc_dirt2();
-    //LGHT_TESTS::test_223_rotated_area_light();
-    
-    //PP_TESTS::test305_fbi_from_render();
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
     //window_main_free_look(L"tests_f/test_241", L"opengl1Debug");
 
     //window_main_free_look(L"tests/test_gl32_002_", L"opengl32Deferred", &test_gl32_002_init, &test_gl32_002_draw);
-    //window_main_free_look(L"tests/lucy_deferred", L"opengl32Deferred", &test_gl32_001_init, &test_gl32_001_draw);
     //window_main_free_look(L"tests/lucy_deferred", L"opengl3Utility", &test_gl32_001_init, &test_gl32_001_draw);
     //window_main_free_look(L"tests/test_gl32_002_", L"opengl3Utility", &test_gl32_002_init, &test_gl32_002_draw);
-    //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/demos/demo_01", L"opengl1", nullptr, &test02_draw);
+    //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_39", L"opengl1", nullptr, &test02_draw);
 
     //window_main_free_look(L"tests/zgl1_test_cube", L"opengl32Forward", &test_gl32_001_init, &test_gl32_001_draw);
     //window_main_free_look(L"D:/PROG/HydraCore/hydra_app/tests/test_42", L"opengl1DrawRays");

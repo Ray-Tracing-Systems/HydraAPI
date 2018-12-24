@@ -1186,8 +1186,7 @@ bool test92_proc_tex_bump2()
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_92/z_out.png");
   //hrRenderSaveGBufferLayerLDR(renderRef, L"tests_images/test_92/z_out2.png", L"diffcolor");
   
-  //return check_images("test_91", 1, 10);
-  return false;
+  return check_images("test_92", 1, 20);
 }
 
 

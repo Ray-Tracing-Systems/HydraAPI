@@ -66,10 +66,10 @@ bool test31_procedural_texture_LDR()
 	int rep3 = 4;
 	int rep4 = 2;
 
-	HRTextureNodeRef testTex1 = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep1), 0, 128, 128);
-	HRTextureNodeRef testTex2 = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep2), 0, 64, 64);
-	HRTextureNodeRef testTex3 = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep3), 0, 32, 32);
-	HRTextureNodeRef testTex4 = hrTexture2DCreateFromProcLDR(&procTexCheckerLDR, (void*)(&rep4), 0, 16, 16);
+	HRTextureNodeRef testTex1 = hrTexture2DCreateBakedLDR(&procTexCheckerLDR, (void *) (&rep1), 0, 128, 128);
+	HRTextureNodeRef testTex2 = hrTexture2DCreateBakedLDR(&procTexCheckerLDR, (void *) (&rep2), 0, 64, 64);
+	HRTextureNodeRef testTex3 = hrTexture2DCreateBakedLDR(&procTexCheckerLDR, (void *) (&rep3), 0, 32, 32);
+	HRTextureNodeRef testTex4 = hrTexture2DCreateBakedLDR(&procTexCheckerLDR, (void *) (&rep4), 0, 16, 16);
 
 	//CreateStripedImageFile("tests_images/test_23/TexFromMemory.png", colors, 4, 128, 128);
 
@@ -318,10 +318,10 @@ bool test32_procedural_texture_HDR()
 	int rep3 = 4;
 	int rep4 = 2;
 
-	HRTextureNodeRef testTex1 = hrTexture2DCreateFromProcHDR(&procTexCheckerHDR, (void*)(&rep1), 0, 128, 128);
-	HRTextureNodeRef testTex2 = hrTexture2DCreateFromProcHDR(&procTexCheckerHDR, (void*)(&rep2), 0, 64, 64);
-	HRTextureNodeRef testTex3 = hrTexture2DCreateFromProcHDR(&procTexCheckerHDR, (void*)(&rep3), 0, 32, 32);
-	HRTextureNodeRef testTex4 = hrTexture2DCreateFromProcHDR(&procTexCheckerHDR, (void*)(&rep4), 0, 16, 16);
+	HRTextureNodeRef testTex1 = hrTexture2DCreateBakedHDR(&procTexCheckerHDR, (void *) (&rep1), 0, 128, 128);
+	HRTextureNodeRef testTex2 = hrTexture2DCreateBakedHDR(&procTexCheckerHDR, (void *) (&rep2), 0, 64, 64);
+	HRTextureNodeRef testTex3 = hrTexture2DCreateBakedHDR(&procTexCheckerHDR, (void *) (&rep3), 0, 32, 32);
+	HRTextureNodeRef testTex4 = hrTexture2DCreateBakedHDR(&procTexCheckerHDR, (void *) (&rep4), 0, 16, 16);
 
 	//CreateStripedImageFile("tests_images/test_23/TexFromMemory.png", colors, 4, 128, 128);
 

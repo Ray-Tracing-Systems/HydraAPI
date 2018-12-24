@@ -53,12 +53,12 @@ namespace HydraSSE
 
   static inline __m128 powf4(__m128 x, __m128 y)
   {
-    return exp2f4(_mm_mul_ps(log2f4(x), y));
+    return exp2f4(_mm_mul_ps(log2f4(x),y));
   }
 
   // those are is self-implemented
   //
-  static const __m128 const_255 = _mm_set_ps1(255.0f);
+  static const __m128 const_255 = {255.0f,255.0f,255.0f,255.0f};
 
   /**
   \brief implement realcolor (float4) to rgb256(int) conversion with gamma correction and clamping (min(color, 1.0f)).

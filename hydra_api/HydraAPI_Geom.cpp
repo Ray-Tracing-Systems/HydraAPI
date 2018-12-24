@@ -1030,11 +1030,14 @@ void hrMeshComputeNormals(HRMeshRef a_mesh, const int indexNum, bool useFaceNorm
       float wB = fmaxf(lenB*fabsf(std::acos(dotB)), 1e-5f);
       float wC = fmaxf(lenC*fabsf(std::acos(dotC)), 1e-5f);
 
-      float face_area = std::abs((A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y)) / 2.0f);
+//      float face_area = 0.5f * sqrtf(powf(edge1A.y * edge2A.z - edge1A.z * edge2A.y, 2) +
+//                                     powf(edge1A.z * edge2A.x - edge1A.x * edge2A.z, 2) +
+//                                     powf(edge1A.x * edge2A.y - edge1A.y * edge2A.x, 2));
+      float face_area = 1.0f;
 
-      float3 normalA = face_normal * wA *face_area;
-      float3 normalB = face_normal * wB *face_area;
-      float3 normalC = face_normal * wC *face_area;
+      float3 normalA = face_normal * wA * face_area;
+      float3 normalB = face_normal * wB * face_area;
+      float3 normalC = face_normal * wC * face_area;
 
       vertexNormals.at(mesh.triIndices.at(3 * i + 0)) += normalA;
       vertexNormals.at(mesh.triIndices.at(3 * i + 1)) += normalB;
