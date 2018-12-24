@@ -1055,9 +1055,13 @@ HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pC
   if(g_objManager.m_pDriver != nullptr)
   {
     auto settings = g_objManager.renderSettings[a_pRender.id].xml_node_immediate();
-    bool doPrepass = false;
+    bool doPrepass      = false;
+    bool doDisplacement = false;
     if (settings.child(L"scenePrepass") != nullptr)
       doPrepass = settings.child(L"scenePrepass").text().as_bool();
+  
+    if (settings.child(L"doDisplacement") != nullptr)
+      doDisplacement = settings.child(L"doDisplacement").text().as_bool();
 
     //std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     std::wstring fixed_state = newPath;
@@ -1067,7 +1071,7 @@ HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pC
     //std::cout << "Resolution fix elapsed time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms" <<std::endl;
 
 //#ifdef IN_DEBUG
-    if (g_objManager.m_pDriver->Info().supportDisplacement)
+    if (g_objManager.m_pDriver->Info().supportDisplacement && doDisplacement)
       fixed_state = HR_PreprocessMeshes(fixed_state.c_str());
 //#endif
   }

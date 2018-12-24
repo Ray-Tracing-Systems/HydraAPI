@@ -1422,7 +1422,7 @@ bool test38_test_for_mlt()
 
 #include "Timer.h"
 
-bool test39_mesh_from_vsgf()
+bool test39_mmlt_or_ibpt()
 {
   initGLIfNeeded();
 

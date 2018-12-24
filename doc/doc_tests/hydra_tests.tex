@@ -1,4 +1,4 @@
-\title{Функциональность Hydra Renderer}
+\title{Функциональность Hydra Renderer v2.3b}
 \author{Ray Tracing Systems}
 \date{\today}
 
@@ -19,7 +19,6 @@
 \usepackage{todonotes} % Required for the boxes that questions appear in
 \usepackage{tocloft} % Required to give customize the table of contents to display questions
 \usepackage{enumitem}
-
 
 \renewcommand{\baselinestretch}{1.25}
 
@@ -70,18 +69,20 @@
 	\phantomsection % Needed for hyperref compatibility with the \addcontensline command
 	%\addcontentsline{def2}{figure}{#1} % Adds the question to the list of questions
 	\addcontentsline{def2}{figure}
-	{\protect\numberline{\thesection.\thereq}#1}\par
-	\todo[inline, color=green!25]{\textbf{\thereq:} \textbf{#1} \hyperref[ruleslist]{(to list)}} % Uses the todonotes package to create a fancy box to put the question
+	{\protect\numberline{\thesection. \thereq}#1}\par
+	\todo[inline, color=green!25]{\textbf{REQ. \#\thereq:} \textbf{#1} \hyperref[ruleslist]{(up)}} % Uses the todonotes package to create a fancy box to put the question
 	\vspace{1em} % White space after the question before the start of the answer
 }
-
-
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-Данный документ содержит описание функциональности рендер-системы Hydra Renderer на основе функциональных тестов. Каждая функциональность (фича) может тестироваться одним или более тестом. Каждый тест способен протестировать одну или более функциональностей.  Таким образом, набор функциональностей рендер-системы определяется набором проходящих успешно тестов.
+Данный документ содержит описание функциональности рендер-системы Hydra Renderer на основе функциональных тестов. Каждая функциональность (или требование) может тестироваться одним или более тестом (в этом случае тесты собраны в группы под одним требованием). Предполагается, что каждый тест призван протестировать ровно одно требование (хотя фактически он может проверять несколько требований и может быть включён в несколько требований). 
+
+Документ оформлен в виде списка требований, описывающих текстом и словами функциональность которую рендер-система обязана реализовывать. Требования не являются строгими или формальными, поэтому не могут быть проверены автоматически. Однако же, \underline{они могут быть проверены в принципе}, и являются отправной точкой при обсуждении функциональности, которую рендер-система определённой версии обязана предоставить. 
+
+Данный набор требований не является стандартом работы рендер-системы, поскольку в требованиях не указано как именно фичи должны быть реализованы (HOW). Присутствует лишь информация WHY/WHAT характера, а сами требования могут быть как и вполне конкретными, так и довольно абстрактными. Пример абстрактного требования: должна быть реализована такая-то фича, вот пример того как это выглядит на картинке. 
 
 \end{abstract}
 
@@ -89,8 +90,9 @@
 
 \listofreq
 
-\section{Материалы}\label{materials}
+\section{Dummy Section}
 
+\section{Материалы}\label{materials}
 
 \addtocounter{section}{-2}
 
@@ -100,7 +102,7 @@
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_101/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_101/w_ref.png}           
 	\caption{\label{fig:test_101_image}
      Изображение-эталон для теста \textnumero 101. Серая сфера соответствует описанию в листинге \ref{lambertxml}.  }   
 \end{figure}
@@ -122,7 +124,7 @@
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_102/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_102/w_ref.png}           
 	\caption{\label{fig:test_102_image}
 		Изображение-эталон для теста \textnumero 102. XML для центральной сферы представлен в листинге \ref{orenxml}.  }   
 \end{figure}
@@ -146,7 +148,7 @@
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_103/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_103/w_ref.png}           
 	\caption{\label{fig:test_103_image}
 		Изображение-эталон для теста \textnumero 103. XML для сферы представлен в листинге \ref{difftexxml}.  }   
 \end{figure}
@@ -172,7 +174,7 @@
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_152/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_152/w_ref.png}           
 	\caption{\label{fig:test_152_image}
 		Изображение-эталон для теста \textnumero 152. XML для центральной сферы представлен в листинге \ref{difftexmultxml}.}  
 \end{figure}
@@ -180,13 +182,13 @@
 \FloatBarrier
 
 \lstset{language=XML}
-\begin{lstlisting}[caption=Текстура в режиме вытеснения цвета, label=difftexmultxml, captionpos=b]
+\begin{lstlisting}[caption=Текстура в режиме вытеснения цвета (см. 'tex\_apply\_mode'), label=difftexmultxml, captionpos=b]
 <material id="1" name="matG" type="hydra_material">
-<diffuse brdf_type="lambert">
-<color val="0.05 0.95 0.05" tex_apply_mode="replace">
-<texture id="1" type="texref" matrix="4 0 0 -0.5 0 4 0 -0.5 0 0 1 0 0 0 0 1" addressing_mode_u="wrap" addressing_mode_v="wrap" input_gamma="2.20000005" input_alpha="rgb" />
-</color>
-</diffuse>
+  <diffuse brdf_type="lambert">
+    <color val="0.05 0.95 0.05" tex_apply_mode="replace">
+      <texture id="1" type="texref" ... />
+    </color>
+  </diffuse>
 </material>
 \end{lstlisting}
 
@@ -197,7 +199,7 @@
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_104/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_104/w_ref.png}           
 	\caption{\label{fig:test_104_image}
 		Изображение-эталон для теста \textnumero 104. XML для центрального шарика представлен в листинге \ref{phongxml}.  }  
 \end{figure}
@@ -228,7 +230,7 @@
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_105/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_105/w_ref.png}           
 	\caption{\label{fig:test_105_image}
 		Изображение-эталон для теста \textnumero 105. XML для центрального шарика представлен в листинге \ref{microfacetxml}.  }  
 \end{figure}
@@ -255,7 +257,7 @@
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_106/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_106/w_ref.png}           
 	\caption{\label{fig:test_106_image}
 		Изображение-эталон для теста \textnumero 106. XML для центрального шарика представлен в листинге \ref{fresnelxml}.  }  
 \end{figure}
@@ -282,7 +284,7 @@
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_107/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_107/w_ref.png}           
 	\caption{\label{fig:test_107_image}
 		Изображение-эталон для теста \textnumero 107. XML для центрального шарика представлен в листинге \ref{extrusionxml}.  }  
 \end{figure}
@@ -311,7 +313,7 @@
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_108/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_108/w_ref.png}           
 	\caption{\label{fig:test_108_image}
 		Изображение-эталон для теста \textnumero 108. XML для сферы представлен в листинге \ref{refltexxml}.  }  
 \end{figure}
@@ -344,7 +346,7 @@
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_109/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_109/w_ref.png}           
 	\caption{\label{fig:test_109_image}
 		Изображение-эталон для теста \textnumero 109. XML для прямоугольника представлен в листинге \ref{glosstexxml}.  }  
 \end{figure}
@@ -373,7 +375,7 @@
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_110/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_110/w_ref.png}           
 	\caption{\label{fig:test_110_image}
 		Изображение-эталон для теста \textnumero 110. XML для центральной сферы представлен в листинге \ref{texsamplerxml}.  }  
 \end{figure}
@@ -399,7 +401,7 @@
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_111/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_111/w_ref.png}           
 	\caption{\label{fig:test_111_image}
 		Изображение-эталон для теста \textnumero 111. XML для сферы представлен в листинге \ref{texsampler2xml}.  }  
 \end{figure}
@@ -431,7 +433,7 @@
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_112/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_112/w_ref.png}           
 	\caption{\label{fig:test_112_image}
 		Изображение-эталон для теста \textnumero 112.XML для зеленого параллелепипеда представлен в листинге \ref{transpxml}.  }  
 \end{figure}
@@ -467,7 +469,7 @@
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_113/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_113/w_ref.png}           
 	\caption{\label{fig:test_113_image}
 		Изображение-эталон для теста \textnumero 113. XML для центральной сферы представлен в листинге \ref{iorxml}.  }  
 \end{figure}
@@ -502,7 +504,7 @@
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_114/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_114/w_ref.png}           
 	\caption{\label{fig:test_114_image}
 		Изображение-эталон для теста \textnumero 114. XML для центральной сферы представлен в листинге \ref{fogcolorxml}.  }  
 \end{figure}
@@ -538,7 +540,7 @@
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_115/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_115/w_ref.png}           
 	\caption{\label{fig:test_115_image}
 		Изображение-эталон для теста \textnumero 115. XML для центральной сферы представлен в листинге \ref{fogmultxml}.  }  
 \end{figure}
@@ -574,7 +576,7 @@
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_116/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_116/w_ref.png}           
 	\caption{\label{fig:test_116_image}
 		Изображение-эталон для теста \textnumero 116. XML для второй сферы представлен в листинге \ref{thinxml}.  }  
 \end{figure}
@@ -609,7 +611,7 @@
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_117/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_117/w_ref.png}           
 	\caption{\label{fig:test_117_image}
 		Изображение-эталон для теста \textnumero 117. XML для второй сферы представлен в листинге \ref{transptexxml}.  }  
 \end{figure}
@@ -643,7 +645,7 @@
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_118/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_118/w_ref.png}           
 	\caption{\label{fig:test_118_image}
 		Изображение-эталон для теста \textnumero 118. XML для второй сферы представлен в листинге \ref{transpglosstexxml}.  }  
 \end{figure}
@@ -673,7 +675,7 @@
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_119/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_119/w_ref.png}           
 	\caption{\label{fig:test_119_image}
 		Изображение-эталон для теста \textnumero 119. XML для второй сферы представлен в листинге \ref{opacitytexxml}.  }  
 \end{figure}
@@ -701,7 +703,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_141/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_141/w_ref.png}           
 	\caption{\label{fig:test_141_image}
 		Изображение-эталон для теста \textnumero 141. XML для центральной сферы представлен в листинге \ref{opacitytexblurxml}.  }  
 \end{figure}
@@ -729,7 +731,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_120/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_120/w_ref.png}           
 	\caption{\label{fig:test_120_image}
 		Изображение-эталон для теста \textnumero 120. Для плоскости задан специальный тип материала "shadow catcher". XML представлен в листинге \ref{shadowcatcherxml}.  }  
 \end{figure}
@@ -749,7 +751,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_121/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_121/w_ref.png}           
 	\caption{\label{fig:test_121_image}
 		Изображение-эталон для теста \textnumero 121. XML для центральной пластинки представлен в листинге \ref{translucentxml}.  }  
 \end{figure}
@@ -772,7 +774,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_122/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_122/w_ref.png}           
 	\caption{\label{fig:test_122_image}
 		Изображение-эталон для теста \textnumero 122. XML для центральной пластинки представлен в листинге \ref{translucenttexxml}.  }  
 \end{figure}
@@ -797,7 +799,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_123/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_123/w_ref.png}           
 	\caption{\label{fig:test_123_image}
 		Изображение-эталон для теста \textnumero 123. XML для центральной сферы представлен в листинге \ref{emissionxml}.  }  
 \end{figure}
@@ -822,7 +824,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_124/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_124/w_ref.png}           
 	\caption{\label{fig:test_124_image}
 		Изображение-эталон для теста \textnumero 124. XML для центральной сферы представлен в листинге \ref{emissiontexxml}.  }  
 \end{figure}
@@ -848,7 +850,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_125/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_125/w_ref.png}           
 	\caption{\label{fig:test_125_image}
 		Изображение-эталон для теста \textnumero 125. XML для правой сферы представлен в листинге \ref{castgixml}.  }  
 \end{figure}
@@ -875,7 +877,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_126/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_126/w_ref.png}           
 	\caption{\label{fig:test_126_image}
 		Изображение-эталон для теста \textnumero 126. XML для центральной сферы представлен в листинге \ref{bumpxml}.  }  
 \end{figure}
@@ -903,7 +905,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_127/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_127/w_ref.png}           
 	\caption{\label{fig:test_127_image}
 		Изображение-эталон для теста \textnumero 127. XML для центральной сферы представлен в листинге \ref{normalxml}.  }  
 \end{figure}
@@ -933,7 +935,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_128/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_128/w_ref.png}           
 	\caption{\label{fig:test_128_image}
 		Изображение-эталон для теста \textnumero 128. XML для центральной сферы представлен в листинге \ref{bumpradiusxml}.  }  
 \end{figure}
@@ -961,7 +963,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_130/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_130/w_ref.png}           
 	\caption{\label{fig:test_130_image}
 		Изображение-эталон для теста \textnumero 130. XML для центральной сферы представлен в листинге \ref{invertnormalxml}.  }  
 \end{figure}
@@ -997,7 +999,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_131/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_131/w_ref.png}           
 	\caption{\label{fig:test_131_image}
 		Изображение-эталон для теста \textnumero 131. XML для центральной сферы представлен в листинге \ref{blendsimplexml}. Первым в листинге приведен материал смешения, а затем два смешиваемых материала (в реальном xml порядок записи материалов был бы обратным).  }  
 \end{figure}
@@ -1051,7 +1053,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_132/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_132/w_ref.png}           
 	\caption{\label{fig:test_132_image}
 		Изображение-эталон для теста \textnumero 132. Для трех сфер заданы рекурсивные составные материалы. XML для центральной сферы представлен в листинге \ref{blendrecursivexml}. Первым в листинге приведен "корневой" материал смешения, а затем два его компонента.  }  
 \end{figure}
@@ -1094,7 +1096,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_133/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_133/w_ref.png}           
 	\caption{\label{fig:test_133_image}
 		Изображение-эталон для теста \textnumero 133. XML для центральной сферы представлен в листинге \ref{diffemixml}.}  
 \end{figure}
@@ -1122,7 +1124,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_134/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_134/w_ref.png}           
 	\caption{\label{fig:test_134_image}
 		Изображение-эталон для теста \textnumero 134. }  
 \end{figure}
@@ -1136,7 +1138,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_135/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_135/w_ref.png}           
 	\caption{\label{fig:test_135_image}
 		Изображение-эталон для теста \textnumero 135. }  
 \end{figure}
@@ -1150,7 +1152,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_136/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_136/w_ref.png}           
 	\caption{\label{fig:test_136_image}
 		Изображение-эталон для теста \textnumero 136. }  
 \end{figure}
@@ -1164,7 +1166,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_138/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_138/w_ref.png}           
 	\caption{\label{fig:test_138_image}
 		Изображение-эталон для теста \textnumero 138. }  
 \end{figure}
@@ -1178,7 +1180,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_139/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_139/w_ref.png}           
 	\caption{\label{fig:test_139_image}
 		Изображение-эталон для теста \textnumero 139. }  
 \end{figure}
@@ -1192,14 +1194,12 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_140/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_140/w_ref.png}           
 	\caption{\label{fig:test_140_image}
 		Изображение-эталон для теста \textnumero 140. }  
 \end{figure}
 
 \FloatBarrier
-
-
 
 \reqirenment{test\_142\_blend\_normalmap\_heightmap}
 
@@ -1207,7 +1207,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_142/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_142/w_ref.png}           
 	\caption{\label{fig:test_142_image}
 		Изображение-эталон для теста \textnumero 142. }  
 \end{figure}
@@ -1217,11 +1217,11 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \reqirenment{test\_150\_gloss\_mirror\_cos\_div}
 
-Тест на корректный расчет модели зеркальных отражений Фонга для материалов со значением glossiness: 0.5 < glossiness < 1.0.
+Тест на корректный расчет модели зеркальных отражений Фонга для материалов со значением glossiness: 0.5 < glossiness < 1.0. Края шаров не должны темнеть. Этот тест объявлен устаревшим и заменён на требование \ref{test_172}.
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_150/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_150/w_ref.png}           
 	\caption{\label{fig:test_150_image}
 		Изображение-эталон для теста \textnumero 150. }  
 \end{figure}
@@ -1231,17 +1231,229 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \reqirenment{test\_151\_gloss\_mirror\_cos\_div2}
 
-Тест на корректный расчет модели зеркальных отражений Torrance-Sparrow для материалов со значением glossiness: 0.5 < glossiness < 1.0.
+Тест на корректный расчет модели зеркальных отражений Torrance-Sparrow для материалов со значением glossiness: 0.5 < glossiness < 1.0. Края шаров не должны темнеть. Этот тест объявлен устаревшим и заменён на требование \ref{test_173}.
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_151/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_151/w_ref.png}           
 	\caption{\label{fig:test_151_image}
 		Изображение-эталон для теста \textnumero 151. }  
 \end{figure}
 
 \FloatBarrier
 
+\reqirenment{test\_153\_opacity\_shadow\_matte\_opacity}
+
+Тест на плавную непрозрачность, применяемую к улавливателю теней. Данная функциональность для того чтобы отрезать слишком длинные тени от солнца для объектов, встраиваемых в фотографию.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_153/w_ref.png}           
+	\caption{\label{fig:test_153_image}
+		Изображение-эталон для теста \textnumero 153. }  
+\end{figure}
+
+\FloatBarrier
+
+
+\reqirenment{test\_154 -- test\_156}\label{test_155}
+
+Тест на запекаемые процедурные текстуры (т.е. вычисляемые заранее а не во время рендеринга). В данном тесте разрешения текстур известны заранее и передаются как подсказка через аргументы функции hrTexture2DCreateBakedLDR.
+
+
+\begin{figure}[h]
+	\begin{minipage}[h]{0.33\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_154/w_ref.png} \\ test\_154}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[h]{0.325\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_155/w_ref.png} \\ test\_155}
+	\end{minipage}
+     \begin{minipage}[h]{0.33\linewidth}
+     	\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_156/w_ref.png} \\ test\_156}
+     \end{minipage}
+	\caption{Тесты на запекаемые процедурные текстуры.}
+\end{figure}
+
+
+\FloatBarrier
+
+\reqirenment{test\_157\_proc\_checker\_precomp\_remap}
+
+Аналогично требованию \ref{test_155}. Проверяет работу алгоритма определения разрешений для запекаемых процедурных текстур на сценах, содержащих списки отображения материалов (remap list).
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_157/w_ref.png}           
+	\caption{\label{fig:test_157_image}
+		Изображение-эталон для теста \textnumero 157. }  
+\end{figure}
+
+\FloatBarrier
+
+\reqirenment{test\_158\_proc\_dirt1}
+
+Тест на грязь (потемнение вогнутых углов) и ржавчину (закраска выпуклых углов) при помощи соответственно прямого Ambient Occlusion и инвертированного Ambient Occlusion и \underline{процедурных текстур}.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_158/w_ref.png}           
+	\caption{\label{fig:test_158_image}
+		Изображение-эталон для теста \textnumero 158. }  
+\end{figure}
+
+\FloatBarrier
+
+\reqirenment{test\_159\_proc\_dirt2}
+
+Тест на смешивание материалов, имеющих Ambient Occlusion ноды и процедурные текстуры, их использующие.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_159/w_ref.png}           
+	\caption{\label{fig:test_159_image}
+		Изображение-эталон для теста \textnumero 159. }  
+\end{figure}
+
+\FloatBarrier
+
+
+\reqirenment{test\_160\_proc\_dirt3}
+
+Тест на смешивание материалов, имеющих одновременно прямые и обратные Ambient Occlusion ноды и процедурные текстуры, которые всё это используют.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_160/w_ref.png}           
+	\caption{\label{fig:test_160_image}
+		Изображение-эталон для теста \textnumero 160. }  
+\end{figure}
+
+\FloatBarrier
+
+\reqirenment{test\_162\_shadow\_matte\_back1}
+
+Тест на встраивание объекта в фотографию (рендеринг на фоне фотографии, указанной в улавливателе теней как задний фон). В настоящее время данная функциональность требует чтобы был только 1 материал типа улавливателя теней в сцене. В случае если таких материалов несколько будет взять последний (материал с большим id).
+
+Дополнительно данный тест проверяет работу улавливателя теней и спроецированных отражений на встраиваемом объекте (обратите внимание на отражения дороги в шаре).
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_162/w_ref.png}           
+	\caption{\label{fig:test_162_image}
+		Изображение-эталон для теста \textnumero 162. }  
+\end{figure}
+
+\FloatBarrier
+
+\reqirenment{test\_163\_diffuse\_texture\_recommended\_res}
+
+Тест на запекаемые процедурные текстуры (т.е. вычисляемые заранее а не во время рендеринга). Данные текстуры задаются через функцию \newline hrTexture2DCreateBakedLDR как указатель на функцию (а следовательно могут быть поддержаны многие существующие процедурные текстуры из вашей программы-редактора) и <<запекаются>> в изображения перед началом рендеринга, сразу после выполнения операции Flush. Разрешения таких текстур определяется специальным алгоритмом на основе \newline производных текстурных координат и видимости объектов из текущей камеры.
+
+Данный тест призван проверить алгоритм вычисления рекомендуемого разрешения процедурных текстур, в том числе с учётом текстурных матриц. 
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_163/w_ref.png}           
+	\caption{\label{fig:test_163_image}
+		Изображение-эталон для теста \textnumero 163. }  
+\end{figure}
+
+\FloatBarrier
+
+\reqirenment{test\_165\_simple\_displacement\_mesh}
+
+Тест, проверяющий применение карты смещения для предварительного изменения меша.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_165/w_ref.png}           
+	\caption{\label{fig:test_165_image}
+		Изображение-эталон для теста \textnumero 165. }  
+\end{figure}
+
+\FloatBarrier
+
+\reqirenment{test\_166\_displace\_by\_noise}
+
+Тест на смещение меша при помощи встроенной функции шума перлина.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_166/w_ref.png}           
+	\caption{\label{fig:test_166_image}
+		Изображение-эталон для теста \textnumero 166. }  
+\end{figure}
+
+\FloatBarrier
+
+\reqirenment{test\_169\_displace\_custom\_callback}
+
+Тест на смещение меша при помощи определяемой пользователем функции шума.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_169/w_ref.png}           
+	\caption{\label{fig:test_169_image}
+		Изображение-эталон для теста \textnumero 169. }  
+\end{figure}
+
+\FloatBarrier
+
+
+\reqirenment{test\_170\_fresnel\_blend}
+
+Тест на смешивание материалов при помощи Френеля (Fresnel Blend) и формирование, таким образом, многослойных материалов.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_170/w_ref.png}           
+	\caption{\label{fig:test_170_image}
+		Изображение-эталон для теста \textnumero 170. }  
+\end{figure}
+
+\FloatBarrier
+
+
+\reqirenment{test\_171\_simple\_displacement\_triplanar}
+
+Тест на смещения при помощи трипланарной проекции.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_171/w_ref.png}           
+	\caption{\label{fig:test_171_image}
+		Изображение-эталон для теста \textnumero 171. }  
+\end{figure}
+
+\FloatBarrier
+
+
+\reqirenment{test\_172\_glossy\_dark\_edges\_phong}\label{test_172}
+
+Тест на корректную имплементацию исправленной модели Фонга с низкой шероховатостью (приближающейся к зеркалу). Края шаров не должны темнеть.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_172/w_ref.png}           
+	\caption{\label{fig:test_172_image}
+		Изображение-эталон для теста \textnumero 172. }  
+\end{figure}
+
+\FloatBarrier
+
+\reqirenment{test\_173\_glossy\_dark\_edges\_microfacet}\label{test_173}
+
+Тест на корректную имплементацию исправленной модели Торранса-Спарроу с низкой шероховатостью (приближающейся к зеркалу). Края шаров не должны темнеть.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_173/w_ref.png}           
+	\caption{\label{fig:test_173_image}
+		Изображение-эталон для теста \textnumero 173. }  
+\end{figure}
+
+\FloatBarrier
 
 
 \section{Источники}\label{lights}
@@ -1252,7 +1464,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_200/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_200/w_ref.png}           
 	\caption{\label{fig:test_200_image}
 		Изображение-эталон для теста \textnumero 200. XML представлен в листинге \ref{diskspot}.  }   
 \end{figure}
@@ -1277,7 +1489,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_201/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_201/w_ref.png}           
 	\caption{\label{fig:test_201_image}
 		Изображение-эталон для теста \textnumero 201. XML представлен в листинге \ref{xml201}.  }   
 \end{figure}
@@ -1301,7 +1513,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_202/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_202/w_ref.png}           
 	\caption{\label{fig:test_202_image}
 		Изображение-эталон для теста \textnumero 202. XML представлен в листинге \ref{xml202}.  }   
 \end{figure}
@@ -1323,7 +1535,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_203/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_203/w_ref.png}           
 	\caption{\label{fig:test_203_image}
 		Изображение-эталон для теста \textnumero 203. XML представлен в листинге \ref{xml203}.  }   
 \end{figure}
@@ -1348,7 +1560,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_204/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_204/w_ref.png}           
 	\caption{\label{fig:test_204_image}
 		Изображение-эталон для теста \textnumero 204. XML представлен в листинге \ref{xml204}.  }   
 \end{figure}
@@ -1375,7 +1587,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_205/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_205/w_ref.png}           
 	\caption{\label{fig:test_205_image}
 		Изображение-эталон для теста \textnumero 205.  }   
 \end{figure}
@@ -1389,7 +1601,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_206/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_206/w_ref.png}           
 	\caption{\label{fig:test_206_image}
 		Изображение-эталон для теста \textnumero 206. XML представлен в листинге \ref{xml206}.  }   
 \end{figure}
@@ -1414,7 +1626,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_207/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_207/w_ref.png}           
 	\caption{\label{fig:test_207_image}
 		Изображение-эталон для теста \textnumero 207.  }   
 \end{figure}
@@ -1427,7 +1639,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_208/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_208/w_ref.png}           
 	\caption{\label{fig:test_208_image}
 		Изображение-эталон для теста \textnumero 208.  }   
 \end{figure}
@@ -1444,7 +1656,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_209/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_209/w_ref.png}           
 	\caption{\label{fig:test_209_image}
 		Изображение-эталон для теста \textnumero 209. XML представлен в листинге \ref{xml209}.  }   
 \end{figure}
@@ -1474,7 +1686,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_210/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_210/w_ref.png}           
 	\caption{\label{fig:test_210_image}
 		Изображение-эталон для теста \textnumero 210.  }   
 \end{figure}
@@ -1487,7 +1699,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_211/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_211/w_ref.png}           
 	\caption{\label{fig:test_211_image}
 		Изображение-эталон для теста \textnumero 211. XML представлен в листинге \ref{xml211}.  }   
 \end{figure}
@@ -1517,7 +1729,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_212/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_212/w_ref.png}           
 	\caption{\label{fig:test_212_image}
 		Изображение-эталон для теста \textnumero 212.  }   
 \end{figure}
@@ -1530,7 +1742,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_213/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_213/w_ref.png}           
 	\caption{\label{fig:test_213_image}
 		Изображение-эталон для теста \textnumero 213. XML представлен в листинге \ref{xml213}.  }   
 \end{figure}
@@ -1551,7 +1763,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_214/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_214/w_ref.png}           
 	\caption{\label{fig:test_214_image}
 		Изображение-эталон для теста \textnumero 214.  }   
 \end{figure}
@@ -1564,7 +1776,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_215/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_215/w_ref.png}           
 	\caption{\label{fig:test_215_image}
 		Изображение-эталон для теста \textnumero 215. XML представлен в листинге \ref{xml215}.  }   
 \end{figure}
@@ -1591,7 +1803,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_216/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_216/w_ref.png}           
 	\caption{\label{fig:test_216_image}
 		Изображение-эталон для теста \textnumero 216. }   
 \end{figure}
@@ -1604,7 +1816,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_217/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_217/w_ref.png}           
 	\caption{\label{fig:test_217_image}
 		Изображение-эталон для теста \textnumero 217.  XML представлен в листинге \ref{xml217}. }   
 \end{figure}
@@ -1628,7 +1840,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_218/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_218/w_ref.png}           
 	\caption{\label{fig:test_218_image}
 		Изображение-эталон для теста \textnumero 218.  }   
 \end{figure}
@@ -1641,7 +1853,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_219/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_219/w_ref.png}           
 	\caption{\label{fig:test_219_image}
 		Изображение-эталон для теста \textnumero 219.  XML представлен в листинге \ref{xml219}. }   
 \end{figure}
@@ -1668,7 +1880,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_220/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_220/w_ref.png}           
 	\caption{\label{fig:test_220_image}
 		Изображение-эталон для теста \textnumero 220.  }   
 \end{figure}
@@ -1681,7 +1893,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_221/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_221/w_ref.png}           
 	\caption{\label{fig:test_221_image}
 		Изображение-эталон для теста \textnumero 221.  }   
 \end{figure}
@@ -1695,7 +1907,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_222/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_222/w_ref.png}           
 	\caption{\label{fig:test_222_image}
 		Изображение-эталон для теста \textnumero 222. XML представлен в листинге \ref{xml222}  }   
 \end{figure}
@@ -1731,6 +1943,192 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \end{lstlisting}
 
+
+\reqirenment{test\_223 -- test\_224}
+
+Тесты на повёрнутые площадные источники.
+
+\begin{figure}[h]
+	\begin{minipage}[h]{0.49\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_223/w_ref.png} \\ test\_223}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[h]{0.49\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_224/w_ref.png} \\ test\_224}
+	\end{minipage}
+	\caption{Тесты на повёрнутые источники.}
+\end{figure}
+
+
+\reqirenment{test\_224 -- test\_225}
+
+Тест на точечный источник со с прожекторным распределением и приблизительное совпадение формы освещения изображения с маленьким площадным источником.
+
+\begin{figure}[h]
+	\begin{minipage}[h]{0.49\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_225/w_ref.png} \\ test\_225}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[h]{0.49\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_226/w_ref.png} \\ test\_226}
+	\end{minipage}
+	\caption{Тесты на точечный и площадный источник с прожекторным распределением.}
+\end{figure}
+
+
+\reqirenment{test\_227\_point\_spot\_glossy\_wall}
+
+Тест на отсутствие выбросов в сцене где присутствует точечный источник, расположенный близко к стене с глосси-отражением. Рекомендуется запускать данный тест при помощи IBPT. Эталон посчитан при помощи PT.
+
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_227/w_ref.png}           
+	\caption{\label{fig:test_227_image}
+		Изображение-эталон для теста \textnumero 227.  }   
+\end{figure}
+
+\FloatBarrier
+
+\reqirenment{test\_228 -- test\_230}
+
+Тесты на точечные и площадные источники с гониограммой (IES файл).
+
+\begin{figure}[h]
+	\begin{minipage}[h]{0.33\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_228/w_ref.png} \\ test\_228}
+	\end{minipage}
+	\begin{minipage}[h]{0.325\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_229/w_ref.png} \\ test\_229}
+	\end{minipage}
+	\begin{minipage}[h]{0.33\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_230/w_ref.png} \\ test\_230}
+	\end{minipage}
+	\caption{Тесты на точечные и площадные источники с гониограммой (IES файл).}
+\end{figure}
+
+
+\reqirenment{test\_231\_direct\_soft\_shadow}
+
+Тест на мягкие тени от бесконечно удалённых источников, имеющих угловой размер (имитация солнца).
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_231/w_ref.png}           
+	\caption{\label{fig:test_231_image}
+		Изображение-эталон для теста \textnumero 231.  }   
+\end{figure}
+
+\FloatBarrier
+
+
+\reqirenment{test\_232\_point\_area\_ies}
+
+Тест на специальную аппроксимацию точечно-площадного (point-area) источника освещения с гониограммой, созданного для имитации \underline{светодиодов}. Данная модель учитывает гониограмму источника всегда из центра источника, даже если сэмпл попал не точно в центр. Сам источник при этом не является точечным, а имеет площадь конечного размера. Обратите внимание на отсутствие размытия освещения у правого источника на рисунке \ref{fig:test_232_image}. Это более точно аппроксимирует распределение света от небольших источников с гониограммой (вроде светодиода), поскольку гониограмма для них измеряется на <<бесконечно большом>> расстоянии от источника.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_232/w_ref.png}           
+	\caption{\label{fig:test_232_image}
+		Изображение-эталон для теста \textnumero 232.  }   
+\end{figure}
+
+\FloatBarrier
+
+\reqirenment{(light groups) test\_233 -- test\_236}
+
+Тесты на эффективное сэмплирование лайт-групп. Данные тесты предназначен для проверки эффективности рассчёта освещения от источников, состоящих из множества светодиодов с разными цветами и гониограммами.
+
+Тест 235 дополнительно проверяет возможность изменения цвета и яркости источника во время его инстанцирования в сцену.
+
+\begin{figure}[h]
+	\begin{minipage}[h]{0.33\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_233/w_ref.png} \\ test\_233}
+	\end{minipage}
+	\begin{minipage}[h]{0.325\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_234/w_ref.png} \\ test\_234}
+	\end{minipage}
+    \begin{minipage}[h]{0.33\linewidth}
+    	\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_236/w_ref.png} \\ test\_236}
+    \end{minipage}
+
+	\caption{Тесты на светодиодные источники.}
+\end{figure}
+
+\FloatBarrier
+
+\reqirenment{test\_237\_cubemap\_ldr}
+
+Тест на поддержку кубических текстурных карт. Обратите внимание что кубические текстурные карты преобразуются в сферические до помещения текстуры в HydraAPI.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_237/w_ref.png}           
+	\caption{\label{fig:test_237_image}
+		Изображение-эталон для теста \textnumero 237.  }   
+\end{figure}
+
+\FloatBarrier
+
+\reqirenment{(mesh lights) test\_238 -- test\_243}
+
+Тесты на источник света произвольной формы, задаваемый мешем с emission текстурой.
+
+\begin{figure}[h]
+	\begin{minipage}[h]{0.49\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_238/w_ref.png} \\ test\_238}
+	\end{minipage}
+	\begin{minipage}[h]{0.49\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_239/w_ref.png} \\ test\_239}
+	\end{minipage}
+
+    \begin{minipage}[h]{0.49\linewidth}
+    	\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_240/w_ref.png} \\ test\_240}
+    \end{minipage}
+    \begin{minipage}[h]{0.49\linewidth}
+    	\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_241/w_ref.png} \\ test\_241}
+    \end{minipage}
+	
+	\begin{minipage}[h]{0.49\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_242/w_ref.png} \\ test\_242}
+	\end{minipage}
+	\begin{minipage}[h]{0.49\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_243/w_ref.png} \\ test\_243}
+	\end{minipage}
+	
+	\caption{Тесты на mesh-light.}
+\end{figure}
+
+\FloatBarrier
+
+\reqirenment{test\_244\_do\_not\_sample\_me}
+
+Тест на принудительное отключение явной стратегии сэмплирования источника. Нужно при большом количестве площадных неярких источников, для которых лучше работает неявная стратегия.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.4\linewidth]{../../main/tests_images/test_244/w_ref.png}           
+	\caption{\label{fig:test_244_image}
+		Изображение-эталон для теста \textnumero 244.  }   
+\end{figure}
+
+\FloatBarrier
+
+\reqirenment{test\_245\_cylinder\_tex\_nearest}
+
+Тест на принудительное отключение линейной интерполяции при применении текстуры к цилиндрическому источнику. Данная функциональность позволяет более точно моделировать резкие границы перехода светимости.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.4\linewidth]{../../main/tests_images/test_245/w_ref.png}           
+	\caption{\label{fig:test_245_image}
+		Изображение-эталон для теста \textnumero 245.  }   
+\end{figure}
+
+
+\FloatBarrier
+
+\newpage
 \section{Геометрия}\label{geom}
 
 \reqirenment{test\_001\_mesh\_from\_memory}
@@ -1739,7 +2137,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_001/w_ref.png}           
+	\includegraphics[width=0.4\linewidth]{../../main/tests_images/test_001/w_ref.png}           
 	\caption{\label{fig:test_001_image}
 		Изображение-эталон для теста \textnumero 001.  }   
 \end{figure}
@@ -1748,17 +2146,16 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \reqirenment{test\_002\_mesh\_from\_vsgf}
 
-Базовый тест на поддержку загрузки меша из файла во внутреннем формате рендера vsgf.
+Тест на поддержку загрузки меша из файла во внутреннем формате рендера vsgf.
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_002/w_ref.png}           
+	\includegraphics[width=0.4\linewidth]{../../main/tests_images/test_002/w_ref.png}           
 	\caption{\label{fig:test_002_image}
 		Изображение-эталон для теста \textnumero 002.  }   
 \end{figure}
 
 \FloatBarrier
-
 
 \reqirenment{test\_003\_compute\_normals}
 
@@ -1766,7 +2163,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_003/w_ref.png}           
+	\includegraphics[width=0.4\linewidth]{../../main/tests_images/test_003/w_ref.png}           
 	\caption{\label{fig:test_003_image}
 		Изображение-эталон для теста \textnumero 003.  Для обоих моделей нормали не заданы. Для чайника расчёт нормалей невозможне в силу его топологии (уже <<уже>> порезанные треугольники).  }   
 \end{figure}
@@ -1779,7 +2176,7 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_004/w_ref.png}           
+	\includegraphics[width=0.4\linewidth]{../../main/tests_images/test_004/w_ref.png}           
 	\caption{\label{fig:test_004_image}
 		Изображение-эталон для теста \textnumero 004.  }   
 \end{figure}
@@ -1792,24 +2189,16 @@ Opacity с размытием текстуры. Для трех сфер с различающимися диффузными цветами 
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\linewidth]{../main/tests_images/test_005/w_ref.png}           
+	\includegraphics[width=0.5\linewidth]{../../main/tests_images/test_005/w_ref.png}           
 	\caption{\label{fig:test_005_image}
 		Изображение-эталон для теста \textnumero 005.  }   
 \end{figure}
 
 \FloatBarrier
 
+\newpage
 
 \section{Пост обработка}\label{pprocess}
-
-\reqirenment{numThreads}
-
-Параметр указывающий количество процессоров участвующих в некотороых расчётах.
-numThreads = 0 - использует максимальное доступное кол-во процессоров.
-
-\begin{lstlisting}
-settings.append_attribute(L"numThreads") = 0;
-\end{lstlisting}
 
 \reqirenment{test301\_resample}
 
@@ -1896,5 +2285,207 @@ settings.append_attribute(L"numThreads") = 0;
 
 Тест на использование диффракционных звёзд.
 
+\newpage
+
+\section{Набор неотсортированных, но важных тестов}
+
+Неотсортированный набор различных тестов.
+
+\reqirenment{test37\_cornell\_with\_light\_different\_image\_layers}
+
+Тест на GBuffer (тестируется 8 слоёв).
+
+\begin{figure}[h]
+	\begin{minipage}[h]{0.24\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_37/w_ref.png} \\ color}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[h]{0.24\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_37/w_ref2.png} \\ normals}
+	\end{minipage}
+	\begin{minipage}[h]{0.24\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_37/w_ref3.png} \\ texcolor}
+	\end{minipage}
+	\begin{minipage}[h]{0.24\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_37/w_ref4.png} \\ depth}
+	\end{minipage}
+	
+	\begin{minipage}[h]{0.24\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_37/w_ref5.png} \\ matid}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[h]{0.24\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_37/w_ref6.png} \\ instid}
+	\end{minipage}
+	\begin{minipage}[h]{0.24\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_37/w_ref7.png} \\ objid}
+	\end{minipage}
+	\begin{minipage}[h]{0.24\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_37/w_ref8.png} \\ shadow}
+	\end{minipage}
+	
+	\caption{Тест на GBuffer.}
+\end{figure}
+
+\FloatBarrier
+
+\reqirenment{test77\_save\_gbuffer\_layers}
+
+Тест на GBuffer и улавливатель теней вместе (тестируются все 12 слоёв).
+
+\begin{figure}[h]
+	\begin{minipage}[h]{0.24\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_77/w_ref.png} \\ color}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[h]{0.24\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_77/w_ref2.png} \\ depth}
+	\end{minipage}
+	\begin{minipage}[h]{0.24\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_77/w_ref3.png} \\ normals}
+	\end{minipage}
+	\begin{minipage}[h]{0.24\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_77/w_ref4.png} \\ texcoord}
+	\end{minipage}
+	
+	\begin{minipage}[h]{0.24\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_77/w_ref5.png} \\ texcolor}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[h]{0.24\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_77/w_ref6.png} \\ alpha}
+	\end{minipage}
+	\begin{minipage}[h]{0.24\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_77/w_ref7.png} \\ shadow}
+	\end{minipage}
+	\begin{minipage}[h]{0.24\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_77/w_ref8.png} \\ matid}
+	\end{minipage}
+	
+	\hfill
+	\begin{minipage}[h]{0.24\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_77/w_ref9.png} \\ objid}
+	\end{minipage}
+	\begin{minipage}[h]{0.24\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_77/w_ref10.png} \\ instid}
+	\end{minipage}
+	\begin{minipage}[h]{0.24\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_77/w_ref11.png} \\ borders}
+	\end{minipage}
+	\begin{minipage}[h]{0.24\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_77/w_ref12.png}   \\ catcher}
+	\end{minipage}
+	
+	\caption{Тест на GBuffer.}
+\end{figure}
+
+\FloatBarrier
+
+\reqirenment{test78 -- test79}
+
+Тесты на списки переназначения материалов (material remap list). Данная функциональ-ность позволяет менять материалы объекта при его инстанцировании. То есть, несколько инстансов одного объекта могут иметь разные материалы.
+
+\begin{figure}[h]
+	\begin{minipage}[h]{0.49\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_78/w_ref.png} \\ test78 (original)}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[h]{0.49\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_78/w_ref2.png} \\ test78 (remaped)}
+	\end{minipage}
+    
+	\begin{minipage}[h]{0.49\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_79/w_ref.png} \\ test79 (original)}
+	\end{minipage}
+    \hfill
+	\begin{minipage}[h]{0.49\linewidth}
+     	\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_79/w_ref2.png} \\ test79 (remaped)}
+    \end{minipage}
+	\caption{Тесты на список переназначения материалов.}
+\end{figure}
+
+\FloatBarrier
+
+
+\reqirenment{test82 -- test92, test95}
+
+Тесты на процедурные текстуры.
+
+\begin{figure}[h]
+	\begin{minipage}[h]{0.24\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_82/w_ref.png} \\ test82 }
+	\end{minipage}
+	\hfill
+	\begin{minipage}[h]{0.24\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_83/w_ref.png} \\ test83 }
+	\end{minipage}
+	\hfill
+	\begin{minipage}[h]{0.24\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_84/w_ref.png} \\ test84 }
+	\end{minipage}
+	\hfill
+	\begin{minipage}[h]{0.24\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_85/w_ref.png} \\ test85 }
+	\end{minipage}
+	
+	\begin{minipage}[h]{0.24\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_86/w_ref.png} \\ test86 }
+	\end{minipage}
+	\hfill
+	\begin{minipage}[h]{0.24\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_87/w_ref.png} \\ test87 }
+	\end{minipage}
+	\hfill
+	\begin{minipage}[h]{0.24\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_88/w_ref.png} \\ test88 }
+	\end{minipage}
+	\hfill
+	\begin{minipage}[h]{0.24\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_89/w_ref.png} \\ test89 }
+	\end{minipage}
+
+    \begin{minipage}[h]{0.24\linewidth}
+    	\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_90/w_ref.png} \\ test90 }
+    \end{minipage}
+    \hfill
+    \begin{minipage}[h]{0.24\linewidth}
+    	\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_91/w_ref.png} \\ test91 }
+    \end{minipage}
+    \hfill
+    \begin{minipage}[h]{0.24\linewidth}
+    	\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_92/w_ref.png} \\ test92 }
+    \end{minipage}
+    \hfill
+    \begin{minipage}[h]{0.24\linewidth}
+    	\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_95/w_ref.png} \\ test95 }
+    \end{minipage}
+		
+	\caption{Тесты на процедурные текстуры.}
+\end{figure}
+
+\FloatBarrier
+
+
+\reqirenment{test95, test96, test99}
+
+Тесты, проверяющие функциональность трипланарной проекции при помощи процедурных текстур.
+
+\begin{figure}[h]
+	\begin{minipage}[h]{0.3\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_95/w_ref.png} \\ test95 }
+	\end{minipage}
+	\hfill
+	\begin{minipage}[h]{0.3\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_96/w_ref.png} \\ test96 }
+	\end{minipage}
+	\hfill
+	\begin{minipage}[h]{0.3\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{../../main/tests_images/test_99/w_ref.png} \\ test99 }
+	\end{minipage}
+
+	\caption{Тесты на трипланарную проекцию при помощи процедурных текстур.}
+\end{figure}
+
+\FloatBarrier
 
 \end{document}

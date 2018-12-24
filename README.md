@@ -16,7 +16,7 @@ Windows:
 3. Open 'hydra_api/HydraNewAPI1.sln' under windows with visual studio 2015 or later; If use 2015 you will need to downgrade platform toolset to v140 (2015).
 4. Select x64 configuration
 5. Set 'main' as startup project.
-6. Now you can try 'HydraModern' with some tests. Try 'test39_mesh_from_vsgf' for example. It is simple cornell box test.
+6. Now you can try 'HydraModern' with some tests. Try 'test39_mmlt_or_ibpt' for example. It is simple cornell box test.
 
 Linux:
 1. Clone HydraAPI repo

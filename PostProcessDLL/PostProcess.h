@@ -19,12 +19,6 @@
 using HydraLiteMath::float3;
 using HydraLiteMath::float4;
 
-struct tagHistogram
-{
-  float* r;
-  float* g;
-  float* b;
-};
 int FloatToInt(const float inData)
 {
   return int(inData + 0.5f);
@@ -895,7 +889,7 @@ void DrawColumn(float4 data[], const int width, const int height, const int offs
     }
   }
 }
-void ViewHistorgam(float4 data[], tagHistogram* histogram, const int m_width, const int m_height, const int histogramBin)
+void ViewHistorgam(float4 data[], float3* histogram, const int m_width, const int m_height, const int histogramBin)
 {
   const int countCol = m_width;
   const int step = FloatToInt((float)histogramBin / countCol);
@@ -915,17 +909,17 @@ void ViewHistorgam(float4 data[], tagHistogram* histogram, const int m_width, co
   {
     const int j = i * step;
 
-    histogram->r[j] = pow(histogram->r[j], gamma);
-    histogram->g[j] = pow(histogram->g[j], gamma);
-    histogram->b[j] = pow(histogram->b[j], gamma);
+    histogram[j].x = pow(histogram[j].x, gamma);
+    histogram[j].y = pow(histogram[j].y, gamma);
+    histogram[j].z = pow(histogram[j].z, gamma);
 
-    height = histogram->r[j] * m_height;
+    height = histogram[j].x * m_height;
     DrawColumn(data, width, (int)height, i * width, m_width, color, 0);
 
-    height = histogram->g[j] * m_height;
+    height = histogram[j].y * m_height;
     DrawColumn(data, width, (int)height, i * width, m_width, color, 0);
 
-    height = histogram->b[j] * m_height;
+    height = histogram[j].z * m_height;
     DrawColumn(data, width, (int)height, i * width, m_width, color, 0);
   }
 
@@ -937,19 +931,19 @@ void ViewHistorgam(float4 data[], tagHistogram* histogram, const int m_width, co
     color.x = 0.0f;
     color.y = 0.0f;
     color.z = 0.5f;
-    height = histogram->b[j] * m_height;
+    height = histogram[j].z * m_height;
     DrawColumn(data, width, (int)height, i * width, m_width, color, 1);
 
     color.x = 0.5f;
     color.y = 0.0;
     color.z = 0.0;
-    height = histogram->r[j] * m_height;
+    height = histogram[j].x * m_height;
     DrawColumn(data, width, (int)height, i * width, m_width, color, 1);
 
     color.x = 0.0f;
     color.y = 0.5f;
     color.z = 0.0f;
-    height = histogram->g[j] * m_height;
+    height = histogram[j].y * m_height;
     DrawColumn(data, width, (int)height, i * width, m_width, color, 1);
 
   }

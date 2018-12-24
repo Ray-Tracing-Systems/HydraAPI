@@ -2853,7 +2853,7 @@ bool test49_light_geom_disk()
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_49/z_out.bmp");
 	//hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_49/z_out.jpg");
 
-  return check_images("test_49", 1, 20.0f);
+  return check_images("test_49", 1, 25.0f);
 }
 
 void run_test_50()

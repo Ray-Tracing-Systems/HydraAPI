@@ -270,12 +270,15 @@ static std::vector<T> ReadArrayFromMeshNode(pugi::xml_node meshNode, ChunkPointe
 
 void OpenHRMesh(HRMesh* pMesh, pugi::xml_node nodeXml)
 {
+  pMesh->m_input.clear();
+  
+  if(pMesh->pImpl == nullptr)
+    return;
+  
   // form m_input from serialized representation ... 
   //
   auto chunkId = pMesh->pImpl->chunkId();
   auto chunk   = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
-
-  pMesh->m_input.clear();
 
   if (chunk.InMemory())
   {
@@ -795,32 +798,35 @@ HAPI void hrMeshAppendTriangles3(HRMeshRef a_mesh, int indNum, const int* indice
     return;
   }
 
-  // find max vertex id
+  
+  // append triangle indices and find maxVertexId
   //
+  const size_t oldVertexNum  = pMesh->m_input.verticesPos.size() / 4;   // remember old vertex buffer size
+  
+  if(pMesh->m_input.triIndices.capacity() < pMesh->m_input.triIndices.size() + size_t(indNum))
+  {
+    pMesh->m_input.triIndices.reserve(pMesh->m_input.triIndices.size() + size_t(indNum) + 100);
+    pMesh->m_input.matIndices.reserve(pMesh->m_input.triIndices.capacity()/3 + 100 );
+  }
+  
   int maxVertexId = 0;
   for (int i = 0; i < indNum; i++)
   {
-    if (indices[i] > maxVertexId)
-      maxVertexId = indices[i];
+    const int currIndex = indices[i];
+    if (currIndex > maxVertexId)
+      maxVertexId = currIndex;
+    pMesh->m_input.triIndices.push_back(int(oldVertexNum) + currIndex);
   }
-
+  
   // append maxVertexId vertex data
   //
- 
-  const size_t oldVertexNum  = pMesh->m_input.verticesPos.size() / 4;   // remember old vertex buffer size
   const size_t newVertexSize = oldVertexNum + maxVertexId;
   const size_t newIndexSize  = oldVertexNum + indNum;
 
   pMesh->m_input.reserve(newVertexSize, newIndexSize);
 
   AddCommonAttributesFromPointers(pMesh, maxVertexId);
-
   AddCustomAttributesFromPointers(pMesh, maxVertexId);
-
-	// now append triangle indices ...
-	//
-	for (int i = 0; i < indNum; i++)
-    pMesh->m_input.triIndices.push_back(int(oldVertexNum) + indices[i]);
 
   const bool hasNormals  = (pMesh->m_inputPointers.normals != nullptr);
   const bool hasTangents = (pMesh->m_inputPointers.tangents != nullptr);
@@ -830,7 +836,8 @@ HAPI void hrMeshAppendTriangles3(HRMeshRef a_mesh, int indNum, const int* indice
 
   if(!hasTangents)
     hrMeshComputeTangents(a_mesh, indNum);
-//  runTSpaceCalc(a_mesh, true);
+
+  //runTSpaceCalc(a_mesh, true);
 
   // append per triangle material id
   //
@@ -848,7 +855,8 @@ HAPI void hrMeshAppendTriangles3(HRMeshRef a_mesh, int indNum, const int* indice
     for (int i = 0; i < (indNum / 3); i++)
       pMesh->m_input.matIndices.push_back(matId);
   }
-//
+  
+  //
   if(weld_vertices)
     hrMeshWeldVertices(a_mesh, indNum);
 }
@@ -1022,11 +1030,14 @@ void hrMeshComputeNormals(HRMeshRef a_mesh, const int indexNum, bool useFaceNorm
       float wB = fmaxf(lenB*fabsf(std::acos(dotB)), 1e-5f);
       float wC = fmaxf(lenC*fabsf(std::acos(dotC)), 1e-5f);
 
-      float face_area = std::abs((A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y)) / 2.0f);
+//      float face_area = 0.5f * sqrtf(powf(edge1A.y * edge2A.z - edge1A.z * edge2A.y, 2) +
+//                                     powf(edge1A.z * edge2A.x - edge1A.x * edge2A.z, 2) +
+//                                     powf(edge1A.x * edge2A.y - edge1A.y * edge2A.x, 2));
+      float face_area = 1.0f;
 
-      float3 normalA = face_normal * wA *face_area;
-      float3 normalB = face_normal * wB *face_area;
-      float3 normalC = face_normal * wC *face_area;
+      float3 normalA = face_normal * wA * face_area;
+      float3 normalB = face_normal * wB * face_area;
+      float3 normalC = face_normal * wC * face_area;
 
       vertexNormals.at(mesh.triIndices.at(3 * i + 0)) += normalA;
       vertexNormals.at(mesh.triIndices.at(3 * i + 1)) += normalB;

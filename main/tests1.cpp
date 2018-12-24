@@ -1605,15 +1605,15 @@ void run_all_api_tests(const int startTestId)
                        &test28_compute_normals,
                        &test29_many_textures_and_meshes,
                        &test30_many_textures_and_meshes,
-                       &dummy_test, //&test31_procedural_texture_LDR,
-                       &dummy_test, //&test32_procedural_texture_HDR,
+                       &test31_procedural_texture_LDR,
+                       &test32_procedural_texture_HDR,
 											 &test33_update_from_file,
                        &test34_delayed_textures_does_not_exists,
                        &test35_cornell_with_light,
 											 &test36_update_from_memory,
                        &test37_cornell_with_light_different_image_layers,
                        &dummy_test,
-                       &dummy_test, // &test39_mesh_from_vsgf,
+                       &test39_mmlt_or_ibpt,
                        &test40_several_changes,
                        &test41_load_library_basic,
                        &dummy_test,
@@ -1669,9 +1669,11 @@ void run_all_api_tests(const int startTestId)
                        &test92_proc_tex_bump2,
                        &dummy_test,
                        &dummy_test,
-                       &dummy_test,
-                       &dummy_test,
+                       &test95_bump,
+                       &test96_hexaplanar,
                        &test97_camera_from_matrices,
+                       &dummy_test,                  // correct implementation of motion blur is not yet finished
+                       &test99_triplanar,
   };
 
 
@@ -1825,9 +1827,14 @@ void run_all_mtl_tests(int a_start)
 
                        &test_164_simple_displacement_proctex,
                        &test_165_simple_displacement_mesh,
-                       &dummy_test, // test_166_displace_by_noise
+                       &test_166_displace_by_noise,
                        &test_167_subdiv,
                        &test_168_diffuse_texture_recommended_res2,
+                       &test_169_displace_custom_callback,
+                       &test_170_fresnel_blend,
+                       &test_171_simple_displacement_triplanar,
+                       &test_172_glossy_dark_edges_phong,
+                       &test_173_glossy_dark_edges_microfacet,
 	                   };
 
 
@@ -2002,6 +2009,80 @@ void run_all_ipp_tests(int a_start)
     g_testWasIgnored = false;
   }
 
+  fout.close();
+}
+
+void run_all_mictofacet()
+{
+  using namespace LGHT_TESTS;
+  using namespace MTL_TESTS;
+  
+  TestFunc tests[] = {
+                       &test_202_sky_color,
+                       &test_203_sky_hdr,
+                       &test_204_sky_hdr_rotate,
+
+                       &test_105_reflect_microfacet,
+                       &test_107_reflect_extrusion,
+                       &test_108_reflect_texture,
+                       &test_109_reflect_glossiness_texture,
+                       &test_111_glossiness_texture_sampler,
+                       
+                       &test_130_bump_invert_normalY,
+                       &test_135_opacity_metal,
+                       &test_151_gloss_mirror_cos_div2,
+                       &test_166_displace_by_noise,
+                       &test_169_displace_custom_callback,
+  };
+  
+  
+  std::string names[] = {
+    "test_202_sky_color",
+    "test_203_sky_hdr",
+    "test_204_sky_hdr_rotate",
+  
+    "test_105_reflect_microfacet",
+    "test_107_reflect_extrusion",
+    "test_108_reflect_texture",
+    "test_109_reflect_glossiness_texture",
+    "test_111_glossiness_texture_sampler",
+  
+    "test_130_bump_invert_normalY",
+    "test_135_opacity_metal",
+    "test_151_gloss_mirror_cos_div2",
+    "test_166_displace_by_noise",
+    "test_169_displace_custom_callback",
+  };
+  
+  
+  std::ofstream fout("z_microfacet.txt");
+  
+  const int testNum = sizeof(tests) / sizeof(TestFunc);
+  
+  for (int i = 0; i < testNum; i++)
+  {
+    bool res = tests[i]();
+    if (res)
+    {
+      std::cout          << names[i].c_str() << " " << std::setfill('0') << std::setw(3) << 200 + i << "\tPASSED!\t\n";
+      fout << std::fixed << names[i].c_str() << " " << std::setfill('0') << std::setw(3) << 200 + i << "\tPASSED!\t\n";
+    }
+    else if (g_testWasIgnored)
+    {
+      std::cout          << names[i].c_str() << " " << std::setfill('0') << std::setw(3) << 200 + i << "\tSKIPPED!\t\n";
+      fout << std::fixed << names[i].c_str() << " " << std::setfill('0') << std::setw(3) << 200 + i << "\tSKIPPED!\t\n";
+    }
+    else
+    {
+      std::cout          << names[i].c_str() << " " << std::setfill('0') << std::setw(3) << 200 + i << "\tFAILED! :-: MSE = " << g_MSEOutput << std::endl;
+      fout << std::fixed << names[i].c_str() << " " << std::setfill('0') << std::setw(3) << 200 + i << "\tFAILED! :-: MSE = " << g_MSEOutput << std::endl;
+    }
+    
+    fout.flush();
+    
+    g_testWasIgnored = false;
+  }
+  
   fout.close();
 }
 

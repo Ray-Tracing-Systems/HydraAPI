@@ -582,13 +582,14 @@ HAPI pugi::xml_node hrTextureBind(HRTextureNodeRef a_pTexNode, pugi::xml_node a_
 }
 
 
-HAPI HRTextureNodeRef  hrTexture2DCreateFromProcLDR(HR_TEXTURE2D_PROC_LDR_CALLBACK a_proc, void* a_customData,
-                                                    int customDataSize, int w, int h)
+HAPI HRTextureNodeRef  hrTexture2DCreateBakedLDR(HR_TEXTURE2D_PROC_LDR_CALLBACK a_proc,
+                                                 void *a_customData, int customDataSize,
+                                                 int w, int h)
 {
 
   if (a_proc == nullptr || (a_customData == nullptr && customDataSize > 0))
   {
-    HrPrint(HR_SEVERITY_WARNING, L"hrTexture2DCreateFromProcLDR, invalid input");
+    HrPrint(HR_SEVERITY_WARNING, L"hrTexture2DCreateBakedLDR, invalid input");
     HRTextureNodeRef ref2; // dummy white texture
     ref2.id = 0;
     return ref2;
@@ -651,13 +652,13 @@ HAPI HRTextureNodeRef  hrTexture2DCreateFromProcLDR(HR_TEXTURE2D_PROC_LDR_CALLBA
   }
 }
 
-HAPI HRTextureNodeRef  hrTexture2DCreateFromProcHDR(HR_TEXTURE2D_PROC_HDR_CALLBACK a_proc, void* a_customData,
-                                                    int customDataSize, int w, int h)
+HAPI HRTextureNodeRef  hrTexture2DCreateBakedHDR(HR_TEXTURE2D_PROC_HDR_CALLBACK a_proc, void *a_customData,
+                                                 int customDataSize, int w, int h)
 {
 
   if (a_proc == nullptr || (a_customData == nullptr && customDataSize > 0))
   {
-    HrPrint(HR_SEVERITY_WARNING, L"hrTexture2DCreateFromProcLDR, invalid input");
+    HrPrint(HR_SEVERITY_WARNING, L"hrTexture2DCreateBakedLDR, invalid input");
     HRTextureNodeRef ref2; // dummy white texture
     ref2.id = 0;
     return ref2;
@@ -721,12 +722,12 @@ HAPI HRTextureNodeRef  hrTexture2DCreateFromProcHDR(HR_TEXTURE2D_PROC_HDR_CALLBA
 
 }
 
-HAPI HRTextureNodeRef  hrTexture2DUpdateFromProcLDR(HRTextureNodeRef currentRef, HR_TEXTURE2D_PROC_LDR_CALLBACK a_proc,
-                                                    void* a_customData, int customDataSize, int w, int h)
+HAPI HRTextureNodeRef  hrTexture2DUpdateBakedLDR(HRTextureNodeRef currentRef, HR_TEXTURE2D_PROC_LDR_CALLBACK a_proc,
+                                                 void *a_customData, int customDataSize, int w, int h)
 {
   if (currentRef.id < 0 || a_proc == nullptr || (a_customData == nullptr && customDataSize > 0))
   {
-    HrPrint(HR_SEVERITY_WARNING, L"hrTexture2DUpdateFromProcLDR, invalid input");
+    HrPrint(HR_SEVERITY_WARNING, L"hrTexture2DUpdateBakedLDR, invalid input");
     HRTextureNodeRef ref2; // dummy white texture
     ref2.id = 0;
     return ref2;
@@ -764,12 +765,12 @@ HAPI HRTextureNodeRef  hrTexture2DUpdateFromProcLDR(HRTextureNodeRef currentRef,
   }
 }
 
-HAPI HRTextureNodeRef  hrTexture2DUpdateFromProcHDR(HRTextureNodeRef currentRef, HR_TEXTURE2D_PROC_HDR_CALLBACK a_proc,
-                                                    void* a_customData, int customDataSize, int w, int h)
+HAPI HRTextureNodeRef  hrTexture2DUpdateBakedHDR(HRTextureNodeRef currentRef, HR_TEXTURE2D_PROC_HDR_CALLBACK a_proc,
+                                                 void *a_customData, int customDataSize, int w, int h)
 {
   if (currentRef.id < 0 || a_proc == nullptr || (a_customData == nullptr && customDataSize > 0))
   {
-    HrPrint(HR_SEVERITY_WARNING, L"hrTexture2DUpdateFromProcLDR, invalid input");
+    HrPrint(HR_SEVERITY_WARNING, L"hrTexture2DUpdateBakedLDR, invalid input");
     HRTextureNodeRef ref2; // dummy white texture
     ref2.id = 0;
     return ref2;
