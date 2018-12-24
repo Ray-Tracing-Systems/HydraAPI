@@ -674,10 +674,9 @@ namespace HydraRender
       FreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);
 
       auto imageType = FIF_HDR;
-      std::wstring fname(a_fileName);
-      if(fname.find(L".exr") != std::wstring::npos)
+      if(fileExt == L".exr" || fileExt == L".EXR")
         imageType = FIF_EXR;
-      else if (fname.find(L".tiff") != std::wstring::npos)
+      else if (fileExt == L".tiff" || fileExt == L".TIFF")
         imageType = FIF_TIFF;
 
       #if defined WIN32
