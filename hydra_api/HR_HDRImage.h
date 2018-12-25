@@ -147,6 +147,12 @@ struct IHRImageTool
   virtual void SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, const float* a_data) = 0;
   virtual void SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, const int*   a_data) = 0;
 
+  /**
+  \brief this function is optional. It is needed for saving depth buffer in 16 bit png.
+
+ */
+  virtual void Save16BitMonoImageTo16BitPNG(const wchar_t* a_fileName, int w, int h, const unsigned short* a_data) {}
+
 private:
   IHRImageTool(const IHRImageTool& a_rhs)            = default;
   IHRImageTool& operator=(const IHRImageTool& a_rhs) = default;

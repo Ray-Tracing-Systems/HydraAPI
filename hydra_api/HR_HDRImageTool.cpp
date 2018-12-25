@@ -480,6 +480,8 @@ namespace HydraRender
     void SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, const float* a_data) override;
     void SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, const int*   a_data) override;
 
+    void Save16BitMonoImageTo16BitPNG(const wchar_t* a_fileName, int w, int h, const unsigned short* a_data) override;
+
   private:
 
     std::unique_ptr<InternalImageTool> m_pInternal;
@@ -682,7 +684,7 @@ namespace HydraRender
       #if defined WIN32
       if (!FreeImage_SaveU(imageType, dib, a_fileName))
       #else
-      char filename_s[256];
+      char filename_s[512];
       wcstombs(filename_s, a_fileName, sizeof(filename_s));
       if (!FreeImage_Save(imageType, dib, filename_s))
       #endif
@@ -735,7 +737,7 @@ namespace HydraRender
       #if defined WIN32
       if (!FreeImage_SaveU(imageFileFormat, dib, a_fileName))
       #else
-      char filename_s[256];
+      char filename_s[512];
       wcstombs(filename_s, a_fileName, sizeof(filename_s));
       if (!FreeImage_Save(imageFileFormat, dib, filename_s))
       #endif
@@ -749,6 +751,30 @@ namespace HydraRender
     } // else 
 
   } // end function
+
+
+  void FreeImageTool::Save16BitMonoImageTo16BitPNG(const wchar_t* a_fileName, int w, int h, const unsigned short* a_data)
+  {
+    FIBITMAP* image = FreeImage_AllocateT(FIT_UINT16, w, h);
+    auto bits       = FreeImage_GetBits(image);
+
+    memcpy(bits, a_data, w*h*sizeof(unsigned short));
+
+    #if defined WIN32
+    if (!FreeImage_SaveU(FIF_PNG, image, a_fileName))
+    #else
+    char filename_s[512];
+    wcstombs(filename_s, a_fileName, sizeof(filename_s));
+    if (!FreeImage_Save(FIF_PNG, image, filename_s))
+    #endif
+    {
+      FreeImage_Unload(image);
+      HrError(L"SaveImageToFile(): FreeImage_Save error on ", a_fileName);
+      return;
+    }
+
+    FreeImage_Unload(image);
+  }
 
 };
 
