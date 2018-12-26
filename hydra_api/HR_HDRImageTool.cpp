@@ -653,25 +653,26 @@ namespace HydraRender
       m_pInternal->SaveHDRImageToFileHDR(a_fileName, w, h, a_data);
     else
     {
-      //struct float3 { float x, y, z; };
-      //struct float4 { float x, y, z, w; };
-      //const float4* data = (const float4*)a_data;
-      //std::vector<float3> tempData(w*h);
-      //for (int i = 0; i < w*h; i++)
-      //{
-      //  float4 src = data[i];
-      //  float3 dst;
-      //  dst.x = src.x;
-      //  dst.y = src.y;
-      //  dst.z = src.z;
-      //  tempData[i] = dst;
-      //}
-      //FIBITMAP* dib = FreeImage_AllocateT(FIT_RGBF, w, h);
-      //BYTE* bits    = FreeImage_GetBits(dib);
-      //memcpy(bits, &tempData[0], sizeof(float3)*w*h);
-
-
+    #ifdef WIN32 // old 3ds max FreeImage version
+      struct float3 { float x, y, z; };
+      struct float4 { float x, y, z, w; };
+      const float4* data = (const float4*)a_data;
+      std::vector<float3> tempData(w*h);
+      for (int i = 0; i < w*h; i++)
+      {
+        float4 src = data[i];
+        float3 dst;
+        dst.x = src.x;
+        dst.y = src.y;
+        dst.z = src.z;
+        tempData[i] = dst;
+      }
+      FIBITMAP* dib = FreeImage_AllocateT(FIT_RGBF, w, h);
+      BYTE* bits    = FreeImage_GetBits(dib);
+      memcpy(bits, &tempData[0], sizeof(float3)*w*h);
+    #else
       FIBITMAP *dib = FreeImage_ConvertFromRawBitsEx(FALSE, (BYTE*)a_data, FIT_RGBAF, w, h, 4*4*w, 4*32, FI_RGBA_BLUE_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_RED_MASK, FALSE);
+    #endif
 
       FreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);
 
