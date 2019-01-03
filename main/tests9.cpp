@@ -938,8 +938,7 @@ bool test56_mesh_change_open_existing()
     auto center3 = to_float3(center);
     for (size_t i = 0; i < vertNum; i++)
     {
-
-      if (i % 8 == 0)
+      if (i % 8 == 0 && i != (vertNum-1))
       {
         float r  = length(to_float3(vpos[i]) - center3);
         auto dir1 = normalize(to_float3(vpos[i + 0]) - center3);
