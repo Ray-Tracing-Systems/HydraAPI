@@ -132,7 +132,7 @@ int main(int argc, const char** argv)
     //demo_01_plane_box();
     //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/demos/demo_01", L"opengl1", nullptr, &test02_draw);
     
-    // run_all_api_tests();
+    run_all_api_tests();
 	  // run_all_geo_tests();
     // run_all_lgt_tests();
     // run_all_mtl_tests();
@@ -141,7 +141,7 @@ int main(int argc, const char** argv)
     //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
     //std::cout << test39_mesh_from_vsgf() << std::endl;
     //std::cout << test40_several_changes() << std::endl;
-    std::cout << test77_save_gbuffer_layers() << std::endl;
+    //std::cout << test77_save_gbuffer_layers() << std::endl;
 
     //MTL_TESTS::test_170_fresnel_blend();
     //MTL_TESTS::test_159_proc_dirt2();
@@ -162,7 +162,7 @@ int main(int argc, const char** argv)
     //test_gl32_002();
     //window_main_free_look(L"tests/test_gl32_002", L"opengl32Deferred");
 
-    //_hrDebugPrintVSGF(L"D:/temp/TestRenderFromPhil/data/chunk_00022.vsgf",   L"z_mesh_phil.txt");
+    //_hrDebugPrintVSGF(L"/home/frol/PROG/ada-ray-tracer/data/pyramid.vsgf",   L"/home/frol/PROG/ada-ray-tracer/data/pyramid.txt");
     //_hrDebugPrintVSGF(L"D:/temp/TestRenderFromSergey/data/chunk_00022.vsgf", L"z_mesh_serg.txt");
 
 	  //test_console_render(L"D:/Downloads/test(1)/test", L"D:/Downloads/test(1)/test/zzz.bmp");

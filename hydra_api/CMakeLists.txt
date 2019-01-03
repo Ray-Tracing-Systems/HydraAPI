@@ -122,7 +122,15 @@ if(WIN32)
   target_link_libraries(hydra_api LINK_PUBLIC ${LIBS} ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY} ies_parser mikttspace)
 else()
   set_property(TARGET hydra_api PROPERTY POSITION_INDEPENDENT_CODE ON)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1 -fopenmp")
+
+  if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+      MESSAGE( STATUS "WE USE CLANG(HydraAPI);")
+  else()
+      MESSAGE( STATUS "WE USE GCC  (HydraAPI);")
+  endif()
+
+  MESSAGE( STATUS "CMAKE_CXX_FLAGS(HydraAPI): " ${CMAKE_CXX_FLAGS} )
   target_link_libraries(hydra_api LINK_PUBLIC Threads::Threads ${LIBS} ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY}
           ies_parser mikktspace
           stdc++fs rt dl OpenCL)
