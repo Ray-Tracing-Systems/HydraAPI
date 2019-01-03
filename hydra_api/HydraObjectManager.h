@@ -300,8 +300,14 @@ struct HRTextureNode : public HRObject<IHRTextureNode>
                                               displaceCallback(other.displaceCallback), customDataSize(other.customDataSize),
                                               pImpl(other.pImpl)
   {
+    if(customDataSize == 0)
+      customData = nullptr;
+    else
+    {
       customData = malloc(customDataSize);
-      memcpy(customData, other.customData, customDataSize);
+      if(other.customData != nullptr)
+        memcpy(customData, other.customData, customDataSize);
+    }
   }
 
   std::shared_ptr<IHRTextureNode> pImpl;
