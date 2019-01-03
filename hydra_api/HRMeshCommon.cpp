@@ -311,10 +311,7 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
   }
 
   const size_t totalByteSize = totalByteSizeCommon + totalByteSizeCustom;
-
-  const size_t chunkId = g_objManager.scnData.m_vbCache.AllocChunk(totalByteSize, pSysObj->id);
-  auto& chunk          = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
-  chunk.type           = CHUNK_TYPE_VSGF;
+  const size_t chunkId       = g_objManager.scnData.m_vbCache.AllocChunk(totalByteSize, pSysObj->id);
    
   if (chunkId == size_t(-1))
   {
@@ -322,7 +319,10 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
     return nullptr;
   }
 
+  auto& chunk  = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
+  chunk.type   = CHUNK_TYPE_VSGF;
   char* memory = (char*)chunk.GetMemoryNow();
+
   if (memory == nullptr)
   {
     HrError(L"HydraFactoryCommon::CreateVSGFFromSimpleInputMesh, out of memory unknown error");

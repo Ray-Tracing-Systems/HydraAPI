@@ -79,7 +79,7 @@ else()
   if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
       MESSAGE( STATUS "WE USE CLANG(main);")
   else()
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=bounds -fsanitize=address -fsanitize=leak -fsanitize=undefined")
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=bounds -fsanitize=address -fno-omit-frame-pointer -fsanitize=leak -fsanitize=undefined")
       MESSAGE( STATUS "WE USE GCC  (main);")
   endif()
 
