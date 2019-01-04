@@ -155,6 +155,7 @@ int main(int argc, const char** argv)
     //PP_TESTS::test305_fbi_from_render();
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
     //window_main_free_look(L"tests_f/test_241", L"opengl1Debug");
+    //window_main_free_look(L"tests/test_56", L"opengl1");
 
     //window_main_free_look(L"tests/test_gl32_002_", L"opengl32Deferred", &test_gl32_002_init, &test_gl32_002_draw);
     //window_main_free_look(L"tests/lucy_deferred", L"opengl32Deferred", &test_gl32_001_init, &test_gl32_001_draw);
@@ -163,7 +164,7 @@ int main(int argc, const char** argv)
     //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/demos/demo_01", L"opengl1", nullptr, &test02_draw);
 
     //window_main_free_look(L"tests/zgl1_test_cube", L"opengl32Forward", &test_gl32_001_init, &test_gl32_001_draw);
-    //window_main_free_look(L"D:/PROG/HydraCore/hydra_app/tests/test_42", L"opengl1DrawRays");
+    //window_main_free_look(L"D:/PROG/HydraCore/hydra_app/tests/test_56", L"opengl1");
     //test_gl32_002();
     //window_main_free_look(L"tests/test_gl32_002", L"opengl32Deferred");
 
