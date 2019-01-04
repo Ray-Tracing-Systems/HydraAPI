@@ -140,11 +140,12 @@ int main(int argc, const char** argv)
 
     //test11_render_ogl_some_figures();
 
-    std::cout << test56_mesh_change_open_existing() << std::endl;
+    //std::cout << test56_mesh_change_open_existing() << std::endl;
     //std::cout << test71_out_of_memory() << std::endl;
     //std::cout << test76_empty_mesh() << std::endl;
     //std::cout << test81_custom_attributes() << std::endl;
     //std::cout << test83_proc_texture2() << std::endl;
+    std::cout << test85_proc_texture_ao() << std::endl;
     //std::cout << test88_proc_texture_convex_rust() << std::endl;
 
     //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
