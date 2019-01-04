@@ -125,9 +125,11 @@ else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1 -fopenmp")
 
   if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+      #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=memory -fno-omit-frame-pointer -fsanitize=leak)
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fsanitize-address-use-after-scope -fno-omit-frame-pointer -fsanitize=leak -fsanitize=undefined")
       MESSAGE( STATUS "WE USE CLANG(HydraAPI);")
   else()
-      #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=bounds -fsanitize=address -fno-omit-frame-pointer -fsanitize=leak -fsanitize=undefined")
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fsanitize-address-use-after-scope -fno-omit-frame-pointer -fsanitize=leak -fsanitize=undefined -fsanitize=bounds-strict")
       MESSAGE( STATUS "WE USE GCC  (HydraAPI);")
   endif()
 
