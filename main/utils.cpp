@@ -530,6 +530,21 @@ namespace TEST_UTILS
     return renderRef;
   }
 
+  HRRenderRef CreateBasicGLRender(int w, int h)
+  {
+    HRRenderRef renderRef = hrRenderCreate(L"opengl1");
+
+    hrRenderOpen(renderRef, HR_WRITE_DISCARD);
+    {
+      auto node = hrRenderParamNode(renderRef);
+      node.append_child(L"width").text()  = w;
+      node.append_child(L"height").text() = h;
+    }
+    hrRenderClose(renderRef);
+
+    return renderRef;
+  }
+
   HRRenderRef CreateBasicTestRenderPTNoCaust(int deviceId, int w, int h, int minRays, int maxRays)
   {
     HRRenderRef renderRef = hrRenderCreate(L"HydraModern");

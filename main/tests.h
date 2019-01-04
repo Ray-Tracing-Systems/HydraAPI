@@ -79,6 +79,7 @@ namespace TEST_UTILS
   //render
   HRRenderRef CreateBasicTestRenderPT(int deviceId, int w, int h, int minRays, int maxRays, const wchar_t* a_drvName = L"HydraModern");
   HRRenderRef CreateBasicTestRenderPTNoCaust(int deviceId, int w, int h, int minRays, int maxRays);
+  HRRenderRef CreateBasicGLRender(int w, int h);
   HRMeshRef CreateTriStrip(int rows, int cols, float size);
  
 }

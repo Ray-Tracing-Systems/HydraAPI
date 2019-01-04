@@ -424,6 +424,8 @@ HAPI void hrMeshClose(HRMeshRef a_mesh)
   pMesh->m_input.freeMem();
   pMesh->m_inputPointers.clear();
   pMesh->wasChanged = true;
+  pMesh->m_empty    = (nodeXml.attribute(L"bytesize").as_int() == 0);
+
 }
 
 

@@ -138,8 +138,9 @@ int main(int argc, const char** argv)
     // run_all_mtl_tests();
     // run_all_ipp_tests();
 
-    std::cout << test56_mesh_change_open_existing() << std::endl;
+    //std::cout << test56_mesh_change_open_existing() << std::endl;
     //std::cout << test71_out_of_memory() << std::endl;
+    std::cout << test76_empty_mesh() << std::endl;
     //std::cout << test83_proc_texture2() << std::endl;
     //std::cout << test88_proc_texture_convex_rust() << std::endl;
 
@@ -155,7 +156,7 @@ int main(int argc, const char** argv)
     //PP_TESTS::test305_fbi_from_render();
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
     //window_main_free_look(L"tests_f/test_241", L"opengl1Debug");
-    //window_main_free_look(L"tests/test_56", L"opengl1");
+    //window_main_free_look(L"tests/test_76", L"opengl1Debug");
 
     //window_main_free_look(L"tests/test_gl32_002_", L"opengl32Deferred", &test_gl32_002_init, &test_gl32_002_draw);
     //window_main_free_look(L"tests/lucy_deferred", L"opengl32Deferred", &test_gl32_001_init, &test_gl32_001_draw);
