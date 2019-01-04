@@ -1090,7 +1090,9 @@ HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, int indexNum)
   const float4* verticesPos  = (const float4*)(&mesh.verticesPos[0]);         // #TODO: not 0-th element, last vertex from prev append!
   const float4* verticesNorm = (const float4*)(&mesh.verticesNorm[0]);        // #TODO: not 0-th element, last vertex from prev append!
   const float2* vertTexCoord = (const float2*)(&mesh.verticesTexCoord[0]);    // #TODO: not 0-th element, last vertex from prev append!
- 
+
+  const float epsDiv = 1.0e25f;
+
   for (auto a = 0; a < triangleCount; a++)
   {
     auto i1 = mesh.triIndices[3 * a + 0];
@@ -1105,22 +1107,22 @@ HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, int indexNum)
     const float2& w2 = vertTexCoord[i2];
     const float2& w3 = vertTexCoord[i3];
 
-    float x1 = v2.x - v1.x;
-    float x2 = v3.x - v1.x;
-    float y1 = v2.y - v1.y;
-    float y2 = v3.y - v1.y;
-    float z1 = v2.z - v1.z;
-    float z2 = v3.z - v1.z;
+    const float x1 = v2.x - v1.x;
+    const float x2 = v3.x - v1.x;
+    const float y1 = v2.y - v1.y;
+    const float y2 = v3.y - v1.y;
+    const float z1 = v2.z - v1.z;
+    const float z2 = v3.z - v1.z;
 
-    float s1 = w2.x - w1.x;
-    float s2 = w3.x - w1.x;
-    float t1 = w2.y - w1.y;
-    float t2 = w3.y - w1.y;
+    const float s1 = w2.x - w1.x;
+    const float s2 = w3.x - w1.x;
+    const float t1 = w2.y - w1.y;
+    const float t2 = w3.y - w1.y;
 
-    float r = 1.0f / (s1 * t2 - s2 * t1);
+    const float r = 1.0f / (s1 * t2 - s2 * t1);
 
-    float4 sdir((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r, 1);
-    float4 tdir((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r, 1);
+    const float4 sdir((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r, 1);
+    const float4 tdir((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r, 1);
 
     tan1[i1] += sdir;
     tan1[i2] += sdir;
@@ -1143,7 +1145,7 @@ HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, int indexNum)
     const float3 t1 = to_float3(t);
 
     // Gram-Schmidt orthogonalization
-    verticesTang[a] = to_float4(normalize(t1 - n1 * dot(n1, t1)), 0.0f);
+    verticesTang[a] = to_float4(normalize(t1 - n1 * dot(n1, t1)), 0.0f); // #NOTE: overlow here is ok!
 
     verticesTang[a].x = isnan(verticesTang[a].x) || isinf(verticesTang[a].x) ? 0 : verticesTang[a].x;
     verticesTang[a].y = isnan(verticesTang[a].y) || isinf(verticesTang[a].y) ? 0 : verticesTang[a].y;

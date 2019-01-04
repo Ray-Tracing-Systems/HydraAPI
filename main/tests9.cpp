@@ -910,6 +910,9 @@ bool test56_mesh_change_open_existing()
     //for(int i=0;i<triNum;i++)
       //matindices[i] = mat5.id;
 
+    matindices[triNum - 3] = mat5.id;
+    matindices[triNum - 4] = mat5.id;
+
     matindices[triNum - 2] = mat5.id;
     matindices[triNum - 1] = mat5.id;
   }

@@ -466,14 +466,14 @@ bool test35_cornell_with_light()
 
 static inline int RealColorToUint32(const float real_color[4])
 {
-  float  r = real_color[0] * 255.0f;
-  float  g = real_color[1] * 255.0f;
-  float  b = real_color[2] * 255.0f;
-  float  a = real_color[3] * 255.0f;
+  float  r = fmin(real_color[0] * 255.0f, 255.0f);
+  float  g = fmin(real_color[1] * 255.0f, 255.0f);
+  float  b = fmin(real_color[2] * 255.0f, 255.0f);
+  float  a = fmin(real_color[3] * 255.0f, 255.0f);
 
-  unsigned char red = (unsigned char)r;
+  unsigned char red   = (unsigned char)r;
   unsigned char green = (unsigned char)g;
-  unsigned char blue = (unsigned char)b;
+  unsigned char blue  = (unsigned char)b;
   unsigned char alpha = (unsigned char)a;
 
   return red | (green << 8) | (blue << 16) | (alpha << 24);

@@ -132,13 +132,15 @@ int main(int argc, const char** argv)
     //demo_01_plane_box();
     //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/demos/demo_01", L"opengl1", nullptr, &test02_draw);
 
-    run_all_api_tests();
+    // run_all_api_tests();
 	  // run_all_geo_tests();
     // run_all_lgt_tests();
     // run_all_mtl_tests();
     // run_all_ipp_tests();
 
-    //std::cout << test56_mesh_change_open_existing() << std::endl;
+    //test11_render_ogl_some_figures();
+
+    std::cout << test56_mesh_change_open_existing() << std::endl;
     //std::cout << test71_out_of_memory() << std::endl;
     //std::cout << test76_empty_mesh() << std::endl;
     //std::cout << test81_custom_attributes() << std::endl;
