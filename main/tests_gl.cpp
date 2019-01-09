@@ -1641,6 +1641,66 @@ void test_gl32_002_init()
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   scnRef = hrSceneCreate(L"my scene");
+
+  hrSceneOpen(scnRef, HR_WRITE_DISCARD);
+
+  const float DEG_TO_RAD = float(M_PI) / 180.0f;
+  static GLfloat	rquad = 40.0f;
+
+  float4x4 mRot;
+  float4x4 mTranslate;
+  float4x4 mScale;
+  float4x4 mRes;
+  mRes.identity();
+
+  ///////////
+
+  mTranslate = translate4x4(float3(100.0f, -0.0f, -30.0f));
+  mRes = mul(mTranslate, mRes);
+
+  hrMeshInstance(scnRef, buildingRef, mRes.L());
+
+  ///////////
+
+  mRes.identity();
+  mTranslate.identity();
+  mScale.identity();
+
+  mTranslate = translate4x4(float3(0.0f, -11.6f, 0.0f));
+  mScale = scale4x4(float3(128.0f, 1.0f, 128.0f));
+  mRes = mul(mTranslate, mScale);
+  hrMeshInstance(scnRef, planeRef, mRes.L());
+
+  ///////////
+
+//  mRes.identity();
+//  mTranslate.identity();
+//
+//  mTranslate = translate4x4(float3(-2.0f, 8.0f, 10.0f));
+//
+//  hrLightInstance(scnRef, iesLights.at(6), mRes.L());
+
+  for(int i = 0; i < lightPos.size(); ++i)
+  {
+    mRes.identity();
+    mTranslate.identity();
+    mRot.identity();
+
+    float4x4 mTranslate2;
+
+    mRot = rotate_Y_4x4(-rquad * DEG_TO_RAD * lightSpeed.at(i));
+    mTranslate2 = translate4x4(float3(0.0f, 3.0f + 4.75f * sinf(-rquad * DEG_TO_RAD * lightSpeed.at(i) * 20.0f), 0.0f));
+
+    mTranslate = translate4x4(lightPos.at(i));
+    mRes = mul(mTranslate2, mTranslate);
+    mRes = mul(mRot, mRes);
+    hrLightInstance(scnRef, iesLights.at(i % iesLights.size()), mRes.L());
+    // hrLightInstance(scnRef, pointLight, mRes.L());
+  }
+
+  ///////////
+
+  hrSceneClose(scnRef);
 }
 
 void test_gl32_002_draw()
@@ -1681,12 +1741,12 @@ void test_gl32_002_draw()
 
   ///////////
 
- /* mRes.identity();
-  mTranslate.identity();
-
-  mTranslate = translate4x4(float3(-2.0f, 8.0f, 10.0f));
-
-  hrLightInstance(scnRef, iesLights.at(6), mRes.L());*/
+//  mRes.identity();
+//  mTranslate.identity();
+//
+//  mTranslate = translate4x4(float3(-2.0f, 8.0f, 10.0f));
+//
+//  hrLightInstance(scnRef, iesLights.at(6), mRes.L());
 
   for(int i = 0; i < lightPos.size(); ++i)
   {

@@ -131,13 +131,14 @@ int main(int argc, const char** argv)
     //GEO_TESTS::test_001_mesh_from_memory();
     //demo_01_plane_box();
     //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_31", L"opengl1", nullptr, &test02_draw);
-    
+
+    test_x5_tess_factor();
     //run_all_api_tests();
 	  //run_all_geo_tests();
-    run_all_mtl_tests(60);
+//    run_all_mtl_tests(60);
     //run_all_lgt_tests();
     //run_all_ipp_tests();
-    
+//    test18_camera_move();
     //std::cout << MTL_TESTS::test_167_subdiv() << std::endl;
     
     //std::cout << PP_TESTS::test301_resample()        << std::endl;
@@ -149,15 +150,16 @@ int main(int argc, const char** argv)
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
     //window_main_free_look(L"tests_f/test_241", L"opengl1Debug");
 
-    //window_main_free_look(L"tests/test_gl32_002_", L"opengl32Deferred", &test_gl32_002_init, &test_gl32_002_draw);
+//    test35_cornell_with_light();
+//    window_main_free_look(L"tests/test_gl32_002_", L"opengl32Deferred", &test_gl32_002_init, &test_gl32_002_draw);
     //window_main_free_look(L"tests/lucy_deferred", L"opengl3Utility", &test_gl32_001_init, &test_gl32_001_draw);
     //window_main_free_look(L"tests/test_gl32_002_", L"opengl3Utility", &test_gl32_002_init, &test_gl32_002_draw);
     //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_39", L"opengl1", nullptr, &test02_draw);
 
-    //window_main_free_look(L"tests/zgl1_test_cube", L"opengl32Forward", &test_gl32_001_init, &test_gl32_001_draw);
+//    window_main_free_look(L"tests/test_35", L"HydraModern", nullptr, nullptr);
     //window_main_free_look(L"D:/PROG/HydraCore/hydra_app/tests/test_42", L"opengl1DrawRays");
     //test_gl32_002();
-    //window_main_free_look(L"tests/test_gl32_002", L"opengl32Deferred");
+//    window_main_free_look(L"tests/test_gl32_002", L"opengl32Deferred");
 
     //_hrDebugPrintVSGF(L"D:/temp/TestRenderFromPhil/data/chunk_00022.vsgf",   L"z_mesh_phil.txt");
     //_hrDebugPrintVSGF(L"D:/temp/TestRenderFromSergey/data/chunk_00022.vsgf", L"z_mesh_serg.txt");

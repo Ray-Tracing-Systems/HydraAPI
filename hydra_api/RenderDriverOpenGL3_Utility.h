@@ -91,6 +91,7 @@ protected:
     GLuint m_matricesUBOBindingPoint;
 
     unsigned int m_texNum;
+    uint32_t  m_meshNum;
 
     //std::vector<float4x4> m_texMatrices;
 

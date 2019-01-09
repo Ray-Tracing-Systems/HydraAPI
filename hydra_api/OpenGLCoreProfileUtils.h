@@ -247,6 +247,7 @@ namespace GL_RENDER_DRIVER_UTILS {
       {
           LODBUF_TEX_1, //emission, diffuse, reflection, reflection glossiness
           LODBUF_TEX_2, //transparency, opacity, translucence, bump
+          LODBUF_TEX_3, //tesselation factor v1, v2, meshID, 0
           LODBUF_NUM_TEXTURES
       };
 
