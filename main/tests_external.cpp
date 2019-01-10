@@ -1250,21 +1250,191 @@ bool test_x5_tess_factor()
   }
   hrMaterialClose(mat1);
 
+  HRTextureNodeRef tex = hrTexture2DCreateFromFile(L"data/textures/height_map1.png");
+  HRMaterialRef mat_displace_4 = hrMaterialCreate(L"mat_displace_4");
+
+  hrMaterialOpen(mat_displace_4, HR_WRITE_DISCARD);
+  {
+    auto matNode = hrMaterialParamNode(mat_displace_4);
+
+    auto diffuse = matNode.append_child(L"diffuse");
+    diffuse.append_child(L"color").append_attribute(L"val").set_value(L"0.25 0.25 0.25");
+
+    auto refl = matNode.append_child(L"reflectivity");
+
+    refl.append_attribute(L"brdf_type").set_value(L"torranse_sparrow");
+    refl.append_child(L"color").append_attribute(L"val").set_value(L"0.8 0.8 0.8");
+    refl.append_child(L"glossiness").append_attribute(L"val").set_value(L"0.75");
+    refl.append_child(L"extrusion").append_attribute(L"val").set_value(L"maxcolor");
+    refl.append_child(L"fresnel").append_attribute(L"val").set_value(1);
+    refl.append_child(L"fresnel_ior").append_attribute(L"val").set_value(8.0f);
+
+    auto displacement = matNode.append_child(L"displacement");
+    auto heightNode   = displacement.append_child(L"height_map");
+
+    displacement.append_attribute(L"type").set_value(L"true_displacement");
+    heightNode.append_attribute(L"amount").set_value(3.1f);
+    displacement.append_attribute(L"subdivs").set_value(4);
+    auto texNode = hrTextureBind(tex, heightNode);
+
+    texNode.append_attribute(L"matrix");
+    float samplerMatrix[16] = { 1, 0, 0, 0,
+                                0, 1, 0, 0,
+                                0, 0, 1, 0,
+                                0, 0, 0, 1 };
+
+    texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
+    texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
+    texNode.append_attribute(L"input_gamma").set_value(1.0f);
+    texNode.append_attribute(L"input_alpha").set_value(L"rgb");
+
+    HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
+
+  }
+  hrMaterialClose(mat_displace_4);
+
+  HRMaterialRef mat_displace_3 = hrMaterialCreate(L"mat_displace_3");
+
+  hrMaterialOpen(mat_displace_3, HR_WRITE_DISCARD);
+  {
+    auto matNode = hrMaterialParamNode(mat_displace_3);
+
+    auto diffuse = matNode.append_child(L"diffuse");
+    diffuse.append_child(L"color").append_attribute(L"val").set_value(L"0.25 0.25 0.25");
+
+    auto refl = matNode.append_child(L"reflectivity");
+
+    refl.append_attribute(L"brdf_type").set_value(L"torranse_sparrow");
+    refl.append_child(L"color").append_attribute(L"val").set_value(L"0.8 0.8 0.8");
+    refl.append_child(L"glossiness").append_attribute(L"val").set_value(L"0.75");
+    refl.append_child(L"extrusion").append_attribute(L"val").set_value(L"maxcolor");
+    refl.append_child(L"fresnel").append_attribute(L"val").set_value(1);
+    refl.append_child(L"fresnel_ior").append_attribute(L"val").set_value(8.0f);
+
+    auto displacement = matNode.append_child(L"displacement");
+    auto heightNode   = displacement.append_child(L"height_map");
+
+    displacement.append_attribute(L"type").set_value(L"true_displacement");
+    heightNode.append_attribute(L"amount").set_value(3.1f);
+    displacement.append_attribute(L"subdivs").set_value(3);
+    auto texNode = hrTextureBind(tex, heightNode);
+
+    texNode.append_attribute(L"matrix");
+    float samplerMatrix[16] = { 1, 0, 0, 0,
+                                0, 1, 0, 0,
+                                0, 0, 1, 0,
+                                0, 0, 0, 1 };
+
+    texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
+    texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
+    texNode.append_attribute(L"input_gamma").set_value(1.0f);
+    texNode.append_attribute(L"input_alpha").set_value(L"rgb");
+
+    HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
+
+  }
+  hrMaterialClose(mat_displace_3);
+
+  HRMaterialRef mat_displace_2 = hrMaterialCreate(L"mat_displace_2");
+
+  hrMaterialOpen(mat_displace_2, HR_WRITE_DISCARD);
+  {
+    auto matNode = hrMaterialParamNode(mat_displace_2);
+
+    auto diffuse = matNode.append_child(L"diffuse");
+    diffuse.append_child(L"color").append_attribute(L"val").set_value(L"0.25 0.25 0.25");
+
+    auto refl = matNode.append_child(L"reflectivity");
+
+    refl.append_attribute(L"brdf_type").set_value(L"torranse_sparrow");
+    refl.append_child(L"color").append_attribute(L"val").set_value(L"0.8 0.8 0.8");
+    refl.append_child(L"glossiness").append_attribute(L"val").set_value(L"0.75");
+    refl.append_child(L"extrusion").append_attribute(L"val").set_value(L"maxcolor");
+    refl.append_child(L"fresnel").append_attribute(L"val").set_value(1);
+    refl.append_child(L"fresnel_ior").append_attribute(L"val").set_value(8.0f);
+
+    auto displacement = matNode.append_child(L"displacement");
+    auto heightNode   = displacement.append_child(L"height_map");
+
+    displacement.append_attribute(L"type").set_value(L"true_displacement");
+    heightNode.append_attribute(L"amount").set_value(3.1f);
+    displacement.append_attribute(L"subdivs").set_value(2);
+    auto texNode = hrTextureBind(tex, heightNode);
+
+    texNode.append_attribute(L"matrix");
+    float samplerMatrix[16] = { 1, 0, 0, 0,
+                                0, 1, 0, 0,
+                                0, 0, 1, 0,
+                                0, 0, 0, 1 };
+
+    texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
+    texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
+    texNode.append_attribute(L"input_gamma").set_value(1.0f);
+    texNode.append_attribute(L"input_alpha").set_value(L"rgb");
+
+    HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
+
+  }
+  hrMaterialClose(mat_displace_2);
+
+  HRMaterialRef mat_displace_1 = hrMaterialCreate(L"mat_displace_3");
+
+  hrMaterialOpen(mat_displace_1, HR_WRITE_DISCARD);
+  {
+    auto matNode = hrMaterialParamNode(mat_displace_1);
+
+    auto diffuse = matNode.append_child(L"diffuse");
+    diffuse.append_child(L"color").append_attribute(L"val").set_value(L"0.25 0.25 0.25");
+
+    auto refl = matNode.append_child(L"reflectivity");
+
+    refl.append_attribute(L"brdf_type").set_value(L"torranse_sparrow");
+    refl.append_child(L"color").append_attribute(L"val").set_value(L"0.8 0.8 0.8");
+    refl.append_child(L"glossiness").append_attribute(L"val").set_value(L"0.75");
+    refl.append_child(L"extrusion").append_attribute(L"val").set_value(L"maxcolor");
+    refl.append_child(L"fresnel").append_attribute(L"val").set_value(1);
+    refl.append_child(L"fresnel_ior").append_attribute(L"val").set_value(8.0f);
+
+    auto displacement = matNode.append_child(L"displacement");
+    auto heightNode   = displacement.append_child(L"height_map");
+
+    displacement.append_attribute(L"type").set_value(L"true_displacement");
+    heightNode.append_attribute(L"amount").set_value(3.1f);
+    displacement.append_attribute(L"subdivs").set_value(1);
+    auto texNode = hrTextureBind(tex, heightNode);
+
+    texNode.append_attribute(L"matrix");
+    float samplerMatrix[16] = { 1, 0, 0, 0,
+                                0, 1, 0, 0,
+                                0, 0, 1, 0,
+                                0, 0, 0, 1 };
+
+    texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
+    texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
+    texNode.append_attribute(L"input_gamma").set_value(1.0f);
+    texNode.append_attribute(L"input_alpha").set_value(L"rgb");
+
+    HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
+
+  }
+  hrMaterialClose(mat_displace_1);
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Meshes
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  HRMeshRef tess1 = hrMeshCreateFromFileDL(L"data/meshes/lucy.vsgf");
-  HRMeshRef tess2 = hrMeshCreateFromFileDL(L"data/meshes/lucy.vsgf");
-  HRMeshRef tess3 = hrMeshCreateFromFileDL(L"data/meshes/lucy.vsgf");
-  HRMeshRef tess4 = hrMeshCreateFromFileDL(L"data/meshes/lucy.vsgf");
-  HRMeshRef tess5 = hrMeshCreateFromFileDL(L"data/meshes/lucy.vsgf");
+//  HRMeshRef tess1 = hrMeshCreateFromFileDL(L"data/meshes/lucy.vsgf");
+//  HRMeshRef tess2 = hrMeshCreateFromFileDL(L"data/meshes/lucy.vsgf");
+//  HRMeshRef tess3 = hrMeshCreateFromFileDL(L"data/meshes/lucy.vsgf");
+//  HRMeshRef tess4 = hrMeshCreateFromFileDL(L"data/meshes/lucy.vsgf");
+//  HRMeshRef tess5 = hrMeshCreateFromFileDL(L"data/meshes/lucy.vsgf");
 
-  HRMeshRef sphere1 = HRMeshFromSimpleMesh(L"sphere1", CreateSphere(4.0f, 64), matGray.id);
-  HRMeshRef sphere2 = HRMeshFromSimpleMesh(L"sphere2", CreateSphere(4.0f, 64), matGray.id);
-  HRMeshRef sphere3 = HRMeshFromSimpleMesh(L"sphere3", CreateSphere(4.0f, 64), matGray.id);
+  HRMeshRef plane1 = HRMeshFromSimpleMesh(L"plane1", CreatePlane(8.0f), mat_displace_4.id);
+  HRMeshRef plane2 = HRMeshFromSimpleMesh(L"plane2", CreatePlane(8.0f), mat_displace_4.id);
+  HRMeshRef plane3 = HRMeshFromSimpleMesh(L"plane3", CreatePlane(8.0f), mat_displace_3.id);
+  HRMeshRef plane4 = HRMeshFromSimpleMesh(L"plane4", CreatePlane(8.0f), mat_displace_2.id);
+  HRMeshRef plane5 = HRMeshFromSimpleMesh(L"plane5", CreatePlane(8.0f), mat_displace_1.id);
 
-  HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane", CreatePlane(10.0f), matGray.id);
+//  HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane", CreatePlane(10.0f), matGray.id);
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Light
@@ -1308,8 +1478,8 @@ bool test_x5_tess_factor()
     camNode.append_child(L"farClipPlane").text().set(L"100.0");
 
     camNode.append_child(L"up").text().set(L"0 1 0");
-    camNode.append_child(L"position").text().set(L"0 0 15");
-    camNode.append_child(L"look_at").text().set(L"0 0 -50");
+    camNode.append_child(L"position").text().set(L"0 4 15");
+    camNode.append_child(L"look_at").text().set(L"0 0 0");
   }
   hrCameraClose(camRef);
 
@@ -1320,8 +1490,11 @@ bool test_x5_tess_factor()
   HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 1024);
 
   hrRenderOpen(renderRef, HR_OPEN_EXISTING);
-  auto node = hrRenderParamNode(renderRef);
-  node.append_child(L"scenePrepass").text() = 1;
+  {
+    auto node = hrRenderParamNode(renderRef);
+    node.append_child(L"scenePrepass").text() = 1;
+    node.force_child(L"doDisplacement").text() = 1;
+  }
   hrRenderClose(renderRef);
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1345,20 +1518,26 @@ bool test_x5_tess_factor()
   ///////////
 
 
-  mTranslate = translate4x4(float3(-8.0f, 0.0f, -30.0f));
-  hrMeshInstance(scnRef, tess1, mTranslate.L());
+  mTranslate = translate4x4(float3(0.0f, -4.0f, 0.0f));
+  hrMeshInstance(scnRef, plane1, mTranslate.L());
 
-  mTranslate = translate4x4(float3(-4.0f, 0.0f, -10.0f));
-  hrMeshInstance(scnRef, tess2, mTranslate.L());
+  mTranslate = translate4x4(float3(0.0f, -4.0f, -25.0f));
+  hrMeshInstance(scnRef, plane2, mTranslate.L());
 
-  mTranslate = translate4x4(float3(0.0f, 0.0f, -1.0f));
-  hrMeshInstance(scnRef, tess3, mTranslate.L());
+  mTranslate = translate4x4(float3(0.0f, -4.0f, -50.0f));
+  hrMeshInstance(scnRef, plane3, mTranslate.L());
 
-  mTranslate = translate4x4(float3(4.0f, 0.0f, -20.0f));
-  hrMeshInstance(scnRef, tess4, mTranslate.L());
+  mTranslate = translate4x4(float3(0.0f, -4.0f, -75.0f));
+  hrMeshInstance(scnRef, plane4, mTranslate.L());
 
-  mTranslate = translate4x4(float3(8.0f, 0.0f, -40.0f));
-  hrMeshInstance(scnRef, tess5, mTranslate.L());
+  mTranslate = translate4x4(float3(0.0f, -4.0f, -100.0f));
+  hrMeshInstance(scnRef, plane5, mTranslate.L());
+
+//  mTranslate = translate4x4(float3(4.0f, 0.0f, -40.0f));
+//  hrMeshInstance(scnRef, tess4, mTranslate.L());
+//
+//  mTranslate = translate4x4(float3(8.0f, 0.0f, -80.0f));
+//  hrMeshInstance(scnRef, tess5, mTranslate.L());
 
   ///////////
 

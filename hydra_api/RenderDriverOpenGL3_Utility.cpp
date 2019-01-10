@@ -173,7 +173,7 @@ float geo_lod(vec3 world_pos)
   const float maxClamp = pow(2.0f, maxTess * 2.0f);
   delta_max_sqr = clamp(delta_max_sqr, 1.0f, maxClamp);
 
-  return 0.5f * log2(delta_max_sqr);
+  return maxTess - 0.5f * log2(delta_max_sqr);
 }
 
 void main()
