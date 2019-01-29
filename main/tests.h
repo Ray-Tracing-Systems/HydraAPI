@@ -420,6 +420,8 @@ bool test_x2_car_displacement_triplanar();
 bool test_x3_car_fresnel_ice();
 bool test_x4_car_triplanar(const int i);
 
+bool test_depth_mesh();
+
 void run_all_api_tests(const int startTestId = 0);
 void run_all_geo_tests();
 void run_all_mtl_tests(int a_start = 0);
