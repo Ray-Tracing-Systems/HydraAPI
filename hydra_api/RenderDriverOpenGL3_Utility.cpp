@@ -141,7 +141,7 @@ mat2 getTexMatrix(int matId, int slotId)
   res[0][0] = tex_mat.x;
   res[0][1] = tex_mat.y;
   res[1][0] = tex_mat.z;
-  res[0][1] = tex_mat.w;
+  res[1][1] = tex_mat.w;
 
   return res;
 }
