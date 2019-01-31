@@ -114,7 +114,7 @@ uniform ivec2 max_tex_res;
 uniform ivec2 render_res;
 uniform ivec2 rasterization_res;
 
-#define MAX_MIP_LEVEL 4
+#define MAX_MIP_LEVEL 8
 
 float mip_map_level(vec2 texture_coordinate)
 {
