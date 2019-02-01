@@ -391,6 +391,12 @@ namespace PP_TESTS
 
 };
 
+namespace ALGR_TESTS
+{
+  bool test_401_ibpt_and_glossy_glass();
+  bool test_402_ibpt_and_glossy_double_glass();
+}
+
 //These tests need some scene library to exist in their respective folders
 bool test1000_loadlibrary_and_edit();
 bool test1001_loadlibrary_and_add_textures();
