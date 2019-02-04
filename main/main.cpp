@@ -157,7 +157,8 @@ int main(int argc, const char** argv)
     //MTL_TESTS::test_159_proc_dirt2();
     //LGHT_TESTS::test_201_sphere();
     //ALGR_TESTS::test_401_ibpt_and_glossy_glass();
-    ALGR_TESTS::test_402_ibpt_and_glossy_double_glass();
+    ALGR_TESTS::test_403_light_inside_double_glass();
+    
     
     
     //PP_TESTS::test305_fbi_from_render();
