@@ -701,9 +701,9 @@ bool ALGR_TESTS::test_403_light_inside_double_glass()
   //HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 4096);
   
   HRRenderRef renderRef = hrRenderCreate(L"HydraModern");
-  //hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
-  hrRenderEnableDevice(renderRef, 0, true);
-  hrRenderEnableDevice(renderRef, 1, true);
+  hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
+  //hrRenderEnableDevice(renderRef, 0, true);
+  //hrRenderEnableDevice(renderRef, 1, true);
   
   hrRenderOpen(renderRef, HR_WRITE_DISCARD);
   {
@@ -712,15 +712,15 @@ bool ALGR_TESTS::test_403_light_inside_double_glass()
     node.append_child(L"width").text()  = 512;
     node.append_child(L"height").text() = 512;
     
-    node.append_child(L"method_primary").text()   = L"pathtracing";
-    node.append_child(L"method_secondary").text() = L"pathtracing";
-    node.append_child(L"method_tertiary").text()  = L"pathtracing";
-    node.append_child(L"method_caustic").text()   = L"pathtracing";
+    node.append_child(L"method_primary").text()   = L"IBPT";
+    node.append_child(L"method_secondary").text() = L"IBPT";
+    node.append_child(L"method_tertiary").text()  = L"IBPT";
+    node.append_child(L"method_caustic").text()   = L"IBPT";
     node.append_child(L"shadows").text()          = L"1";
     
     node.append_child(L"trace_depth").text()      = L"10";
     node.append_child(L"diff_trace_depth").text() = L"10";
-    node.append_child(L"maxRaysPerPixel").text()  = 65536;
+    node.append_child(L"maxRaysPerPixel").text()  = 4096;
     node.append_child(L"resources_path").text()   = L"..";
     node.append_child(L"offline_pt").text()       = 0;
   }
