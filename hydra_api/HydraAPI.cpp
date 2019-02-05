@@ -537,6 +537,8 @@ HAPI int hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh,
                          float a_mat[16], const int32_t* a_mmListm, int32_t a_mmListSize)
 {
   HRSceneInst* pScn = g_objManager.PtrById(a_pScn);
+  HRMesh*     pMesh = g_objManager.PtrById(a_pMesh);
+
   if (pScn == nullptr)
   {
     HrError(L"hrMeshInstance: nullptr input");
@@ -549,11 +551,18 @@ HAPI int hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh,
     return 0;
   }
 
-  if (a_pMesh.id == -1)
+  if (a_pMesh.id == -1 || pMesh == nullptr)
   {
     HrError(L"hrMeshInstance: mesh with id == -1");
     return -1;
   }
+
+  if(pMesh->m_empty)
+  {
+    HrPrint(HR_SEVERITY_WARNING, L"hrMeshInstance: empty mesh with id = ", a_pMesh.id);
+    return -1;
+  }
+
 
   int32_t mmId = -1;
 
@@ -597,7 +606,6 @@ HAPI int hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh,
   model.scene_sid = pScn->instancedScenesCounter;
   pScn->drawList.push_back(model);
 
-  HRMesh *pMesh = g_objManager.PtrById(a_pMesh);
   if(g_objManager.m_computeBBoxes && pMesh->pImpl != nullptr)
   {
     auto bbox = pMesh->pImpl->getBBox();

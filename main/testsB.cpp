@@ -697,24 +697,22 @@ bool test83_proc_texture2()
     //
     xml_node p1 = texNode.append_child(L"arg");
     xml_node p2 = texNode.append_child(L"arg");
-    xml_node p3 = texNode.append_child(L"arg");
-    xml_node p4 = texNode.append_child(L"arg");
 
     std::wstringstream strOut;
     strOut << texBitmap1.id << L" " << texBitmap2.id;
     auto val = strOut.str();
 
     p1.append_attribute(L"id")   = 0;
-    p1.append_attribute(L"name") = L"texId1";
+    p1.append_attribute(L"name") = L"texArr";
     p1.append_attribute(L"type") = L"sampler2D";
     p1.append_attribute(L"size") = 2;
     p1.append_attribute(L"val")  = val.c_str();
 
-    p4.append_attribute(L"id")   = 1;
-    p4.append_attribute(L"name") = L"color";
-    p4.append_attribute(L"type") = L"float4";
-    p4.append_attribute(L"size") = 1;
-    p4.append_attribute(L"val")  = L"1 1 1 1";
+    p2.append_attribute(L"id")   = 1;
+    p2.append_attribute(L"name") = L"inColor";
+    p2.append_attribute(L"type") = L"float4";
+    p2.append_attribute(L"size") = 1;
+    p2.append_attribute(L"val")  = L"1 1 1 1";
   }
   hrMaterialClose(mat1);
 
@@ -1375,28 +1373,28 @@ bool test85_proc_texture_ao()
     xml_node p4 = texNode.append_child(L"arg");
 
     p1.append_attribute(L"id") = 0;
-    p1.append_attribute(L"name") = L"texId1";
+    p1.append_attribute(L"name") = L"tex1";
     p1.append_attribute(L"type") = L"sampler2D";
     p1.append_attribute(L"size") = 1;
-    p1.append_attribute(L"val") = texBitmap1.id;
+    p1.append_attribute(L"val")  = texBitmap1.id;
 
-    p2.append_attribute(L"id") = 1;
-    p2.append_attribute(L"name") = L"texId2";
+    p2.append_attribute(L"id")   = 1;
+    p2.append_attribute(L"name") = L"tex2";
     p2.append_attribute(L"type") = L"sampler2D";
     p2.append_attribute(L"size") = 1;
-    p2.append_attribute(L"val") = texBitmap2.id;
+    p2.append_attribute(L"val")  = texBitmap2.id;
 
-    p3.append_attribute(L"id") = 3;
-    p3.append_attribute(L"name") = L"offset";
+    p3.append_attribute(L"id")   = 2;
+    p3.append_attribute(L"name") = L"texOffset";
     p3.append_attribute(L"type") = L"float2";
     p3.append_attribute(L"size") = 1;
-    p3.append_attribute(L"val") = L"0 0";
+    p3.append_attribute(L"val")  = L"0 0";
 
-    p4.append_attribute(L"id") = 4;
-    p4.append_attribute(L"name") = L"color";
+    p4.append_attribute(L"id")   = 3;
+    p4.append_attribute(L"name") = L"inColor";
     p4.append_attribute(L"type") = L"float4";
     p4.append_attribute(L"size") = 1;
-    p4.append_attribute(L"val") = L"1 1 1 1";
+    p4.append_attribute(L"val")  = L"1 1 1 1";
   }
   hrMaterialClose(mat1);
 
@@ -2509,25 +2507,25 @@ bool test88_proc_texture_convex_rust()
     xml_node p4 = texNode.append_child(L"arg");
 
     p1.append_attribute(L"id") = 0;
-    p1.append_attribute(L"name") = L"texId1";
+    p1.append_attribute(L"name") = L"tex1";
     p1.append_attribute(L"type") = L"sampler2D";
     p1.append_attribute(L"size") = 1;
     p1.append_attribute(L"val") = texBitmap1.id;
 
     p2.append_attribute(L"id") = 1;
-    p2.append_attribute(L"name") = L"texId2";
+    p2.append_attribute(L"name") = L"tex2";
     p2.append_attribute(L"type") = L"sampler2D";
     p2.append_attribute(L"size") = 1;
     p2.append_attribute(L"val") = texBitmap2.id;
 
-    p3.append_attribute(L"id") = 3;
-    p3.append_attribute(L"name") = L"offset";
+    p3.append_attribute(L"id") = 2;
+    p3.append_attribute(L"name") = L"texOffset";
     p3.append_attribute(L"type") = L"float2";
     p3.append_attribute(L"size") = 1;
     p3.append_attribute(L"val") = L"0 0";
 
-    p4.append_attribute(L"id") = 4;
-    p4.append_attribute(L"name") = L"color";
+    p4.append_attribute(L"id") = 3;
+    p4.append_attribute(L"name") = L"inColor";
     p4.append_attribute(L"type") = L"float4";
     p4.append_attribute(L"size") = 1;
     p4.append_attribute(L"val") = L"1 1 1 1";

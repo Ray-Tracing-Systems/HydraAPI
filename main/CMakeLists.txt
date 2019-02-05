@@ -43,7 +43,7 @@ set(SOURCE_FILES
         Timer.h
         utils.cpp
         simplerandom.h
-        tests_external.cpp demo_01.cpp)
+        tests_external.cpp demo_01.cpp tests_algr.cpp)
 
 #set (CMAKE_CXX_FLAGS_DEBUG  "${CMAKE_CXX_FLAGS_DEBUG}")
 
@@ -74,7 +74,20 @@ if(WIN32)
   target_link_libraries(main LINK_PUBLIC ${OPENGL_gl_LIBRARY} hydra_api glfw3dll )
 else()
   target_compile_options(main PRIVATE -fpermissive -Wnarrowing)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1 -fopenmp")
+
+  if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=memory -fno-omit-frame-pointer -fsanitize=leak)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fsanitize-address-use-after-scope -fno-omit-frame-pointer -fsanitize=leak -fsanitize=undefined")
+    MESSAGE( STATUS "WE USE CLANG(main);")
+  else()
+    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fsanitize-address-use-after-scope -fno-omit-frame-pointer -fsanitize=leak -fsanitize=undefined -fsanitize=bounds-strict")
+    MESSAGE( STATUS "WE USE GCC  (main);")
+  endif()
+
+  MESSAGE( STATUS "CMAKE_CXX_FLAGS(main): " ${CMAKE_CXX_FLAGS} )
   target_link_libraries(main LINK_PUBLIC Threads::Threads  ${OPENGL_gl_LIBRARY} ${LIBS} hydra_api glfw)
+
 endif()
 
 

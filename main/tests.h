@@ -79,6 +79,7 @@ namespace TEST_UTILS
   //render
   HRRenderRef CreateBasicTestRenderPT(int deviceId, int w, int h, int minRays, int maxRays, const wchar_t* a_drvName = L"HydraModern");
   HRRenderRef CreateBasicTestRenderPTNoCaust(int deviceId, int w, int h, int minRays, int maxRays);
+  HRRenderRef CreateBasicGLRender(int w, int h);
   HRMeshRef CreateTriStrip(int rows, int cols, float size);
  
 }
@@ -389,6 +390,13 @@ namespace PP_TESTS
   bool test321_median_mostly_bad_pixels();
 
 };
+
+namespace ALGR_TESTS
+{
+  bool test_401_ibpt_and_glossy_glass();
+  bool test_402_ibpt_and_glossy_double_glass();
+  bool test_403_light_inside_double_glass();
+}
 
 //These tests need some scene library to exist in their respective folders
 bool test1000_loadlibrary_and_edit();
