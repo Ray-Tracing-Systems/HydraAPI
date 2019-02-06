@@ -296,7 +296,7 @@ bool ALGR_TESTS::test_401_ibpt_and_glossy_glass()
   
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_401/z_out.png");
   
-  return check_images("test_401", 1, 40);
+  return check_images("test_401", 1, 20);
   
 }
 
@@ -565,7 +565,7 @@ bool ALGR_TESTS::test_402_ibpt_and_glossy_double_glass()
   
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_402/z_out.png");
   
-  return check_images("test_402", 1, 40);
+  return check_images("test_402", 1, 20);
   //return false;
 }
 
@@ -833,6 +833,6 @@ bool ALGR_TESTS::test_403_light_inside_double_glass()
   
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_403/z_out.png");
   
-  //return check_images("test_403", 1, 40);
-  return false;
+  return check_images("test_403", 1, 20);
+  //return false;
 }

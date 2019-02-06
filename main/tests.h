@@ -266,7 +266,7 @@ namespace MTL_TESTS
   
   bool test_135_opacity_metal();        // not smooth backface
   bool test_136_opacity_glass();        // transparency work as thin;
-  bool test_137_opacity_emission();     // #NOT_SUPPORTED_CURRENTLY;  falloff does not work in emission
+  bool test_137_opacity_emission();     //
 
   bool test_138_translucency_and_diffuse();
   bool test_139_glass_and_bump();
@@ -434,6 +434,7 @@ void run_all_api_tests(const int startTestId = 0);
 void run_all_geo_tests();
 void run_all_mtl_tests(int a_start = 0);
 void run_all_lgt_tests(int a_start = 0);
+void run_all_alg_tests(int a_start = 0);
 void run_all_ipp_tests(int a_start = 0);
 void terminate_opengl();
 
