@@ -132,11 +132,12 @@ int main(int argc, const char** argv)
     //demo_01_plane_box();
     //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/demos/demo_01", L"opengl1", nullptr, &test02_draw);
 
-    // run_all_api_tests();
-	  // run_all_geo_tests();
-    // run_all_lgt_tests();
-    // run_all_mtl_tests();
-    // run_all_ipp_tests();
+    //run_all_api_tests();
+	  //run_all_geo_tests();
+    //run_all_lgt_tests();
+    //run_all_mtl_tests();
+    //run_all_alg_tests();
+    //run_all_ipp_tests();
 
     //test11_render_ogl_some_figures();
 
@@ -150,14 +151,12 @@ int main(int argc, const char** argv)
 
     //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
     //std::cout << test39_mesh_from_vsgf() << std::endl;
-    //std::cout << test40_several_changes() << std::endl;
+    std::cout << test40_several_changes() << std::endl;
     //std::cout << test77_save_gbuffer_layers() << std::endl;
 
-    //MTL_TESTS::test_170_fresnel_blend();
-    //MTL_TESTS::test_159_proc_dirt2();
-    //LGHT_TESTS::test_201_sphere();
+    //MTL_TESTS::test_137_opacity_emission();
+    //LGHT_TESTS::test_223_rotated_area_light();
     //ALGR_TESTS::test_401_ibpt_and_glossy_glass();
-    ALGR_TESTS::test_403_light_inside_double_glass();
     
     
     
