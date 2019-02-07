@@ -436,15 +436,16 @@ bool test32_procedural_texture_HDR()
   //{
   //  auto node = hrRenderParamNode(settingsRef);
   //  node.force_child(L"scenePrepass").text() = 1;
+	//	node.append_child(L"width").text()       = 512;
+	//	node.append_child(L"height").text()      = 512;
   //}
   //hrRenderClose(settingsRef);
   
   HRRenderRef settingsRef = hrRenderCreate(L"opengl1");
-  
   hrRenderOpen(settingsRef, HR_WRITE_DISCARD);
   {
     pugi::xml_node node = hrRenderParamNode(settingsRef);
-    
+
     node.append_child(L"width").text()  = 512;
     node.append_child(L"height").text() = 512;
   }
