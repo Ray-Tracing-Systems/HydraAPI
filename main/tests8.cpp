@@ -623,7 +623,7 @@ bool test91_proc_tex_bump()
       xml_node p2 = nmTexNode.append_child(L"arg");
       
       p1.append_attribute(L"id")   = 0;
-      p1.append_attribute(L"name") = L"texNorm";
+      p1.append_attribute(L"name") = L"texHeight";
       p1.append_attribute(L"type") = L"sampler2D";
       p1.append_attribute(L"size") = 1;
       p1.append_attribute(L"val")  = texHeight.id;
@@ -825,7 +825,7 @@ bool test91_proc_tex_bump()
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_91/z_out.png");
   hrRenderSaveGBufferLayerLDR(renderRef, L"tests_images/test_91/z_out2.png", L"diffcolor");
   
-  return check_images("test_91", 1, 10);
+  return check_images("test_91", 2, 20);
 }
 
 bool test92_proc_tex_bump2()

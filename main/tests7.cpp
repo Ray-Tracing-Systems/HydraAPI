@@ -363,7 +363,7 @@ bool test43_test_direct_light()
     pList = pList->next;
   }
 
-  hrRenderEnableDevice(renderRef, 0, true);
+  hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
