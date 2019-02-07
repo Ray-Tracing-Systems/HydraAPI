@@ -910,6 +910,9 @@ bool test56_mesh_change_open_existing()
     //for(int i=0;i<triNum;i++)
       //matindices[i] = mat5.id;
 
+    matindices[triNum - 3] = mat5.id;
+    matindices[triNum - 4] = mat5.id;
+
     matindices[triNum - 2] = mat5.id;
     matindices[triNum - 1] = mat5.id;
   }
@@ -938,8 +941,7 @@ bool test56_mesh_change_open_existing()
     auto center3 = to_float3(center);
     for (size_t i = 0; i < vertNum; i++)
     {
-
-      if (i % 8 == 0)
+      if (i % 8 == 0 && i != (vertNum-1))
       {
         float r  = length(to_float3(vpos[i]) - center3);
         auto dir1 = normalize(to_float3(vpos[i + 0]) - center3);

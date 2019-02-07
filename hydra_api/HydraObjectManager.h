@@ -119,7 +119,7 @@ void clear_node_childs(pugi::xml_node a_xmlNode);
 
 struct HRMesh : public HRObject<IHRMesh>
 {
-  HRMesh() : pImpl(nullptr), m_allMeshMatId(-1)  {}
+  HRMesh() : pImpl(nullptr), m_allMeshMatId(-1), m_empty(true)  {}
 
   std::shared_ptr<IHRMesh> pImpl;
 
@@ -241,6 +241,7 @@ struct HRMesh : public HRObject<IHRMesh>
   InputTriMesh         m_input;
   InputTriMeshPointers m_inputPointers;
   int                  m_allMeshMatId;
+  bool                 m_empty;
 };
 
 struct HRLight : public HRObject<IHRLight>
@@ -300,8 +301,14 @@ struct HRTextureNode : public HRObject<IHRTextureNode>
                                               displaceCallback(other.displaceCallback), customDataSize(other.customDataSize),
                                               pImpl(other.pImpl)
   {
+    if(customDataSize == 0)
+      customData = nullptr;
+    else
+    {
       customData = malloc(customDataSize);
-      memcpy(customData, other.customData, customDataSize);
+      if(other.customData != nullptr)
+        memcpy(customData, other.customData, customDataSize);
+    }
   }
 
   std::shared_ptr<IHRTextureNode> pImpl;

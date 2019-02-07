@@ -1793,7 +1793,7 @@ void run_all_mtl_tests(int a_start)
 		                   &test_134_diff_refl_transp,
                        &test_135_opacity_metal,
                        &test_136_opacity_glass,
-                       &test_137_opacity_emission,
+                       &dummy_test,               // test_137_opacity_emission,
                        &test_138_translucency_and_diffuse,
                        &test_139_glass_and_bump,
                        &test_140_blend_emission,
@@ -2010,6 +2010,47 @@ void run_all_ipp_tests(int a_start)
   }
 
   fout.close();
+}
+
+
+void run_all_alg_tests(int a_start)
+{
+  using namespace ALGR_TESTS;
+  TestFunc tests[] = { &test_401_ibpt_and_glossy_glass,
+                       &test_402_ibpt_and_glossy_double_glass,
+                       &test_403_light_inside_double_glass,
+  };
+  
+  std::ofstream fout("z_test_ralgs.txt");
+  
+  const int testNum = sizeof(tests) / sizeof(TestFunc);
+  
+  for (int i = a_start; i < testNum; i++)
+  {
+    bool res = tests[i]();
+    if (res)
+    {
+      std::cout          << "rend_alg_test_" << std::setfill('0') << std::setw(3) << 400 + i + 1 << "\tPASSED!\t\n";
+      fout << std::fixed << "rend_alg_test_" << std::setfill('0') << std::setw(3) << 400 + i + 1 << "\tPASSED!\t\n";
+    }
+    else if (g_testWasIgnored)
+    {
+      std::cout          << "rend_alg_test_" << std::setfill('0') << std::setw(3) << 400 + i + 1 << "\tSKIPPED!\t\n";
+      fout << std::fixed << "rend_alg_test_" << std::setfill('0') << std::setw(3) << 400 + i + 1 << "\tSKIPPED!\t\n";
+    }
+    else
+    {
+      std::cout          << "rend_alg_test_" << std::setfill('0') << std::setw(3) << 400 + i + 1 << "\tFAILED! :-: MSE = " << g_MSEOutput << std::endl;
+      fout << std::fixed << "rend_alg_test_" << std::setfill('0') << std::setw(3) << 400 + i + 1 << "\tFAILED! :-: MSE = " << g_MSEOutput << std::endl;
+    }
+    
+    fout.flush();
+    
+    g_testWasIgnored = false;
+  }
+  
+  fout.close();
+  
 }
 
 void run_all_mictofacet()

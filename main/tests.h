@@ -79,6 +79,7 @@ namespace TEST_UTILS
   //render
   HRRenderRef CreateBasicTestRenderPT(int deviceId, int w, int h, int minRays, int maxRays, const wchar_t* a_drvName = L"HydraModern");
   HRRenderRef CreateBasicTestRenderPTNoCaust(int deviceId, int w, int h, int minRays, int maxRays);
+  HRRenderRef CreateBasicGLRender(int w, int h);
   HRMeshRef CreateTriStrip(int rows, int cols, float size);
  
 }
@@ -265,7 +266,7 @@ namespace MTL_TESTS
   
   bool test_135_opacity_metal();        // not smooth backface
   bool test_136_opacity_glass();        // transparency work as thin;
-  bool test_137_opacity_emission();     // #NOT_SUPPORTED_CURRENTLY;  falloff does not work in emission
+  bool test_137_opacity_emission();     //
 
   bool test_138_translucency_and_diffuse();
   bool test_139_glass_and_bump();
@@ -390,6 +391,13 @@ namespace PP_TESTS
 
 };
 
+namespace ALGR_TESTS
+{
+  bool test_401_ibpt_and_glossy_glass();
+  bool test_402_ibpt_and_glossy_double_glass();
+  bool test_403_light_inside_double_glass();
+}
+
 //These tests need some scene library to exist in their respective folders
 bool test1000_loadlibrary_and_edit();
 bool test1001_loadlibrary_and_add_textures();
@@ -418,12 +426,15 @@ bool test1017_merge_scene_scene_id_mask();
 bool test_x1_displace_car_by_noise();
 bool test_x2_car_displacement_triplanar();
 bool test_x3_car_fresnel_ice();
-bool test_x4_car_triplanar();
+bool test_x4_car_triplanar(const int i);
+
+bool test_depth_mesh();
 
 void run_all_api_tests(const int startTestId = 0);
 void run_all_geo_tests();
 void run_all_mtl_tests(int a_start = 0);
 void run_all_lgt_tests(int a_start = 0);
+void run_all_alg_tests(int a_start = 0);
 void run_all_ipp_tests(int a_start = 0);
 void terminate_opengl();
 

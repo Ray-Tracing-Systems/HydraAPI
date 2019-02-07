@@ -867,7 +867,7 @@ bool test_x3_car_fresnel_ice()
 }
 
 
-bool test_x4_car_triplanar()
+bool test_x4_car_triplanar(const int i)
 {
   initGLIfNeeded();
 
@@ -875,12 +875,12 @@ bool test_x4_car_triplanar()
 
   hrSceneLibraryOpen(L"tests/test_x4", HR_WRITE_DISCARD);
 
-  HRTextureNodeRef texX = hrTexture2DCreateFromFile(L"d:/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/Germany/Police_side.png"); // side
-  HRTextureNodeRef texY  = hrTexture2DCreateFromFile(L"d:/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/Test_Top.png"); // bottom
-  HRTextureNodeRef texZ  = hrTexture2DCreateFromFile(L"d:/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/Germany/Police_back.png"); // back
-  HRTextureNodeRef texX2 = hrTexture2DCreateFromFile(L"d:/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/Germany/Police_side.png"); // side
-  HRTextureNodeRef texY2  = hrTexture2DCreateFromFile(L"d:/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/Germany/Police_top.png"); // top
-  HRTextureNodeRef texZ2  = hrTexture2DCreateFromFile(L"d:/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/White80.png"); // front
+  HRTextureNodeRef texX = hrTexture2DCreateFromFile(L"d:/Works/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/Taxi_side_v1.png"); // side
+  HRTextureNodeRef texX2 = hrTexture2DCreateFromFile(L"d:/Works/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/Taxi_side_v1.png"); // side
+  HRTextureNodeRef texY2  = hrTexture2DCreateFromFile(L"d:/Works/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/Taxi_top_v1.png"); // top
+  HRTextureNodeRef texY  = hrTexture2DCreateFromFile(L"d:/Works/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/Taxi_bottom_v1.png"); // bottom
+  HRTextureNodeRef texZ2  = hrTexture2DCreateFromFile(L"d:/Works/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/Taxi_front_v1.png"); // front
+  HRTextureNodeRef texZ  = hrTexture2DCreateFromFile(L"d:/Works/Samsung/01_CarsRoadsSigns/Textures/Cars/BodySpecial_triplanar/Taxi_back_v1.png"); // back
 
   HRTextureNodeRef texEnv = hrTexture2DCreateFromFile(L"data/textures/building.hdr");
 
@@ -936,6 +936,9 @@ bool test_x4_car_triplanar()
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   HRCameraRef camRef = hrCameraCreate(L"my camera");
+  enum cameraView { CAM_FRONT, CAM_BACK }camView;
+  camView = CAM_FRONT;
+  std::string strCamView;
 
   hrCameraOpen(camRef, HR_WRITE_DISCARD);
   {
@@ -946,8 +949,22 @@ bool test_x4_car_triplanar()
     camNode.append_child(L"farClipPlane").text().set(L"100.0");
 
     camNode.append_child(L"up").text().set(L"0 1 0");
+    switch (camView)
+    {
+    case CAM_FRONT:
+      camNode.append_child(L"position").text().set(L"4 2 5"); // front and side
+      strCamView = "front";
+      break;
+    case CAM_BACK:
+      camNode.append_child(L"position").text().set(L"4 2 -5"); // back and side
+      strCamView = "back";
+      break;
+
+    default:
+      break;
+    }
     //camNode.append_child(L"position").text().set(L"4 2 5"); // front and side
-	  camNode.append_child(L"position").text().set(L"4 2 -5"); // back and side
+	  //camNode.append_child(L"position").text().set(L"4 2 -5"); // back and side
     camNode.append_child(L"look_at").text().set(L"0.0 1 0");
   }
   hrCameraClose(camRef);
@@ -1001,9 +1018,10 @@ bool test_x4_car_triplanar()
 
   hrSceneClose(scnRef);
 
-  std::wstring car_path(L"d:/Samsung/01_CarsRoadsSigns/CarsLibSeparate/004");
+  std::wstringstream car_path;
+  car_path << "d:/Works/Samsung/01_CarsRoadsSigns/CarsLibSeparate/00" << i;
 
-  auto merged_car = MergeLibraryIntoLibrary(car_path.c_str(), false, true);
+  auto merged_car = MergeLibraryIntoLibrary(car_path.str().c_str(), false, true);
   hrCommit(scnRef);
 
   auto materials = HydraXMLHelpers::GetMaterialNameToIdMap();
@@ -1018,7 +1036,7 @@ bool test_x4_car_triplanar()
     }
   }
 
-  auto newBodyMat = MergeOneMaterialIntoLibrary(car_path.c_str(), L"outside_body");
+  auto newBodyMat = MergeOneMaterialIntoLibrary(car_path.str().c_str(), L"outside_body");
   xml_node p8;
   xml_node p9;
 
@@ -1145,8 +1163,263 @@ bool test_x4_car_triplanar()
     if (info.finalUpdate)
       break;
   }
-
-  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_x4/z_out.png");
+  std::wstringstream outImgNum;
+  outImgNum << "tests_images/test_x4/Taxi" << i << "_" << strCamView.c_str() << ".png";
+  hrRenderSaveFrameBufferLDR(renderRef, outImgNum.str().c_str());// L"tests_images/test_x4/z_out.png");
 
   return check_images("test_x4", 1, 30);
+}
+
+
+bool test_depth_mesh()
+{
+  initGLIfNeeded();
+
+  hrErrorCallerPlace(L"test_depth_mesh");
+
+  hrSceneLibraryOpen(L"tests_f/test_depth_mesh", HR_WRITE_DISCARD);
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Materials
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  HRMaterialRef mat1 = hrMaterialCreate(L"mat1");
+  HRMaterialRef mat2 = hrMaterialCreate(L"mat2");
+  HRMaterialRef mat3 = hrMaterialCreate(L"mat3");
+
+  //HRTextureNodeRef texChecker = hrTexture2DCreateFromFile(L"data/textures/chess_white.bmp");
+  //HRTextureNodeRef tex = hrTexture2DCreateFromFile(L"data/textures/ornament.jpg");
+  HRTextureNodeRef tex_light = hrTexture2DCreateFromFile(L"data/textures/z_out.png");
+  HRTextureNodeRef tex_depth = hrTexture2DCreateFromFile(L"data/textures/z_depth.png");
+
+  hrMaterialOpen(mat1, HR_WRITE_DISCARD);
+  {
+    auto matNode = hrMaterialParamNode(mat1);
+
+    auto emission = matNode.append_child(L"emission");
+    emission.append_child(L"multiplier").append_attribute(L"val").set_value(1.0f);
+
+    auto color = emission.append_child(L"color");
+    color.append_attribute(L"val").set_value(L"1.0 1.0 1.0");
+    color.append_attribute(L"tex_apply_mode ").set_value(L"multiply");
+
+    auto texNode = hrTextureBind(tex_light, emission.child(L"color"));
+
+    texNode.append_attribute(L"matrix");
+    float samplerMatrix[16] = { -1, 0, 0, 0,
+                                0, 1, 0, 0,
+                                0, 0, 1, 0,
+                                0, 0, 0, 1 };
+    texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
+    texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
+    texNode.append_attribute(L"input_gamma").set_value(2.2f);
+    texNode.append_attribute(L"input_alpha").set_value(L"rgb");
+
+    HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
+
+    auto displacement = matNode.append_child(L"displacement");
+    auto heightNode   = displacement.append_child(L"height_map");
+
+    displacement.append_attribute(L"type").set_value(L"true_displacement");
+    heightNode.append_attribute(L"amount").set_value(-50.0f);
+    displacement.append_attribute(L"subdivs").set_value(0);
+    texNode = hrTextureBind(tex_depth, heightNode);
+
+    texNode.append_attribute(L"matrix");
+
+    texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
+    texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
+    texNode.append_attribute(L"input_gamma").set_value(1.0f);
+    texNode.append_attribute(L"input_alpha").set_value(L"rgb");
+
+    HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
+
+  }
+  hrMaterialClose(mat1);
+
+  hrMaterialOpen(mat2, HR_WRITE_DISCARD);
+  {
+    auto matNode = hrMaterialParamNode(mat2);
+
+    auto refl = matNode.append_child(L"reflectivity");
+
+    refl.append_attribute(L"brdf_type").set_value(L"torranse_sparrow");
+    refl.append_child(L"color").append_attribute(L"val").set_value(L"0.8 0.8 0.8");
+    refl.append_child(L"glossiness").append_attribute(L"val").set_value(L"0.95");
+    refl.append_child(L"extrusion").append_attribute(L"val").set_value(L"maxcolor");
+    refl.append_child(L"fresnel").append_attribute(L"val").set_value(1);
+    refl.append_child(L"fresnel_ior").append_attribute(L"val").set_value(8.0f);
+
+    VERIFY_XML(matNode);
+  }
+  hrMaterialClose(mat2);
+
+  hrMaterialOpen(mat3, HR_WRITE_DISCARD);
+  {
+    auto matNode = hrMaterialParamNode(mat3);
+
+    auto diffuse = matNode.append_child(L"diffuse");
+    diffuse.append_child(L"color").append_attribute(L"val").set_value(L"0.8 0.8 0.8");
+
+  }
+  hrMaterialClose(mat3);
+
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Meshes4
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  HRMeshRef tess = CreateTriStrip(256, 256, 40);//hrMeshCreateFromFileDL(L"data/meshes/lucy.vsgf");//
+  HRMeshRef sphere1 = HRMeshFromSimpleMesh(L"sphMirror", CreateSphere(2.0f, 64), mat2.id);
+  HRMeshRef sphere2 = HRMeshFromSimpleMesh(L"sphDiff", CreateSphere(2.0f, 64), mat3.id);
+
+  hrMeshOpen(tess, HR_TRIANGLE_IND3, HR_OPEN_EXISTING);
+  {
+    hrMeshMaterialId(tess, mat1.id);
+  }
+  hrMeshClose(tess);
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Light
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  HRLightRef sky = hrLightCreate(L"sky");
+
+  hrLightOpen(sky, HR_WRITE_DISCARD);
+  {
+    auto lightNode = hrLightParamNode(sky);
+
+    lightNode.attribute(L"type").set_value(L"sky");
+
+    auto intensityNode = lightNode.append_child(L"intensity");
+
+    intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(0.75f);
+
+    VERIFY_XML(lightNode);
+  }
+  hrLightClose(sky);
+
+
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Camera
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  HRCameraRef camRef = hrCameraCreate(L"my camera");
+
+  hrCameraOpen(camRef, HR_WRITE_DISCARD);
+  {
+    auto camNode = hrCameraParamNode(camRef);
+
+    camNode.append_child(L"fov").text().set(L"40");
+    camNode.append_child(L"nearClipPlane").text().set(L"0.01");
+    camNode.append_child(L"farClipPlane").text().set(L"100.0");
+
+    camNode.append_child(L"up").text().set(L"0 1 0");
+    camNode.append_child(L"position").text().set(L"0 -4 37");
+    camNode.append_child(L"look_at").text().set(L"0 0 0");
+  }
+  hrCameraClose(camRef);
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Render settings
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 1024, 256, 2048);
+
+  hrRenderOpen(renderRef, HR_OPEN_EXISTING);
+  {
+    auto node = hrRenderParamNode(renderRef);
+    node.force_child(L"doDisplacement").text() = 1;
+  }
+  hrRenderClose(renderRef);
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Create scene
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  HRSceneInstRef scnRef = hrSceneCreate(L"my scene");
+
+  using namespace HydraLiteMath;
+
+  float4x4 mRot;
+  float4x4 mRot2;
+  float4x4 mTranslate;
+  float4x4 mScale;
+  float4x4 mRes;
+  const float DEG_TO_RAD = 0.01745329251f;
+
+  hrSceneOpen(scnRef, HR_WRITE_DISCARD);
+
+  ///////////
+  mTranslate.identity();
+  mRes.identity();
+
+
+  mTranslate = translate4x4(float3(0.0f, 0.0f, 0.0f));
+  mRot = rotate_X_4x4(DEG_TO_RAD * 90.0f);
+  mRot2 = rotate_Z_4x4(DEG_TO_RAD * 180.0f);
+  mScale = scale4x4(float3(1.0f, 1.0f, 1.0f));
+  mRes = mul(mTranslate, mul(mRot2, mRot));
+
+  hrMeshInstance(scnRef, tess, mRes.L());
+
+//
+//  mRot = rotate_X_4x4(DEG_TO_RAD * 90.0f);
+//  mRot2 = rotate_Z_4x4(DEG_TO_RAD * 180.0f);
+//  mScale = scale4x4(float3(1.0f, 1.0f, -1.0f));
+//  mTranslate = translate4x4(float3(0.0f, 0.0f, 15.0f));
+//  mRes = mul(mTranslate, mul(mScale, mul(mRot2, mRot)));
+//
+//  hrMeshInstance(scnRef, tess, mRes.L());
+
+  ///////////
+
+  mTranslate.identity();
+  mRes.identity();
+
+  mTranslate = translate4x4(float3(5.5f, -6.5f, -7.0f));
+  hrMeshInstance(scnRef, sphere1, mTranslate.L());
+
+  mTranslate = translate4x4(float3(-5.0f, -7.0f, -4.0f));
+  hrMeshInstance(scnRef, sphere2, mTranslate.L());
+
+  hrLightInstance(scnRef, sky, mRes.L());
+
+  ///////////
+
+  hrSceneClose(scnRef);
+
+  hrFlush(scnRef, renderRef);
+
+  glViewport(0, 0, 1024, 1024);
+  std::vector<int32_t> image(1024 * 1024);
+
+  while (true)
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+    HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
+
+    if (info.haveUpdateFB)
+    {
+      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 1024, &image[0]);
+
+      glDisable(GL_TEXTURE_2D);
+      glDrawPixels(1024, 1024, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+
+      auto pres = std::cout.precision(2);
+      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout.precision(pres);
+
+      glfwSwapBuffers(g_window);
+      glfwPollEvents();
+    }
+
+    if (info.finalUpdate)
+      break;
+  }
+
+  hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_depth_mesh/z_out.png");
+
+  return check_images("test_depth_mesh", 1, 50);
 }

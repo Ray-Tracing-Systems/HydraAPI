@@ -56,15 +56,34 @@ static void ExtractDepthLine(const HRGBufferPixel* a_inLine, int32_t* a_outLine,
   {
     float d = (a_inLine[x].depth - dmin) / (dmax - dmin);
     if (d > 1e5f || a_inLine[x].matId < 0)
-      d = 0.0f;
+      d = 1.0f;
 
     float depth[4];
-    depth[0] = d;
-    depth[1] = d;
-    depth[2] = d;
+    depth[0] = 1.0f - d;
+    depth[1] = 1.0f - d;
+    depth[2] = 1.0f - d;
     depth[3] = 1.0f;
 
     a_outLine[x] = RealColorToUint32(depth);
+  }
+}
+
+static void ExtractDepthLineU16(const HRGBufferPixel* a_inLine, unsigned short* a_outLine, int a_width, const float dmin, const float dmax)
+{
+  for (int x = 0; x < a_width; x++)
+  {
+    const float d = (a_inLine[x].depth - dmin) / (dmax - dmin);
+
+    int r = (int)((1.0f-d)*65535.0f);
+    if(r > 65535)
+      r = 65535;
+    else if (r < 1)
+      r = 1;
+
+    if (d > 1e5f || a_inLine[x].matId < 0)
+      r = 0;
+
+    a_outLine[x] = (unsigned short)(r);
   }
 }
 
@@ -292,12 +311,15 @@ HAPI bool hrRenderSaveGBufferLayerLDR(HRRenderRef a_pRender, const wchar_t* a_ou
   }
 
 
+  unsigned short* imageU16 = (unsigned short*)imageLDR.data();
+
   for (int y = 0; y < height; y++)
   {
     pDriver->GetGBufferLine(y, &gbufferLine[0], 0, width, g_objManager.scnData.m_shadowCatchers);
 
     if (lname == L"depth")
-      ExtractDepthLine(&gbufferLine[0], &imageLDR[y*width], width, dmin, dmax);
+      //ExtractDepthLine(&gbufferLine[0], &imageLDR[y*width], width, dmin, dmax);
+      ExtractDepthLineU16(&gbufferLine[0], &imageU16[y*width], width, dmin, dmax);
     else if (lname == L"normals")
       ExtractNormalsLine(&gbufferLine[0], &imageLDR[y*width], width);
     else if (lname == L"texcoord")
@@ -361,7 +383,11 @@ HAPI bool hrRenderSaveGBufferLayerLDR(HRRenderRef a_pRender, const wchar_t* a_ou
     }
   }
 
-  g_objManager.m_pImgTool->SaveLDRImageToFileLDR(a_outFileName, width, height, imageLDR.data());
+
+  if (lname == L"depth")
+    g_objManager.m_pImgTool->Save16BitMonoImageTo16BitPNG(a_outFileName, width, height, imageU16);
+  else
+    g_objManager.m_pImgTool->SaveLDRImageToFileLDR(a_outFileName, width, height, imageLDR.data());
 
   return true;
 }
