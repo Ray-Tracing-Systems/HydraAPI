@@ -938,10 +938,16 @@ bool test37_cornell_with_light_different_image_layers()
       texc[2] = line[x].rgba[2];
       texc[3] = 1.0f;
 
-      depth[0] = line[x].depth*0.1f;
-      depth[1] = line[x].depth*0.1f;
-      depth[2] = line[x].depth*0.1f;
+      float ldepth = line[x].depth;
+
+      if (ldepth >= 1000000.0f)
+        ldepth = 0.0f;
+
+      depth[0] = ldepth*0.025f;
+      depth[1] = ldepth*0.025f;
+      depth[2] = ldepth*0.025f;
       depth[3] = 1.0f;
+
 
       const float color[4] = { powf(texc[0], invGamma),
                                powf(texc[1], invGamma), 
