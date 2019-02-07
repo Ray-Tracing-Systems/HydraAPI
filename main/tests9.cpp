@@ -744,7 +744,7 @@ bool test56_mesh_change_open_existing()
 
     //hrMeshMaterialId(cubeRef, 0);
     hrMeshPrimitiveAttribPointer1i(cubeRef, L"mind", cubeMatIndices);
-    hrMeshAppendTriangles3(cubeRef, int(cube.triIndices.size()), &cube.triIndices[0]);
+    hrMeshAppendTriangles3(cubeRef, int(cube.triIndices.size()), &cube.triIndices[0], false);
   }
   hrMeshClose(cubeRef);
 
@@ -755,7 +755,7 @@ bool test56_mesh_change_open_existing()
     hrMeshVertexAttribPointer2f(planeRef, L"texcoord", &plane.vTexCoord[0]);
 
     hrMeshMaterialId(planeRef, mat1.id);
-    hrMeshAppendTriangles3(planeRef, int32_t(plane.triIndices.size()), &plane.triIndices[0]);
+    hrMeshAppendTriangles3(planeRef, int32_t(plane.triIndices.size()), &plane.triIndices[0], false);
   }
   hrMeshClose(planeRef);
 
@@ -772,7 +772,7 @@ bool test56_mesh_change_open_existing()
       sphere.matIndices[i] = mat2.id;
 
     hrMeshPrimitiveAttribPointer1i(sphereRef, L"mind", &sphere.matIndices[0]);
-    hrMeshAppendTriangles3(sphereRef, int32_t(sphere.triIndices.size()), &sphere.triIndices[0]);
+    hrMeshAppendTriangles3(sphereRef, int32_t(sphere.triIndices.size()), &sphere.triIndices[0], false);
   }
   hrMeshClose(sphereRef);
 
@@ -793,7 +793,7 @@ bool test56_mesh_change_open_existing()
 
     //hrMeshMaterialId(torusRef, mat0.id);
     hrMeshPrimitiveAttribPointer1i(torusRef, L"mind", &torus.matIndices[0]);
-    hrMeshAppendTriangles3(torusRef, int32_t(torus.triIndices.size()), &torus.triIndices[0]);
+    hrMeshAppendTriangles3(torusRef, int32_t(torus.triIndices.size()), &torus.triIndices[0], false);
 
     // test second call of hrMeshAppendTriangles3
     //
@@ -804,7 +804,7 @@ bool test56_mesh_change_open_existing()
     int cubeMatIndices[12] = { 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 1, 1 };
 
     hrMeshPrimitiveAttribPointer1i(torusRef, L"mind", cubeMatIndices);
-    hrMeshAppendTriangles3(torusRef, int(cube2.triIndices.size()), &cube2.triIndices[0]);
+    hrMeshAppendTriangles3(torusRef, int(cube2.triIndices.size()), &cube2.triIndices[0], false);
   }
   hrMeshClose(torusRef);
 
