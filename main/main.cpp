@@ -133,13 +133,13 @@ int main(int argc, const char** argv)
     //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_31", L"opengl1", nullptr, &test02_draw);
     
     //run_all_api_tests();
-	  //run_all_geo_tests();
+	//run_all_geo_tests();
     //run_all_mtl_tests();
     //run_all_lgt_tests();
     //run_all_ipp_tests();
 
-    //test40_several_changes();
-    std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
+    test40_several_changes();
+    //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
 
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
     //window_main_free_look(L"tests_f/test_241", L"opengl1Debug");
