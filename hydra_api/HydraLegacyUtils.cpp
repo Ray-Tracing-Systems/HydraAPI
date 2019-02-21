@@ -104,8 +104,6 @@ bool isTargetDevIdAHydraCPU(int a_devId, const std::vector<HydraRenderDevice>& a
   return res;
 }
 
-// std::wstring HydraInstallPathW() { return std::wstring(L"C:\\[Hydra]\\"); }
-
 #ifdef WIN32
 
 std::string ws2s(const std::wstring& s)
