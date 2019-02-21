@@ -56,7 +56,6 @@ protected:
 };
 
 using namespace HRUtils;
-
 BBox transformBBox(const BBox &a_bbox, const HydraLiteMath::float4x4 &m);
 BBox mergeBBoxes(const BBox &A, const BBox &B);
 BBox createBBoxFromFloat4V(const std::vector<HydraLiteMath::float4> &a_verts);

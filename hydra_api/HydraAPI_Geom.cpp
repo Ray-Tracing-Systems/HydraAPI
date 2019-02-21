@@ -1158,3 +1158,10 @@ HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, int indexNum)
   delete[] tan1;
   
 }
+
+BBox HRUtils::GetMeshBBox(HRMeshRef a_mesh)
+{
+  HRMesh* pMesh = g_objManager.PtrById(a_mesh);
+
+  return pMesh->pImpl->getBBox();
+}

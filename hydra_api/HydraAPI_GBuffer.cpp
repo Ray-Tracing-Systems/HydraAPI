@@ -87,6 +87,22 @@ static void ExtractDepthLineU16(const HRGBufferPixel* a_inLine, unsigned short* 
   }
 }
 
+static void ExtractDepthLineSpecial(const HRGBufferPixel* a_inLine, int32_t* a_outLine, int a_width, const float dmax)
+{
+  for (int x = 0; x < a_width; x++)
+  {
+    const float d = a_inLine[x].depth / dmax;
+
+    float res[4];
+    res[0] = d;
+    res[1] = d;
+    res[2] = d;
+    res[3] = 1.0f;
+
+    a_outLine[x] = RealColorToUint32(res);
+  }
+}
+
 
 static void ExtractNormalsLine(const HRGBufferPixel* a_inLine, int32_t* a_outLine, int a_width)
 {
@@ -231,6 +247,50 @@ static void ExtractCoverage(const HRGBufferPixel* a_inLine, int32_t* a_outLine, 
     const float col[4] = { cov, cov, cov, 1};
     a_outLine[x]  = RealColorToUint32(col);
   }
+}
+
+bool HRUtils::hrRenderSaveDepthSpecial(HRRenderRef a_pRender, const wchar_t* a_outFileName, float max_depth)
+{
+  HRRender* pRender = g_objManager.PtrById(a_pRender);
+
+  if (pRender == nullptr)
+  {
+    HrError(L"hrRenderGetDeviceList: nullptr input");
+    return false;
+  }
+
+  auto pDriver = pRender->m_pDriver;
+  if (pDriver == nullptr)
+    return false;
+
+  auto renderSettingsNode = pRender->xml_node_immediate();
+
+  const int width     = renderSettingsNode.child(L"width").text().as_int();
+  const int height    = renderSettingsNode.child(L"height").text().as_int();
+  const int evalgbuff = renderSettingsNode.child(L"evalgbuffer").text().as_int();
+
+  if (evalgbuff != 1)
+  {
+    HrError(L"hrRenderSaveGBufferLayerLDR: don't have gbuffer; set 'evalgbuffer' = 1 and render again; ");
+    return false;
+  }
+
+  std::vector<int32_t>        imageLDR(width * height);
+  std::vector<HRGBufferPixel> gbufferLine(width);
+
+  int* image = imageLDR.data();
+
+  for (int y = 0; y < height; y++)
+  {
+    pDriver->GetGBufferLine(y, &gbufferLine[0], 0, width, g_objManager.scnData.m_shadowCatchers);
+    ExtractDepthLineSpecial(&gbufferLine[0], &image[y*width], width, max_depth);
+  }
+
+
+  g_objManager.m_pImgTool->SaveLDRImageToFileLDR(a_outFileName, width, height, image);
+
+
+  return true;
 }
 
 HAPI bool hrRenderSaveGBufferLayerLDR(HRRenderRef a_pRender, const wchar_t* a_outFileName, const wchar_t* a_layerName,

@@ -1005,7 +1005,7 @@ BBox HRUtils::InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_
   }
   std::cout << std::endl;
 */
-  BBox bbox(transformBBox(pScn->m_bbox, HydraLiteMath::float4x4(a_mat)));
+  BBox bbox(::transformBBox(pScn->m_bbox, HydraLiteMath::float4x4(a_mat)));
 /*
   std::cout << "bbox of transformed scene: " << bbox.x_min << " " << bbox.x_max << " "
                                              << bbox.y_min << " " << bbox.y_max << " "
