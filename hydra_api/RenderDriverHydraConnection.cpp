@@ -38,7 +38,8 @@ struct RD_HydraConnection : public IHRRenderDriver
 {
   RD_HydraConnection() : m_pConnection(nullptr), m_pSharedImage(nullptr), m_progressVal(0.0f), m_firstUpdate(true), m_width(0), m_height(0),
                          m_avgBrightness(0.0f), m_avgBCounter(0), m_enableMedianFilter(false), m_medianthreshold(0.4f), m_stopThreadImmediately(false),
-                         haveUpdateFromMT(false), m_threadIsRun(false), m_threadFinished(false), hadFinalUpdate(false), m_clewInitRes(-1), m_instancesNum(0)
+                         haveUpdateFromMT(false), m_threadIsRun(false), m_threadFinished(false), hadFinalUpdate(false), m_clewInitRes(-1), m_instancesNum(0),
+                         m_colorImageIsLocked(false)
   {
     InitBothDeviceList();
 
@@ -176,6 +177,7 @@ protected:
   std::future<int>                      m_mltFrameBufferUpdateThread;
   bool                                  m_mltFrameBufferUpdate_ExitNow;
   int                                   m_lastMaxRaysPerPixel;
+  volatile std::atomic<bool>            m_colorImageIsLocked;
 
   int MLT_FrameBufferUpdateLoop();
 
@@ -188,6 +190,8 @@ static inline float contribFunc(float colorX, float colorY, float colorZ)
 
 int RD_HydraConnection::MLT_FrameBufferUpdateLoop()
 {
+  m_colorImageIsLocked = false;
+  
   size_t iter = 0;
 
   const float* indirect = m_pSharedImage->ImageData(0);
@@ -219,14 +223,9 @@ int RD_HydraConnection::MLT_FrameBufferUpdateLoop()
     const size_t imagesize = m_colorMLTFinalImage.width()*m_colorMLTFinalImage.height()*4;
     float* dataOut = m_colorMLTFinalImage.data();
     
-    for(size_t i=0; i<imagesize; i+=4)
-    {
-      const cvex::vfloat4 RGB0 = cvex::load_u(direct+i)*normDL4 + cvex::load_u(indirect+i)*normC;
-      cvex::store(dataOut + i, RGB0);
-    }
-  
     if(m_presets.mlt_med_enable)
     {
+      m_colorImageIsLocked = true;
       for(size_t i=0; i<imagesize; i+=4)
       {
         const cvex::vfloat4 RGB0 = cvex::load_u(indirect+i)*normC;
@@ -240,6 +239,7 @@ int RD_HydraConnection::MLT_FrameBufferUpdateLoop()
         const cvex::vfloat4 RGB0 =  cvex::load(dataOut+i) + cvex::load_u(direct+i)*normDL4;
         cvex::store(dataOut + i, RGB0);
       }
+      m_colorImageIsLocked = false;
     }
     else
     {
@@ -249,6 +249,7 @@ int RD_HydraConnection::MLT_FrameBufferUpdateLoop()
         cvex::store(dataOut + i, RGB0);
       }
     }
+    
     
     iter++;
   }
@@ -1004,7 +1005,9 @@ void RD_HydraConnection::GetFrameBufferLineHDR(int32_t a_xBegin, int32_t a_xEnd,
 
   const float* data = m_pSharedImage->ImageData(0); // index depends on a_layerName
   if(m_enableMLT)
+  {
     data = m_colorMLTFinalImage.data();
+  }
   if (data == nullptr)
     return;
 
@@ -1018,6 +1021,8 @@ void RD_HydraConnection::GetFrameBufferLineHDR(int32_t a_xBegin, int32_t a_xEnd,
   auto intptr        = reinterpret_cast<std::uintptr_t>(data);
 
   // if final update lock image
+  
+  while(m_enableMLT && m_colorImageIsLocked); // wait for unlocking m_colorImageIsLocked
 
   if (intptr % 16 == 0)
   {
