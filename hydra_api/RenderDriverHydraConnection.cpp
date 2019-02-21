@@ -19,6 +19,7 @@
 #include <thread>
 
 #include "ssemath.h"
+#include "vfloat4_x64.h"
 
 
 #ifdef WIN32
@@ -145,8 +146,11 @@ protected:
     int  maxrays;
     bool allocImageB;
     bool allocImageBOnGPU;
-    int  mmltThreads;
+    int   mmltThreads;
     float mmltMultBrightness;
+    
+    float mlt_med_threshold;
+    bool  mlt_med_enable;
   } m_presets;
 
   bool m_firstUpdate;
@@ -168,7 +172,7 @@ protected:
 
   // MLT/MMLT asynchronous frame buffer update
   //
-  std::vector<float, aligned16<float> > m_colorMLTFinal;
+  HydraRender::HDRImage4f               m_colorMLTFinalImage;
   std::future<int>                      m_mltFrameBufferUpdateThread;
   bool                                  m_mltFrameBufferUpdate_ExitNow;
   int                                   m_lastMaxRaysPerPixel;
@@ -203,22 +207,49 @@ int RD_HydraConnection::MLT_FrameBufferUpdateLoop()
     std::tie(summ[0], summ[1], summ[2]) = HydraRender::ColorSummImage4f(indirect, m_width, m_height);
     double avgDiv       = 1.0/double(m_width*m_height);
     float avgBrightness = contribFunc(avgDiv*summ[0], avgDiv*summ[1], avgDiv*summ[2]);
-    // normC надо умножить на коэффициент multBrightness из 3д макса.
+    
+    // calc normalisation constant
+    //
     const float normC   = m_pSharedImage->Header()->avgImageB / fmax(avgBrightness, 1e-30f) * m_presets.mmltMultBrightness;
     const float normDL  = 1.0f/float(m_pSharedImage->Header()->spp);
-
-    for(size_t i=0;i<m_colorMLTFinal.size(); i+=4)
+  
+    const cvex::vfloat4 normDL4 = {normDL, normDL, normDL, 0.0f};
+    const cvex::vfloat4 normC4  = {normC,  normC,  normC,  0.0f};
+  
+    const size_t imagesize = m_colorMLTFinalImage.width()*m_colorMLTFinalImage.height()*4;
+    float* dataOut = m_colorMLTFinalImage.data();
+    
+    for(size_t i=0; i<imagesize; i+=4)
     {
-      const float R = direct[i+0]*normDL + indirect[i+0]*normC;
-      const float G = direct[i+1]*normDL + indirect[i+1]*normC;
-      const float B = direct[i+2]*normDL + indirect[i+2]*normC;
-
-      m_colorMLTFinal[i + 0] = R;
-      m_colorMLTFinal[i + 1] = G;
-      m_colorMLTFinal[i + 2] = B;
-      m_colorMLTFinal[i + 3] = 0.0f;
+      const cvex::vfloat4 RGB0 = cvex::load_u(direct+i)*normDL4 + cvex::load_u(indirect+i)*normC;
+      cvex::store(dataOut + i, RGB0);
     }
-
+  
+    if(m_presets.mlt_med_enable)
+    {
+      for(size_t i=0; i<imagesize; i+=4)
+      {
+        const cvex::vfloat4 RGB0 = cvex::load_u(indirect+i)*normC;
+        cvex::store(dataOut + i, RGB0);
+      }
+      
+      m_colorMLTFinalImage.medianFilterInPlace(m_presets.mlt_med_threshold);
+      
+      for(size_t i=0; i<imagesize; i+=4)
+      {
+        const cvex::vfloat4 RGB0 =  cvex::load(dataOut+i) + cvex::load_u(direct+i)*normDL4;
+        cvex::store(dataOut + i, RGB0);
+      }
+    }
+    else
+    {
+      for(size_t i=0; i<imagesize; i+=4)
+      {
+        const cvex::vfloat4 RGB0 = cvex::load_u(direct+i)*normDL4 + cvex::load_u(indirect+i)*normC;
+        cvex::store(dataOut + i, RGB0);
+      }
+    }
+    
     iter++;
   }
 
@@ -517,7 +548,19 @@ bool RD_HydraConnection::UpdateSettings(pugi::xml_node a_settingsNode)
     m_presets.mmltMultBrightness = a_settingsNode.child(L"mmlt_multBrightness").text().as_float();
   else
     m_presets.mmltMultBrightness = 1.0f;
-
+  
+  // mlt median filter
+  //
+  if (a_settingsNode.child(L"mlt_med_threshold") != nullptr)
+    m_presets.mlt_med_threshold = a_settingsNode.child(L"mlt_med_threshold").text().as_float();
+  else
+    m_presets.mlt_med_threshold = 0.4f;
+  
+  if (a_settingsNode.child(L"mlt_med_enable") != nullptr)
+    m_presets.mlt_med_enable = a_settingsNode.child(L"mlt_med_enable").text().as_bool();
+  else
+    m_presets.mlt_med_enable = false;
+  
   return true;
 }
 
@@ -769,13 +812,17 @@ void RD_HydraConnection::EndFlush()
   //
   if(m_enableMLT)
   {
-    m_colorMLTFinal.resize(m_width*m_height*4);
-    for(size_t i=0;i<m_colorMLTFinal.size();i+=4)
+    
+    m_colorMLTFinalImage.resize(m_width, m_height);
+    const size_t imagesize = m_colorMLTFinalImage.width()*m_colorMLTFinalImage.height()*4;
+    float* colorMLTFinal   = m_colorMLTFinalImage.data();
+    
+    for(size_t i=0;i<imagesize;i+=4)
     {
-      m_colorMLTFinal[i+0] = 1.0f;
-      m_colorMLTFinal[i+1] = 0.0f;
-      m_colorMLTFinal[i+2] = 0.0f;
-      m_colorMLTFinal[i+3] = 0.0f;
+      colorMLTFinal[i+0] = 1.0f;
+      colorMLTFinal[i+1] = 0.0f;
+      colorMLTFinal[i+2] = 0.0f;
+      colorMLTFinal[i+3] = 0.0f;
     }
     
     m_mltFrameBufferUpdateThread   = std::async(std::launch::async, &RD_HydraConnection::MLT_FrameBufferUpdateLoop, this);
@@ -957,7 +1004,7 @@ void RD_HydraConnection::GetFrameBufferLineHDR(int32_t a_xBegin, int32_t a_xEnd,
 
   const float* data = m_pSharedImage->ImageData(0); // index depends on a_layerName
   if(m_enableMLT)
-    data = m_colorMLTFinal.data();
+    data = m_colorMLTFinalImage.data();
   if (data == nullptr)
     return;
 
@@ -1021,7 +1068,7 @@ void RD_HydraConnection::GetFrameBufferLineLDR(int32_t a_xBegin, int32_t a_xEnd,
 
   const float* data = m_pSharedImage->ImageData(0); // index depends on a_layerName
   if(m_enableMLT)
-    data = m_colorMLTFinal.data();
+    data = m_colorMLTFinalImage.data();
   if (data == nullptr)
     return;
 
