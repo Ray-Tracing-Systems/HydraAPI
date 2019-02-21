@@ -751,7 +751,13 @@ int32_t HR_DriverUpdateMeshes(HRSceneInst& scn, ChangeList& objList, IHRRenderDr
 
   int32_t updatedMeshes = 0;
 
-  for (auto id : objList.meshUsed)
+  std::vector<int32_t> idsToUpdate;
+  idsToUpdate.reserve(objList.meshUsed.size());
+  std::copy(objList.meshUsed.begin(), objList.meshUsed.end(), std::back_inserter(idsToUpdate));
+  std::sort(idsToUpdate.begin(), idsToUpdate.end());
+
+
+  for (auto id : idsToUpdate)
   {
     HRMesh& mesh            = g_objManager.scnData.meshes[id];
     HRMeshDriverInput input = HR_GetMeshDataPointers(id);
@@ -1580,8 +1586,8 @@ std::wstring HR_UtilityDriverStart(const wchar_t* state_path)
 //      imgData = g_objManager.EmptyBuffer();
 //#endif
 
-//    for (auto elem : mipLevelsDict)
-//      std::cout << " " << elem.first << ":" << elem.second << std::endl;
+    for (auto elem : mipLevelsDict)
+      std::cout << " " << elem.first << ":" << elem.second << std::endl;
 
 #ifdef WIN32
     HydraDestroyHiddenWindow();

@@ -619,9 +619,6 @@ void RD_HydraConnection::CreateAndClearSharedImage()
 {
   ////////////////////////////////////////////////////////////////////////////////////////////
 
-  const int width  = m_width;
-  const int height = m_height;
-
   const std::string hydraImageName = NewSharedImageName();
   const std::vector<int> devList   = GetCurrDeviceList();
 
@@ -642,7 +639,9 @@ void RD_HydraConnection::CreateAndClearSharedImage()
   }
 
   char err[256];
-  bool shmemImageIsOk = m_pSharedImage->Create(width, height, layersNum, hydraImageName.c_str(), err); // #TODO: change this and pass via cmd line
+  
+  const bool shmemImageIsOk = m_pSharedImage->Create(m_width, m_height, layersNum, hydraImageName.c_str(), err); // #TODO: change this and pass via cmd line
+  
   if (!shmemImageIsOk)
   {
     //#TODO: call error callback or do some thing like that
@@ -663,7 +662,7 @@ void RD_HydraConnection::CreateAndClearSharedImage()
   m_lastSharedImageName = hydraImageName;
 
   delete m_pConnection;
-  m_pConnection = CreateHydraServerConnection(width, height, false);
+  m_pConnection = CreateHydraServerConnection(m_width, m_height, false);
 }
 
 RenderProcessRunParams RD_HydraConnection::GetCurrRunProcessParams()

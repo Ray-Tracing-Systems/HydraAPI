@@ -34,7 +34,8 @@ HydraGeomData::~HydraGeomData()
 void HydraGeomData::freeMemIfNeeded()
 {
   if(m_ownMemory)
-    free(m_data);
+    delete [] m_data;
+  m_data = nullptr;
 }
 
 uint32_t HydraGeomData::getVerticesNumber() const { return verticesNum; }

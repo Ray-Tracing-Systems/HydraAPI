@@ -128,7 +128,7 @@ uniform ivec2 max_tex_res;
 uniform ivec2 render_res;
 uniform ivec2 rasterization_res;
 
-#define MAX_MIP_LEVEL 4
+#define MAX_MIP_LEVEL 8
 
 float mip_map_level(vec2 texture_coordinate)
 {
@@ -156,7 +156,7 @@ mat2 getTexMatrix(int matId, int slotId)
   res[0][0] = tex_mat.x;
   res[0][1] = tex_mat.y;
   res[1][0] = tex_mat.z;
-  res[0][1] = tex_mat.w;
+  res[1][1] = tex_mat.w;
 
   return res;
 }

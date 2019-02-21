@@ -131,8 +131,6 @@ std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTexture2DFromMemory(HR
   const size_t totalByteSizeOfTexture = textureSizeInBytes + size_t(2 * sizeof(unsigned int));
   
   const size_t chunkId = g_objManager.scnData.m_vbCache.AllocChunk(totalByteSizeOfTexture, pSysObj->id);
-  auto& chunk          = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
-  chunk.type           = (bpp <= 4) ? CHUNK_TYPE_IMAGE4UB : CHUNK_TYPE_IMAGE4F;
 
   if (chunkId == size_t(-1))
   {
@@ -140,7 +138,10 @@ std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTexture2DFromMemory(HR
     return nullptr;
   }
 
+  auto& chunk         = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
+  chunk.type          = (bpp <= 4) ? CHUNK_TYPE_IMAGE4UB : CHUNK_TYPE_IMAGE4F;
   unsigned char* data = (unsigned char*)chunk.GetMemoryNow();
+
   if (data == nullptr)
   {
     HrError(L"HydraFactoryCommon::CreateTexture2DFromMemory, out of memory unknown error");

@@ -71,7 +71,7 @@ top=2cm,bottom=2cm,bindingoffset=0cm]{geometry}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Book's title and subtitle
-\title{\Huge \textbf{Hydra Renderer 2.2}  \footnote{ Copyright \space \textcopyright \space  Ray Tracing Systems, 2014-2017.} \\ \huge XML Doc }
+\title{\Huge \textbf{Hydra Renderer 2.3}  \footnote{ Copyright \space \textcopyright \space  Ray Tracing Systems, 2014-2019.} \\ \huge XML Doc }
 % Author
 \author{\url{www.raytracing.ru}}
 
@@ -347,8 +347,27 @@ Also it is possible to combine any number of componenets in a single hydra\_mate
 
 \end{lstlisting}
 
-\subsection{Blend Material (in progress)}
+\subsection{Blend Material}
 
+Attributes <<node\_top>> and <<node\_bottom>> are material id's of child materials. Here are sample of simple (i. e. by mask) blend and fresnel blend.
+
+\lstset{language=XML}
+\begin{lstlisting}
+<material id="7" name="matBlend1" type="hydra_blend" node_top="0" node_bottom="1">
+  <blend type="mask_blend">
+    <mask val="1">
+      <texture matrix="4 0 0 0 0 4 0 0 0 0 1 0 0 0 0 1" ... />
+    </mask>
+  </blend>
+</material>
+
+<material id="6" name="matBlend" type="hydra_blend" node_top="5" node_bottom="4">
+  <blend type="fresnel_blend">
+    <fresnel_ior val="5" />
+  </blend>
+</material>
+
+\end{lstlisting}
 
 \section{Lights}
 

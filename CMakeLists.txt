@@ -16,7 +16,6 @@ set(ADDITIONAL_LIBRARY_DIRS
 add_subdirectory (ies_parser)
 add_subdirectory (mikktspace)
 add_subdirectory (hydra_api)
-add_subdirectory (main)
 #add_subdirectory (hydra_api/hydra_api_py)
 
 
