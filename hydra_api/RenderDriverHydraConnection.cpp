@@ -491,12 +491,9 @@ bool RD_HydraConnection::UpdateSettings(pugi::xml_node a_settingsNode)
 
   m_presets.allocImageBOnGPU = (std::wstring(a_settingsNode.child(L"forceGPUFrameBuffer").text().as_string()) == L"1");
 
-  std::wstring tmp  = std::wstring(a_settingsNode.child(L"render_executable").text().as_string());
+  std::wstring tmp  = std::wstring(a_settingsNode.child(L"render_exe_dir").text().as_string());
   if(!tmp.empty())
-  {
     m_params.customExePath = std::string(tmp.begin(), tmp.end());
-    m_params.customExePath += "/";
-  }
 
   if(a_settingsNode.child(L"dont_run").text().as_int() == 1)
     m_dontRun = true;

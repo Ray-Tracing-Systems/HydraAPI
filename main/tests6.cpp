@@ -2139,11 +2139,17 @@ bool test40_several_changes()
     node.append_child(L"method_caustic").text()   = L"pathtracing";
     node.append_child(L"shadows").text()          = L"1";
 
-    node.append_child(L"trace_depth").text()      = L"5";
-    node.append_child(L"diff_trace_depth").text() = L"3";
-    node.append_child(L"maxRaysPerPixel").text()  = L"1024";
+    node.append_child(L"trace_depth").text()      = 5;
+    node.append_child(L"diff_trace_depth").text() = 3;
+    node.append_child(L"maxRaysPerPixel").text()  = 1024;
+
+    // #{CUSTOM EXE PATH}:
+    //node.append_child(L"render_exe_dir").text() = L"E:/PROG/hydratest"; // copy all files from "C:/[Hydra]/bin2" to "E:/PROG/hydratest". Don't create "E:/PROG/hydratest/bin2". 
   }
   hrRenderClose(renderRef);
+
+  // #{CUSTOM EXE PATH}:
+  //hrRenderLogDir(renderRef, L"E:/PROG/hydratest/logs", false);          // we also fix logs folder path. it if does not end with "/", we add "/" inside hrRenderLogDir
 
   // create scene
   //

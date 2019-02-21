@@ -246,6 +246,13 @@ HAPI void hrRenderLogDir(HRRenderRef a_pRender, const wchar_t* a_logDir, bool a_
     return;
   }
 
-  pRender->m_pDriver->SetLogDir(a_logDir, a_hrRenderLogDir);
+  // fix directory path if it don't end with '\' or '/'
+  //
+  std::wstring copyOfPath(a_logDir);
+  if (copyOfPath[copyOfPath.size() - 1] != L"/"[0] && 
+      copyOfPath[copyOfPath.size() - 1] != L"\\"[0])
+    copyOfPath += L"/";      
+
+  pRender->m_pDriver->SetLogDir(copyOfPath.c_str(), a_hrRenderLogDir);
 
 }
