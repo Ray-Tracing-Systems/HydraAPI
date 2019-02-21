@@ -616,27 +616,27 @@ namespace TEST_UTILS
     }
 
     int numTris = 0;
-    for (int x = 0; x < cols - 1; ++x)
+    for (int z = 0; z < rows - 1; ++z)
     {
-      for (int z = 0; z < rows - 1; ++z)
+      for (int x = 0; x < cols - 1; ++x)
       {
-        unsigned int offset = x*cols + z;
+        unsigned int offset = z * cols + x;
 
         indices_vec.push_back(offset + 0);
-        indices_vec.push_back(offset + rows);
+        indices_vec.push_back(offset + cols);
         indices_vec.push_back(offset + 1);
-        indices_vec.push_back(offset + rows);
-        indices_vec.push_back(offset + rows + 1);
+        indices_vec.push_back(offset + cols);
+        indices_vec.push_back(offset + cols + 1);
         indices_vec.push_back(offset + 1);
 
         float3 A(vertices_vec.at(4 * offset + 0), vertices_vec.at(4 * offset + 1),
                  vertices_vec.at(4 * offset + 2));
-        float3 B(vertices_vec.at(4 * (offset + rows) + 0), vertices_vec.at(4 * (offset + rows) + 1),
-                 vertices_vec.at(4 * (offset + rows) + 2));
+        float3 B(vertices_vec.at(4 * (offset + cols) + 0), vertices_vec.at(4 * (offset + cols) + 1),
+                 vertices_vec.at(4 * (offset + cols) + 2));
         float3 C(vertices_vec.at(4 * (offset + 1) + 0), vertices_vec.at(4 * (offset + 1) + 1),
                  vertices_vec.at(4 * (offset + 1) + 2));
-        float3 D(vertices_vec.at(4 * (offset + rows + 1) + 0), vertices_vec.at(4 * (offset + rows + 1) + 1),
-                 vertices_vec.at(4 * (offset + rows + 1) + 2));
+        float3 D(vertices_vec.at(4 * (offset + cols + 1) + 0), vertices_vec.at(4 * (offset + cols + 1) + 1),
+                 vertices_vec.at(4 * (offset + cols + 1) + 2));
 
         float3 edge1B(normalize(B - A));
         float3 edge1C(normalize(C - A));
@@ -649,9 +649,9 @@ namespace TEST_UTILS
         float3 face_normal2 = cross(edge2D, edge2C);
 
         normals_vec_tmp.at(offset) += face_normal1;
-        normals_vec_tmp.at(offset + rows) += face_normal1 + face_normal2;
+        normals_vec_tmp.at(offset + cols) += face_normal1 + face_normal2;
         normals_vec_tmp.at(offset + 1) += face_normal1 + face_normal2;
-        normals_vec_tmp.at(offset + rows + 1) += face_normal2;
+        normals_vec_tmp.at(offset + cols + 1) += face_normal2;
 
         numTris += 2;
       }
