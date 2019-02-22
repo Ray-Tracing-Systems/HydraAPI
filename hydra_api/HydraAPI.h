@@ -924,7 +924,7 @@ HAPI bool hrRenderLockFrameBufferUpdate(HRRenderRef pRender);
 \brief You must use this function _after_ call hrRenderGetFrameBufferLineHDR4f/hrRenderGetFrameBufferLineLDR1i
        If use hrRenderGetFrameBufferHDR4f/hrRenderGetFrameBufferLDR1i, you don't have to call this
 */
-HAPI bool hrRenderUnlockFrameBufferUpdate(HRRenderRef pRender);
+HAPI void hrRenderUnlockFrameBufferUpdate(HRRenderRef pRender);
 
 /**
 \brief get framebuffer line to imgData. 

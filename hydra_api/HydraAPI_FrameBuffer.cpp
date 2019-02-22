@@ -42,23 +42,25 @@ HAPI bool hrRenderLockFrameBufferUpdate(HRRenderRef a_pRender)
   }
   
   pRender->m_pDriver->LockFrameBufferUpdate();
+
+  return true;
 }
 
 
-HAPI bool hrRenderUnlockFrameBufferUpdate(HRRenderRef a_pRender)
+HAPI void hrRenderUnlockFrameBufferUpdate(HRRenderRef a_pRender)
 {
   HRRender* pRender = g_objManager.PtrById(a_pRender);
   
   if (pRender == nullptr)
   {
     HrError(L"hrRenderUnlockFrameBufferUpdate, nullptr Render Driver ");
-    return false;
+    return;
   }
   
   if (pRender->m_pDriver == nullptr)
   {
     HrError(L"hrRenderUnlockFrameBufferUpdate, nullptr Render Driver impl ");
-    return false;
+    return;
   }
   
   pRender->m_pDriver->UnlockFrameBufferUpdate();
