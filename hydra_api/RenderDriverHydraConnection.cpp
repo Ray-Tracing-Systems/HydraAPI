@@ -191,6 +191,8 @@ static inline float contribFunc(float colorX, float colorY, float colorZ)
   return fmax(0.33334f*(colorX + colorY + colorZ), 0.0f);
 }
 
+using namespace cvex;
+
 int RD_HydraConnection::MLT_FrameBufferUpdateLoop()
 {
   m_colorImageIsLocked = false;
@@ -233,7 +235,7 @@ int RD_HydraConnection::MLT_FrameBufferUpdateLoop()
     {
       for(size_t i=0; i<imagesize; i+=4)
       {
-        const cvex::vfloat4 RGB0 = cvex::load_u(indirect+i)*normC;
+        const cvex::vfloat4 RGB0 = cvex::load_u(indirect + i)*normC4;
         cvex::store(dataOut + i, RGB0);
       }
       
@@ -241,7 +243,7 @@ int RD_HydraConnection::MLT_FrameBufferUpdateLoop()
       
       for(size_t i=0; i<imagesize; i+=4)
       {
-        const cvex::vfloat4 RGB0 =  cvex::load(dataOut+i) + cvex::load_u(direct+i)*normDL4;
+        const cvex::vfloat4 RGB0 = cvex::load(dataOut+i) + cvex::load_u(direct+i)*normDL4;
         cvex::store(dataOut + i, RGB0);
       }
     }
@@ -249,7 +251,7 @@ int RD_HydraConnection::MLT_FrameBufferUpdateLoop()
     {
       for(size_t i=0; i<imagesize; i+=4)
       {
-        const cvex::vfloat4 RGB0 = cvex::load_u(direct+i)*normDL4 + cvex::load_u(indirect+i)*normC;
+        const cvex::vfloat4 RGB0 = cvex::load_u(direct+i)*normDL4 + cvex::load_u(indirect+i)*normC4;
         cvex::store(dataOut + i, RGB0);
       }
     }
