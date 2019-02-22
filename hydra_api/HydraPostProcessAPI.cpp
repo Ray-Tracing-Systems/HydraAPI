@@ -374,8 +374,10 @@ void hrRenderCopyFrameBufferToFBI(HRRenderRef a_render, const wchar_t* a_name, H
   }
 
   auto& image = g_fbImages[a_outData.id].pHDRImage;
-
+  
+  pRenderObj->m_pDriver->LockFrameBufferUpdate();
   pRenderObj->m_pDriver->GetFrameBufferHDR(image->width(), image->height(), image->data(), a_name);
+  pRenderObj->m_pDriver->UnlockFrameBufferUpdate();
 }
 
 

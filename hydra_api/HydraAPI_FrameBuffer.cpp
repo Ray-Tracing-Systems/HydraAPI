@@ -25,6 +25,45 @@ extern HRObjectManager   g_objManager;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+HAPI bool hrRenderLockFrameBufferUpdate(HRRenderRef a_pRender)
+{
+  HRRender* pRender = g_objManager.PtrById(a_pRender);
+  
+  if (pRender == nullptr)
+  {
+    HrError(L"hrRenderLockFrameBufferUpdate, nullptr Render Driver ");
+    return false;
+  }
+  
+  if (pRender->m_pDriver == nullptr)
+  {
+    HrError(L"hrRenderLockFrameBufferUpdate, nullptr Render Driver impl ");
+    return false;
+  }
+  
+  pRender->m_pDriver->LockFrameBufferUpdate();
+}
+
+
+HAPI bool hrRenderUnlockFrameBufferUpdate(HRRenderRef a_pRender)
+{
+  HRRender* pRender = g_objManager.PtrById(a_pRender);
+  
+  if (pRender == nullptr)
+  {
+    HrError(L"hrRenderUnlockFrameBufferUpdate, nullptr Render Driver ");
+    return false;
+  }
+  
+  if (pRender->m_pDriver == nullptr)
+  {
+    HrError(L"hrRenderUnlockFrameBufferUpdate, nullptr Render Driver impl ");
+    return false;
+  }
+  
+  pRender->m_pDriver->UnlockFrameBufferUpdate();
+}
+
 HAPI bool hrRenderGetFrameBufferHDR4f(HRRenderRef a_pRender, int w, int h, float* imgData, const wchar_t* a_layerName) // (w,h) is strongly related to viewport size; return true if image was final
 {
   HRRender* pRender = g_objManager.PtrById(a_pRender);
@@ -40,9 +79,11 @@ HAPI bool hrRenderGetFrameBufferHDR4f(HRRenderRef a_pRender, int w, int h, float
     HrError(L"hrRenderGetFrameBufferHDR4f, nullptr Render Driver impl ");
     return false;
   }
-
+  
+  pRender->m_pDriver->LockFrameBufferUpdate();
   pRender->m_pDriver->GetFrameBufferHDR(w, h, imgData, a_layerName);
-
+  pRender->m_pDriver->UnlockFrameBufferUpdate();
+  
   return true;
 }
 
@@ -62,9 +103,11 @@ HAPI bool hrRenderGetFrameBufferLDR1i(HRRenderRef a_pRender, int w, int h, int32
     HrError(L"hrRenderGetFrameBufferLDR1i, nullptr Render Driver impl ");
     return false;
   }
-
+  
+  pRender->m_pDriver->LockFrameBufferUpdate();
   pRender->m_pDriver->GetFrameBufferLDR(w, h, imgData);
-
+  pRender->m_pDriver->UnlockFrameBufferUpdate();
+  
   return true;
 }
 

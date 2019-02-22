@@ -90,7 +90,10 @@ struct RD_HydraConnection : public IHRRenderDriver
   void GetFrameBufferLineLDR(int32_t a_xBegin, int32_t a_xEnd, int32_t y, int32_t* a_out)                           override;
 
   void GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_lineData, int32_t a_startX, int32_t a_endX, const std::unordered_set<int32_t>& a_shadowCatchers) override;
-
+  
+  void    LockFrameBufferUpdate()   override;
+  void    UnlockFrameBufferUpdate() override;
+  
   // info and devices
   //
   HRDriverInfo Info() override;
@@ -173,11 +176,11 @@ protected:
 
   // MLT/MMLT asynchronous frame buffer update
   //
-  HydraRender::HDRImage4f               m_colorMLTFinalImage;
-  std::future<int>                      m_mltFrameBufferUpdateThread;
-  bool                                  m_mltFrameBufferUpdate_ExitNow;
-  int                                   m_lastMaxRaysPerPixel;
-  volatile std::atomic<bool>            m_colorImageIsLocked;
+  HydraRender::HDRImage4f m_colorMLTFinalImage;
+  std::future<int>        m_mltFrameBufferUpdateThread;
+  bool                    m_mltFrameBufferUpdate_ExitNow;
+  int                     m_lastMaxRaysPerPixel;
+  std::atomic<bool>       m_colorImageIsLocked;
 
   int MLT_FrameBufferUpdateLoop();
 
@@ -222,10 +225,12 @@ int RD_HydraConnection::MLT_FrameBufferUpdateLoop()
   
     const size_t imagesize = m_colorMLTFinalImage.width()*m_colorMLTFinalImage.height()*4;
     float* dataOut = m_colorMLTFinalImage.data();
+  
+    while(m_colorImageIsLocked); // wait for use to free framebuffer
+    m_colorImageIsLocked = true;
     
     if(m_presets.mlt_med_enable)
     {
-      m_colorImageIsLocked = true;
       for(size_t i=0; i<imagesize; i+=4)
       {
         const cvex::vfloat4 RGB0 = cvex::load_u(indirect+i)*normC;
@@ -239,7 +244,6 @@ int RD_HydraConnection::MLT_FrameBufferUpdateLoop()
         const cvex::vfloat4 RGB0 =  cvex::load(dataOut+i) + cvex::load_u(direct+i)*normDL4;
         cvex::store(dataOut + i, RGB0);
       }
-      m_colorImageIsLocked = false;
     }
     else
     {
@@ -249,7 +253,7 @@ int RD_HydraConnection::MLT_FrameBufferUpdateLoop()
         cvex::store(dataOut + i, RGB0);
       }
     }
-    
+    m_colorImageIsLocked = false;
     
     iter++;
   }
@@ -1017,29 +1021,25 @@ void RD_HydraConnection::GetFrameBufferLineHDR(int32_t a_xBegin, int32_t a_xEnd,
   data = data + y*m_width*4;
 
   const float invSpp = m_enableMLT ? 1.0f : 1.0f / m_pSharedImage->Header()->spp;
-  const __m128 mult  = _mm_set_ps1(invSpp);
+  const cvex::vfloat4 mult = cvex::splat(invSpp);
   auto intptr        = reinterpret_cast<std::uintptr_t>(data);
-
-  // if final update lock image
   
-  while(m_enableMLT && m_colorImageIsLocked); // wait for unlocking m_colorImageIsLocked
-
   if (intptr % 16 == 0)
   {
     for (int i = a_xBegin*4; i < a_xEnd*4; i += 4)
     {
-      const __m128 color1 = _mm_load_ps(data + i);
-      const __m128 color2 = _mm_mul_ps(mult, color1);
-      _mm_store_ps(a_out + i - a_xBegin*4, color2);
+      const cvex::vfloat4 color1 = cvex::load(data + i);
+      const cvex::vfloat4 color2 = mult*color1;
+      cvex::store(a_out + i - a_xBegin*4, color2);
     }
   }
   else
   {
     for (int i = a_xBegin * 4; i < a_xEnd * 4; i += 4)
     {
-      const __m128 color1 = _mm_load_ps(data + i);
-      const __m128 color2 = _mm_mul_ps(mult, color1);
-      _mm_storeu_ps(a_out + i - a_xBegin*4, color2);
+      const cvex::vfloat4 color1 = cvex::load(data + i);
+      const cvex::vfloat4 color2 = mult*color1;
+      cvex::store_u(a_out + i - a_xBegin*4, color2);
     }
   }
 
@@ -1116,6 +1116,17 @@ void RD_HydraConnection::GetFrameBufferLineLDR(int32_t a_xBegin, int32_t a_xEnd,
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void RD_HydraConnection::LockFrameBufferUpdate()
+{
+  while(m_colorImageIsLocked); // wait for some fb update thread to set 'm_colorImageIsLocked' to false
+  m_colorImageIsLocked = true;
+}
+
+void RD_HydraConnection::UnlockFrameBufferUpdate()
+{
+  m_colorImageIsLocked = false;
+}
 
 void RD_HydraConnection::GetFrameBufferHDR(int32_t w, int32_t h, float* a_out, const wchar_t* a_layerName)
 {
