@@ -826,9 +826,9 @@ void RD_HydraConnection::EndFlush()
     
     for(size_t i=0;i<imagesize;i+=4)
     {
-      colorMLTFinal[i+0] = 1.0f;
+      colorMLTFinal[i+0] = 0.1f;
       colorMLTFinal[i+1] = 0.0f;
-      colorMLTFinal[i+2] = 0.0f;
+      colorMLTFinal[i+2] = 0.1f;
       colorMLTFinal[i+3] = 0.0f;
     }
     
