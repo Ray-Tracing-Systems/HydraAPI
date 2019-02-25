@@ -140,10 +140,12 @@ int main(int argc, const char** argv)
 	  //run_all_ipp_tests();
 
     //test40_several_changes();
-    test39_mmlt_or_ibpt();
+    //test39_mmlt_or_ibpt();
     //test42_load_library_basic();
     //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
 
+    LGHT_TESTS::test_208_ies3();
+    
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
     //window_main_free_look(L"tests_f/test_241", L"opengl1Debug");
 

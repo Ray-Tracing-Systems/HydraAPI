@@ -13,6 +13,8 @@
 #include <intrin.h>
 #else
 #include <xmmintrin.h>
+#include <emmintrin.h>
+#include <smmintrin.h>
 #endif
 
 
