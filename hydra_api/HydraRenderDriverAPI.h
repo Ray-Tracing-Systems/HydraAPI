@@ -353,6 +353,8 @@ IHRRenderDriver* CreateOpenGL32Deferred_RenderDriver();
 
 IHRRenderDriver* CreateOpenGL3_Utilty_RenderDriver();
 
+IHRRenderDriver* CreateVulkan_RenderDriver();
+
 static constexpr uint32_t MAX_TEXTURE_RESOLUTION = 16384;
 
 /**
