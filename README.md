@@ -14,7 +14,7 @@ Windows:
 1. Clone HydraAPI repo
 2. Copy 'bin2' folder content to 'C:/[Hydra]/bin2' under windows;
 3. Open 'hydra_api/HydraNewAPI1.sln' under windows with visual studio 2015 or later; If use 2015 you will need to downgrade platform toolset to v140 (2015).
-4. Select x64 configuration
+4. **Select x64 configuration**
 5. Set 'main' as startup project.
 6. Now you can try 'HydraModern' with some tests. Try 'test39_mmlt_or_ibpt' for example. It is simple cornell box test.
 
