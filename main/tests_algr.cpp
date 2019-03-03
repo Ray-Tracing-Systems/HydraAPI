@@ -918,9 +918,6 @@ void test_three_algorithms(HRSceneInstRef scnRef, HRRenderRef renderRef, const s
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
