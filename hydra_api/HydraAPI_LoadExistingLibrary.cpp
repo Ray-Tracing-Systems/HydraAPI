@@ -271,9 +271,9 @@ void _hrFindTargetOrLastState(const wchar_t* a_libPath, int32_t a_stateId,
       if (currFile.find("statex") != std::string::npos)
       {
         fileName    = s2ws(currFile);
-        auto first  = fileName.find("statex_") + 7;
-        auto last   = fileName.find(".xml");
-        auto strNew = fileName.substr(first, last - first);
+        auto first  = currFile.find("statex_") + 7;
+        auto last   = currFile.find(".xml");
+        auto strNew = currFile.substr(first, last - first);
         stateId     = atoi(strNew.c_str());
       }
     }
