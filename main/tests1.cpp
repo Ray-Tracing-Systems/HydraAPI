@@ -2019,6 +2019,9 @@ void run_all_alg_tests(int a_start)
   TestFunc tests[] = { &test_401_ibpt_and_glossy_glass,
                        &test_402_ibpt_and_glossy_double_glass,
                        &test_403_light_inside_double_glass,
+                       &test_404_cornell_glossy,
+                       &test_405_cornell_with_mirror,
+                       &test_406_env_glass_ball_caustic,
   };
   
   std::ofstream fout("z_test_ralgs.txt");

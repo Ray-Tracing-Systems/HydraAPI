@@ -396,6 +396,9 @@ namespace ALGR_TESTS
   bool test_401_ibpt_and_glossy_glass();
   bool test_402_ibpt_and_glossy_double_glass();
   bool test_403_light_inside_double_glass();
+  bool test_404_cornell_glossy();
+  bool test_405_cornell_with_mirror();
+  bool test_406_env_glass_ball_caustic();
 }
 
 //These tests need some scene library to exist in their respective folders
