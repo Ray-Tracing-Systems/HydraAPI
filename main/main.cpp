@@ -140,9 +140,9 @@ int main(int argc, const char** argv)
 	  //run_all_alg_tests();
 	  //run_all_ipp_tests();
 
-    test40_several_changes();
+    //test40_several_changes();
     //test39_mmlt_or_ibpt();
-    //test42_load_library_basic();
+    test42_load_library_basic();
     //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
     
     //std::cout << ALGR_TESTS::test_404_cornell_glossy() << std::endl;
