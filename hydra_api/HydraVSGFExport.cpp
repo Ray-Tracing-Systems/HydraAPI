@@ -80,7 +80,12 @@ void HydraGeomData::write(std::ostream& a_out)
   if(m_tangents != nullptr)
     flags |= HAS_TANGENT;
 
-  fileSizeInBytes = verticesNum*( sizeof(float)*4*2 + sizeof(float)*2 );
+  if(m_normals != nullptr)
+    flags |= HAS_NORMALS;
+
+  fileSizeInBytes = verticesNum*( sizeof(float)*4 + sizeof(float)*2 );
+  if(flags & HAS_NORMALS)
+    fileSizeInBytes += verticesNum*sizeof(float)*4;
   if(flags & HAS_TANGENT)
     fileSizeInBytes += verticesNum*sizeof(float)*4;
 
@@ -96,7 +101,9 @@ void HydraGeomData::write(std::ostream& a_out)
   a_out.write((const char*)&flags, sizeof(uint32_t));
 
   a_out.write((const char*)m_positions, sizeof(float)*4*verticesNum);
-  a_out.write((const char*)m_normals, sizeof(float)*4*verticesNum);
+
+  if(flags & HAS_NORMALS)
+    a_out.write((const char*)m_normals, sizeof(float)*4*verticesNum);
 
   if(flags & HAS_TANGENT)
     a_out.write((const char*)m_tangents, sizeof(float)*4*verticesNum);
@@ -121,11 +128,17 @@ void HydraGeomData::write(std::ostream& a_out)
 
 void HydraGeomData::writeToMemory(char* a_dataToWrite)
 {
+  if (m_normals != nullptr)
+    flags |= HAS_NORMALS;
 
   if (m_tangents != nullptr)
     flags |= HAS_TANGENT;
 
-  fileSizeInBytes = verticesNum*(sizeof(float) * 4 * 2 + sizeof(float) * 2);
+  fileSizeInBytes = verticesNum*(sizeof(float) * 4 + sizeof(float) * 2);
+
+  if (flags & HAS_NORMALS)
+    fileSizeInBytes += verticesNum*sizeof(float) * 4;
+
   if (flags & HAS_TANGENT)
     fileSizeInBytes += verticesNum*sizeof(float) * 4;
 
@@ -147,7 +160,12 @@ void HydraGeomData::writeToMemory(char* a_dataToWrite)
 
   memcpy(ptr, &header,     sizeof(Header));              ptr += sizeof(Header);
   memcpy(ptr, m_positions, sizeof(float)*4*verticesNum); ptr += sizeof(float) * 4 * verticesNum;
-  memcpy(ptr, m_normals,   sizeof(float)*4*verticesNum); ptr += sizeof(float) * 4 * verticesNum;
+
+  if(flags & HAS_NORMALS)
+  {
+    memcpy(ptr, m_normals, sizeof(float) * 4 * verticesNum);
+    ptr += sizeof(float) * 4 * verticesNum;
+  }
 
   if (flags & HAS_TANGENT)
   {
@@ -246,7 +264,12 @@ void HydraGeomData::read(std::istream& a_input)
   char* ptr = m_data;
 
   m_positions = (float*)ptr; ptr += sizeof(float)*4*verticesNum;
-  m_normals   = (float*)ptr; ptr += sizeof(float)*4*verticesNum;
+
+  if(flags & HAS_NORMALS)
+  {
+    m_normals = (float *) ptr;
+    ptr += sizeof(float) * 4 * verticesNum;
+  }
 
   if(flags & HAS_TANGENT)
   {
@@ -260,7 +283,10 @@ void HydraGeomData::read(std::istream& a_input)
   m_triMaterialIndices = (uint32_t*)ptr; ptr += sizeof(uint32_t)*(indicesNum / 3);
 
   convertLittleBigEndian((unsigned int*)m_positions, verticesNum*4);
-  convertLittleBigEndian((unsigned int*)m_normals, verticesNum*4);
+  if(flags & HAS_NORMALS)
+  {
+    convertLittleBigEndian((unsigned int *) m_normals, verticesNum * 4);
+  }
   convertLittleBigEndian((unsigned int*)m_texcoords, verticesNum*2);
   convertLittleBigEndian((unsigned int*)m_triVertIndices, indicesNum);
   convertLittleBigEndian((unsigned int*)m_triMaterialIndices, (indicesNum/3));

@@ -62,7 +62,8 @@ protected:
 
   enum GEOM_FLAGS{ HAS_TANGENT = 1, 
                    HAS_LIGHTMAP_TEXCOORDS = 2, 
-                   HAS_HARMONIC_COEFFS = 4 };
+                   HAS_HARMONIC_COEFFS = 4,
+                   HAS_NORMALS = 8};
 
   // size info
   //
