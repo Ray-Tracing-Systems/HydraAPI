@@ -270,8 +270,11 @@ void _hrFindTargetOrLastState(const wchar_t* a_libPath, int32_t a_stateId,
       
       if (currFile.find("statex") != std::string::npos)
       {
-        fileName = s2ws(currFile);
-        stateId++;
+        fileName    = s2ws(currFile);
+        auto first  = currFile.find("statex_") + 7;
+        auto last   = currFile.find(".xml");
+        auto strNew = currFile.substr(first, last - first);
+        stateId     = atoi(strNew.c_str());
       }
     }
 #elif defined WIN32
@@ -287,7 +290,11 @@ void _hrFindTargetOrLastState(const wchar_t* a_libPath, int32_t a_stateId,
       if (currFile.find(L"statex") != std::wstring::npos)
       {
         fileName = currFile;
-        stateId++;
+        auto first  = fileName.find(L"statex_") + 7;
+        auto last   = fileName.find(L".xml");
+        auto strNew = fileName.substr(first, last - first);
+        auto strStd = ws2s(strNew);
+        stateId     = atoi(strStd.c_str());
       }
     }
 #endif
@@ -315,7 +322,7 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
 	  return -1;
   }
 
-  stateId--;
+  // stateId--; // #NOTE: uncomment this if ypu need to chenge current state?
 
   // (1) open last state.xml
   //

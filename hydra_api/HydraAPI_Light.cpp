@@ -482,6 +482,12 @@ HRMaterialRef HR_UpdateLightMaterial(pugi::xml_node a_lightNode, const std::wstr
     hrMaterialOpen(emissiveMtl, HR_OPEN_EXISTING);
     {
       auto emNode     = hrMaterialParamNode(emissiveMtl);
+
+      if (a_lightNode.child(L"sky_portal") != nullptr)
+        emNode.attribute(L"type") = L"sky_portal_mtl";
+      else
+        emNode.attribute(L"type") = L"hydra_material";
+
       auto emissColor = emNode.child(L"emission").child(L"color");
       auto valueAttr  = emissColor.attribute(L"val");
       HydraXMLHelpers::WriteFloat3(valueAttr, clr);

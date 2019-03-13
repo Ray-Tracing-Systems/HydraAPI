@@ -6,6 +6,7 @@
 #include <iomanip>
 
 #include <stdlib.h>
+#include <stdio.h>
 #include "linmath.h"
 
 #if defined(WIN32)
@@ -24,6 +25,8 @@
 #include "../hydra_api/HR_HDRImageTool.h"
 #include "../hydra_api/HydraXMLHelpers.h"
 
+#include "Timer.h"
+
 #pragma warning(disable:4996)
 #pragma warning(disable:4838)
 #pragma warning(disable:4244)
@@ -39,7 +42,7 @@ bool ALGR_TESTS::test_401_ibpt_and_glossy_glass()
   
   hrErrorCallerPlace(L"test_401");
   
-  hrSceneLibraryOpen(L"tests_f/test_401", HR_WRITE_DISCARD);
+  hrSceneLibraryOpen(L"tests_a/test_401", HR_WRITE_DISCARD);
   
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Materials
@@ -306,7 +309,7 @@ bool ALGR_TESTS::test_402_ibpt_and_glossy_double_glass()
   
   hrErrorCallerPlace(L"test_402");
   
-  hrSceneLibraryOpen(L"tests_f/test_402", HR_WRITE_DISCARD);
+  hrSceneLibraryOpen(L"tests_a/test_402", HR_WRITE_DISCARD);
   
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Materials
@@ -575,7 +578,7 @@ bool ALGR_TESTS::test_403_light_inside_double_glass()
   
   hrErrorCallerPlace(L"test_403");
   
-  hrSceneLibraryOpen(L"tests_f/test_403", HR_WRITE_DISCARD);
+  hrSceneLibraryOpen(L"tests_a/test_403", HR_WRITE_DISCARD);
   
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Materials
@@ -835,4 +838,198 @@ bool ALGR_TESTS::test_403_light_inside_double_glass()
   
   return check_images("test_403", 1, 20);
   //return false;
+}
+
+
+void test_three_algorithms(HRSceneInstRef scnRef, HRRenderRef renderRef, const std::wstring a_outPath[3])
+{
+  for (int algId = 0; algId < 3; algId++)
+  { 
+    switch (algId)
+    {
+      case 0 :
+      {
+        hrRenderOpen(renderRef, HR_OPEN_EXISTING);   
+        {
+          auto node = hrRenderParamNode(renderRef);
+          node.force_child(L"method_primary").text()   = L"pathtracing";
+          node.force_child(L"method_secondary").text() = L"pathtracing";
+          node.force_child(L"method_tertiary").text()  = L"pathtracing";
+          node.force_child(L"method_caustic").text()   = L"pathtracing";
+
+          node.force_child(L"maxRaysPerPixel").text()  = 1024;
+        }
+        hrRenderClose(renderRef);
+      }
+      break;
+    
+      case 1 :
+      {
+        hrRenderOpen(renderRef, HR_OPEN_EXISTING);  
+        {
+          auto node = hrRenderParamNode(renderRef);
+          node.force_child(L"method_primary").text()   = L"IBPT";
+          node.force_child(L"method_secondary").text() = L"IBPT";
+          node.force_child(L"method_tertiary").text()  = L"IBPT";
+          node.force_child(L"method_caustic").text()   = L"IBPT";
+
+          node.force_child(L"maxRaysPerPixel").text()  = 512;
+        }
+        hrRenderClose(renderRef);
+      }
+      break;
+    
+      case 2 :
+      default:
+      {
+        hrRenderOpen(renderRef, HR_OPEN_EXISTING);    // disable automatic process run for hrCommit, ... probably need to add custom params to tis function
+        {
+          auto node = hrRenderParamNode(renderRef);
+          node.force_child(L"method_primary").text()   = L"mmlt";
+          node.force_child(L"method_secondary").text() = L"mmlt";
+          node.force_child(L"method_tertiary").text()  = L"mmlt";
+          node.force_child(L"method_caustic").text()   = L"mmlt";
+
+          node.append_child(L"mmlt_burn_iters").text() = 256;
+          node.append_child(L"mmlt_step_power").text() = 1024.0f;
+          node.append_child(L"mmlt_step_size").text()  = 0.5f;    
+
+          node.force_child(L"maxRaysPerPixel").text()  = 1024;
+        }
+        hrRenderClose(renderRef);
+      }
+      break;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    hrFlush(scnRef, renderRef);
+
+    Timer timer(true);
+
+    while (true)
+    {
+      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+      HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
+
+      if (info.haveUpdateFB)
+      {
+        auto pres = std::cout.precision(2);
+        std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
+        std::cout.precision(pres);
+      }
+
+      if (info.finalUpdate)
+        break;
+    }
+
+    hrRenderSaveFrameBufferLDR(renderRef, a_outPath[algId].c_str());
+
+    std::cout << std::endl << "render time = " << timer.getElapsed() << " sec " << std::endl;
+    std::cout << std::endl << "<--- next algorithm --->" << std::endl;
+    
+  }
+}
+
+
+
+bool ALGR_TESTS::test_404_cornell_glossy()                   // todo: this test should check situation when scene is not found.
+{
+  hrErrorCallerPlace(L"test404");                            // scene not found ?
+  hrSceneLibraryOpen(L"tests_a/test_404", HR_OPEN_EXISTING);
+
+  /////////////////////////////////////////////////////////
+  HRRenderRef renderRef;
+  HRSceneInstRef scnRef;
+  {
+    renderRef.id = 0;  // get first render 
+    scnRef.id    = 0;  // and first scene
+  }
+  /////////////////////////////////////////////////////////
+
+  hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
+
+  std::wstring outNames[3] = { L"tests_images/test_404/z_out.png", 
+                               L"tests_images/test_404/z_out2.png",
+                               L"tests_images/test_404/z_out3.png" };
+
+  test_three_algorithms(scnRef, renderRef, outNames);
+
+  remove("tests_a/test_404/statex_00002.xml");
+  remove("tests_a/test_404/statex_00003.xml");
+  remove("tests_a/test_404/statex_00004.xml");
+
+  remove("tests_a/test_404/change_00001.xml");
+  remove("tests_a/test_404/change_00002.xml");
+  remove("tests_a/test_404/change_00003.xml");
+
+  return check_images("test_404", 3, 50);
+}
+
+
+bool ALGR_TESTS::test_405_cornell_with_mirror()
+{
+  hrErrorCallerPlace(L"test405");                            // scene not found ?
+  hrSceneLibraryOpen(L"tests_a/test_405", HR_OPEN_EXISTING);
+
+  /////////////////////////////////////////////////////////
+  HRRenderRef renderRef;
+  HRSceneInstRef scnRef;
+  {
+    renderRef.id = 0;  // get first render 
+    scnRef.id    = 0;  // and first scene
+  }
+  /////////////////////////////////////////////////////////
+
+  hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
+
+  std::wstring outNames[3] = { L"tests_images/test_405/z_out.png",
+                               L"tests_images/test_405/z_out2.png",
+                               L"tests_images/test_405/z_out3.png" };
+
+  test_three_algorithms(scnRef, renderRef, outNames);
+
+  remove("tests_a/test_405/statex_00002.xml");
+  remove("tests_a/test_405/statex_00003.xml");
+  remove("tests_a/test_405/statex_00004.xml");
+
+  remove("tests_a/test_405/change_00001.xml");
+  remove("tests_a/test_405/change_00002.xml");
+  remove("tests_a/test_405/change_00003.xml");
+
+  return check_images("test_405", 3, 50);
+}
+
+bool ALGR_TESTS::test_406_env_glass_ball_caustic()
+{
+  hrErrorCallerPlace(L"test406");                            // scene not found ?
+  hrSceneLibraryOpen(L"tests_a/test_406", HR_OPEN_EXISTING);
+
+  /////////////////////////////////////////////////////////
+  HRRenderRef renderRef;
+  HRSceneInstRef scnRef;
+  {
+    renderRef.id = 0;  // get first render 
+    scnRef.id = 0;  // and first scene
+  }
+  /////////////////////////////////////////////////////////
+
+  hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
+
+  std::wstring outNames[3] = { L"tests_images/test_406/z_out.png",
+                               L"tests_images/test_406/z_out2.png",
+                               L"tests_images/test_406/z_out3.png" };
+
+  test_three_algorithms(scnRef, renderRef, outNames);
+
+  remove("tests_a/test_406/statex_00002.xml");
+  remove("tests_a/test_406/statex_00003.xml");
+  remove("tests_a/test_406/statex_00004.xml");
+
+  remove("tests_a/test_406/change_00001.xml");
+  remove("tests_a/test_406/change_00002.xml");
+  remove("tests_a/test_406/change_00003.xml");
+
+  return check_images("test_406", 3, 50);
 }

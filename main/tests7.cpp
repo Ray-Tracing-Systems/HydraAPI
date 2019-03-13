@@ -63,7 +63,7 @@ bool test42_load_library_basic()
 {
   initGLIfNeeded();
   hrErrorCallerPlace(L"test42");
-  hrSceneLibraryOpen(L"tests/test_42", HR_OPEN_EXISTING);
+  hrSceneLibraryOpen(L"/media/frol/Data_500/scenes/bench_16", HR_OPEN_EXISTING);
 
   /////////////////////////////////////////////////////////
   HRRenderRef renderRef;
@@ -81,8 +81,7 @@ bool test42_load_library_basic()
     pList = pList->next;
   }
   
-  hrRenderEnableDevice(renderRef, 0, true);
-  //hrRenderEnableDevice(renderRef, 1, true);
+  hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
   
   hrRenderOpen(renderRef, HR_OPEN_EXISTING);    // disable automatic process run for hrCommit, ... probably need to add custom params to tis function
   {

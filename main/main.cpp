@@ -19,6 +19,7 @@ IHRRenderDriver* CreateDriverRTE(const wchar_t* a_cfg) { return nullptr; }
 #include <signal.h>
 #endif
 
+
 void ErrorCallBack(const wchar_t* message, const wchar_t* callerPlace)
 {
   std::wcout << callerPlace << L":\t" << message << std::endl;
@@ -130,18 +131,25 @@ int main(int argc, const char** argv)
   {
     //GEO_TESTS::test_001_mesh_from_memory();
     //demo_01_plane_box();
-    //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_31", L"opengl1", nullptr, &test02_draw);
+    //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_31", L"opengl1");
     
     //run_all_api_tests();
-	  //run_all_geo_tests();
+    //run_all_geo_tests();
     //run_all_mtl_tests();
     //run_all_lgt_tests();
 	  //run_all_alg_tests();
 	  //run_all_ipp_tests();
 
-    test40_several_changes();
+    //test40_several_changes();
+    //test39_mmlt_or_ibpt();
+    test42_load_library_basic();
     //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
-
+    
+    //std::cout << ALGR_TESTS::test_404_cornell_glossy() << std::endl;
+    //std::cout << ALGR_TESTS::test_405_cornell_with_mirror() << std::endl;
+    //std::cout << ALGR_TESTS::test_406_env_glass_ball_caustic() << std::endl;
+    //std::cout << std::endl << "g_MSEOutput = " << g_MSEOutput << std::endl;
+    
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
     //window_main_free_look(L"tests_f/test_241", L"opengl1Debug");
 

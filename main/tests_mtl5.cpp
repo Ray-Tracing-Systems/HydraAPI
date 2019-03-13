@@ -1175,7 +1175,7 @@ bool MTL_TESTS::test_168_diffuse_texture_recommended_res2()
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_168/z_out.png");
   */
-
+ //or
   hrRenderCommand(renderRef, L"exitnow", nullptr);
 
   return check_test_168(L"tests_f/test_168/statex_00001_fixed.xml"); // check_images("test_168", 1, 30); // &&
