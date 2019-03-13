@@ -32,7 +32,9 @@ Optionally, to build and use python bindings library (tested only under Linux):
 - git submodule update
 2. sudo apt-get install python3-dev (install Python headers)
 3. Build hydra bindings with Cmake (hydra_api/hydra_api_py)
-- to select specific python version specify CMake variable: cmake .. -DPYTHON_EXECUTABLE=/path/to/your/python3
+ 3.1 mkdir build (to create "hydra_api/hydra_api_py/build")
+ 3.2 cd build
+ 3.3 select specific python version specify CMake variable: cmake .. -DPYTHON_EXECUTABLE=/path/to/your/python3
 4. Import resulting library in your python project
 
 Some examples can be found in hydra_api/hydra_api_py/hydraPyTests.py
