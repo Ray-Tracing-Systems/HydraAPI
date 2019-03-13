@@ -35,7 +35,7 @@ Optionally, to build and use python bindings library (tested only under Linux):
  
  * mkdir build (to create "hydra_api/hydra_api_py/build")
  * cd build
- * select specific python version specify CMake variable: cmake .. -DPYTHON_EXECUTABLE=/path/to/your/python3
+ * select specific python version specify CMake variable: **cmake .. -DPYTHON_EXECUTABLE=/path/to/your/python3**
  
 4. Import resulting library in your python project
 
