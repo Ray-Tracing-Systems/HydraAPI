@@ -219,12 +219,12 @@ void VirtualBuffer::RestoreChunks()
   //
   const auto maxChunks = (VB_CHUNK_TABLE_SIZE)/sizeof(int64_t) - 2;
 
-  int chunksNum = 0, chunkOffset = 1;
-  do {
-
+  int chunksNum = 0;
+  int64_t chunkOffset = 1;
+  do 
+  {
     chunksNum++;
     chunkOffset = table[chunksNum];
-
   } while(chunksNum < maxChunks && chunkOffset != 0);
 
   // (2) restore chunk pointers (their localAddresses)

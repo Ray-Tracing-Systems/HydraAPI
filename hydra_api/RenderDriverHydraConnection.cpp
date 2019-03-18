@@ -215,7 +215,7 @@ int RD_HydraConnection::MLT_FrameBufferUpdateLoop()
     double summ[3];
     std::tie(summ[0], summ[1], summ[2]) = HydraRender::ColorSummImage4f(indirect, m_width, m_height);
     double avgDiv       = 1.0/double(m_width*m_height);
-    float avgBrightness = contribFunc(avgDiv*summ[0], avgDiv*summ[1], avgDiv*summ[2]);
+	float avgBrightness = contribFunc(float(avgDiv*summ[0]), float(avgDiv*summ[1]), float(avgDiv*summ[2]));
     
     // calc normalisation constant
     //

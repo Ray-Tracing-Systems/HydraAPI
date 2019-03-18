@@ -61,7 +61,7 @@ static inline float NLMWeight(const float4* in_buff, int w, int h, int x, int y,
 
 static inline float surfaceSimilarity(float4 data1, float4 data2, float MADXDIFF)
 {
-  const float MANXDIFF = 0.1;
+  const float MANXDIFF = 0.1f;
 
   float3 n1 = to_float3(data1);
   float3 n2 = to_float3(data2);

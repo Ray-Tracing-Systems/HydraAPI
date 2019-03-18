@@ -432,7 +432,7 @@ void UpdateImageFromFileOrChunk(int32_t a_id, HRTextureNode& img, IHRRenderDrive
       return;
     }
 
-    auto bpp = sizeInBytes / (w*h);
+    int bpp = int(sizeInBytes / (w*h));
 
     sizeInBytes += size_t(sizeof(int) * 2);
 
@@ -1133,10 +1133,10 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
     g_objManager.driverAllocated.insert(a_pDriver);
     HRDriverAllocInfo allocInfo;
 
-    const size_t geomNum  = objList.meshUsed.size();
-    const size_t imgNum   = objList.texturesUsed.size();
-    const size_t matNum   = objList.matUsed.size();
-    const size_t lightNum = objList.lightUsed.size();
+	const size_t geomNum  = *( std::max_element(objList.meshUsed.begin(),     objList.meshUsed.end())     ) + 1;
+    const size_t imgNum   = *( std::max_element(objList.texturesUsed.begin(), objList.texturesUsed.end()) ) + 1;
+    const size_t matNum   = *( std::max_element(objList.matUsed.begin(),      objList.matUsed.end())      ) + 1;
+    const size_t lightNum = *( std::max_element(objList.lightUsed.begin(),    objList.lightUsed.end())    ) + 1;
 
     allocInfo.geomNum     = int32_t(geomNum  + geomNum/3  + 100);
     allocInfo.imgNum      = int32_t(imgNum   + imgNum/3   + 100);
@@ -1276,10 +1276,15 @@ void _hr_UtilityDriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 
   HRDriverAllocInfo allocInfo;
 
-  const size_t geomNum  = scn.meshUsedByDrv.size();
-  const size_t imgNum   = scn.texturesUsedByDrv.size();
-  const size_t matNum   = scn.matUsedByDrv.size();
-  const size_t lightNum = scn.lightUsedByDrv.size();
+  // const size_t geomNum  = scn.meshUsedByDrv.size();
+  // const size_t imgNum   = scn.texturesUsedByDrv.size();
+  // const size_t matNum   = scn.matUsedByDrv.size();
+  // const size_t lightNum = scn.lightUsedByDrv.size();
+
+  const size_t geomNum  = *(std::max_element(scn.meshUsedByDrv.begin(),     scn.meshUsedByDrv.end()));
+  const size_t imgNum   = *(std::max_element(scn.texturesUsedByDrv.begin(), scn.texturesUsedByDrv.end()));
+  const size_t matNum   = *(std::max_element(scn.matUsedByDrv.begin(),      scn.matUsedByDrv.end()));
+  const size_t lightNum = *(std::max_element(scn.lightUsedByDrv.begin(),    scn.lightUsedByDrv.end()));
 
   allocInfo.geomNum     = int32_t(geomNum  + geomNum/3  + 100);
   allocInfo.imgNum      = int32_t(imgNum   + imgNum/3   + 100);

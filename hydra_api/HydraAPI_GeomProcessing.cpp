@@ -200,7 +200,7 @@ void hrMeshDisplace(HRMeshRef a_mesh, const std::unordered_map<uint32_t, uint32_
   }
 
 
-  hrMeshComputeNormals(a_mesh, mesh.triIndices.size(), false);
+  hrMeshComputeNormals(a_mesh, int(mesh.triIndices.size()), false);
 }
 
 float smoothing_coeff(uint32_t valence)
@@ -290,8 +290,8 @@ void update_vertex_attrib_by_index_f2(float2 new_val, uint32_t vertex_index, std
 void smooth_common_vertex_attributes(uint32_t vertex_index, const HRMesh::InputTriMesh& mesh, float4 &pos, float4 &normal,
                                      float4 &tangent, float2 &uv)
 {
-  auto neighbours = find_vertex_neighbours(vertex_index, mesh);
-  uint32_t valence = neighbours.size();
+  auto neighbours  = find_vertex_neighbours(vertex_index, mesh);
+  uint32_t valence = uint32_t(neighbours.size());
 
   pos      = vertex_attrib_by_index_f4("pos", vertex_index, mesh);
   normal   = vertex_attrib_by_index_f4("normal", vertex_index, mesh);
@@ -412,7 +412,7 @@ void hrMeshSubdivideSqrt3(HRMeshRef a_mesh, int a_iterations)
       float4 PTan = (ATan + BTan + CTan) / 3.0f;
       float2 Puv = (Auv + Buv + Cuv) / 3.0f;
 
-      uint32_t indP = mesh.verticesPos.size() / 4;
+      uint32_t indP = uint32_t(mesh.verticesPos.size() / 4);
       mesh.verticesPos.push_back(P.x);
       mesh.verticesPos.push_back(P.y);
       mesh.verticesPos.push_back(P.z);
@@ -550,7 +550,7 @@ void hrMeshSubdivide(HRMeshRef a_mesh, int a_iterations)
     float4 PTan = (ATan + BTan + CTan) / 3.0f;
     float2 Puv = (Auv + Buv + Cuv) / 3.0f;
 
-    uint32_t indP = mesh.verticesPos.size() / 4;
+    uint32_t indP = uint32_t(mesh.verticesPos.size() / 4);
     mesh.verticesPos.push_back(P.x);
     mesh.verticesPos.push_back(P.y);
     mesh.verticesPos.push_back(P.z);
@@ -1644,7 +1644,7 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
   mesh.matIndices.resize(mid_new.size());
   std::copy(mid_new.begin(), mid_new.end(), mesh.matIndices.begin());
 
-  indexNum = indices_new.size();
+  indexNum = int(indices_new.size());
 }
 
 
@@ -1655,7 +1655,7 @@ int getNumFaces(const SMikkTSpaceContext *context)
 {
   HRMesh *pMesh = static_cast <HRMesh *> (context->m_pUserData);
 
-  return pMesh->m_input.triIndices.size()/3;
+  return int(pMesh->m_input.triIndices.size()/3);
 }
 
 // Return number of vertices in the primitive given by index.

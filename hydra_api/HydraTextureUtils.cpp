@@ -67,12 +67,12 @@ namespace HRTextureUtils
 
     float3 mod289f3(float3 x)
     {
-      return x - floor3(x * (1.0 / 289.0)) * 289.0;
+      return x - floor3(x * (1.0f / 289.0f)) * 289.0f;
     }
 
     float4 mod289f4(float4 x)
     {
-      return x - floor4(x * (1.0 / 289.0)) * 289.0;
+      return x - floor4(x * (1.0f / 289.0f)) * 289.0f;
     }
 
     float4 permute(float4 x)
@@ -153,21 +153,21 @@ namespace HRTextureUtils
       float4 ixy0 = permute(ixy + iz0);
       float4 ixy1 = permute(ixy + iz1);
 
-      float4 gx0 = ixy0 * (1.0 / 7.0);
-      float4 gy0 = fract4(floor4(gx0) * (1.0 / 7.0)) - 0.5;
+      float4 gx0 = ixy0 * (1.0f / 7.0f);
+      float4 gy0 = fract4(floor4(gx0) * (1.0f / 7.0f)) - 0.5f;
       gx0 = fract4(gx0);
-      float4 gz0 = make_float4(0.5, 0.5, 0.5, 0.5) - abs4(gx0) - abs4(gy0);
+      float4 gz0 = make_float4(0.5f, 0.5f, 0.5f, 0.5f) - abs4(gx0) - abs4(gy0);
       float4 sz0 = step4_(gz0, make_float4(0.0, 0.0, 0.0, 0.0));
       gx0 -= sz0 * (step4(0.0, gx0) - 0.5);
       gy0 -= sz0 * (step4(0.0, gy0) - 0.5);
 
-      float4 gx1 = ixy1 * (1.0 / 7.0);
-      float4 gy1 = fract4(floor4(gx1) * (1.0 / 7.0)) - 0.5;
+      float4 gx1 = ixy1 * (1.0f / 7.0f);
+      float4 gy1 = fract4(floor4(gx1) * (1.0f / 7.0f)) - 0.5f;
       gx1 = fract4(gx1);
-      float4 gz1 = make_float4(0.5, 0.5, 0.5, 0.5) - abs4(gx1) - abs4(gy1);
+      float4 gz1 = make_float4(0.5f, 0.5f, 0.5f, 0.5f) - abs4(gx1) - abs4(gy1);
       float4 sz1 = step4_(gz1, make_float4(0.0, 0.0, 0.0, 0.0));
-      gx1 -= sz1 * (step4(0.0f, gx1) - 0.5);
-      gy1 -= sz1 * (step4(0.0f, gy1) - 0.5);
+      gx1 -= sz1 * (step4(0.0f, gx1) - 0.5f);
+      gy1 -= sz1 * (step4(0.0f, gy1) - 0.5f);
 
       float3 g000 = make_float3(gx0.x, gy0.x, gz0.x);
       float3 g100 = make_float3(gx0.y, gy0.y, gz0.y);
