@@ -512,7 +512,7 @@ bool test44_four_lights()
     diff.append_attribute(L"brdf_type").set_value(L"lambert");
     diff.append_child(L"color").text().set(L"0.75 0.75 0.75");
 
-    HRTextureNodeRef testTex = hrTexture2DCreateFromFileDL(L"data/textures/163.jpg");
+    HRTextureNodeRef testTex = hrTexture2DCreateFromFileDL(L"data/textures/163.jpg", -1, -1, -1, true);
     hrTextureBind(testTex, diff);
   }
   hrMaterialClose(mat3);

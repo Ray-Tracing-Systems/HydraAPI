@@ -268,15 +268,17 @@ HAPI HRSceneLibraryInfo hrSceneLibraryInfo();
 
 
 /**
-\brief create 2D texture from file
+\brief Creates 2D texture from file.
 \param pScnData   - scene data object ptr.
 \param a_fileName - file name
-\param w   - texture width; optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
-\param h   - texture height; optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
+\param w   - texture width;   optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
+\param h   - texture height;  optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
 \param bpp - bytes per pixel; optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
 
- passing w,h or bpp not equal to -1 ask render
-
+ Creates 2D texture from file.
+ Passing w,h or bpp not equal to -1 ask render to resize texture; however render does not have to resize texture. It is just a hint.
+ Note that all 'hrTexture2DCreateFromFile***' functions have their internal cache by 'a_fileName'. if you pass same file name twice, this function return existing texture id second time.
+ If you really need to update texture with new file data, use hrTextureUpdateFromFile please.
 */
 
 HAPI HRTextureNodeRef  hrTexture2DCreateFromFile(const wchar_t* a_fileName, int w = -1, int h = -1, int bpp = -1);
@@ -285,9 +287,10 @@ HAPI HRTextureNodeRef  hrTexture2DCreateFromFile(const wchar_t* a_fileName, int 
 \brief Create 2D texture from file with Delayed Load (DL means "Delayed Load").
 \param pScnData   - scene data object ptr.
 \param a_fileName - file name
-\param w   - texture width; optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
-\param h   - texture height; optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
+\param w   - texture width;   optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
+\param h   - texture height;  optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
 \param bpp - bytes per pixel; optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
+\param a_copyFileToLocalData - indicates that texture should be copied to "data" folder (for further transmittion, for example)
 
  The "Delayed Load" means that texture will be load to memory only when passing it to render driver (or by render driver itself, if it can load images from external format).
  The advantage of using textures with delayed load is that if some texture is not really needed for rendering current frame it won't be touched at all.
@@ -298,9 +301,11 @@ HAPI HRTextureNodeRef  hrTexture2DCreateFromFile(const wchar_t* a_fileName, int 
  The normal case also - if you do know that your texture don't have full size copy in memory.
  Nevertheless, it is absolutely ok to use this function if you want to save memory or prevent unnecessary disk flush of internal HydraAPI cache in other cases.
 
+ Note that all 'hrTexture2DCreateFromFile***' functions have their internal cache by 'a_fileName'. if you pass same file name twice, this function return existing texture id second time.
+ If you really need to update texture with new file data, use hrTextureUpdateFromFile please.
 */
 
-HAPI HRTextureNodeRef  hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, int w = -1, int h = -1, int bpp = -1);
+HAPI HRTextureNodeRef  hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, int w = -1, int h = -1, int bpp = -1, bool a_copyFileToLocalData = false);
 
 /**
 \brief Update 2D texture from file
@@ -310,6 +315,7 @@ HAPI HRTextureNodeRef  hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, in
 \param h    - new texture height;
 \param bpp  - new bytes per pixel;
 
+ Use this function if you really need to update texture with new file data.
 */
 
 HAPI HRTextureNodeRef hrTexture2DUpdateFromFile(HRTextureNodeRef currentRef, const wchar_t* a_fileName, int w = -1, int h = -1, int bpp = -1);

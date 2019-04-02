@@ -141,8 +141,9 @@ int main(int argc, const char** argv)
 	  //run_all_ipp_tests();
 
     //test40_several_changes();
+    test44_four_lights();
     //test82_proc_texture();
-    test93_proc_tex_recursive();
+    //test93_proc_tex_recursive();
     //test39_mmlt_or_ibpt();
     //test42_load_library_basic();
     //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
