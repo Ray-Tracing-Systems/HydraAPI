@@ -1373,12 +1373,12 @@ bool test46_light_geom_rect()
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  HRMeshRef teapotRef = hrMeshCreateFromFileDL(L"data/meshes/teapot.vsgf"); // chunk_00009.vsgf // teapot.vsgf // chunk_00591.vsgf
+  HRMeshRef teapotRef   = hrMeshCreateFromFileDL(L"data/meshes/teapot2.vsgf", false);
 
   HRMeshRef cubeOpenRef = hrMeshCreate(L"my_box");
-  HRMeshRef planeRef = hrMeshCreate(L"my_plane");
-  HRMeshRef sphereRef = hrMeshCreate(L"my_sphere");
-  HRMeshRef torusRef = hrMeshCreate(L"my_torus");
+  HRMeshRef planeRef    = hrMeshCreate(L"my_plane");
+  HRMeshRef sphereRef   = hrMeshCreate(L"my_sphere");
+  HRMeshRef torusRef    = hrMeshCreate(L"my_torus");
 
   // hrMeshOpen(cubeRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
   // {

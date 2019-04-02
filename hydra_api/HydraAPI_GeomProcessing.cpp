@@ -1504,7 +1504,7 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
       normals_new.at(index * 4 + 0) = A_normal.x;
       normals_new.at(index * 4 + 1) = A_normal.y;
       normals_new.at(index * 4 + 2) = A_normal.z;
-      normals_new.at(index * 4 + 3) = 1.0f;
+      normals_new.at(index * 4 + 3) = 0.0f;
 
       uv_new.at(index * 2 + 0) = A_uv.x;
       uv_new.at(index * 2 + 1) = A_uv.y;
@@ -1549,7 +1549,7 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
       normals_new.at(index * 4 + 0) = B_normal.x;
       normals_new.at(index * 4 + 1) = B_normal.y;
       normals_new.at(index * 4 + 2) = B_normal.z;
-      normals_new.at(index * 4 + 3) = 1.0f;
+      normals_new.at(index * 4 + 3) = 0.0f;
 
       uv_new.at(index * 2 + 0) = B_uv.x;
       uv_new.at(index * 2 + 1) = B_uv.y;
@@ -1595,7 +1595,7 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
       normals_new.at(index * 4 + 0) = C_normal.x;
       normals_new.at(index * 4 + 1) = C_normal.y;
       normals_new.at(index * 4 + 2) = C_normal.z;
-      normals_new.at(index * 4 + 3) = 1.0f;
+      normals_new.at(index * 4 + 3) = 0.0f;
 
       uv_new.at(index * 2 + 0) = C_uv.x;
       uv_new.at(index * 2 + 1) = C_uv.y;

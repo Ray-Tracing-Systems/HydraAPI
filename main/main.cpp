@@ -83,6 +83,7 @@ void test_gl32_002_init(void);
 void test_gl32_002_draw(void);
 
 void _hrDebugPrintVSGF(const wchar_t* a_fileNameIn, const wchar_t* a_fileNameOut);
+void _hrConvertOldVSGFMesh(const std::wstring& a_path, const std::wstring& a_newPath);
 
 void demo_01_plane_box();
 
@@ -141,7 +142,15 @@ int main(int argc, const char** argv)
 	  //run_all_ipp_tests();
 
     //test40_several_changes();
-    test44_four_lights();
+    //test44_four_lights();
+
+    //hrSceneLibraryOpen(L"/home/frol/temp", HR_WRITE_DISCARD);
+    //_hrConvertOldVSGFMesh(L"data/meshes/teapot.vsgf", L"data/meshes/teapot2.vsgf");
+    ////_hrDebugPrintVSGF(L"data/meshes/teapot.vsgf",    L"/home/frol/temp/teapot1.txt");
+    ////_hrDebugPrintVSGF(L"data/meshes/teapot2.vsgf",   L"/home/frol/temp/teapot2.txt");
+
+    test46_light_geom_rect();
+
     //test82_proc_texture();
     //test93_proc_tex_recursive();
     //test39_mmlt_or_ibpt();

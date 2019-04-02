@@ -1120,7 +1120,7 @@ void hrMeshComputeNormals(HRMeshRef a_mesh, const int indexNum, bool useFaceNorm
     mesh.verticesNorm.at(4 * i + 0) = N.x;
     mesh.verticesNorm.at(4 * i + 1) = N.y;
     mesh.verticesNorm.at(4 * i + 2) = N.z;
-    mesh.verticesNorm.at(4 * i + 3) = 1.0f;
+    mesh.verticesNorm.at(4 * i + 3) = 0.0f;
 
 	}
 }
