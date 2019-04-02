@@ -126,8 +126,9 @@ BBox mergeBBoxes(const BBox &A, const BBox &B)
 
 struct MeshVSGF : public IHRMesh
 {
+  MeshVSGF(){}
   MeshVSGF(size_t a_sz, size_t a_chId) : m_sizeInBytes(a_sz), m_chunkId(a_chId), m_vertNum(0),
-                                                      m_indNum(0), m_bbox(BBox()) { m_matDrawList.reserve(100); }
+                                         m_indNum(0), m_bbox(BBox()) { m_matDrawList.reserve(100); }
 
   uint64_t chunkId() const override { return uint64_t(m_chunkId); }
   uint64_t offset (const wchar_t* a_arrayname) const override;
@@ -150,7 +151,6 @@ struct MeshVSGF : public IHRMesh
   size_t   m_indNum;
 
   std::vector<HRBatchInfo> m_matDrawList;
-
   BBox m_bbox;
 
   std::unordered_map<std::wstring, std::tuple<std::wstring, size_t, size_t, int> > m_custAttrOffsAndSize;
@@ -199,6 +199,41 @@ uint64_t MeshVSGF::offset(const wchar_t* a_arrayname) const
   }
 
 }
+
+
+struct MeshVSGFProxy : public MeshVSGF
+{
+  MeshVSGFProxy(){}
+  MeshVSGFProxy(const wchar_t* a_vsgfPath)
+  {
+    ReadVSGFHeader(a_vsgfPath);
+  }
+
+protected:
+
+  void ReadVSGFHeader(const wchar_t* a_fileName)
+  {
+  #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
+    std::wstring s1(a_fileName);
+    std::string  s2(s1.begin(), s1.end());
+    std::ifstream fin(s2.c_str(), std::ios::binary);
+  #elif defined WIN32
+    std::ifstream fin(a_fileName.c_str(), std::ios::binary);
+  #endif
+
+    HydraGeomData::Header header;
+    fin.read((char*)&header, sizeof(HydraGeomData::Header));
+
+    m_vertNum     = header.verticesNum;
+    m_indNum      = header.indicesNum;
+    m_sizeInBytes = header.fileSizeInBytes;
+    m_chunkId     = size_t(-1);
+
+    //m_matDrawList; // don't evaluate this for Proxy Object due to this is long operation
+    //m_bbox;        // don't evaluate this for Proxy Object due to this is long operation
+  }
+
+};
 
 std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndices)
 {
@@ -465,4 +500,10 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromFile(HRMesh* pSysObj,
   pMeshImpl->m_bbox = bbox;
 
   return pMeshImpl;
+}
+
+std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFProxy(const wchar_t* a_fileName)
+{
+  std::shared_ptr<MeshVSGFProxy> pImpl = std::make_shared<MeshVSGFProxy>(a_fileName);
+  return pImpl;
 }

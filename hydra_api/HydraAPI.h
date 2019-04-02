@@ -679,9 +679,10 @@ HAPI HRMeshRef hrMeshCreate(const wchar_t* a_objectName);
 \brief create mesh from internal vsgf format with delayed load.
 \param a_pScn     - pointer to scene library
 \param a_fileName - file name of the mesh.
+\param a_copyToLocalFolder - indicates if we need to copy input '.vsgf' file to local folder
 
 */
-HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName);
+HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName, bool a_copyToLocalFolder = false);
 
 /**
 \brief open mesh

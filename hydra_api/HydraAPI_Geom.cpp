@@ -52,9 +52,19 @@ void FillXMLFromMeshImpl(pugi::xml_node nodeXml, std::shared_ptr<IHRMesh> a_pImp
 {
   ////
   //
-  size_t       chunkId  = a_pImpl->chunkId();
-  ChunkPointer chunk    = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
-  std::wstring location = ChunkName(chunk);
+  size_t chunkId = a_pImpl->chunkId();
+  std::wstring location = L"unknown";
+  ChunkPointer chunk;
+
+  if(chunkId > g_objManager.scnData.m_vbCache.size())
+  {
+    chunk.sizeInBytes = 0;
+  }
+  else
+  {
+    chunk = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
+    location = ChunkName(chunk);
+  }
 
   VSGFChunkInfo info;
 
@@ -184,11 +194,56 @@ HAPI HRMeshRef hrMeshCreate(const wchar_t* a_objectName)
   return ref;
 }
 
-HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName)
+std::wstring CutFileName(const std::wstring& fileName);
+std::wstring LocalDataPathOfCurrentSceneLibrary();
+
+HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName, bool a_copyToLocalFolder)
 {
   if (a_fileName == nullptr || std::wstring(a_fileName) == L"")
     return HRMeshRef();
-  
+
+  HRMeshRef ref = hrMeshCreate(a_fileName);
+
+  HRMesh* pMesh = g_objManager.PtrById(ref);
+  if (pMesh == nullptr)
+  {
+    HrError(L"hrMeshClose: nullptr input");
+    return ref;
+  }
+
+  pMesh->pImpl  = g_objManager.m_pFactory->CreateVSGFProxy(a_fileName);
+  pMesh->opened = false;
+
+  if (pMesh->pImpl == nullptr)
+    return ref;
+
+  auto nodeXml = pMesh->xml_node_next(HR_OPEN_EXISTING);
+  auto pImpl   = pMesh->pImpl;
+
+  FillXMLFromMeshImpl(nodeXml, pImpl, false);
+
+  nodeXml.force_attribute(L"dl")       = 1;
+  nodeXml.force_attribute(L"loc")      = L"unknown";
+  nodeXml.force_attribute(L"bytesize") = pImpl->DataSizeInBytes();
+  nodeXml.force_attribute(L"path")     = a_fileName;
+
+  pMesh->wasChanged = true;
+  pMesh->m_empty    = (nodeXml.attribute(L"bytesize").as_ullong() == 0);
+
+  if(a_copyToLocalFolder)
+  {
+    std::wstring fileName1 = CutFileName(a_fileName);
+    std::wstring fileName2 = std::wstring(L"data/") + fileName1;
+
+    std::wstring dataFolderPath = LocalDataPathOfCurrentSceneLibrary();
+    std::wstring fileName3      = dataFolderPath + fileName1;
+
+    hr_copy_file(a_fileName, fileName3.c_str());
+    nodeXml.attribute(L"loc")  = fileName2.c_str();
+    nodeXml.attribute(L"path") = L"";
+  }
+
+  /*
   // (1) to have this function works, we temporary convert it via common mesh that placed in memory, not really DelayedLoad (!!!)
   //
   HydraGeomData data;
@@ -213,6 +268,7 @@ HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName)
     hrMeshAppendTriangles3(ref, data.getIndicesNumber(), (const int*)data.getTriangleVertexIndicesArray());
   }
   hrMeshClose(ref);
+  */
 
   return ref;
 }
@@ -1158,3 +1214,37 @@ HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, int indexNum)
   delete[] tan1;
   
 }
+
+
+
+void _hrConvertOldVSGFMesh(const std::wstring& a_path, const std::wstring& a_newPath)
+{
+  // (1) to have this function works, we temporary convert it via common mesh that placed in memory, not really DelayedLoad (!!!)
+  //
+  HydraGeomData data;
+  data.read(a_path);
+  if (data.getVerticesNumber() == 0)
+    return;
+
+  HRMeshRef ref = hrMeshCreate(a_path.c_str());
+  hrMeshOpen(ref, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
+  {
+    hrMeshVertexAttribPointer4f(ref, L"pos",      data.getVertexPositionsFloat4Array());
+    hrMeshVertexAttribPointer4f(ref, L"norm",     data.getVertexNormalsFloat4Array());
+    if(data.getVertexTangentsFloat4Array() != nullptr)                                     // for the old format this never happen
+      hrMeshVertexAttribPointer4f(ref, L"tangent", data.getVertexTangentsFloat4Array());   //
+    hrMeshVertexAttribPointer2f(ref, L"texcoord", data.getVertexTexcoordFloat2Array());
+    hrMeshPrimitiveAttribPointer1i(ref, L"mind", (const int*)data.getTriangleMaterialIndicesArray());
+    hrMeshAppendTriangles3(ref, data.getIndicesNumber(), (const int*)data.getTriangleVertexIndicesArray());
+  }
+  hrMeshClose(ref);
+
+  HRMesh* pMesh               = g_objManager.PtrById(ref);
+  pugi::xml_node node         = pMesh->xml_node_next(HR_OPEN_READ_ONLY);
+  std::wstring newFilePath    = g_objManager.scnData.m_path + L"/" + node.attribute(L"loc").as_string();
+
+  hrFlush();
+
+  hr_copy_file(newFilePath.c_str(), a_newPath.c_str());
+}
+

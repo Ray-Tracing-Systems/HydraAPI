@@ -692,6 +692,8 @@ HRMeshDriverInput HR_GetMeshDataPointers(size_t a_meshId)
   return input;
 }
 
+std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndices);
+
 void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, const std::vector<HRBatchInfo>& a_batches, IHRRenderDriver* a_pDriver, const wchar_t* path, int64_t a_byteSize)
 {
   pugi::xml_node nodeXML    = mesh.xml_node_immediate();
@@ -706,6 +708,10 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, const std::vector<HRBatchIn
 #endif 
   g_objManager.m_tempBuffer.resize(a_byteSize / sizeof(int) + sizeof(int) * 16);
   char* dataPtr = (char*)g_objManager.m_tempBuffer.data();
+
+  if(!fin.is_open())
+    return;
+
   fin.read(dataPtr, a_byteSize);
 
   HRMeshDriverInput input;
@@ -728,7 +734,14 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, const std::vector<HRBatchIn
   input.triMatIndices = (int*)  (dataPtr + offsetMInd);
   input.allData       = dataPtr;
 
-  a_pDriver->UpdateMesh(a_id, nodeXML, input, &a_batches[0], int32_t(a_batches.size()));
+  if(a_batches.size() == 0)
+  {
+    std::vector<uint32_t> matIndices((uint*)input.triMatIndices, (uint*)input.triMatIndices + input.triNum);
+    std::vector<HRBatchInfo> batches = FormMatDrawListRLE(matIndices);
+    a_pDriver->UpdateMesh(a_id, nodeXML, input, &batches[0], int32_t(batches.size()));
+  }
+  else
+    a_pDriver->UpdateMesh(a_id, nodeXML, input, &a_batches[0], int32_t(a_batches.size()));
 
   fin.close();
 }
@@ -763,9 +776,9 @@ int32_t HR_DriverUpdateMeshes(HRSceneInst& scn, ChangeList& objList, IHRRenderDr
     HRMeshDriverInput input = HR_GetMeshDataPointers(id);
     pugi::xml_node meshNode = mesh.xml_node_immediate();
 
-    const std::wstring delayedLoad = meshNode.attribute(L"dl").as_string();
+    const int delayedLoad          = meshNode.attribute(L"dl").as_int();
     const std::wstring locStr      = g_objManager.GetLoc(meshNode);
-    const wchar_t* path            = (delayedLoad == L"1") ? meshNode.attribute(L"path").as_string() : locStr.c_str();
+    const wchar_t* path            = (delayedLoad == 1) ? meshNode.attribute(L"path").as_string() : locStr.c_str();
 
     if (mesh.pImpl != nullptr)
     {
@@ -773,17 +786,15 @@ int32_t HR_DriverUpdateMeshes(HRSceneInst& scn, ChangeList& objList, IHRRenderDr
 
       if (input.pos4f == nullptr)
       {
+        scn.meshUsedByDrv.insert(id);
+
         if (info.supportMeshLoadFromInternalFormat)
         {
-          scn.meshUsedByDrv.insert(id);
           a_pDriver->UpdateMeshFromFile(int32_t(id), meshNode, path);
         }
         else
         {
-          scn.meshUsedByDrv.insert(id);
-
           int64_t byteSize = meshNode.attribute(L"bytesize").as_llong();
-
           UpdateMeshFromChunk(int32_t(id), mesh, mlist, a_pDriver, path, byteSize);
         }
       }

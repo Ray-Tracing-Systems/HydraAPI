@@ -1,5 +1,5 @@
 #include "HydraLegacyUtils.h"
-
+#include "HydraVSGFExport.h"
 
 #ifdef WIN32
 #else
