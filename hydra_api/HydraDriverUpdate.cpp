@@ -713,6 +713,7 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, const std::vector<HRBatchIn
     return;
 
   fin.read(dataPtr, a_byteSize);
+  fin.close();
 
   HRMeshDriverInput input;
 
@@ -734,16 +735,14 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, const std::vector<HRBatchIn
   input.triMatIndices = (int*)  (dataPtr + offsetMInd);
   input.allData       = dataPtr;
 
-  if(a_batches.size() == 0)
-  {
-    std::vector<uint32_t> matIndices((uint*)input.triMatIndices, (uint*)input.triMatIndices + input.triNum);
-    std::vector<HRBatchInfo> batches = FormMatDrawListRLE(matIndices);
-    a_pDriver->UpdateMesh(a_id, nodeXML, input, &batches[0], int32_t(batches.size()));
-  }
-  else
-    a_pDriver->UpdateMesh(a_id, nodeXML, input, &a_batches[0], int32_t(a_batches.size()));
-
-  fin.close();
+  //if(a_batches.size() == 0)
+  //{
+  //  std::vector<uint32_t> matIndices((uint*)input.triMatIndices, (uint*)input.triMatIndices + input.triNum);
+  //  std::vector<HRBatchInfo> batches = FormMatDrawListRLE(matIndices);
+  //  a_pDriver->UpdateMesh(a_id, nodeXML, input, &batches[0], int32_t(batches.size()));
+  //}
+  //else
+  a_pDriver->UpdateMesh(a_id, nodeXML, input, &a_batches[0], int32_t(a_batches.size()));
 }
 
 
@@ -779,6 +778,8 @@ int32_t HR_DriverUpdateMeshes(HRSceneInst& scn, ChangeList& objList, IHRRenderDr
     const int delayedLoad          = meshNode.attribute(L"dl").as_int();
     const std::wstring locStr      = g_objManager.GetLoc(meshNode);
     const wchar_t* path            = (delayedLoad == 1) ? meshNode.attribute(L"path").as_string() : locStr.c_str();
+
+    //if(std::wstring(path) == L"") then get path from "loc" due to we actually copied file to 'data' folder // #TODO: implement this!
 
     if (mesh.pImpl != nullptr)
     {

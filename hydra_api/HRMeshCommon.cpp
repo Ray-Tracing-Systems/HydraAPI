@@ -200,6 +200,7 @@ uint64_t MeshVSGF::offset(const wchar_t* a_arrayname) const
 
 }
 
+std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndices);
 
 struct MeshVSGFProxy : public MeshVSGF
 {
@@ -229,7 +230,14 @@ protected:
     m_sizeInBytes = header.fileSizeInBytes;
     m_chunkId     = size_t(-1);
 
-    //m_matDrawList; // don't evaluate this for Proxy Object due to this is long operation
+    const auto matIndOffset = this->offset(L"mind");
+
+    std::vector<uint32_t> matIndixes(m_indNum/3);
+    fin.seekg (matIndOffset);
+    fin.read((char*)matIndixes.data(), matIndixes.size()*sizeof(int));
+    fin.close();
+
+    m_matDrawList = FormMatDrawListRLE(matIndixes);
     //m_bbox;        // don't evaluate this for Proxy Object due to this is long operation
   }
 
