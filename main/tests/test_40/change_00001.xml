@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<textures_lib />
+<materials_lib>
+  <material id="1" name="mysimplemat2" type="hydra_material">
+    <diffuse brdf_type="lambert">
+      <color>0.207843 0.188235 0</color>
+    </diffuse>
+    <reflectivity brdf_type="phong">
+      <color>0.367059 0.345882 0.35f</color>
+      <glossiness>0.5</glossiness>
+      <texture id="1" type="texref" />
+    </reflectivity>
+  </material>
+</materials_lib>
+<lights_lib />
+<cam_lib />
+<geometry_lib />
+<render_lib />
+<scenes />
+<trash />

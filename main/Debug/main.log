@@ -1,0 +1,51 @@
+﻿  input.cpp
+  tests1.cpp
+  tests10.cpp
+  tests8.cpp
+  tests9.cpp
+d:\hydra\hydraapi\main\tests9.cpp(149): warning C4018: <: несоответствие типов со знаком и без знака
+d:\hydra\hydraapi\main\tests9.cpp(163): warning C4018: >=: несоответствие типов со знаком и без знака
+d:\hydra\hydraapi\main\tests9.cpp(937): warning C4018: <: несоответствие типов со знаком и без знака
+d:\hydra\hydraapi\main\tests9.cpp(942): warning C4018: <: несоответствие типов со знаком и без знака
+  testsA.cpp
+  testsB.cpp
+  tests_algr.cpp
+  tests_lights2.cpp
+  tests_mtl2.cpp
+  tests_mtl3.cpp
+  tests_mtl4.cpp
+  tests_mtl5.cpp
+d:\hydra\hydraapi\main\tests_mtl5.cpp(539): warning C4305: инициализация: усечение из "double" в "float"
+d:\hydra\hydraapi\main\tests_mtl5.cpp(933): warning C4305: инициализация: усечение из "double" в "float"
+  tests_pp.cpp
+  test_camera_free_look_gl.cpp
+  main.cpp
+  tests2.cpp
+d:\hydra\hydraapi\hydra_api\hr_hdrimagetool.h(44): warning C4018: <: несоответствие типов со знаком и без знака
+  d:\hydra\hydraapi\main\tests2.cpp(81): note: выполняется компиляция ссылки на экземпляр шаблон функции "float HydraRender::MSE<std::vector<float,std::allocator<_Ty>>>(const ContainerT &,const ContainerT &)"
+          with
+          [
+              _Ty=float,
+              ContainerT=std::vector<float,std::allocator<float>>
+          ]
+  tests3.cpp
+  tests4.cpp
+  tests5.cpp
+  Создание кода...
+  Компиляция...
+  tests6.cpp
+  tests7.cpp
+  tests_geo.cpp
+  tests_gl.cpp
+d:\hydra\hydraapi\main\tests_gl.cpp(1691): warning C4018: <: несоответствие типов со знаком и без знака
+  tests_lights.cpp
+  tests_mtl.cpp
+  test_image_processing.cpp
+  test_lights3.cpp
+  test_lights4.cpp
+  test_mtl_adv.cpp
+  utils.cpp
+d:\hydra\hydraapi\main\utils.cpp(212): warning C4305: инициализация: усечение из "double" в "float"
+d:\hydra\hydraapi\main\utils.cpp(672): warning C4018: <: несоответствие типов со знаком и без знака
+  Создание кода...
+HydraAPI.lib(HydraAPI_Texture.obj) : fatal error LNK1112: тип компьютера модуля "x64" противоречит типу целевого компьютера "x86"
