@@ -21,6 +21,7 @@ struct HydraGeomData
   void read(const std::wstring& a_fileName);
   void read(const std::string& a_fileName);
   void read(std::istream& a_input);
+  void readCompressed(std::istream& a_input, size_t a_compressedSize);
 
   void writeToMemory(char* a);
   size_t sizeInBytes();

@@ -352,6 +352,34 @@ size_t HydraGeomData::writeCompressed(std::ostream& a_out)
   return size_t(compressed_size);
 }
 
+void HydraGeomData::readCompressed(std::istream& a_input, size_t a_compressedSize)
+{
+  std::vector<char> dataTemp(a_compressedSize);
+  a_input.read(dataTemp.data(), a_compressedSize);
+
+  std::vector<float> positions3(verticesNum*3);
+
+  crt::Decoder decoder(a_compressedSize, (const unsigned char*)dataTemp.data());
+  {
+    decoder.setPositions(positions3.data()); // vertex_quantization_step
+    decoder.setIndex((uint32_t*)m_triVertIndices);
+    decoder.setUvs(const_cast<float*>(m_texcoords));
+    decoder.setAttribute("normal",  (char*)m_normals,   crt::VertexAttribute::FLOAT);
+    decoder.setAttribute("tangent", (char *)m_tangents, crt::VertexAttribute::FLOAT);
+  }
+  decoder.decode();
+
+  float* positions = const_cast<float*>(m_positions);
+
+  for(int i=0;i<verticesNum;i++)
+  {
+    positions[i*4+0] = positions3[i*3+0];
+    positions[i*4+1] = positions3[i*3+1];
+    positions[i*4+2] = positions3[i*3+2];
+  }
+
+}
+
 
 VSGFOffsets CalcOffsets(int numVert, int numInd)
 {
@@ -368,8 +396,8 @@ VSGFOffsets CalcOffsets(int numVert, int numInd)
 }
 
 
-#include "HydraObjectManager.h"
-extern HRObjectManager g_objManager;
+#include "HydraObjectManager.h"      // #TODO: remove this
+extern HRObjectManager g_objManager; // #TODO: remove this
 
 
 size_t HR_SaveVSGFCompressed(int a_objId, const void* vsgfData, size_t a_vsgfSize, const wchar_t* a_outfileName)
@@ -402,8 +430,8 @@ size_t HR_SaveVSGFCompressed(int a_objId, const void* vsgfData, size_t a_vsgfSiz
   
   assert(meshObj.pImpl != nullptr);
   
-  const auto& matDrawList = meshObj.pImpl->MList();
-  const auto& bbox        = meshObj.pImpl->getBBox();
+  const auto& matDrawList = meshObj.pImpl->MList();   // #TODO: form this list from material indices
+  const auto& bbox        = meshObj.pImpl->getBBox(); // #TODO: recompute bounding box
 
   //const std::string xmlNodeData = "";
   
@@ -417,6 +445,7 @@ size_t HR_SaveVSGFCompressed(int a_objId, const void* vsgfData, size_t a_vsgfSiz
   h2.boxMax[0]             = bbox.x_max;
   h2.boxMax[1]             = bbox.y_max;
   h2.boxMax[2]             = bbox.z_max;
+  h2.dummy                 = 123456;
   
   fout.write((char*)&h2, sizeof(HydraGeomData::HeaderC));
   
@@ -437,8 +466,8 @@ size_t HR_SaveVSGFCompressed(int a_objId, const void* vsgfData, size_t a_vsgfSiz
   
   // write true file size to 'h2.compressedSizeInBytes' in file
   //
-  h2.compressedSizeInBytes = totalFileSize;
-  fout.seekp(fout.tellp() - (compressedBytes + sizeof(HydraGeomData::HeaderC)));
+  h2.compressedSizeInBytes = compressedBytes;
+  fout.seekp(sizeof(HydraGeomData::Header), ios_base::beg);
   fout.write((char*)&h2, sizeof(HydraGeomData::HeaderC));
   
   return totalFileSize;
@@ -446,27 +475,10 @@ size_t HR_SaveVSGFCompressed(int a_objId, const void* vsgfData, size_t a_vsgfSiz
 
 
 void HR_LoadVSGFCompressedBothHeaders(std::ifstream& fin,
-                                      std::vector<HRBatchInfo>& a_outBatchList, float a_boxMin[3], float a_boxMax[3])
+                                      std::vector<HRBatchInfo>& a_outBatchList, HydraGeomData::Header& h1, HydraGeomData::HeaderC& h2)
 {
-  //#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) // #TODO: refactor this shit finally!
-  //std::wstring s1(a_inFileName);
-  //std::string  s2(s1.begin(), s1.end());
-  //std::ifstream fin(s2.c_str(), std::ios::binary);
-  //#elif defined WIN32
-  //std::ifstream fin(a_inFileName, std::ios::binary);
-  //#endif
-  
-  HydraGeomData::Header  h1;
-  HydraGeomData::HeaderC h2;
-  
   fin.read((char*)&h1, sizeof(HydraGeomData::Header));
   fin.read((char*)&h2, sizeof(HydraGeomData::HeaderC));
-  
-  for(int i=0;i<3;i++)
-  {
-    a_boxMin[i] = h2.boxMin[i];
-    a_boxMax[i] = h2.boxMax[i];
-  }
   
   a_outBatchList.resize(h2.batchListArraySize);
   
@@ -474,12 +486,43 @@ void HR_LoadVSGFCompressedBothHeaders(std::ifstream& fin,
 }
 
 
-HydraGeomData HR_LoadVSGFCompressedData(std::ifstream& fin, const HydraGeomData::Header& h1, const HydraGeomData::HeaderC& h2,
-                                        std::vector<int>& dataBuffer)
+HydraGeomData HR_LoadVSGFCompressedData(const wchar_t* a_fileName, std::vector<int>& dataBuffer)
 {
+  std::ifstream fin;
+  hr_ifstream_open(fin, a_fileName);
+
+  std::vector<HRBatchInfo> batchList;
+  HydraGeomData::Header    h1;
+  HydraGeomData::HeaderC   h2;
+
+  HR_LoadVSGFCompressedBothHeaders(fin,
+                                   batchList, h1, h2);
+
+
+  dataBuffer.resize(h1.fileSizeInBytes / sizeof(int) + 1);
+  char* p = (char*)dataBuffer.data();
+
+  memcpy(p, &h1, sizeof(HydraGeomData::Header));
+
+  const VSGFOffsets offsets = CalcOffsets(h1.verticesNum, h1.indicesNum);
+
   HydraGeomData data;
-  
-  
-  
+  data.setData(uint32_t(h1.verticesNum), (float*)   (p + offsets.offsetPos),    (float*)(p + offsets.offsetNorm),
+                                         (float*)   (p + offsets.offsetTang),   (float*)(p + offsets.offsetTexc),
+               uint32_t(h1.indicesNum),  (uint32_t*)(p + offsets.offsetInd), (uint32_t*)(p + offsets.offsetMind));
+
+  data.readCompressed(fin, h2.compressedSizeInBytes);
+
   return data;
+}
+
+
+void _hrDecompressMesh(const std::wstring& a_path, const std::wstring& a_newPath)
+{
+  std::vector<int> dataBuffer;
+  HydraGeomData data = HR_LoadVSGFCompressedData(a_path.c_str(), dataBuffer);
+
+  std::ofstream fout;
+  hr_ofstream_open(fout, a_newPath.c_str());
+  data.write(fout);
 }

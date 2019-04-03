@@ -84,6 +84,8 @@ void test_gl32_002_draw(void);
 
 void _hrDebugPrintVSGF(const wchar_t* a_fileNameIn, const wchar_t* a_fileNameOut);
 void _hrConvertOldVSGFMesh(const std::wstring& a_path, const std::wstring& a_newPath);
+void _hrDecompressMesh(const std::wstring& a_path, const std::wstring& a_newPath);
+
 
 void demo_01_plane_box();
 
@@ -150,6 +152,11 @@ int main(int argc, const char** argv)
     ////_hrDebugPrintVSGF(L"data/meshes/teapot2.vsgf",   L"/home/frol/temp/teapot2.txt");
 
     test46_light_geom_rect();
+
+    _hrDecompressMesh(L"/home/frol/PROG/HydraAPI/main/tests/test_46/data/chunk_00005.vsgfc", L"/home/frol/temp/mesh2.vsgf");
+
+    _hrDebugPrintVSGF(L"/home/frol/temp/mesh1.vsgf",    L"/home/frol/temp/mesh1.txt");
+    _hrDebugPrintVSGF(L"/home/frol/temp/mesh2.vsgf",    L"/home/frol/temp/mesh2.txt");
 
     //test82_proc_texture();
     //test93_proc_tex_recursive();
