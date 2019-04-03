@@ -130,7 +130,7 @@ struct HRMesh : public HRObject<IHRMesh>
 
   struct InputTriMesh
   {
-    InputTriMesh() = default;
+    InputTriMesh() : m_saveCompressed(false) { }
 
     void clear()
     {
@@ -191,6 +191,7 @@ struct HRMesh : public HRObject<IHRMesh>
     };
 
     std::vector<CustArray> customArrays;
+    bool m_saveCompressed;
   };
 
   struct InputTriMeshPointers

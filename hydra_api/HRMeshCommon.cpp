@@ -159,39 +159,31 @@ struct MeshVSGF : public IHRMesh
 
 uint64_t MeshVSGF::offset(const wchar_t* a_arrayname) const 
 {
-  // auto node = this->xml_node_immediate();
-
-  uint64_t offset1 = sizeof(HydraGeomData::Header);
-  uint64_t offset2 = offset1 + m_vertNum*sizeof(float)*4; // after pos
-  uint64_t offset3 = offset2 + m_vertNum*sizeof(float)*4; // after norm
-  uint64_t offset4 = offset3 + m_vertNum*sizeof(float)*4; // after tangent
-  uint64_t offset5 = offset4 + m_vertNum*sizeof(float)*2; // after texcoord
-  uint64_t offset6 = offset5 + m_indNum*sizeof(int);      // after ind
-
-
+  const VSGFOffsets offsets = CalcOffsets(m_vertNum, m_indNum);
+  
   if (std::wstring(a_arrayname) == L"pos")
   {
-    return offset1;
+    return offsets.offsetPos;
   }
   else if (std::wstring(a_arrayname) == L"norm")
   {
-    return offset2;
+    return offsets.offsetNorm;
   }
   else if (std::wstring(a_arrayname) == L"tan")
   {
-    return offset3;
+    return offsets.offsetTang;
   }
   else if (std::wstring(a_arrayname) == L"texc")
   {
-    return offset4;
+    return offsets.offsetTexc;
   }
   else if (std::wstring(a_arrayname) == L"ind")
   {
-    return offset5;
+    return offsets.offsetInd;
   }
   else if (std::wstring(a_arrayname) == L"mind")
   {
-    return offset6;
+    return offsets.offsetMind;
   }
   else
   {
@@ -283,7 +275,7 @@ std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndi
   return matDrawList;
 }
 
-std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMesh* pSysObj)
+std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMesh* pSysObj, bool a_saveCompressed)
 {
   const auto& input = pSysObj->m_input;
 
@@ -362,17 +354,19 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
     return nullptr;
   }
 
-  auto& chunk  = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
-  chunk.type   = CHUNK_TYPE_VSGF;
+  auto& chunk          = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
+  chunk.type           = CHUNK_TYPE_VSGF;
+  chunk.saveCompressed = a_saveCompressed;  // we need to remember this info inside chunk to enable compressed mesh save
+  chunk.sysObjectId    = pSysObj->id;       // and plug xml description inside a file also;
+  
   char* memory = (char*)chunk.GetMemoryNow();
 
   if (memory == nullptr)
   {
-    HrError(L"HydraFactoryCommon::CreateVSGFFromSimpleInputMesh, out of memory unknown error");
+    HrError(L"HydraFactoryCommon::CreateVSGFFromSimpleInputMesh, out of memory, unknown error");
     return nullptr;
   }
-
-
+  
   std::shared_ptr<MeshVSGF> pMeshImpl = std::make_shared<MeshVSGF>(totalByteSize, chunkId);
 
   // (1) common mesh attributes
@@ -416,8 +410,8 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
     currOffset += currSize;
   }
 
-  pMeshImpl->m_vertNum     = totalVertNumber;
-  pMeshImpl->m_indNum      = totalMeshTriIndices;
+  pMeshImpl->m_vertNum = totalVertNumber;
+  pMeshImpl->m_indNum  = totalMeshTriIndices;
 
   //compute bbox
   if (g_objManager.m_computeBBoxes)

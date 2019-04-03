@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <cassert>
 
 HydraGeomData::HydraGeomData()
 {
@@ -112,9 +113,7 @@ void HydraGeomData::write(std::ostream& a_out)
 
   a_out.write((const char*)m_triVertIndices, sizeof(uint32_t)*indicesNum);
   a_out.write((const char*)m_triMaterialIndices, sizeof(uint32_t)*(indicesNum / 3));
-
-  //a_out.write(strData.c_str(), strData.size());
-
+  
 }
 
 // void mymemcpy(void* a_dst, void* a_src, int a_size)
@@ -321,4 +320,131 @@ void HydraGeomData::read(const std::wstring& a_fileName)
   fin.close();
 }
 
+#include "../corto/corto.h"
 
+size_t HydraGeomData::writeCompressed(std::ostream& a_out)
+{
+  // convert positions to float3 due to corto does not understand float4 input for positions by default
+  //
+  std::vector<float> positions3(verticesNum*3);
+  
+  for(int i=0;i<verticesNum;i++)
+  {
+    positions3[i*3+0] = m_positions[i*4+0];
+    positions3[i*3+1] = m_positions[i*4+1];
+    positions3[i*3+2] = m_positions[i*4+2];
+  }
+  
+  crt::Encoder encoder(verticesNum, indicesNum/3);
+  {
+    encoder.addPositions(positions3.data(), m_triVertIndices); // vertex_quantization_step
+    encoder.addUvs(m_texcoords);
+    encoder.addAttribute("normal",  (const char *) m_normals,  crt::VertexAttribute::FLOAT, 4, 1.0f);
+    encoder.addAttribute("tangent", (const char *) m_tangents, crt::VertexAttribute::FLOAT, 4, 1.0f);
+  }
+  encoder.encode();
+  
+  const auto*    compressed_data = encoder.stream.data();
+  const uint32_t compressed_size = encoder.stream.size();
+  
+  a_out.write((char*)compressed_data, compressed_size);
+  
+  return size_t(compressed_size);
+}
+
+
+VSGFOffsets CalcOffsets(int numVert, int numInd)
+{
+  VSGFOffsets res;
+  
+  res.offsetPos  = sizeof(HydraGeomData::Header);
+  res.offsetNorm = res.offsetPos  + numVert*sizeof(float)*4; // after pos
+  res.offsetTang = res.offsetNorm + numVert*sizeof(float)*4; // after norm
+  res.offsetTexc = res.offsetTang + numVert*sizeof(float)*4; // after tangent
+  res.offsetInd  = res.offsetTexc + numVert*sizeof(float)*2; // after texcoord
+  res.offsetMind = res.offsetInd  + numInd*sizeof(int);      // after ind
+  
+  return res;
+}
+
+
+#include "HydraObjectManager.h"
+extern HRObjectManager g_objManager;
+
+
+size_t HR_SaveVSGFCompressed(int a_objId, const void* vsgfData, size_t a_vsgfSize, const wchar_t* a_outfileName)
+{
+  HydraGeomData::Header* pHeader = (HydraGeomData::Header*)vsgfData;
+  
+  const VSGFOffsets offsets = CalcOffsets(pHeader->verticesNum, pHeader->indicesNum);
+  
+  
+  char* p = (char*)vsgfData;
+  
+  HydraGeomData data;
+  
+  data.setData(uint32_t(pHeader->verticesNum), (float*)   (p + offsets.offsetPos),    (float*)(p + offsets.offsetNorm),
+                                               (float*)   (p + offsets.offsetTang),   (float*)(p + offsets.offsetTexc),
+               uint32_t(pHeader->indicesNum),  (uint32_t*)(p + offsets.offsetInd), (uint32_t*)(p + offsets.offsetMind));
+  
+  // (1) open file
+  //
+  #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
+  std::wstring s1(a_outfileName);
+  std::string  s2(s1.begin(), s1.end());
+  std::ofstream fout(s2.c_str(), std::ios::binary);
+  #elif defined WIN32
+  std::ofstream fout(a_outfileName.c_str(), std::ios::binary);
+  #endif
+  
+  // (2) put vsgf header
+  //
+  fout.write((char*)pHeader, sizeof(HydraGeomData::Header));
+  
+  // (3) put header2 (bbox, compressed file size in bytes that we have to overwrite later, and other)
+  //
+  auto& meshObj = g_objManager.scnData.meshes[a_objId];
+  
+  assert(meshObj.pImpl != nullptr);
+  
+  const auto& matDrawList = meshObj.pImpl->MList();
+  const auto& bbox        = meshObj.pImpl->getBBox();
+
+  //const std::string xmlNodeData = "";
+  
+  HydraGeomData::HeaderC h2;
+  
+  h2.compressedSizeInBytes = 0;
+  h2.batchListArraySize    = matDrawList.size();
+  h2.boxMin[0]             = bbox.x_min;
+  h2.boxMin[1]             = bbox.y_min;
+  h2.boxMin[2]             = bbox.z_min;
+  h2.boxMax[0]             = bbox.x_max;
+  h2.boxMax[1]             = bbox.y_max;
+  h2.boxMax[2]             = bbox.z_max;
+  
+  fout.write((char*)&h2, sizeof(HydraGeomData::HeaderC));
+  
+  // (4) put material batch list
+  //
+  fout.write((char*)matDrawList.data(), matDrawList.size()*sizeof(HRBatchInfo));
+  
+  // (5) #TODO: put xml data of mesh in file ...
+  //
+  
+  // (6) compress mesh via corto lib
+  //
+  auto compressedBytes = data.writeCompressed(fout);
+  
+  size_t totalFileSize = sizeof(HydraGeomData::Header)  +
+                         sizeof(HydraGeomData::HeaderC) +
+                         matDrawList.size()*sizeof(HRBatchInfo) + compressedBytes;
+  
+  // write true file size to 'h2.compressedSizeInBytes' in file
+  //
+  h2.compressedSizeInBytes = totalFileSize;
+  fout.seekp(fout.tellp() - (compressedBytes + sizeof(HydraGeomData::HeaderC)));
+  fout.write((char*)&h2, sizeof(HydraGeomData::HeaderC));
+  
+  return totalFileSize;
+}

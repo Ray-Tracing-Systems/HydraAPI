@@ -696,9 +696,9 @@ HAPI void              hrMeshOpen(HRMeshRef a_pMesh, HR_PRIM_TYPE a_type, HR_OPE
 /**
 \brief close mesh
 \param a_pMesh      - pointer to mesh
-
+\param a_compress   - compress mesh when save it to file
 */
-HAPI void              hrMeshClose(HRMeshRef a_pMesh);
+HAPI void              hrMeshClose(HRMeshRef a_pMesh, bool a_compress = false);
 
 
 /**

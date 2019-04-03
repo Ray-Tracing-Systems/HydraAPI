@@ -16,6 +16,7 @@ struct HydraGeomData
   //
   void write(const std::string& a_fileName);
   void write(std::ostream& a_out);
+  size_t writeCompressed(std::ostream& a_out);
 
   void read(const std::wstring& a_fileName);
   void read(const std::string& a_fileName);
@@ -56,6 +57,15 @@ struct HydraGeomData
     uint32_t indicesNum;
     uint32_t materialsNum;
     uint32_t flags;
+  };
+  
+  struct HeaderC // this header i used only fpr '.vsgfc', compressed format.
+  {
+    uint64_t compressedSizeInBytes;
+    float    boxMin[3];
+    float    boxMax[3];
+    uint32_t batchListArraySize;
+    uint32_t dummy;
   };
 
 protected:
@@ -99,4 +109,19 @@ protected:
 
 };
 
+
+struct VSGFOffsets
+{
+  uint64_t offsetPos ;
+  uint64_t offsetNorm;
+  uint64_t offsetTang;
+  uint64_t offsetTexc;
+  uint64_t offsetInd ;
+  uint64_t offsetMind;
+};
+
+VSGFOffsets CalcOffsets(int numVert, int numInd);
+
+
+size_t HR_SaveVSGFCompressed(const void* vsgfData, size_t a_vsgfSize, const wchar_t* a_outfileName);
 

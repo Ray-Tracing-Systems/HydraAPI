@@ -1396,8 +1396,8 @@ bool test46_light_geom_rect()
 
   hrMeshOpen(cubeOpenRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
   {
-    hrMeshVertexAttribPointer4f(cubeOpenRef, L"pos", &cubeOpen.vPos[0]);
-    hrMeshVertexAttribPointer4f(cubeOpenRef, L"norm", &cubeOpen.vNorm[0]);
+    hrMeshVertexAttribPointer4f(cubeOpenRef, L"pos",      &cubeOpen.vPos[0]);
+    hrMeshVertexAttribPointer4f(cubeOpenRef, L"norm",     &cubeOpen.vNorm[0]);
     hrMeshVertexAttribPointer2f(cubeOpenRef, L"texcoord", &cubeOpen.vTexCoord[0]);
 
     int cubeMatIndices[10] = { mat8.id, mat8.id, mat8.id, mat8.id, mat8.id, mat8.id, mat7.id, mat7.id, mat6.id, mat6.id };
@@ -1435,7 +1435,7 @@ bool test46_light_geom_rect()
     hrMeshPrimitiveAttribPointer1i(sphereRef, L"mind", &sphere.matIndices[0]);
     hrMeshAppendTriangles3(sphereRef, int32_t(sphere.triIndices.size()), &sphere.triIndices[0]);
   }
-  hrMeshClose(sphereRef);
+  hrMeshClose(sphereRef, true);
 
   hrMeshOpen(torusRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
   {

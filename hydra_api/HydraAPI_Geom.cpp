@@ -444,7 +444,7 @@ HAPI pugi::xml_node hrMeshParamNode(HRMeshRef a_mesh)
   return pMesh->xml_node_next(pMesh->openMode);
 }
 
-HAPI void hrMeshClose(HRMeshRef a_mesh)
+HAPI void hrMeshClose(HRMeshRef a_mesh, bool a_compress)
 {
   HRMesh* pMesh = g_objManager.PtrById(a_mesh);
   if (pMesh == nullptr)
@@ -466,7 +466,7 @@ HAPI void hrMeshClose(HRMeshRef a_mesh)
   for (size_t i = 0; i < mindices.size(); i++)
     g_objManager.scnData.m_materialToMeshDependency.emplace(mindices[i], a_mesh.id);
 
-  pMesh->pImpl  = g_objManager.m_pFactory->CreateVSGFFromSimpleInputMesh(pMesh);
+  pMesh->pImpl  = g_objManager.m_pFactory->CreateVSGFFromSimpleInputMesh(pMesh, a_compress);
   pMesh->opened = false;
 
   if (pMesh->pImpl == nullptr)
@@ -481,7 +481,8 @@ HAPI void hrMeshClose(HRMeshRef a_mesh)
   pMesh->m_inputPointers.clear();
   pMesh->wasChanged = true;
   pMesh->m_empty    = (nodeXml.attribute(L"bytesize").as_int() == 0);
-
+  pMesh->m_input.m_saveCompressed = a_compress;
+  
 }
 
 

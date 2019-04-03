@@ -132,7 +132,7 @@ int main(int argc, const char** argv)
   {
     //GEO_TESTS::test_001_mesh_from_memory();
     //demo_01_plane_box();
-    //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_31", L"opengl1");
+    //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_46", L"opengl1");
     
     //run_all_api_tests();
     //run_all_geo_tests();

@@ -602,6 +602,7 @@ std::wstring ChunkName(const ChunkPointer& a_chunk)
   return namestream.str();
 }
 
+size_t HR_SaveVSGFCompressed(int a_objId, const void* vsgfData, size_t a_vsgfSize, const wchar_t* a_outfileName);
 
 void ChunkPointer::SwapToDisk()
 {
@@ -613,17 +614,28 @@ void ChunkPointer::SwapToDisk()
 
   if (wasSaved)
     return;
-
+  
   const std::wstring name = ChunkName(*this);
-#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
-  std::wstring s1(name);
-  std::string  s2(s1.begin(), s1.end());
-  std::ofstream fout(s2.c_str(), std::ios::binary);
-#elif defined WIN32
-  std::ofstream fout(name.c_str(), std::ios::binary);
-#endif
-  fout.write(pVB->m_dataHalfCurr + localAddress, sizeInBytes);
-  fout.close();
+  
+  if(saveCompressed && type == CHUNK_TYPE_VSGF)
+  {
+    const std::wstring name2 = name + L"c";
+    //std::wcout << L"save chunk " << name2.c_str() << " to compressed format" << std::endl;
+    HR_SaveVSGFCompressed(sysObjectId, pVB->m_dataHalfCurr + localAddress, sizeInBytes, name2.c_str());
+  }
+  //else
+  //{
+  #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
+    std::wstring s1(name);
+    std::string s2(s1.begin(), s1.end());
+    std::ofstream fout(s2.c_str(), std::ios::binary);
+  #elif defined WIN32
+    std::ofstream fout(name.c_str(), std::ios::binary);
+  #endif
+    fout.write(pVB->m_dataHalfCurr + localAddress, sizeInBytes);
+    fout.close();
+  //}
+  
   wasSaved = true;
 }
 

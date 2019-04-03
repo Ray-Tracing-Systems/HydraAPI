@@ -153,7 +153,7 @@ struct IHydraFactory
   virtual std::shared_ptr<IHRTextureNode> CreateTexture2DFromMemory(HRTextureNode* pSysObj, int w, int h, int bpp, const void* a_data)                  = 0;
   virtual std::shared_ptr<IHRTextureNode> CreateTextureInfoFromChunkFile(HRTextureNode* pSysObj, const wchar_t* a_chunkFileName, pugi::xml_node a_node) = 0;
 
-  virtual std::shared_ptr<IHRMesh>        CreateVSGFFromSimpleInputMesh(HRMesh* pSysObj)                                               = 0;
+  virtual std::shared_ptr<IHRMesh>        CreateVSGFFromSimpleInputMesh(HRMesh* pSysObj, bool a_saveCompressed)                                               = 0;
   virtual std::shared_ptr<IHRMesh>        CreateVSGFFromFile           (HRMesh* pSysObj, const std::wstring& a_fileName, pugi::xml_node a_node)   = 0;
 
   virtual std::shared_ptr<IHRMesh>        CreateVSGFProxy(const wchar_t* a_fileName) = 0;
@@ -218,8 +218,8 @@ struct VirtualBuffer;
 */
 struct ChunkPointer
 {
-  ChunkPointer()                              : localAddress(-1), sizeInBytes(0), id(0), inUse(true), wasSaved(false), pVB(nullptr), useCounter(0), type(CHUNK_TYPE_UNKNOWN) {}
-  explicit ChunkPointer(VirtualBuffer* a_pVB) : localAddress(-1), sizeInBytes(0), id(0), inUse(true), wasSaved(false), pVB(a_pVB), useCounter(0), type(CHUNK_TYPE_UNKNOWN) {}
+  ChunkPointer()                              : localAddress(-1), sizeInBytes(0), id(0), inUse(true), wasSaved(false), pVB(nullptr), useCounter(0), sysObjectId(-1), type(CHUNK_TYPE_UNKNOWN), saveCompressed(false) {}
+  explicit ChunkPointer(VirtualBuffer* a_pVB) : localAddress(-1), sizeInBytes(0), id(0), inUse(true), wasSaved(false), pVB(a_pVB), useCounter(0), sysObjectId(-1), type(CHUNK_TYPE_UNKNOWN), saveCompressed(false) {}
 
   void* GetMemoryNow();
   const void* GetMemoryNow() const;
@@ -232,10 +232,12 @@ struct ChunkPointer
   uint64_t sizeInBytes;
   uint64_t id;
   uint32_t useCounter;
+  uint32_t sysObjectId;
   
   CHUNK_TYPE type;
   bool       inUse;
   bool       wasSaved;
+  bool       saveCompressed;
 
 protected:
 
@@ -431,7 +433,7 @@ struct HydraFactoryCommon : public IHydraFactory
   std::shared_ptr<IHRTextureNode> CreateTexture2DFromMemory(HRTextureNode* pSysObj, int w, int h, int bpp, const void* a_data) override;
   std::shared_ptr<IHRTextureNode> CreateTextureInfoFromChunkFile(HRTextureNode* pSysObj, const wchar_t* a_chunkFileName, pugi::xml_node a_node) override;
 
-  std::shared_ptr<IHRMesh>        CreateVSGFFromSimpleInputMesh(HRMesh* pSysObj) override;
+  std::shared_ptr<IHRMesh>        CreateVSGFFromSimpleInputMesh(HRMesh* pSysObj, bool a_saveCompressed) override;
   std::shared_ptr<IHRMesh>        CreateVSGFFromFile(HRMesh* pSysObj, const std::wstring& a_fileName, pugi::xml_node) override;
   std::shared_ptr<IHRMesh>        CreateVSGFProxy   (const wchar_t* a_fileName) override;
 };
