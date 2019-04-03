@@ -160,7 +160,7 @@ uint64_t submitCommandList(ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12Command
 void Tutorial07::initDXR(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 {
     mHwnd = winHandle;
-    mSwapChainSize = uvec2(winWidth, winHeight);
+    mSwapChainSize = glm::uvec2(winWidth, winHeight);
 
     // Initialize the debug layer for debug builds
 #ifdef _DEBUG
@@ -267,11 +267,11 @@ ID3D12ResourcePtr createBuffer(ID3D12Device5Ptr pDevice, uint64_t size, D3D12_RE
 
 ID3D12ResourcePtr createTriangleVB(ID3D12Device5Ptr pDevice)
 {
-    const vec3 vertices[] =
+    const glm::vec3 vertices[] =
     {
-        vec3(0,          1,  0),
-        vec3(0.866f,  -0.5f, 0),
-        vec3(-0.866f, -0.5f, 0),
+        glm::vec3(0,          1,  0),
+        glm::vec3(0.866f,  -0.5f, 0),
+        glm::vec3(-0.866f, -0.5f, 0),
     };
 
     // For simplicity, we create the vertex buffer on the upload heap, but that's not required
@@ -295,7 +295,7 @@ AccelerationStructureBuffers createBottomLevelAS(ID3D12Device5Ptr pDevice, ID3D1
     D3D12_RAYTRACING_GEOMETRY_DESC geomDesc = {};
     geomDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
     geomDesc.Triangles.VertexBuffer.StartAddress = pVB->GetGPUVirtualAddress();
-    geomDesc.Triangles.VertexBuffer.StrideInBytes = sizeof(vec3);
+    geomDesc.Triangles.VertexBuffer.StrideInBytes = sizeof(glm::vec3);
     geomDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
     geomDesc.Triangles.VertexCount = 3;
     geomDesc.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
@@ -360,7 +360,7 @@ AccelerationStructureBuffers createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12Gr
     pInstanceDesc->InstanceID = 0;                            // This value will be exposed to the shader via InstanceID()
     pInstanceDesc->InstanceContributionToHitGroupIndex = 0;   // This is the offset inside the shader-table. We only have a single geometry, so the offset 0
     pInstanceDesc->Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
-    mat4 m; // Identity matrix
+    glm::mat4 m; // Identity matrix
     memcpy(pInstanceDesc->Transform, &m, sizeof(pInstanceDesc->Transform));
     pInstanceDesc->AccelerationStructure = pBottomLevelAS->GetGPUVirtualAddress();
     pInstanceDesc->InstanceMask = 0xFF;
@@ -842,7 +842,7 @@ void Tutorial07::onFrameRender()
     // Dispatch
     mpCmdList->SetPipelineState1(mpPipelineState.GetInterfacePtr());
     mpCmdList->DispatchRays(&raytraceDesc);
-
+    
     // Copy the results to the back-buffer
     resourceBarrier(mpCmdList, mpOutputResource, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE);
     resourceBarrier(mpCmdList, mFrameObjects[rtvIndex].pSwapChainBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_DEST);

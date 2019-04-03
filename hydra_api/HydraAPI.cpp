@@ -711,6 +711,8 @@ std::unique_ptr<IHRRenderDriver> CreateRenderFromString(const wchar_t *a_classNa
     return std::unique_ptr<IHRRenderDriver>(CreateOpenGL3_Utilty_RenderDriver());
   else if (!wcscmp(a_className, L"HydraModern"))
     return std::unique_ptr<IHRRenderDriver>(CreateHydraConnection_RenderDriver());
+  else if (!wcscmp(a_className, L"dxrExperimental"))
+    return std::unique_ptr<IHRRenderDriver>(CreateDXRExperimental_RenderDriver());
   else
   {
     HrPrint(HR_SEVERITY_ERROR, L"CreateRenderFromString, unknown render driver name ", a_className);

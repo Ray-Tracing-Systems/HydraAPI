@@ -4,11 +4,12 @@
 #define _USE_MATH_DEFINES
 #include "math.h"
 
+#include "test_camera_free_look_dxr.h"
 
+#include "../hydra_api/RTX/07-BasicShaders.h"
+/*
 #include "../hydra_api/HydraAPI.h"
 #include "../hydra_api/HydraXMLHelpers.h"
-#include "tests.h"
-#include "test_camera_free_look_dxr.h"
 
 #include "input.h"
 #include "Camera.h"
@@ -16,12 +17,7 @@
 //#include "glad/glad.h"
 #include "../hydra_api/OpenGLCoreProfileUtils.h"
 
-#include "../hydra_api/RTX/Framework.h"
 #include "../hydra_api/RTX/07-BasicShaders.h"
-
-#include <locale>
-#include <codecvt>
-
 
 #if defined(WIN32)
 #include <GLFW/glfw3.h>
@@ -440,327 +436,114 @@ void OnMouseButtonClicked(GLFWwindow* window, int button, int action, int mods)
 void OnError(int errorCode, const char* msg) 
 {
   throw std::runtime_error(msg);
-}
+}*/
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////
-//               DXR poor code goes here
-//////////////////////////////////////////////////////////////////////////////////////////////////////
 
-namespace 
+void window_main_free_look_dxr(const wchar_t* a_libPath, const wchar_t* a_renderName)
 {
-HWND gWinHandle = nullptr;
-
-
-void msgBox(const std::string& msg)
-{
-  MessageBoxA(gWinHandle, msg.c_str(), "Error", MB_OK);
-}
-
-void msgLoop(Tutorial& tutorial)
-{
-  MSG msg;
-  while (1)
-  {
-    if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-    {
-      if (msg.message == WM_QUIT) break;
-      TranslateMessage(&msg);
-      DispatchMessage(&msg);
-    }
-    else
-    {
-      tutorial.onFrameRender();
-    }
-  }
-}
-
-std::wstring string_2_wstring(const std::string& s)
-{
-  std::wstring_convert<std::codecvt_utf8<WCHAR>> cvt;
-  std::wstring ws = cvt.from_bytes(s);
-  return ws;
-}
-
-std::string wstring_2_string(const std::wstring& ws)
-{
-  std::wstring_convert<std::codecvt_utf8<wchar_t>> cvt;
-  std::string s = cvt.to_bytes(ws);
-  return s;
-}
-
-void d3dTraceHR(const std::string& msg, HRESULT hr)
-{
-  char hr_msg[512];
-  FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, hr, 0, hr_msg, ARRAYSIZE(hr_msg), nullptr);
-
-  std::string error_msg = msg + ".\nError! " + hr_msg;
-  msgBox(error_msg);
-}
-
-static LRESULT CALLBACK msgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-  switch (msg)
-  {
-  case WM_CLOSE:
-    DestroyWindow(hwnd);
-    return 0;
-  case WM_DESTROY:
-    PostQuitMessage(0);
-    return 0;
-  case WM_KEYDOWN:
-    if (wParam == VK_ESCAPE) PostQuitMessage(0);
-    return 0;
-  default:
-    return DefWindowProc(hwnd, msg, wParam, lParam);
-  }
-}
-
-HWND createWindow(const std::string winTitle, uint32_t width, uint32_t height)
-{
-  const WCHAR* className = L"DxrTutorialWindowClass";
-  DWORD winStyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
-
-  // Load the icon
-  //HANDLE icon = LoadImageA(nullptr, _PROJECT_DIR_ "\\nvidia.ico", IMAGE_ICON, 0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE | LR_SHARED);
-
-  // Register the window class
-  WNDCLASS wc = {};
-  wc.lpfnWndProc = msgProc;
-  wc.hInstance = GetModuleHandle(nullptr);
-  wc.lpszClassName = className;
-  //wc.hIcon = (HICON)icon;
-
-  if (RegisterClass(&wc) == 0)
-  {
-    msgBox("RegisterClass() failed");
-    return nullptr;
-  }
-
-  // Window size we have is for client area, calculate actual window size
-  RECT r{ 0, 0, (LONG)width, (LONG)height };
-  AdjustWindowRect(&r, winStyle, false);
-
-  int windowWidth = r.right - r.left;
-  int windowHeight = r.bottom - r.top;
-
-  // create the window
-  std::wstring wTitle = string_2_wstring(winTitle);
-  HWND hWnd = CreateWindowEx(0, className, wTitle.c_str(), winStyle, CW_USEDEFAULT, CW_USEDEFAULT, windowWidth, windowHeight, nullptr, nullptr, wc.hInstance, nullptr);
-  if (hWnd == nullptr)
-  {
-    msgBox("CreateWindowEx() failed");
-    return nullptr;
-  }
-
-  return hWnd;
-}
-
-void run(Tutorial& tutorial, const std::string& winTitle, uint32_t width, uint32_t height)
-{
-  gWinHandle = createWindow(winTitle, width, height);
-
-  // Calculate the client-rect area
-  RECT r;
-  GetClientRect(gWinHandle, &r);
-  width = r.right - r.left;
-  height = r.bottom - r.top;
-
-  // Call onLoad()
-  tutorial.onLoad(gWinHandle, width, height);
-
-  // Show the window
-  ShowWindow(gWinHandle, SW_SHOWNORMAL);
-
-  // Start the msgLoop()
-  msgLoop(tutorial);
-
-  // Cleanup
-  tutorial.onShutdown();
-  DestroyWindow(gWinHandle);
-}
-
-bool isDxrRender(const wchar_t* a_renderName) {
-  return !wcscmp(a_renderName, L"dxrExperimental");
-}
-};
-#define DXRONLY if (isDxrRender(a_renderName))
-#define NDXRONLY if (!isDxrRender(a_renderName))
-//////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void window_main_free_look(const wchar_t* a_libPath, const wchar_t* a_renderName, InitFuncType a_pInitFunc, DrawFuncType a_pDrawFunc)
-{
+  Framework::run(Tutorial07(), "DXR Experimental");
   /*
-  if (!wcscmp(a_renderName, L"dxrExperimental")) {
-    window_main_free_look_dxr(a_libPath, a_renderName);
-    return;
-  }*/
 
-  g_input.inputLibraryPath = a_libPath;
-  g_input.inputRenderName  = a_renderName;
+  Framework::run(Tutorial07(), "Tutorial 07 - Basic Shaders");
 
-  NDXRONLY
+  if (!glfwInit())
   {
-    if (!glfwInit())
-    {
-      fprintf(stderr, "Failed to initialize GLFW\n");
-      exit(EXIT_FAILURE);
-    }
+    fprintf(stderr, "Failed to initialize GLFW\n");
+    exit(EXIT_FAILURE);
+  }
+
+  //glfwSetErrorCallback(OnError);
+
+  glfwWindowHint(GLFW_DEPTH_BITS, 24);
+
+  if(!wcscmp(a_renderName, L"opengl32Forward") || !wcscmp(a_renderName, L"opengl32Deferred"))
+  {
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+  }
+
+  g_window = glfwCreateWindow(g_width, g_height, "Hydra GLFW Window", NULL, NULL);
+  if (!g_window)
+  {
+    fprintf(stderr, "Failed to open GLFW window\n");
+    glfwTerminate();
+    exit(EXIT_FAILURE);
+  }
+
+  // Set callback functions
   
-    glfwSetErrorCallback(OnError);
-
-    glfwWindowHint(GLFW_DEPTH_BITS, 24);
-
-    if(!wcscmp(a_renderName, L"opengl32Forward") || !wcscmp(a_renderName, L"opengl32Deferred"))
-    {
-      glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-      glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-      glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-      glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
-    }
-  }
-  Tutorial& tutorial = Tutorial07();
-  DXRONLY
-  {
-    gWinHandle = createWindow("Hydra DXRExperimental Window", g_width, g_height);
-  } 
-  else
-  {
-    g_window = glfwCreateWindow(g_width, g_width, "Hydra GLFW Window", NULL, NULL);
-    if (!g_window)
-    {
-      fprintf(stderr, "Failed to open GLFW window\n");
-      glfwTerminate();
-      exit(EXIT_FAILURE);
-    }
-  }
+  glfwSetFramebufferSizeCallback(g_window, reshape);
+  glfwSetKeyCallback(g_window, key);
+  glfwSetScrollCallback(g_window, OnScroll);
+  glfwSetMouseButtonCallback(g_window, OnMouseButtonClicked);
   
-  DXRONLY
-  {
-
-  }
-  else {
-    // Set callback functions
-    glfwSetFramebufferSizeCallback(g_window, reshape);
-    glfwSetKeyCallback(g_window, key);
-    glfwSetScrollCallback(g_window, OnScroll);
-    glfwSetMouseButtonCallback(g_window, OnMouseButtonClicked);
-
-    glfwMakeContextCurrent(g_window);
-    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-    //glfwSwapInterval(0);
-  }
-
-  NDXRONLY {
+  glfwMakeContextCurrent(g_window);
+  gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+  //glfwSwapInterval(0);
+  */
 /*
  * comment this for better performance when not debugging
  * */
-    if(!wcscmp(a_renderName, L"opengl32Forward") || !wcscmp(a_renderName, L"opengl32Deferred") || !wcscmp(a_renderName, L"opengl3Utility"))
+  /*
+  if(!wcscmp(a_renderName, L"opengl32Forward") || !wcscmp(a_renderName, L"opengl32Deferred") || !wcscmp(a_renderName, L"opengl3Utility"))
+  {
+    GLint flags = 0;
+    glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
     {
-      GLint flags = 0;
-      glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
-      if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
-      {
-        std::cout << "Initializing debug output" << std::endl;
-        glEnable(GL_DEBUG_OUTPUT);
-        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-        glDebugMessageCallback(glDebugOutput, nullptr);
-        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
-      }
+      std::cout << "Initializing debug output" << std::endl;
+      glEnable(GL_DEBUG_OUTPUT);
+      glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+      //glDebugMessageCallback(glDebugOutput, nullptr);
+      glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
     }
-  }
+  }*/
 /*
  *
  * */
 
-  DXRONLY 
-  {
-    RECT r;
-    GetClientRect(gWinHandle, &r);
-    g_width = r.right - r.left;
-    g_height = r.bottom - r.top;
-    ShowWindow(gWinHandle, SW_SHOWNORMAL);
-  }
-  else 
-  { 
-    glfwGetFramebufferSize(g_window, &g_width, &g_height);
-    glfwSetInputMode(g_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-  }
-  reshape(g_window, g_width, g_height);
+  //glfwGetFramebufferSize(g_window, &g_width, &g_height);
+  //glfwSetInputMode(g_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+  //reshape(g_window, g_width, g_height);
 
   // Parse command-line options
+  /*
   if (a_pInitFunc != nullptr)
     (*a_pInitFunc)();
   else
     Init();
-
-  DXRONLY
-  {
-    tutorial.onLoad(gWinHandle, g_width, g_height);
-  }
-
+    */
   // Main loop
   //
-  
-  DXRONLY
+  /*
+  double lastTime = glfwGetTime();
+  while (!glfwWindowShouldClose(g_window))
   {
-      MSG msg;
+    glfwPollEvents();
+
+    double thisTime = glfwGetTime();
+    const float diffTime = float(thisTime - lastTime);
+    lastTime = thisTime;
+
+    //Update(diffTime);
+    
+    if (a_pDrawFunc != nullptr)
+      (*a_pDrawFunc)();
+    else
+      Draw();
       
-      while (1)
-      {
-          if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-          {
-              if (msg.message == WM_QUIT) break;
-              TranslateMessage(&msg);
-              DispatchMessage(&msg);
-          }
-          else
-          {
-            Update(1.0f);
+    // Swap buffers
+    glfwSwapBuffers(g_window);
 
-            if (a_pDrawFunc != nullptr)
-              (*a_pDrawFunc)();
-            else
-              Draw();
-              tutorial.onFrameRender();
-          }
-      }
-  }
-  else 
-  {
-    double lastTime = glfwGetTime();
-    while (!glfwWindowShouldClose(g_window))
-    {
-      glfwPollEvents();
-
-      double thisTime = glfwGetTime();
-      const float diffTime = float(thisTime - lastTime);
-      lastTime = thisTime;
-
-      Update(diffTime);
-
-      if (a_pDrawFunc != nullptr)
-        (*a_pDrawFunc)();
-      else
-        Draw();
-
-      // Swap buffers
-      glfwSwapBuffers(g_window);
-
-      //exit program if escape key is pressed
-      if (glfwGetKey(g_window, GLFW_KEY_ESCAPE))
-        glfwSetWindowShouldClose(g_window, GL_TRUE);
-    }
-  }
-  DXRONLY
-  {
-    tutorial.onShutdown();
-    DestroyWindow(gWinHandle); 
-  }
-  else
-  {
-    // Terminate GLFW
-    glfwTerminate();
+    //exit program if escape key is pressed
+    if (glfwGetKey(g_window, GLFW_KEY_ESCAPE))
+      glfwSetWindowShouldClose(g_window, GL_TRUE);
   }
 
+  // Terminate GLFW
+  glfwTerminate();
+  */
 }
 

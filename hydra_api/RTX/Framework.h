@@ -46,7 +46,6 @@
 #include <vector>
 #include <array>
 
-using namespace glm;
 
 // Common DX12 definitions
 #define MAKE_SMART_COM_PTR(_a) _COM_SMARTPTR_TYPEDEF(_a, __uuidof(_a))

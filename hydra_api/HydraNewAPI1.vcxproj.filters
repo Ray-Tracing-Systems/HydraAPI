@@ -186,6 +186,9 @@
     <ClCompile Include="RTX\Framework.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="RenderDriverDXRExperimental.cpp">
+      <Filter>Source\RenderDrivers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LiteMath.h">
@@ -268,6 +271,9 @@
     </ClInclude>
     <ClInclude Include="RTX\Framework.h">
       <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderDriverDXRExperimental.h">
+      <Filter>Source\RenderDrivers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

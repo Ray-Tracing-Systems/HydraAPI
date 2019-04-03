@@ -172,6 +172,7 @@
     <ClCompile Include="OpenGLCoreProfileUtils.cpp" />
     <ClCompile Include="pugixml.cpp" />
     <ClCompile Include="RenderDriverDebugPrint.cpp" />
+    <ClCompile Include="RenderDriverDXRExperimental.cpp" />
     <ClCompile Include="RenderDriverHydraConnection.cpp" />
     <ClCompile Include="RenderDriverOpenGL1.cpp" />
     <ClCompile Include="RenderDriverOpenGL1Debug.cpp" />
@@ -210,6 +211,7 @@
     <ClInclude Include="OpenGLCoreProfileUtils.h" />
     <ClInclude Include="pugiconfig.hpp" />
     <ClInclude Include="pugixml.hpp" />
+    <ClInclude Include="RenderDriverDXRExperimental.h" />
     <ClInclude Include="RenderDriverOpenGL1.h" />
     <ClInclude Include="RenderDriverOpenGL32Deferred.h" />
     <ClInclude Include="RenderDriverOpenGL32Forward.h" />

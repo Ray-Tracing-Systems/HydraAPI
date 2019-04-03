@@ -86,8 +86,6 @@ void _hrDebugPrintVSGF(const wchar_t* a_fileNameIn, const wchar_t* a_fileNameOut
 
 void demo_01_plane_box();
 
-#include "../hydra_api/RTX/07-BasicShaders.h"
-
 int main(int argc, const char** argv)
 {
   hrInit(L"-copy_textures_to_local_folder 0 -local_data_path 1 -sort_indices 1 -compute_bboxes 1");
@@ -131,11 +129,9 @@ int main(int argc, const char** argv)
   
   try
   {
-    Framework::run(Tutorial07(), "Tutorial 07 - Basic Shaders");
-
     //GEO_TESTS::test_001_mesh_from_memory();
     //demo_01_plane_box();
-    //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_31", L"opengl1");
+    window_main_free_look(L"tests/test_41", L"dxrExperimental");
     
     //run_all_api_tests();
     //run_all_geo_tests();

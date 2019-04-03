@@ -29,6 +29,9 @@
 #include <locale>
 #include <codecvt>
 
+#include "../../main/Timer.h"
+#include "../../main/Camera.h"
+
 namespace
 {
     HWND gWinHandle = nullptr;
@@ -50,6 +53,8 @@ namespace
             return DefWindowProc(hwnd, msg, wParam, lParam);
         }
     }
+
+
 
     HWND createWindow(const std::string& winTitle, uint32_t& width, uint32_t& height)
     {
@@ -147,7 +152,7 @@ void Framework::run(Tutorial& tutorial, const std::string& winTitle, uint32_t wi
     GetClientRect(gWinHandle, &r);
     width = r.right - r.left;
     height = r.bottom - r.top;
-
+    
     // Call onLoad()
     tutorial.onLoad(gWinHandle, width, height);
     

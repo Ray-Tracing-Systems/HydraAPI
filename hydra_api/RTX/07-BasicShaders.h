@@ -45,7 +45,7 @@ private:
     ID3D12Device5Ptr mpDevice;
     ID3D12CommandQueuePtr mpCmdQueue;
     IDXGISwapChain3Ptr mpSwapChain;
-    uvec2 mSwapChainSize;
+    glm::uvec2 mSwapChainSize;
     ID3D12GraphicsCommandList4Ptr mpCmdList;
     ID3D12FencePtr mpFence;
     HANDLE mFenceEvent;

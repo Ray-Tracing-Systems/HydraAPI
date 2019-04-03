@@ -353,6 +353,7 @@ protected:
   HR_INFO_CALLBACK m_pInfoCallBack;
 };
 
+IHRRenderDriver* CreateDXRExperimental_RenderDriver();
 IHRRenderDriver* CreateOpenGL1_RenderDriver();
 IHRRenderDriver* CreateOpenGL1Debug_RenderDriver();
 IHRRenderDriver* CreateOpenGL1_DelayedLoad_RenderDriver(bool a_canLoadMeshes);
