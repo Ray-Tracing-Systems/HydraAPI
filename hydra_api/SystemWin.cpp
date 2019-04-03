@@ -124,3 +124,15 @@ void hr_unlock_system_mutex(HRSystemMutex* a_mutex)
 
   ReleaseMutex(a_mutex->mutex);
 }
+
+#include <fstream>
+
+void hr_ifstream_open(std::ifstream& a_stream, const wchar_t* a_fileName)
+{
+  a_stream.open(a_fileName, std::ios::binary);
+}
+
+void hr_ofstream_open(std::ofstream& a_stream, const wchar_t* a_fileName)
+{
+  a_stream.open(a_fileName, std::ios::binary);
+}

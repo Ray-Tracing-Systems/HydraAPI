@@ -206,13 +206,8 @@ protected:
 
   void ReadVSGFHeader(const wchar_t* a_fileName)
   {
-  #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
-    std::wstring s1(a_fileName);
-    std::string  s2(s1.begin(), s1.end());
-    std::ifstream fin(s2.c_str(), std::ios::binary);
-  #elif defined WIN32
-    std::ifstream fin(a_fileName.c_str(), std::ios::binary);
-  #endif
+    std::ifstream fin;
+    hr_ifstream_open(fin, a_fileName);
 
     HydraGeomData::Header header;
     fin.read((char*)&header, sizeof(HydraGeomData::Header));

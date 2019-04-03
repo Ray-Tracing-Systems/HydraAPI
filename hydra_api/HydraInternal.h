@@ -347,13 +347,15 @@ std::wstring ChunkName(const ChunkPointer& a_chunk);
 #endif
   
   void hr_copy_file(const wchar_t* a_file1, const wchar_t* a_file2); //#TODO: implement this on Linux!!!
+  
+  void hr_ifstream_open(std::ifstream& a_stream, const wchar_t* a_fileName);
+  void hr_ofstream_open( std::ofstream& a_stream, const wchar_t* a_fileName);
 
-
-struct HRSystemMutex;
-HRSystemMutex* hr_create_system_mutex(const char* a_mutexName);
-void hr_free_system_mutex(HRSystemMutex*& a_mutex);
-bool hr_lock_system_mutex(HRSystemMutex* a_mutex, int a_msToWait = 1000);
-void hr_unlock_system_mutex(HRSystemMutex* a_mutex);
+  struct HRSystemMutex;
+  HRSystemMutex* hr_create_system_mutex(const char* a_mutexName);
+  void hr_free_system_mutex(HRSystemMutex*& a_mutex);
+  bool hr_lock_system_mutex(HRSystemMutex* a_mutex, int a_msToWait = 1000);
+  void hr_unlock_system_mutex(HRSystemMutex* a_mutex);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -625,13 +625,10 @@ void ChunkPointer::SwapToDisk()
   }
   //else
   //{
-  #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
-    std::wstring s1(name);
-    std::string s2(s1.begin(), s1.end());
-    std::ofstream fout(s2.c_str(), std::ios::binary);
-  #elif defined WIN32
-    std::ofstream fout(name.c_str(), std::ios::binary);
-  #endif
+  
+    std::ofstream fout;
+    hr_ofstream_open(fout, name.c_str());
+    
     fout.write(pVB->m_dataHalfCurr + localAddress, sizeInBytes);
     fout.close();
   //}

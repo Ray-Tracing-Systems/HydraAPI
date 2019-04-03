@@ -169,13 +169,9 @@ void hrFBISaveToFile(HRFBIRef a_image, const wchar_t* a_fileName, float a_gamma)
     
     if (inFileName.find(L".image4f") != std::wstring::npos) //#TODO: check normal way check of file extension
     {
-#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
-      std::wstring s1(a_fileName);
-      std::string  s2(s1.begin(), s1.end());
-      std::ofstream fout(s2.c_str(), std::ios::binary);
-#elif defined WIN32
-      std::ofstream fout(a_fileName, std::ios::binary);
-#endif
+      std::ofstream fout;
+      hr_ofstream_open(fout, a_fileName);
+      
       int wh[2] = { image.pHDRImage->width(), image.pHDRImage->height() };
       fout.write((const char*)wh, sizeof(wh));
       fout.write((const char*)fdata, wh[0]*wh[1]*sizeof(float));
@@ -219,14 +215,9 @@ void hrFBILoadFromFile(HRFBIRef a_image, const wchar_t* a_fileName, int a_desire
     }
     else
     {
-      #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
-      std::wstring s1(a_fileName);
-      std::string  s2(s1.begin(), s1.end());
-      std::ifstream fout(s2.c_str(), std::ios::binary);
-      #elif defined WIN32
-            std::ifstream fout(a_fileName, std::ios::binary);
-      #endif
-
+      std::ifstream fout;
+      hr_ifstream_open(fout, a_fileName);
+      
       if (!fout.is_open())
       {
         HrPrint(HR_SEVERITY_WARNING, L"[hrFBILoadFromFile(2)]: can't load image file = ", inFileName);

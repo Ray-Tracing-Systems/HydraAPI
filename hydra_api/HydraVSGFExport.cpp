@@ -389,13 +389,8 @@ size_t HR_SaveVSGFCompressed(int a_objId, const void* vsgfData, size_t a_vsgfSiz
   
   // (1) open file
   //
-  #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
-  std::wstring s1(a_outfileName);
-  std::string  s2(s1.begin(), s1.end());
-  std::ofstream fout(s2.c_str(), std::ios::binary);
-  #elif defined WIN32
-  std::ofstream fout(a_outfileName.c_str(), std::ios::binary);
-  #endif
+  std::ofstream fout;
+  hr_ofstream_open(fout, a_outfileName);
   
   // (2) put vsgf header
   //
@@ -447,4 +442,44 @@ size_t HR_SaveVSGFCompressed(int a_objId, const void* vsgfData, size_t a_vsgfSiz
   fout.write((char*)&h2, sizeof(HydraGeomData::HeaderC));
   
   return totalFileSize;
+}
+
+
+void HR_LoadVSGFCompressedBothHeaders(std::ifstream& fin,
+                                      std::vector<HRBatchInfo>& a_outBatchList, float a_boxMin[3], float a_boxMax[3])
+{
+  //#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) // #TODO: refactor this shit finally!
+  //std::wstring s1(a_inFileName);
+  //std::string  s2(s1.begin(), s1.end());
+  //std::ifstream fin(s2.c_str(), std::ios::binary);
+  //#elif defined WIN32
+  //std::ifstream fin(a_inFileName, std::ios::binary);
+  //#endif
+  
+  HydraGeomData::Header  h1;
+  HydraGeomData::HeaderC h2;
+  
+  fin.read((char*)&h1, sizeof(HydraGeomData::Header));
+  fin.read((char*)&h2, sizeof(HydraGeomData::HeaderC));
+  
+  for(int i=0;i<3;i++)
+  {
+    a_boxMin[i] = h2.boxMin[i];
+    a_boxMax[i] = h2.boxMax[i];
+  }
+  
+  a_outBatchList.resize(h2.batchListArraySize);
+  
+  fin.read((char*)a_outBatchList.data(), sizeof(HRBatchInfo)*a_outBatchList.size());
+}
+
+
+HydraGeomData HR_LoadVSGFCompressedData(std::ifstream& fin, const HydraGeomData::Header& h1, const HydraGeomData::HeaderC& h2,
+                                        std::vector<int>& dataBuffer)
+{
+  HydraGeomData data;
+  
+  
+  
+  return data;
 }

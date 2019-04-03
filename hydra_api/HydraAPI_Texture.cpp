@@ -143,14 +143,9 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, int
     }
   }
   /////////////////////////////////////////////////////////////////////////////////////////////////
-
-#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
-  std::wstring s1(a_fileName);
-  std::string  s2(s1.begin(), s1.end());
-  std::ifstream testFile(s2.c_str());
-#elif defined WIN32
-  std::ifstream testFile(a_fileName);
-#endif
+  
+  std::ifstream testFile;
+  hr_ifstream_open(testFile, a_fileName);
 
   if (!testFile.good())
   {

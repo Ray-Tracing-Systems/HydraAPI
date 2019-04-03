@@ -66,13 +66,9 @@ bool RD_OGL1_Plain_DelayedLoad::UpdateImageFromFile(int32_t a_texId, const wchar
 
   if (fname2.find(L".image4ub") != std::wstring::npos)
   {
-#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
-    std::wstring s1(a_fileName);
-    std::string  s2(s1.begin(), s1.end());
-    std::ifstream fin(s2.c_str(), std::ios::binary);
-#elif defined WIN32
-    std::ifstream fin(a_fileName, std::ios::binary);
-#endif
+    std::ifstream fin;
+    hr_ifstream_open(fin, a_fileName);
+    
     if (fin.is_open())
     {
       int32_t wh[2];
@@ -232,13 +228,10 @@ bool RD_OGL1_Plain_DelayedLoad2::UpdateMeshFromFile(int32_t a_meshId, pugi::xml_
   char* dataPtr = tempBuffer.data();
 
   const std::wstring path = m_libPath + std::wstring(L"/") + a_meshNode.attribute(L"loc").as_string();
-#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
-  std::wstring s1(path);
-  std::string  s2(s1.begin(), s1.end());
-  std::ifstream fin(s2.c_str(), std::ios::binary);
-#elif defined WIN32
-  std::ifstream fin(path.c_str(), std::ios::binary);
-#endif
+  
+  std::ifstream fin;
+  hr_ifstream_open(fin, path.c_str());
+  
   fin.read(dataPtr, sizeInBytes);
 
   HRMeshDriverInput input;
