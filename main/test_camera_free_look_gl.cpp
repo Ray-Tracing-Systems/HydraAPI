@@ -8,7 +8,6 @@
 #include "../hydra_api/HydraAPI.h"
 #include "../hydra_api/HydraXMLHelpers.h"
 #include "tests.h"
-#include "test_camera_free_look_dxr.h"
 
 #include "input.h"
 #include "Camera.h"

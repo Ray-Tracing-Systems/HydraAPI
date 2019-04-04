@@ -2,10 +2,10 @@
 #pragma once
 
 
+#include "../hydra_api/RTX/Framework.h"
+
 #include "HydraRenderDriverAPI.h"
 #include "OpenGLCoreProfileUtils.h"
-
-#include "../hydra_api/RTX/07-BasicShaders.h"
 
 using namespace HydraLiteMath;
 using namespace GL_RENDER_DRIVER_UTILS;
@@ -68,5 +68,64 @@ protected:
   int   m_width;
   int   m_height;
 
-  Tutorial07 tutorial;
+  void initDXR(HWND winHandle, uint32_t winWidth, uint32_t winHeight);
+  uint32_t beginFrame();
+  void endFrame(uint32_t rtvIndex);
+  HWND mHwnd = nullptr;
+  ID3D12Device5Ptr mpDevice;
+  ID3D12CommandQueuePtr mpCmdQueue;
+  IDXGISwapChain3Ptr mpSwapChain;
+  glm::uvec2 mSwapChainSize;
+  ID3D12GraphicsCommandList4Ptr mpCmdList;
+  ID3D12FencePtr mpFence;
+  HANDLE mFenceEvent;
+  uint64_t mFenceValue = 0;
+
+  struct
+  {
+    ID3D12CommandAllocatorPtr pCmdAllocator;
+    ID3D12ResourcePtr pSwapChainBuffer;
+    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle;
+  } mFrameObjects[kDefaultSwapChainBuffers];
+
+
+  // Heap data
+  struct HeapData
+  {
+    ID3D12DescriptorHeapPtr pHeap;
+    uint32_t usedEntries = 0;
+  };
+  HeapData mRtvHeap;
+  static const uint32_t kRtvHeapSize = 3;
+
+  //////////////////////////////////////////////////////////////////////////
+  // Tutorial 03
+  //////////////////////////////////////////////////////////////////////////
+  void createAccelerationStructures();
+  ID3D12ResourcePtr mpVertexBuffer;
+  ID3D12ResourcePtr mpTopLevelAS;
+  ID3D12ResourcePtr mpBottomLevelAS;
+  uint64_t mTlasSize = 0;
+
+  //////////////////////////////////////////////////////////////////////////
+  // Tutorial 04
+  //////////////////////////////////////////////////////////////////////////
+  void createRtPipelineState();
+  ID3D12StateObjectPtr mpPipelineState;
+  ID3D12RootSignaturePtr mpEmptyRootSig;
+
+  //////////////////////////////////////////////////////////////////////////
+  // Tutorial 05
+  //////////////////////////////////////////////////////////////////////////
+  void createShaderTable();
+  ID3D12ResourcePtr mpShaderTable;
+  uint32_t mShaderTableEntrySize = 0;
+
+  //////////////////////////////////////////////////////////////////////////
+  // Tutorial 06
+  //////////////////////////////////////////////////////////////////////////
+  void createShaderResources();
+  ID3D12ResourcePtr mpOutputResource;
+  ID3D12DescriptorHeapPtr mpSrvUavHeap;
+  static const uint32_t kSrvUavHeapSize = 2;
 };

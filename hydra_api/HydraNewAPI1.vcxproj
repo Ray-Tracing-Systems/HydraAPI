@@ -186,7 +186,6 @@
     <ClCompile Include="RenderDriverOpenGL32Deferred.cpp" />
     <ClCompile Include="RenderDriverOpenGL32Forward.cpp" />
     <ClCompile Include="RenderDriverOpenGL3_Utility.cpp" />
-    <ClCompile Include="RTX\07-BasicShaders.cpp" />
     <ClCompile Include="RTX\Framework.cpp" />
     <ClCompile Include="ssemath.cpp" />
     <ClCompile Include="SystemWin.cpp" />
@@ -218,7 +217,6 @@
     <ClInclude Include="RenderDriverOpenGL32Deferred.h" />
     <ClInclude Include="RenderDriverOpenGL32Forward.h" />
     <ClInclude Include="RenderDriverOpenGL3_Utility.h" />
-    <ClInclude Include="RTX\07-BasicShaders.h" />
     <ClInclude Include="RTX\Framework.h" />
     <ClInclude Include="ssemath.h" />
     <ClInclude Include="xxhash.h" />
