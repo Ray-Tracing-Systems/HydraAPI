@@ -322,6 +322,7 @@ void HydraGeomData::read(const std::wstring& a_fileName)
 }
 
 #include "../corto/corto.h"
+#include "LiteMath.h"
 
 size_t HydraGeomData::writeCompressed(std::ostream& a_out, const std::vector<HRBatchInfo>& a_batchesList) const
 {
@@ -329,7 +330,6 @@ size_t HydraGeomData::writeCompressed(std::ostream& a_out, const std::vector<HRB
   //
   std::vector<float> positions3(verticesNum*3);
   std::vector<float> normals3  (verticesNum*3);
-  std::vector<float> tangents3 (verticesNum*3);
   
   for(int i=0;i<verticesNum;i++)
   {
@@ -340,15 +340,11 @@ size_t HydraGeomData::writeCompressed(std::ostream& a_out, const std::vector<HRB
     normals3[i*3+0]   = m_normals[i*4+0];
     normals3[i*3+1]   = m_normals[i*4+1];
     normals3[i*3+2]   = m_normals[i*4+2];
-  
-    tangents3[i*3+0]  = m_tangents[i*4+0];
-    tangents3[i*3+1]  = m_tangents[i*4+1];
-    tangents3[i*3+2]  = m_tangents[i*4+2];
   }
   
   const int   uv_bits    = 12;
   const int   norm_bits  = 10;
-  auto* normalAttrs      = new crt::NormalAttr(norm_bits);
+  //auto* normalAttrs      = new crt::NormalAttr(norm_bits);
   
   crt::Encoder encoder(verticesNum, indicesNum/3);
   {
@@ -356,12 +352,10 @@ size_t HydraGeomData::writeCompressed(std::ostream& a_out, const std::vector<HRB
     encoder.addUvs(m_texcoords, pow(2, -uv_bits));
     encoder.addNormals(normals3.data(), norm_bits, crt::NormalAttr::ESTIMATED);
     
-    normalAttrs->format     = crt::VertexAttribute::FLOAT;
-    normalAttrs->prediction = 0;
+    //normalAttrs->format     = crt::VertexAttribute::FLOAT;
+    //normalAttrs->prediction = 0;
     
-    encoder.addAttribute("tangent", (char*)tangents3.data(), normalAttrs);
-    
-    for(auto& batch : a_batchesList) // preserve groups by save material indices per triangle
+    for(auto& batch : a_batchesList) // preserve groups to save material indices per triangle
       encoder.addGroup(batch.triEnd);
   }
   encoder.encode();
@@ -376,6 +370,13 @@ size_t HydraGeomData::writeCompressed(std::ostream& a_out, const std::vector<HRB
   return size_t(compressed_size);
 }
 
+using HydraLiteMath::float4;
+using HydraLiteMath::float2;
+
+void HR_ComputeTangentSpaceSimple(const int     vertexCount, const int     triangleCount, const uint32_t* triIndices,
+                                  const float4* verticesPos, const float4* verticesNorm, const float2* vertTexCoord,
+                                  float4* verticesTang);
+
 void HydraGeomData::readCompressed(std::istream& a_input, size_t a_compressedSize)
 {
   std::vector<char> dataTemp(a_compressedSize);
@@ -383,7 +384,6 @@ void HydraGeomData::readCompressed(std::istream& a_input, size_t a_compressedSiz
 
   std::vector<float> positions3(verticesNum*3);
   std::vector<float> normals3  (verticesNum*3);
-  std::vector<float> tangents3 (verticesNum*3);
 
   crt::Decoder decoder(a_compressedSize, (const unsigned char*)dataTemp.data());
   {
@@ -391,7 +391,6 @@ void HydraGeomData::readCompressed(std::istream& a_input, size_t a_compressedSiz
     decoder.setIndex((uint32_t*)m_triVertIndices);
     decoder.setUvs(const_cast<float*>(m_texcoords));
     decoder.setNormals(normals3.data());
-    decoder.setAttribute("tangent", (char*)tangents3.data(), crt::VertexAttribute::FLOAT);
   }
   decoder.decode();
 
@@ -410,13 +409,12 @@ void HydraGeomData::readCompressed(std::istream& a_input, size_t a_compressedSiz
     normals[i*4+1]   = normals3[i*3+1];
     normals[i*4+2]   = normals3[i*3+2];
     normals[i*4+3]   = 0.0f;
-  
-    tangents[i*4+0]   = tangents3[i*3+0];
-    tangents[i*4+1]   = tangents3[i*3+1];
-    tangents[i*4+2]   = tangents3[i*3+2];
-    tangents[i*4+3]   = 0.0f;
   }
-
+  
+  HR_ComputeTangentSpaceSimple(verticesNum, indicesNum/3, m_triVertIndices,
+                               (float4*)m_positions, (float4*)m_normals, (float2*)m_texcoords,
+                               (float4*)tangents);
+  
 }
 
 

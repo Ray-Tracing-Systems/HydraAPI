@@ -153,13 +153,13 @@ int main(int argc, const char** argv)
     ////_hrDebugPrintVSGF(L"data/meshes/teapot.vsgf",    L"/home/frol/temp/teapot1.txt");
     ////_hrDebugPrintVSGF(L"data/meshes/teapot2.vsgf",   L"/home/frol/temp/teapot2.txt");
 
-    //test46_light_geom_rect();
-    //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_46", L"opengl1Debug");
+    test46_light_geom_rect();
+    window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_46", L"opengl1Debug");
   
-    _hrCompressMesh  (L"/home/frol/temp/original.vsgf",    L"/home/frol/temp/compressed.vsgfc");
-    _hrDecompressMesh(L"/home/frol/temp/compressed.vsgfc", L"/home/frol/temp/decompressed.vsgf");
-    _hrDebugPrintVSGF(L"/home/frol/temp/original.vsgf",    L"/home/frol/temp/original.txt");
-    _hrDebugPrintVSGF(L"/home/frol/temp/decompressed.vsgf",L"/home/frol/temp/decompressed.txt");
+    //_hrCompressMesh  (L"/home/frol/temp/original.vsgf",    L"/home/frol/temp/compressed.vsgfc");
+    //_hrDecompressMesh(L"/home/frol/temp/compressed.vsgfc", L"/home/frol/temp/decompressed.vsgf");
+    //_hrDebugPrintVSGF(L"/home/frol/temp/original.vsgf",    L"/home/frol/temp/original.txt");
+    //_hrDebugPrintVSGF(L"/home/frol/temp/decompressed.vsgf",L"/home/frol/temp/decompressed.txt");
 
     //test82_proc_texture();
     //test93_proc_tex_recursive();

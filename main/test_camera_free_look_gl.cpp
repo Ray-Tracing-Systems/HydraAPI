@@ -242,7 +242,7 @@ static void Draw(void)
 
     settingsNode.force_child(L"draw_solid").text()    = 1;
     settingsNode.force_child(L"draw_wire").text()     = 1;
-    settingsNode.force_child(L"draw_normals").text()  = 0;
+    settingsNode.force_child(L"draw_normals").text()  = 1;
     settingsNode.force_child(L"draw_tangents").text() = 0;
     settingsNode.force_child(L"draw_axis").text()     = 0;
     settingsNode.force_child(L"draw_length").text()   = 1.0f;
