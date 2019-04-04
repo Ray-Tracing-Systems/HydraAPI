@@ -53,6 +53,38 @@
 
 #endif
 
+
+
+/*
+#include <map>
+#include <any>
+
+using std::any;
+using std::string;
+using std::map;
+using std::any_cast;
+
+map<string, any> &GetDataBase() {
+  static map<string, any> dataBase;
+  return dataBase;
+}
+
+template<typename T>
+void setGlobalVar(string name, T o) {
+  any a = o;
+  int p = GetDataBase().size();
+
+  GetDataBase()[name] = a;
+  p = GetDataBase().size();
+}
+
+template<typename T>
+T getGlobalVar(string name) {
+  int p = GetDataBase().size();
+  return any_cast<T>(GetDataBase().at(name));
+}
+*/
+
 /**
 \brief Information about total current numbers of all objects inside API in it's current state 
 

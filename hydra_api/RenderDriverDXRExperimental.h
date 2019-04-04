@@ -5,6 +5,7 @@
 #include "HydraRenderDriverAPI.h"
 #include "OpenGLCoreProfileUtils.h"
 
+#include "../hydra_api/RTX/07-BasicShaders.h"
 
 using namespace HydraLiteMath;
 using namespace GL_RENDER_DRIVER_UTILS;
@@ -67,4 +68,5 @@ protected:
   int   m_width;
   int   m_height;
 
+  Tutorial07 tutorial;
 };

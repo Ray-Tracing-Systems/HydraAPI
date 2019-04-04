@@ -4,6 +4,8 @@ using namespace HydraLiteMath;
 
 #include <iostream>
 
+extern HWND mainWindowHWND;
+
 RD_DXR_Experimental::RD_DXR_Experimental() {
 
 }
@@ -11,11 +13,18 @@ RD_DXR_Experimental::RD_DXR_Experimental() {
 void RD_DXR_Experimental::ClearAll()
 {
   printf("ClearAll\n\n");
+  tutorial.onShutdown();
 }
 
 HRDriverAllocInfo RD_DXR_Experimental::AllocAll(HRDriverAllocInfo a_info)
 {
   printf("AllocAll\n\n");
+  RECT r;
+  GetClientRect(mainWindowHWND, &r);
+  int g_width = r.right - r.left;
+  int g_height = r.bottom - r.top;
+
+  tutorial.onLoad(mainWindowHWND, g_width, g_height);
 
   return a_info;
 }
@@ -78,8 +87,7 @@ bool RD_DXR_Experimental::UpdateCamera(pugi::xml_node a_camNode)
 {
   if (a_camNode == nullptr)
     return true;
-
-
+  
   printf("UpdateCamera\n");
 
   return true;
@@ -87,6 +95,7 @@ bool RD_DXR_Experimental::UpdateCamera(pugi::xml_node a_camNode)
 
 bool RD_DXR_Experimental::UpdateSettings(pugi::xml_node a_settingsNode)
 {
+  printf("UpdateSettings\n");
   if (a_settingsNode.child(L"width") != nullptr)
     m_width = a_settingsNode.child(L"width").text().as_int();
 
@@ -131,6 +140,7 @@ void RD_DXR_Experimental::EndScene()
 
 void RD_DXR_Experimental::Draw()
 {
+  tutorial.onFrameRender();
   printf("Draw\n");
 }
 

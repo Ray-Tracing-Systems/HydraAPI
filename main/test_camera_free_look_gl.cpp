@@ -17,7 +17,6 @@
 #include "../hydra_api/OpenGLCoreProfileUtils.h"
 
 #include "../hydra_api/RTX/Framework.h"
-#include "../hydra_api/RTX/07-BasicShaders.h"
 
 #include <locale>
 #include <codecvt>
@@ -42,6 +41,9 @@ int   g_height = 1024;
 int   g_ssao = 1;
 int   g_lightgeo = 0;
 static int g_filling = 0;
+
+
+HWND mainWindowHWND;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -545,14 +547,14 @@ HWND createWindow(const std::string winTitle, uint32_t width, uint32_t height)
 
   // create the window
   std::wstring wTitle = string_2_wstring(winTitle);
-  HWND hWnd = CreateWindowEx(0, className, wTitle.c_str(), winStyle, CW_USEDEFAULT, CW_USEDEFAULT, windowWidth, windowHeight, nullptr, nullptr, wc.hInstance, nullptr);
-  if (hWnd == nullptr)
+  mainWindowHWND = CreateWindowEx(0, className, wTitle.c_str(), winStyle, CW_USEDEFAULT, CW_USEDEFAULT, windowWidth, windowHeight, nullptr, nullptr, wc.hInstance, nullptr);
+  if (mainWindowHWND == nullptr)
   {
     msgBox("CreateWindowEx() failed");
     return nullptr;
   }
 
-  return hWnd;
+  return mainWindowHWND;
 }
 
 void run(Tutorial& tutorial, const std::string& winTitle, uint32_t width, uint32_t height)
@@ -618,7 +620,6 @@ void window_main_free_look(const wchar_t* a_libPath, const wchar_t* a_renderName
       glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
     }
   }
-  Tutorial& tutorial = Tutorial07();
   DXRONLY
   {
     gWinHandle = createWindow("Hydra DXRExperimental Window", g_width, g_height);
@@ -693,11 +694,6 @@ void window_main_free_look(const wchar_t* a_libPath, const wchar_t* a_renderName
   else
     Init();
 
-  DXRONLY
-  {
-    tutorial.onLoad(gWinHandle, g_width, g_height);
-  }
-
   // Main loop
   //
   
@@ -719,9 +715,9 @@ void window_main_free_look(const wchar_t* a_libPath, const wchar_t* a_renderName
 
             if (a_pDrawFunc != nullptr)
               (*a_pDrawFunc)();
-            else
+            else {
               Draw();
-              tutorial.onFrameRender();
+            }
           }
       }
   }
@@ -753,7 +749,6 @@ void window_main_free_look(const wchar_t* a_libPath, const wchar_t* a_renderName
   }
   DXRONLY
   {
-    tutorial.onShutdown();
     DestroyWindow(gWinHandle); 
   }
   else
