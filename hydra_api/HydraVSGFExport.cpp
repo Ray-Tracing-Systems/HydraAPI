@@ -4,6 +4,8 @@
 #include <sstream>
 #include <cassert>
 
+std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndices);
+
 HydraGeomData::HydraGeomData()
 {
   m_ownMemory = false;
@@ -321,7 +323,7 @@ void HydraGeomData::read(const std::wstring& a_fileName)
 
 #include "../corto/corto.h"
 
-size_t HydraGeomData::writeCompressed(std::ostream& a_out) const
+size_t HydraGeomData::writeCompressed(std::ostream& a_out, const std::vector<HRBatchInfo>& a_batchesList) const
 {
   // convert positions to float3 due to corto does not understand float4 input for positions by default
   //
@@ -358,6 +360,9 @@ size_t HydraGeomData::writeCompressed(std::ostream& a_out) const
     normalAttrs->prediction = 0;
     
     encoder.addAttribute("tangent", (char*)tangents3.data(), normalAttrs);
+    
+    for(auto& batch : a_batchesList) // preserve groups by save material indices per triangle
+      encoder.addGroup(batch.triEnd);
   }
   encoder.encode();
   
@@ -382,7 +387,7 @@ void HydraGeomData::readCompressed(std::istream& a_input, size_t a_compressedSiz
 
   crt::Decoder decoder(a_compressedSize, (const unsigned char*)dataTemp.data());
   {
-    decoder.setPositions(positions3.data()); // vertex_quantization_step
+    decoder.setPositions(positions3.data());
     decoder.setIndex((uint32_t*)m_triVertIndices);
     decoder.setUvs(const_cast<float*>(m_texcoords));
     decoder.setNormals(normals3.data());
@@ -429,8 +434,7 @@ VSGFOffsets CalcOffsets(int numVert, int numInd)
   return res;
 }
 
-#include "HydraRenderDriverAPI.h"
-std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndices);
+
 
 #include "HydraObjectManager.h"   // #TODO: remove this
 #include "vfloat4_x64.h"
@@ -443,7 +447,7 @@ BBox CalcBoundingBox4f(const float* in_array, const uint32_t a_vertexNumber)
   cvex::vfloat4 boxMax = {res.x_max, res.x_max, res.x_max, 0};
   cvex::vfloat4 boxMin = {res.x_min, res.x_min, res.x_min, 0};
   
-  for(uint32_t i=0; i < a_vertexNumber; i++)
+  for(uint32_t i=0; i < a_vertexNumber; i++) // #TODO: can opt via loop vectorisation
   {
     const cvex::vfloat4 vpos = cvex::load_u(in_array + i*4);
     boxMin = cvex::min(boxMin, vpos);
@@ -512,7 +516,7 @@ size_t HR_SaveVSGFCompressed(const HydraGeomData& data, const wchar_t* a_outfile
   
   // (6) compress mesh via corto lib
   //
-  auto compressedBytes = data.writeCompressed(fout);
+  auto compressedBytes = data.writeCompressed(fout,matDrawList);
   
   size_t totalFileSize = sizeof(HydraGeomData::Header)  +
                          sizeof(HydraGeomData::HeaderC) +
@@ -568,7 +572,6 @@ HydraGeomData HR_LoadVSGFCompressedData(const wchar_t* a_fileName, std::vector<i
 
   HR_LoadVSGFCompressedBothHeaders(fin,
                                    batchList, h1, h2);
-
 
   dataBuffer.resize(h1.fileSizeInBytes / sizeof(int) + 1);
   char* p = (char*)dataBuffer.data();
