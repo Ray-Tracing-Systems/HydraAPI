@@ -220,6 +220,8 @@ static void Draw(void)
 #endif
   //const float DEG_TO_RAD = float(M_PI) / 180.0f;
 
+
+
   hrCameraOpen(camRef, HR_OPEN_EXISTING);
   {
     xml_node camNode = hrCameraParamNode(camRef);
@@ -249,35 +251,7 @@ static void Draw(void)
   }
   hrRenderClose(renderRef);
 
-
   hrCommit(scnRef, renderRef, camRef);
-
-
-  //HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
-  //
-  //if (info.haveUpdateFB && !g_input.enableOpenGL1)
-  //{
-  //  glViewport(0, 0, 1024, 768);
-  //  std::vector<int32_t> image(1024 * 768);
-  //
-  //  hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-  //
-  //  glFlush();
-  //  glDisable(GL_TEXTURE_2D);
-  //  glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-  //}
-
-  if (!g_input.enableOpenGL1)
-  {
-    glViewport(0, 0, g_width, g_height);
-    std::vector<int32_t> image(g_width * g_height);
-  
-    hrRenderGetFrameBufferLDR1i(renderRef, g_width, g_height, &image[0]);
-  
-    glFlush();
-    glDisable(GL_TEXTURE_2D);
-    glDrawPixels(g_width, g_height, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-  }
 
   // count fps 
   //
@@ -291,12 +265,10 @@ static void Draw(void)
     std::stringstream out; out.precision(4);
     g_FPS = (10.0f / timer.getElapsed());
     out << "FPS = " << g_FPS;
-    glfwSetWindowTitle(g_window, out.str().c_str());
     timer.start();
   }
-#else
-  glfwSetWindowTitle(g_window, "test");
 #endif
+
   frameCounter++;
 }
 
@@ -506,6 +478,8 @@ void window_main_free_look(const wchar_t* a_libPath, const wchar_t* a_renderName
   else
     Init();
 
+  uint64_t frameId = 0;
+
   // Main loop
   //
   double lastTime = glfwGetTime();
@@ -524,12 +498,16 @@ void window_main_free_look(const wchar_t* a_libPath, const wchar_t* a_renderName
     else
       Draw();
 
+    //std::cout << "frameId = " << frameId << std::endl;
+
     // Swap buffers
     glfwSwapBuffers(g_window);
 
     //exit program if escape key is pressed
     if (glfwGetKey(g_window, GLFW_KEY_ESCAPE))
       glfwSetWindowShouldClose(g_window, GL_TRUE);
+
+    frameId++;
   }
 
   // Terminate GLFW
