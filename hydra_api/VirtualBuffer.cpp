@@ -617,12 +617,12 @@ void ChunkPointer::SwapToDisk()
   
   const std::wstring name = ChunkName(*this);
   
-  if(saveCompressed && type == CHUNK_TYPE_VSGF)
-  {
-    const std::wstring name2 = name + L"c";
-    //std::wcout << L"save chunk " << name2.c_str() << " to compressed format" << std::endl;
-    HR_SaveVSGFCompressed(sysObjectId, pVB->m_dataHalfCurr + localAddress, sizeInBytes, name2.c_str());
-  }
+  //if(saveCompressed && type == CHUNK_TYPE_VSGF)
+  //{
+  //  const std::wstring name2 = name + L"c";
+  //  //std::wcout << L"save chunk " << name2.c_str() << " to compressed format" << std::endl;
+  //  HR_SaveVSGFCompressed(pVB->m_dataHalfCurr + localAddress, sizeInBytes, name2.c_str());
+  //}
   //else
   //{
   

@@ -283,6 +283,13 @@ void _hrDebugPrintMesh(const HRMeshDriverInput& a_input, const wchar_t* a_fileNa
     fout << "  " << a_input.norm4f[i * 4 + 0] << ", " << a_input.norm4f[i * 4 + 1] << ", " << a_input.norm4f[i * 4 + 2] << ", " << a_input.norm4f[i * 4 + 3] << std::endl;
 
   fout << "]" << std::endl << std::endl;
+  
+  fout << "vtang  = [ " << std::endl;
+  
+  for (int i = 0; i < a_input.vertNum; i++)
+    fout << "  " << a_input.tan4f[i * 4 + 0] << ", " << a_input.tan4f[i * 4 + 1] << ", " << a_input.tan4f[i * 4 + 2] << ", " << a_input.tan4f[i * 4 + 3] << std::endl;
+  
+  fout << "]" << std::endl << std::endl;
 
 
   fout << "vtxcoord  = [ " << std::endl;

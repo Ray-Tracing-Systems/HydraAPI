@@ -26,7 +26,6 @@ HydraGeomData::HydraGeomData()
   flags           = 0;
 }
 
-
 HydraGeomData::~HydraGeomData()
 {
   freeMemIfNeeded();
@@ -39,13 +38,13 @@ void HydraGeomData::freeMemIfNeeded()
   m_data = nullptr;
 }
 
-uint32_t HydraGeomData::getVerticesNumber() const { return verticesNum; }
+uint32_t     HydraGeomData::getVerticesNumber()             const { return verticesNum; }
 const float* HydraGeomData::getVertexPositionsFloat4Array() const { return (const float*)m_positions; }
 const float* HydraGeomData::getVertexNormalsFloat4Array()   const { return (const float*)m_normals;   }
 const float* HydraGeomData::getVertexTangentsFloat4Array()  const { return (const float*)m_tangents;  }
 const float* HydraGeomData::getVertexTexcoordFloat2Array()  const { return (const float*)m_texcoords; }
 
-uint32_t HydraGeomData::getIndicesNumber() const { return indicesNum; }
+uint32_t HydraGeomData::getIndicesNumber()                        const { return indicesNum; }
 const uint32_t* HydraGeomData::getTriangleVertexIndicesArray()    const { return m_triVertIndices; }
 const uint32_t* HydraGeomData::getTriangleMaterialIndicesArray()  const { return m_triMaterialIndices; }
 
@@ -64,7 +63,7 @@ void HydraGeomData::setData(uint32_t a_vertNum, const float* a_pos, const float*
 
   m_texcoords = a_texCoord;
 
-  m_triVertIndices = a_triVertIndices;
+  m_triVertIndices     = a_triVertIndices;
   m_triMaterialIndices = a_triMatIndices;
 }
 
@@ -322,27 +321,47 @@ void HydraGeomData::read(const std::wstring& a_fileName)
 
 #include "../corto/corto.h"
 
-size_t HydraGeomData::writeCompressed(std::ostream& a_out)
+size_t HydraGeomData::writeCompressed(std::ostream& a_out) const
 {
   // convert positions to float3 due to corto does not understand float4 input for positions by default
   //
   std::vector<float> positions3(verticesNum*3);
+  std::vector<float> normals3  (verticesNum*3);
+  std::vector<float> tangents3 (verticesNum*3);
   
   for(int i=0;i<verticesNum;i++)
   {
     positions3[i*3+0] = m_positions[i*4+0];
     positions3[i*3+1] = m_positions[i*4+1];
     positions3[i*3+2] = m_positions[i*4+2];
+  
+    normals3[i*3+0]   = m_normals[i*4+0];
+    normals3[i*3+1]   = m_normals[i*4+1];
+    normals3[i*3+2]   = m_normals[i*4+2];
+  
+    tangents3[i*3+0]  = m_tangents[i*4+0];
+    tangents3[i*3+1]  = m_tangents[i*4+1];
+    tangents3[i*3+2]  = m_tangents[i*4+2];
   }
+  
+  const int   uv_bits    = 12;
+  const int   norm_bits  = 10;
+  auto* normalAttrs      = new crt::NormalAttr(norm_bits);
   
   crt::Encoder encoder(verticesNum, indicesNum/3);
   {
     encoder.addPositions(positions3.data(), m_triVertIndices); // vertex_quantization_step
-    encoder.addUvs(m_texcoords);
-    encoder.addAttribute("normal",  (const char *) m_normals,  crt::VertexAttribute::FLOAT, 4, 1.0f);
-    encoder.addAttribute("tangent", (const char *) m_tangents, crt::VertexAttribute::FLOAT, 4, 1.0f);
+    encoder.addUvs(m_texcoords, pow(2, -uv_bits));
+    encoder.addNormals(normals3.data(), norm_bits, crt::NormalAttr::ESTIMATED);
+    
+    normalAttrs->format     = crt::VertexAttribute::FLOAT;
+    normalAttrs->prediction = 0;
+    
+    encoder.addAttribute("tangent", (char*)tangents3.data(), normalAttrs);
   }
   encoder.encode();
+  
+  //delete normalAttrs; normalAttrs = nullptr;
   
   const auto*    compressed_data = encoder.stream.data();
   const uint32_t compressed_size = encoder.stream.size();
@@ -358,24 +377,39 @@ void HydraGeomData::readCompressed(std::istream& a_input, size_t a_compressedSiz
   a_input.read(dataTemp.data(), a_compressedSize);
 
   std::vector<float> positions3(verticesNum*3);
+  std::vector<float> normals3  (verticesNum*3);
+  std::vector<float> tangents3 (verticesNum*3);
 
   crt::Decoder decoder(a_compressedSize, (const unsigned char*)dataTemp.data());
   {
     decoder.setPositions(positions3.data()); // vertex_quantization_step
     decoder.setIndex((uint32_t*)m_triVertIndices);
     decoder.setUvs(const_cast<float*>(m_texcoords));
-    decoder.setAttribute("normal",  (char*)m_normals,   crt::VertexAttribute::FLOAT);
-    decoder.setAttribute("tangent", (char *)m_tangents, crt::VertexAttribute::FLOAT);
+    decoder.setNormals(normals3.data());
+    decoder.setAttribute("tangent", (char*)tangents3.data(), crt::VertexAttribute::FLOAT);
   }
   decoder.decode();
 
   float* positions = const_cast<float*>(m_positions);
+  float* normals   = const_cast<float*>(m_normals);
+  float* tangents  = const_cast<float*>(m_tangents);
 
   for(int i=0;i<verticesNum;i++)
   {
     positions[i*4+0] = positions3[i*3+0];
     positions[i*4+1] = positions3[i*3+1];
     positions[i*4+2] = positions3[i*3+2];
+    positions[i*4+3] = 1.0f;
+  
+    normals[i*4+0]   = normals3[i*3+0];
+    normals[i*4+1]   = normals3[i*3+1];
+    normals[i*4+2]   = normals3[i*3+2];
+    normals[i*4+3]   = 0.0f;
+  
+    tangents[i*4+0]   = tangents3[i*3+0];
+    tangents[i*4+1]   = tangents3[i*3+1];
+    tangents[i*4+2]   = tangents3[i*3+2];
+    tangents[i*4+3]   = 0.0f;
   }
 
 }
@@ -395,26 +429,46 @@ VSGFOffsets CalcOffsets(int numVert, int numInd)
   return res;
 }
 
+#include "HydraRenderDriverAPI.h"
+std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndices);
 
-#include "HydraObjectManager.h"      // #TODO: remove this
-extern HRObjectManager g_objManager; // #TODO: remove this
+#include "HydraObjectManager.h"   // #TODO: remove this
+#include "vfloat4_x64.h"
 
 
-size_t HR_SaveVSGFCompressed(int a_objId, const void* vsgfData, size_t a_vsgfSize, const wchar_t* a_outfileName)
+BBox CalcBoundingBox4f(const float* in_array, const uint32_t a_vertexNumber)
 {
-  HydraGeomData::Header* pHeader = (HydraGeomData::Header*)vsgfData;
+  BBox res;
   
-  const VSGFOffsets offsets = CalcOffsets(pHeader->verticesNum, pHeader->indicesNum);
+  cvex::vfloat4 boxMax = {res.x_max, res.x_max, res.x_max, 0};
+  cvex::vfloat4 boxMin = {res.x_min, res.x_min, res.x_min, 0};
   
+  for(uint32_t i=0; i < a_vertexNumber; i++)
+  {
+    const cvex::vfloat4 vpos = cvex::load_u(in_array + i*4);
+    boxMin = cvex::min(boxMin, vpos);
+    boxMax = cvex::max(boxMax, vpos);
+  }
   
-  char* p = (char*)vsgfData;
+  float boxMin2[4], boxMax2[4];
+  {
+    cvex::store_u(boxMin2, boxMin);
+    cvex::store_u(boxMax2, boxMax);
+  }
   
-  HydraGeomData data;
+  res.x_min = boxMin2[0];
+  res.y_min = boxMin2[1];
+  res.z_min = boxMin2[2];
   
-  data.setData(uint32_t(pHeader->verticesNum), (float*)   (p + offsets.offsetPos),    (float*)(p + offsets.offsetNorm),
-                                               (float*)   (p + offsets.offsetTang),   (float*)(p + offsets.offsetTexc),
-               uint32_t(pHeader->indicesNum),  (uint32_t*)(p + offsets.offsetInd), (uint32_t*)(p + offsets.offsetMind));
+  res.x_max = boxMax2[0];
+  res.y_max = boxMax2[1];
+  res.z_max = boxMax2[2];
   
+  return res;
+}
+
+size_t HR_SaveVSGFCompressed(const HydraGeomData& data, const wchar_t* a_outfileName)
+{
   // (1) open file
   //
   std::ofstream fout;
@@ -422,17 +476,17 @@ size_t HR_SaveVSGFCompressed(int a_objId, const void* vsgfData, size_t a_vsgfSiz
   
   // (2) put vsgf header
   //
-  fout.write((char*)pHeader, sizeof(HydraGeomData::Header));
+  const auto h1 = data.getHeader();
+  fout.write((char*)&h1, sizeof(HydraGeomData::Header));
   
   // (3) put header2 (bbox, compressed file size in bytes that we have to overwrite later, and other)
   //
-  auto& meshObj = g_objManager.scnData.meshes[a_objId];
+  const uint32_t* pInd    = (const uint32_t*)data.getTriangleMaterialIndicesArray();
+  const auto      indSize = data.getIndicesNumber()/3;
   
-  assert(meshObj.pImpl != nullptr);
+  const auto& matDrawList = FormMatDrawListRLE(std::vector<uint32_t>(pInd, pInd+indSize));
+  const auto& bbox        = CalcBoundingBox4f(data.getVertexPositionsFloat4Array(), data.getVerticesNumber());
   
-  const auto& matDrawList = meshObj.pImpl->MList();   // #TODO: form this list from material indices
-  const auto& bbox        = meshObj.pImpl->getBBox(); // #TODO: recompute bounding box
-
   //const std::string xmlNodeData = "";
   
   HydraGeomData::HeaderC h2;
@@ -473,6 +527,23 @@ size_t HR_SaveVSGFCompressed(int a_objId, const void* vsgfData, size_t a_vsgfSiz
   return totalFileSize;
 }
 
+size_t HR_SaveVSGFCompressed(const void* vsgfData, size_t a_vsgfSize, const wchar_t* a_outfileName)
+{
+  HydraGeomData::Header* pHeader = (HydraGeomData::Header*)vsgfData;
+  
+  const VSGFOffsets offsets = CalcOffsets(pHeader->verticesNum, pHeader->indicesNum);
+  
+  char* p = (char*)vsgfData;
+  
+  HydraGeomData data;
+  
+  data.setData(uint32_t(pHeader->verticesNum), (float*)   (p + offsets.offsetPos),    (float*)(p + offsets.offsetNorm),
+                                               (float*)   (p + offsets.offsetTang),   (float*)(p + offsets.offsetTexc),
+               uint32_t(pHeader->indicesNum),  (uint32_t*)(p + offsets.offsetInd), (uint32_t*)(p + offsets.offsetMind));
+  
+  return HR_SaveVSGFCompressed(data, a_outfileName);
+}
+
 
 void HR_LoadVSGFCompressedBothHeaders(std::ifstream& fin,
                                       std::vector<HRBatchInfo>& a_outBatchList, HydraGeomData::Header& h1, HydraGeomData::HeaderC& h2)
@@ -510,12 +581,28 @@ HydraGeomData HR_LoadVSGFCompressedData(const wchar_t* a_fileName, std::vector<i
   data.setData(uint32_t(h1.verticesNum), (float*)   (p + offsets.offsetPos),    (float*)(p + offsets.offsetNorm),
                                          (float*)   (p + offsets.offsetTang),   (float*)(p + offsets.offsetTexc),
                uint32_t(h1.indicesNum),  (uint32_t*)(p + offsets.offsetInd), (uint32_t*)(p + offsets.offsetMind));
-
+  
   data.readCompressed(fin, h2.compressedSizeInBytes);
+  
+  int* pMaterialsId = (int*)(p + offsets.offsetMind);
 
+  for(int batchId = 0; batchId < batchList.size(); batchId++)
+  {
+    const auto& batch = batchList[batchId];
+    for(int i=batch.triBegin; i < batch.triEnd; i++)
+      pMaterialsId[i] = batch.matId;
+  }
+  
   return data;
 }
 
+void _hrCompressMesh(const std::wstring& a_inPath, const std::wstring& a_outPath)
+{
+  HydraGeomData data;
+  data.read(a_inPath.c_str());
+  
+  HR_SaveVSGFCompressed(data, a_outPath.c_str());
+}
 
 void _hrDecompressMesh(const std::wstring& a_path, const std::wstring& a_newPath)
 {

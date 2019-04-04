@@ -6,7 +6,6 @@
 #include <cstring>
 #include <cstdint>
 
-
 struct HydraGeomData
 {
   HydraGeomData();
@@ -16,7 +15,7 @@ struct HydraGeomData
   //
   void write(const std::string& a_fileName);
   void write(std::ostream& a_out);
-  size_t writeCompressed(std::ostream& a_out);
+  size_t writeCompressed(std::ostream& a_out) const;
 
   void read(const std::wstring& a_fileName);
   void read(const std::string& a_fileName);
@@ -69,6 +68,19 @@ struct HydraGeomData
     uint32_t dummy;
   };
 
+  char* data() { return m_data; }
+  
+  Header getHeader() const
+  {
+    Header h;
+    h.fileSizeInBytes = fileSizeInBytes;
+    h.verticesNum     = verticesNum;
+    h.indicesNum      = indicesNum;
+    h.materialsNum    = materialsNum;
+    h.flags           = flags;
+    return h;
+  }
+  
 protected:
 
   enum GEOM_FLAGS{ HAS_TANGENT = 1, 
@@ -107,7 +119,6 @@ protected:
   
   // HashMapI                      m_matIndexByName;
   // std::vector<std::string>      m_matNameByIndex;
-
 };
 
 
@@ -123,6 +134,4 @@ struct VSGFOffsets
 
 VSGFOffsets CalcOffsets(int numVert, int numInd);
 
-
 size_t HR_SaveVSGFCompressed(const void* vsgfData, size_t a_vsgfSize, const wchar_t* a_outfileName);
-
