@@ -82,7 +82,6 @@ protected:
 
 };
 
-
 struct VSGFOffsets
 {
   uint64_t offsetPos ;

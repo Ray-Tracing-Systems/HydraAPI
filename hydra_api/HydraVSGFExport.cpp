@@ -135,7 +135,7 @@ void HydraGeomData::writeToMemory(char* a_dataToWrite)
   char* ptr     = a_dataToWrite;
   Header header = m_header;
 
-  memcpy(ptr, &header,     sizeof(Header));              ptr += sizeof(Header);
+  memcpy(ptr, &header,     sizeof(Header));                       ptr += sizeof(Header);
   memcpy(ptr, m_positions, sizeof(float)*4*m_header.verticesNum); ptr += sizeof(float) * 4 * m_header.verticesNum;
 
   if(!(m_header.flags & HAS_NO_NORMALS))
@@ -150,12 +150,9 @@ void HydraGeomData::writeToMemory(char* a_dataToWrite)
     ptr += sizeof(float) * 4 * m_header.verticesNum;
   }
 
-  memcpy(ptr, m_texcoords, sizeof(float) * 2 * m_header.verticesNum); ptr += sizeof(float) * 2 * m_header.verticesNum;
-
-  const int mindNum = (m_header.indicesNum / 3);
-
-  memcpy(ptr, m_triVertIndices, sizeof(uint32_t)*m_header.indicesNum);   ptr += sizeof(uint32_t)*m_header.indicesNum;
-  memcpy(ptr, m_triMaterialIndices, sizeof(uint32_t)*mindNum);  ptr += sizeof(uint32_t)*mindNum;
+  memcpy(ptr, m_texcoords,          sizeof(float)*2* m_header.verticesNum);      ptr += sizeof(float) * 2 * m_header.verticesNum;
+  memcpy(ptr, m_triVertIndices,     sizeof(uint32_t)*m_header.indicesNum);       ptr += sizeof(uint32_t)*m_header.indicesNum;
+  memcpy(ptr, m_triMaterialIndices, sizeof(uint32_t)*(m_header.indicesNum / 3)); ptr += sizeof(uint32_t)*(m_header.indicesNum / 3);
 }
 
 
