@@ -1373,9 +1373,9 @@ bool test46_light_geom_rect()
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  HRMeshRef teapotRef   = hrMeshCreateFromFileDL(L"data/meshes/teapot2.vsgf", false);
+  //HRMeshRef teapotRef   = hrMeshCreateFromFileDL(L"data/meshes/teapot2.vsgf", false);
   //HRMeshRef teapotRef   = hrMeshCreateFromFileDL(L"/home/frol/temp/original.vsgf", false);
-  //HRMeshRef teapotRef   = hrMeshCreateFromFileDL(L"/home/frol/temp/decompressed.vsgf", false);
+  HRMeshRef teapotRef   = hrMeshCreateFromFileDL(L"/home/frol/temp/decompressed.vsgf", false);
 
   HRMeshRef cubeOpenRef = hrMeshCreate(L"my_box");
   HRMeshRef planeRef    = hrMeshCreate(L"my_plane");

@@ -32,6 +32,8 @@ set(SOURCE_FILES
         HydraRenderDriverAPI.h
         HydraVSGFExport.cpp
         HydraVSGFExport.h
+        HydraVSGFCompress.h
+        HydraVSGFCompress.cpp
         HydraXMLHelpers.h
         HydraXMLVerify.cpp
         HydraXMLVerify.h
@@ -89,7 +91,7 @@ set(POST_PROC
         HydraPostProcessSpecial.h
         HydraPostProcessSpecial.cpp
         NonLocalMeans.cpp
-        )
+        HydraVSGFCompress.h HydraVSGFCompress.cpp)
 
 
 
