@@ -10,7 +10,6 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
-#include <complex>
 #include <set>
 #include <algorithm>
 
@@ -26,9 +25,6 @@ extern std::wstring      g_lastError;
 extern std::wstring      g_lastErrorCallerPlace;
 extern HR_ERROR_CALLBACK g_pErrorCallback;
 extern HRObjectManager   g_objManager;
-
-using std::isnan;
-using std::isinf;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1128,76 +1124,7 @@ void hrMeshComputeNormals(HRMeshRef a_mesh, const int indexNum, bool useFaceNorm
 
 void HR_ComputeTangentSpaceSimple(const int     vertexCount, const int     triangleCount, const uint32_t* triIndices,
                                   const float4* verticesPos, const float4* verticesNorm, const float2* vertTexCoord,
-                                  float4* verticesTang)
-{
-  
-  float4 *tan1 = new float4[vertexCount * 2];
-  float4 *tan2 = tan1 + vertexCount;
-  memset(tan1, 0, vertexCount * sizeof(float4) * 2);
-  
-  const float epsDiv = 1.0e25f;
-  
-  for (auto a = 0; a < triangleCount; a++)
-  {
-    auto i1 = triIndices[3 * a + 0];
-    auto i2 = triIndices[3 * a + 1];
-    auto i3 = triIndices[3 * a + 2];
-    
-    const float4& v1 = verticesPos[i1];
-    const float4& v2 = verticesPos[i2];
-    const float4& v3 = verticesPos[i3];
-    
-    const float2& w1 = vertTexCoord[i1];
-    const float2& w2 = vertTexCoord[i2];
-    const float2& w3 = vertTexCoord[i3];
-    
-    const float x1 = v2.x - v1.x;
-    const float x2 = v3.x - v1.x;
-    const float y1 = v2.y - v1.y;
-    const float y2 = v3.y - v1.y;
-    const float z1 = v2.z - v1.z;
-    const float z2 = v3.z - v1.z;
-    
-    const float s1 = w2.x - w1.x;
-    const float s2 = w3.x - w1.x;
-    const float t1 = w2.y - w1.y;
-    const float t2 = w3.y - w1.y;
-    
-    const float r = 1.0f / (s1 * t2 - s2 * t1);
-    
-    const float4 sdir((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r, 1);
-    const float4 tdir((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r, 1);
-    
-    tan1[i1] += sdir;
-    tan1[i2] += sdir;
-    tan1[i3] += sdir;
-    
-    tan2[i1] += tdir;
-    tan2[i2] += tdir;
-    tan2[i3] += tdir;
-  }
-  
-  for (long a = 0; a < vertexCount; a++)
-  {
-    const float4& n = verticesNorm[a];
-    const float4& t = tan1[a];
-    
-    const float3 n1 = to_float3(n);
-    const float3 t1 = to_float3(t);
-    
-    // Gram-Schmidt orthogonalization
-    verticesTang[a] = to_float4(normalize(t1 - n1 * dot(n1, t1)), 0.0f); // #NOTE: overlow here is ok!
-    
-    verticesTang[a].x = isnan(verticesTang[a].x) || isinf(verticesTang[a].x) ? 0 : verticesTang[a].x;
-    verticesTang[a].y = isnan(verticesTang[a].y) || isinf(verticesTang[a].y) ? 0 : verticesTang[a].y;
-    verticesTang[a].z = isnan(verticesTang[a].z) || isinf(verticesTang[a].z) ? 0 : verticesTang[a].z;
-    
-    // Calculate handedness
-    verticesTang[a].w = (dot(cross(n1, t1), to_float3(tan2[a])) < 0.0f) ? -1.0f : 1.0f;
-  }
-  
-  delete[] tan1;
-}
+                                  float4* verticesTang);
 
 HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, int indexNum)
 {
@@ -1224,75 +1151,6 @@ HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, int indexNum)
   HR_ComputeTangentSpaceSimple(vertexCount, triangleCount, mesh.triIndices.data(),
                                verticesPos, verticesNorm, vertTexCoord,
                                verticesTang);
-  
-  /*
-  float4 *tan1 = new float4[vertexCount * 2];
-  float4 *tan2 = tan1 + vertexCount;
-  memset(tan1, 0, vertexCount * sizeof(float4) * 2);
-  
-  const float epsDiv = 1.0e25f;
-
-  for (auto a = 0; a < triangleCount; a++)
-  {
-    auto i1 = mesh.triIndices[3 * a + 0];
-    auto i2 = mesh.triIndices[3 * a + 1];
-    auto i3 = mesh.triIndices[3 * a + 2];
-
-    const float4& v1 = verticesPos[i1];
-    const float4& v2 = verticesPos[i2];
-    const float4& v3 = verticesPos[i3];
-
-    const float2& w1 = vertTexCoord[i1];
-    const float2& w2 = vertTexCoord[i2];
-    const float2& w3 = vertTexCoord[i3];
-
-    const float x1 = v2.x - v1.x;
-    const float x2 = v3.x - v1.x;
-    const float y1 = v2.y - v1.y;
-    const float y2 = v3.y - v1.y;
-    const float z1 = v2.z - v1.z;
-    const float z2 = v3.z - v1.z;
-
-    const float s1 = w2.x - w1.x;
-    const float s2 = w3.x - w1.x;
-    const float t1 = w2.y - w1.y;
-    const float t2 = w3.y - w1.y;
-
-    const float r = 1.0f / (s1 * t2 - s2 * t1);
-
-    const float4 sdir((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r, 1);
-    const float4 tdir((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r, 1);
-
-    tan1[i1] += sdir;
-    tan1[i2] += sdir;
-    tan1[i3] += sdir;
-
-    tan2[i1] += tdir;
-    tan2[i2] += tdir;
-    tan2[i3] += tdir;
-  }
-
-  for (long a = 0; a < vertexCount; a++)
-  {
-    const float4& n = verticesNorm[a];
-    const float4& t = tan1[a];
-
-    const float3 n1 = to_float3(n);
-    const float3 t1 = to_float3(t);
-
-    // Gram-Schmidt orthogonalization
-    verticesTang[a] = to_float4(normalize(t1 - n1 * dot(n1, t1)), 0.0f); // #NOTE: overlow here is ok!
-
-    verticesTang[a].x = isnan(verticesTang[a].x) || isinf(verticesTang[a].x) ? 0 : verticesTang[a].x;
-    verticesTang[a].y = isnan(verticesTang[a].y) || isinf(verticesTang[a].y) ? 0 : verticesTang[a].y;
-    verticesTang[a].z = isnan(verticesTang[a].z) || isinf(verticesTang[a].z) ? 0 : verticesTang[a].z;
-
-    // Calculate handedness
-    verticesTang[a].w = (dot(cross(n1, t1), to_float3(tan2[a])) < 0.0f) ? -1.0f : 1.0f;
-  }
-  
-  delete[] tan1;
-  */
 }
 
 

@@ -12,9 +12,7 @@ struct HydraGeomData
 {
   HydraGeomData();
   ~HydraGeomData();
-
-  //
-  //
+  
   void write(const std::string& a_fileName);
   void write(std::ostream& a_out);
   size_t writeCompressed(std::ostream& a_out, const std::vector<HRBatchInfo>& a_batchesList) const;
@@ -29,16 +27,12 @@ struct HydraGeomData
 
   // common vertex attributes
   //
-  uint32_t getVerticesNumber() const;
+  uint32_t     getVerticesNumber() const;
   const float* getVertexPositionsFloat4Array() const; 
   const float* getVertexNormalsFloat4Array()  const; 
   const float* getVertexTangentsFloat4Array()  const; 
   const float* getVertexTexcoordFloat2Array()  const; 
-
-  // advanced attributes, for various types of lightmaps
-  //
-  const float* getVertexLightmapTexcoordFloat2Array()  const; 
-  const float* getVertexSphericalHarmonicCoeffs()  const; 
+  
 
   // per triangle data
   //
@@ -71,17 +65,7 @@ struct HydraGeomData
   };
 
   char* data() { return m_data; }
-  
-  Header getHeader() const
-  {
-    Header h;
-    h.fileSizeInBytes = fileSizeInBytes;
-    h.verticesNum     = verticesNum;
-    h.indicesNum      = indicesNum;
-    h.materialsNum    = materialsNum;
-    h.flags           = flags;
-    return h;
-  }
+  Header getHeader() const { return m_header; }
   
 protected:
 
@@ -92,12 +76,7 @@ protected:
 
   // size info
   //
-  uint64_t fileSizeInBytes;
-  uint32_t verticesNum;
-  uint32_t indicesNum;
-  uint32_t materialsNum;
-  uint32_t flags;
-
+  Header m_header;
 
   //
   //
