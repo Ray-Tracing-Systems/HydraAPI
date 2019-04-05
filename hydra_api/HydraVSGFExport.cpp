@@ -252,7 +252,8 @@ void HydraGeomData::read(std::istream& a_input)
 
   m_triVertIndices     = (uint32_t*)ptr; ptr += sizeof(uint32_t)*m_header.indicesNum;
   m_triMaterialIndices = (uint32_t*)ptr; ptr += sizeof(uint32_t)*(m_header.indicesNum / 3);
-
+  
+  // #NOTE: enable if use ppc
   //convertLittleBigEndian((unsigned int*)m_positions, m_header.verticesNum*4);
   //if (!(m_header.flags & HAS_NO_NORMALS))
   //  convertLittleBigEndian((unsigned int*)m_normals, m_header.verticesNum*4);
@@ -266,18 +267,15 @@ void HydraGeomData::read(std::istream& a_input)
 void HydraGeomData::read(const std::string& a_fileName)
 {
   std::ifstream fin(a_fileName.c_str(), std::ios::binary);
-
   if (!fin.is_open())
     return;
 
   read(fin);
-
   fin.close();
 }
 
 void HydraGeomData::read(const std::wstring& a_fileName)
 {
-
 #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
   std::wstring s1(a_fileName);
   std::string  s2(s1.begin(), s1.end());
@@ -290,7 +288,6 @@ void HydraGeomData::read(const std::wstring& a_fileName)
     return;
 
   read(fin);
-
   fin.close();
 }
 
@@ -315,8 +312,8 @@ size_t HydraGeomData::writeCompressed(std::ostream& a_out, const std::vector<HRB
     normals3[i*3+2]   = m_normals[i*4+2];
   }
   
-  const int   uv_bits    = 12;
-  const int   norm_bits  = 10;
+  const int uv_bits   = 12;
+  const int norm_bits = 10;
   //auto* normalAttrs      = new crt::NormalAttr(norm_bits);
   
   crt::Encoder encoder(m_header.verticesNum, m_header.indicesNum/3);
@@ -332,12 +329,9 @@ size_t HydraGeomData::writeCompressed(std::ostream& a_out, const std::vector<HRB
   
   //delete normalAttrs; normalAttrs = nullptr;
   
-  const auto*    compressed_data = encoder.stream.data();
-  const uint32_t compressed_size = encoder.stream.size();
+  a_out.write((char*)encoder.stream.data(), encoder.stream.size());
   
-  a_out.write((char*)compressed_data, compressed_size);
-  
-  return size_t(compressed_size);
+  return encoder.stream.size();
 }
 
 using HydraLiteMath::float4;
@@ -384,7 +378,6 @@ void HydraGeomData::readCompressed(std::istream& a_input, size_t a_compressedSiz
   HR_ComputeTangentSpaceSimple(m_header.verticesNum, m_header.indicesNum/3, m_triVertIndices,
                                (float4*)m_positions, (float4*)m_normals, (float2*)m_texcoords,
                                (float4*)tangents);
-  
 }
 
 
@@ -571,7 +564,6 @@ void _hrCompressMesh(const std::wstring& a_inPath, const std::wstring& a_outPath
 {
   HydraGeomData data;
   data.read(a_inPath.c_str());
-  
   HR_SaveVSGFCompressed(data, a_outPath.c_str());
 }
 
@@ -579,7 +571,6 @@ void _hrDecompressMesh(const std::wstring& a_path, const std::wstring& a_newPath
 {
   std::vector<int> dataBuffer;
   HydraGeomData data = HR_LoadVSGFCompressedData(a_path.c_str(), dataBuffer);
-
   std::ofstream fout;
   hr_ofstream_open(fout, a_newPath.c_str());
   data.write(fout);

@@ -36,7 +36,7 @@ struct HydraGeomData
 
   // per triangle data
   //
-  uint32_t getIndicesNumber() const;                       // return 3*num_triangles
+  uint32_t        getIndicesNumber() const;                // return 3*num_triangles
   const uint32_t* getTriangleVertexIndicesArray() const;   // 3*num_triangles
   const uint32_t* getTriangleMaterialIndicesArray() const; // 1*num_triangles 
 
