@@ -7,6 +7,8 @@
 #include "HydraRenderDriverAPI.h"
 #include "OpenGLCoreProfileUtils.h"
 
+using namespace std;
+
 using namespace HydraLiteMath;
 using namespace GL_RENDER_DRIVER_UTILS;
 
@@ -101,7 +103,7 @@ protected:
   //////////////////////////////////////////////////////////////////////////
   // Tutorial 03
   //////////////////////////////////////////////////////////////////////////
-  void createAccelerationStructures();
+  void createAccelerationStructures(vector<vector<glm::vec3>> meshes);
   ID3D12ResourcePtr mpVertexBuffer;
   ID3D12ResourcePtr mpTopLevelAS;
   ID3D12ResourcePtr mpBottomLevelAS;

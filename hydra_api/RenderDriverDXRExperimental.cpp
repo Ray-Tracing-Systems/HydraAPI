@@ -6,7 +6,6 @@ using namespace HydraLiteMath;
 
 extern HWND mainWindowHWND;
 
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //                            Tutorial stuff
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -250,20 +249,13 @@ ID3D12ResourcePtr createBuffer(ID3D12Device5Ptr pDevice, uint64_t size, D3D12_RE
   return pBuffer;
 }
 
-ID3D12ResourcePtr createTriangleVB(ID3D12Device5Ptr pDevice)
+ID3D12ResourcePtr createTriangleVB(ID3D12Device5Ptr pDevice, const std::vector<glm::vec3> vertices)
 {
-  const glm::vec3 vertices[] =
-  {
-      glm::vec3(0,          1,  0),
-      glm::vec3(0.866f,  -0.5f, 0),
-      glm::vec3(-0.866f, -0.5f, 0),
-  };
-
   // For simplicity, we create the vertex buffer on the upload heap, but that's not required
-  ID3D12ResourcePtr pBuffer = createBuffer(pDevice, sizeof(vertices), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+  ID3D12ResourcePtr pBuffer = createBuffer(pDevice, vertices.size() * sizeof(glm::vec3), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
   uint8_t* pData;
   pBuffer->Map(0, nullptr, (void**)&pData);
-  memcpy(pData, vertices, sizeof(vertices));
+  memcpy(pData, vertices.data(), vertices.size() * sizeof(glm::vec3));
   pBuffer->Unmap(0, nullptr);
   return pBuffer;
 }
@@ -275,22 +267,26 @@ struct AccelerationStructureBuffers
   ID3D12ResourcePtr pInstanceDesc;    // Used only for top-level AS
 };
 
-AccelerationStructureBuffers createBottomLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pVB)
+AccelerationStructureBuffers createBottomLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, std::vector<std::pair<ID3D12ResourcePtr, size_t>> meshes)
 {
+  vector<D3D12_RAYTRACING_GEOMETRY_DESC> geomDescs;
   D3D12_RAYTRACING_GEOMETRY_DESC geomDesc = {};
-  geomDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
-  geomDesc.Triangles.VertexBuffer.StartAddress = pVB->GetGPUVirtualAddress();
-  geomDesc.Triangles.VertexBuffer.StrideInBytes = sizeof(glm::vec3);
-  geomDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
-  geomDesc.Triangles.VertexCount = 3;
-  geomDesc.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
+  for (auto mesh : meshes) {
+    geomDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
+    geomDesc.Triangles.VertexBuffer.StartAddress = mesh.first->GetGPUVirtualAddress();
+    geomDesc.Triangles.VertexBuffer.StrideInBytes = sizeof(glm::vec3);
+    geomDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
+    geomDesc.Triangles.VertexCount = mesh.second;
+    geomDesc.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
+    geomDescs.push_back(geomDesc);
+  }
 
   // Get the size requirements for the scratch and AS buffers
   D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
   inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
   inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_NONE;
-  inputs.NumDescs = 1;
-  inputs.pGeometryDescs = &geomDesc;
+  inputs.NumDescs = geomDescs.size();
+  inputs.pGeometryDescs = geomDescs.data();
   inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
 
   D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info = {};
@@ -324,7 +320,7 @@ AccelerationStructureBuffers createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12Gr
   D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
   inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
   inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_NONE;
-  inputs.NumDescs = 1;
+  inputs.NumDescs = 2;
   inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
 
   D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info;
@@ -371,10 +367,16 @@ AccelerationStructureBuffers createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12Gr
   return buffers;
 }
 
-void RD_DXR_Experimental::createAccelerationStructures()
+void RD_DXR_Experimental::createAccelerationStructures(vector<vector<glm::vec3>> meshes)
 {
-  mpVertexBuffer = createTriangleVB(mpDevice);
-  AccelerationStructureBuffers bottomLevelBuffers = createBottomLevelAS(mpDevice, mpCmdList, mpVertexBuffer);
+  std::vector<std::pair<ID3D12ResourcePtr, size_t>>  args;
+
+  for (auto m : meshes) {
+    ID3D12ResourcePtr mpVertexBuffer = createTriangleVB(mpDevice, m);
+    args.push_back(make_pair(mpVertexBuffer, m.size()));
+  }
+
+  AccelerationStructureBuffers bottomLevelBuffers = createBottomLevelAS(mpDevice, mpCmdList, args);
   AccelerationStructureBuffers topLevelBuffers = createTopLevelAS(mpDevice, mpCmdList, bottomLevelBuffers.pResult, mTlasSize);
 
   // The tutorial doesn't have any resource lifetime management, so we flush and sync here. This is not required by the DXR spec - you can submit the list whenever you like as long as you take care of the resources lifetime.
@@ -811,7 +813,26 @@ HRDriverAllocInfo RD_DXR_Experimental::AllocAll(HRDriverAllocInfo a_info)
   int g_height = r.bottom - r.top;
 
   initDXR(mainWindowHWND, g_width, g_height);        // Tutorial 02
-  createAccelerationStructures();                 // Tutorial 03
+
+  std::vector<glm::vec3> vertices =
+  {
+      glm::vec3(0.5, 0.5,  0) + glm::vec3(0,          1,  0),
+      glm::vec3(0.5, 0.5,  0) + glm::vec3(0.866f,  -0.5f, 0),
+      glm::vec3(0.5, 0.5,  0) + glm::vec3(-0.866f, -0.5f, 0),
+      glm::vec3(0.5, 1.5,  0) + glm::vec3(-0.866f, -0.5f, 0),
+  };
+
+  std::vector<glm::vec3> vertices2 =
+  {
+      glm::vec3(0,          1,  0),
+      glm::vec3(0.866f,  -0.5f, 0),
+      glm::vec3(-0.866f, -0.5f, 0),
+  };
+
+  vector<vector<glm::vec3>> meshes;
+  meshes.push_back(vertices);
+  meshes.push_back(vertices2);
+  createAccelerationStructures(meshes);                 // Tutorial 03
   createRtPipelineState();                        // Tutorial 04
   createShaderResources();                        // Tutorial 06. Need to do this before initializing the shader-table
   createShaderTable();                            // Tutorial 05
