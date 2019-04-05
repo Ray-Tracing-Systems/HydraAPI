@@ -814,29 +814,6 @@ HRDriverAllocInfo RD_DXR_Experimental::AllocAll(HRDriverAllocInfo a_info)
 
   initDXR(mainWindowHWND, g_width, g_height);        // Tutorial 02
 
-  std::vector<glm::vec3> vertices =
-  {
-      glm::vec3(0.5, 0.5,  0) + glm::vec3(0,          1,  0),
-      glm::vec3(0.5, 0.5,  0) + glm::vec3(0.866f,  -0.5f, 0),
-      glm::vec3(0.5, 0.5,  0) + glm::vec3(-0.866f, -0.5f, 0),
-      glm::vec3(0.5, 1.5,  0) + glm::vec3(-0.866f, -0.5f, 0),
-  };
-
-  std::vector<glm::vec3> vertices2 =
-  {
-      glm::vec3(0,          1,  0),
-      glm::vec3(0.866f,  -0.5f, 0),
-      glm::vec3(-0.866f, -0.5f, 0),
-  };
-
-  vector<vector<glm::vec3>> meshes;
-  meshes.push_back(vertices);
-  meshes.push_back(vertices2);
-  createAccelerationStructures(meshes);                 // Tutorial 03
-  createRtPipelineState();                        // Tutorial 04
-  createShaderResources();                        // Tutorial 06. Need to do this before initializing the shader-table
-  createShaderTable();                            // Tutorial 05
-
   return a_info;
 }
 
@@ -934,12 +911,36 @@ bool RD_DXR_Experimental::UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode
     return true;
   }
 
+  for (int32_t batchId = 0; batchId < a_listSize; batchId++)
+  {
+    HRBatchInfo batch = a_batchList[batchId];
+    const int drawElementsNum = batch.triEnd - batch.triBegin;
+
+    vector<glm::vec3> currMesh;
+
+    for (int triid = batch.triBegin; triid < batch.triBegin + drawElementsNum; triid++)
+    {
+      const int vInds[] = {
+        a_input.indices[triid * 3 + 0],
+        a_input.indices[triid * 3 + 1],
+        a_input.indices[triid * 3 + 2]
+      };
+      
+      for (auto vInd : vInds) {
+        currMesh.push_back(glm::vec3(a_input.pos4f[vInd * 4 + 0], a_input.pos4f[vInd * 4 + 1], a_input.pos4f[vInd * 4 + 2]));
+      }
+    }
+    MeshAttrib<glm::vec3> c;
+    c.data = currMesh;
+    sceneCoord.push_back(c);
+  }
   return true;
 }
 
 
 void RD_DXR_Experimental::BeginScene(pugi::xml_node a_sceneNode)
 {
+  sceneCoord.resize(0);
 
   printf("BeginScene\n");
 }
@@ -947,6 +948,34 @@ void RD_DXR_Experimental::BeginScene(pugi::xml_node a_sceneNode)
 void RD_DXR_Experimental::EndScene()
 {
   printf("EndScene\n");
+
+  /*std::vector<glm::vec3> vertices =
+  {
+      glm::vec3(0.5, 0.5,  0) + glm::vec3(0,          1,  0),
+      glm::vec3(0.5, 0.5,  0) + glm::vec3(0.866f,  -0.5f, 0),
+      glm::vec3(0.5, 0.5,  0) + glm::vec3(-0.866f, -0.5f, 0),
+      glm::vec3(0.5, 1.5,  0) + glm::vec3(-0.866f, -0.5f, 0),
+  };
+
+  std::vector<glm::vec3> vertices2 =
+  {
+      glm::vec3(0,          1,  0),
+      glm::vec3(0.866f,  -0.5f, 0),
+      glm::vec3(-0.866f, -0.5f, 0),
+  };*/
+
+  // @BUG Fix leaking and infinite handle creation
+  
+  vector<vector<glm::vec3>> meshes;
+
+  for (auto m : sceneCoord) {
+    meshes.push_back(m.data);
+  }
+  
+  createAccelerationStructures(meshes);                 // Tutorial 03
+  createRtPipelineState();                        // Tutorial 04
+  createShaderResources();                        // Tutorial 06. Need to do this before initializing the shader-table
+  createShaderTable();                            // Tutorial 05
 }
 
 void RD_DXR_Experimental::Draw()

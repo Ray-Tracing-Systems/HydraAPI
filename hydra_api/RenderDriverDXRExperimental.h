@@ -90,7 +90,6 @@ protected:
     D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle;
   } mFrameObjects[kDefaultSwapChainBuffers];
 
-
   // Heap data
   struct HeapData
   {
@@ -130,4 +129,11 @@ protected:
   ID3D12ResourcePtr mpOutputResource;
   ID3D12DescriptorHeapPtr mpSrvUavHeap;
   static const uint32_t kSrvUavHeapSize = 2;
+
+  template <typename T>
+  struct MeshAttrib {
+    vector<T> data;
+  };
+  
+  vector<MeshAttrib<glm::vec3>> sceneCoord;
 };
