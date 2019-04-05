@@ -253,14 +253,14 @@ void HydraGeomData::read(std::istream& a_input)
   m_triVertIndices     = (uint32_t*)ptr; ptr += sizeof(uint32_t)*m_header.indicesNum;
   m_triMaterialIndices = (uint32_t*)ptr; ptr += sizeof(uint32_t)*(m_header.indicesNum / 3);
 
-  convertLittleBigEndian((unsigned int*)m_positions, m_header.verticesNum*4);
-  if (!(m_header.flags & HAS_NO_NORMALS))
-    convertLittleBigEndian((unsigned int*)m_normals, m_header.verticesNum*4);
-  if (m_header.flags & HAS_TANGENT)
-    convertLittleBigEndian((unsigned int*)m_tangents, m_header.verticesNum*4);
-  convertLittleBigEndian((unsigned int*)m_texcoords, m_header.verticesNum*2);
-  convertLittleBigEndian((unsigned int*)m_triVertIndices, m_header.indicesNum);
-  convertLittleBigEndian((unsigned int*)m_triMaterialIndices, (m_header.indicesNum/3));
+  //convertLittleBigEndian((unsigned int*)m_positions, m_header.verticesNum*4);
+  //if (!(m_header.flags & HAS_NO_NORMALS))
+  //  convertLittleBigEndian((unsigned int*)m_normals, m_header.verticesNum*4);
+  //if (m_header.flags & HAS_TANGENT)
+  //  convertLittleBigEndian((unsigned int*)m_tangents, m_header.verticesNum*4);
+  //convertLittleBigEndian((unsigned int*)m_texcoords, m_header.verticesNum*2);
+  //convertLittleBigEndian((unsigned int*)m_triVertIndices, m_header.indicesNum);
+  //convertLittleBigEndian((unsigned int*)m_triMaterialIndices, (m_header.indicesNum/3));
 }
 
 void HydraGeomData::read(const std::string& a_fileName)
