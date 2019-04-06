@@ -255,6 +255,8 @@ protected:
       m_indNum      = header.indicesNum;
       m_sizeInBytes = header.fileSizeInBytes;
       m_chunkId     = size_t(-1);
+
+      //#TODO: read file names list;
     }
     else
     {

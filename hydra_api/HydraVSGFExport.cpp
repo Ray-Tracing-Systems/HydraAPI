@@ -50,8 +50,9 @@ const uint32_t* HydraGeomData::getTriangleMaterialIndicesArray()  const { return
 void HydraGeomData::setData(uint32_t a_vertNum, const float* a_pos, const float* a_norm, const float* a_tangent, const float* a_texCoord,
                             uint32_t a_indicesNum, const uint32_t* a_triVertIndices, const uint32_t* a_triMatIndices)
 {
-  m_header.verticesNum = a_vertNum;
-  m_header.indicesNum  = a_indicesNum;
+  m_header.verticesNum     = a_vertNum;
+  m_header.indicesNum      = a_indicesNum;
+  m_header.fileSizeInBytes = sizeInBytes();
 
   m_positions = a_pos;
   m_normals   = a_norm;

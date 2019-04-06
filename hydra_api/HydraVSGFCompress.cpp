@@ -255,8 +255,8 @@ HydraGeomData HR_LoadVSGFCompressedData(const wchar_t* a_fileName, std::vector<i
   const VSGFOffsets offsets = CalcOffsets(h1.verticesNum, h1.indicesNum);
 
   HydraGeomData data;
-  data.setData(uint32_t(h1.verticesNum), (float*)   (p + offsets.offsetPos),    (float*)(p + offsets.offsetNorm),
-               (float*)   (p + offsets.offsetTang),   (float*)(p + offsets.offsetTexc),
+  data.setData(uint32_t(h1.verticesNum), (float*)(p + offsets.offsetPos),  (float*)(p + offsets.offsetNorm),
+                                         (float*)(p + offsets.offsetTang), (float*)(p + offsets.offsetTexc),
                uint32_t(h1.indicesNum),  (uint32_t*)(p + offsets.offsetInd), (uint32_t*)(p + offsets.offsetMind));
 
   ReadCompressed(data, fin, h2.compressedSizeInBytes);

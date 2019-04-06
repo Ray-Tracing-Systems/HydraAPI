@@ -707,6 +707,12 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, const std::vector<HRBatchIn
   if(!fin.is_open())
     return;
 
+  // (1) check the case when we don't have tangents or normals ...
+  //
+
+  // (2) decompress if we have '.vsgfc' format
+  //
+
   fin.read(dataPtr, a_byteSize);
   fin.close();
 
@@ -730,13 +736,6 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, const std::vector<HRBatchIn
   input.triMatIndices = (int*)  (dataPtr + offsetMInd);
   input.allData       = dataPtr;
 
-  //if(a_batches.size() == 0)
-  //{
-  //  std::vector<uint32_t> matIndices((uint*)input.triMatIndices, (uint*)input.triMatIndices + input.triNum);
-  //  std::vector<HRBatchInfo> batches = FormMatDrawListRLE(matIndices);
-  //  a_pDriver->UpdateMesh(a_id, nodeXML, input, &batches[0], int32_t(batches.size()));
-  //}
-  //else
   a_pDriver->UpdateMesh(a_id, nodeXML, input, &a_batches[0], int32_t(a_batches.size()));
 }
 
