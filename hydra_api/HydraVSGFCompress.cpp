@@ -216,7 +216,7 @@ size_t HR_SaveVSGFCompressed(const HydraGeomData& data, const wchar_t* a_outfile
   return totalFileSize;
 }
 
-size_t HR_SaveVSGFCompressed(const void* vsgfData, size_t a_vsgfSize, const wchar_t* a_outfileName)
+size_t HR_SaveVSGFCompressed(const void* vsgfData, size_t a_vsgfSize, const wchar_t* a_outfileName, const char* a_customData, const int a_dataSize)
 {
   HydraGeomData::Header* pHeader = (HydraGeomData::Header*)vsgfData;
 
@@ -230,7 +230,7 @@ size_t HR_SaveVSGFCompressed(const void* vsgfData, size_t a_vsgfSize, const wcha
                (float*)   (p + offsets.offsetTang),   (float*)(p + offsets.offsetTexc),
                uint32_t(pHeader->indicesNum),  (uint32_t*)(p + offsets.offsetInd), (uint32_t*)(p + offsets.offsetMind));
 
-  return HR_SaveVSGFCompressed(data, a_outfileName, "", 0);
+  return HR_SaveVSGFCompressed(data, a_outfileName, a_customData, a_dataSize);
 }
 
 

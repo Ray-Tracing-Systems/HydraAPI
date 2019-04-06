@@ -809,7 +809,7 @@ struct HROpenedMeshInfo
 
 /**
 \brief get mesh info. You can't call this function if mesh is not open.
-\param a_pMesh - pointer to mesh
+\param a_meshRef - mesh reference
 \return  Information about opened mesh. 
 
 */
@@ -817,10 +817,26 @@ HAPI HROpenedMeshInfo  hrMeshGetInfo(HRMeshRef a_mesh);
 
 /**
 \brief get params node for mesh
-\param a_pMesh - pointer to mesh
+\param a_meshRef - mesh reference
 
 */
 HAPI pugi::xml_node    hrMeshParamNode(HRMeshRef a_meshRef);
+
+/**
+\brief immediately save current mesh to '.vsgf' file to specified path.
+\param a_meshRef  - mesh reference
+\param a_fileName - out file name; must end with '.vsgf'
+
+*/
+HAPI void              hrMeshSaveVSGF(HRMeshRef a_meshRef, const wchar_t* a_fileName);
+
+/**
+\brief immediately save current mesh to '.vsgfc' file (compressed vsgf)
+\param a_meshRef  - mesh reference
+\param a_fileName - out file name; must end with '.vsgfc'
+
+*/
+HAPI void              hrMeshSaveVSGFCompressed(HRMeshRef a_meshRef, const wchar_t* a_fileName);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

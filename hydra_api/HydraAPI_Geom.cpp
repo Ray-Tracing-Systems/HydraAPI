@@ -1186,3 +1186,115 @@ void _hrConvertOldVSGFMesh(const std::wstring& a_path, const std::wstring& a_new
   hr_copy_file(newFilePath.c_str(), a_newPath.c_str());
 }
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include "HydraVSGFCompress.h"
+
+std::string  ws2s(const std::wstring& s);
+std::wstring s2ws(const std::string& s);
+
+static inline std::wstring str_tail(const std::wstring& a_str, int a_tailSize)
+{
+  if(a_tailSize < a_str.size())
+    return a_str.substr(a_str.size() - a_tailSize);
+  else
+    return a_str;
+}
+
+HAPI void hrMeshSaveVSGF(HRMeshRef a_meshRef, const wchar_t* a_fileName)
+{
+  std::wstring inFileName(a_fileName);
+  std::wstring tail = str_tail(inFileName, 5);
+  if(tail != L".vsgf")
+  {
+    HrError(L"hrMeshSaveVSGF: bad file tail. Must be '.vsgf', but in fact it is ", tail.c_str());
+    return;
+  }
+
+  HRMesh* pMesh = g_objManager.PtrById(a_meshRef);
+  if (pMesh == nullptr)
+  {
+    HrError(L"hrMeshSaveVSGF: nullptr mesh input");
+    return;
+  }
+
+  if (pMesh->opened)
+  {
+    HrError(L"hrMeshSaveVSGF: mesh is opened. Close it please before save. meshId = ", a_meshRef.id);
+    return;
+  }
+
+  std::ofstream fout;
+  hr_ofstream_open(fout, a_fileName);
+  fout.write((const char*)pMesh->pImpl->GetData(), pMesh->pImpl->DataSizeInBytes());
+  fout.close();
+}
+
+
+void PrintMaterialListNames(std::ostream& strOut, HRMesh* pMesh)
+{
+  auto batchList = pMesh->pImpl->MList();
+
+  for(size_t i=0;i<batchList.size();i++)
+  {
+    int matId = batchList[i].matId;
+
+    if(matId < 0)
+    {
+      strOut << "undefined;";
+      continue;
+    }
+
+    HRMaterialRef matRef;
+    matRef.id = matId;
+
+    auto* pMaterial = g_objManager.PtrById(matRef);
+    if(pMaterial == nullptr)
+    {
+      strOut << "undefined;";
+      continue;
+    }
+
+    std::string matName = ws2s(pMaterial->name);
+    strOut << matName.c_str() << ";";
+  }
+}
+
+HAPI void hrMeshSaveVSGFCompressed(HRMeshRef a_meshRef, const wchar_t* a_fileName)
+{
+  std::wstring inFileName(a_fileName);
+  std::wstring tail = str_tail(inFileName, 6);
+  if(tail != L".vsgfc")
+  {
+    HrError(L"hrMeshSaveVSGFCompressed: bad file tail. Must be '.vsgfc', but in fact it is ", tail.c_str());
+    return;
+  }
+
+  HRMesh* pMesh = g_objManager.PtrById(a_meshRef);
+  if (pMesh == nullptr)
+  {
+    HrError(L"hrMeshSaveVSGFCompressed: nullptr mesh input");
+    return;
+  }
+
+  if (pMesh->opened)
+  {
+    HrError(L"hrMeshSaveVSGFCompressed: mesh is opened. Close it please before save; meshId = ", a_meshRef.id);
+    return;
+  }
+
+  if(pMesh->pImpl == nullptr)
+  {
+    HrError(L"hrMeshSaveVSGFCompressed: nullptr impl, can't save; meshId = ", a_meshRef.id);
+    return;
+  }
+
+  std::stringstream strOut;
+  PrintMaterialListNames(strOut, pMesh);
+  std::string matnames = strOut.str();
+
+  HR_SaveVSGFCompressed(pMesh->pImpl->GetData(), pMesh->pImpl->DataSizeInBytes(), a_fileName, matnames.c_str(), int(matnames.size()));
+}

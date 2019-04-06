@@ -135,7 +135,7 @@ bool test35_cornell_with_light();
 bool test36_update_from_memory();
 bool test37_cornell_with_light_different_image_layers();
 
-bool test38_licence_plate();          // not used, to change, #TODO: get back MLT test here
+bool test38_save_mesh_and_delayed_load();
 bool test39_mmlt_or_ibpt();
 bool test40_several_changes();
 
