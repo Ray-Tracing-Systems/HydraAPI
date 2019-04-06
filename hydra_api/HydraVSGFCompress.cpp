@@ -5,17 +5,6 @@
 #include "HydraVSGFCompress.h"
 #include <fstream>
 
-struct HydraHeaderC // this header i used only fpr '.vsgfc', compressed format.
-{
-  uint64_t compressedSizeInBytes;
-  float    boxMin[3];
-  float    boxMax[3];
-  uint32_t batchListArraySize;
-  uint32_t customDataSize;
-  uint64_t customDataOffset;
-};
-
-
 #include "HydraRenderDriverAPI.h"
 std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndices);
 

@@ -47,7 +47,7 @@ struct IHRObject
   virtual uint64_t    chunkId() const { return uint64_t(-1); }
   virtual size_t      DataSizeInBytes() const { return 0; }                        ///< The size of the second part (big data in virtual buffer) in bytes.
   virtual const void* GetData() const { return nullptr; }
-  virtual bool        ReadDataFromChunkTo(std::vector<int>& a_dataConteiner) { return false; }
+  virtual bool        ReadDataFromChunkTo(std::vector<int>& a_dataContainer) { return false; }
 
 protected:
 

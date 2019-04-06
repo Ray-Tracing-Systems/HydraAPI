@@ -495,11 +495,11 @@ bool test38_save_mesh_and_delayed_load()
 
   // now we tests mesh save and delayed load
   //
-  //hrMeshSaveVSGF          (sphereRef, L"tests/test_38/data/mysphere.vsgf");
-  //hrMeshSaveVSGFCompressed(torusRef,  L"tests/test_38/data/mytorus.vsgfc");  // IT CRASH HERE !!! <--- !!!
+  hrMeshSaveVSGF          (sphereRef, L"tests/test_38/data/mysphere.vsgf");
+  hrMeshSaveVSGFCompressed(torusRef,  L"tests/test_38/data/mytorus.vsgfc");  // IT CRASH HERE !!! <--- !!!
 
-  //HRMeshRef sphere1Ref  = hrMeshCreateFromFileDL(L"tests/test_38/data/mysphere.vsgf");
-  //HRMeshRef torus1Ref   = hrMeshCreateFromFileDL(L"tests/test_38/data/mytorus.vsgfc");
+  HRMeshRef sphere1Ref  = hrMeshCreateFromFileDL(L"tests/test_38/data/mysphere.vsgf");
+  HRMeshRef torus1Ref   = hrMeshCreateFromFileDL(L"tests/test_38/data/mytorus.vsgfc");
 
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -616,6 +616,28 @@ bool test38_save_mesh_and_delayed_load()
     hrMeshInstance(scnRef, cubeRef, &matrixT[0][0]);
     hrMeshInstance(scnRef, sphereRef, &matrixT3[0][0]);
     hrMeshInstance(scnRef, torusRef, &matrixT4[0][0]);
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////// instance DL meshes
+    mat4x4_identity(mRot1);
+    mat4x4_identity(mRes);
+    mat4x4_rotate_Y(mRes, mRot1, rquad * DEG_TO_RAD);
+    mat4x4_translate(mTranslateDown, -2.0f, 1.0f, 1.0f);
+    mat4x4_mul(mRes2, mTranslateDown, mRes);
+    mat4x4_transpose(matrixT3, mRes2);
+
+    mat4x4_identity(mRot1);
+    mat4x4_identity(mTranslate);
+    mat4x4_identity(mRes);
+
+    mat4x4_translate(mTranslate, 2.0f, 1.0f, 0.0f);
+    mat4x4_rotate_X(mRot1, mRot1, rquad * DEG_TO_RAD);
+    mat4x4_rotate_Y(mRot1, mRot1, rquad * DEG_TO_RAD * 0.5f);
+    mat4x4_mul(mRes, mTranslate, mRot1);
+    mat4x4_transpose(matrixT4, mRes); // this fucking math library swap rows and columns
+
+    hrMeshInstance(scnRef, sphere1Ref, &matrixT3[0][0]);
+    hrMeshInstance(scnRef, torus1Ref, &matrixT4[0][0]);
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////// instance DL meshes
 
     mat4x4_identity(mRot1);
     mat4x4_rotate_Y(mRot1, mRot1, 180.0f * DEG_TO_RAD);

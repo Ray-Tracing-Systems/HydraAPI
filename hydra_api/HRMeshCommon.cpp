@@ -2,7 +2,9 @@
 #include "HydraObjectManager.h"
 
 #include "HydraVSGFExport.h"
+#include "HydraVSGFCompress.h"
 #include "HydraXMLHelpers.h"
+
 
 #include <sstream>
 #include <fstream>
@@ -136,7 +138,26 @@ struct MeshVSGF : public IHRMesh
   uint64_t vertNum() const override { return m_vertNum; }
   uint64_t indNum()  const override { return m_indNum;  }
 
-  size_t   DataSizeInBytes() const override { return m_sizeInBytes; }
+  size_t DataSizeInBytes() const override { return m_sizeInBytes; }
+  const void* GetData() const override
+  {
+    auto chunk = g_objManager.scnData.m_vbCache.chunk_at(m_chunkId);
+
+    if(chunk.InMemory())
+    {
+      return chunk.GetMemoryNow();
+    }
+    else
+    {
+      const std::wstring location = ChunkName(chunk);
+      std::ifstream fin;
+      hr_ifstream_open(fin, location.c_str());
+      g_objManager.m_tempBuffer.resize(DataSizeInBytes()/sizeof(int) + 10); // #TODO: add lock flags for global buffer ... ?? may be ...
+      fin.read((char*)g_objManager.m_tempBuffer.data(), DataSizeInBytes());
+      fin.close();
+      return g_objManager.m_tempBuffer.data();
+    }
+  }
 
   BBox getBBox() const override { return m_bbox;}
   
@@ -194,6 +215,17 @@ uint64_t MeshVSGF::offset(const wchar_t* a_arrayname) const
 
 std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndices);
 
+static inline std::wstring str_tail(const std::wstring& a_str, int a_tailSize)
+{
+  if(a_tailSize < a_str.size())
+    return a_str.substr(a_str.size() - a_tailSize);
+  else
+    return a_str;
+}
+
+void HR_LoadVSGFCompressedBothHeaders(std::ifstream& fin,
+                                      std::vector<HRBatchInfo>& a_outBatchList, HydraGeomData::Header& h1, HydraHeaderC& h2);
+
 struct MeshVSGFProxy : public MeshVSGF
 {
   MeshVSGFProxy(){}
@@ -209,23 +241,45 @@ protected:
     std::ifstream fin;
     hr_ifstream_open(fin, a_fileName);
 
+    std::wstring fileName(a_fileName);
+    std::wstring ext = str_tail(fileName, 6);
+
     HydraGeomData::Header header;
-    fin.read((char*)&header, sizeof(HydraGeomData::Header));
 
-    m_vertNum     = header.verticesNum;
-    m_indNum      = header.indicesNum;
-    m_sizeInBytes = header.fileSizeInBytes;
-    m_chunkId     = size_t(-1);
+    if(ext == L".vsgfc")
+    {
+      HydraHeaderC h2;
+      HR_LoadVSGFCompressedBothHeaders(fin,
+                                       m_matDrawList, header, h2);
+      m_vertNum     = header.verticesNum;
+      m_indNum      = header.indicesNum;
+      m_sizeInBytes = header.fileSizeInBytes;
+      m_chunkId     = size_t(-1);
+    }
+    else
+    {
+      fin.read((char*)&header, sizeof(HydraGeomData::Header));
 
-    const auto matIndOffset = this->offset(L"mind");
+      m_vertNum     = header.verticesNum;
+      m_indNum      = header.indicesNum;
+      m_sizeInBytes = header.fileSizeInBytes;
+      m_chunkId     = size_t(-1);
 
-    std::vector<uint32_t> matIndixes(m_indNum/3);
-    fin.seekg (matIndOffset);
-    fin.read((char*)matIndixes.data(), matIndixes.size()*sizeof(int));
-    fin.close();
+      const auto matIndOffset = this->offset(L"mind");
 
-    m_matDrawList = FormMatDrawListRLE(matIndixes);
-    //m_bbox;        // don't evaluate this for Proxy Object due to this is long operation
+      std::vector<uint32_t> matIndixes(m_indNum/3);
+      fin.seekg (matIndOffset);
+      fin.read((char*)matIndixes.data(), matIndixes.size()*sizeof(int));
+      fin.close();
+
+      m_matDrawList = FormMatDrawListRLE(matIndixes);
+      //m_bbox;        // don't evaluate this for Proxy Object due to this is long operation
+    }
+  }
+
+  const void* GetData() const override  // yes, don;t try to get data of MeshVSGFProxy. Find another option.
+  {
+    return nullptr;
   }
 
 };

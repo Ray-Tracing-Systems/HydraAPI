@@ -696,18 +696,13 @@ std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndi
 
 void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, const std::vector<HRBatchInfo>& a_batches, IHRRenderDriver* a_pDriver, const wchar_t* path, int64_t a_byteSize)
 {
-  pugi::xml_node nodeXML    = mesh.xml_node_immediate();
-  //uint64_t       dataOffset = nodeXML.attribute(L"offset").as_ullong();
+  pugi::xml_node nodeXML = mesh.xml_node_immediate();
 
-#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
-  std::wstring s1(path);
-  std::string  s2(s1.begin(), s1.end());
-  std::ifstream fin(s2.c_str(), std::ios::binary);
-#elif defined WIN32
-  std::ifstream fin(path, std::ios::binary);
-#endif 
   g_objManager.m_tempBuffer.resize(a_byteSize / sizeof(int) + sizeof(int) * 16);
   char* dataPtr = (char*)g_objManager.m_tempBuffer.data();
+
+  std::ifstream fin;
+  hr_ifstream_open(fin, path);
 
   if(!fin.is_open())
     return;

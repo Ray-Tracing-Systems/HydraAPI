@@ -1227,6 +1227,12 @@ HAPI void hrMeshSaveVSGF(HRMeshRef a_meshRef, const wchar_t* a_fileName)
     return;
   }
 
+  if(pMesh->pImpl->DataSizeInBytes() == 0 || pMesh->pImpl->GetData() == 0)
+  {
+    HrError(L"hrMeshSaveVSGF: mesh data in not avaliable; meshId = ", a_meshRef.id);
+    return;
+  }
+
   std::ofstream fout;
   hr_ofstream_open(fout, a_fileName);
   fout.write((const char*)pMesh->pImpl->GetData(), pMesh->pImpl->DataSizeInBytes());
@@ -1295,6 +1301,12 @@ HAPI void hrMeshSaveVSGFCompressed(HRMeshRef a_meshRef, const wchar_t* a_fileNam
   std::stringstream strOut;
   PrintMaterialListNames(strOut, pMesh);
   std::string matnames = strOut.str();
+
+  if(pMesh->pImpl->DataSizeInBytes() == 0 || pMesh->pImpl->GetData() == 0)
+  {
+    HrError(L"hrMeshSaveVSGFCompressed: mesh data in not avaliable; meshId = ", a_meshRef.id);
+    return;
+  }
 
   HR_SaveVSGFCompressed(pMesh->pImpl->GetData(), pMesh->pImpl->DataSizeInBytes(), a_fileName, matnames.c_str(), int(matnames.size()));
 }

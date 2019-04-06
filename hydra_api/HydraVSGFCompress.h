@@ -28,4 +28,15 @@ size_t HR_SaveVSGFCompressed(const void* vsgfData, size_t a_vsgfSize, const wcha
 void _hrCompressMesh(const std::wstring& a_inPath, const std::wstring& a_outPath);
 void _hrDecompressMesh(const std::wstring& a_path, const std::wstring& a_newPath);
 
+struct HydraHeaderC // this header i used only fpr '.vsgfc', compressed format.
+{
+  uint64_t compressedSizeInBytes;
+  float    boxMin[3];
+  float    boxMax[3];
+  uint32_t batchListArraySize;
+  uint32_t customDataSize;
+  uint64_t customDataOffset;
+};
+
+
 #endif //HYDRAAPI_EX_HYDRAVSGFCOMPRESS_H
