@@ -54,12 +54,12 @@ struct HydraGeomData
   char* data() { return m_data; }
   Header getHeader() const { return m_header; }
   
+  enum GEOM_FLAGS{ HAS_TANGENT    = 1,
+                   UNUSED2        = 2,
+                   UNUSED4        = 4,
+                   HAS_NO_NORMALS = 8};
+  
 protected:
-
-  enum GEOM_FLAGS{ HAS_TANGENT            = 1,
-                   UNUSED2                = 2,
-                   UNUSED4                = 4,
-                   HAS_NO_NORMALS         = 8};
 
   // size info
   //

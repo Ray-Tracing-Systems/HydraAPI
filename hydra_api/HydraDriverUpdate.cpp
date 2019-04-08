@@ -18,6 +18,7 @@
 #include <algorithm>
 
 #include "HydraVSGFExport.h"
+#include "HydraVSGFCompress.h"
 #include "RenderDriverOpenGL3_Utility.h"
 
 #include <chrono>
@@ -694,48 +695,127 @@ HRMeshDriverInput HR_GetMeshDataPointers(size_t a_meshId)
 
 std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndices);
 
+static inline std::wstring str_tail(const std::wstring& a_str, int a_tailSize)
+{
+  if(a_tailSize < a_str.size())
+    return a_str.substr(a_str.size() - a_tailSize);
+  else
+    return a_str;
+}
+
 void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, const std::vector<HRBatchInfo>& a_batches, IHRRenderDriver* a_pDriver, const wchar_t* path, int64_t a_byteSize)
 {
   pugi::xml_node nodeXML = mesh.xml_node_immediate();
-
-  g_objManager.m_tempBuffer.resize(a_byteSize / sizeof(int) + sizeof(int) * 16);
-  char* dataPtr = (char*)g_objManager.m_tempBuffer.data();
 
   std::ifstream fin;
   hr_ifstream_open(fin, path);
 
   if(!fin.is_open())
     return;
-
+  
+  HydraGeomData::Header header;
+  fin.read((char*)&header, sizeof(header));
+  fin.close();
+  
+  const std::wstring tail = str_tail(path,6);
+  if(tail != L".vsgfc" && header.fileSizeInBytes != a_byteSize)
+  {
+    HrPrint(HR_SEVERITY_WARNING, L"UpdateMeshFromChunk, different byte size of chunk, may be broken mesh: ", path);
+    a_byteSize = std::max<int64_t>(a_byteSize, header.fileSizeInBytes);
+  }
+  
+  g_objManager.m_tempBuffer.resize(a_byteSize / sizeof(int) + sizeof(int) * 16);
+  char* dataPtr = (char*)g_objManager.m_tempBuffer.data();
+  
+  const bool dontHaveTangents = (header.flags & HydraGeomData::HAS_TANGENT)    == 0;
+  const bool dontHaveNormals  = (header.flags & HydraGeomData::HAS_NO_NORMALS) != 0;
+  
+  HRMeshDriverInput input;
+  
   // (1) check the case when we don't have tangents or normals ...
   //
-
-  // (2) decompress if we have '.vsgfc' format
+  if(dontHaveTangents || dontHaveNormals)
+  {
+    //#TODO: implement this
+    HrError(L"UpdateMeshFromChunk, mesh does not have normals or tangents, not implemented feature!");
+    
+    if(dontHaveNormals) // compute normals first
+    {
+      HrError(L"UpdateMeshFromChunk, not implemented!!!");
+    }
+  
+    if(dontHaveTangents) // compute tangents next
+    {
+      HrError(L"UpdateMeshFromChunk, not implemented!!!");
+    }
+  
+    hr_ifstream_open(fin, path);
+    fin.read(dataPtr, a_byteSize);
+    fin.close();
+  
+    uint64_t offsetPos  = mesh.pImpl->offset(L"pos");
+    uint64_t offsetNorm = mesh.pImpl->offset(L"norm");
+    uint64_t offsetTexc = mesh.pImpl->offset(L"texc");
+    uint64_t offsetTang = mesh.pImpl->offset(L"tan");
+    uint64_t offsetInd  = mesh.pImpl->offset(L"ind");
+    uint64_t offsetMInd = mesh.pImpl->offset(L"mind");
+  
+    input.vertNum       = nodeXML.attribute(L"vertNum").as_int();
+    input.triNum        = nodeXML.attribute(L"triNum").as_int();
+  
+    input.pos4f         = (float*)(dataPtr + offsetPos);
+    input.norm4f        = (float*)(dataPtr + offsetNorm);
+    input.tan4f         = (float*)(dataPtr + offsetTang);
+    input.texcoord2f    = (float*)(dataPtr + offsetTexc);
+    input.indices       = (int*)  (dataPtr + offsetInd);
+    input.triMatIndices = (int*)  (dataPtr + offsetMInd);
+    input.allData       = dataPtr;
+    
+  }
+  // (2) decompress '.vsgfc' format
   //
-
-  fin.read(dataPtr, a_byteSize);
-  fin.close();
-
-  HRMeshDriverInput input;
-
-  uint64_t offsetPos  = mesh.pImpl->offset(L"pos");
-  uint64_t offsetNorm = mesh.pImpl->offset(L"norm");
-  uint64_t offsetTexc = mesh.pImpl->offset(L"texc");
-  uint64_t offsetTang = mesh.pImpl->offset(L"tan");
-  uint64_t offsetInd  = mesh.pImpl->offset(L"ind");
-  uint64_t offsetMInd = mesh.pImpl->offset(L"mind");
-
-  input.vertNum       = nodeXML.attribute(L"vertNum").as_int();
-  input.triNum        = nodeXML.attribute(L"triNum").as_int();
-
-  input.pos4f         = (float*)(dataPtr + offsetPos);
-  input.norm4f        = (float*)(dataPtr + offsetNorm);
-  input.tan4f         = (float*)(dataPtr + offsetTang);
-  input.texcoord2f    = (float*)(dataPtr + offsetTexc);
-  input.indices       = (int*)  (dataPtr + offsetInd);
-  input.triMatIndices = (int*)  (dataPtr + offsetMInd);
-  input.allData       = dataPtr;
-
+  else if(tail == L".vsgfc")
+  {
+    auto data           = HR_LoadVSGFCompressedData(path, g_objManager.m_tempBuffer);
+    
+    input.vertNum       = data.getVerticesNumber();
+    input.triNum        = data.getIndicesNumber();
+  
+    input.pos4f         = data.getVertexPositionsFloat4Array();
+    input.norm4f        = data.getVertexNormalsFloat4Array();
+    input.tan4f         = data.getVertexTangentsFloat4Array();
+    input.texcoord2f    = data.getVertexTexcoordFloat2Array();
+    input.indices       = (const int*)data.getTriangleVertexIndicesArray();
+    input.triMatIndices = (const int*)data.getTriangleMaterialIndicesArray();
+    input.allData       = (char*)g_objManager.m_tempBuffer.data();
+  }
+  // (3) read it "as is"
+  //
+  else
+  {
+    hr_ifstream_open(fin, path);
+    fin.read(dataPtr, a_byteSize);
+    fin.close();
+  
+    uint64_t offsetPos  = mesh.pImpl->offset(L"pos");
+    uint64_t offsetNorm = mesh.pImpl->offset(L"norm");
+    uint64_t offsetTexc = mesh.pImpl->offset(L"texc");
+    uint64_t offsetTang = mesh.pImpl->offset(L"tan");
+    uint64_t offsetInd  = mesh.pImpl->offset(L"ind");
+    uint64_t offsetMInd = mesh.pImpl->offset(L"mind");
+  
+    input.vertNum       = nodeXML.attribute(L"vertNum").as_int();
+    input.triNum        = nodeXML.attribute(L"triNum").as_int();
+  
+    input.pos4f         = (float*)(dataPtr + offsetPos);
+    input.norm4f        = (float*)(dataPtr + offsetNorm);
+    input.tan4f         = (float*)(dataPtr + offsetTang);
+    input.texcoord2f    = (float*)(dataPtr + offsetTexc);
+    input.indices       = (int*)  (dataPtr + offsetInd);
+    input.triMatIndices = (int*)  (dataPtr + offsetMInd);
+    input.allData       = dataPtr;
+  }
+  
   a_pDriver->UpdateMesh(a_id, nodeXML, input, &a_batches[0], int32_t(a_batches.size()));
 }
 

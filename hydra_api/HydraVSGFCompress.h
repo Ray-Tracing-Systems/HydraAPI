@@ -24,6 +24,7 @@
 size_t HR_SaveVSGFCompressed(const HydraGeomData& data, const wchar_t* a_outfileName, const char* a_customData, const int a_customDataSize);
 size_t HR_SaveVSGFCompressed(const void* vsgfData, size_t a_vsgfSize, const wchar_t* a_outfileName, const char* a_customData, const int a_dataSize);
 
+HydraGeomData HR_LoadVSGFCompressedData(const wchar_t* a_fileName, std::vector<int>& dataBuffer);
 
 void _hrCompressMesh(const std::wstring& a_inPath, const std::wstring& a_outPath);
 void _hrDecompressMesh(const std::wstring& a_path, const std::wstring& a_newPath);

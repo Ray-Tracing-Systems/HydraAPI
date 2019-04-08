@@ -607,7 +607,7 @@ bool test38_save_mesh_and_delayed_load()
     mat4x4_identity(mTranslate);
     mat4x4_identity(mRes);
 
-    mat4x4_translate(mTranslate, 2.0f, -1.25f, -5.0f + 5.0f);
+    mat4x4_translate(mTranslate, 2.0f, -1.25f, 5.0f);
     mat4x4_rotate_X(mRot1, mRot1, rquad * DEG_TO_RAD);
     mat4x4_rotate_Y(mRot1, mRot1, rquad * DEG_TO_RAD * 0.5f);
     mat4x4_mul(mRes, mTranslate, mRot1);
@@ -629,7 +629,7 @@ bool test38_save_mesh_and_delayed_load()
     mat4x4_identity(mTranslate);
     mat4x4_identity(mRes);
 
-    mat4x4_translate(mTranslate, 2.0f, 1.0f, 0.0f);
+    mat4x4_translate(mTranslate, 2.0f, 1.0f, 5.0f);
     mat4x4_rotate_X(mRot1, mRot1, rquad * DEG_TO_RAD);
     mat4x4_rotate_Y(mRot1, mRot1, rquad * DEG_TO_RAD * 0.5f);
     mat4x4_mul(mRes, mTranslate, mRot1);
@@ -673,7 +673,7 @@ bool test38_save_mesh_and_delayed_load()
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_38/z_out.png");
 
-  return false; // not implemented
+  return check_images("test_38", 1, 10);
 }
 
 bool test82_proc_texture()

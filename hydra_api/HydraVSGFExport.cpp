@@ -53,6 +53,7 @@ void HydraGeomData::setData(uint32_t a_vertNum, const float* a_pos, const float*
   m_header.verticesNum     = a_vertNum;
   m_header.indicesNum      = a_indicesNum;
   m_header.fileSizeInBytes = sizeInBytes();
+  m_header.flags           = (a_tangent != nullptr) ? HAS_TANGENT : 0;
 
   m_positions = a_pos;
   m_normals   = a_norm;
