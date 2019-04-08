@@ -756,7 +756,7 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, const std::vector<HRBatchIn
     ComputeVertexTangents(mesh2, data.getIndicesNumber());
   
     input.vertNum       = data.getVerticesNumber();
-    input.triNum        = data.getIndicesNumber();
+    input.triNum        = data.getIndicesNumber()/3;
   
     input.pos4f         = mesh2.verticesPos.data();
     input.norm4f        = mesh2.verticesNorm.data();
