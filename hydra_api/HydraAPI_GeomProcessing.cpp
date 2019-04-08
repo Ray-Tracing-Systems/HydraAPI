@@ -75,7 +75,7 @@ void HR_ComputeTangentSpaceSimple(const int     vertexCount, const int     trian
     const float t2 = w3.y - w1.y;
     
     const float denom = (s1 * t2 - s2 * t1);
-    const float r     = fabs(denom) > 1e30f ? 1.0f / denom : 0.0f;
+    const float r     = fabs(denom) < 1e30f ? 1.0f / denom : 0.0f;
     
     const float4 sdir((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r, 1);
     const float4 tdir((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r, 1);
