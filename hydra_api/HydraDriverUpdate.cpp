@@ -774,7 +774,7 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, const std::vector<HRBatchIn
     data                = HR_LoadVSGFCompressedData(path, g_objManager.m_tempBuffer);
     
     input.vertNum       = data.getVerticesNumber();
-    input.triNum        = data.getIndicesNumber();
+    input.triNum        = data.getIndicesNumber()/3;
   
     input.pos4f         = data.getVertexPositionsFloat4Array();
     input.norm4f        = data.getVertexNormalsFloat4Array();

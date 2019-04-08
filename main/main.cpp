@@ -154,11 +154,11 @@ int main(int argc, const char** argv)
     ////_hrDebugPrintVSGF(L"data/meshes/teapot2.vsgf",   L"/home/frol/temp/teapot2.txt");
 
     //std::cout << test38_save_mesh_and_delayed_load() << std::endl;
-    std::cout << test49_light_geom_disk() << std::endl;
+    //std::cout << test49_light_geom_disk() << std::endl;
     
     //test46_light_geom_rect();
     //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_49", L"opengl1Debug"); // &test02_draw
-    //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_38", L"opengl1Debug"); // &test02_draw
+    window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_38", L"opengl1Debug"); // &test02_draw
   
     //_hrCompressMesh  (L"/home/frol/temp/original.vsgf",    L"/home/frol/temp/compressed.vsgfc");
     //_hrDecompressMesh(L"/home/frol/temp/compressed.vsgfc", L"/home/frol/temp/decompressed.vsgf");
