@@ -1019,41 +1019,31 @@ HAPI HROpenedMeshInfo  hrMeshGetInfo(HRMeshRef a_mesh)
   return info;
 }
 
-
-void hrMeshComputeNormals(HRMeshRef a_mesh, const int indexNum, bool useFaceNormals)
+void ComputeVertexNormals(HRMesh::InputTriMesh& mesh, const int indexNum, bool useFaceNormals)
 {
-	HRMesh* pMesh = g_objManager.PtrById(a_mesh);
-	if (pMesh == nullptr)
-	{
-		HrError(L"hrMeshComputeNormals: nullptr input");
-		return;
-	}
-
-	HRMesh::InputTriMesh& mesh = pMesh->m_input;
-
-	int faceNum = indexNum / 3;
-
-	//std::vector<float3> faceNormals;
-	//faceNormals.reserve(faceNum);
-
-	std::vector<float3> vertexNormals(mesh.verticesPos.size() / 4, float3(0.0, 0.0, 0.0));
-
-
-	for (auto i = 0; i < faceNum; ++i)
-	{
-		float3 A = float3(mesh.verticesPos.at(4 * mesh.triIndices.at(3*i)), mesh.verticesPos.at(4 * mesh.triIndices.at(3*i) + 1), mesh.verticesPos.at(4 * mesh.triIndices.at(3*i) + 2));
-		float3 B = float3(mesh.verticesPos.at(4 * mesh.triIndices.at(3*i + 1)), mesh.verticesPos.at(4 * mesh.triIndices.at(3*i + 1) + 1), mesh.verticesPos.at(4 * mesh.triIndices.at(3*i + 1) + 2));
-		float3 C = float3(mesh.verticesPos.at(4 * mesh.triIndices.at(3*i + 2)), mesh.verticesPos.at(4 * mesh.triIndices.at(3*i + 2) + 1), mesh.verticesPos.at(4 * mesh.triIndices.at(3*i + 2) + 2));
+  int faceNum = indexNum / 3;
+  
+  //std::vector<float3> faceNormals;
+  //faceNormals.reserve(faceNum);
+  
+  std::vector<float3> vertexNormals(mesh.verticesPos.size() / 4, float3(0.0, 0.0, 0.0));
+  
+  
+  for (auto i = 0; i < faceNum; ++i)
+  {
+    float3 A = float3(mesh.verticesPos.at(4 * mesh.triIndices.at(3*i)), mesh.verticesPos.at(4 * mesh.triIndices.at(3*i) + 1), mesh.verticesPos.at(4 * mesh.triIndices.at(3*i) + 2));
+    float3 B = float3(mesh.verticesPos.at(4 * mesh.triIndices.at(3*i + 1)), mesh.verticesPos.at(4 * mesh.triIndices.at(3*i + 1) + 1), mesh.verticesPos.at(4 * mesh.triIndices.at(3*i + 1) + 2));
+    float3 C = float3(mesh.verticesPos.at(4 * mesh.triIndices.at(3*i + 2)), mesh.verticesPos.at(4 * mesh.triIndices.at(3*i + 2) + 1), mesh.verticesPos.at(4 * mesh.triIndices.at(3*i + 2) + 2));
     
-		float3 edge1A = normalize(B - A);
-		float3 edge2A = normalize(C - A);
-
-		float3 edge1B = normalize(A - B);
-		float3 edge2B = normalize(C - B);
-
-		float3 edge1C = normalize(A - C);
-		float3 edge2C = normalize(B - C);
+    float3 edge1A = normalize(B - A);
+    float3 edge2A = normalize(C - A);
     
+    float3 edge1B = normalize(A - B);
+    float3 edge2B = normalize(C - B);
+    
+    float3 edge1C = normalize(A - C);
+    float3 edge2C = normalize(B - C);
+
 /*
     float3 edge1A = normalize(A - B);
     float3 edge2A = normalize(A - C);
@@ -1064,8 +1054,8 @@ void hrMeshComputeNormals(HRMeshRef a_mesh, const int indexNum, bool useFaceNorm
     float3 edge1C = normalize(C - A);
     float3 edge2C = normalize(C - B);
     */
-
-		float3 face_normal = normalize(cross(edge1A, edge2A));
+    
+    float3 face_normal = normalize(cross(edge1A, edge2A));
     /*
     vertexNormals.at(mesh.triIndices.at(3 * i)) += face_normal;
     vertexNormals.at(mesh.triIndices.at(3 * i + 1)) += face_normal;
@@ -1076,7 +1066,7 @@ void hrMeshComputeNormals(HRMeshRef a_mesh, const int indexNum, bool useFaceNorm
       float dotA = dot(edge1A, edge2A);
       float dotB = dot(edge1B, edge2B);
       float dotC = dot(edge1C, edge2C);
-
+      
       const float lenA = length(cross(edge1A, edge2A));
       const float lenB = length(cross(edge1B, edge2B));
       const float lenC = length(cross(edge1C, edge2C));
@@ -1089,11 +1079,11 @@ void hrMeshComputeNormals(HRMeshRef a_mesh, const int indexNum, bool useFaceNorm
 //                                     powf(edge1A.z * edge2A.x - edge1A.x * edge2A.z, 2) +
 //                                     powf(edge1A.x * edge2A.y - edge1A.y * edge2A.x, 2));
       float face_area = 1.0f;
-
+      
       float3 normalA = face_normal * wA * face_area;
       float3 normalB = face_normal * wB * face_area;
       float3 normalC = face_normal * wC * face_area;
-
+      
       vertexNormals.at(mesh.triIndices.at(3 * i + 0)) += normalA;
       vertexNormals.at(mesh.triIndices.at(3 * i + 1)) += normalB;
       vertexNormals.at(mesh.triIndices.at(3 * i + 2)) += normalC;
@@ -1104,42 +1094,47 @@ void hrMeshComputeNormals(HRMeshRef a_mesh, const int indexNum, bool useFaceNorm
       vertexNormals.at(mesh.triIndices.at(3 * i + 1)) += face_normal;
       vertexNormals.at(mesh.triIndices.at(3 * i + 2)) += face_normal;
     }
-		//faceNormals.push_back(face_normal);
-	}
-
-	if(mesh.verticesNorm.size() != mesh.verticesPos.size())
-	  mesh.verticesNorm.resize(mesh.verticesPos.size());
-
-	for (int i = 0; i < vertexNormals.size(); ++i)
-	{
-		float3 N = normalize(vertexNormals.at(i));
-
+    //faceNormals.push_back(face_normal);
+  }
+  
+  if(mesh.verticesNorm.size() != mesh.verticesPos.size())
+    mesh.verticesNorm.resize(mesh.verticesPos.size());
+  
+  for (int i = 0; i < vertexNormals.size(); ++i)
+  {
+    float3 N = normalize(vertexNormals.at(i));
+    
     mesh.verticesNorm.at(4 * i + 0) = N.x;
     mesh.verticesNorm.at(4 * i + 1) = N.y;
     mesh.verticesNorm.at(4 * i + 2) = N.z;
     mesh.verticesNorm.at(4 * i + 3) = 0.0f;
+  }
+  
+}
 
+void hrMeshComputeNormals(HRMeshRef a_mesh, const int indexNum, bool useFaceNormals)
+{
+	HRMesh* pMesh = g_objManager.PtrById(a_mesh);
+	if (pMesh == nullptr)
+	{
+		HrError(L"hrMeshComputeNormals: nullptr input");
+		return;
 	}
+
+	HRMesh::InputTriMesh& mesh = pMesh->m_input;
+  
+  ComputeVertexNormals(mesh, indexNum, useFaceNormals);
 }
 
 void HR_ComputeTangentSpaceSimple(const int     vertexCount, const int     triangleCount, const uint32_t* triIndices,
                                   const float4* verticesPos, const float4* verticesNorm, const float2* vertTexCoord,
                                   float4* verticesTang);
 
-HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, int indexNum)
+void ComputeVertexTangents(HRMesh::InputTriMesh& mesh, int indexNum)
 {
-  HRMesh* pMesh = g_objManager.PtrById(a_mesh);
-  if (pMesh == nullptr)
-  {
-    HrError(L"hrMeshComputeNormals: nullptr input");
-    return;
-  }
-
-  HRMesh::InputTriMesh& mesh = pMesh->m_input;
-
   const int vertexCount   = int(mesh.verticesPos.size()/4);                   // #TODO: not 0-th element, last vertex from prev append!
   const int triangleCount = indexNum / 3;
-                                                                              // #TODO: not 0-th element, last vertex from prev append!
+ 
   const float4* verticesPos  = (const float4*)(&mesh.verticesPos[0]);         // #TODO: not 0-th element, last vertex from prev append!
   const float4* verticesNorm = (const float4*)(&mesh.verticesNorm[0]);        // #TODO: not 0-th element, last vertex from prev append!
   const float2* vertTexCoord = (const float2*)(&mesh.verticesTexCoord[0]);    // #TODO: not 0-th element, last vertex from prev append!
@@ -1151,6 +1146,19 @@ HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, int indexNum)
   HR_ComputeTangentSpaceSimple(vertexCount, triangleCount, mesh.triIndices.data(),
                                verticesPos, verticesNorm, vertTexCoord,
                                verticesTang);
+}
+
+HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, int indexNum)
+{
+  HRMesh* pMesh = g_objManager.PtrById(a_mesh);
+  if (pMesh == nullptr)
+  {
+    HrError(L"hrMeshComputeNormals: nullptr input");
+    return;
+  }
+  
+  HRMesh::InputTriMesh& mesh = pMesh->m_input;
+  ComputeVertexTangents(mesh, indexNum);
 }
 
 

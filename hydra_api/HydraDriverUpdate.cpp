@@ -732,45 +732,39 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, const std::vector<HRBatchIn
   
   HRMeshDriverInput input;
   
-  // (1) check the case when we don't have tangents or normals ...
+  // (1) process the case when we don't have tangents or normals ...
   //
   if(dontHaveTangents || dontHaveNormals)
   {
-    //#TODO: implement this
-    HrError(L"UpdateMeshFromChunk, mesh does not have normals or tangents, not implemented feature!");
+    HydraGeomData data;
+    data.read(path);
+  
+    HRMesh::InputTriMesh mesh;
+    mesh.reserve(data.getVerticesNumber(), data.getIndicesNumber());
+  
+    memcpy(mesh.verticesPos.data(), data.getVertexPositionsFloat4Array(),     sizeof(float)*4*data.getVerticesNumber());
+    memcpy(mesh.verticesTexCoord.data(), data.getVertexTexcoordFloat2Array(), sizeof(float)*2*data.getVerticesNumber());
+  
+    memcpy(mesh.triIndices.data(), data.getTriangleVertexIndicesArray(),   sizeof(int)*data.getIndicesNumber());
+    memcpy(mesh.matIndices.data(), data.getTriangleMaterialIndicesArray(), sizeof(int)*data.getIndicesNumber()/3);
     
-    if(dontHaveNormals) // compute normals first
-    {
-      HrError(L"UpdateMeshFromChunk, not implemented!!!");
-    }
+    if(!dontHaveNormals)
+      memcpy(mesh.verticesNorm.data(), data.getVertexNormalsFloat4Array(), sizeof(float)*4*data.getVerticesNumber());
+    else
+      ComputeVertexNormals(mesh, data.getIndicesNumber(), false);
   
-    if(dontHaveTangents) // compute tangents next
-    {
-      HrError(L"UpdateMeshFromChunk, not implemented!!!");
-    }
+    ComputeVertexTangents(mesh, data.getIndicesNumber());
   
-    hr_ifstream_open(fin, path);
-    fin.read(dataPtr, a_byteSize);
-    fin.close();
+    input.vertNum       = data.getVerticesNumber();
+    input.triNum        = data.getIndicesNumber();
   
-    uint64_t offsetPos  = mesh.pImpl->offset(L"pos");
-    uint64_t offsetNorm = mesh.pImpl->offset(L"norm");
-    uint64_t offsetTexc = mesh.pImpl->offset(L"texc");
-    uint64_t offsetTang = mesh.pImpl->offset(L"tan");
-    uint64_t offsetInd  = mesh.pImpl->offset(L"ind");
-    uint64_t offsetMInd = mesh.pImpl->offset(L"mind");
-  
-    input.vertNum       = nodeXML.attribute(L"vertNum").as_int();
-    input.triNum        = nodeXML.attribute(L"triNum").as_int();
-  
-    input.pos4f         = (float*)(dataPtr + offsetPos);
-    input.norm4f        = (float*)(dataPtr + offsetNorm);
-    input.tan4f         = (float*)(dataPtr + offsetTang);
-    input.texcoord2f    = (float*)(dataPtr + offsetTexc);
-    input.indices       = (int*)  (dataPtr + offsetInd);
-    input.triMatIndices = (int*)  (dataPtr + offsetMInd);
-    input.allData       = dataPtr;
-    
+    input.pos4f         = mesh.verticesPos.data();
+    input.norm4f        = mesh.verticesNorm.data();
+    input.tan4f         = mesh.verticesTangent.data();
+    input.texcoord2f    = mesh.verticesTexCoord.data();
+    input.indices       = (const int*)mesh.triIndices.data();
+    input.triMatIndices = (const int*)mesh.matIndices.data();
+    input.allData       = (char*)g_objManager.m_tempBuffer.data();
   }
   // (2) decompress '.vsgfc' format
   //

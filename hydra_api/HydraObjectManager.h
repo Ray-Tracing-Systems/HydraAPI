@@ -639,3 +639,5 @@ std::wstring ToWString(int i);
 std::wstring ToWString(float i);
 std::wstring ToWString(unsigned int i);
 
+void ComputeVertexTangents(HRMesh::InputTriMesh& mesh, int indexNum);
+void ComputeVertexNormals(HRMesh::InputTriMesh& mesh, const int indexNum, bool useFaceNormals);
