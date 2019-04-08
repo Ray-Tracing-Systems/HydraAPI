@@ -156,9 +156,9 @@ struct HRMesh : public HRObject<IHRMesh>
 
     void reserve(size_t vNum, size_t indNum)
     {
-      verticesPos.reserve(vNum * 4 + 10);
-      verticesNorm.reserve(vNum * 4 + 10);
-      verticesTangent.reserve(vNum * 4 + 10);
+      verticesPos.reserve     (vNum * 4 + 10);
+      verticesNorm.reserve    (vNum * 4 + 10);
+      verticesTangent.reserve (vNum * 4 + 10);
       verticesTexCoord.reserve(vNum * 2 + 10);
       
       if(triIndices.capacity() < indNum + 10)
@@ -171,6 +171,23 @@ struct HRMesh : public HRObject<IHRMesh>
       {
         arr.idata.reserve(1*vNum);
         arr.fdata.reserve(4*vNum);
+      }
+    }
+  
+    void resize(size_t vNum, size_t indNum)
+    {
+      verticesPos.resize     (vNum * 4 + 10);
+      verticesNorm.resize    (vNum * 4 + 10);
+      verticesTangent.resize (vNum * 4 + 10);
+      verticesTexCoord.resize(vNum * 2 + 10);
+      
+      triIndices.resize      (indNum + 10);
+      matIndices.resize      (indNum / 3 + 10);
+    
+      for (auto& arr : customArrays)
+      {
+        arr.idata.resize(1*vNum);
+        arr.fdata.resize(4*vNum);
       }
     }
 

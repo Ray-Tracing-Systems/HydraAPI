@@ -429,8 +429,6 @@ bool test43_test_direct_light()
 
 bool test44_four_lights()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_44");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -825,10 +823,7 @@ bool test44_four_lights()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef);
-
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-
+  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -837,17 +832,9 @@ bool test44_four_lights()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -2421,8 +2408,6 @@ bool test48_light_geom_sphere()
 
 bool test49_light_geom_disk()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_49");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2711,7 +2696,7 @@ bool test49_light_geom_disk()
   //
   HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1
 
-                                                      ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   auto pList = hrRenderGetDeviceList(renderRef);
 
@@ -2807,9 +2792,6 @@ bool test49_light_geom_disk()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef);
-
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
   
   while (true)
   {
@@ -2819,17 +2801,10 @@ bool test49_light_geom_disk()
   
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-  
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-  
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-  
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      std::cout.flush();
     }
   
     if (info.finalUpdate)

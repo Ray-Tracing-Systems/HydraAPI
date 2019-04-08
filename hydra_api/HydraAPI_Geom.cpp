@@ -1132,16 +1132,14 @@ void HR_ComputeTangentSpaceSimple(const int     vertexCount, const int     trian
 
 void ComputeVertexTangents(HRMesh::InputTriMesh& mesh, int indexNum)
 {
-  const int vertexCount   = int(mesh.verticesPos.size()/4);                   // #TODO: not 0-th element, last vertex from prev append!
-  const int triangleCount = indexNum / 3;
+  const int vertexCount      = int(mesh.verticesPos.size()/4);                   // #TODO: not 0-th element, last vertex from prev append!
+  const int triangleCount    = indexNum / 3;
  
-  const float4* verticesPos  = (const float4*)(&mesh.verticesPos[0]);         // #TODO: not 0-th element, last vertex from prev append!
-  const float4* verticesNorm = (const float4*)(&mesh.verticesNorm[0]);        // #TODO: not 0-th element, last vertex from prev append!
-  const float2* vertTexCoord = (const float2*)(&mesh.verticesTexCoord[0]);    // #TODO: not 0-th element, last vertex from prev append!
+  const float4* verticesPos  = (const float4*)(mesh.verticesPos.data());         // #TODO: not 0-th element, last vertex from prev append!
+  const float4* verticesNorm = (const float4*)(mesh.verticesNorm.data());        // #TODO: not 0-th element, last vertex from prev append!
+  const float2* vertTexCoord = (const float2*)(mesh.verticesTexCoord.data());    // #TODO: not 0-th element, last vertex from prev append!
   
-  mesh.verticesTangent.resize(vertexCount*4);                                 // #TODO: not 0-th element, last vertex from prev append!
-  float4* verticesTang = (float4*)(&mesh.verticesTangent[0]);                 // #TODO: not 0-th element, last vertex from prev append!
-  
+  float4* verticesTang       = (float4*)(mesh.verticesTangent.data());           // #TODO: not 0-th element, last vertex from prev append!
   
   HR_ComputeTangentSpaceSimple(vertexCount, triangleCount, mesh.triIndices.data(),
                                verticesPos, verticesNorm, vertTexCoord,
@@ -1158,6 +1156,8 @@ HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, int indexNum)
   }
   
   HRMesh::InputTriMesh& mesh = pMesh->m_input;
+  const int vertexCount      = pMesh->m_input.verticesPos.size()/4;
+  mesh.verticesTangent.resize(vertexCount*4); // #TODO: not 0-th element, last vertex from prev append!
   ComputeVertexTangents(mesh, indexNum);
 }
 

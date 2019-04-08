@@ -74,7 +74,8 @@ void HR_ComputeTangentSpaceSimple(const int     vertexCount, const int     trian
     const float t1 = w2.y - w1.y;
     const float t2 = w3.y - w1.y;
     
-    const float r = 1.0f / (s1 * t2 - s2 * t1); // #TODO: enable ftz if texture coords are incorrect
+    const float denom = (s1 * t2 - s2 * t1);
+    const float r     = fabs(denom) > 1e30f ? 1.0f / denom : 0.0f;
     
     const float4 sdir((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r, 1);
     const float4 tdir((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r, 1);
@@ -107,7 +108,7 @@ void HR_ComputeTangentSpaceSimple(const int     vertexCount, const int     trian
     verticesTang[a].w = (dot(cross(n1, t1), to_float3(tan2[a])) < 0.0f) ? -1.0f : 1.0f;
   }
   
-  delete[] tan1;
+  delete [] tan1;
 }
 
 

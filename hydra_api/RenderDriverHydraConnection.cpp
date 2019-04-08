@@ -439,10 +439,10 @@ HRDriverInfo RD_HydraConnection::Info()
 
   info.supportHDRFrameBuffer              = true;
   info.supportHDRTextures                 = true;
-  info.supportMultiMaterialInstance       = false;
+  info.supportMultiMaterialInstance       = true;
 
-  info.supportImageLoadFromInternalFormat = false;
-  info.supportMeshLoadFromInternalFormat  = false;
+  info.supportImageLoadFromInternalFormat = true;
+  info.supportMeshLoadFromInternalFormat  = true;
 
   info.supportImageLoadFromExternalFormat = true;
   info.supportLighting                    = true;

@@ -730,47 +730,48 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, const std::vector<HRBatchIn
   const bool dontHaveTangents = (header.flags & HydraGeomData::HAS_TANGENT)    == 0;
   const bool dontHaveNormals  = (header.flags & HydraGeomData::HAS_NO_NORMALS) != 0;
   
-  HRMeshDriverInput input;
+  HRMeshDriverInput    input;
+  HRMesh::InputTriMesh mesh2;
+  HydraGeomData        data;
   
   // (1) process the case when we don't have tangents or normals ...
   //
   if(dontHaveTangents || dontHaveNormals)
   {
-    HydraGeomData data;
     data.read(path);
+    
+    mesh2.resize(data.getVerticesNumber(), data.getIndicesNumber());
   
-    HRMesh::InputTriMesh mesh;
-    mesh.reserve(data.getVerticesNumber(), data.getIndicesNumber());
+    memcpy(mesh2.verticesPos.data(),      data.getVertexPositionsFloat4Array(), sizeof(float)*4*data.getVerticesNumber());
+    memcpy(mesh2.verticesTexCoord.data(), data.getVertexTexcoordFloat2Array(),  sizeof(float)*2*data.getVerticesNumber());
   
-    memcpy(mesh.verticesPos.data(), data.getVertexPositionsFloat4Array(),     sizeof(float)*4*data.getVerticesNumber());
-    memcpy(mesh.verticesTexCoord.data(), data.getVertexTexcoordFloat2Array(), sizeof(float)*2*data.getVerticesNumber());
-  
-    memcpy(mesh.triIndices.data(), data.getTriangleVertexIndicesArray(),   sizeof(int)*data.getIndicesNumber());
-    memcpy(mesh.matIndices.data(), data.getTriangleMaterialIndicesArray(), sizeof(int)*data.getIndicesNumber()/3);
+    memcpy(mesh2.triIndices.data(), data.getTriangleVertexIndicesArray(),   sizeof(int)*data.getIndicesNumber());
+    memcpy(mesh2.matIndices.data(), data.getTriangleMaterialIndicesArray(), sizeof(int)*data.getIndicesNumber()/3);
     
     if(!dontHaveNormals)
-      memcpy(mesh.verticesNorm.data(), data.getVertexNormalsFloat4Array(), sizeof(float)*4*data.getVerticesNumber());
+      memcpy(mesh2.verticesNorm.data(), data.getVertexNormalsFloat4Array(), sizeof(float)*4*data.getVerticesNumber());
     else
-      ComputeVertexNormals(mesh, data.getIndicesNumber(), false);
-  
-    ComputeVertexTangents(mesh, data.getIndicesNumber());
+      ComputeVertexNormals(mesh2, data.getIndicesNumber(), false);
+    
+    ComputeVertexTangents(mesh2, data.getIndicesNumber());
   
     input.vertNum       = data.getVerticesNumber();
     input.triNum        = data.getIndicesNumber();
   
-    input.pos4f         = mesh.verticesPos.data();
-    input.norm4f        = mesh.verticesNorm.data();
-    input.tan4f         = mesh.verticesTangent.data();
-    input.texcoord2f    = mesh.verticesTexCoord.data();
-    input.indices       = (const int*)mesh.triIndices.data();
-    input.triMatIndices = (const int*)mesh.matIndices.data();
+    input.pos4f         = mesh2.verticesPos.data();
+    input.norm4f        = mesh2.verticesNorm.data();
+    input.tan4f         = mesh2.verticesTangent.data();
+    input.texcoord2f    = mesh2.verticesTexCoord.data();
+    input.indices       = (const int*)mesh2.triIndices.data();
+    input.triMatIndices = (const int*)mesh2.matIndices.data();
     input.allData       = (char*)g_objManager.m_tempBuffer.data();
+    
   }
   // (2) decompress '.vsgfc' format
   //
   else if(tail == L".vsgfc")
   {
-    auto data           = HR_LoadVSGFCompressedData(path, g_objManager.m_tempBuffer);
+    data                = HR_LoadVSGFCompressedData(path, g_objManager.m_tempBuffer);
     
     input.vertNum       = data.getVerticesNumber();
     input.triNum        = data.getIndicesNumber();
@@ -810,7 +811,8 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, const std::vector<HRBatchIn
     input.allData       = dataPtr;
   }
   
-  a_pDriver->UpdateMesh(a_id, nodeXML, input, &a_batches[0], int32_t(a_batches.size()));
+  a_pDriver->UpdateMesh(a_id, nodeXML, input, a_batches.data(), int32_t(a_batches.size()));
+  
 }
 
 
