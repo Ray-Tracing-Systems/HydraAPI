@@ -41,4 +41,13 @@ struct HydraHeaderC // this header i used only for '.vsgfc', compressed format.
 };
 
 
+static inline std::wstring str_tail(const std::wstring& a_str, int a_tailSize)
+{
+  if(a_tailSize < a_str.size())
+    return a_str.substr(a_str.size() - a_tailSize);
+  else
+    return a_str;
+}
+
+
 #endif //HYDRAAPI_EX_HYDRAVSGFCOMPRESS_H

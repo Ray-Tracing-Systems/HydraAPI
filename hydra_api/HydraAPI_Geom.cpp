@@ -21,10 +21,13 @@ using namespace HydraLiteMath;
 #include "HydraXMLHelpers.h"
 #include "HydraTextureUtils.h"
 
+#include "HydraVSGFCompress.h"
+
 extern std::wstring      g_lastError;
 extern std::wstring      g_lastErrorCallerPlace;
 extern HR_ERROR_CALLBACK g_pErrorCallback;
 extern HRObjectManager   g_objManager;
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -321,6 +324,7 @@ static std::vector<T> ReadArrayFromMeshNode(pugi::xml_node meshNode, ChunkPointe
   return std::vector<T>(begin, end);
 }
 
+
 void OpenHRMesh(HRMesh* pMesh, pugi::xml_node nodeXml)
 {
   pMesh->m_input.clear();
@@ -330,10 +334,13 @@ void OpenHRMesh(HRMesh* pMesh, pugi::xml_node nodeXml)
   
   // form m_input from serialized representation ... 
   //
+  ChunkPointer chunk;
   auto chunkId = pMesh->pImpl->chunkId();
-  auto chunk   = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
 
-  if (chunk.InMemory())
+  if(chunkId != size_t(-1))
+    chunk   = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
+
+  if (chunk.InMemory() && chunkId != size_t(-1))
   {
     // (1) read common mesh attributes
     //
@@ -349,10 +356,15 @@ void OpenHRMesh(HRMesh* pMesh, pugi::xml_node nodeXml)
   }
   else
   {
-    std::wstring location = ChunkName(chunk);
+    std::wstring location   = ChunkName(chunk);
+
+    const std::wstring tail = str_tail(location, 6);
 
     HydraGeomData data;
-    data.read(location);
+    if(tail == L".vsgfc")
+      data = HR_LoadVSGFCompressedData(location.c_str(), g_objManager.m_tempBuffer);
+    else
+      data.read(location);
 
     const int vnum = data.getVerticesNumber();
     const int inum = data.getIndicesNumber();
@@ -380,11 +392,11 @@ void OpenHRMesh(HRMesh* pMesh, pugi::xml_node nodeXml)
   // set pointers
   //
   pMesh->m_inputPointers.clear();
-  pMesh->m_inputPointers.pos       = &pMesh->m_input.verticesPos[0];      pMesh->m_inputPointers.posStride = sizeof(float) * 4;
-  pMesh->m_inputPointers.normals   = &pMesh->m_input.verticesNorm[0];     pMesh->m_inputPointers.normStride = sizeof(float) * 4;
-  pMesh->m_inputPointers.tangents  = &pMesh->m_input.verticesTangent[0];  pMesh->m_inputPointers.tangStride = sizeof(float) * 4;
-  pMesh->m_inputPointers.texCoords = &pMesh->m_input.verticesTexCoord[0];
-  pMesh->m_inputPointers.mindices  = (const int*)&pMesh->m_input.matIndices[0];
+  pMesh->m_inputPointers.pos       = pMesh->m_input.verticesPos.data();      pMesh->m_inputPointers.posStride = sizeof(float) * 4;
+  pMesh->m_inputPointers.normals   = pMesh->m_input.verticesNorm.data();     pMesh->m_inputPointers.normStride = sizeof(float) * 4;
+  pMesh->m_inputPointers.tangents  = pMesh->m_input.verticesTangent.data();  pMesh->m_inputPointers.tangStride = sizeof(float) * 4;
+  pMesh->m_inputPointers.texCoords = pMesh->m_input.verticesTexCoord.data();
+  pMesh->m_inputPointers.mindices  = (const int*)pMesh->m_input.matIndices.data();
 
   // #TODO: set custom pointers
   //
@@ -1200,18 +1212,10 @@ void _hrConvertOldVSGFMesh(const std::wstring& a_path, const std::wstring& a_new
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "HydraVSGFCompress.h"
 
 std::string  ws2s(const std::wstring& s);
 std::wstring s2ws(const std::string& s);
 
-static inline std::wstring str_tail(const std::wstring& a_str, int a_tailSize)
-{
-  if(a_tailSize < a_str.size())
-    return a_str.substr(a_str.size() - a_tailSize);
-  else
-    return a_str;
-}
 
 HAPI void hrMeshSaveVSGF(HRMeshRef a_meshRef, const wchar_t* a_fileName)
 {

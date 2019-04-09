@@ -696,14 +696,6 @@ HRMeshDriverInput HR_GetMeshDataPointers(size_t a_meshId)
 
 std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndices);
 
-static inline std::wstring str_tail(const std::wstring& a_str, int a_tailSize)
-{
-  if(a_tailSize < a_str.size())
-    return a_str.substr(a_str.size() - a_tailSize);
-  else
-    return a_str;
-}
-
 void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, std::vector<HRBatchInfo>& a_batches, IHRRenderDriver* a_pDriver, const wchar_t* path, int64_t a_byteSize)
 {
   pugi::xml_node nodeXML = mesh.xml_node_immediate();

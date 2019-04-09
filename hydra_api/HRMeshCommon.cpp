@@ -220,14 +220,6 @@ uint64_t MeshVSGF::offset(const wchar_t* a_arrayname) const
 
 std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndices);
 
-static inline std::wstring str_tail(const std::wstring& a_str, int a_tailSize)
-{
-  if(a_tailSize < a_str.size())
-    return a_str.substr(a_str.size() - a_tailSize);
-  else
-    return a_str;
-}
-
 void HR_LoadVSGFCompressedBothHeaders(std::ifstream& fin,
                                       std::vector<HRBatchInfo>& a_outBatchList, HydraGeomData::Header& h1, HydraHeaderC& h2);
 
