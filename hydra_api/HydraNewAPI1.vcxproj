@@ -19,19 +19,19 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>HydraNewAPI1</RootNamespace>
     <ProjectName>HydraAPI</ProjectName>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -154,6 +154,7 @@
     <ClCompile Include="HydraPostProcessCommon.cpp" />
     <ClCompile Include="HydraPostProcessSpecial.cpp" />
     <ClCompile Include="HydraTextureUtils.cpp" />
+    <ClCompile Include="HydraVSGFCompress.cpp" />
     <ClCompile Include="HydraVSGFExport.cpp" />
     <ClCompile Include="HydraObjectManager.cpp" />
     <ClCompile Include="HydraXMLHelpers.cpp" />
@@ -188,6 +189,7 @@
     <ClInclude Include="HydraPostProcessCommon.h" />
     <ClInclude Include="HydraPostProcessSpecial.h" />
     <ClInclude Include="HydraTextureUtils.h" />
+    <ClInclude Include="HydraVSGFCompress.h" />
     <ClInclude Include="HydraXMLHelpers.h" />
     <ClInclude Include="HydraVSGFExport.h" />
     <ClInclude Include="HydraInternal.h" />
@@ -212,6 +214,9 @@
   <ItemGroup>
     <ProjectReference Include="..\clew\clew.vcxproj">
       <Project>{5f13e40f-c0f1-4ef4-a775-ab8bc703de88}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\corto\corto.vcxproj">
+      <Project>{43666dca-d7ff-411f-823f-d04cfc49669c}</Project>
     </ProjectReference>
     <ProjectReference Include="..\ies_parser\ies_parser.vcxproj">
       <Project>{1d53b494-4b7e-464b-82a1-a2052240f6ef}</Project>

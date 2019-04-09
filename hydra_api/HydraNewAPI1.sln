@@ -7,6 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HydraAPI", "HydraNewAPI1.vc
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "main", "..\main\main.vcxproj", "{F276469E-9751-4572-B988-E3130637E885}"
 	ProjectSection(ProjectDependencies) = postProject
+		{43666DCA-D7FF-411F-823F-D04CFC49669C} = {43666DCA-D7FF-411F-823F-D04CFC49669C}
 		{999F34F2-BF3C-4D55-AFDF-75235335B1A1} = {999F34F2-BF3C-4D55-AFDF-75235335B1A1}
 	EndProjectSection
 EndProject
@@ -19,6 +20,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PostProcessDLLExample", "..\PostProcessDLLExample\PostProcessDLLExample.vcxproj", "{C5AC1D8F-9BC7-467B-BC17-829F02A2831C}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mikktspace", "..\mikktspace\mikktspace.vcxproj", "{7844C04D-F5D4-4C90-B080-6744A10C3332}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "corto", "..\corto\corto.vcxproj", "{43666DCA-D7FF-411F-823F-D04CFC49669C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -114,6 +117,18 @@ Global
 		{7844C04D-F5D4-4C90-B080-6744A10C3332}.Release|Win32.Build.0 = Release|Win32
 		{7844C04D-F5D4-4C90-B080-6744A10C3332}.Release|x64.ActiveCfg = Release|x64
 		{7844C04D-F5D4-4C90-B080-6744A10C3332}.Release|x64.Build.0 = Release|x64
+		{43666DCA-D7FF-411F-823F-D04CFC49669C}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{43666DCA-D7FF-411F-823F-D04CFC49669C}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{43666DCA-D7FF-411F-823F-D04CFC49669C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{43666DCA-D7FF-411F-823F-D04CFC49669C}.Debug|Win32.Build.0 = Debug|Win32
+		{43666DCA-D7FF-411F-823F-D04CFC49669C}.Debug|x64.ActiveCfg = Debug|x64
+		{43666DCA-D7FF-411F-823F-D04CFC49669C}.Debug|x64.Build.0 = Debug|x64
+		{43666DCA-D7FF-411F-823F-D04CFC49669C}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{43666DCA-D7FF-411F-823F-D04CFC49669C}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{43666DCA-D7FF-411F-823F-D04CFC49669C}.Release|Win32.ActiveCfg = Release|Win32
+		{43666DCA-D7FF-411F-823F-D04CFC49669C}.Release|Win32.Build.0 = Release|Win32
+		{43666DCA-D7FF-411F-823F-D04CFC49669C}.Release|x64.ActiveCfg = Release|x64
+		{43666DCA-D7FF-411F-823F-D04CFC49669C}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
