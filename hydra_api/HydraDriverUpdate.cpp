@@ -821,6 +821,7 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, std::vector<HRBatchInfo>& a
   
 }
 
+const std::wstring GetRealFilePathOfDelayedMesh(pugi::xml_node a_node);
 
 /////
 //
@@ -851,11 +852,8 @@ int32_t HR_DriverUpdateMeshes(HRSceneInst& scn, ChangeList& objList, IHRRenderDr
     HRMeshDriverInput input = HR_GetMeshDataPointers(id);
     pugi::xml_node meshNode = mesh.xml_node_immediate();
 
-    const int delayedLoad          = meshNode.attribute(L"dl").as_int();
-    const std::wstring locStr      = g_objManager.GetLoc(meshNode);
-    const wchar_t* path            = (delayedLoad == 1) ? meshNode.attribute(L"path").as_string() : locStr.c_str();
-
-    //if(std::wstring(path) == L"") then get path from "loc" due to we actually copied file to 'data' folder // #TODO: implement this!
+    const std::wstring filePathStr = GetRealFilePathOfDelayedMesh(meshNode);
+    const wchar_t* path            = filePathStr.c_str();
 
     if (mesh.pImpl != nullptr)
     {

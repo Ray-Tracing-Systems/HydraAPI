@@ -68,12 +68,25 @@ HRMaterialRef _hrMaterialCreateFromNode(pugi::xml_node a_node)
   return ref;
 }
 
-HAPI HRMeshRef _hrMeshCreateFromNode(pugi::xml_node a_node)
+const std::wstring GetRealFilePathOfDelayedMesh(pugi::xml_node a_node)
 {
   const std::wstring dl       = a_node.attribute(L"dl").as_string();
   const std::wstring loc      = g_objManager.GetLoc(a_node);
   const wchar_t* a_objectName = a_node.attribute(L"name").as_string();
   const wchar_t* a_fileName   = (dl == L"1") ? a_node.attribute(L"path").as_string() : loc.c_str();
+
+  if(std::wstring(a_fileName) == L"") //  then get path from "loc" due to we actually copied file to 'data' folder
+    return loc;
+  else
+    return std::wstring(a_fileName);
+}
+
+
+HAPI HRMeshRef _hrMeshCreateFromNode(pugi::xml_node a_node)
+{
+  const std::wstring filePathStr = GetRealFilePathOfDelayedMesh(a_node);
+  const wchar_t* a_fileName      = filePathStr.c_str();
+  const wchar_t* a_objectName    = a_node.attribute(L"name").as_string();
 
   HRMeshRef ref;
 
