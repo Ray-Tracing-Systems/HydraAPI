@@ -130,7 +130,7 @@ struct MeshVSGF : public IHRMesh
 {
   MeshVSGF(){}
   MeshVSGF(size_t a_sz, size_t a_chId) : m_sizeInBytes(a_sz), m_chunkId(a_chId), m_vertNum(0),
-                                         m_indNum(0), m_bbox(BBox()) { m_matDrawList.reserve(100); }
+                                         m_indNum(0), m_bbox(BBox()), m_hasTangentOnLoad(true), m_hasNormalsOnLoad(true) { m_matDrawList.reserve(100); }
 
   uint64_t chunkId() const override { return uint64_t(m_chunkId); }
   uint64_t offset (const wchar_t* a_arrayname) const override;
@@ -162,6 +162,7 @@ struct MeshVSGF : public IHRMesh
   BBox getBBox() const override { return m_bbox;}
   
   const std::vector<HRBatchInfo>& MList() const override { return m_matDrawList; }
+  std::vector<HRBatchInfo>&       MList() override { return m_matDrawList; }
 
   const std::unordered_map<std::wstring, std::tuple<std::wstring, size_t, size_t, int> >& GetOffsAndSizeForAttrs() const override { return m_custAttrOffsAndSize; }
 
@@ -174,13 +175,17 @@ struct MeshVSGF : public IHRMesh
   std::vector<HRBatchInfo> m_matDrawList;
   BBox m_bbox;
 
+  bool m_hasTangentOnLoad;
+  bool m_hasNormalsOnLoad;
+
   std::unordered_map<std::wstring, std::tuple<std::wstring, size_t, size_t, int> > m_custAttrOffsAndSize;
 };
 
 
 uint64_t MeshVSGF::offset(const wchar_t* a_arrayname) const 
 {
-  const VSGFOffsets offsets = CalcOffsets(m_vertNum, m_indNum);
+
+  const VSGFOffsets offsets = CalcOffsets(m_vertNum, m_indNum, m_hasTangentOnLoad, m_hasNormalsOnLoad);
   
   if (std::wstring(a_arrayname) == L"pos")
   {
@@ -267,7 +272,10 @@ protected:
       m_sizeInBytes = header.fileSizeInBytes;
       m_chunkId     = size_t(-1);
 
-      const auto matIndOffset = this->offset(L"mind");
+      const bool hasNormalsOnLoad = ((header.flags & HydraGeomData::HAS_NO_NORMALS) == 0);
+      const bool hasTangentOnLoad = ((header.flags & HydraGeomData::HAS_TANGENT)    != 0);
+      const auto allOffsets       = CalcOffsets(header.verticesNum, header.indicesNum, hasTangentOnLoad, hasNormalsOnLoad);
+      const auto matIndOffset     = allOffsets.offsetMind;
 
       std::vector<uint32_t> matIndixes(m_indNum/3);
       fin.seekg (matIndOffset);
@@ -277,6 +285,9 @@ protected:
       m_matDrawList = FormMatDrawListRLE(matIndixes);
       //m_bbox;        // don't evaluate this for Proxy Object due to this is long operation
     }
+
+    m_hasNormalsOnLoad = ((header.flags & HydraGeomData::HAS_NO_NORMALS) == 0);
+    m_hasTangentOnLoad = ((header.flags & HydraGeomData::HAS_TANGENT)    != 0);
   }
 
   const void* GetData() const override  // yes, don;t try to get data of MeshVSGFProxy. Find another option.
@@ -557,6 +568,6 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromFile(HRMesh* pSysObj,
 
 std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFProxy(const wchar_t* a_fileName)
 {
-  std::shared_ptr<MeshVSGFProxy> pImpl = std::make_shared<MeshVSGFProxy>(a_fileName);
+  std::shared_ptr<MeshVSGFProxy> pImpl = std::make_shared<MeshVSGFProxy>(a_fileName); // #TODO: check if file don't exists and return nullptr if it doesnt
   return pImpl;
 }

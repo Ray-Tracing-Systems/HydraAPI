@@ -92,5 +92,5 @@ struct VSGFOffsets
   uint64_t offsetMind;
 };
 
-VSGFOffsets CalcOffsets(int numVert, int numInd);
+VSGFOffsets CalcOffsets(int numVert, int numInd, bool a_haveTangents = true, bool a_haveNormals = true);
 

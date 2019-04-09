@@ -211,7 +211,8 @@ void FindNewObjects(ChangeList& objects, HRSceneInst& scn)
 
       if (pImpl != nullptr)
       {
-        for(const auto& trio : pImpl->MList())
+        const auto& mlist = pImpl->MList();
+        for(const auto& trio : mlist)
         {
           objects.matUsed.insert(trio.matId);
           AddUsedMaterialChildrenRecursive(objects, trio.matId);
@@ -703,7 +704,7 @@ static inline std::wstring str_tail(const std::wstring& a_str, int a_tailSize)
     return a_str;
 }
 
-void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, const std::vector<HRBatchInfo>& a_batches, IHRRenderDriver* a_pDriver, const wchar_t* path, int64_t a_byteSize)
+void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, std::vector<HRBatchInfo>& a_batches, IHRRenderDriver* a_pDriver, const wchar_t* path, int64_t a_byteSize)
 {
   pugi::xml_node nodeXML = mesh.xml_node_immediate();
 
@@ -754,7 +755,9 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, const std::vector<HRBatchIn
       ComputeVertexNormals(mesh2, data.getIndicesNumber(), false);
     
     ComputeVertexTangents(mesh2, data.getIndicesNumber());
-  
+
+    a_batches           = FormMatDrawListRLE(mesh2.matIndices);
+
     input.vertNum       = data.getVerticesNumber();
     input.triNum        = data.getIndicesNumber()/3;
   
@@ -765,14 +768,13 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, const std::vector<HRBatchIn
     input.indices       = (const int*)mesh2.triIndices.data();
     input.triMatIndices = (const int*)mesh2.matIndices.data();
     input.allData       = (char*)g_objManager.m_tempBuffer.data();
-    
   }
   // (2) decompress '.vsgfc' format
   //
   else if(tail == L".vsgfc")
   {
-    data                = HR_LoadVSGFCompressedData(path, g_objManager.m_tempBuffer);
-    
+    data                = HR_LoadVSGFCompressedData(path, g_objManager.m_tempBuffer, &a_batches);
+
     input.vertNum       = data.getVerticesNumber();
     input.triNum        = data.getIndicesNumber()/3;
   
@@ -809,8 +811,12 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, const std::vector<HRBatchIn
     input.indices       = (int*)  (dataPtr + offsetInd);
     input.triMatIndices = (int*)  (dataPtr + offsetMInd);
     input.allData       = dataPtr;
+
+    a_batches           = FormMatDrawListRLE(std::vector<uint32_t>(input.triMatIndices, input.triMatIndices + input.triNum));
   }
-  
+
+  //#TODO: add debug assert/check that all materials from 'a_batches' were updated previously to 'a_pDriver'
+
   a_pDriver->UpdateMesh(a_id, nodeXML, input, a_batches.data(), int32_t(a_batches.size()));
   
 }
@@ -853,7 +859,7 @@ int32_t HR_DriverUpdateMeshes(HRSceneInst& scn, ChangeList& objList, IHRRenderDr
 
     if (mesh.pImpl != nullptr)
     {
-      const auto& mlist = mesh.pImpl->MList();
+      auto& mlist = mesh.pImpl->MList();
 
       if (input.pos4f == nullptr)
       {
@@ -907,7 +913,7 @@ int32_t _hr_UtilityDriverUpdateMeshes(HRSceneInst& scn, IHRRenderDriver* a_pDriv
 
     if (mesh.pImpl != nullptr)
     {
-      const auto& mlist = mesh.pImpl->MList();
+      auto& mlist = mesh.pImpl->MList();
 
       if (input.pos4f == nullptr)
       {
@@ -1215,12 +1221,12 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
     g_objManager.driverAllocated.insert(a_pDriver);
     HRDriverAllocInfo allocInfo;
 
-	const auto p1 = std::max_element(objList.meshUsed.begin(), objList.meshUsed.end());
-	const auto p2 = std::max_element(objList.texturesUsed.begin(), objList.texturesUsed.end());
-	const auto p3 = std::max_element(objList.matUsed.begin(), objList.matUsed.end());
-	const auto p4 = std::max_element(objList.lightUsed.begin(), objList.lightUsed.end());
+	  const auto p1 = std::max_element(objList.meshUsed.begin(), objList.meshUsed.end());
+	  const auto p2 = std::max_element(objList.texturesUsed.begin(), objList.texturesUsed.end());
+	  const auto p3 = std::max_element(objList.matUsed.begin(), objList.matUsed.end());
+	  const auto p4 = std::max_element(objList.lightUsed.begin(), objList.lightUsed.end());
 
-	const size_t geomNum  = (p1 == objList.meshUsed.end())     ? 10 : *p1;
+	  const size_t geomNum  = (p1 == objList.meshUsed.end())     ? 10 : *p1;
     const size_t imgNum   = (p2 == objList.texturesUsed.end()) ? 10 : *p2;
     const size_t matNum   = (p3 == objList.matUsed.end())      ? 10 : *p3;
     const size_t lightNum = (p4 == objList.lightUsed.end())    ? 10 : *p4;

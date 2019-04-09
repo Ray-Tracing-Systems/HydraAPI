@@ -82,6 +82,8 @@ struct IHRMesh : public IHRObject ///< Not empty Data (reimplement DataSerialize
   virtual BBox getBBox() const { return BBox();}
 
   virtual const std::vector<HRBatchInfo>& MList() const = 0;
+  virtual       std::vector<HRBatchInfo>& MList()       = 0;
+
   virtual const std::unordered_map<std::wstring, std::tuple<std::wstring, size_t, size_t, int> >& GetOffsAndSizeForAttrs() const = 0;
 };
 

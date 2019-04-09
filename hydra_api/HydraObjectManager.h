@@ -176,13 +176,13 @@ struct HRMesh : public HRObject<IHRMesh>
   
     void resize(size_t vNum, size_t indNum)
     {
-      verticesPos.resize     (vNum * 4 + 10);
-      verticesNorm.resize    (vNum * 4 + 10);
-      verticesTangent.resize (vNum * 4 + 10);
-      verticesTexCoord.resize(vNum * 2 + 10);
+      verticesPos.resize     (vNum * 4);
+      verticesNorm.resize    (vNum * 4);
+      verticesTangent.resize (vNum * 4);
+      verticesTexCoord.resize(vNum * 2);
       
-      triIndices.resize      (indNum + 10);
-      matIndices.resize      (indNum / 3 + 10);
+      triIndices.resize      (indNum);
+      matIndices.resize      (indNum / 3);
     
       for (auto& arr : customArrays)
       {

@@ -235,7 +235,7 @@ void HR_LoadVSGFCompressedBothHeaders(std::ifstream& fin,
 }
 
 
-HydraGeomData HR_LoadVSGFCompressedData(const wchar_t* a_fileName, std::vector<int>& dataBuffer)
+HydraGeomData HR_LoadVSGFCompressedData(const wchar_t* a_fileName, std::vector<int>& dataBuffer, std::vector<HRBatchInfo>* pOutbatchList)
 {
   std::ifstream fin;
   hr_ifstream_open(fin, a_fileName);
@@ -269,6 +269,9 @@ HydraGeomData HR_LoadVSGFCompressedData(const wchar_t* a_fileName, std::vector<i
     for(int i=batch.triBegin; i < batch.triEnd; i++)
       pMaterialsId[i] = batch.matId;
   }
+
+  if(pOutbatchList != nullptr)
+    (*pOutbatchList) = batchList;
 
   return data;
 }

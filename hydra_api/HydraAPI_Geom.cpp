@@ -198,12 +198,13 @@ HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName, bool a_copyToLo
   if (a_fileName == nullptr || std::wstring(a_fileName) == L"")
     return HRMeshRef();
 
+
   HRMeshRef ref = hrMeshCreate(a_fileName);
 
   HRMesh* pMesh = g_objManager.PtrById(ref);
   if (pMesh == nullptr)
   {
-    HrError(L"hrMeshClose: nullptr input");
+    HrError(L"hrMeshCreateFromFileDL: nullptr created mesh");
     return ref;
   }
 
@@ -239,9 +240,10 @@ HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName, bool a_copyToLo
     nodeXml.attribute(L"path") = L"";
   }
 
-  /*
+
   // (1) to have this function works, we temporary convert it via common mesh that placed in memory, not really DelayedLoad (!!!)
   //
+  /*
   HydraGeomData data;
   data.read(a_fileName);
 
@@ -265,7 +267,6 @@ HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName, bool a_copyToLo
   }
   hrMeshClose(ref);
   */
-
   return ref;
 }
 

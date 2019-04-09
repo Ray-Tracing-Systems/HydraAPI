@@ -279,16 +279,37 @@ void HydraGeomData::read(const std::wstring& a_fileName)
   fin.close();
 }
 
-VSGFOffsets CalcOffsets(int numVert, int numInd)
+VSGFOffsets CalcOffsets(int numVert, int numInd, bool a_haveTangents, bool a_haveNormals)
 {
   VSGFOffsets res;
 
-  res.offsetPos  = sizeof(HydraGeomData::Header);
-  res.offsetNorm = res.offsetPos  + numVert*sizeof(float)*4; // after pos
-  res.offsetTang = res.offsetNorm + numVert*sizeof(float)*4; // after norm
-  res.offsetTexc = res.offsetTang + numVert*sizeof(float)*4; // after tangent
-  res.offsetInd  = res.offsetTexc + numVert*sizeof(float)*2; // after texcoord
-  res.offsetMind = res.offsetInd  + numInd*sizeof(int);      // after ind
+  if(a_haveTangents && a_haveNormals)
+  {
+    res.offsetPos  = sizeof(HydraGeomData::Header);
+    res.offsetNorm = res.offsetPos  + numVert * sizeof(float) * 4; // after pos
+    res.offsetTang = res.offsetNorm + numVert * sizeof(float) * 4; // after norm
+    res.offsetTexc = res.offsetTang + numVert * sizeof(float) * 4; // after tangent
+    res.offsetInd  = res.offsetTexc + numVert * sizeof(float) * 2; // after texcoord
+    res.offsetMind = res.offsetInd  + numInd * sizeof(int);        // after ind
+  }
+  else if (!a_haveTangents && a_haveNormals)
+  {
+    res.offsetPos  = sizeof(HydraGeomData::Header);
+    res.offsetNorm = res.offsetPos  + numVert * sizeof(float) * 4; // after pos
+    res.offsetTang = res.offsetNorm; // res.offsetNorm + numVert * sizeof(float) * 4; // after norm
+    res.offsetTexc = res.offsetTang + numVert * sizeof(float) * 4; // after tangent
+    res.offsetInd  = res.offsetTexc + numVert * sizeof(float) * 2; // after texcoord
+    res.offsetMind = res.offsetInd  + numInd * sizeof(int);        // after ind
+  }
+  else
+  {
+    res.offsetPos  = sizeof(HydraGeomData::Header);
+    res.offsetNorm = res.offsetPos;  // res.offsetPos  + numVert * sizeof(float) * 4; // after pos
+    res.offsetTang = res.offsetNorm; // res.offsetNorm + numVert * sizeof(float) * 4; // after norm
+    res.offsetTexc = res.offsetTang + numVert * sizeof(float) * 4; // after tangent
+    res.offsetInd  = res.offsetTexc + numVert * sizeof(float) * 2; // after texcoord
+    res.offsetMind = res.offsetInd  + numInd * sizeof(int);        // after ind
+  }
 
   return res;
 }

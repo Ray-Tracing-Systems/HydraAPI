@@ -2563,26 +2563,12 @@ bool test49_light_geom_disk()
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  HRMeshRef teapotRef = hrMeshCreateFromFileDL(L"data/meshes/teapot.vsgf"); // chunk_00009.vsgf // teapot.vsgf // chunk_00591.vsgf
+  HRMeshRef teapotRef   = hrMeshCreateFromFileDL(L"data/meshes/teapot.vsgf"); // chunk_00009.vsgf // teapot.vsgf // chunk_00591.vsgf
 
   HRMeshRef cubeOpenRef = hrMeshCreate(L"my_box");
-  HRMeshRef planeRef = hrMeshCreate(L"my_plane");
-  HRMeshRef sphereRef = hrMeshCreate(L"my_sphere");
-  HRMeshRef torusRef = hrMeshCreate(L"my_torus");
-
-  // hrMeshOpen(cubeRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
-  // {
-  //   hrMeshVertexAttribPointer4f(cubeRef, L"pos", &cube.vPos[0]);
-  //   hrMeshVertexAttribPointer4f(cubeRef, L"norm", &cube.vNorm[0]);
-  //   hrMeshVertexAttribPointer2f(cubeRef, L"texcoord", &cube.vTexCoord[0]);
-  // 
-  //   int cubeMatIndices[12] = { 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 2, 2 };
-  // 
-  //   //hrMeshMaterialId(cubeRef, 0);
-  //   hrMeshPrimitiveAttribPointer1i(cubeRef, L"mind", cubeMatIndices);
-  //   hrMeshAppendTriangles3(cubeRef, int(cube.triIndices.size()), &cube.triIndices[0]);
-  // }
-  // hrMeshClose(cubeRef);
+  HRMeshRef planeRef    = hrMeshCreate(L"my_plane");
+  HRMeshRef sphereRef   = hrMeshCreate(L"my_sphere");
+  HRMeshRef torusRef    = hrMeshCreate(L"my_torus");
 
   hrMeshOpen(cubeOpenRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
   {

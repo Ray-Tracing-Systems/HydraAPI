@@ -77,21 +77,16 @@ HAPI HRMeshRef _hrMeshCreateFromNode(pugi::xml_node a_node)
 
   HRMeshRef ref;
 
-  ref.id = a_node.attribute(L"id").as_int();//HR_IDType(g_objManager.scnData.meshes.size());
-
-  if(ref.id == 43)
-    std::cout <<"1";
+  ref.id = a_node.attribute(L"id").as_int(); //HR_IDType(g_objManager.scnData.meshes.size());
 
   HRMesh mesh;
   mesh.name = std::wstring(a_objectName);
   mesh.id   = ref.id;
   mesh.update_this(a_node);
   g_objManager.scnData.meshes.push_back(mesh);
-//  g_objManager.scnData.meshes[ref.id].update_this(a_node);
-//  g_objManager.scnData.meshes[ref.id].id = ref.id;
 
   HRMesh* pMesh = &g_objManager.scnData.meshes.back();
-  pMesh->pImpl  = g_objManager.m_pFactory->CreateVSGFFromFile(pMesh, a_fileName, a_node); //#TODO: load custom attributes somewhere inside
+  pMesh->pImpl  = g_objManager.m_pFactory->CreateVSGFProxy(a_fileName); // delay mesh load untill it will be needed by RenderDriver::UpdateMesh
 
   if (pMesh->pImpl == nullptr)
     HrError(L"LoadExistingLibrary, _hrMeshCreateFromNode can't load mesh from location = ", a_fileName);
