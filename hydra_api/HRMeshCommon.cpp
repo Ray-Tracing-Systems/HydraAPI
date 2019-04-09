@@ -346,8 +346,7 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
   const size_t totalVertNumber     = input.verticesPos.size() / 4;
   const size_t totalMeshTriIndices = input.triIndices.size();
 
-
-  /* sorting triIndices by matIndices */
+  // sorting triIndices by matIndices
   
   const uint32_t* triIndices = &input.triIndices[0];
   const uint32_t* matIndices = &input.matIndices[0];

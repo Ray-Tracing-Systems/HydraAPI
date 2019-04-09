@@ -138,10 +138,10 @@ int main(int argc, const char** argv)
     //demo_01_plane_box();
     //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_46", L"opengl1Debug");
     
-    run_all_api_tests(88);
+    //run_all_api_tests(88);
     //run_all_geo_tests();
     //run_all_mtl_tests();
-    run_all_lgt_tests();
+    //run_all_lgt_tests();
 	  //run_all_alg_tests();
 	  //run_all_ipp_tests();
 
@@ -157,7 +157,7 @@ int main(int argc, const char** argv)
     //std::cout << test49_light_geom_disk() << std::endl;
     
     //test46_light_geom_rect();
-    //std::cout << test89_proc_texture_dirty() << std::endl;
+    std::cout << test89_proc_texture_dirty() << std::endl;
     //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_49", L"opengl1"); // &test02_draw
     //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_38", L"opengl1Debug"); // &test02_draw
   

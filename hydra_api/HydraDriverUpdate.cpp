@@ -696,6 +696,31 @@ HRMeshDriverInput HR_GetMeshDataPointers(size_t a_meshId)
 
 std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndices);
 
+void HR_CopyMeshToInputMeshFromHydraGeomData(const HydraGeomData& data,  HRMesh::InputTriMesh& mesh2)
+{
+  HydraGeomData::Header header = data.getHeader();
+  const bool dontHaveTangents  = (header.flags & HydraGeomData::HAS_TANGENT)    == 0;
+  const bool dontHaveNormals   = (header.flags & HydraGeomData::HAS_NO_NORMALS) != 0;
+
+  mesh2.resize(data.getVerticesNumber(), data.getIndicesNumber());
+
+  memcpy(mesh2.verticesPos.data(),      data.getVertexPositionsFloat4Array(), sizeof(float)*4*data.getVerticesNumber());
+  memcpy(mesh2.verticesTexCoord.data(), data.getVertexTexcoordFloat2Array(),  sizeof(float)*2*data.getVerticesNumber());
+
+  memcpy(mesh2.triIndices.data(), data.getTriangleVertexIndicesArray(),   sizeof(int)*data.getIndicesNumber());
+  memcpy(mesh2.matIndices.data(), data.getTriangleMaterialIndicesArray(), sizeof(int)*data.getIndicesNumber()/3);
+
+  if(!dontHaveNormals)
+    memcpy(mesh2.verticesNorm.data(), data.getVertexNormalsFloat4Array(), sizeof(float)*4*data.getVerticesNumber());
+  else
+    ComputeVertexNormals(mesh2, data.getIndicesNumber(), false);
+
+  if(dontHaveTangents)
+    ComputeVertexTangents(mesh2, data.getIndicesNumber());
+  else
+    memcpy(mesh2.verticesTangent.data(), data.getVertexTangentsFloat4Array(), sizeof(float)*4*data.getVerticesNumber());
+}
+
 void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, std::vector<HRBatchInfo>& a_batches, IHRRenderDriver* a_pDriver, const wchar_t* path, int64_t a_byteSize)
 {
   pugi::xml_node nodeXML = mesh.xml_node_immediate();
@@ -732,21 +757,7 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, std::vector<HRBatchInfo>& a
   if(dontHaveTangents || dontHaveNormals)
   {
     data.read(path);
-    
-    mesh2.resize(data.getVerticesNumber(), data.getIndicesNumber());
-  
-    memcpy(mesh2.verticesPos.data(),      data.getVertexPositionsFloat4Array(), sizeof(float)*4*data.getVerticesNumber());
-    memcpy(mesh2.verticesTexCoord.data(), data.getVertexTexcoordFloat2Array(),  sizeof(float)*2*data.getVerticesNumber());
-  
-    memcpy(mesh2.triIndices.data(), data.getTriangleVertexIndicesArray(),   sizeof(int)*data.getIndicesNumber());
-    memcpy(mesh2.matIndices.data(), data.getTriangleMaterialIndicesArray(), sizeof(int)*data.getIndicesNumber()/3);
-    
-    if(!dontHaveNormals)
-      memcpy(mesh2.verticesNorm.data(), data.getVertexNormalsFloat4Array(), sizeof(float)*4*data.getVerticesNumber());
-    else
-      ComputeVertexNormals(mesh2, data.getIndicesNumber(), false);
-    
-    ComputeVertexTangents(mesh2, data.getIndicesNumber());
+    HR_CopyMeshToInputMeshFromHydraGeomData(data, mesh2);
 
     a_batches           = FormMatDrawListRLE(mesh2.matIndices);
 
@@ -759,7 +770,7 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, std::vector<HRBatchInfo>& a
     input.texcoord2f    = mesh2.verticesTexCoord.data();
     input.indices       = (const int*)mesh2.triIndices.data();
     input.triMatIndices = (const int*)mesh2.matIndices.data();
-    input.allData       = (char*)g_objManager.m_tempBuffer.data();
+    input.allData       = nullptr;
   }
   // (2) decompress '.vsgfc' format
   //

@@ -324,6 +324,8 @@ static std::vector<T> ReadArrayFromMeshNode(pugi::xml_node meshNode, ChunkPointe
   return std::vector<T>(begin, end);
 }
 
+const std::wstring GetRealFilePathOfDelayedMesh(pugi::xml_node a_node);
+void HR_CopyMeshToInputMeshFromHydraGeomData(const HydraGeomData& data,  HRMesh::InputTriMesh& mesh2);
 
 void OpenHRMesh(HRMesh* pMesh, pugi::xml_node nodeXml)
 {
@@ -356,7 +358,7 @@ void OpenHRMesh(HRMesh* pMesh, pugi::xml_node nodeXml)
   }
   else
   {
-    std::wstring location   = ChunkName(chunk);
+    std::wstring location   = GetRealFilePathOfDelayedMesh(nodeXml); // ChunkName(chunk);
 
     const std::wstring tail = str_tail(location, 6);
 
@@ -369,24 +371,28 @@ void OpenHRMesh(HRMesh* pMesh, pugi::xml_node nodeXml)
     const int vnum = data.getVerticesNumber();
     const int inum = data.getIndicesNumber();
 
-    if (vnum == 0)
+    if (vnum == 0 || inum == 0)
     {
       HrError(L"OpenHRMesh, can't import existing mesh at loc = ", location.c_str());
       return;
     }
 
-    // (1) read all mesh attributes
-    //
-    pMesh->m_input.verticesPos      = std::vector<float>(data.getVertexPositionsFloat4Array(), data.getVertexPositionsFloat4Array() + 4 * vnum);
-    pMesh->m_input.verticesNorm     = std::vector<float>(data.getVertexNormalsFloat4Array(),   data.getVertexNormalsFloat4Array() + 4 * vnum);
-    pMesh->m_input.verticesTangent  = std::vector<float>(data.getVertexTangentsFloat4Array(),  data.getVertexTangentsFloat4Array() + 4 * vnum);
-    pMesh->m_input.verticesTexCoord = std::vector<float>(data.getVertexTexcoordFloat2Array(),  data.getVertexTexcoordFloat2Array() + 2 * vnum);
+    HR_CopyMeshToInputMeshFromHydraGeomData(data, pMesh->m_input);
 
-    pMesh->m_input.triIndices       = std::vector<uint32_t>(data.getTriangleVertexIndicesArray(),   data.getTriangleVertexIndicesArray() + inum);
-    pMesh->m_input.matIndices       = std::vector<uint32_t>(data.getTriangleMaterialIndicesArray(), data.getTriangleMaterialIndicesArray() + inum / 3);
+    //pMesh->pImpl->MList() = FormMatDrawListRLE(pMesh->m_input.matIndices);
 
-    // (2) #TODO: read custom mesh attributes
+    //// (1) read all mesh attributes
+    ////
+    //pMesh->m_input.verticesPos      = std::vector<float>(data.getVertexPositionsFloat4Array(), data.getVertexPositionsFloat4Array() + 4 * vnum);
+    //pMesh->m_input.verticesNorm     = std::vector<float>(data.getVertexNormalsFloat4Array(),   data.getVertexNormalsFloat4Array() + 4 * vnum);
+    //pMesh->m_input.verticesTangent  = std::vector<float>(data.getVertexTangentsFloat4Array(),  data.getVertexTangentsFloat4Array() + 4 * vnum);
+    //pMesh->m_input.verticesTexCoord = std::vector<float>(data.getVertexTexcoordFloat2Array(),  data.getVertexTexcoordFloat2Array() + 2 * vnum);
     //
+    //pMesh->m_input.triIndices       = std::vector<uint32_t>(data.getTriangleVertexIndicesArray(),   data.getTriangleVertexIndicesArray() + inum);
+    //pMesh->m_input.matIndices       = std::vector<uint32_t>(data.getTriangleMaterialIndicesArray(), data.getTriangleMaterialIndicesArray() + inum / 3);
+    //
+    //// (2) #TODO: read custom mesh attributes
+    ////
   }
 
   // set pointers
@@ -491,7 +497,8 @@ HAPI void hrMeshClose(HRMeshRef a_mesh, bool a_compress)
   pMesh->wasChanged = true;
   pMesh->m_empty    = (nodeXml.attribute(L"bytesize").as_int() == 0);
   pMesh->m_input.m_saveCompressed = a_compress;
-  
+
+  nodeXml.attribute(L"dl") = 0; // if we 'open/close' mesh then it became common, not delayed load object
 }
 
 
