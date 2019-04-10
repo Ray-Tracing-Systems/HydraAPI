@@ -149,7 +149,7 @@ struct MeshVSGF : public IHRMesh
   size_t EstimatedDataSizeInBytes() const override
   {
     return m_vertNum*(sizeof(float)*4*3 + sizeof(float)*2) +
-           m_indNum*sizeof(int) + m_indNum*sizeof(int)/3   +
+           m_indNum*sizeof(int) + (m_indNum*sizeof(int))/3 +
            sizeof(HydraGeomData::Header) + 1024;
   }
   
