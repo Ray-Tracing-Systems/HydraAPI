@@ -1156,8 +1156,10 @@ namespace HRUtils
   };
 
   BBox GetMeshBBox(HRMeshRef);
+
   BBox transformBBox(const BBox &a_bbox, const float m[16]);
 
+  void getRandomPointsOnMesh(HRMeshRef mesh_ref, float *points, uint32_t n_points, bool tri_area_weighted, uint32_t seed = 0u);
 
   HRTextureNodeRef Cube2SphereLDR(HRTextureNodeRef a_cube[6]);
 

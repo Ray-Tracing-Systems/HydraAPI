@@ -18,6 +18,8 @@
 #include <algorithm>
 
 #include <cmath>
+#include <random>
+
 using std::isnan;
 using std::isinf;
 
@@ -1846,6 +1848,115 @@ void runTSpaceCalc(HRMeshRef mesh_ref, bool basic)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//// Mesh sampling
+
+void HRUtils::getRandomPointsOnMesh(HRMeshRef mesh_ref, float *points, uint32_t n_points, bool tri_area_weighted, uint32_t seed)
+{
+  HRMesh *pMesh = g_objManager.PtrById(mesh_ref);
+
+  if (pMesh == nullptr)
+  {
+    HrError(L"HRUtils::getRandomPointsOnMesh: nullptr input");
+    return;
+  }
+
+  if(points == nullptr)
+  {
+    HrError(L"HRUtils::getRandomPointsOnMesh: points is nullptr");
+    return;
+  }
+
+  if (!pMesh->opened)
+  {
+    hrMeshOpen(mesh_ref, HR_TRIANGLE_IND3, HR_OPEN_EXISTING);
+  }
+
+  HRMesh::InputTriMesh &mesh = pMesh->m_input;
+
+  uint32_t vert_num = mesh.verticesPos.size();
+  uint32_t tri_num = mesh.triIndices.size() / 3;
+
+//  std::random_device rand;
+  std::mt19937 rng(seed);
+  std::uniform_real_distribution<float> select(0.0f, 1.0f);
+
+  std::vector<uint32_t> triangle_indices;
+  if(tri_area_weighted)
+  {
+    float min_area = std::numeric_limits<float>::max();
+    std::vector<float> triangle_areas(tri_num, 0.0f);
+    for(uint32_t i = 0; i < tri_num; ++i )
+    {
+      uint32_t idx_A = mesh.triIndices.at(i * 3 + 0);
+      uint32_t idx_B = mesh.triIndices.at(i * 3 + 1);
+      uint32_t idx_C = mesh.triIndices.at(i * 3 + 2);
+      float3 A = make_float3(mesh.verticesPos.at(idx_A * 4 + 0), mesh.verticesPos.at(idx_A * 4 + 1), mesh.verticesPos.at(idx_A * 4 + 2));
+      float3 B = make_float3(mesh.verticesPos.at(idx_B * 4 + 0), mesh.verticesPos.at(idx_B * 4 + 1), mesh.verticesPos.at(idx_B * 4 + 2));
+      float3 C = make_float3(mesh.verticesPos.at(idx_C * 4 + 0), mesh.verticesPos.at(idx_C * 4 + 1), mesh.verticesPos.at(idx_C * 4 + 2));
+
+      float3 edge1A = normalize(B - A);
+      float3 edge2A = normalize(C - A);
+
+      float face_area = 0.5f * sqrtf(powf(edge1A.y * edge2A.z - edge1A.z * edge2A.y, 2) +
+                                     powf(edge1A.z * edge2A.x - edge1A.x * edge2A.z, 2) +
+                                     powf(edge1A.x * edge2A.y - edge1A.y * edge2A.x, 2));
+
+//      float cos_theta = dot(edge1A, edge2A);
+//      float sin_theta = sqrtf(1.0f - cos_theta * cos_theta);
+//      float face_area = 0.5f * dot(edge1A, edge1A) * dot(edge2A, edge2A) * sin_theta;
+
+      if(face_area < min_area)
+        min_area = face_area;
+
+      triangle_areas[i] = face_area;
+    }
+
+    //std::vector<uint32_t> tmp_vec(triangle_areas.size(), 0u);
+    for(uint32_t i = 0; i < triangle_areas.size(); ++i)
+    {
+      auto tmp = static_cast<uint32_t >(std::ceil(triangle_areas[i] / min_area));
+
+      for(int j = 0; j <= tmp; ++j)
+        triangle_indices.push_back(i);
+    }
+  }
+
+
+  for(uint32_t i = 0; i < n_points; ++i)
+  {
+    uint32_t triangle = 0u;
+    if(tri_area_weighted)
+      triangle = triangle_indices[uint32_t(triangle_indices.size() * select(rng))];
+    else
+      triangle = uint32_t(tri_num * select(rng));
+
+    uint32_t idx_A = mesh.triIndices.at(triangle * 3 + 0);
+    uint32_t idx_B = mesh.triIndices.at(triangle * 3 + 1);
+    uint32_t idx_C = mesh.triIndices.at(triangle * 3 + 2);
+
+    float3 A = make_float3(mesh.verticesPos.at(idx_A * 4 + 0), mesh.verticesPos.at(idx_A * 4 + 1), mesh.verticesPos.at(idx_A * 4 + 2));
+    float3 B = make_float3(mesh.verticesPos.at(idx_B * 4 + 0), mesh.verticesPos.at(idx_B * 4 + 1), mesh.verticesPos.at(idx_B * 4 + 2));
+    float3 C = make_float3(mesh.verticesPos.at(idx_C * 4 + 0), mesh.verticesPos.at(idx_C * 4 + 1), mesh.verticesPos.at(idx_C * 4 + 2));
+
+    float u = select(rng);
+    float v = select(rng);
+    if( u + v > 1.0f)
+    {
+      u = 1.0f - u;
+      v = 1.0f - v;
+    }
+
+    float3 pt = u * A + v * B + (1 - (u + v)) * C;
+
+    points[i * 3 + 0] = pt.x;
+    points[i * 3 + 1] = pt.y;
+    points[i * 3 + 2] = pt.z;
+  }
+}
+
+
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
