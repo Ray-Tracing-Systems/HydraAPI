@@ -710,7 +710,10 @@ std::unique_ptr<IHRRenderDriver> CreateRenderFromString(const wchar_t *a_classNa
   else if (!wcscmp(a_className, L"opengl3Utility"))
     return std::unique_ptr<IHRRenderDriver>(CreateOpenGL3_Utilty_RenderDriver());
   else if (!wcscmp(a_className, L"vulkan"))
-    return std::unique_ptr<IHRRenderDriver>(CreateVulkan_RenderDriver());
+  {
+    HrPrint(HR_SEVERITY_ERROR, L"Define CreateVulkan_RenderDriver() and uncomment its call in CreateRenderFromString", a_className);
+//    return std::unique_ptr<IHRRenderDriver>(CreateVulkan_RenderDriver());
+  }
   else if (!wcscmp(a_className, L"HydraModern"))
     return std::unique_ptr<IHRRenderDriver>(CreateHydraConnection_RenderDriver());
   else
