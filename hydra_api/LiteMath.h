@@ -191,6 +191,32 @@ namespace HydraLiteMath
   static inline float3 to_float3(float4 v) { return make_float3(v.x, v.y, v.z); }
   static inline float4 to_float4(float3 v, float w) { return make_float4(v.x, v.y, v.z, w); }
 
+
+  static inline float4x4 operator + (const float4x4 & u, const float4x4 & v)
+  {
+    float4x4 res;
+    res.row[0].x = u.row[0].x + v.row[0].x;
+    res.row[0].y = u.row[0].y + v.row[0].y;
+    res.row[0].z = u.row[0].z + v.row[0].z;
+    res.row[0].w = u.row[0].w + v.row[0].w;
+
+    res.row[1].x = u.row[1].x + v.row[1].x;
+    res.row[1].y = u.row[1].y + v.row[1].y;
+    res.row[1].z = u.row[1].z + v.row[1].z;
+    res.row[1].w = u.row[1].w + v.row[1].w;
+
+    res.row[2].x = u.row[2].x + v.row[2].x;
+    res.row[2].y = u.row[2].y + v.row[2].y;
+    res.row[2].z = u.row[2].z + v.row[2].z;
+    res.row[2].w = u.row[2].w + v.row[2].w;
+
+    res.row[3].x = u.row[3].x + v.row[3].x;
+    res.row[3].y = u.row[3].y + v.row[3].y;
+    res.row[3].z = u.row[3].z + v.row[3].z;
+    res.row[3].w = u.row[3].w + v.row[3].w;
+    return res;
+  }
+
   //**********************************************************************************
   // float4 operators and functions
   //**********************************************************************************
@@ -403,6 +429,33 @@ namespace HydraLiteMath
   {
     return box1Min.x <= box2Max.x && box2Min.x <= box1Max.x &&
            box1Min.y <= box2Max.y && box2Min.y <= box1Max.y;
+  }
+
+
+  static inline float4x4 mul(float4x4 m, float v)
+  {
+    float4x4 res;
+    res.row[0].x *= v;
+    res.row[0].y *= v;
+    res.row[0].z *= v;
+    res.row[0].w *= v;
+
+    res.row[1].x *= v;
+    res.row[1].y *= v;
+    res.row[1].z *= v;
+    res.row[1].w *= v;
+
+    res.row[2].x *= v;
+    res.row[2].y *= v;
+    res.row[2].z *= v;
+    res.row[2].w *= v;
+
+    res.row[3].x *= v;
+    res.row[3].y *= v;
+    res.row[3].z *= v;
+    res.row[3].w *= v;
+
+    return res;
   }
 
   static inline float4 mul(float4x4 m, float4 v)

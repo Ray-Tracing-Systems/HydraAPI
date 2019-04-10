@@ -808,6 +808,8 @@ void RD_OGL32_Deferred::DrawLightGeoInstances(GLuint &vao, GLuint &vboMat, GLuin
   glBindBuffer(GL_ARRAY_BUFFER, vboMat);
   glBufferData(GL_ARRAY_BUFFER, m_lightsMatrices.size() * 16 * sizeof(float), &m_lightsMatrices[0], GL_DYNAMIC_DRAW);
 
+
+
   glEnableVertexAttribArray(4);
   glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (GLvoid*)0);
   glEnableVertexAttribArray(5);
