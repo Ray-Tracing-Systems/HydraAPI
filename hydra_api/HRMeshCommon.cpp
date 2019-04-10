@@ -146,6 +146,13 @@ struct MeshVSGF : public IHRMesh
   uint64_t indNum()  const override { return m_indNum;  }
 
   size_t DataSizeInBytes() const override { return m_sizeInBytes; }
+  size_t EstimatedDataSizeInBytes() const override
+  {
+    return m_vertNum*(sizeof(float)*4*3 + sizeof(float)*2) +
+           m_indNum*sizeof(int) + (m_indNum*sizeof(int))/3 +
+           sizeof(HydraGeomData::Header) + 1024;
+  }
+  
   const void* GetData() const override
   {
     auto chunk = g_objManager.scnData.m_vbCache.chunk_at(m_chunkId);
