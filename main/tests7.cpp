@@ -181,11 +181,11 @@ bool test42_load_mesh_compressed()
   
   HRMeshRef lucyOriginal = hrMeshCreateFromFile(L"data/meshes/lucy.vsgf");
   
-  hrMeshOpen(lucyOriginal, HR_TRIANGLE_IND3, HR_OPEN_EXISTING);
-  {
-    hrMeshMaterialId(lucyOriginal, matY.id);
-  }
-  hrMeshClose(lucyOriginal);
+  //hrMeshOpen(lucyOriginal, HR_TRIANGLE_IND3, HR_OPEN_EXISTING);
+  //{
+  //  hrMeshMaterialId(lucyOriginal, matY.id);
+  //}
+  //hrMeshClose(lucyOriginal);
   
   hrMeshSaveVSGFCompressed(lucyOriginal, L"data/meshes/lucy1.vsgfc");
   hrMeshSaveVSGFCompressed(lucyOriginal, L"data/meshes/lucy2.vsgfc");
@@ -193,7 +193,7 @@ bool test42_load_mesh_compressed()
   HRMeshRef lucyCompressed1 = hrMeshCreateFromFileDL(L"data/meshes/lucy1.vsgfc");
   HRMeshRef lucyCompressed2 = hrMeshCreateFromFile  (L"data/meshes/lucy2.vsgfc");
   
-  HRLightRef rectLight   = hrLightCreate(L"my_area_light");
+  HRLightRef rectLight      = hrLightCreate(L"my_area_light");
   
   hrLightOpen(rectLight, HR_WRITE_DISCARD);
   {
@@ -282,9 +282,11 @@ bool test42_load_mesh_compressed()
     auto m2          = hlm::mul(mtranslate2, mrot3);
     auto m3          = hlm::mul(mtranslate3, mrot3);
   
-    hrMeshInstance(scnRef, lucyOriginal,    mtranslate1.L());
-    hrMeshInstance(scnRef, lucyCompressed1, m2.L());
-    hrMeshInstance(scnRef, lucyCompressed2, m3.L());
+    int32_t remapList1[2] = { mat1.id, matY.id };
+  
+    hrMeshInstance(scnRef, lucyOriginal,    mtranslate1.L(), remapList1, 2);
+    hrMeshInstance(scnRef, lucyCompressed1, m2.L(),          remapList1, 2);
+    hrMeshInstance(scnRef, lucyCompressed2, m3.L(),          remapList1, 2);
     
     auto mrot = hlm::rotate_Y_4x4(180.0f*DEG_TO_RAD);
     hrMeshInstance(scnRef, cubeOpenRef, mrot.L());
