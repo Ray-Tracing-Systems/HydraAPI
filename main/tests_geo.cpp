@@ -1330,6 +1330,240 @@ namespace GEO_TESTS
 
   }
 
+  bool test_006_points_on_mesh()
+  {
+
+    initGLIfNeeded();
+    hrErrorCallerPlace(L"test_006");
+    hrSceneLibraryOpen(L"tests_f/test_006", HR_WRITE_DISCARD);
+
+    HRMaterialRef mat1 = hrMaterialCreate(L"mat1");
+    HRMaterialRef mat2 = hrMaterialCreate(L"mat2");
+
+    int rep = 8;
+
+    HRTextureNodeRef tex = hrTexture2DCreateBakedLDR(&procTexCheckerLDR, (void *) (&rep), sizeof(int), 32, 32);
+
+    hrMaterialOpen(mat1, HR_WRITE_DISCARD);
+    {
+      auto matNode = hrMaterialParamNode(mat1);
+
+      auto diffuse = matNode.append_child(L"diffuse");
+      diffuse.append_child(L"color").append_attribute(L"val").set_value(L"0.2 0.2 0.120");
+
+      auto texNode = hrTextureBind(tex, diffuse.child(L"color"));
+      texNode.append_attribute(L"matrix");
+      float samplerMatrix[16] = { 1, 0, 0, 0.0f,
+                                  0, 1, 0, 0.0f,
+                                  0, 0, 1, 0,
+                                  0, 0, 0, 1 };
+
+      texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
+      texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
+      texNode.append_attribute(L"input_gamma").set_value(1.0f);
+      texNode.append_attribute(L"input_alpha").set_value(L"rgb");
+
+      HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
+
+    }
+    hrMaterialClose(mat1);
+
+    hrMaterialOpen(mat2, HR_WRITE_DISCARD);
+    {
+      auto matNode = hrMaterialParamNode(mat2);
+
+      auto refl = matNode.append_child(L"reflectivity");
+
+      refl.append_attribute(L"brdf_type").set_value(L"torranse_sparrow");
+      refl.append_child(L"color").append_attribute(L"val").set_value(L"0.99 0.6 0.0");
+      refl.append_child(L"glossiness").append_attribute(L"val").set_value(L"0.999");
+      refl.append_child(L"extrusion").append_attribute(L"val").set_value(L"maxcolor");
+      refl.append_child(L"fresnel").append_attribute(L"val").set_value(1);
+      refl.append_child(L"fresnel_ior").append_attribute(L"val").set_value(8.0f);
+    }
+    hrMaterialClose(mat2);
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Meshes
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    HRMeshRef tess = CreateTriStrip(64, 64, 100);//hrMeshCreateFromFileDL(L"data/meshes/teapot.vsgf");//
+
+    HRMeshRef lucyRef = hrMeshCreateFromFileDL(L"data/meshes/lucy.vsgf");
+    hrMeshOpen(lucyRef, HR_TRIANGLE_IND3, HR_OPEN_EXISTING);
+    {
+      hrMeshMaterialId(lucyRef, mat2.id);
+    }
+    hrMeshClose(lucyRef);
+
+    uint32_t n_points = 100;
+    std::vector<float> points(n_points * 3, 0.0f);
+
+    hrMeshOpen(tess, HR_TRIANGLE_IND3, HR_OPEN_EXISTING);
+    {
+      hrMeshMaterialId(tess, mat1.id);
+      HRUtils::getRandomPointsOnMesh(tess, points.data(), n_points, true);
+    }
+    hrMeshClose(tess);
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Light
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    HRLightRef sky = hrLightCreate(L"sky");
+
+    hrLightOpen(sky, HR_WRITE_DISCARD);
+    {
+      auto lightNode = hrLightParamNode(sky);
+
+      lightNode.attribute(L"type").set_value(L"sky");
+
+      auto intensityNode = lightNode.append_child(L"intensity");
+
+      intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"0.75 0.75 1");
+      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(0.25f);
+
+      VERIFY_XML(lightNode);
+    }
+    hrLightClose(sky);
+
+
+    HRLightRef sphereLight = hrLightCreate(L"my_area_light");
+
+    hrLightOpen(sphereLight, HR_WRITE_DISCARD);
+    {
+      auto lightNode = hrLightParamNode(sphereLight);
+
+      lightNode.attribute(L"type").set_value(L"area");
+      lightNode.attribute(L"shape").set_value(L"sphere");
+      lightNode.attribute(L"distribution").set_value(L"uniform");
+
+      auto intensityNode = lightNode.append_child(L"intensity");
+      intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
+      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"6.0");
+
+      auto sizeNode = lightNode.append_child(L"size").append_attribute(L"radius").set_value(5.5f);
+    }
+    hrLightClose(sphereLight);
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Camera
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    HRCameraRef camRef = hrCameraCreate(L"my camera");
+
+    hrCameraOpen(camRef, HR_WRITE_DISCARD);
+    {
+      auto camNode = hrCameraParamNode(camRef);
+
+      camNode.append_child(L"fov").text().set(L"45");
+      camNode.append_child(L"nearClipPlane").text().set(L"0.01");
+      camNode.append_child(L"farClipPlane").text().set(L"100.0");
+
+      camNode.append_child(L"up").text().set(L"0 1 0");
+      camNode.append_child(L"position").text().set(L"0 50 100");
+      camNode.append_child(L"look_at").text().set(L"0 0 0");
+    }
+    hrCameraClose(camRef);
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Render settings
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 1024);
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Create scene
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    HRSceneInstRef scnRef = hrSceneCreate(L"my scene");
+
+    using namespace HydraLiteMath;
+
+    float4x4 mRot;
+    float4x4 mTranslate;
+    float4x4 mScale;
+    float4x4 mRes;
+
+    hrSceneOpen(scnRef, HR_WRITE_DISCARD);
+
+    ///////////
+    mTranslate.identity();
+    mRes.identity();
+
+    mTranslate = translate4x4(float3(0.0f, -1.0f, 0.0f));
+    mScale = scale4x4(float3(0.51f, 0.51f, 0.51f));
+    mRes = mul(mTranslate, mScale);
+
+    auto pt_matrix = mRes;
+
+    hrMeshInstance(scnRef, tess, mRes.L());
+
+    for(int i = 0; i < points.size(); i += 3)
+    {
+      auto pt = make_float3(points[i * 3], points[i * 3 + 1], points[i * 3 + 2]);
+      pt = mul(pt_matrix, pt);
+      mTranslate = translate4x4(pt);
+      mScale = scale4x4(float3(1.0f, 1.0f, 1.0f));
+      mRes = mul(mTranslate, mScale);
+
+      hrMeshInstance(scnRef, lucyRef, mRes.L());
+    }
+
+    ///////////
+
+    mTranslate.identity();
+    mRes.identity();
+
+    mTranslate = translate4x4(float3(0, 0.0f, 0.0));
+    mRes = mul(mTranslate, mRes);
+
+    hrLightInstance(scnRef, sky, mRes.L());
+
+    mTranslate = translate4x4(float3(0, 40.0f, 0.0));
+    hrLightInstance(scnRef, sphereLight, mTranslate.L());
+
+    ///////////
+
+    hrSceneClose(scnRef);
+
+    hrFlush(scnRef, renderRef);
+
+    glViewport(0, 0, 512, 512);
+    std::vector<int32_t> image(512 * 512);
+
+    while (true)
+    {
+      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+      HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
+
+      if (info.haveUpdateFB)
+      {
+        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
+
+        glDisable(GL_TEXTURE_2D);
+        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+
+        auto pres = std::cout.precision(2);
+        std::cout << "rendering progress = " << info.progress << "% \r";
+        std::cout.precision(pres);
+
+        glfwSwapBuffers(g_window);
+        glfwPollEvents();
+      }
+
+      if (info.finalUpdate)
+        break;
+    }
+
+    hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_006/z_out.png");
+
+    return check_images("test_006", 1, 50);
+  }
 
 }
 
