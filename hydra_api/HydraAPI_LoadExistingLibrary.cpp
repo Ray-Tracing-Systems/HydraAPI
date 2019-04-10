@@ -989,7 +989,7 @@ HRLightRef HRUtils::MergeOneLightIntoLibrary(const wchar_t* a_libPath, const wch
 }
 
 BBox HRUtils::InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_scnTo, float a_mat[16],
-                            bool origin, const int32_t* remapListOverride, int32_t remapListSize)
+                                     bool origin, const int32_t* remapListOverride, int32_t remapListSize)
 {
   HRSceneInst *pScn = g_objManager.PtrById(a_scnFrom);
   HRSceneInst *pScn2 = g_objManager.PtrById(a_scnTo);
@@ -1020,7 +1020,7 @@ BBox HRUtils::InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_
   }
   std::cout << std::endl;
 */
-  BBox bbox(transformBBox(pScn->m_bbox, HydraLiteMath::float4x4(a_mat)));
+  BBox bbox(HRUtils::transformBBox(pScn->m_bbox, a_mat));
 /*
   std::cout << "bbox of transformed scene: " << bbox.x_min << " " << bbox.x_max << " "
                                              << bbox.y_min << " " << bbox.y_max << " "
