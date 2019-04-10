@@ -275,8 +275,15 @@ HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName, bool a_copyToLo
 
 HAPI HRMeshRef hrMeshCreateFromFile(const wchar_t* a_fileName, bool a_copyToLocalFolder)
 {
+  std::wstring tail = str_tail(a_fileName, 6);
+  
   HydraGeomData data;
-  data.read(a_fileName);
+  std::vector<int> dataBuffer;
+  
+  if(tail == L".vsgfc")
+    data = HR_LoadVSGFCompressedData(a_fileName, dataBuffer);
+  else
+    data.read(a_fileName);
 
   if (data.getVerticesNumber() == 0)
     return HRMeshRef();

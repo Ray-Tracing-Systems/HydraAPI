@@ -146,7 +146,8 @@ int main(int argc, const char** argv)
 	  //run_all_ipp_tests();
 
     //test40_several_changes();
-    test44_four_lights();
+    //test44_four_lights();
+    test42_load_mesh_compressed();
 
     //hrSceneLibraryOpen(L"/home/frol/temp", HR_WRITE_DISCARD);
     //_hrConvertOldVSGFMesh(L"data/meshes/teapot.vsgf", L"data/meshes/teapot2.vsgf");

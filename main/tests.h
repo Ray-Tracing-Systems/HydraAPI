@@ -140,7 +140,7 @@ bool test39_mmlt_or_ibpt();
 bool test40_several_changes();
 
 bool test41_load_library_basic();
-bool test42_load_library_basic();     // not used (Why ???),  #TODO: get back scene load tests here
+bool test42_load_mesh_compressed();   // not used (Why ???),  #TODO: get back scene load tests here
 
 bool test43_test_direct_light();
 bool test44_four_lights();
