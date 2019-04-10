@@ -685,6 +685,15 @@ HAPI HRMeshRef hrMeshCreate(const wchar_t* a_objectName);
 HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName, bool a_copyToLocalFolder = false);
 
 /**
+\brief create mesh from internal vsgf format.
+\param a_pScn     - pointer to scene library
+\param a_fileName - file name of the mesh.
+\param a_copyToLocalFolder - indicates if we need to copy input '.vsgf' file to local folder
+
+*/
+HAPI HRMeshRef hrMeshCreateFromFile(const wchar_t* a_fileName, bool a_copyToLocalFolder = false);
+
+/**
 \brief open mesh
 \param a_pMesh - pointer to mesh
 \param a_type - primitive type that will be used during current open/close session.
@@ -1164,8 +1173,6 @@ namespace HRUtils
   HRLightRef MergeOneLightIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_lightName);
 
   HRTextureNodeRef MergeOneTextureIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_texName, int a_texId = -1);
-
-  bool hrRenderSaveDepthSpecial(HRRenderRef a_pRender, const wchar_t* a_outFileName, float max_depth);
 
   bool hrRenderSaveDepthRaw(HRRenderRef a_pRender, const wchar_t* a_outFileName);
 };
