@@ -148,7 +148,9 @@ int main(int argc, const char** argv)
     //test40_several_changes();
     //test44_four_lights();
     test42_load_mesh_compressed();
-
+    //test78_material_remap_list1();
+    
+    
     //hrSceneLibraryOpen(L"/home/frol/temp", HR_WRITE_DISCARD);
     //_hrConvertOldVSGFMesh(L"data/meshes/teapot.vsgf", L"data/meshes/teapot2.vsgf");
     ////_hrDebugPrintVSGF(L"data/meshes/teapot.vsgf",    L"/home/frol/temp/teapot1.txt");
