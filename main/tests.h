@@ -143,7 +143,7 @@ bool test41_load_library_basic();
 bool test42_load_mesh_compressed();   // not used (Why ???),  #TODO: get back scene load tests here
 
 bool test43_test_direct_light();
-bool test44_four_lights();
+bool test44_four_lights_and_compressed_mesh();
 bool test45_mesh_from_vsgf_opengl_bug_teapot();
 
 bool test46_light_geom_rect();

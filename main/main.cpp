@@ -146,8 +146,8 @@ int main(int argc, const char** argv)
 	  //run_all_ipp_tests();
 
     //test40_several_changes();
-    //test44_four_lights();
-    test42_load_mesh_compressed();
+    test44_four_lights_and_compressed_mesh();
+    //test42_load_mesh_compressed();
     //test78_material_remap_list1();
     
     

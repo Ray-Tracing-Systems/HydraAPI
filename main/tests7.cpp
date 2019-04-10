@@ -616,7 +616,7 @@ bool test43_test_direct_light()
 }
 
 
-bool test44_four_lights()
+bool test44_four_lights_and_compressed_mesh()
 {
   hrErrorCallerPlace(L"test_44");
 
@@ -826,7 +826,7 @@ bool test44_four_lights()
     hrMeshPrimitiveAttribPointer1i(sphereRef, L"mind", &sphere.matIndices[0]);
     hrMeshAppendTriangles3(sphereRef, int32_t(sphere.triIndices.size()), &sphere.triIndices[0]);
   }
-  hrMeshClose(sphereRef, true);
+  hrMeshClose(sphereRef, true); // compress mesh when save it to file
 
   hrMeshOpen(torusRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
   {
