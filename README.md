@@ -14,7 +14,7 @@ Windows:
 1. Clone HydraAPI repo
 2. Copy 'bin2' folder content to 'C:/[Hydra]/bin2' under windows;
 3. Open 'hydra_api/HydraNewAPI1.sln' under windows with visual studio 2015 or later; If use 2015 you will need to downgrade platform toolset to v140 (2015).
-4. Select x64 configuration
+4. **Select x64 configuration**
 5. Set 'main' as startup project.
 6. Now you can try 'HydraModern' with some tests. Try 'test39_mmlt_or_ibpt' for example. It is simple cornell box test.
 
@@ -32,7 +32,11 @@ Optionally, to build and use python bindings library (tested only under Linux):
 - git submodule update
 2. sudo apt-get install python3-dev (install Python headers)
 3. Build hydra bindings with Cmake (hydra_api/hydra_api_py)
-- to select specific python version specify CMake variable: cmake .. -DPYTHON_EXECUTABLE=/path/to/your/python3
+ 
+ * mkdir build (to create "hydra_api/hydra_api_py/build")
+ * cd build
+ * select specific python version specify CMake variable: **cmake .. -DPYTHON_EXECUTABLE=/path/to/your/python3**
+ 
 4. Import resulting library in your python project
 
 Some examples can be found in hydra_api/hydra_api_py/hydraPyTests.py

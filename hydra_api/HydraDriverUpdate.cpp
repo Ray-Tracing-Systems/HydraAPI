@@ -18,6 +18,7 @@
 #include <algorithm>
 
 #include "HydraVSGFExport.h"
+#include "HydraVSGFCompress.h"
 #include "RenderDriverOpenGL3_Utility.h"
 
 #include <chrono>
@@ -210,7 +211,8 @@ void FindNewObjects(ChangeList& objects, HRSceneInst& scn)
 
       if (pImpl != nullptr)
       {
-        for(const auto& trio : pImpl->MList())
+        const auto& mlist = pImpl->MList();
+        for(const auto& trio : mlist)
         {
           objects.matUsed.insert(trio.matId);
           AddUsedMaterialChildrenRecursive(objects, trio.matId);
@@ -432,7 +434,7 @@ void UpdateImageFromFileOrChunk(int32_t a_id, HRTextureNode& img, IHRRenderDrive
       return;
     }
 
-    auto bpp = sizeInBytes / (w*h);
+    int bpp = int(sizeInBytes / (w*h));
 
     sizeInBytes += size_t(sizeof(int) * 2);
 
@@ -692,47 +694,137 @@ HRMeshDriverInput HR_GetMeshDataPointers(size_t a_meshId)
   return input;
 }
 
-void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, const std::vector<HRBatchInfo>& a_batches, IHRRenderDriver* a_pDriver, const wchar_t* path, int64_t a_byteSize)
+std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndices);
+
+void HR_CopyMeshToInputMeshFromHydraGeomData(const HydraGeomData& data,  HRMesh::InputTriMesh& mesh2)
 {
-  pugi::xml_node nodeXML    = mesh.xml_node_immediate();
-  //uint64_t       dataOffset = nodeXML.attribute(L"offset").as_ullong();
+  HydraGeomData::Header header = data.getHeader();
+  const bool dontHaveTangents  = (header.flags & HydraGeomData::HAS_TANGENT)    == 0;
+  const bool dontHaveNormals   = (header.flags & HydraGeomData::HAS_NO_NORMALS) != 0;
 
-#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
-  std::wstring s1(path);
-  std::string  s2(s1.begin(), s1.end());
-  std::ifstream fin(s2.c_str(), std::ios::binary);
-#elif defined WIN32
-  std::ifstream fin(path, std::ios::binary);
-#endif 
-  g_objManager.m_tempBuffer.resize(a_byteSize / sizeof(int) + sizeof(int) * 16);
-  char* dataPtr = (char*)g_objManager.m_tempBuffer.data();
-  fin.read(dataPtr, a_byteSize);
+  mesh2.resize(data.getVerticesNumber(), data.getIndicesNumber());
 
-  HRMeshDriverInput input;
+  memcpy(mesh2.verticesPos.data(),      data.getVertexPositionsFloat4Array(), sizeof(float)*4*data.getVerticesNumber());
+  memcpy(mesh2.verticesTexCoord.data(), data.getVertexTexcoordFloat2Array(),  sizeof(float)*2*data.getVerticesNumber());
 
-  uint64_t offsetPos  = mesh.pImpl->offset(L"pos");
-  uint64_t offsetNorm = mesh.pImpl->offset(L"norm");
-  uint64_t offsetTexc = mesh.pImpl->offset(L"texc");
-  uint64_t offsetTang = mesh.pImpl->offset(L"tan");
-  uint64_t offsetInd  = mesh.pImpl->offset(L"ind");
-  uint64_t offsetMInd = mesh.pImpl->offset(L"mind");
+  memcpy(mesh2.triIndices.data(), data.getTriangleVertexIndicesArray(),   sizeof(int)*data.getIndicesNumber());
+  memcpy(mesh2.matIndices.data(), data.getTriangleMaterialIndicesArray(), sizeof(int)*data.getIndicesNumber()/3);
 
-  input.vertNum       = nodeXML.attribute(L"vertNum").as_int();
-  input.triNum        = nodeXML.attribute(L"triNum").as_int();
+  if(!dontHaveNormals)
+    memcpy(mesh2.verticesNorm.data(), data.getVertexNormalsFloat4Array(), sizeof(float)*4*data.getVerticesNumber());
+  else
+    ComputeVertexNormals(mesh2, data.getIndicesNumber(), false);
 
-  input.pos4f         = (float*)(dataPtr + offsetPos);
-  input.norm4f        = (float*)(dataPtr + offsetNorm);
-  input.tan4f         = (float*)(dataPtr + offsetTang);
-  input.texcoord2f    = (float*)(dataPtr + offsetTexc);
-  input.indices       = (int*)  (dataPtr + offsetInd);
-  input.triMatIndices = (int*)  (dataPtr + offsetMInd);
-  input.allData       = dataPtr;
-
-  a_pDriver->UpdateMesh(a_id, nodeXML, input, &a_batches[0], int32_t(a_batches.size()));
-
-  fin.close();
+  if(dontHaveTangents)
+    ComputeVertexTangents(mesh2, data.getIndicesNumber());
+  else
+    memcpy(mesh2.verticesTangent.data(), data.getVertexTangentsFloat4Array(), sizeof(float)*4*data.getVerticesNumber());
 }
 
+void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, std::vector<HRBatchInfo>& a_batches, IHRRenderDriver* a_pDriver, const wchar_t* path, int64_t a_byteSize)
+{
+  pugi::xml_node nodeXML = mesh.xml_node_immediate();
+
+  std::ifstream fin;
+  hr_ifstream_open(fin, path);
+
+  if(!fin.is_open())
+    return;
+  
+  HydraGeomData::Header header;
+  fin.read((char*)&header, sizeof(header));
+  fin.close();
+  
+  const std::wstring tail = str_tail(path,6);
+  if(tail != L".vsgfc" && header.fileSizeInBytes != a_byteSize)
+  {
+    HrPrint(HR_SEVERITY_WARNING, L"UpdateMeshFromChunk, different byte size of chunk, may be broken mesh: ", path);
+    a_byteSize = std::max<int64_t>(a_byteSize, header.fileSizeInBytes);
+  }
+  
+  g_objManager.m_tempBuffer.resize(a_byteSize / sizeof(int) + sizeof(int) * 16);
+  char* dataPtr = (char*)g_objManager.m_tempBuffer.data();
+  
+  const bool dontHaveTangents = (header.flags & HydraGeomData::HAS_TANGENT)    == 0;
+  const bool dontHaveNormals  = (header.flags & HydraGeomData::HAS_NO_NORMALS) != 0;
+  
+  HRMeshDriverInput    input;
+  HRMesh::InputTriMesh mesh2;
+  HydraGeomData        data;
+  
+  // (1) process the case when we don't have tangents or normals ...
+  //
+  if(dontHaveTangents || dontHaveNormals)
+  {
+    data.read(path);
+    HR_CopyMeshToInputMeshFromHydraGeomData(data, mesh2);
+
+    a_batches           = FormMatDrawListRLE(mesh2.matIndices);
+
+    input.vertNum       = data.getVerticesNumber();
+    input.triNum        = data.getIndicesNumber()/3;
+  
+    input.pos4f         = mesh2.verticesPos.data();
+    input.norm4f        = mesh2.verticesNorm.data();
+    input.tan4f         = mesh2.verticesTangent.data();
+    input.texcoord2f    = mesh2.verticesTexCoord.data();
+    input.indices       = (const int*)mesh2.triIndices.data();
+    input.triMatIndices = (const int*)mesh2.matIndices.data();
+    input.allData       = nullptr;
+  }
+  // (2) decompress '.vsgfc' format
+  //
+  else if(tail == L".vsgfc")
+  {
+    data                = HR_LoadVSGFCompressedData(path, g_objManager.m_tempBuffer, &a_batches);
+
+    input.vertNum       = data.getVerticesNumber();
+    input.triNum        = data.getIndicesNumber()/3;
+  
+    input.pos4f         = data.getVertexPositionsFloat4Array();
+    input.norm4f        = data.getVertexNormalsFloat4Array();
+    input.tan4f         = data.getVertexTangentsFloat4Array();
+    input.texcoord2f    = data.getVertexTexcoordFloat2Array();
+    input.indices       = (const int*)data.getTriangleVertexIndicesArray();
+    input.triMatIndices = (const int*)data.getTriangleMaterialIndicesArray();
+    input.allData       = (char*)g_objManager.m_tempBuffer.data();
+  }
+  // (3) read it "as is"
+  //
+  else
+  {
+    hr_ifstream_open(fin, path);
+    fin.read(dataPtr, a_byteSize);
+    fin.close();
+  
+    uint64_t offsetPos  = mesh.pImpl->offset(L"pos");
+    uint64_t offsetNorm = mesh.pImpl->offset(L"norm");
+    uint64_t offsetTexc = mesh.pImpl->offset(L"texc");
+    uint64_t offsetTang = mesh.pImpl->offset(L"tan");
+    uint64_t offsetInd  = mesh.pImpl->offset(L"ind");
+    uint64_t offsetMInd = mesh.pImpl->offset(L"mind");
+  
+    input.vertNum       = nodeXML.attribute(L"vertNum").as_int();
+    input.triNum        = nodeXML.attribute(L"triNum").as_int();
+  
+    input.pos4f         = (float*)(dataPtr + offsetPos);
+    input.norm4f        = (float*)(dataPtr + offsetNorm);
+    input.tan4f         = (float*)(dataPtr + offsetTang);
+    input.texcoord2f    = (float*)(dataPtr + offsetTexc);
+    input.indices       = (int*)  (dataPtr + offsetInd);
+    input.triMatIndices = (int*)  (dataPtr + offsetMInd);
+    input.allData       = dataPtr;
+
+    a_batches           = FormMatDrawListRLE(std::vector<uint32_t>(input.triMatIndices, input.triMatIndices + input.triNum));
+  }
+
+  //#TODO: add debug assert/check that all materials from 'a_batches' were updated previously to 'a_pDriver'
+
+  a_pDriver->UpdateMesh(a_id, nodeXML, input, a_batches.data(), int32_t(a_batches.size()));
+  
+}
+
+const std::wstring GetRealFilePathOfDelayedMesh(pugi::xml_node a_node);
 
 /////
 //
@@ -763,27 +855,24 @@ int32_t HR_DriverUpdateMeshes(HRSceneInst& scn, ChangeList& objList, IHRRenderDr
     HRMeshDriverInput input = HR_GetMeshDataPointers(id);
     pugi::xml_node meshNode = mesh.xml_node_immediate();
 
-    const std::wstring delayedLoad = meshNode.attribute(L"dl").as_string();
-    const std::wstring locStr      = g_objManager.GetLoc(meshNode);
-    const wchar_t* path            = (delayedLoad == L"1") ? meshNode.attribute(L"path").as_string() : locStr.c_str();
+    const std::wstring filePathStr = GetRealFilePathOfDelayedMesh(meshNode);
+    const wchar_t* path            = filePathStr.c_str();
 
     if (mesh.pImpl != nullptr)
     {
-      const auto& mlist = mesh.pImpl->MList();
+      auto& mlist = mesh.pImpl->MList();
 
       if (input.pos4f == nullptr)
       {
+        scn.meshUsedByDrv.insert(id);
+
         if (info.supportMeshLoadFromInternalFormat)
         {
-          scn.meshUsedByDrv.insert(id);
           a_pDriver->UpdateMeshFromFile(int32_t(id), meshNode, path);
         }
         else
         {
-          scn.meshUsedByDrv.insert(id);
-
           int64_t byteSize = meshNode.attribute(L"bytesize").as_llong();
-
           UpdateMeshFromChunk(int32_t(id), mesh, mlist, a_pDriver, path, byteSize);
         }
       }
@@ -825,7 +914,7 @@ int32_t _hr_UtilityDriverUpdateMeshes(HRSceneInst& scn, IHRRenderDriver* a_pDriv
 
     if (mesh.pImpl != nullptr)
     {
-      const auto& mlist = mesh.pImpl->MList();
+      auto& mlist = mesh.pImpl->MList();
 
       if (input.pos4f == nullptr)
       {
@@ -1133,10 +1222,15 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
     g_objManager.driverAllocated.insert(a_pDriver);
     HRDriverAllocInfo allocInfo;
 
-    const size_t geomNum  = objList.meshUsed.size();
-    const size_t imgNum   = objList.texturesUsed.size();
-    const size_t matNum   = objList.matUsed.size();
-    const size_t lightNum = objList.lightUsed.size();
+	  const auto p1 = std::max_element(objList.meshUsed.begin(), objList.meshUsed.end());
+	  const auto p2 = std::max_element(objList.texturesUsed.begin(), objList.texturesUsed.end());
+	  const auto p3 = std::max_element(objList.matUsed.begin(), objList.matUsed.end());
+	  const auto p4 = std::max_element(objList.lightUsed.begin(), objList.lightUsed.end());
+
+	  const size_t geomNum  = (p1 == objList.meshUsed.end())     ? 10 : *p1;
+    const size_t imgNum   = (p2 == objList.texturesUsed.end()) ? 10 : *p2;
+    const size_t matNum   = (p3 == objList.matUsed.end())      ? 10 : *p3;
+    const size_t lightNum = (p4 == objList.lightUsed.end())    ? 10 : *p4;
 
     allocInfo.geomNum     = int32_t(geomNum  + geomNum/3  + 100);
     allocInfo.imgNum      = int32_t(imgNum   + imgNum/3   + 100);
@@ -1276,10 +1370,15 @@ void _hr_UtilityDriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 
   HRDriverAllocInfo allocInfo;
 
-  const size_t geomNum  = scn.meshUsedByDrv.size();
-  const size_t imgNum   = scn.texturesUsedByDrv.size();
-  const size_t matNum   = scn.matUsedByDrv.size();
-  const size_t lightNum = scn.lightUsedByDrv.size();
+  const auto p1 = std::max_element(scn.meshUsedByDrv.begin(), scn.meshUsedByDrv.end());
+  const auto p2 = std::max_element(scn.texturesUsedByDrv.begin(), scn.texturesUsedByDrv.end());
+  const auto p3 = std::max_element(scn.matUsedByDrv.begin(), scn.matUsedByDrv.end());
+  const auto p4 = std::max_element(scn.lightUsedByDrv.begin(), scn.lightUsedByDrv.end());
+
+  const size_t geomNum  = (p1 == scn.meshUsedByDrv.end())     ? 10 : *p1;
+  const size_t imgNum   = (p2 == scn.texturesUsedByDrv.end()) ? 10 : *p2;
+  const size_t matNum   = (p3 == scn.matUsedByDrv.end())      ? 10 : *p3;
+  const size_t lightNum = (p4 == scn.lightUsedByDrv.end())    ? 10 : *p4;
 
   allocInfo.geomNum     = int32_t(geomNum  + geomNum/3  + 100);
   allocInfo.imgNum      = int32_t(imgNum   + imgNum/3   + 100);

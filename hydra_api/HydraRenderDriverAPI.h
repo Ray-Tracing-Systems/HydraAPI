@@ -130,7 +130,7 @@ struct HRMeshDriverInput
   const char*  allData;
 };
 
-/** \brief Batch is a sequence of triangles withe the same id.
+/** \brief Batch is a sequence of triangles with the same material id.
 *
 */
 struct HRBatchInfo
@@ -297,8 +297,17 @@ struct IHRRenderDriver
   */
   virtual void    GetFrameBufferLineHDR(int32_t a_xBegin, int32_t a_xEnd, int32_t y, float* a_out, const wchar_t* a_layerName) {}
   virtual void    GetFrameBufferLineLDR(int32_t a_xBegin, int32_t a_xEnd, int32_t y, int32_t* a_out)                           {}
-
-
+  
+  /**
+  \brief These functions is needed to offline multithreaded frame buffer update implementation.
+         I.e. you after Commit operation, computation are just start and they are detached.  #TODO: describe this
+         ...
+  */
+  virtual void    LockFrameBufferUpdate() {}
+  virtual void    UnlockFrameBufferUpdate() {}
+  
+  
+  
   virtual void    EvalGBuffer() { } ///< run gbuffer evaluation (which can be async in general).
 
   virtual void    GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_lineData, int32_t a_startX, int32_t a_endX, const std::unordered_set<int32_t>& a_shadowCatchers) = 0; ///< get single gbuffer line (because the whole gbuffer is quite big!)

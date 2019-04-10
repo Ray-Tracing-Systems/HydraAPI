@@ -79,15 +79,21 @@ def saveAllGBuffferLayers(renderRef, testName):
   hy.hrRenderSaveGBufferLayerLDR(renderRef, "tests_images/" + testName + "/z_out9.png", "objid", 0, 0)
   hy.hrRenderSaveGBufferLayerLDR(renderRef, "tests_images/" + testName + "/z_out10.png", "instid", 0, 0)
   hy.hrRenderSaveFrameBufferHDR(renderRef, "tests_images/" + testName + "/z_out.hdr")
+  
+  gbuffer_line = hy.hrRenderGetGBufferLine(renderRef, 1024, 15)
+  
+  print(gbuffer_line[16].depth)
+  print(gbuffer_line[16].norm)
+  print(gbuffer_line[16].rgba)
 
 def runRenderInBG(renderRef, w, h, testName, states_to_del = []):
   while True:
     time.sleep(0.5)
     info = hy.hrRenderHaveUpdate(renderRef);
     if (info.finalUpdate is True):
-      for state in states_to_del:
-        os.remove(("tests/" + testName + "/change_0000{}.xml").format(state - 1))    
-        os.remove(("tests/" + testName + "/statex_0000{}.xml").format(state))    
+     # for state in states_to_del:
+     #   os.remove(("tests/" + testName + "/change_0000{}.xml").format(state - 1))    
+     #   os.remove(("tests/" + testName + "/statex_0000{}.xml").format(state))    
       hy.hrRenderSaveFrameBufferLDR(renderRef, "tests_images/" + testName + "/z_out.png")
       hy.hrRenderCommand(renderRef, "exitnow", "")
       break
@@ -113,11 +119,11 @@ def initAndStartOpenGL(renderRef, w, h, testName, states_to_del = []):
     info = hy.hrRenderHaveUpdate(renderRef);
     
     if (info.haveUpdateFB):
-      if(display.firstUpdate):
-        for state in states_to_del:
-          os.remove(("tests/" + testName + "/change_0000{}.xml").format(state - 1))    
-          os.remove(("tests/" + testName + "/statex_0000{}.xml").format(state))          
-        display.firstUpdate = False
+     # if(display.firstUpdate):
+     #   for state in states_to_del:
+     #     os.remove(("tests/" + testName + "/change_0000{}.xml").format(state - 1))    
+     #     os.remove(("tests/" + testName + "/statex_0000{}.xml").format(state))          
+     #   display.firstUpdate = False
         
       hy.hrRenderGetFrameBufferLDR1i(renderRef, w, h, image);
       glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, image.tostring());

@@ -41,6 +41,7 @@ static pugi::xml_attribute my_force_attrib(pugi::xml_node a_parent, const wchar_
     return a_parent.append_attribute(a_name);
 }
 
+std::wstring LocalDataPathOfCurrentSceneLibrary();
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -127,8 +128,9 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFile(const wchar_t* a_fileName, int w
 }
 
 void GetTextureFileInfo(const wchar_t* a_fileName, int32_t* pW, int32_t* pH, size_t* pByteSize);
+std::wstring CutFileName(const std::wstring& fileName);
 
-HAPI HRTextureNodeRef hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, int w, int h, int bpp)
+HAPI HRTextureNodeRef hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, int w, int h, int bpp, bool a_copyFileToLocalData)
 {
   /////////////////////////////////////////////////////////////////////////////////////////////////
   {
@@ -141,14 +143,9 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, int
     }
   }
   /////////////////////////////////////////////////////////////////////////////////////////////////
-
-#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
-  std::wstring s1(a_fileName);
-  std::string  s2(s1.begin(), s1.end());
-  std::ifstream testFile(s2.c_str());
-#elif defined WIN32
-  std::ifstream testFile(a_fileName);
-#endif
+  
+  std::ifstream testFile;
+  hr_ifstream_open(testFile, a_fileName);
 
   if (!testFile.good())
   {
@@ -180,6 +177,18 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, int
 	texNodeXml.append_attribute(L"id").set_value(id.c_str());
   texNodeXml.append_attribute(L"name").set_value(a_fileName);
   texNodeXml.append_attribute(L"path").set_value(a_fileName);
+
+  if(a_copyFileToLocalData)
+  {
+    std::wstring fileName1 = CutFileName(a_fileName);
+    std::wstring fileName2 = std::wstring(L"data/") + fileName1;
+
+    std::wstring dataFolderPath = LocalDataPathOfCurrentSceneLibrary();
+    std::wstring fileName3      = dataFolderPath + fileName1;
+
+    hr_copy_file(a_fileName, fileName3.c_str());
+    texNodeXml.append_attribute(L"loc").set_value(fileName2.c_str());
+  }
 
   int32_t w1, h1;
   size_t  bpp1;
@@ -501,8 +510,6 @@ HAPI void hrTextureNodeOpen(HRTextureNodeRef a_pNode, HR_OPEN_MODE a_openMode)
   pData->opened = true;
 
 }
-
-std::wstring LocalDataPathOfCurrentSceneLibrary();
 
 void ProcessProcTexFile(const std::wstring& in_file, const std::wstring& out_file, const std::wstring& mainName, const std::wstring& prefix, 
                         pugi::xml_node a_node);

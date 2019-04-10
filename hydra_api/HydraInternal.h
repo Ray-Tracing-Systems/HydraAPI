@@ -47,7 +47,7 @@ struct IHRObject
   virtual uint64_t    chunkId() const { return uint64_t(-1); }
   virtual size_t      DataSizeInBytes() const { return 0; }                        ///< The size of the second part (big data in virtual buffer) in bytes.
   virtual const void* GetData() const { return nullptr; }
-  virtual bool        ReadDataFromChunkTo(std::vector<int>& a_dataConteiner) { return false; }
+  virtual bool        ReadDataFromChunkTo(std::vector<int>& a_dataContainer) { return false; }
 
 protected:
 
@@ -81,6 +81,8 @@ struct IHRMesh : public IHRObject ///< Not empty Data (reimplement DataSerialize
   virtual BBox getBBox() const { return BBox();}
 
   virtual const std::vector<HRBatchInfo>& MList() const = 0;
+  virtual       std::vector<HRBatchInfo>& MList()       = 0;
+
   virtual const std::unordered_map<std::wstring, std::tuple<std::wstring, size_t, size_t, int> >& GetOffsAndSizeForAttrs() const = 0;
 };
 
@@ -152,8 +154,10 @@ struct IHydraFactory
   virtual std::shared_ptr<IHRTextureNode> CreateTexture2DFromMemory(HRTextureNode* pSysObj, int w, int h, int bpp, const void* a_data)                  = 0;
   virtual std::shared_ptr<IHRTextureNode> CreateTextureInfoFromChunkFile(HRTextureNode* pSysObj, const wchar_t* a_chunkFileName, pugi::xml_node a_node) = 0;
 
-  virtual std::shared_ptr<IHRMesh>        CreateVSGFFromSimpleInputMesh(HRMesh* pSysObj)                                               = 0;
-  virtual std::shared_ptr<IHRMesh>        CreateVSGFFromFile(HRMesh* pSysObj, const std::wstring& a_fileName, pugi::xml_node a_node)   = 0;
+  virtual std::shared_ptr<IHRMesh>        CreateVSGFFromSimpleInputMesh(HRMesh* pSysObj, bool a_saveCompressed)                                               = 0;
+  virtual std::shared_ptr<IHRMesh>        CreateVSGFFromFile           (HRMesh* pSysObj, const std::wstring& a_fileName, pugi::xml_node a_node)   = 0;
+
+  virtual std::shared_ptr<IHRMesh>        CreateVSGFProxy(const wchar_t* a_fileName) = 0;
 };
 
 int32_t ChunkIdFromFileName(const wchar_t* a_chunkFileName);
@@ -215,8 +219,8 @@ struct VirtualBuffer;
 */
 struct ChunkPointer
 {
-  ChunkPointer()                              : localAddress(-1), sizeInBytes(0), id(0), inUse(true), wasSaved(false), pVB(nullptr), useCounter(0), type(CHUNK_TYPE_UNKNOWN) {}
-  explicit ChunkPointer(VirtualBuffer* a_pVB) : localAddress(-1), sizeInBytes(0), id(0), inUse(true), wasSaved(false), pVB(a_pVB), useCounter(0), type(CHUNK_TYPE_UNKNOWN) {}
+  ChunkPointer()                              : localAddress(-1), sizeInBytes(0), id(0), inUse(true), wasSaved(false), pVB(nullptr), useCounter(0), sysObjectId(-1), type(CHUNK_TYPE_UNKNOWN), saveCompressed(false) {}
+  explicit ChunkPointer(VirtualBuffer* a_pVB) : localAddress(-1), sizeInBytes(0), id(0), inUse(true), wasSaved(false), pVB(a_pVB), useCounter(0), sysObjectId(-1), type(CHUNK_TYPE_UNKNOWN), saveCompressed(false) {}
 
   void* GetMemoryNow();
   const void* GetMemoryNow() const;
@@ -229,10 +233,12 @@ struct ChunkPointer
   uint64_t sizeInBytes;
   uint64_t id;
   uint32_t useCounter;
+  uint32_t sysObjectId;
   
   CHUNK_TYPE type;
   bool       inUse;
   bool       wasSaved;
+  bool       saveCompressed;
 
 protected:
 
@@ -342,13 +348,15 @@ std::wstring ChunkName(const ChunkPointer& a_chunk);
 #endif
   
   void hr_copy_file(const wchar_t* a_file1, const wchar_t* a_file2); //#TODO: implement this on Linux!!!
+  
+  void hr_ifstream_open(std::ifstream& a_stream, const wchar_t* a_fileName);
+  void hr_ofstream_open( std::ofstream& a_stream, const wchar_t* a_fileName);
 
-
-struct HRSystemMutex;
-HRSystemMutex* hr_create_system_mutex(const char* a_mutexName);
-void hr_free_system_mutex(HRSystemMutex*& a_mutex);
-bool hr_lock_system_mutex(HRSystemMutex* a_mutex, int a_msToWait = 1000);
-void hr_unlock_system_mutex(HRSystemMutex* a_mutex);
+  struct HRSystemMutex;
+  HRSystemMutex* hr_create_system_mutex(const char* a_mutexName);
+  void hr_free_system_mutex(HRSystemMutex*& a_mutex);
+  bool hr_lock_system_mutex(HRSystemMutex* a_mutex, int a_msToWait = 1000);
+  void hr_unlock_system_mutex(HRSystemMutex* a_mutex);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -428,8 +436,9 @@ struct HydraFactoryCommon : public IHydraFactory
   std::shared_ptr<IHRTextureNode> CreateTexture2DFromMemory(HRTextureNode* pSysObj, int w, int h, int bpp, const void* a_data) override;
   std::shared_ptr<IHRTextureNode> CreateTextureInfoFromChunkFile(HRTextureNode* pSysObj, const wchar_t* a_chunkFileName, pugi::xml_node a_node) override;
 
-  std::shared_ptr<IHRMesh>        CreateVSGFFromSimpleInputMesh(HRMesh* pSysObj) override;
+  std::shared_ptr<IHRMesh>        CreateVSGFFromSimpleInputMesh(HRMesh* pSysObj, bool a_saveCompressed) override;
   std::shared_ptr<IHRMesh>        CreateVSGFFromFile(HRMesh* pSysObj, const std::wstring& a_fileName, pugi::xml_node) override;
+  std::shared_ptr<IHRMesh>        CreateVSGFProxy   (const wchar_t* a_fileName) override;
 };
 
 

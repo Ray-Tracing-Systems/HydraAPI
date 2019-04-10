@@ -21,6 +21,42 @@ std::unordered_map<std::wstring, std::vector<float>> g_vertexAttribf;
 std::unordered_map<std::wstring, std::vector<int>> g_vertexAttribi;
 
 
+struct HRGBufferPixelPy
+{
+    HRGBufferPixelPy(const HRGBufferPixel &pixel)
+    {
+      depth = pixel.depth;
+
+      norm.push_back(pixel.norm[0]);
+      norm.push_back(pixel.norm[1]);
+      norm.push_back(pixel.norm[2]);
+
+      texc.push_back(pixel.texc[0]);
+      texc.push_back(pixel.texc[1]);
+
+      rgba.push_back(pixel.rgba[0]);
+      rgba.push_back(pixel.rgba[1]);
+      rgba.push_back(pixel.rgba[2]);
+      rgba.push_back(pixel.rgba[3]);
+
+      shadow = pixel.shadow;
+      coverage = pixel.coverage;
+
+      matId = pixel.matId;
+      objId = pixel.objId;
+      instId = pixel.instId;
+    }
+    float   depth;
+    std::vector<float> norm;
+    std::vector<float> texc;
+    std::vector<float> rgba;
+    float   shadow;
+    float   coverage;
+    int32_t matId;
+    int32_t objId;
+    int32_t instId;
+};
+
 void hrMeshOpenPy(HRMeshRef a_pMesh, HR_PRIM_TYPE a_type, HR_OPEN_MODE a_mode)
 {
   py::object gc = py::module::import("gc");
@@ -178,6 +214,15 @@ HRUtils::BBox InstanceSceneIntoSceneRemapOverridePy(HRSceneInstRef a_scnFrom, HR
                                   int32_t(remap_list.size()));
 }
 
+std::vector<HRGBufferPixelPy> hrRenderGetGBufferLinePy(HRRenderRef a_pRender, int w, int y)
+{
+  std::vector<HRGBufferPixel> buffer_cpp(w);
+  hrRenderGetGBufferLine(a_pRender, y, &buffer_cpp[0], 0, w);
+  std::vector<HRGBufferPixelPy> buffer_py;
+  buffer_py.insert(buffer_py.end(), buffer_cpp.begin(), buffer_cpp.end());
+  return buffer_py;
+}
+
 
 
 
@@ -233,11 +278,30 @@ PYBIND11_MODULE(hydraPy, m)
           .def_readwrite("progress", &HRRenderUpdateInfo::progress)
           .def_readwrite("msg", &HRRenderUpdateInfo::msg);
 
-  py::class_<HRGBufferPixel>(m, "HRGBufferPixel")
-          .def_readonly("depth", &HRGBufferPixel::depth)
-          .def_readonly("norm", &HRGBufferPixel::norm)
-          .def_readonly("rgba", &HRGBufferPixel::rgba)
-          .def_readonly("matId", &HRGBufferPixel::matId);
+  /*
+   *   float   depth;
+  float   norm[3];
+  float   texc[2];
+  float   rgba[4];
+  float   shadow;
+  float   coverage;
+  int32_t matId;
+  int32_t objId;
+  int32_t instId;
+   */
+  py::class_<HRGBufferPixelPy>(m, "HRGBufferPixelPy")
+          .def_readonly("depth", &HRGBufferPixelPy::depth)
+//          .def_property("norm", &HRGBufferPixel::get_norm, &HRGBufferPixel::set_norm)
+//          .def_property("texc", &HRGBufferPixel::get_texc, &HRGBufferPixel::set_texc)
+//          .def_property("rgba", &HRGBufferPixel::get_rgba, &HRGBufferPixel::set_rgba)
+          .def_readonly("norm", &HRGBufferPixelPy::norm)
+          .def_readonly("texc", &HRGBufferPixelPy::texc)
+          .def_readonly("rgba", &HRGBufferPixelPy::rgba)
+          .def_readonly("shadow", &HRGBufferPixelPy::shadow)
+          .def_readonly("coverage", &HRGBufferPixelPy::coverage)
+          .def_readonly("matId", &HRGBufferPixelPy::matId)
+          .def_readonly("objId", &HRGBufferPixelPy::objId)
+          .def_readonly("instId", &HRGBufferPixelPy::instId);
 
   py::class_<HRUtils::BBox>(m, "BBox")
           .def_readonly("x_min", &HRUtils::BBox::x_min)
@@ -358,7 +422,7 @@ PYBIND11_MODULE(hydraPy, m)
   m.def("hrRenderSaveGBufferLayerLDR", &hrRenderSaveGBufferLayerLDR, py::arg("a_pRender"), py::arg("a_outFileName"), py::arg("a_layerName"),
         py::arg("a_palette") = (const int*)nullptr, py::arg("a_paletteSize") = 0);
   m.def("hrRenderSaveFrameBufferHDR", &hrRenderSaveFrameBufferHDR);
-  m.def("hrRenderGetGBufferLine", &hrRenderGetGBufferLine);
+  m.def("hrRenderGetGBufferLine", &hrRenderGetGBufferLinePy, py::arg("a_pRender"), py::arg("w"), py::arg("y"));
   m.def("hrRenderCommand", &hrRenderCommand);
   m.def("hrRenderLogDir", &hrRenderLogDir);
   m.def("hrCommit", &hrCommit, py::arg("a_pScn") = HRSceneInstRef(), py::arg("a_pRender") = HRRenderRef(),  py::arg("a_pCam") = HRCameraRef());

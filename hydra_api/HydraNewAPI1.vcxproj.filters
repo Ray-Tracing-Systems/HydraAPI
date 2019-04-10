@@ -180,6 +180,9 @@
     <ClCompile Include="HRExtensions.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="HydraVSGFCompress.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LiteMath.h">
@@ -256,6 +259,9 @@
     </ClInclude>
     <ClInclude Include="HydraTextureUtils.h">
       <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="HydraVSGFCompress.h">
+      <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
