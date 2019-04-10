@@ -18,6 +18,8 @@
 
 namespace HydraLiteMath 
 {
+  const float eps = 1e-5;
+  const float DEG_TO_RAD = float(3.14159265358979323846f) / 180.0f;
   using std::isfinite;
   struct float2
   {
@@ -243,6 +245,8 @@ namespace HydraLiteMath
   static inline float4 & operator -= (float4 & u, float v) { u.x -= v; u.y -= v; u.z -= v; u.w -= v; return u; }
   static inline float4 & operator *= (float4 & u, float v) { u.x *= v; u.y *= v; u.z *= v; u.w *= v; return u; }
   static inline float4 & operator /= (float4 & u, float v) { u.x /= v; u.y /= v; u.z /= v; u.w /= v; return u; }
+  static inline bool   operator == (const float4 & u, const float4 & v) { return (fabs(u.x - v.x) < eps) && (fabs(u.y - v.y) < eps) &&
+                                                                                 (fabs(u.z - v.z) < eps) && (fabs(u.w - v.w) < eps); }
 
   static inline float4   operator - (const float4 & v) { return make_float4(-v.x, -v.y, -v.z, -v.w); }
 
@@ -294,6 +298,8 @@ namespace HydraLiteMath
   static inline float3 & operator -= (float3 & u, float v) { u.x -= v; u.y -= v; u.z -= v; return u; }
   static inline float3 & operator *= (float3 & u, float v) { u.x *= v; u.y *= v; u.z *= v; return u; }
   static inline float3 & operator /= (float3 & u, float v) { u.x /= v; u.y /= v; u.z /= v; return u; }
+  static inline bool   operator == (const float3 & u, const float3 & v) { return (fabs(u.x - v.x) < eps) && (fabs(u.y - v.y) < eps) &&
+                                                                                 (fabs(u.z - v.z) < eps); }
 
   static inline float3 catmullrom(const float3 & P0, const float3 & P1, const float3 & P2, const float3 & P3, float t)
   {
@@ -389,6 +395,7 @@ namespace HydraLiteMath
   static inline float2 & operator -= (float2 & u, float v) { u.x -= v; u.y -= v; return u; }
   static inline float2 & operator *= (float2 & u, float v) { u.x *= v; u.y *= v; return u; }
   static inline float2 & operator /= (float2 & u, float v) { u.x /= v; u.y /= v; return u; }
+  static inline bool   operator ==(const float2 & u, const float2 & v) { return (fabs(u.x - v.x) < eps) && (fabs(u.y - v.y) < eps); }
 
   static inline float2 catmullrom(const float2 & P0, const float2 & P1, const float2 & P2, const float2 & P3, float t)
   {

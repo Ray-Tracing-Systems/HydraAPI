@@ -1155,6 +1155,9 @@ namespace HRUtils
               z_min(std::numeric_limits<float>::max()), z_max(std::numeric_limits<float>::lowest()) {}
   };
 
+  BBox GetMeshBBox(HRMeshRef);
+  BBox transformBBox(const BBox &a_bbox, const float m[16]);
+
 
   HRTextureNodeRef Cube2SphereLDR(HRTextureNodeRef a_cube[6]);
 
@@ -1170,6 +1173,8 @@ namespace HRUtils
   HRLightRef MergeOneLightIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_lightName);
 
   HRTextureNodeRef MergeOneTextureIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_texName, int a_texId = -1);
+
+  bool hrRenderSaveDepthRaw(HRRenderRef a_pRender, const wchar_t* a_outFileName);
 };
 
 namespace HRExtensions

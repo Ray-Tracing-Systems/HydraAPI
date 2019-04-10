@@ -98,6 +98,13 @@ BBox createBBoxFromFloatV(const std::vector<float> &a_verts, int stride)
   return box;
 }
 
+BBox HRUtils::transformBBox(const BBox &a_bbox, const float m[16])
+{
+  HydraLiteMath::float4x4 mat(m);
+
+  return ::transformBBox(a_bbox, mat);
+}
+
 BBox transformBBox(const BBox &a_bbox, const HydraLiteMath::float4x4 &m)
 {
   auto verts = getVerticesFromBBox(a_bbox);

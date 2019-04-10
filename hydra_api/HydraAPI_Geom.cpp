@@ -1358,3 +1358,10 @@ HAPI void hrMeshSaveVSGFCompressed(HRMeshRef a_meshRef, const wchar_t* a_fileNam
 
   HR_SaveVSGFCompressed(pMesh->pImpl->GetData(), pMesh->pImpl->DataSizeInBytes(), a_fileName, matnames.c_str(), int(matnames.size()));
 }
+
+BBox HRUtils::GetMeshBBox(HRMeshRef a_mesh)
+{
+  HRMesh* pMesh = g_objManager.PtrById(a_mesh);
+
+  return pMesh->pImpl->getBBox();
+}
