@@ -275,8 +275,15 @@ HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName, bool a_copyToLo
 
 HAPI HRMeshRef hrMeshCreateFromFile(const wchar_t* a_fileName, bool a_copyToLocalFolder)
 {
+  std::wstring tail = str_tail(a_fileName, 6);
+  
   HydraGeomData data;
-  data.read(a_fileName);
+  std::vector<int> dataBuffer;
+  
+  if(tail == L".vsgfc")
+    data = HR_LoadVSGFCompressedData(a_fileName, dataBuffer);
+  else
+    data.read(a_fileName);
 
   if (data.getVerticesNumber() == 0)
     return HRMeshRef();
@@ -527,6 +534,15 @@ HAPI void hrMeshClose(HRMeshRef a_mesh, bool a_compress)
   pMesh->m_input.m_saveCompressed = a_compress;
 
   nodeXml.attribute(L"dl") = 0; // if we 'open/close' mesh then it became common, not delayed load object
+  if(a_compress)
+  {
+    std::wstring originalPath = nodeXml.attribute(L"loc").as_string();
+    if(str_tail(originalPath, 6) != L".vsgfc") // already compressed format extension
+    {
+      std::wstring compressedPath = originalPath + L"c";
+      nodeXml.attribute(L"loc")   = compressedPath.c_str();
+    }
+  }
 }
 
 
