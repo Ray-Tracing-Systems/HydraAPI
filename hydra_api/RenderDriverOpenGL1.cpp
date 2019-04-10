@@ -259,15 +259,12 @@ bool RD_OGL1_Plain::UpdateSettings(pugi::xml_node a_settingsNode)
   return true;
 }
 
+#include "HydraInternal.h"
+
 void _hrDebugPrintMesh(const HRMeshDriverInput& a_input, const wchar_t* a_fileName)
 {
-#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
-  std::wstring s1(a_fileName);
-  std::string  s2(s1.begin(), s1.end());
-  std::ofstream fout(s2.c_str(), std::ios::binary);
-#elif defined WIN32
-  std::ofstream fout(a_fileName, std::ios::binary);
-#endif
+  std::ofstream fout;
+  hr_ofstream_open(fout, a_fileName);
 
   fout << "vertNum = " << a_input.vertNum << std::endl;
   fout << "triNum  = " << a_input.triNum << std::endl;
@@ -285,6 +282,13 @@ void _hrDebugPrintMesh(const HRMeshDriverInput& a_input, const wchar_t* a_fileNa
   for (int i = 0; i < a_input.vertNum; i++)
     fout << "  " << a_input.norm4f[i * 4 + 0] << ", " << a_input.norm4f[i * 4 + 1] << ", " << a_input.norm4f[i * 4 + 2] << ", " << a_input.norm4f[i * 4 + 3] << std::endl;
 
+  fout << "]" << std::endl << std::endl;
+  
+  fout << "vtang  = [ " << std::endl;
+  
+  for (int i = 0; i < a_input.vertNum; i++)
+    fout << "  " << a_input.tan4f[i * 4 + 0] << ", " << a_input.tan4f[i * 4 + 1] << ", " << a_input.tan4f[i * 4 + 2] << ", " << a_input.tan4f[i * 4 + 3] << std::endl;
+  
   fout << "]" << std::endl << std::endl;
 
 

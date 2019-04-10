@@ -6,14 +6,11 @@
 #include <cstring>
 #include <cstdint>
 
-
 struct HydraGeomData
 {
   HydraGeomData();
   ~HydraGeomData();
-
-  //
-  //
+  
   void write(const std::string& a_fileName);
   void write(std::ostream& a_out);
 
@@ -26,20 +23,16 @@ struct HydraGeomData
 
   // common vertex attributes
   //
-  uint32_t getVerticesNumber() const;
+  uint32_t     getVerticesNumber() const;
   const float* getVertexPositionsFloat4Array() const; 
   const float* getVertexNormalsFloat4Array()  const; 
   const float* getVertexTangentsFloat4Array()  const; 
   const float* getVertexTexcoordFloat2Array()  const; 
-
-  // advanced attributes, for various types of lightmaps
-  //
-  const float* getVertexLightmapTexcoordFloat2Array()  const; 
-  const float* getVertexSphericalHarmonicCoeffs()  const; 
+  
 
   // per triangle data
   //
-  uint32_t getIndicesNumber() const;                       // return 3*num_triangles
+  uint32_t        getIndicesNumber() const;                // return 3*num_triangles
   const uint32_t* getTriangleVertexIndicesArray() const;   // 3*num_triangles
   const uint32_t* getTriangleMaterialIndicesArray() const; // 1*num_triangles 
 
@@ -58,23 +51,20 @@ struct HydraGeomData
     uint32_t flags;
   };
 
+  char* data() { return m_data; }
+  Header getHeader() const { return m_header; }
+  
+  enum GEOM_FLAGS{ HAS_TANGENT    = 1,
+                   UNUSED2        = 2,
+                   UNUSED4        = 4,
+                   HAS_NO_NORMALS = 8};
+  
 protected:
-
-  enum GEOM_FLAGS{ HAS_TANGENT = 1, 
-                   HAS_LIGHTMAP_TEXCOORDS = 2, 
-                   HAS_HARMONIC_COEFFS = 4 };
 
   // size info
   //
-  uint64_t fileSizeInBytes;
-  uint32_t verticesNum;
-  uint32_t indicesNum;
-  uint32_t materialsNum;
-  uint32_t flags;
+  Header m_header;
 
-
-  //
-  //
   const float* m_positions;
   const float* m_normals;
   const float* m_tangents; 
@@ -82,9 +72,6 @@ protected:
 
   const uint32_t* m_triVertIndices;
   const uint32_t* m_triMaterialIndices;
-
-  char*     m_materialNames;
-  uint32_t  m_matNamesTotalStringSize;
   
   char*   m_data; // this is a full dump of the file
 
@@ -92,10 +79,18 @@ protected:
   //
   void freeMemIfNeeded();
   bool m_ownMemory;
-  
-  // HashMapI                      m_matIndexByName;
-  // std::vector<std::string>      m_matNameByIndex;
 
 };
 
+struct VSGFOffsets
+{
+  uint64_t offsetPos ;
+  uint64_t offsetNorm;
+  uint64_t offsetTang;
+  uint64_t offsetTexc;
+  uint64_t offsetInd ;
+  uint64_t offsetMind;
+};
+
+VSGFOffsets CalcOffsets(int numVert, int numInd, bool a_haveTangents = true, bool a_haveNormals = true);
 

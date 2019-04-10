@@ -11,8 +11,12 @@
 
 #ifdef WIN32
 #include <intrin.h>
+#undef min
+#undef max
 #else
 #include <xmmintrin.h>
+#include <emmintrin.h>
+#include <smmintrin.h>
 #endif
 
 
@@ -43,10 +47,10 @@ namespace cvex
 
   #ifdef WIN32 // MVSC does not define operators !!!
 
-  static inline vfloat4 operator+(const vfloat4 a, const vfloat4 b) { return _mm_add_ps(a, b); }
-  static inline vfloat4 operator-(const vfloat4 a, const vfloat4 b) { return _mm_sub_ps(a, b); }
-  static inline vfloat4 operator*(const vfloat4 a, const vfloat4 b) { return _mm_mul_ps(a, b); }
-  static inline vfloat4 operator/(const vfloat4 a, const vfloat4 b) { return _mm_div_ps(a, b); }
+  static inline vfloat4 operator+(vfloat4 a, vfloat4 b) { return _mm_add_ps(a, b); }
+  static inline vfloat4 operator-(vfloat4 a, vfloat4 b) { return _mm_sub_ps(a, b); }
+  static inline vfloat4 operator*(vfloat4 a, vfloat4 b) { return _mm_mul_ps(a, b); }
+  static inline vfloat4 operator/(vfloat4 a, vfloat4 b) { return _mm_div_ps(a, b); }
 
   #endif
 
@@ -59,12 +63,12 @@ namespace cvex
   static inline void store_u(int*   data,  vint4 a_val)  { _mm_storeu_ps((float*)data, _mm_castsi128_ps(a_val)); }
   static inline void store_s(float* data, vfloat4 a_val) { _mm_store_ss(data, a_val);  } // store single ...
 
-  static inline auto load  (const float *data) -> vfloat4 { return _mm_load_ps(data);  }
-  static inline auto load  (const int *data)   -> vint4   { return _mm_castps_si128(_mm_load_ps((float*)data));  }
+  static inline vfloat4 load (const float *data) { return _mm_load_ps(data);  }
+  static inline vint4 load   (const int *data)   { return _mm_castps_si128(_mm_load_ps((float*)data));  }
 
-  static inline auto load_u(const float *data) -> vfloat4 { return _mm_loadu_ps(data); }
-  static inline auto load_u(const int *data)   -> vint4   { return _mm_castps_si128(_mm_loadu_ps((float*)data)); }
-  static inline auto load_s(const float *data) -> vfloat4 { return _mm_load_ss(data);  }
+  static inline vfloat4 load_u(const float *data)   { return _mm_loadu_ps(data); }
+  static inline vint4   load_u(const int *data)     { return _mm_castps_si128(_mm_loadu_ps((float*)data)); }
+  static inline vfloat4 load_s(const float *data)   { return _mm_load_ss(data);  }
 
   static inline int extract_0(const vint4 a_val)    { return _mm_cvtsi128_si32(a_val); }
   static inline int extract_1(const vint4 a_val)    { return _mm_cvtsi128_si32( _mm_shuffle_epi32(a_val, _MM_SHUFFLE(1,1,1,1)) ); }

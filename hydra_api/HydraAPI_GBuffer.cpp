@@ -436,6 +436,8 @@ HAPI bool hrRenderSaveGBufferLayerLDR(HRRenderRef a_pRender, const wchar_t* a_ou
 
   unsigned short* imageU16 = (unsigned short*)imageLDR.data();
 
+  hrRenderLockFrameBufferUpdate(a_pRender);
+
   for (int y = 0; y < height; y++)
   {
     pDriver->GetGBufferLine(y, &gbufferLine[0], 0, width, g_objManager.scnData.m_shadowCatchers);
@@ -506,6 +508,7 @@ HAPI bool hrRenderSaveGBufferLayerLDR(HRRenderRef a_pRender, const wchar_t* a_ou
     }
   }
 
+  hrRenderUnlockFrameBufferUpdate(a_pRender);
 
   if (lname == L"depth")
     g_objManager.m_pImgTool->Save16BitMonoImageTo16BitPNG(a_outFileName, width, height, imageU16);

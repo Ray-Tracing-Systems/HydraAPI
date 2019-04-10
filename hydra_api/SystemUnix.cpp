@@ -164,3 +164,19 @@ void hr_unlock_system_mutex(HRSystemMutex* a_mutex)
 {
   sem_post(a_mutex->mutex);
 }
+
+#include <fstream>
+
+void hr_ifstream_open(std::ifstream& a_stream, const wchar_t* a_fileName)
+{
+  std::wstring s1(a_fileName);
+  std::string  s2(s1.begin(), s1.end());
+  a_stream.open(s2.c_str(), std::ios::binary);
+}
+
+void hr_ofstream_open(std::ofstream& a_stream, const wchar_t* a_fileName)
+{
+  std::wstring s1(a_fileName);
+  std::string  s2(s1.begin(), s1.end());
+  a_stream.open(s2.c_str(), std::ios::binary);
+}

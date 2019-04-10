@@ -2,7 +2,9 @@
 #include "HydraObjectManager.h"
 
 #include "HydraVSGFExport.h"
+#include "HydraVSGFCompress.h"
 #include "HydraXMLHelpers.h"
+
 
 #include <sstream>
 #include <fstream>
@@ -133,8 +135,9 @@ BBox mergeBBoxes(const BBox &A, const BBox &B)
 
 struct MeshVSGF : public IHRMesh
 {
+  MeshVSGF(){}
   MeshVSGF(size_t a_sz, size_t a_chId) : m_sizeInBytes(a_sz), m_chunkId(a_chId), m_vertNum(0),
-                                                      m_indNum(0), m_bbox(BBox()) { m_matDrawList.reserve(100); }
+                                         m_indNum(0), m_bbox(BBox()), m_hasTangentOnLoad(true), m_hasNormalsOnLoad(true) { m_matDrawList.reserve(100); }
 
   uint64_t chunkId() const override { return uint64_t(m_chunkId); }
   uint64_t offset (const wchar_t* a_arrayname) const override;
@@ -142,11 +145,31 @@ struct MeshVSGF : public IHRMesh
   uint64_t vertNum() const override { return m_vertNum; }
   uint64_t indNum()  const override { return m_indNum;  }
 
-  size_t   DataSizeInBytes() const override { return m_sizeInBytes; }
+  size_t DataSizeInBytes() const override { return m_sizeInBytes; }
+  const void* GetData() const override
+  {
+    auto chunk = g_objManager.scnData.m_vbCache.chunk_at(m_chunkId);
+
+    if(chunk.InMemory())
+    {
+      return chunk.GetMemoryNow();
+    }
+    else
+    {
+      const std::wstring location = ChunkName(chunk);
+      std::ifstream fin;
+      hr_ifstream_open(fin, location.c_str());
+      g_objManager.m_tempBuffer.resize(DataSizeInBytes()/sizeof(int) + 10); // #TODO: add lock flags for global buffer ... ?? may be ...
+      fin.read((char*)g_objManager.m_tempBuffer.data(), DataSizeInBytes());
+      fin.close();
+      return g_objManager.m_tempBuffer.data();
+    }
+  }
 
   BBox getBBox() const override { return m_bbox;}
   
   const std::vector<HRBatchInfo>& MList() const override { return m_matDrawList; }
+  std::vector<HRBatchInfo>&       MList() override { return m_matDrawList; }
 
   const std::unordered_map<std::wstring, std::tuple<std::wstring, size_t, size_t, int> >& GetOffsAndSizeForAttrs() const override { return m_custAttrOffsAndSize; }
 
@@ -157,8 +180,10 @@ struct MeshVSGF : public IHRMesh
   size_t   m_indNum;
 
   std::vector<HRBatchInfo> m_matDrawList;
-
   BBox m_bbox;
+
+  bool m_hasTangentOnLoad;
+  bool m_hasNormalsOnLoad;
 
   std::unordered_map<std::wstring, std::tuple<std::wstring, size_t, size_t, int> > m_custAttrOffsAndSize;
 };
@@ -166,39 +191,32 @@ struct MeshVSGF : public IHRMesh
 
 uint64_t MeshVSGF::offset(const wchar_t* a_arrayname) const 
 {
-  // auto node = this->xml_node_immediate();
 
-  uint64_t offset1 = sizeof(HydraGeomData::Header);
-  uint64_t offset2 = offset1 + m_vertNum*sizeof(float)*4; // after pos
-  uint64_t offset3 = offset2 + m_vertNum*sizeof(float)*4; // after norm
-  uint64_t offset4 = offset3 + m_vertNum*sizeof(float)*4; // after tangent
-  uint64_t offset5 = offset4 + m_vertNum*sizeof(float)*2; // after texcoord
-  uint64_t offset6 = offset5 + m_indNum*sizeof(int);      // after ind
-
-
+  const VSGFOffsets offsets = CalcOffsets(m_vertNum, m_indNum, m_hasTangentOnLoad, m_hasNormalsOnLoad);
+  
   if (std::wstring(a_arrayname) == L"pos")
   {
-    return offset1;
+    return offsets.offsetPos;
   }
   else if (std::wstring(a_arrayname) == L"norm")
   {
-    return offset2;
+    return offsets.offsetNorm;
   }
   else if (std::wstring(a_arrayname) == L"tan")
   {
-    return offset3;
+    return offsets.offsetTang;
   }
   else if (std::wstring(a_arrayname) == L"texc")
   {
-    return offset4;
+    return offsets.offsetTexc;
   }
   else if (std::wstring(a_arrayname) == L"ind")
   {
-    return offset5;
+    return offsets.offsetInd;
   }
   else if (std::wstring(a_arrayname) == L"mind")
   {
-    return offset6;
+    return offsets.offsetMind;
   }
   else
   {
@@ -206,6 +224,77 @@ uint64_t MeshVSGF::offset(const wchar_t* a_arrayname) const
   }
 
 }
+
+std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndices);
+
+void HR_LoadVSGFCompressedBothHeaders(std::ifstream& fin,
+                                      std::vector<HRBatchInfo>& a_outBatchList, HydraGeomData::Header& h1, HydraHeaderC& h2);
+
+struct MeshVSGFProxy : public MeshVSGF
+{
+  MeshVSGFProxy(){}
+  MeshVSGFProxy(const wchar_t* a_vsgfPath)
+  {
+    ReadVSGFHeader(a_vsgfPath);
+  }
+
+protected:
+
+  void ReadVSGFHeader(const wchar_t* a_fileName)
+  {
+    std::ifstream fin;
+    hr_ifstream_open(fin, a_fileName);
+
+    std::wstring fileName(a_fileName);
+    std::wstring ext = str_tail(fileName, 6);
+
+    HydraGeomData::Header header;
+
+    if(ext == L".vsgfc")
+    {
+      HydraHeaderC h2;
+      HR_LoadVSGFCompressedBothHeaders(fin,
+                                       m_matDrawList, header, h2);
+      m_vertNum     = header.verticesNum;
+      m_indNum      = header.indicesNum;
+      m_sizeInBytes = header.fileSizeInBytes;
+      m_chunkId     = size_t(-1);
+
+      //#TODO: read file names list;
+    }
+    else
+    {
+      fin.read((char*)&header, sizeof(HydraGeomData::Header));
+
+      m_vertNum     = header.verticesNum;
+      m_indNum      = header.indicesNum;
+      m_sizeInBytes = header.fileSizeInBytes;
+      m_chunkId     = size_t(-1);
+
+      const bool hasNormalsOnLoad = ((header.flags & HydraGeomData::HAS_NO_NORMALS) == 0);
+      const bool hasTangentOnLoad = ((header.flags & HydraGeomData::HAS_TANGENT)    != 0);
+      const auto allOffsets       = CalcOffsets(header.verticesNum, header.indicesNum, hasTangentOnLoad, hasNormalsOnLoad);
+      const auto matIndOffset     = allOffsets.offsetMind;
+
+      std::vector<uint32_t> matIndixes(m_indNum/3);
+      fin.seekg (matIndOffset);
+      fin.read((char*)matIndixes.data(), matIndixes.size()*sizeof(int));
+      fin.close();
+
+      m_matDrawList = FormMatDrawListRLE(matIndixes);
+      //m_bbox;        // don't evaluate this for Proxy Object due to this is long operation
+    }
+
+    m_hasNormalsOnLoad = ((header.flags & HydraGeomData::HAS_NO_NORMALS) == 0);
+    m_hasTangentOnLoad = ((header.flags & HydraGeomData::HAS_TANGENT)    != 0);
+  }
+
+  const void* GetData() const override  // yes, don;t try to get data of MeshVSGFProxy. Find another option.
+  {
+    return nullptr;
+  }
+
+};
 
 std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndices)
 {
@@ -247,7 +336,7 @@ std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndi
   return matDrawList;
 }
 
-std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMesh* pSysObj)
+std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMesh* pSysObj, bool a_saveCompressed)
 {
   const auto& input = pSysObj->m_input;
 
@@ -264,8 +353,7 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
   const size_t totalVertNumber     = input.verticesPos.size() / 4;
   const size_t totalMeshTriIndices = input.triIndices.size();
 
-
-  /* sorting triIndices by matIndices */
+  // sorting triIndices by matIndices
   
   const uint32_t* triIndices = &input.triIndices[0];
   const uint32_t* matIndices = &input.matIndices[0];
@@ -326,17 +414,19 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
     return nullptr;
   }
 
-  auto& chunk  = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
-  chunk.type   = CHUNK_TYPE_VSGF;
+  auto& chunk          = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
+  chunk.type           = CHUNK_TYPE_VSGF;
+  chunk.saveCompressed = a_saveCompressed;  // we need to remember this info inside chunk to enable compressed mesh save
+  chunk.sysObjectId    = pSysObj->id;       // and plug xml description inside a file also;
+  
   char* memory = (char*)chunk.GetMemoryNow();
 
   if (memory == nullptr)
   {
-    HrError(L"HydraFactoryCommon::CreateVSGFFromSimpleInputMesh, out of memory unknown error");
+    HrError(L"HydraFactoryCommon::CreateVSGFFromSimpleInputMesh, out of memory, unknown error");
     return nullptr;
   }
-
-
+  
   std::shared_ptr<MeshVSGF> pMeshImpl = std::make_shared<MeshVSGF>(totalByteSize, chunkId);
 
   // (1) common mesh attributes
@@ -380,8 +470,8 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
     currOffset += currSize;
   }
 
-  pMeshImpl->m_vertNum     = totalVertNumber;
-  pMeshImpl->m_indNum      = totalMeshTriIndices;
+  pMeshImpl->m_vertNum = totalVertNumber;
+  pMeshImpl->m_indNum  = totalMeshTriIndices;
 
   //compute bbox
   if (g_objManager.m_computeBBoxes)
@@ -472,4 +562,10 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromFile(HRMesh* pSysObj,
   pMeshImpl->m_bbox = bbox;
 
   return pMeshImpl;
+}
+
+std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFProxy(const wchar_t* a_fileName)
+{
+  std::shared_ptr<MeshVSGFProxy> pImpl = std::make_shared<MeshVSGFProxy>(a_fileName); // #TODO: check if file don't exists and return nullptr if it doesnt
+  return pImpl;
 }

@@ -130,7 +130,7 @@ struct HRMesh : public HRObject<IHRMesh>
 
   struct InputTriMesh
   {
-    InputTriMesh() = default;
+    InputTriMesh() : m_saveCompressed(false) { }
 
     void clear()
     {
@@ -156,9 +156,9 @@ struct HRMesh : public HRObject<IHRMesh>
 
     void reserve(size_t vNum, size_t indNum)
     {
-      verticesPos.reserve(vNum * 4 + 10);
-      verticesNorm.reserve(vNum * 4 + 10);
-      verticesTangent.reserve(vNum * 4 + 10);
+      verticesPos.reserve     (vNum * 4 + 10);
+      verticesNorm.reserve    (vNum * 4 + 10);
+      verticesTangent.reserve (vNum * 4 + 10);
       verticesTexCoord.reserve(vNum * 2 + 10);
       
       if(triIndices.capacity() < indNum + 10)
@@ -171,6 +171,23 @@ struct HRMesh : public HRObject<IHRMesh>
       {
         arr.idata.reserve(1*vNum);
         arr.fdata.reserve(4*vNum);
+      }
+    }
+  
+    void resize(size_t vNum, size_t indNum)
+    {
+      verticesPos.resize     (vNum * 4);
+      verticesNorm.resize    (vNum * 4);
+      verticesTangent.resize (vNum * 4);
+      verticesTexCoord.resize(vNum * 2);
+      
+      triIndices.resize      (indNum);
+      matIndices.resize      (indNum / 3);
+    
+      for (auto& arr : customArrays)
+      {
+        arr.idata.resize(1*vNum);
+        arr.fdata.resize(4*vNum);
       }
     }
 
@@ -191,6 +208,7 @@ struct HRMesh : public HRObject<IHRMesh>
     };
 
     std::vector<CustArray> customArrays;
+    bool m_saveCompressed;
   };
 
   struct InputTriMeshPointers
@@ -638,3 +656,5 @@ std::wstring ToWString(int i);
 std::wstring ToWString(float i);
 std::wstring ToWString(unsigned int i);
 
+void ComputeVertexTangents(HRMesh::InputTriMesh& mesh, int indexNum);
+void ComputeVertexNormals(HRMesh::InputTriMesh& mesh, const int indexNum, bool useFaceNormals);

@@ -68,30 +68,38 @@ HRMaterialRef _hrMaterialCreateFromNode(pugi::xml_node a_node)
   return ref;
 }
 
-HAPI HRMeshRef _hrMeshCreateFromNode(pugi::xml_node a_node)
+const std::wstring GetRealFilePathOfDelayedMesh(pugi::xml_node a_node)
 {
   const std::wstring dl       = a_node.attribute(L"dl").as_string();
   const std::wstring loc      = g_objManager.GetLoc(a_node);
   const wchar_t* a_objectName = a_node.attribute(L"name").as_string();
   const wchar_t* a_fileName   = (dl == L"1") ? a_node.attribute(L"path").as_string() : loc.c_str();
 
+  if(std::wstring(a_fileName) == L"") //  then get path from "loc" due to we actually copied file to 'data' folder
+    return loc;
+  else
+    return std::wstring(a_fileName);
+}
+
+
+HAPI HRMeshRef _hrMeshCreateFromNode(pugi::xml_node a_node)
+{
+  const std::wstring filePathStr = GetRealFilePathOfDelayedMesh(a_node);
+  const wchar_t* a_fileName      = filePathStr.c_str();
+  const wchar_t* a_objectName    = a_node.attribute(L"name").as_string();
+
   HRMeshRef ref;
 
-  ref.id = a_node.attribute(L"id").as_int();//HR_IDType(g_objManager.scnData.meshes.size());
-
-  if(ref.id == 43)
-    std::cout <<"1";
+  ref.id = a_node.attribute(L"id").as_int(); //HR_IDType(g_objManager.scnData.meshes.size());
 
   HRMesh mesh;
   mesh.name = std::wstring(a_objectName);
   mesh.id   = ref.id;
   mesh.update_this(a_node);
   g_objManager.scnData.meshes.push_back(mesh);
-//  g_objManager.scnData.meshes[ref.id].update_this(a_node);
-//  g_objManager.scnData.meshes[ref.id].id = ref.id;
 
   HRMesh* pMesh = &g_objManager.scnData.meshes.back();
-  pMesh->pImpl  = g_objManager.m_pFactory->CreateVSGFFromFile(pMesh, a_fileName, a_node); //#TODO: load custom attributes somewhere inside
+  pMesh->pImpl  = g_objManager.m_pFactory->CreateVSGFProxy(a_fileName); // delay mesh load untill it will be needed by RenderDriver::UpdateMesh
 
   if (pMesh->pImpl == nullptr)
     HrError(L"LoadExistingLibrary, _hrMeshCreateFromNode can't load mesh from location = ", a_fileName);
@@ -270,8 +278,11 @@ void _hrFindTargetOrLastState(const wchar_t* a_libPath, int32_t a_stateId,
       
       if (currFile.find("statex") != std::string::npos)
       {
-        fileName = s2ws(currFile);
-        stateId++;
+        fileName    = s2ws(currFile);
+        auto first  = currFile.find("statex_") + 7;
+        auto last   = currFile.find(".xml");
+        auto strNew = currFile.substr(first, last - first);
+        stateId     = atoi(strNew.c_str());
       }
     }
 #elif defined WIN32
@@ -287,7 +298,11 @@ void _hrFindTargetOrLastState(const wchar_t* a_libPath, int32_t a_stateId,
       if (currFile.find(L"statex") != std::wstring::npos)
       {
         fileName = currFile;
-        stateId++;
+        auto first  = fileName.find(L"statex_") + 7;
+        auto last   = fileName.find(L".xml");
+        auto strNew = fileName.substr(first, last - first);
+        auto strStd = ws2s(strNew);
+        stateId     = atoi(strStd.c_str());
       }
     }
 #endif
@@ -315,7 +330,7 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
 	  return -1;
   }
 
-  stateId--;
+  // stateId--; // #NOTE: uncomment this if ypu need to chenge current state?
 
   // (1) open last state.xml
   //

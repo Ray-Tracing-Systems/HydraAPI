@@ -17,6 +17,10 @@
 #include <set>
 #include <algorithm>
 
+#include <cmath>
+using std::isnan;
+using std::isinf;
+
 #include "LiteMath.h"
 using namespace HydraLiteMath;
 
@@ -31,6 +35,81 @@ extern std::wstring      g_lastError;
 extern std::wstring      g_lastErrorCallerPlace;
 extern HR_ERROR_CALLBACK g_pErrorCallback;
 extern HRObjectManager   g_objManager;
+
+
+void HR_ComputeTangentSpaceSimple(const int     vertexCount, const int     triangleCount, const uint32_t* triIndices,
+                                  const float4* verticesPos, const float4* verticesNorm, const float2* vertTexCoord,
+                                  float4* verticesTang)
+{
+  
+  float4 *tan1 = new float4[vertexCount * 2];
+  float4 *tan2 = tan1 + vertexCount;
+  memset(tan1, 0, vertexCount * sizeof(float4) * 2);
+  
+  const float epsDiv = 1.0e25f;
+  
+  for (auto a = 0; a < triangleCount; a++)
+  {
+    auto i1 = triIndices[3 * a + 0];
+    auto i2 = triIndices[3 * a + 1];
+    auto i3 = triIndices[3 * a + 2];
+    
+    const float4& v1 = verticesPos[i1];
+    const float4& v2 = verticesPos[i2];
+    const float4& v3 = verticesPos[i3];
+    
+    const float2& w1 = vertTexCoord[i1];
+    const float2& w2 = vertTexCoord[i2];
+    const float2& w3 = vertTexCoord[i3];
+    
+    const float x1 = v2.x - v1.x;
+    const float x2 = v3.x - v1.x;
+    const float y1 = v2.y - v1.y;
+    const float y2 = v3.y - v1.y;
+    const float z1 = v2.z - v1.z;
+    const float z2 = v3.z - v1.z;
+    
+    const float s1 = w2.x - w1.x;
+    const float s2 = w3.x - w1.x;
+    const float t1 = w2.y - w1.y;
+    const float t2 = w3.y - w1.y;
+    
+    const float denom = (s1 * t2 - s2 * t1);
+    const float r     = (fabs(denom) > 1e-35f) ? (1.0f / denom) : 0.0f;
+    
+    const float4 sdir((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r, 1);
+    const float4 tdir((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r, 1);
+    
+    tan1[i1] += sdir;
+    tan1[i2] += sdir;
+    tan1[i3] += sdir;
+    
+    tan2[i1] += tdir;
+    tan2[i2] += tdir;
+    tan2[i3] += tdir;
+  }
+  
+  for (long a = 0; a < vertexCount; a++)
+  {
+    const float4& n = verticesNorm[a];
+    const float4& t = tan1[a];
+    
+    const float3 n1 = to_float3(n);
+    const float3 t1 = to_float3(t);
+    
+    // Gram-Schmidt orthogonalization
+    verticesTang[a] = to_float4(normalize(t1 - n1 * dot(n1, t1)), 0.0f); // #NOTE: overlow here is ok!
+    
+    verticesTang[a].x = isnan(verticesTang[a].x) || isinf(verticesTang[a].x) ? 0 : verticesTang[a].x;
+    verticesTang[a].y = isnan(verticesTang[a].y) || isinf(verticesTang[a].y) ? 0 : verticesTang[a].y;
+    verticesTang[a].z = isnan(verticesTang[a].z) || isinf(verticesTang[a].z) ? 0 : verticesTang[a].z;
+    
+    // Calculate handedness
+    verticesTang[a].w = (dot(cross(n1, t1), to_float3(tan2[a])) < 0.0f) ? -1.0f : 1.0f;
+  }
+  
+  delete [] tan1;
+}
 
 
 
@@ -200,7 +279,7 @@ void hrMeshDisplace(HRMeshRef a_mesh, const std::unordered_map<uint32_t, uint32_
   }
 
 
-  hrMeshComputeNormals(a_mesh, mesh.triIndices.size(), false);
+  hrMeshComputeNormals(a_mesh, int(mesh.triIndices.size()), false);
 }
 
 float smoothing_coeff(uint32_t valence)
@@ -290,8 +369,8 @@ void update_vertex_attrib_by_index_f2(float2 new_val, uint32_t vertex_index, std
 void smooth_common_vertex_attributes(uint32_t vertex_index, const HRMesh::InputTriMesh& mesh, float4 &pos, float4 &normal,
                                      float4 &tangent, float2 &uv)
 {
-  auto neighbours = find_vertex_neighbours(vertex_index, mesh);
-  uint32_t valence = neighbours.size();
+  auto neighbours  = find_vertex_neighbours(vertex_index, mesh);
+  uint32_t valence = uint32_t(neighbours.size());
 
   pos      = vertex_attrib_by_index_f4("pos", vertex_index, mesh);
   normal   = vertex_attrib_by_index_f4("normal", vertex_index, mesh);
@@ -412,7 +491,7 @@ void hrMeshSubdivideSqrt3(HRMeshRef a_mesh, int a_iterations)
       float4 PTan = (ATan + BTan + CTan) / 3.0f;
       float2 Puv = (Auv + Buv + Cuv) / 3.0f;
 
-      uint32_t indP = mesh.verticesPos.size() / 4;
+      uint32_t indP = uint32_t(mesh.verticesPos.size() / 4);
       mesh.verticesPos.push_back(P.x);
       mesh.verticesPos.push_back(P.y);
       mesh.verticesPos.push_back(P.z);
@@ -550,7 +629,7 @@ void hrMeshSubdivide(HRMeshRef a_mesh, int a_iterations)
     float4 PTan = (ATan + BTan + CTan) / 3.0f;
     float2 Puv = (Auv + Buv + Cuv) / 3.0f;
 
-    uint32_t indP = mesh.verticesPos.size() / 4;
+    uint32_t indP = uint32_t(mesh.verticesPos.size() / 4);
     mesh.verticesPos.push_back(P.x);
     mesh.verticesPos.push_back(P.y);
     mesh.verticesPos.push_back(P.z);
@@ -1504,7 +1583,7 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
       normals_new.at(index * 4 + 0) = A_normal.x;
       normals_new.at(index * 4 + 1) = A_normal.y;
       normals_new.at(index * 4 + 2) = A_normal.z;
-      normals_new.at(index * 4 + 3) = 1.0f;
+      normals_new.at(index * 4 + 3) = 0.0f;
 
       uv_new.at(index * 2 + 0) = A_uv.x;
       uv_new.at(index * 2 + 1) = A_uv.y;
@@ -1549,7 +1628,7 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
       normals_new.at(index * 4 + 0) = B_normal.x;
       normals_new.at(index * 4 + 1) = B_normal.y;
       normals_new.at(index * 4 + 2) = B_normal.z;
-      normals_new.at(index * 4 + 3) = 1.0f;
+      normals_new.at(index * 4 + 3) = 0.0f;
 
       uv_new.at(index * 2 + 0) = B_uv.x;
       uv_new.at(index * 2 + 1) = B_uv.y;
@@ -1595,7 +1674,7 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
       normals_new.at(index * 4 + 0) = C_normal.x;
       normals_new.at(index * 4 + 1) = C_normal.y;
       normals_new.at(index * 4 + 2) = C_normal.z;
-      normals_new.at(index * 4 + 3) = 1.0f;
+      normals_new.at(index * 4 + 3) = 0.0f;
 
       uv_new.at(index * 2 + 0) = C_uv.x;
       uv_new.at(index * 2 + 1) = C_uv.y;
@@ -1644,7 +1723,7 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
   mesh.matIndices.resize(mid_new.size());
   std::copy(mid_new.begin(), mid_new.end(), mesh.matIndices.begin());
 
-  indexNum = indices_new.size();
+  indexNum = int(indices_new.size());
 }
 
 
@@ -1655,7 +1734,7 @@ int getNumFaces(const SMikkTSpaceContext *context)
 {
   HRMesh *pMesh = static_cast <HRMesh *> (context->m_pUserData);
 
-  return pMesh->m_input.triIndices.size()/3;
+  return int(pMesh->m_input.triIndices.size()/3);
 }
 
 // Return number of vertices in the primitive given by index.
@@ -1764,3 +1843,11 @@ void runTSpaceCalc(HRMeshRef mesh_ref, bool basic)
 
   genTangSpaceDefault(&context);
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+

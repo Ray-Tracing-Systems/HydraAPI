@@ -1,5 +1,5 @@
 #include "HydraLegacyUtils.h"
-
+#include "HydraVSGFExport.h"
 
 #ifdef WIN32
 #else
@@ -103,8 +103,6 @@ bool isTargetDevIdAHydraCPU(int a_devId, const std::vector<HydraRenderDevice>& a
 
   return res;
 }
-
-// std::wstring HydraInstallPathW() { return std::wstring(L"C:\\[Hydra]\\"); }
 
 #ifdef WIN32
 

@@ -132,6 +132,12 @@ const std::wstring HRObjectManager::GetLoc(pugi::xml_node a_node) const
 
 void HRObjectManager::SetLoc(pugi::xml_node a_node, const std::wstring& a_loc)
 {
+  if(a_loc == L"unknown")
+  {
+    a_node.attribute(L"loc") = a_loc.c_str();
+    return;
+  }
+
   const std::wstring& libPath = scnData.m_path;
   const size_t charsNum       = libPath.size();
   const std::wstring loc      = a_loc.substr(charsNum+1, a_loc.size());

@@ -49,7 +49,6 @@ protected:
 
 static IHydraNetPluginAPI* g_pMaterialRenderConnect = nullptr;
 static std::ofstream g_logMain;
-static std::ofstream g_logMtl;
 
 IHydraNetPluginAPI* CreateHydraServerConnection(int renderWidth, int renderHeight, bool inMatEditor)
 {
@@ -76,26 +75,7 @@ IHydraNetPluginAPI* CreateHydraServerConnection(int renderWidth, int renderHeigh
   }
   else // if in matEditor
   {
-    if (!g_logMtl.is_open())
-      g_logMtl.open("C:/[Hydra]/logs/material_log.txt");
-    logPtr = &g_logMtl;
-
-    if ((m_matRenderTimes != 0) && (m_matRenderTimes % 40 == 0)) // restart mtl render process each 32 render to prevent mem leaks
-    {
-      //hydraRender_mk3::plugin_log.Print("restart material render");
-      if (g_pMaterialRenderConnect != nullptr)
-        g_pMaterialRenderConnect->stopAllRenderProcesses();
-
-      g_materialProcessStart = false;
-    }
-
-    pImpl = g_pMaterialRenderConnect;
-
-    if (pImpl == nullptr)
-    {
-      g_pMaterialRenderConnect = new PluginShmemPipe(imageName.c_str(), messageName.c_str(), guiName.c_str(), 512, 512, "material", logPtr);
-      pImpl = g_pMaterialRenderConnect;
-    }
+  
 
     m_matRenderTimes++;
   }
@@ -158,11 +138,11 @@ void PluginShmemPipe::runAllRenderProcesses(RenderProcessRunParams a_params, con
     m_hydraStartupInfo.dwFlags     = STARTF_USESHOWWINDOW; // CREATE_NEW_CONSOLE // DETACHED_PROCESS
     m_hydraStartupInfo.wShowWindow = SW_SHOWMINNOACTIVE;
 
-    const char* hydraPath = "C:\\[Hydra]\\bin2\\hydra.exe";
+    std::string hydraPath = "C:/[Hydra]/bin2/hydra.exe";
     if (a_params.customExePath != "")
-      hydraPath = a_params.customExePath.c_str();
+      hydraPath = a_params.customExePath + "/hydra.exe";
 
-    if (!isFileExist(hydraPath))
+    if (!isFileExist(hydraPath.c_str()))
     {
       m_hydraServerStarted = false;
     }
@@ -182,7 +162,14 @@ void PluginShmemPipe::runAllRenderProcesses(RenderProcessRunParams a_params, con
       std::string basicCmd = ss.str();
 
       m_hydraServerStarted = true;
-      std::ofstream fout("C:\\[Hydra]\\pluginFiles\\zcmd.txt");
+      std::ofstream fout;
+      if (a_params.customExePath != "")
+      {
+        fout.close();
+        fout.open(a_params.customExePath + "/zcmd.txt");
+      }
+      else
+        fout.open("C:/[Hydra]/zcmd.txt");
 
       for (size_t i = 0; i < activeDevices.size(); i++)
       {
@@ -203,13 +190,15 @@ void PluginShmemPipe::runAllRenderProcesses(RenderProcessRunParams a_params, con
           dwCreationFlags |= CREATE_NEW_CONSOLE;
 
         std::stringstream ss3;
-        ss3 << " -cl_device_id " << devId;
+        ss3 << " -cl_device_id " << devId << " ";
+        if (a_params.customExePath != "")
+          ss3 << "-hydradir " << a_params.customExePath.c_str() << " ";
         const std::string cmdFull = basicCmd + ss3.str();
 
         ZeroMemory(&m_mdProcessList[i], sizeof(PROCESS_INFORMATION));
         if (!a_debug)
         {
-          m_hydraServerStarted = m_hydraServerStarted && CreateProcessA(hydraPath, (LPSTR)cmdFull.c_str(), NULL, NULL, FALSE, dwCreationFlags, NULL, NULL, &m_hydraStartupInfo, &m_mdProcessList[i]);
+          m_hydraServerStarted = m_hydraServerStarted && CreateProcessA(hydraPath.c_str(), (LPSTR)cmdFull.c_str(), NULL, NULL, FALSE, dwCreationFlags, NULL, NULL, &m_hydraStartupInfo, &m_mdProcessList[i]);
           if (!m_hydraServerStarted && outp != nullptr)
           {
             (*outp) << "[syscall failed]: runAllRenderProcesses->(m_connectionType == 'main')->CreateProcessA " << std::endl;

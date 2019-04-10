@@ -241,6 +241,21 @@ std::wstring CutFileExt(const std::wstring& fileName)
   return fileName.substr(pos, fileName.size());
 }
 
+std::wstring CutFileName(const std::wstring& fileName)
+{
+  auto pos = fileName.find_last_of(L"/");
+
+  if (pos == std::wstring::npos)
+    pos = fileName.find_last_of(L"\\");
+
+  if (pos == std::wstring::npos)
+  {
+    HrPrint(HR_SEVERITY_ERROR, "CutFileExt, can not guess file extension");
+    return L"";
+  }
+  return fileName.substr(pos+1, fileName.size());
+}
+
 bool InternalImageTool::LoadImageFromFile(const wchar_t* a_fileName,
                                           int& w, int& h, int& bpp, std::vector<int>& a_data)
 {

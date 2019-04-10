@@ -268,15 +268,17 @@ HAPI HRSceneLibraryInfo hrSceneLibraryInfo();
 
 
 /**
-\brief create 2D texture from file
+\brief Creates 2D texture from file.
 \param pScnData   - scene data object ptr.
 \param a_fileName - file name
-\param w   - texture width; optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
-\param h   - texture height; optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
+\param w   - texture width;   optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
+\param h   - texture height;  optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
 \param bpp - bytes per pixel; optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
 
- passing w,h or bpp not equal to -1 ask render
-
+ Creates 2D texture from file.
+ Passing w,h or bpp not equal to -1 ask render to resize texture; however render does not have to resize texture. It is just a hint.
+ Note that all 'hrTexture2DCreateFromFile***' functions have their internal cache by 'a_fileName'. if you pass same file name twice, this function return existing texture id second time.
+ If you really need to update texture with new file data, use hrTextureUpdateFromFile please.
 */
 
 HAPI HRTextureNodeRef  hrTexture2DCreateFromFile(const wchar_t* a_fileName, int w = -1, int h = -1, int bpp = -1);
@@ -285,9 +287,10 @@ HAPI HRTextureNodeRef  hrTexture2DCreateFromFile(const wchar_t* a_fileName, int 
 \brief Create 2D texture from file with Delayed Load (DL means "Delayed Load").
 \param pScnData   - scene data object ptr.
 \param a_fileName - file name
-\param w   - texture width; optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
-\param h   - texture height; optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
+\param w   - texture width;   optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
+\param h   - texture height;  optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
 \param bpp - bytes per pixel; optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
+\param a_copyFileToLocalData - indicates that texture should be copied to "data" folder (for further transmittion, for example)
 
  The "Delayed Load" means that texture will be load to memory only when passing it to render driver (or by render driver itself, if it can load images from external format).
  The advantage of using textures with delayed load is that if some texture is not really needed for rendering current frame it won't be touched at all.
@@ -298,9 +301,11 @@ HAPI HRTextureNodeRef  hrTexture2DCreateFromFile(const wchar_t* a_fileName, int 
  The normal case also - if you do know that your texture don't have full size copy in memory.
  Nevertheless, it is absolutely ok to use this function if you want to save memory or prevent unnecessary disk flush of internal HydraAPI cache in other cases.
 
+ Note that all 'hrTexture2DCreateFromFile***' functions have their internal cache by 'a_fileName'. if you pass same file name twice, this function return existing texture id second time.
+ If you really need to update texture with new file data, use hrTextureUpdateFromFile please.
 */
 
-HAPI HRTextureNodeRef  hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, int w = -1, int h = -1, int bpp = -1);
+HAPI HRTextureNodeRef  hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, int w = -1, int h = -1, int bpp = -1, bool a_copyFileToLocalData = false);
 
 /**
 \brief Update 2D texture from file
@@ -310,6 +315,7 @@ HAPI HRTextureNodeRef  hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, in
 \param h    - new texture height;
 \param bpp  - new bytes per pixel;
 
+ Use this function if you really need to update texture with new file data.
 */
 
 HAPI HRTextureNodeRef hrTexture2DUpdateFromFile(HRTextureNodeRef currentRef, const wchar_t* a_fileName, int w = -1, int h = -1, int bpp = -1);
@@ -673,9 +679,10 @@ HAPI HRMeshRef hrMeshCreate(const wchar_t* a_objectName);
 \brief create mesh from internal vsgf format with delayed load.
 \param a_pScn     - pointer to scene library
 \param a_fileName - file name of the mesh.
+\param a_copyToLocalFolder - indicates if we need to copy input '.vsgf' file to local folder
 
 */
-HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName);
+HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName, bool a_copyToLocalFolder = false);
 
 /**
 \brief open mesh
@@ -689,9 +696,9 @@ HAPI void              hrMeshOpen(HRMeshRef a_pMesh, HR_PRIM_TYPE a_type, HR_OPE
 /**
 \brief close mesh
 \param a_pMesh      - pointer to mesh
-
+\param a_compress   - compress mesh when save it to file
 */
-HAPI void              hrMeshClose(HRMeshRef a_pMesh);
+HAPI void              hrMeshClose(HRMeshRef a_pMesh, bool a_compress = false);
 
 
 /**
@@ -802,7 +809,7 @@ struct HROpenedMeshInfo
 
 /**
 \brief get mesh info. You can't call this function if mesh is not open.
-\param a_pMesh - pointer to mesh
+\param a_meshRef - mesh reference
 \return  Information about opened mesh. 
 
 */
@@ -810,10 +817,26 @@ HAPI HROpenedMeshInfo  hrMeshGetInfo(HRMeshRef a_mesh);
 
 /**
 \brief get params node for mesh
-\param a_pMesh - pointer to mesh
+\param a_meshRef - mesh reference
 
 */
 HAPI pugi::xml_node    hrMeshParamNode(HRMeshRef a_meshRef);
+
+/**
+\brief immediately save current mesh to '.vsgf' file to specified path.
+\param a_meshRef  - mesh reference
+\param a_fileName - out file name; must end with '.vsgf'
+
+*/
+HAPI void              hrMeshSaveVSGF(HRMeshRef a_meshRef, const wchar_t* a_fileName);
+
+/**
+\brief immediately save current mesh to '.vsgfc' file (compressed vsgf)
+\param a_meshRef  - mesh reference
+\param a_fileName - out file name; must end with '.vsgfc'
+
+*/
+HAPI void              hrMeshSaveVSGFCompressed(HRMeshRef a_meshRef, const wchar_t* a_fileName);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -912,6 +935,19 @@ HAPI bool hrRenderGetFrameBufferHDR4f(HRRenderRef pRender, int w, int h, float* 
 \brief get framebuffer content to imgData, only color
 */
 HAPI bool hrRenderGetFrameBufferLDR1i(HRRenderRef pRender, int w, int h, int32_t* imgData);  // w*h*sizeof(int) --> RGBA
+
+
+/**
+\brief You must use this function _before_ call hrRenderGetFrameBufferLineHDR4f/hrRenderGetFrameBufferLineLDR1i
+       If use hrRenderGetFrameBufferHDR4f/hrRenderGetFrameBufferLDR1i, you don't have to call this
+*/
+HAPI bool hrRenderLockFrameBufferUpdate(HRRenderRef pRender);
+
+/**
+\brief You must use this function _after_ call hrRenderGetFrameBufferLineHDR4f/hrRenderGetFrameBufferLineLDR1i
+       If use hrRenderGetFrameBufferHDR4f/hrRenderGetFrameBufferLDR1i, you don't have to call this
+*/
+HAPI void hrRenderUnlockFrameBufferUpdate(HRRenderRef pRender);
 
 /**
 \brief get framebuffer line to imgData. 
