@@ -527,6 +527,15 @@ HAPI void hrMeshClose(HRMeshRef a_mesh, bool a_compress)
   pMesh->m_input.m_saveCompressed = a_compress;
 
   nodeXml.attribute(L"dl") = 0; // if we 'open/close' mesh then it became common, not delayed load object
+  if(a_compress)
+  {
+    std::wstring originalPath = nodeXml.attribute(L"loc").as_string();
+    if(str_tail(originalPath, 6) != L".vsgfc") // already compressed format extension
+    {
+      std::wstring compressedPath = originalPath + L"c";
+      nodeXml.attribute(L"loc")   = compressedPath.c_str();
+    }
+  }
 }
 
 

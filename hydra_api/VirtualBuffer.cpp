@@ -1,6 +1,8 @@
 #include "HydraInternal.h"
 #include "HydraObjectManager.h"
 
+#include "HydraVSGFCompress.h"
+
 #include <algorithm>
 #include <fstream>
 #include <sstream>
@@ -617,21 +619,19 @@ void ChunkPointer::SwapToDisk()
   
   const std::wstring name = ChunkName(*this);
   
-  //if(saveCompressed && type == CHUNK_TYPE_VSGF)
-  //{
-  //  const std::wstring name2 = name + L"c";
-  //  //std::wcout << L"save chunk " << name2.c_str() << " to compressed format" << std::endl;
-  //  HR_SaveVSGFCompressed(pVB->m_dataHalfCurr + localAddress, sizeInBytes, name2.c_str());
-  //}
-  //else
-  //{
-  
+  if(saveCompressed && type == CHUNK_TYPE_VSGF)
+  {
+    const std::wstring name2 = name + L"c";
+    std::wcout << L"save chunk " << name2.c_str() << " to compressed format" << std::endl;
+    HR_SaveVSGFCompressed(pVB->m_dataHalfCurr + localAddress, sizeInBytes, name2.c_str(), "", 0);
+  }
+  else
+  {
     std::ofstream fout;
     hr_ofstream_open(fout, name.c_str());
-    
     fout.write(pVB->m_dataHalfCurr + localAddress, sizeInBytes);
     fout.close();
-  //}
+  }
   
   wasSaved = true;
 }

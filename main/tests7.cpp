@@ -641,8 +641,8 @@ bool test44_four_lights()
 
   hrMeshOpen(torusRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
   {
-    hrMeshVertexAttribPointer4f(torusRef, L"pos", &torus.vPos[0]);
-    hrMeshVertexAttribPointer4f(torusRef, L"norm", &torus.vNorm[0]);
+    hrMeshVertexAttribPointer4f(torusRef, L"pos",      &torus.vPos[0]);
+    hrMeshVertexAttribPointer4f(torusRef, L"norm",     &torus.vNorm[0]);
     hrMeshVertexAttribPointer2f(torusRef, L"texcoord", &torus.vTexCoord[0]);
 
     for (size_t i = 0; i < torus.matIndices.size() / 3; i++)
@@ -656,9 +656,9 @@ bool test44_four_lights()
 
     //hrMeshMaterialId(torusRef, mat0.id);
     hrMeshPrimitiveAttribPointer1i(torusRef, L"mind", &torus.matIndices[0]);
-    hrMeshAppendTriangles3(torusRef, int32_t(torus.triIndices.size()), &torus.triIndices[0]);
+    hrMeshAppendTriangles3        (torusRef, int32_t(torus.triIndices.size()), &torus.triIndices[0]);
   }
-  hrMeshClose(torusRef);
+  hrMeshClose(torusRef, true); // compress mesh when save it to file
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

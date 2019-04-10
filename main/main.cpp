@@ -146,7 +146,7 @@ int main(int argc, const char** argv)
 	  //run_all_ipp_tests();
 
     //test40_several_changes();
-    //test44_four_lights();
+    test44_four_lights();
 
     //hrSceneLibraryOpen(L"/home/frol/temp", HR_WRITE_DISCARD);
     //_hrConvertOldVSGFMesh(L"data/meshes/teapot.vsgf", L"data/meshes/teapot2.vsgf");
@@ -154,7 +154,7 @@ int main(int argc, const char** argv)
     ////_hrDebugPrintVSGF(L"data/meshes/teapot2.vsgf",   L"/home/frol/temp/teapot2.txt");
 
     //std::cout << test38_save_mesh_and_delayed_load() << std::endl;
-    std::cout << test49_light_geom_disk() << std::endl;
+    //std::cout << test49_light_geom_disk() << std::endl;
     
     //test46_light_geom_rect();
     //std::cout << test89_proc_texture_dirty() << std::endl;
