@@ -218,6 +218,7 @@ namespace GEO_TESTS
   bool test_003_compute_normals(); // bug - normals computation
   bool test_004_dof();
   bool test_005_instancing();
+  bool test_006_points_on_mesh();
 }
 
 namespace MTL_TESTS
