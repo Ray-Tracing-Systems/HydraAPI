@@ -1130,6 +1130,8 @@ namespace HRUtils
   HRTextureNodeRef MergeOneTextureIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_texName, int a_texId = -1);
 
   bool hrRenderSaveDepthSpecial(HRRenderRef a_pRender, const wchar_t* a_outFileName, float max_depth);
+
+  bool hrRenderSaveDepthRaw(HRRenderRef a_pRender, const wchar_t* a_outFileName);
 };
 
 namespace HRExtensions

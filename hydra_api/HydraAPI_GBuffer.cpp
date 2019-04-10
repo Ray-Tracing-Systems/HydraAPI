@@ -293,6 +293,69 @@ bool HRUtils::hrRenderSaveDepthSpecial(HRRenderRef a_pRender, const wchar_t* a_o
   return true;
 }
 
+bool HRUtils::hrRenderSaveDepthRaw(HRRenderRef a_pRender, const wchar_t* a_outFileName)
+{
+  HRRender* pRender = g_objManager.PtrById(a_pRender);
+
+  if (pRender == nullptr)
+  {
+    HrError(L"hrRenderGetDeviceList: nullptr input");
+    return false;
+  }
+
+  auto pDriver = pRender->m_pDriver;
+  if (pDriver == nullptr)
+    return false;
+
+  auto renderSettingsNode = pRender->xml_node_immediate();
+
+  const int width     = renderSettingsNode.child(L"width").text().as_int();
+  const int height    = renderSettingsNode.child(L"height").text().as_int();
+  const int evalgbuff = renderSettingsNode.child(L"evalgbuffer").text().as_int();
+
+  if (evalgbuff != 1)
+  {
+    HrError(L"hrRenderSaveGBufferLayerLDR: don't have gbuffer; set 'evalgbuffer' = 1 and render again; ");
+    return false;
+  }
+
+  std::vector<float>          rawDepth(width * height);
+  std::vector<HRGBufferPixel> gbufferLine(width);
+
+  float* data = rawDepth.data();
+
+  for (int y = 0; y < height; y++)
+  {
+    pDriver->GetGBufferLine(y, &gbufferLine[0], 0, width, g_objManager.scnData.m_shadowCatchers);
+    for (int x = 0; x < width; x++)
+    {
+      const float d = gbufferLine[x].depth;
+
+      float res[4];
+      res[0] = d;
+      res[1] = d;
+      res[2] = d;
+      res[3] = 1.0f;
+
+      data[y * width + x] = d;
+    }
+  }
+
+  std::wstring s1(a_outFileName);
+  std::string  s2(s1.begin(), s1.end());
+  std::ofstream fout(s2.c_str(), std::ios::out | std::ios::binary);
+
+  fout.write((char*)&width, sizeof(int32_t));
+  fout.write((char*)&height, sizeof(int32_t));
+
+  fout.write((char*)data, width * height * sizeof(float));
+
+  fout.flush();
+  fout.close();
+
+  return true;
+}
+
 HAPI bool hrRenderSaveGBufferLayerLDR(HRRenderRef a_pRender, const wchar_t* a_outFileName, const wchar_t* a_layerName,
                                       const int* a_palette, int a_paletteSize)
 {
