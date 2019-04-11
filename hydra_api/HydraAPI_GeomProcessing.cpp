@@ -33,6 +33,11 @@ using namespace HydraLiteMath;
 
 #include "../mikktspace/mikktspace.h"
 
+#ifdef WIN32
+#undef min
+#undef max
+#endif
+
 extern std::wstring      g_lastError;
 extern std::wstring      g_lastErrorCallerPlace;
 extern HR_ERROR_CALLBACK g_pErrorCallback;
