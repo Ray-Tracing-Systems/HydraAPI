@@ -1063,23 +1063,78 @@ HAPI void* hrMeshGetPrimitiveAttribPointer(HRMeshRef a_mesh, const wchar_t* attr
 
 }
 
-HAPI HROpenedMeshInfo  hrMeshGetInfo(HRMeshRef a_mesh)
+
+struct MeshGetInfoGlobalData
 {
-  HROpenedMeshInfo info;
-  info.indicesNum = 0;
-  info.vertNum    = 0;
+  std::vector<const wchar_t*> mptrs;
+  std::wstring                mlist;
+  std::vector<HRBatchInfo>    batches;
+} mig_data;
+
+
+std::wstring s2ws(const std::string& s);
+
+HAPI HRMeshInfo  hrMeshGetInfo(HRMeshRef a_mesh)
+{
+  HRMeshInfo info;
 
   HRMesh* pMesh = g_objManager.PtrById(a_mesh);
   if (pMesh == nullptr)
     return info;
 
-  if(!pMesh->opened)
-    return info;
-
   HRMesh::InputTriMesh& mesh = pMesh->m_input;
-
-  info.indicesNum = int32_t(mesh.triIndices.size());
-  info.vertNum    = int32_t(mesh.verticesPos.size() / 4);
+  
+  auto pImpl = pMesh->pImpl;
+  
+  if(pImpl != nullptr)
+  {
+    mig_data.batches     = pImpl->MList();
+    info.batchesList     = mig_data.batches.data();
+    info.batchesListSize = mig_data.batches.size();
+    
+    // create wchar_t** pointers ...
+    //
+    mig_data.mlist        = s2ws(pImpl->MaterialNamesList());
+  
+    mig_data.mptrs.resize(0);
+    mig_data.mptrs.push_back(mig_data.mlist.data());
+    
+    for(size_t i=0;i<mig_data.mlist.size();i++)
+    {
+      if(mig_data.mlist[i] == L";"[0])
+      {
+        mig_data.mlist[i] = 0; // "\0"
+        
+        if(i != mig_data.mlist.size()-1)
+          mig_data.mptrs.push_back(mig_data.mlist.data() + i + 1);
+      }
+    }
+    
+    info.matNamesList     = mig_data.mptrs.data();
+    info.matNamesListSize = mig_data.mptrs.size();
+  
+    auto box = pImpl->getBBox();
+    info.boxMin[0] = box.x_min;
+    info.boxMin[1] = box.y_min;
+    info.boxMin[2] = box.z_min;
+  
+    info.boxMax[0] = box.x_max;
+    info.boxMax[1] = box.y_max;
+    info.boxMax[2] = box.z_max;
+  
+    info.indicesNum = pImpl->vertNum();
+    info.vertNum    = pImpl->indNum();
+  }
+  else
+  {
+    for(int i=0;i<3;i++)
+    {
+      info.boxMin[i] = 0;
+      info.boxMax[i] = 0;
+    }
+  }
+  
+ 
   return info;
 }
 

@@ -85,6 +85,7 @@ struct IHRMesh : public IHRObject ///< Not empty Data (reimplement DataSerialize
   virtual       std::vector<HRBatchInfo>& MList()       = 0;
   
   virtual size_t EstimatedDataSizeInBytes() const { return DataSizeInBytes(); }
+  virtual std::string MaterialNamesList() = 0;
 
   virtual const std::unordered_map<std::wstring, std::tuple<std::wstring, size_t, size_t, int> >& GetOffsAndSizeForAttrs() const = 0;
 };

@@ -63,7 +63,6 @@ bool test41_load_library_basic()
 
 bool test42_load_mesh_compressed()
 {
-  initGLIfNeeded();
   hrErrorCallerPlace(L"test_42");
   
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -193,6 +192,11 @@ bool test42_load_mesh_compressed()
   HRMeshRef lucyCompressed1 = hrMeshCreateFromFileDL(L"data/meshes/lucy1.vsgfc");
   HRMeshRef lucyCompressed2 = hrMeshCreateFromFile  (L"data/meshes/lucy2.vsgfc");
   
+  //HRMeshInfo meshOriginalInfo    = hrMeshGetInfo(lucyOriginal);
+  //HRMeshInfo meshCompressedInfo1 = hrMeshGetInfo(lucyCompressed1);
+  //HRMeshInfo meshCompressedInfo2 = hrMeshGetInfo(lucyCompressed2);
+  
+  
   HRLightRef rectLight      = hrLightCreate(L"my_area_light");
   
   hrLightOpen(rectLight, HR_WRITE_DISCARD);
@@ -254,13 +258,10 @@ bool test42_load_mesh_compressed()
     node.append_child(L"method_secondary").text() = L"IBPT";
     node.append_child(L"method_tertiary").text()  = L"IBPT";
     node.append_child(L"method_caustic").text()   = L"IBPT";
-    node.append_child(L"shadows").text()          = L"1";
     
     node.append_child(L"trace_depth").text()      = L"8";
     node.append_child(L"diff_trace_depth").text() = L"4";
-    node.append_child(L"pt_error").text()         = L"2.0";
-    node.append_child(L"minRaysPerPixel").text()  = L"256";
-    node.append_child(L"maxRaysPerPixel").text()  = L"2048";
+    node.append_child(L"maxRaysPerPixel").text()  = 256;
   }
   hrRenderClose(renderRef);
   
@@ -300,9 +301,6 @@ bool test42_load_mesh_compressed()
   
   hrFlush(scnRef, renderRef, camRef);
   
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -311,17 +309,9 @@ bool test42_load_mesh_compressed()
     
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-      
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-      
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-      
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
     
     if (info.finalUpdate)
@@ -330,8 +320,7 @@ bool test42_load_mesh_compressed()
   
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_42/z_out.png");
   
-  //return check_images("test_42", 1, 10);
-  return false;
+  return check_images("test_42", 1, 10);
 }
 
 
@@ -848,7 +837,15 @@ bool test44_four_lights_and_compressed_mesh()
     hrMeshAppendTriangles3        (torusRef, int32_t(torus.triIndices.size()), &torus.triIndices[0]);
   }
   hrMeshClose(torusRef, true); // compress mesh when save it to file
-
+  
+  HRMeshInfo torusInfo = hrMeshGetInfo(torusRef);
+  
+  for(int i=0; i<torusInfo.matNamesListSize; i++)
+  {
+    const std::wstring matName = torusInfo.matNamesList[i];
+    std::wcout << "matName = " << matName.c_str() << std::endl;
+  }
+  
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
