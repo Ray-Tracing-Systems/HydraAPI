@@ -193,6 +193,9 @@
     <ProjectReference Include="..\clew\clew.vcxproj">
       <Project>{5f13e40f-c0f1-4ef4-a775-ab8bc703de88}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\corto\corto.vcxproj">
+      <Project>{43666dca-d7ff-411f-823f-d04cfc49669c}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\hydra_api\HydraNewAPI1.vcxproj">
       <Project>{c05ff9ea-3d61-48b7-abea-4353253691dc}</Project>
     </ProjectReference>

@@ -273,6 +273,41 @@ HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName, bool a_copyToLo
   return ref;
 }
 
+HAPI HRMeshRef hrMeshCreateFromFile(const wchar_t* a_fileName, bool a_copyToLocalFolder)
+{
+  std::wstring tail = str_tail(a_fileName, 6);
+  
+  HydraGeomData data;
+  std::vector<int> dataBuffer;
+  
+  if(tail == L".vsgfc")
+    data = HR_LoadVSGFCompressedData(a_fileName, dataBuffer);
+  else
+    data.read(a_fileName);
+
+  if (data.getVerticesNumber() == 0)
+    return HRMeshRef();
+
+  HRMeshRef ref = hrMeshCreate(a_fileName);
+
+  hrMeshOpen(ref, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
+  {
+    hrMeshVertexAttribPointer4f(ref, L"pos",      data.getVertexPositionsFloat4Array());
+    hrMeshVertexAttribPointer4f(ref, L"norm",     data.getVertexNormalsFloat4Array());
+
+    if(data.getVertexTangentsFloat4Array() != nullptr)                                     // for the old format this never happen
+      hrMeshVertexAttribPointer4f(ref, L"tangent", data.getVertexTangentsFloat4Array());   //
+
+    hrMeshVertexAttribPointer2f(ref, L"texcoord", data.getVertexTexcoordFloat2Array());
+
+    hrMeshPrimitiveAttribPointer1i(ref, L"mind", (const int*)data.getTriangleMaterialIndicesArray());
+    hrMeshAppendTriangles3(ref, data.getIndicesNumber(), (const int*)data.getTriangleVertexIndicesArray());
+  }
+  hrMeshClose(ref);
+
+  return ref;
+}
+
 
 HAPI HRMeshRef hrMeshCreateFromFileDL_NoNormals(const wchar_t* a_fileName)
 {
@@ -499,6 +534,15 @@ HAPI void hrMeshClose(HRMeshRef a_mesh, bool a_compress)
   pMesh->m_input.m_saveCompressed = a_compress;
 
   nodeXml.attribute(L"dl") = 0; // if we 'open/close' mesh then it became common, not delayed load object
+  if(a_compress)
+  {
+    std::wstring originalPath = nodeXml.attribute(L"loc").as_string();
+    if(str_tail(originalPath, 6) != L".vsgfc") // already compressed format extension
+    {
+      std::wstring compressedPath = originalPath + L"c";
+      nodeXml.attribute(L"loc")   = compressedPath.c_str();
+    }
+  }
 }
 
 
@@ -1329,4 +1373,11 @@ HAPI void hrMeshSaveVSGFCompressed(HRMeshRef a_meshRef, const wchar_t* a_fileNam
   }
 
   HR_SaveVSGFCompressed(pMesh->pImpl->GetData(), pMesh->pImpl->DataSizeInBytes(), a_fileName, matnames.c_str(), int(matnames.size()));
+}
+
+BBox HRUtils::GetMeshBBox(HRMeshRef a_mesh)
+{
+  HRMesh* pMesh = g_objManager.PtrById(a_mesh);
+
+  return pMesh->pImpl->getBBox();
 }

@@ -11,6 +11,8 @@
 
 #ifdef WIN32
 #include <intrin.h>
+#undef min
+#undef max
 #else
 #include <xmmintrin.h>
 #include <emmintrin.h>

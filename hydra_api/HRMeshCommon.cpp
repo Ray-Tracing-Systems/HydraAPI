@@ -98,6 +98,13 @@ BBox createBBoxFromFloatV(const std::vector<float> &a_verts, int stride)
   return box;
 }
 
+BBox HRUtils::transformBBox(const BBox &a_bbox, const float m[16])
+{
+  HydraLiteMath::float4x4 mat(m);
+
+  return ::transformBBox(a_bbox, mat);
+}
+
 BBox transformBBox(const BBox &a_bbox, const HydraLiteMath::float4x4 &m)
 {
   auto verts = getVerticesFromBBox(a_bbox);
@@ -139,6 +146,13 @@ struct MeshVSGF : public IHRMesh
   uint64_t indNum()  const override { return m_indNum;  }
 
   size_t DataSizeInBytes() const override { return m_sizeInBytes; }
+  size_t EstimatedDataSizeInBytes() const override
+  {
+    return m_vertNum*(sizeof(float)*4*3 + sizeof(float)*2) +
+           m_indNum*sizeof(int) + (m_indNum*sizeof(int))/3 +
+           sizeof(HydraGeomData::Header) + 1024;
+  }
+  
   const void* GetData() const override
   {
     auto chunk = g_objManager.scnData.m_vbCache.chunk_at(m_chunkId);

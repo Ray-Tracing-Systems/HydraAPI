@@ -998,11 +998,26 @@ int64_t EstimateGeometryMem(const ChangeList& a_objList)
   {
     auto meshObj          = g_objManager.scnData.meshes[texId];
     pugi::xml_node node   = meshObj.xml_node_immediate();
-    const size_t byteSize = node.attribute(L"bytesize").as_llong();
-
-    const int trisNum     = int(node.child(L"indices").attribute(L"bytesize").as_llong()/(sizeof(int)*3)); // aux per poly shadow ray offsets
-
-    memAmount += (byteSize + trisNum*sizeof(float));
+  
+    size_t byteSize2 = 0;
+    if(meshObj.pImpl == nullptr) // well, we try to estimate it in some way
+    {
+      // mul to 1.5 due to external generated '.vsgf' mesh may not have tangents (and normals) and
+      // and we try to estimate upper bound of memory that mesh will take
+      //
+      const size_t byteSize = node.attribute(L"bytesize").as_double() * 1.5;
+      const int trisNum     = int(node.child(L"indices").attribute(L"bytesize").as_llong() / (sizeof(int) * 3)); // aux per poly shadow ray offsets
+      byteSize2             = (byteSize + trisNum * sizeof(float));
+    }
+    else
+    {
+      // more accurate method
+      //
+      const int trisNum     = int(node.child(L"indices").attribute(L"bytesize").as_llong() / (sizeof(int) * 3)); // aux per poly shadow ray offsets
+      byteSize2 = meshObj.pImpl->EstimatedDataSizeInBytes() + trisNum*sizeof(float);
+    }
+    
+    memAmount += byteSize2;
   }
 
   return memAmount + int64_t(1*1024*1024);

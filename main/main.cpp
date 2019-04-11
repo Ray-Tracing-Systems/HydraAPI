@@ -138,16 +138,19 @@ int main(int argc, const char** argv)
     //demo_01_plane_box();
     //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_46", L"opengl1Debug");
     
-    run_all_api_tests();
+    //run_all_api_tests();
     //run_all_geo_tests();
     //run_all_mtl_tests();
-    run_all_lgt_tests();
+    //run_all_lgt_tests();
 	  //run_all_alg_tests();
 	  //run_all_ipp_tests();
 
     //test40_several_changes();
-    //test44_four_lights();
-
+    test44_four_lights_and_compressed_mesh();
+    //test42_load_mesh_compressed();
+    //test78_material_remap_list1();
+    
+    
     //hrSceneLibraryOpen(L"/home/frol/temp", HR_WRITE_DISCARD);
     //_hrConvertOldVSGFMesh(L"data/meshes/teapot.vsgf", L"data/meshes/teapot2.vsgf");
     ////_hrDebugPrintVSGF(L"data/meshes/teapot.vsgf",    L"/home/frol/temp/teapot1.txt");

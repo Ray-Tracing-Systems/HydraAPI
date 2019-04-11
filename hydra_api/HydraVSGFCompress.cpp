@@ -11,6 +11,11 @@ std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndi
 #include "../corto/corto.h"
 #include "LiteMath.h"
 
+#ifdef WIN32
+#undef min
+#undef max
+#endif
+
 size_t WriteCompressed(const HydraGeomData& a_data, std::ostream& a_out, const std::vector<HRBatchInfo>& a_batchesList)
 {
   // convert positions to float3 due to corto does not understand float4 input for positions by default
