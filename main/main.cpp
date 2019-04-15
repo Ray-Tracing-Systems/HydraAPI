@@ -136,7 +136,7 @@ int main(int argc, const char** argv)
   {
     //GEO_TESTS::test_001_mesh_from_memory();
     //demo_01_plane_box();
-    //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_46", L"opengl1Debug");
+    //window_main_free_look(L"/home/denispavlov/Projects/Hydra/HydraAPI/main/tests/test_45", L"opengl1");
     
     //run_all_api_tests();
     //run_all_geo_tests();
@@ -145,10 +145,11 @@ int main(int argc, const char** argv)
 	  //run_all_alg_tests();
 	  //run_all_ipp_tests();
 
-    //test40_several_changes();
-    test44_four_lights_and_compressed_mesh();
+    test40_several_changes();
+    //test44_four_lights_and_compressed_mesh();
     //test42_load_mesh_compressed();
     //test78_material_remap_list1();
+    //test45_mesh_from_vsgf_opengl_bug_teapot();
     
     
     //hrSceneLibraryOpen(L"/home/frol/temp", HR_WRITE_DISCARD);

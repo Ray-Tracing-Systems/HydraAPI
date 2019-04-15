@@ -2127,6 +2127,8 @@ bool test40_several_changes()
   //hrRenderEnableDevice(renderRef, 0, true);
   hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
 
+  hrRenderLogDir(renderRef, L"/home/denispavlov/hydra/logs/", true);
+
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   hrRenderOpen(renderRef, HR_WRITE_DISCARD);
