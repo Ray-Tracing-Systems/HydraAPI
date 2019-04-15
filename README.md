@@ -23,8 +23,8 @@ Linux:
 2. sudo apt-get install libfreeimage-dev
 3. sudo apt-get install mesa-common-dev libglu1-mesa-dev libglfw3-dev libglfw3
 4. sudo apt install ocl-icd-opencl-dev
-5. Copy bin_ubuntu/hydra forder to your home folder to form '/home/hydra' or build and install HydraCore from sources; 
-6. use Cmake;
+5. use Cmake;
+6. build and install HydraCore using Cmake and approptiate instruction
 
 Optionally, to build and use python bindings library (tested only under Linux):
 1. Get pybind11 as submodule (HydraAPI root dir): 
