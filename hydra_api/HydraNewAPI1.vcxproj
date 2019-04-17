@@ -218,6 +218,11 @@
     <ClInclude Include="RenderDriverOpenGL32Forward.h" />
     <ClInclude Include="RenderDriverOpenGL3_Utility.h" />
     <ClInclude Include="RTX\Framework.h" />
+    <ClInclude Include="RTX\nv_helpers_dx12\BottomLevelASGenerator.h" />
+    <ClInclude Include="RTX\nv_helpers_dx12\RaytracingPipelineGenerator.h" />
+    <ClInclude Include="RTX\nv_helpers_dx12\RootSignatureGenerator.h" />
+    <ClInclude Include="RTX\nv_helpers_dx12\ShaderBindingTableGenerator.h" />
+    <ClInclude Include="RTX\nv_helpers_dx12\TopLevelASGenerator.h" />
     <ClInclude Include="ssemath.h" />
     <ClInclude Include="xxhash.h" />
   </ItemGroup>

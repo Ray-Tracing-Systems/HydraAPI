@@ -269,6 +269,21 @@
     <ClInclude Include="RenderDriverDXRExperimental.h">
       <Filter>Source\RenderDrivers</Filter>
     </ClInclude>
+    <ClInclude Include="RTX\nv_helpers_dx12\BottomLevelASGenerator.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\nv_helpers_dx12\RaytracingPipelineGenerator.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\nv_helpers_dx12\RootSignatureGenerator.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\nv_helpers_dx12\ShaderBindingTableGenerator.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\nv_helpers_dx12\TopLevelASGenerator.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram1.cd" />

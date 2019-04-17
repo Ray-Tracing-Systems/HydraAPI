@@ -1,28 +1,19 @@
 #include "RenderDriverDXRExperimental.h"
 #include "LiteMath.h"
+
 using namespace HydraLiteMath;
 
+#include "RTX/d3dx12.h"
+#include <DirectXMath.h>
 #include <iostream>
 
 extern HWND mainWindowHWND;
+using namespace glm;
+static dxc::DxcDllSupport gDxcDllHelper;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //                            Tutorial stuff
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-#include <sstream>
-
-static dxc::DxcDllSupport gDxcDllHelper;
-MAKE_SMART_COM_PTR(IDxcCompiler);
-MAKE_SMART_COM_PTR(IDxcLibrary);
-MAKE_SMART_COM_PTR(IDxcBlobEncoding);
-MAKE_SMART_COM_PTR(IDxcOperationResult);
-
-
-//////////////////////////////////////////////////////////////////////////
-// Tutorial 02 code
-//////////////////////////////////////////////////////////////////////////
-
 IDXGISwapChain3Ptr createDxgiSwapChain(IDXGIFactory4Ptr pFactory, HWND hwnd, uint32_t width, uint32_t height, DXGI_FORMAT format, ID3D12CommandQueuePtr pCommandQueue)
 {
   DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
@@ -144,7 +135,7 @@ uint64_t submitCommandList(ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12Command
 void RD_DXR_Experimental::initDXR(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 {
   mHwnd = winHandle;
-  mSwapChainSize = glm::uvec2(winWidth, winHeight);
+  mSwapChainSize = uvec2(winWidth, winHeight);
 
   // Initialize the debug layer for debug builds
 #ifdef _DEBUG
@@ -249,13 +240,42 @@ ID3D12ResourcePtr createBuffer(ID3D12Device5Ptr pDevice, uint64_t size, D3D12_RE
   return pBuffer;
 }
 
-ID3D12ResourcePtr createTriangleVB(ID3D12Device5Ptr pDevice, const std::vector<glm::vec3> vertices)
+ID3D12ResourcePtr createTriangleVB(ID3D12Device5Ptr pDevice)
 {
+  const vec3 vertices[] =
+  {
+      vec3(0,          1,  0),
+      vec3(0.866f,  -0.5f, 0),
+      vec3(-0.866f, -0.5f, 0),
+  };
+
   // For simplicity, we create the vertex buffer on the upload heap, but that's not required
-  ID3D12ResourcePtr pBuffer = createBuffer(pDevice, vertices.size() * sizeof(glm::vec3), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+  ID3D12ResourcePtr pBuffer = createBuffer(pDevice, sizeof(vertices), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
   uint8_t* pData;
   pBuffer->Map(0, nullptr, (void**)&pData);
-  memcpy(pData, vertices.data(), vertices.size() * sizeof(glm::vec3));
+  memcpy(pData, vertices, sizeof(vertices));
+  pBuffer->Unmap(0, nullptr);
+  return pBuffer;
+}
+
+ID3D12ResourcePtr createPlaneVB(ID3D12Device5Ptr pDevice)
+{
+  const vec3 vertices[] =
+  {
+      vec3(-100, -1,  -2),
+      vec3(100, -1,  100),
+      vec3(-100, -1,  100),
+
+      vec3(-100, -1,  -2),
+      vec3(100, -1,  -2),
+      vec3(100, -1,  100),
+  };
+
+  // For simplicity, we create the vertex buffer on the upload heap, but that's not required
+  ID3D12ResourcePtr pBuffer = createBuffer(pDevice, sizeof(vertices), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+  uint8_t* pData;
+  pBuffer->Map(0, nullptr, (void**)&pData);
+  memcpy(pData, vertices, sizeof(vertices));
   pBuffer->Unmap(0, nullptr);
   return pBuffer;
 }
@@ -267,34 +287,35 @@ struct AccelerationStructureBuffers
   ID3D12ResourcePtr pInstanceDesc;    // Used only for top-level AS
 };
 
-AccelerationStructureBuffers createBottomLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, std::vector<std::pair<ID3D12ResourcePtr, size_t>> meshes)
+AccelerationStructureBuffers createBottomLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pVB[], const uint32_t vertexCount[], uint32_t geometryCount)
 {
-  vector<D3D12_RAYTRACING_GEOMETRY_DESC> geomDescs;
-  D3D12_RAYTRACING_GEOMETRY_DESC geomDesc = {};
-  for (auto mesh : meshes) {
-    geomDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
-    geomDesc.Triangles.VertexBuffer.StartAddress = mesh.first->GetGPUVirtualAddress();
-    geomDesc.Triangles.VertexBuffer.StrideInBytes = sizeof(glm::vec3);
-    geomDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
-    geomDesc.Triangles.VertexCount = mesh.second;
-    geomDesc.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
-    geomDescs.push_back(geomDesc);
+  std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geomDesc;
+  geomDesc.resize(geometryCount);
+
+  for (uint32_t i = 0; i < geometryCount; i++)
+  {
+    geomDesc[i].Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
+    geomDesc[i].Triangles.VertexBuffer.StartAddress = pVB[i]->GetGPUVirtualAddress();
+    geomDesc[i].Triangles.VertexBuffer.StrideInBytes = sizeof(vec3);
+    geomDesc[i].Triangles.VertexCount = vertexCount[i];
+    geomDesc[i].Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
+    geomDesc[i].Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
   }
 
   // Get the size requirements for the scratch and AS buffers
   D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
   inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
   inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_NONE;
-  inputs.NumDescs = geomDescs.size();
-  inputs.pGeometryDescs = geomDescs.data();
+  inputs.NumDescs = geometryCount;
+  inputs.pGeometryDescs = geomDesc.data();
   inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
 
-  D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info = {};
+  D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info;
   pDevice->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &info);
 
   // Create the buffers. They need to support UAV, and since we are going to immediately use them, we create them with an unordered-access state
   AccelerationStructureBuffers buffers;
-  buffers.pScratch = createBuffer(pDevice, info.ScratchDataSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, kDefaultHeapProps);
+  buffers.pScratch = createBuffer(pDevice, info.ScratchDataSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COMMON, kDefaultHeapProps);
   buffers.pResult = createBuffer(pDevice, info.ResultDataMaxSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE, kDefaultHeapProps);
 
   // Create the bottom-level AS
@@ -314,13 +335,13 @@ AccelerationStructureBuffers createBottomLevelAS(ID3D12Device5Ptr pDevice, ID3D1
   return buffers;
 }
 
-AccelerationStructureBuffers createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pBottomLevelAS, uint64_t& tlasSize)
+AccelerationStructureBuffers createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pBottomLevelAS[2], uint64_t& tlasSize)
 {
   // First, get the size of the TLAS buffers and create them
   D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
   inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
   inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_NONE;
-  inputs.NumDescs = 2;
+  inputs.NumDescs = 3;
   inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
 
   D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info;
@@ -333,18 +354,35 @@ AccelerationStructureBuffers createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12Gr
   tlasSize = info.ResultDataMaxSizeInBytes;
 
   // The instance desc should be inside a buffer, create and map the buffer
-  buffers.pInstanceDesc = createBuffer(pDevice, sizeof(D3D12_RAYTRACING_INSTANCE_DESC), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
-  D3D12_RAYTRACING_INSTANCE_DESC* pInstanceDesc;
-  buffers.pInstanceDesc->Map(0, nullptr, (void**)&pInstanceDesc);
+  buffers.pInstanceDesc = createBuffer(pDevice, sizeof(D3D12_RAYTRACING_INSTANCE_DESC) * 3, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+  D3D12_RAYTRACING_INSTANCE_DESC* instanceDescs;
+  buffers.pInstanceDesc->Map(0, nullptr, (void**)&instanceDescs);
+  ZeroMemory(instanceDescs, sizeof(D3D12_RAYTRACING_INSTANCE_DESC) * 3);
 
-  // Initialize the instance desc. We only have a single instance
-  pInstanceDesc->InstanceID = 0;                            // This value will be exposed to the shader via InstanceID()
-  pInstanceDesc->InstanceContributionToHitGroupIndex = 0;   // This is the offset inside the shader-table. We only have a single geometry, so the offset 0
-  pInstanceDesc->Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
-  glm::mat4 m; // Identity matrix
-  memcpy(pInstanceDesc->Transform, &m, sizeof(pInstanceDesc->Transform));
-  pInstanceDesc->AccelerationStructure = pBottomLevelAS->GetGPUVirtualAddress();
-  pInstanceDesc->InstanceMask = 0xFF;
+  // The transformation matrices for the instances
+  mat4 transformation[3];
+  transformation[0] = mat4(); // Identity
+  transformation[1] = translate(mat4(), vec3(-2, 0, 0));
+  transformation[2] = translate(mat4(), vec3(2, 0, 0));
+
+  // Create the desc for the triangle/plane instance
+  instanceDescs[0].InstanceID = 0;
+  instanceDescs[0].InstanceContributionToHitGroupIndex = 0;
+  instanceDescs[0].Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
+  memcpy(instanceDescs[0].Transform, &transformation[0], sizeof(instanceDescs[0].Transform));
+  instanceDescs[0].AccelerationStructure = pBottomLevelAS[0]->GetGPUVirtualAddress();
+  instanceDescs[0].InstanceMask = 0xFF;
+
+  for (uint32_t i = 1; i < 3; i++)
+  {
+    instanceDescs[i].InstanceID = i; // This value will be exposed to the shader via InstanceID()
+    instanceDescs[i].InstanceContributionToHitGroupIndex = (i * 2) + 2;  // The indices are relative to to the start of the hit-table entries specified in Raytrace(), so we need 4 and 6
+    instanceDescs[i].Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
+    mat4 m = transpose(transformation[i]); // GLM is column major, the INSTANCE_DESC is row major
+    memcpy(instanceDescs[i].Transform, &m, sizeof(instanceDescs[i].Transform));
+    instanceDescs[i].AccelerationStructure = pBottomLevelAS[1]->GetGPUVirtualAddress();
+    instanceDescs[i].InstanceMask = 0xFF;
+  }
 
   // Unmap
   buffers.pInstanceDesc->Unmap(0, nullptr);
@@ -367,17 +405,23 @@ AccelerationStructureBuffers createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12Gr
   return buffers;
 }
 
-void RD_DXR_Experimental::createAccelerationStructures(vector<vector<glm::vec3>> meshes)
+void RD_DXR_Experimental::createAccelerationStructures()
 {
-  std::vector<std::pair<ID3D12ResourcePtr, size_t>>  args;
+  mpVertexBuffer[0] = createTriangleVB(mpDevice);
+  mpVertexBuffer[1] = createPlaneVB(mpDevice);
+  AccelerationStructureBuffers bottomLevelBuffers[2];
 
-  for (auto m : meshes) {
-    ID3D12ResourcePtr mpVertexBuffer = createTriangleVB(mpDevice, m);
-    args.push_back(make_pair(mpVertexBuffer, m.size()));
-  }
+  // The first bottom-level buffer is for the plane and the triangle
+  const uint32_t vertexCount[] = { 3, 6 }; // Triangle has 3 vertices, plane has 6
+  bottomLevelBuffers[0] = createBottomLevelAS(mpDevice, mpCmdList, mpVertexBuffer, vertexCount, 2);
+  mpBottomLevelAS[0] = bottomLevelBuffers[0].pResult;
 
-  AccelerationStructureBuffers bottomLevelBuffers = createBottomLevelAS(mpDevice, mpCmdList, args);
-  AccelerationStructureBuffers topLevelBuffers = createTopLevelAS(mpDevice, mpCmdList, bottomLevelBuffers.pResult, mTlasSize);
+  // The second bottom-level buffer is for the triangle only
+  bottomLevelBuffers[1] = createBottomLevelAS(mpDevice, mpCmdList, mpVertexBuffer, vertexCount, 1);
+  mpBottomLevelAS[1] = bottomLevelBuffers[1].pResult;
+
+  // Create the TLAS
+  AccelerationStructureBuffers topLevelBuffers = createTopLevelAS(mpDevice, mpCmdList, mpBottomLevelAS, mTlasSize);
 
   // The tutorial doesn't have any resource lifetime management, so we flush and sync here. This is not required by the DXR spec - you can submit the list whenever you like as long as you take care of the resources lifetime.
   mFenceValue = submitCommandList(mpCmdList, mpCmdQueue, mpFence, mFenceValue);
@@ -388,7 +432,6 @@ void RD_DXR_Experimental::createAccelerationStructures(vector<vector<glm::vec3>>
 
   // Store the AS buffers. The rest of the buffers will be released once we exit the function
   mpTopLevelAS = topLevelBuffers.pResult;
-  mpBottomLevelAS = bottomLevelBuffers.pResult;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -398,8 +441,8 @@ ID3DBlobPtr compileLibrary(const WCHAR* filename, const WCHAR* targetString)
 {
   // Initialize the helper
   d3d_call(gDxcDllHelper.Initialize());
-  IDxcCompilerPtr pCompiler;
-  IDxcLibraryPtr pLibrary;
+  IDxcCompiler* pCompiler;
+  IDxcLibrary* pLibrary;
   d3d_call(gDxcDllHelper.CreateInstance(CLSID_DxcCompiler, &pCompiler));
   d3d_call(gDxcDllHelper.CreateInstance(CLSID_DxcLibrary, &pLibrary));
 
@@ -419,7 +462,7 @@ ID3DBlobPtr compileLibrary(const WCHAR* filename, const WCHAR* targetString)
   d3d_call(pLibrary->CreateBlobWithEncodingFromPinned((LPBYTE)shader.c_str(), (uint32_t)shader.size(), 0, &pTextBlob));
 
   // Compile
-  IDxcOperationResultPtr pResult;
+  IDxcOperationResult* pResult;
   d3d_call(pCompiler->Compile(pTextBlob, filename, L"", targetString, nullptr, 0, nullptr, 0, nullptr, &pResult));
 
   // Verify the result
@@ -495,6 +538,43 @@ RootSignatureDesc createRayGenRootDesc()
   return desc;
 }
 
+RootSignatureDesc createTriangleHitRootDesc()
+{
+  RootSignatureDesc desc;
+  desc.rootParams.resize(1);
+  desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+  desc.rootParams[0].Descriptor.RegisterSpace = 0;
+  desc.rootParams[0].Descriptor.ShaderRegister = 0;
+
+  desc.desc.NumParameters = 1;
+  desc.desc.pParameters = desc.rootParams.data();
+  desc.desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
+
+  return desc;
+}
+
+RootSignatureDesc createPlaneHitRootDesc()
+{
+  RootSignatureDesc desc;
+  desc.range.resize(1);
+  desc.range[0].BaseShaderRegister = 0;
+  desc.range[0].NumDescriptors = 1;
+  desc.range[0].RegisterSpace = 0;
+  desc.range[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+  desc.range[0].OffsetInDescriptorsFromTableStart = 0;
+
+  desc.rootParams.resize(1);
+  desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+  desc.rootParams[0].DescriptorTable.NumDescriptorRanges = 1;
+  desc.rootParams[0].DescriptorTable.pDescriptorRanges = desc.range.data();
+
+  desc.desc.NumParameters = 1;
+  desc.desc.pParameters = desc.rootParams.data();
+  desc.desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
+
+  return desc;
+}
+
 struct DxilLibrary
 {
   DxilLibrary(ID3DBlobPtr pBlob, const WCHAR* entryPoint[], uint32_t entryPointCount) : pShaderBlob(pBlob)
@@ -533,14 +613,19 @@ struct DxilLibrary
 
 static const WCHAR* kRayGenShader = L"rayGen";
 static const WCHAR* kMissShader = L"miss";
-static const WCHAR* kClosestHitShader = L"chs";
-static const WCHAR* kHitGroup = L"HitGroup";
+static const WCHAR* kTriangleChs = L"triangleChs";
+static const WCHAR* kPlaneChs = L"planeChs";
+static const WCHAR* kTriHitGroup = L"TriHitGroup";
+static const WCHAR* kPlaneHitGroup = L"PlaneHitGroup";
+static const WCHAR* kShadowChs = L"shadowChs";
+static const WCHAR* kShadowMiss = L"shadowMiss";
+static const WCHAR* kShadowHitGroup = L"ShadowHitGroup";
 
 DxilLibrary createDxilLibrary()
 {
   // Compile the shader
-  ID3DBlobPtr pDxilLib = compileLibrary(L"shaders/shader.hlsl", L"lib_6_3");
-  const WCHAR* entryPoints[] = { kRayGenShader, kMissShader, kClosestHitShader };
+  ID3DBlobPtr pDxilLib = compileLibrary(L"shaders/13-Shaders.hlsl", L"lib_6_3");
+  const WCHAR* entryPoints[] = { kRayGenShader, kMissShader, kPlaneChs, kTriangleChs, kShadowMiss, kShadowChs };
   return DxilLibrary(pDxilLib, entryPoints, arraysize(entryPoints));
 }
 
@@ -637,64 +722,91 @@ struct PipelineConfig
 
 void RD_DXR_Experimental::createRtPipelineState()
 {
-  // Need 10 subobjects:
-  //  1 for the DXIL library
-  //  1 for hit-group
+  // Need 16 subobjects:
+  //  1 for DXIL library    
+  //  3 for the hit-groups (triangle hit group, plane hit-group, shadow-hit group)
   //  2 for RayGen root-signature (root-signature and the subobject association)
-  //  2 for the root-signature shared between miss and hit shaders (signature and association)
+  //  2 for triangle hit-program root-signature (root-signature and the subobject association)
+  //  2 for the plane-hit root-signature (root-signature and the subobject association)
+  //  2 for shadow-program and miss root-signature (root-signature and the subobject association)
   //  2 for shader config (shared between all programs. 1 for the config, 1 for association)
   //  1 for pipeline config
   //  1 for the global root signature
-  std::array<D3D12_STATE_SUBOBJECT, 10> subobjects;
+  std::array<D3D12_STATE_SUBOBJECT, 16> subobjects;
   uint32_t index = 0;
 
   // Create the DXIL library
   DxilLibrary dxilLib = createDxilLibrary();
   subobjects[index++] = dxilLib.stateSubobject; // 0 Library
 
-  HitProgram hitProgram(nullptr, kClosestHitShader, kHitGroup);
-  subobjects[index++] = hitProgram.subObject; // 1 Hit Group
+  // Create the triangle HitProgram
+  HitProgram triHitProgram(nullptr, kTriangleChs, kTriHitGroup);
+  subobjects[index++] = triHitProgram.subObject; // 1 Triangle Hit Group
+
+  // Create the plane HitProgram
+  HitProgram planeHitProgram(nullptr, kPlaneChs, kPlaneHitGroup);
+  subobjects[index++] = planeHitProgram.subObject; // 2 Plant Hit Group
+
+  // Create the shadow-ray hit group
+  HitProgram shadowHitProgram(nullptr, kShadowChs, kShadowHitGroup);
+  subobjects[index++] = shadowHitProgram.subObject; // 3 Shadow Hit Group
 
   // Create the ray-gen root-signature and association
   LocalRootSignature rgsRootSignature(mpDevice, createRayGenRootDesc().desc);
-  subobjects[index] = rgsRootSignature.subobject; // 2 RayGen Root Sig
+  subobjects[index] = rgsRootSignature.subobject; // 4 Ray Gen Root Sig
 
-  uint32_t rgsRootIndex = index++; // 2
+  uint32_t rgsRootIndex = index++; // 4
   ExportAssociation rgsRootAssociation(&kRayGenShader, 1, &(subobjects[rgsRootIndex]));
-  subobjects[index++] = rgsRootAssociation.subobject; // 3 Associate Root Sig to RGS
+  subobjects[index++] = rgsRootAssociation.subobject; // 5 Associate Root Sig to RGS
 
-  // Create the miss- and hit-programs root-signature and association
+  // Create the tri hit root-signature and association
+  LocalRootSignature triHitRootSignature(mpDevice, createTriangleHitRootDesc().desc);
+  subobjects[index] = triHitRootSignature.subobject; // 6 Triangle Hit Root Sig
+
+  uint32_t triHitRootIndex = index++; // 6
+  ExportAssociation triHitRootAssociation(&kTriangleChs, 1, &(subobjects[triHitRootIndex]));
+  subobjects[index++] = triHitRootAssociation.subobject; // 7 Associate Triangle Root Sig to Triangle Hit Group
+
+  // Create the plane hit root-signature and association
+  LocalRootSignature planeHitRootSignature(mpDevice, createPlaneHitRootDesc().desc);
+  subobjects[index] = planeHitRootSignature.subobject; // 8 Plane Hit Root Sig
+
+  uint32_t planeHitRootIndex = index++; // 8
+  ExportAssociation planeHitRootAssociation(&kPlaneHitGroup, 1, &(subobjects[planeHitRootIndex]));
+  subobjects[index++] = planeHitRootAssociation.subobject; // 9 Associate Plane Hit Root Sig to Plane Hit Group
+
+  // Create the empty root-signature and associate it with the primary miss-shader and the shadow programs
   D3D12_ROOT_SIGNATURE_DESC emptyDesc = {};
   emptyDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
-  LocalRootSignature hitMissRootSignature(mpDevice, emptyDesc);
-  subobjects[index] = hitMissRootSignature.subobject; // 4 Root Sig to be shared between Miss and CHS
+  LocalRootSignature emptyRootSignature(mpDevice, emptyDesc);
+  subobjects[index] = emptyRootSignature.subobject; // 10 Empty Root Sig for Plane Hit Group and Miss
 
-  uint32_t hitMissRootIndex = index++; // 4
-  const WCHAR* missHitExportName[] = { kMissShader, kClosestHitShader };
-  ExportAssociation missHitRootAssociation(missHitExportName, arraysize(missHitExportName), &(subobjects[hitMissRootIndex]));
-  subobjects[index++] = missHitRootAssociation.subobject; // 5 Associate Root Sig to Miss and CHS
+  uint32_t emptyRootIndex = index++; // 10
+  const WCHAR* emptyRootExport[] = { kMissShader, kShadowChs, kShadowMiss };
+  ExportAssociation emptyRootAssociation(emptyRootExport, arraysize(emptyRootExport), &(subobjects[emptyRootIndex]));
+  subobjects[index++] = emptyRootAssociation.subobject; // 11 Associate empty root sig to Plane Hit Group and Miss shader
 
-  // Bind the payload size to the programs
-  ShaderConfig shaderConfig(sizeof(float) * 2, sizeof(float) * 3);
-  subobjects[index] = shaderConfig.subobject; // 6 Shader Config
+  // Bind the payload size to all programs
+  ShaderConfig primaryShaderConfig(sizeof(float) * 2, sizeof(float) * 3);
+  subobjects[index] = primaryShaderConfig.subobject; // 12
 
-  uint32_t shaderConfigIndex = index++; // 6
-  const WCHAR* shaderExports[] = { kMissShader, kClosestHitShader, kRayGenShader };
-  ExportAssociation configAssociation(shaderExports, arraysize(shaderExports), &(subobjects[shaderConfigIndex]));
-  subobjects[index++] = configAssociation.subobject; // 7 Associate Shader Config to Miss, CHS, RGS
+  uint32_t primaryShaderConfigIndex = index++;
+  const WCHAR* primaryShaderExports[] = { kRayGenShader, kMissShader, kTriangleChs, kPlaneChs, kShadowMiss, kShadowChs };
+  ExportAssociation primaryConfigAssociation(primaryShaderExports, arraysize(primaryShaderExports), &(subobjects[primaryShaderConfigIndex]));
+  subobjects[index++] = primaryConfigAssociation.subobject; // 13 Associate shader config to all programs
 
   // Create the pipeline config
-  PipelineConfig config(1);
-  subobjects[index++] = config.subobject; // 8
+  PipelineConfig config(2); // maxRecursionDepth - 1 TraceRay() from the ray-gen, 1 TraceRay() from the primary hit-shader
+  subobjects[index++] = config.subobject; // 14
 
   // Create the global root signature and store the empty signature
   GlobalRootSignature root(mpDevice, {});
   mpEmptyRootSig = root.pRootSig;
-  subobjects[index++] = root.subobject; // 9
+  subobjects[index++] = root.subobject; // 15
 
   // Create the state
   D3D12_STATE_OBJECT_DESC desc;
-  desc.NumSubobjects = index; // 10
+  desc.NumSubobjects = index; // 16
   desc.pSubobjects = subobjects.data();
   desc.Type = D3D12_STATE_OBJECT_TYPE_RAYTRACING_PIPELINE;
 
@@ -708,18 +820,22 @@ void RD_DXR_Experimental::createShaderTable()
 {
   /** The shader-table layout is as follows:
       Entry 0 - Ray-gen program
-      Entry 1 - Miss program
-      Entry 2 - Hit program
+      Entry 1 - Miss program for the primary ray
+      Entry 2 - Miss program for the shadow ray
+      Entries 3,4 - Hit programs for triangle 0 (primary followed by shadow)
+      Entries 5,6 - Hit programs for the plane (primary followed by shadow)
+      Entries 7,8 - Hit programs for triangle 1 (primary followed by shadow)
+      Entries 9,10 - Hit programs for triangle 2 (primary followed by shadow)
       All entries in the shader-table must have the same size, so we will choose it base on the largest required entry.
-      The ray-gen program requires the largest entry - sizeof(program identifier) + 8 bytes for a descriptor-table.
+      The triangle primary-ray hit program requires the largest entry - sizeof(program identifier) + 8 bytes for the constant-buffer root descriptor.
       The entry size must be aligned up to D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT
   */
 
   // Calculate the size and create the buffer
   mShaderTableEntrySize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
-  mShaderTableEntrySize += 8; // The ray-gen's descriptor table
+  mShaderTableEntrySize += 8; // The hit shader constant-buffer descriptor
   mShaderTableEntrySize = align_to(D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT, mShaderTableEntrySize);
-  uint32_t shaderTableSize = mShaderTableEntrySize * 3;
+  uint32_t shaderTableSize = mShaderTableEntrySize * 11;
 
   // For simplicity, we create the shader-table on the upload heap. You can also create it on the default heap
   mpShaderTable = createBuffer(mpDevice, shaderTableSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
@@ -737,12 +853,50 @@ void RD_DXR_Experimental::createShaderTable()
   uint64_t heapStart = mpSrvUavHeap->GetGPUDescriptorHandleForHeapStart().ptr;
   *(uint64_t*)(pData + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) = heapStart;
 
-  // Entry 1 - miss program
+  // Entry 1 - primary ray miss
   memcpy(pData + mShaderTableEntrySize, pRtsoProps->GetShaderIdentifier(kMissShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
 
-  // Entry 2 - hit program
-  uint8_t* pHitEntry = pData + mShaderTableEntrySize * 2; // +2 skips the ray-gen and miss entries
-  memcpy(pHitEntry, pRtsoProps->GetShaderIdentifier(kHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+  // Entry 2 - shadow-ray miss
+  memcpy(pData + mShaderTableEntrySize * 2, pRtsoProps->GetShaderIdentifier(kShadowMiss), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+
+  // Entry 3 - Triangle 0, primary ray. ProgramID and constant-buffer data
+  uint8_t* pEntry3 = pData + mShaderTableEntrySize * 3;
+  memcpy(pEntry3, pRtsoProps->GetShaderIdentifier(kTriHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+  assert(((uint64_t)(pEntry3 + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) % 8) == 0); // Root descriptor must be stored at an 8-byte aligned address
+  *(D3D12_GPU_VIRTUAL_ADDRESS*)(pEntry3 + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) = mpConstantBuffer[0]->GetGPUVirtualAddress();
+
+  // Entry 4 - Triangle 0, shadow ray. ProgramID only
+  uint8_t* pEntry4 = pData + mShaderTableEntrySize * 4;
+  memcpy(pEntry4, pRtsoProps->GetShaderIdentifier(kShadowHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+
+  // Entry 5 - Plane, primary ray. ProgramID only and the TLAS SRV
+  uint8_t* pEntry5 = pData + mShaderTableEntrySize * 5;
+  memcpy(pEntry5, pRtsoProps->GetShaderIdentifier(kPlaneHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+  *(uint64_t*)(pEntry5 + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) = heapStart + mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV); // The SRV comes directly after the program id
+
+  // Entry 6 - Plane, shadow ray
+  uint8_t* pEntry6 = pData + mShaderTableEntrySize * 6;
+  memcpy(pEntry6, pRtsoProps->GetShaderIdentifier(kShadowHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+
+  // Entry 7 - Triangle 1, primary ray. ProgramID and constant-buffer data
+  uint8_t* pEntry7 = pData + mShaderTableEntrySize * 7;
+  memcpy(pEntry7, pRtsoProps->GetShaderIdentifier(kTriHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+  assert(((uint64_t)(pEntry7 + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) % 8) == 0); // Root descriptor must be stored at an 8-byte aligned address
+  *(D3D12_GPU_VIRTUAL_ADDRESS*)(pEntry7 + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) = mpConstantBuffer[1]->GetGPUVirtualAddress();
+
+  // Entry 8 - Triangle 1, shadow ray. ProgramID only
+  uint8_t* pEntry8 = pData + mShaderTableEntrySize * 8;
+  memcpy(pEntry8, pRtsoProps->GetShaderIdentifier(kShadowHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+
+  // Entry 9 - Triangle 2, primary ray. ProgramID and constant-buffer data
+  uint8_t* pEntry9 = pData + mShaderTableEntrySize * 9;
+  memcpy(pEntry9, pRtsoProps->GetShaderIdentifier(kTriHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+  assert(((uint64_t)(pEntry9 + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) % 8) == 0); // Root descriptor must be stored at an 8-byte aligned address
+  *(D3D12_GPU_VIRTUAL_ADDRESS*)(pEntry9 + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) = mpConstantBuffer[2]->GetGPUVirtualAddress();
+
+  // Entry 10 - Triangle 2, shadow ray. ProgramID only
+  uint8_t* pEntry10 = pData + mShaderTableEntrySize * 10;
+  memcpy(pEntry10, pRtsoProps->GetShaderIdentifier(kShadowHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
 
   // Unmap
   mpShaderTable->Unmap(0, nullptr);
@@ -784,6 +938,39 @@ void RD_DXR_Experimental::createShaderResources()
   mpDevice->CreateShaderResourceView(nullptr, &srvDesc, srvHandle);
 }
 
+//////////////////////////////////////////////////////////////////////////
+// Tutorial 10
+//////////////////////////////////////////////////////////////////////////
+void RD_DXR_Experimental::createConstantBuffers()
+{
+  // The shader declares each CB with 3 float3. However, due to HLSL packing rules, we create the CB with vec4 (each float3 needs to start on a 16-byte boundary)
+  vec4 bufferData[] = {
+    // Instance 0
+    vec4(1.0f, 0.0f, 0.0f, 1.0f),
+    vec4(1.0f, 1.0f, 0.0f, 1.0f),
+    vec4(1.0f, 0.0f, 1.0f, 1.0f),
+
+    // Instance 1
+    vec4(0.0f, 1.0f, 0.0f, 1.0f),
+    vec4(0.0f, 1.0f, 1.0f, 1.0f),
+    vec4(1.0f, 1.0f, 0.0f, 1.0f),
+
+    // Instance 2
+    vec4(0.0f, 0.0f, 1.0f, 1.0f),
+    vec4(1.0f, 0.0f, 1.0f, 1.0f),
+    vec4(0.0f, 1.0f, 1.0f, 1.0f),
+  };
+
+  for (uint32_t i = 0; i < 3; i++)
+  {
+    const uint32_t bufferSize = sizeof(vec4) * 3;
+    mpConstantBuffer[i] = createBuffer(mpDevice, bufferSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+    uint8_t* pData;
+    d3d_call(mpConstantBuffer[i]->Map(0, nullptr, (void**)&pData));
+    memcpy(pData, &bufferData[i * 3], sizeof(bufferData));
+    mpConstantBuffer[i]->Unmap(0, nullptr);
+  }
+}
 
 //////////////////////////////////////////////////////////////////////////
 // The render itself
@@ -813,6 +1000,11 @@ HRDriverAllocInfo RD_DXR_Experimental::AllocAll(HRDriverAllocInfo a_info)
   int g_height = r.bottom - r.top;
 
   initDXR(mainWindowHWND, g_width, g_height);        // Tutorial 02
+  createAccelerationStructures();                 // Tutorial 03
+  createRtPipelineState();                        // Tutorial 04
+  createShaderResources();                        // Tutorial 06
+  createConstantBuffers();                        // Tutorial 10. Yes, we need to do it before creating the shader-table
+  createShaderTable();                            // Tutorial 05
 
   return a_info;
 }
@@ -875,7 +1067,64 @@ bool RD_DXR_Experimental::UpdateCamera(pugi::xml_node a_camNode)
 {
   if (a_camNode == nullptr)
     return true;
+
+  //this->camUseMatrices = false;
   
+
+  if (std::wstring(a_camNode.attribute(L"type").as_string()) == L"two_matrices")
+  {
+    const wchar_t* m1 = a_camNode.child(L"mWorldView").text().as_string();
+    const wchar_t* m2 = a_camNode.child(L"mProj").text().as_string();
+
+    float mWorldView[16];
+    float mProj[16];
+
+    std::wstringstream str1(m1), str2(m2);
+    for (int i = 0; i < 16; i++)
+    {
+      str1 >> mWorldView[i];
+      str2 >> mProj[i];
+    }
+
+    /*this->camWorldViewMartrixTransposed = transpose(float4x4(mWorldView));
+    this->camProjMatrixTransposed = transpose(float4x4(mProj));
+    this->camUseMatrices = true;
+*/
+    return true;
+  }
+
+  const wchar_t* camPosStr = a_camNode.child(L"position").text().as_string();
+  const wchar_t* camLAtStr = a_camNode.child(L"look_at").text().as_string();
+  const wchar_t* camUpStr = a_camNode.child(L"up").text().as_string();
+  //const wchar_t* testStr   = a_camNode.child(L"test").text().as_string();
+
+  if (!a_camNode.child(L"fov").text().empty())
+    camFov = a_camNode.child(L"fov").text().as_float();
+
+  if (!a_camNode.child(L"nearClipPlane").text().empty())
+    camNearPlane = a_camNode.child(L"nearClipPlane").text().as_float();
+
+  if (!a_camNode.child(L"farClipPlane").text().empty())
+    camFarPlane = a_camNode.child(L"farClipPlane").text().as_float();
+
+  if (std::wstring(camPosStr) != L"")
+  {
+    std::wstringstream input(camPosStr);
+    input >> camPos[0] >> camPos[1] >> camPos[2];
+  }
+
+  if (std::wstring(camLAtStr) != L"")
+  {
+    std::wstringstream input(camLAtStr);
+    input >> camLookAt[0] >> camLookAt[1] >> camLookAt[2];
+  }
+
+  if (std::wstring(camUpStr) != L"")
+  {
+    std::wstringstream input(camUpStr);
+    input >> camUp[0] >> camUp[1] >> camUp[2];
+  }
+
   printf("UpdateCamera\n");
 
   return true;
@@ -949,7 +1198,7 @@ void RD_DXR_Experimental::EndScene()
 {
   printf("EndScene\n");
 
-  /*std::vector<glm::vec3> vertices =
+  std::vector<glm::vec3> vertices =
   {
       glm::vec3(0.5, 0.5,  0) + glm::vec3(0,          1,  0),
       glm::vec3(0.5, 0.5,  0) + glm::vec3(0.866f,  -0.5f, 0),
@@ -962,20 +1211,21 @@ void RD_DXR_Experimental::EndScene()
       glm::vec3(0,          1,  0),
       glm::vec3(0.866f,  -0.5f, 0),
       glm::vec3(-0.866f, -0.5f, 0),
-  };*/
+  };
 
   // @BUG Fix leaking and infinite handle creation
   
   vector<vector<glm::vec3>> meshes;
-
+  /*
   for (auto m : sceneCoord) {
     meshes.push_back(m.data);
   }
-  
-  createAccelerationStructures(meshes);                 // Tutorial 03
-  createRtPipelineState();                        // Tutorial 04
-  createShaderResources();                        // Tutorial 06. Need to do this before initializing the shader-table
-  createShaderTable();                            // Tutorial 05
+  */
+
+  meshes.push_back(vertices);
+  meshes.push_back(vertices2);
+
+
 }
 
 void RD_DXR_Experimental::Draw()
@@ -997,13 +1247,13 @@ void RD_DXR_Experimental::Draw()
   size_t missOffset = 1 * mShaderTableEntrySize;
   raytraceDesc.MissShaderTable.StartAddress = mpShaderTable->GetGPUVirtualAddress() + missOffset;
   raytraceDesc.MissShaderTable.StrideInBytes = mShaderTableEntrySize;
-  raytraceDesc.MissShaderTable.SizeInBytes = mShaderTableEntrySize;   // Only a s single miss-entry
+  raytraceDesc.MissShaderTable.SizeInBytes = mShaderTableEntrySize * 2;   // 2 miss-entries
 
-  // Hit is the third entry in the shader-table
-  size_t hitOffset = 2 * mShaderTableEntrySize;
+  // Hit is the fourth entry in the shader-table
+  size_t hitOffset = 3 * mShaderTableEntrySize;
   raytraceDesc.HitGroupTable.StartAddress = mpShaderTable->GetGPUVirtualAddress() + hitOffset;
   raytraceDesc.HitGroupTable.StrideInBytes = mShaderTableEntrySize;
-  raytraceDesc.HitGroupTable.SizeInBytes = mShaderTableEntrySize;
+  raytraceDesc.HitGroupTable.SizeInBytes = mShaderTableEntrySize * 8;    // 8 hit-entries
 
   // Bind the empty root signature
   mpCmdList->SetComputeRootSignature(mpEmptyRootSig);

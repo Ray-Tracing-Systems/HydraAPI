@@ -100,12 +100,12 @@ protected:
   static const uint32_t kRtvHeapSize = 3;
 
   //////////////////////////////////////////////////////////////////////////
-  // Tutorial 03
+  // Tutorial 03, Tutorial 11
   //////////////////////////////////////////////////////////////////////////
-  void createAccelerationStructures(vector<vector<glm::vec3>> meshes);
-  ID3D12ResourcePtr mpVertexBuffer;
+  void createAccelerationStructures();
+  ID3D12ResourcePtr mpVertexBuffer[2];
   ID3D12ResourcePtr mpTopLevelAS;
-  ID3D12ResourcePtr mpBottomLevelAS;
+  ID3D12ResourcePtr mpBottomLevelAS[2];
   uint64_t mTlasSize = 0;
 
   //////////////////////////////////////////////////////////////////////////
@@ -129,6 +129,18 @@ protected:
   ID3D12ResourcePtr mpOutputResource;
   ID3D12DescriptorHeapPtr mpSrvUavHeap;
   static const uint32_t kSrvUavHeapSize = 2;
+
+  //////////////////////////////////////////////////////////////////////////
+  // Tutorial 10
+  //////////////////////////////////////////////////////////////////////////
+  void createConstantBuffers();
+  ID3D12ResourcePtr mpConstantBuffer[3];
+
+  //void CreateCameraBuffer();
+  //void UpdateCameraBuffer();
+  ID3D12ResourcePtr m_cameraBuffer;
+  ID3D12DescriptorHeapPtr m_constHeap;
+  uint32_t m_cameraBufferSize = 0;
 
   template <typename T>
   struct MeshAttrib {
