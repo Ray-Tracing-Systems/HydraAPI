@@ -508,9 +508,36 @@ static LRESULT CALLBACK msgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
   case WM_DESTROY:
     PostQuitMessage(0);
     return 0;
-  case WM_KEYDOWN:
+  case WM_KEYDOWN: {
     if (wParam == VK_ESCAPE) PostQuitMessage(0);
+    
+    static float lastCallTime = GetTickCount();
+    float secondsElapsed = GetTickCount() - lastCallTime;
+    secondsElapsed /= 1000.0f;
+    lastCallTime = GetTickCount();
+
+    /*
+    if (glfwGetKey(g_window, 'F'))
+      g_cam.offsetPosition(secondsElapsed * g_input.camMoveSpeed * -g_cam.up);
+    else if (glfwGetKey(g_window, 'R'))
+      g_cam.offsetPosition(secondsElapsed * g_input.camMoveSpeed * g_cam.up);
+      */
+    switch (wParam) {
+    case (0x57): {//w
+      g_cam.offsetPosition(secondsElapsed * g_input.camMoveSpeed * g_cam.forward());
+      } break;
+    case (0x53): {//s
+      g_cam.offsetPosition(secondsElapsed * g_input.camMoveSpeed * -g_cam.forward());
+    } break;
+    case (0x41): {//a
+      g_cam.offsetPosition(secondsElapsed * g_input.camMoveSpeed * -g_cam.right());
+    } break;
+    case (0x44): {//d
+      g_cam.offsetPosition(secondsElapsed * g_input.camMoveSpeed * g_cam.right());
+    } break;
+    };
     return 0;
+  }
   default:
     return DefWindowProc(hwnd, msg, wParam, lParam);
   }
