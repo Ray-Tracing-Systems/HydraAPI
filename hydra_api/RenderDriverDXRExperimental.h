@@ -6,11 +6,18 @@
 
 #include "HydraRenderDriverAPI.h"
 #include "OpenGLCoreProfileUtils.h"
+#include "RTX/Externals/GLM/glm/glm.hpp"
 
 using namespace std;
 
-using namespace HydraLiteMath;
 using namespace GL_RENDER_DRIVER_UTILS;
+using namespace glm;
+
+struct Instance {
+  mat4 tr;
+  size_t meshid;
+  UINT hitGroup;
+};
 
 struct RD_DXR_Experimental : public IHRRenderDriver
 {
@@ -90,6 +97,7 @@ protected:
     D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle;
   } mFrameObjects[kDefaultSwapChainBuffers];
 
+
   // Heap data
   struct HeapData
   {
@@ -102,7 +110,13 @@ protected:
   //////////////////////////////////////////////////////////////////////////
   // Tutorial 03, Tutorial 11
   //////////////////////////////////////////////////////////////////////////
+  void addMesh(vector<glm::vec3> mesh);
+  void addInstance(Instance inst);
+  void initGeometry();
   void createAccelerationStructures();
+
+  vector<vector<glm::vec3>> meshList;
+  vector<Instance> instances;
   vector<ID3D12ResourcePtr> mpVertexBuffer;
   ID3D12ResourcePtr mpTopLevelAS;
   vector<ID3D12ResourcePtr> mpBottomLevelAS;

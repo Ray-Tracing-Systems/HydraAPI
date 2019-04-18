@@ -343,7 +343,7 @@ AccelerationStructureBuffers createSingleGeomBottomLevelAS(ID3D12Device5Ptr pDev
   return createBottomLevelAS(pDevice, pCmdList, b, &vertexCount, 1);
 }
 
-AccelerationStructureBuffers createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pBottomLevelAS[2], uint64_t& tlasSize)
+AccelerationStructureBuffers createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pBottomLevelAS[2], vector<Instance> instances, uint64_t& tlasSize)
 {
   // First, get the size of the TLAS buffers and create them
   D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
@@ -362,34 +362,22 @@ AccelerationStructureBuffers createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12Gr
   tlasSize = info.ResultDataMaxSizeInBytes;
 
   // The instance desc should be inside a buffer, create and map the buffer
-  buffers.pInstanceDesc = createBuffer(pDevice, sizeof(D3D12_RAYTRACING_INSTANCE_DESC) * 3, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+  buffers.pInstanceDesc = createBuffer(pDevice, sizeof(D3D12_RAYTRACING_INSTANCE_DESC) * instances.size(), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
   D3D12_RAYTRACING_INSTANCE_DESC* instanceDescs;
   buffers.pInstanceDesc->Map(0, nullptr, (void**)&instanceDescs);
-  ZeroMemory(instanceDescs, sizeof(D3D12_RAYTRACING_INSTANCE_DESC) * 3);
+  ZeroMemory(instanceDescs, sizeof(D3D12_RAYTRACING_INSTANCE_DESC) * instances.size());
 
-  // The transformation matrices for the instances
-  mat4 transformation[3];
-  transformation[0] = mat4(); // Identity
-  transformation[1] = translate(mat4(), vec3(-2, 0, 0));
-  transformation[2] = translate(mat4(), vec3(2, 0, 0));
-
-  // Create the desc for the triangle/plane instance
-  instanceDescs[0].InstanceID = 0;
-  instanceDescs[0].InstanceContributionToHitGroupIndex = 0;
-  instanceDescs[0].Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
-  memcpy(instanceDescs[0].Transform, &transformation[0], sizeof(instanceDescs[0].Transform));
-  instanceDescs[0].AccelerationStructure = pBottomLevelAS[0]->GetGPUVirtualAddress();
-  instanceDescs[0].InstanceMask = 0xFF;
-
-  for (uint32_t i = 1; i < 3; i++)
+  uint32_t i = 0;
+  for (auto inst : instances)
   {
     instanceDescs[i].InstanceID = i; // This value will be exposed to the shader via InstanceID()
-    instanceDescs[i].InstanceContributionToHitGroupIndex = (i * 2) + 2;  // The indices are relative to to the start of the hit-table entries specified in Raytrace(), so we need 4 and 6
+    instanceDescs[i].InstanceContributionToHitGroupIndex = inst.hitGroup;  // The indices are relative to to the start of the hit-table entries specified in Raytrace(), so we need 4 and 6
     instanceDescs[i].Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
-    mat4 m = transpose(transformation[i]); // GLM is column major, the INSTANCE_DESC is row major
+    mat4 m = transpose(inst.tr); // GLM is column major, the INSTANCE_DESC is row major
     memcpy(instanceDescs[i].Transform, &m, sizeof(instanceDescs[i].Transform));
-    instanceDescs[i].AccelerationStructure = pBottomLevelAS[1]->GetGPUVirtualAddress();
+    instanceDescs[i].AccelerationStructure = pBottomLevelAS[inst.meshid]->GetGPUVirtualAddress();
     instanceDescs[i].InstanceMask = 0xFF;
+    i++;
   }
 
   // Unmap
@@ -412,9 +400,8 @@ AccelerationStructureBuffers createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12Gr
 
   return buffers;
 }
-
-void RD_DXR_Experimental::createAccelerationStructures()
-{
+void RD_DXR_Experimental::addMesh(vector<vec3> mesh) {
+  /*
   vector<vec3> vertices =
   {
       vec3(0,          1,  0),
@@ -433,25 +420,44 @@ void RD_DXR_Experimental::createAccelerationStructures()
       vec3(100, -1,  -2),
       vec3(100, -1,  100)
   };
-
-  vector<vector<vec3>> meshes = {
+  
+  vector<vector<vec3>> meshList = {
     verticesp,
     vertices
   };
+  */
+  meshList.push_back(mesh);
+}
 
-  for (auto m : meshes) {
+void RD_DXR_Experimental::addInstance(Instance inst) {
+  instances.push_back(inst);
+}
+
+void RD_DXR_Experimental::initGeometry() {
+  /*
+  vector<Instance> instances = {
+  {mat4(), 0, 0},
+  {translate(mat4(), vec3(-2, 0, 0)), 1, 4},
+  {translate(mat4(), vec3(2, 0, 0)), 1, 6}
+  };*/
+
+  for (auto m : meshList) {
     mpVertexBuffer.push_back(createVB(mpDevice, m));
   }
   vector<AccelerationStructureBuffers> bottomLevelBuffers;
 
   int i = 0;
-  for (auto m : meshes) {
+  for (auto m : meshList) {
     bottomLevelBuffers.push_back(createSingleGeomBottomLevelAS(mpDevice, mpCmdList, mpVertexBuffer.data() + i, m.size()));
     mpBottomLevelAS.push_back(bottomLevelBuffers[i].pResult);
     i++;
   }
+}
+
+void RD_DXR_Experimental::createAccelerationStructures()
+{
   // Create the TLAS
-  AccelerationStructureBuffers topLevelBuffers = createTopLevelAS(mpDevice, mpCmdList, mpBottomLevelAS.data(), mTlasSize);
+  AccelerationStructureBuffers topLevelBuffers = createTopLevelAS(mpDevice, mpCmdList, mpBottomLevelAS.data(), instances, mTlasSize);
 
   // The tutorial doesn't have any resource lifetime management, so we flush and sync here. This is not required by the DXR spec - you can submit the list whenever you like as long as you take care of the resources lifetime.
   mFenceValue = submitCommandList(mpCmdList, mpCmdQueue, mpFence, mFenceValue);
@@ -1088,7 +1094,44 @@ HRDriverAllocInfo RD_DXR_Experimental::AllocAll(HRDriverAllocInfo a_info)
   int g_height = r.bottom - r.top;
 
   initDXR(mainWindowHWND, g_width, g_height);        // Tutorial 02
+  vector<vec3> vertices =
+  {
+      vec3(0,          1,  0),
+      vec3(0.866f,  -0.5f, 0),
+      vec3(-0.866f, -0.5f, 0)
+  };
 
+
+  vector<vec3> verticesp =
+  {
+      vec3(-100, -1,  -2),
+      vec3(100, -1,  100),
+      vec3(-100, -1,  100),
+
+      vec3(-100, -1,  -2),
+      vec3(100, -1,  -2),
+      vec3(100, -1,  100)
+  };
+
+  vector<vector<vec3>> meshList = {
+    verticesp,
+    vertices
+  };
+  for (auto m : meshList) {
+    addMesh(m);
+  }
+
+  vector<Instance> instances = {
+    {mat4(), 0, 0},
+    {translate(mat4(), vec3(-2, 0, 0)), 1, 4},
+    {translate(mat4(), vec3(2, 0, 0)), 1, 6}
+  };
+
+  for (auto m : instances) {
+    addInstance(m);
+  }
+
+  initGeometry();
   createAccelerationStructures();                 // Tutorial 03
   createRtPipelineState();                        // Tutorial 04
   createShaderResources();                        // Tutorial 06
