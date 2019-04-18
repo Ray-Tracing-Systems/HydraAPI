@@ -338,6 +338,11 @@ AccelerationStructureBuffers createBottomLevelAS(ID3D12Device5Ptr pDevice, ID3D1
   return buffers;
 }
 
+AccelerationStructureBuffers createSingleGeomBottomLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pVB, const uint32_t vertexCount) {
+  ID3D12ResourcePtr b[] = { pVB };
+  return createBottomLevelAS(pDevice, pCmdList, b, &vertexCount, 1);
+}
+
 AccelerationStructureBuffers createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pBottomLevelAS[2], uint64_t& tlasSize)
 {
   // First, get the size of the TLAS buffers and create them
@@ -410,21 +415,43 @@ AccelerationStructureBuffers createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12Gr
 
 void RD_DXR_Experimental::createAccelerationStructures()
 {
-  mpVertexBuffer[0] = createTriangleVB(mpDevice);
-  mpVertexBuffer[1] = createPlaneVB(mpDevice);
-  AccelerationStructureBuffers bottomLevelBuffers[2];
+  vector<vec3> vertices =
+  {
+      vec3(0,          1,  0),
+      vec3(0.866f,  -0.5f, 0),
+      vec3(-0.866f, -0.5f, 0)
+  };
 
-  // The first bottom-level buffer is for the plane and the triangle
-  const uint32_t vertexCount[] = { 3, 6 }; // Triangle has 3 vertices, plane has 6
-  bottomLevelBuffers[0] = createBottomLevelAS(mpDevice, mpCmdList, mpVertexBuffer, vertexCount, 2);
-  mpBottomLevelAS[0] = bottomLevelBuffers[0].pResult;
 
-  // The second bottom-level buffer is for the triangle only
-  bottomLevelBuffers[1] = createBottomLevelAS(mpDevice, mpCmdList, mpVertexBuffer, vertexCount, 1);
-  mpBottomLevelAS[1] = bottomLevelBuffers[1].pResult;
+  vector<vec3> verticesp =
+  {
+      vec3(-100, -1,  -2),
+      vec3(100, -1,  100),
+      vec3(-100, -1,  100),
 
+      vec3(-100, -1,  -2),
+      vec3(100, -1,  -2),
+      vec3(100, -1,  100)
+  };
+
+  vector<vector<vec3>> meshes = {
+    verticesp,
+    vertices
+  };
+
+  for (auto m : meshes) {
+    mpVertexBuffer.push_back(createVB(mpDevice, m));
+  }
+  vector<AccelerationStructureBuffers> bottomLevelBuffers;
+
+  int i = 0;
+  for (auto m : meshes) {
+    bottomLevelBuffers.push_back(createSingleGeomBottomLevelAS(mpDevice, mpCmdList, mpVertexBuffer.data() + i, m.size()));
+    mpBottomLevelAS.push_back(bottomLevelBuffers[i].pResult);
+    i++;
+  }
   // Create the TLAS
-  AccelerationStructureBuffers topLevelBuffers = createTopLevelAS(mpDevice, mpCmdList, mpBottomLevelAS, mTlasSize);
+  AccelerationStructureBuffers topLevelBuffers = createTopLevelAS(mpDevice, mpCmdList, mpBottomLevelAS.data(), mTlasSize);
 
   // The tutorial doesn't have any resource lifetime management, so we flush and sync here. This is not required by the DXR spec - you can submit the list whenever you like as long as you take care of the resources lifetime.
   mFenceValue = submitCommandList(mpCmdList, mpCmdQueue, mpFence, mFenceValue);

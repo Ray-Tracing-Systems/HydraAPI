@@ -103,9 +103,9 @@ protected:
   // Tutorial 03, Tutorial 11
   //////////////////////////////////////////////////////////////////////////
   void createAccelerationStructures();
-  ID3D12ResourcePtr mpVertexBuffer[2];
+  vector<ID3D12ResourcePtr> mpVertexBuffer;
   ID3D12ResourcePtr mpTopLevelAS;
-  ID3D12ResourcePtr mpBottomLevelAS[2];
+  vector<ID3D12ResourcePtr> mpBottomLevelAS;
   uint64_t mTlasSize = 0;
 
   //////////////////////////////////////////////////////////////////////////
@@ -136,7 +136,7 @@ protected:
   //////////////////////////////////////////////////////////////////////////
   void createConstantBuffers();
   ID3D12ResourcePtr mpConstantBuffer[3];
-
+  
   void createCameraConstantBuffers();
   void updateCameraConstantBuffers(glm::mat4 proj, glm::mat4 view);
   ID3D12ResourcePtr mpCameraConstantBuffer[2];
