@@ -525,13 +525,17 @@ RootSignatureDesc createRayGenRootDesc()
   desc.range[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
   desc.range[1].OffsetInDescriptorsFromTableStart = 1;
 
-  desc.rootParams.resize(1);
+  desc.rootParams.resize(2);
   desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
   desc.rootParams[0].DescriptorTable.NumDescriptorRanges = 2;
   desc.rootParams[0].DescriptorTable.pDescriptorRanges = desc.range.data();
 
+  desc.rootParams[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+  desc.rootParams[1].Descriptor.RegisterSpace = 1;
+  desc.rootParams[1].Descriptor.ShaderRegister = 0;
+
   // Create the desc
-  desc.desc.NumParameters = 1;
+  desc.desc.NumParameters = desc.rootParams.size();
   desc.desc.pParameters = desc.rootParams.data();
   desc.desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
 
@@ -546,7 +550,7 @@ RootSignatureDesc createTriangleHitRootDesc()
   desc.rootParams[0].Descriptor.RegisterSpace = 0;
   desc.rootParams[0].Descriptor.ShaderRegister = 0;
 
-  desc.desc.NumParameters = 1;
+  desc.desc.NumParameters = desc.rootParams.size();
   desc.desc.pParameters = desc.rootParams.data();
   desc.desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
 
@@ -834,8 +838,9 @@ void RD_DXR_Experimental::createShaderTable()
   // Calculate the size and create the buffer
   mShaderTableEntrySize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
   mShaderTableEntrySize += 8; // The hit shader constant-buffer descriptor
+  mShaderTableEntrySize += 8; // The hit shader constant-buffer descriptor
   mShaderTableEntrySize = align_to(D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT, mShaderTableEntrySize);
-  uint32_t shaderTableSize = mShaderTableEntrySize * 11;
+  uint32_t shaderTableSize = mShaderTableEntrySize * 14;
 
   // For simplicity, we create the shader-table on the upload heap. You can also create it on the default heap
   mpShaderTable = createBuffer(mpDevice, shaderTableSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
@@ -852,9 +857,11 @@ void RD_DXR_Experimental::createShaderTable()
   memcpy(pData, pRtsoProps->GetShaderIdentifier(kRayGenShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
   uint64_t heapStart = mpSrvUavHeap->GetGPUDescriptorHandleForHeapStart().ptr;
   *(uint64_t*)(pData + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) = heapStart;
+  assert(((uint64_t)(pData + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) % 8) == 0); // Root descriptor must be stored at an 8-byte aligned address
+  *(D3D12_GPU_VIRTUAL_ADDRESS*)(pData + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES + 8) = mpCameraConstantBuffer[0]->GetGPUVirtualAddress();
 
   // Entry 1 - primary ray miss
-  memcpy(pData + mShaderTableEntrySize, pRtsoProps->GetShaderIdentifier(kMissShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+  memcpy(pData + mShaderTableEntrySize * 1, pRtsoProps->GetShaderIdentifier(kMissShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
 
   // Entry 2 - shadow-ray miss
   memcpy(pData + mShaderTableEntrySize * 2, pRtsoProps->GetShaderIdentifier(kShadowMiss), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
@@ -972,6 +979,23 @@ void RD_DXR_Experimental::createConstantBuffers()
   }
 }
 
+void RD_DXR_Experimental::createCameraConstantBuffers() {
+  mat4 bufferData[] = {
+    mat4(),
+    mat4()
+  };
+
+  for (uint32_t i = 0; i < 1; i++)
+  {
+    const uint32_t bufferSize = sizeof(bufferData) * 2;
+    mpCameraConstantBuffer[i] = createBuffer(mpDevice, bufferSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+    uint8_t* pData;
+    d3d_call(mpCameraConstantBuffer[i]->Map(0, nullptr, (void**)&pData));
+    memcpy(pData, &bufferData[i], sizeof(bufferData));
+    mpCameraConstantBuffer[i]->Unmap(0, nullptr);
+  }
+}
+
 //////////////////////////////////////////////////////////////////////////
 // The render itself
 //////////////////////////////////////////////////////////////////////////
@@ -1004,6 +1028,7 @@ HRDriverAllocInfo RD_DXR_Experimental::AllocAll(HRDriverAllocInfo a_info)
   createRtPipelineState();                        // Tutorial 04
   createShaderResources();                        // Tutorial 06
   createConstantBuffers();                        // Tutorial 10. Yes, we need to do it before creating the shader-table
+  createCameraConstantBuffers();
   createShaderTable();                            // Tutorial 05
 
   return a_info;
@@ -1078,7 +1103,7 @@ bool RD_DXR_Experimental::UpdateCamera(pugi::xml_node a_camNode)
 
     float mWorldView[16];
     float mProj[16];
-
+    
     std::wstringstream str1(m1), str2(m2);
     for (int i = 0; i < 16; i++)
     {

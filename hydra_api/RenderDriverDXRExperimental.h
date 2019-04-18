@@ -136,6 +136,9 @@ protected:
   void createConstantBuffers();
   ID3D12ResourcePtr mpConstantBuffer[3];
 
+  void createCameraConstantBuffers();
+  ID3D12ResourcePtr mpCameraConstantBuffer[2];
+
   //void CreateCameraBuffer();
   //void UpdateCameraBuffer();
   ID3D12ResourcePtr m_cameraBuffer;

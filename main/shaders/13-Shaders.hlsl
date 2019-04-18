@@ -28,7 +28,7 @@
 RaytracingAccelerationStructure gRtScene : register(t0);
 RWTexture2D<float4> gOutput : register(u0);
 
-cbuffer PerFrame : register(b0)
+cbuffer PerFrame : register(b0, space0)
 {
     float3 A;
     float3 B;
@@ -49,6 +49,12 @@ struct RayPayload
 {
     float3 color;
 };
+
+cbuffer Camera : register(b0, space1)
+{
+    matrix proj;
+    matrix view;
+}
 
 [shader("raygeneration")]
 void rayGen()
@@ -72,7 +78,13 @@ void rayGen()
     RayPayload payload;
     TraceRay( gRtScene, 0 /*rayFlags*/, 0xFF, 0 /* ray index*/, 2, 0, ray, payload );
     float3 col = linearToSrgb(payload.color);
-    gOutput[launchIndex.xy] = float4(col, 1);
+    if (view[0][0] == 1.0) {
+        gOutput[launchIndex.xy] = float4(0,1,0,1);    
+    } else {
+        gOutput[launchIndex.xy] = float4(1,0,0,1);    
+    }
+    //gOutput[launchIndex.xy] = float4(1,0,0,1);
+    //gOutput[launchIndex.xy] = float4(col, 1);
 }
 
 [shader("miss")]
