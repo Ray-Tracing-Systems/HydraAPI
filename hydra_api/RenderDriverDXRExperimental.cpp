@@ -241,27 +241,35 @@ ID3D12ResourcePtr createBuffer(ID3D12Device5Ptr pDevice, uint64_t size, D3D12_RE
   return pBuffer;
 }
 
+
+ID3D12ResourcePtr createVB(ID3D12Device5Ptr pDevice, vector<vec3> mesh)
+{
+  size_t bufferSize = mesh.size() * sizeof(mesh[0]);
+
+  // For simplicity, we create the vertex buffer on the upload heap, but that's not required
+  ID3D12ResourcePtr pBuffer = createBuffer(pDevice, bufferSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+  uint8_t* pData;
+  pBuffer->Map(0, nullptr, (void**)&pData);
+  memcpy(pData, mesh.data(), bufferSize);
+  pBuffer->Unmap(0, nullptr);
+  return pBuffer;
+}
+
 ID3D12ResourcePtr createTriangleVB(ID3D12Device5Ptr pDevice)
 {
-  const vec3 vertices[] =
+  vector<vec3> vertices =
   {
       vec3(0,          1,  0),
       vec3(0.866f,  -0.5f, 0),
       vec3(-0.866f, -0.5f, 0),
   };
 
-  // For simplicity, we create the vertex buffer on the upload heap, but that's not required
-  ID3D12ResourcePtr pBuffer = createBuffer(pDevice, sizeof(vertices), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
-  uint8_t* pData;
-  pBuffer->Map(0, nullptr, (void**)&pData);
-  memcpy(pData, vertices, sizeof(vertices));
-  pBuffer->Unmap(0, nullptr);
-  return pBuffer;
+  return createVB(pDevice, vertices);
 }
 
 ID3D12ResourcePtr createPlaneVB(ID3D12Device5Ptr pDevice)
 {
-  const vec3 vertices[] =
+  vector<vec3> vertices =
   {
       vec3(-100, -1,  -2),
       vec3(100, -1,  100),
@@ -272,13 +280,7 @@ ID3D12ResourcePtr createPlaneVB(ID3D12Device5Ptr pDevice)
       vec3(100, -1,  100),
   };
 
-  // For simplicity, we create the vertex buffer on the upload heap, but that's not required
-  ID3D12ResourcePtr pBuffer = createBuffer(pDevice, sizeof(vertices), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
-  uint8_t* pData;
-  pBuffer->Map(0, nullptr, (void**)&pData);
-  memcpy(pData, vertices, sizeof(vertices));
-  pBuffer->Unmap(0, nullptr);
-  return pBuffer;
+  return createVB(pDevice, vertices);
 }
 
 struct AccelerationStructureBuffers
