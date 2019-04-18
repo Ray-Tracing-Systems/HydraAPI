@@ -456,6 +456,7 @@ void RD_OGL1_Plain::BeginScene(pugi::xml_node a_sceneNode)
 
     glMatrixMode(GL_MODELVIEW);			  // Select The Modelview Matrix
 
+    camPos[2] -= 0.1;
     float3 eye(camPos[0], camPos[1], camPos[2]);
     float3 center(camLookAt[0], camLookAt[1], camLookAt[2]);
     float3 up(camUp[0], camUp[1], camUp[2]);

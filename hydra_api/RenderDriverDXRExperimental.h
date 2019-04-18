@@ -119,6 +119,7 @@ protected:
   // Tutorial 05
   //////////////////////////////////////////////////////////////////////////
   void createShaderTable();
+  void updateShaderTable();
   ID3D12ResourcePtr mpShaderTable;
   uint32_t mShaderTableEntrySize = 0;
 
@@ -137,6 +138,7 @@ protected:
   ID3D12ResourcePtr mpConstantBuffer[3];
 
   void createCameraConstantBuffers();
+  void updateCameraConstantBuffers(glm::mat4 proj, glm::mat4 view);
   ID3D12ResourcePtr mpCameraConstantBuffer[2];
 
   //void CreateCameraBuffer();

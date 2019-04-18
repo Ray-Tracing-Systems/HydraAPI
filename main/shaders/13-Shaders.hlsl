@@ -52,8 +52,8 @@ struct RayPayload
 
 cbuffer Camera : register(b0, space1)
 {
-    matrix proj;
-    matrix view;
+    matrix projI;
+    matrix viewI;
 }
 
 [shader("raygeneration")]
@@ -68,23 +68,36 @@ void rayGen()
     float2 d = ((crd/dims) * 2.f - 1.f);
     float aspectRatio = dims.x / dims.y;
 
+    //RayDesc ray;
+  //  ray.Origin = float3(0, 0, -2);
+//    ray.Direction = normalize(float3(d.x * aspectRatio, -d.y, 1));
+
+    // #DXR Extra: Perspective Camera
+    // Perspective
     RayDesc ray;
-    ray.Origin = float3(0, 0, -2);
-    ray.Direction = normalize(float3(d.x * aspectRatio, -d.y, 1));
+    ray.Origin = mul(viewI, float4(0, 0, 0, 1));
+    float4 target = mul(projI, float4(d.x, -d.y, 1, 1));
+    ray.Direction = mul(viewI, float4(target.xyz, 0));
 
     ray.TMin = 0;
     ray.TMax = 100000;
 
     RayPayload payload;
     TraceRay( gRtScene, 0 /*rayFlags*/, 0xFF, 0 /* ray index*/, 2, 0, ray, payload );
+    
+    
     float3 col = linearToSrgb(payload.color);
-    if (view[0][0] == 1.0) {
+    /*
+    if (view[0][0] == 1.0 &&
+        view[1][0] == 2.0 &&
+        view[2][0] == 3.0 &&
+        view[3][0] == 4.0) {
         gOutput[launchIndex.xy] = float4(0,1,0,1);    
     } else {
         gOutput[launchIndex.xy] = float4(1,0,0,1);    
-    }
+    }*/
     //gOutput[launchIndex.xy] = float4(1,0,0,1);
-    //gOutput[launchIndex.xy] = float4(col, 1);
+    gOutput[launchIndex.xy] = float4(col, 1);
 }
 
 [shader("miss")]

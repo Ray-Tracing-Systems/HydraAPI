@@ -6,6 +6,7 @@ using namespace HydraLiteMath;
 #include "RTX/d3dx12.h"
 #include <DirectXMath.h>
 #include <iostream>
+#include "RTX/Externals/GLM/glm/gtc/matrix_transform.hpp"
 
 extern HWND mainWindowHWND;
 using namespace glm;
@@ -820,8 +821,8 @@ void RD_DXR_Experimental::createRtPipelineState()
 //////////////////////////////////////////////////////////////////////////
 // Tutorial 05
 //////////////////////////////////////////////////////////////////////////
-void RD_DXR_Experimental::createShaderTable()
-{
+
+void RD_DXR_Experimental::updateShaderTable() {
   /** The shader-table layout is as follows:
       Entry 0 - Ray-gen program
       Entry 1 - Miss program for the primary ray
@@ -834,16 +835,11 @@ void RD_DXR_Experimental::createShaderTable()
       The triangle primary-ray hit program requires the largest entry - sizeof(program identifier) + 8 bytes for the constant-buffer root descriptor.
       The entry size must be aligned up to D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT
   */
-
-  // Calculate the size and create the buffer
   mShaderTableEntrySize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
   mShaderTableEntrySize += 8; // The hit shader constant-buffer descriptor
   mShaderTableEntrySize += 8; // The hit shader constant-buffer descriptor
   mShaderTableEntrySize = align_to(D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT, mShaderTableEntrySize);
   uint32_t shaderTableSize = mShaderTableEntrySize * 14;
-
-  // For simplicity, we create the shader-table on the upload heap. You can also create it on the default heap
-  mpShaderTable = createBuffer(mpDevice, shaderTableSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
 
   // Map the buffer
   uint8_t* pData;
@@ -907,6 +903,30 @@ void RD_DXR_Experimental::createShaderTable()
 
   // Unmap
   mpShaderTable->Unmap(0, nullptr);
+}
+
+void RD_DXR_Experimental::createShaderTable()
+{
+  /** The shader-table layout is as follows:
+      Entry 0 - Ray-gen program
+      Entry 1 - Miss program for the primary ray
+      Entry 2 - Miss program for the shadow ray
+      Entries 3,4 - Hit programs for triangle 0 (primary followed by shadow)
+      Entries 5,6 - Hit programs for the plane (primary followed by shadow)
+      Entries 7,8 - Hit programs for triangle 1 (primary followed by shadow)
+      Entries 9,10 - Hit programs for triangle 2 (primary followed by shadow)
+      All entries in the shader-table must have the same size, so we will choose it base on the largest required entry.
+      The triangle primary-ray hit program requires the largest entry - sizeof(program identifier) + 8 bytes for the constant-buffer root descriptor.
+      The entry size must be aligned up to D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT
+  */
+  mShaderTableEntrySize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+  mShaderTableEntrySize += 8; // The hit shader constant-buffer descriptor
+  mShaderTableEntrySize += 8; // The hit shader constant-buffer descriptor
+  mShaderTableEntrySize = align_to(D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT, mShaderTableEntrySize);
+  uint32_t shaderTableSize = mShaderTableEntrySize * 14;
+
+  // For simplicity, we create the shader-table on the upload heap. You can also create it on the default heap
+  mpShaderTable = createBuffer(mpDevice, shaderTableSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -996,6 +1016,21 @@ void RD_DXR_Experimental::createCameraConstantBuffers() {
   }
 }
 
+void RD_DXR_Experimental::updateCameraConstantBuffers(mat4 proj, mat4 view) {
+  mat4 bufferData[] = {
+    proj,
+    view
+  };
+
+  for (uint32_t i = 0; i < 1; i++)
+  {
+    uint8_t* pData;
+    d3d_call(mpCameraConstantBuffer[i]->Map(0, nullptr, (void**)&pData));
+    memcpy(pData, &bufferData[i], sizeof(bufferData));
+    mpCameraConstantBuffer[i]->Unmap(0, nullptr);
+  }
+}
+
 //////////////////////////////////////////////////////////////////////////
 // The render itself
 //////////////////////////////////////////////////////////////////////////
@@ -1024,12 +1059,13 @@ HRDriverAllocInfo RD_DXR_Experimental::AllocAll(HRDriverAllocInfo a_info)
   int g_height = r.bottom - r.top;
 
   initDXR(mainWindowHWND, g_width, g_height);        // Tutorial 02
+
   createAccelerationStructures();                 // Tutorial 03
   createRtPipelineState();                        // Tutorial 04
   createShaderResources();                        // Tutorial 06
   createConstantBuffers();                        // Tutorial 10. Yes, we need to do it before creating the shader-table
   createCameraConstantBuffers();
-  createShaderTable();                            // Tutorial 05
+  createShaderTable();
 
   return a_info;
 }
@@ -1101,14 +1137,15 @@ bool RD_DXR_Experimental::UpdateCamera(pugi::xml_node a_camNode)
     const wchar_t* m1 = a_camNode.child(L"mWorldView").text().as_string();
     const wchar_t* m2 = a_camNode.child(L"mProj").text().as_string();
 
-    float mWorldView[16];
-    float mProj[16];
+    mat4 mWorldView;
+    mat4 mProj;
     
     std::wstringstream str1(m1), str2(m2);
-    for (int i = 0; i < 16; i++)
+    for (int i = 0; i < 4; i++)
+    for (int j = 0; j < 4; j++)
     {
-      str1 >> mWorldView[i];
-      str2 >> mProj[i];
+      str1 >> mWorldView[i][j];
+      str2 >> mProj[i][j];
     }
 
     /*this->camWorldViewMartrixTransposed = transpose(float4x4(mWorldView));
@@ -1149,6 +1186,18 @@ bool RD_DXR_Experimental::UpdateCamera(pugi::xml_node a_camNode)
     std::wstringstream input(camUpStr);
     input >> camUp[0] >> camUp[1] >> camUp[2];
   }
+
+  const float aspect = float(m_width) / float(m_height);
+  mat4 projMatrixInv = glm::perspectiveFov(camFov, (float)m_width, (float)m_height, camNearPlane, camFarPlane);
+  projMatrixInv = inverse(projMatrixInv);
+  vec3 eye(camPos[0], camPos[1], camPos[2]);
+  vec3 center(camLookAt[0], camLookAt[1], camLookAt[2]);
+  vec3 up(camUp[0], camUp[1], camUp[2]);
+
+  mat4 lookAtMatrix = lookAt(eye, center, up); // get inverse lookAt matrix
+  lookAtMatrix = inverse(lookAtMatrix);
+
+  updateCameraConstantBuffers(projMatrixInv, lookAtMatrix);
 
   printf("UpdateCamera\n");
 
@@ -1250,7 +1299,7 @@ void RD_DXR_Experimental::EndScene()
   meshes.push_back(vertices);
   meshes.push_back(vertices2);
 
-
+  updateShaderTable();                            // Tutorial 05
 }
 
 void RD_DXR_Experimental::Draw()
