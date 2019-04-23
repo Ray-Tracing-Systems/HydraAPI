@@ -7,6 +7,9 @@
 #include "HydraRenderDriverAPI.h"
 #include "OpenGLCoreProfileUtils.h"
 #include "RTX/Externals/GLM/glm/glm.hpp"
+#include "RTX/d3dx12.h"
+
+#include <map>
 
 using namespace std;
 
@@ -17,6 +20,13 @@ struct Instance {
   mat4 tr;
   size_t meshid;
   UINT hitGroup;
+};
+
+struct AccelerationStructureBuffers
+{
+  ID3D12ResourcePtr pScratch;
+  ID3D12ResourcePtr pResult;
+  ID3D12ResourcePtr pInstanceDesc;    // Used only for top-level AS
 };
 
 struct RD_DXR_Experimental : public IHRRenderDriver
@@ -110,13 +120,18 @@ protected:
   //////////////////////////////////////////////////////////////////////////
   // Tutorial 03, Tutorial 11
   //////////////////////////////////////////////////////////////////////////
-  void addMesh(vector<glm::vec3> mesh);
+  size_t addMesh(vector<glm::vec3> mesh);
+
+  map<int32_t, vector<size_t>> meshIdToReal;
+
   void addInstance(Instance inst);
   void initGeometry();
   void createAccelerationStructures();
 
   vector<vector<glm::vec3>> meshList;
-  vector<Instance> instances;
+  vector<Instance> instancesList;
+  vector<AccelerationStructureBuffers> bottomLevelBuffers;
+
   vector<ID3D12ResourcePtr> mpVertexBuffer;
   ID3D12ResourcePtr mpTopLevelAS;
   vector<ID3D12ResourcePtr> mpBottomLevelAS;

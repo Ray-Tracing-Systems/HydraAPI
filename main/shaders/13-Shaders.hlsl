@@ -110,7 +110,7 @@ void miss(inout RayPayload payload)
 void triangleChs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
     float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
-    payload.color = A * barycentrics.x + B * barycentrics.y + C * barycentrics.z;
+    payload.color = float4(1, 0, 0, 1);//A * barycentrics.x + B * barycentrics.y + C * barycentrics.z;
 }
 
 struct ShadowPayload

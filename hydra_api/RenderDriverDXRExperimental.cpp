@@ -283,13 +283,6 @@ ID3D12ResourcePtr createPlaneVB(ID3D12Device5Ptr pDevice)
   return createVB(pDevice, vertices);
 }
 
-struct AccelerationStructureBuffers
-{
-  ID3D12ResourcePtr pScratch;
-  ID3D12ResourcePtr pResult;
-  ID3D12ResourcePtr pInstanceDesc;    // Used only for top-level AS
-};
-
 AccelerationStructureBuffers createBottomLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pVB[], const uint32_t vertexCount[], uint32_t geometryCount)
 {
   std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geomDesc;
@@ -343,13 +336,13 @@ AccelerationStructureBuffers createSingleGeomBottomLevelAS(ID3D12Device5Ptr pDev
   return createBottomLevelAS(pDevice, pCmdList, b, &vertexCount, 1);
 }
 
-AccelerationStructureBuffers createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pBottomLevelAS[2], vector<Instance> instances, uint64_t& tlasSize)
+AccelerationStructureBuffers createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, vector<ID3D12ResourcePtr> &pBottomLevelAS, vector<Instance> instances, uint64_t& tlasSize)
 {
   // First, get the size of the TLAS buffers and create them
   D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
   inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
   inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_NONE;
-  inputs.NumDescs = 3;
+  inputs.NumDescs = instances.size();
   inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
 
   D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info;
@@ -400,7 +393,7 @@ AccelerationStructureBuffers createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12Gr
 
   return buffers;
 }
-void RD_DXR_Experimental::addMesh(vector<vec3> mesh) {
+size_t RD_DXR_Experimental::addMesh(vector<vec3> mesh) {
   /*
   vector<vec3> vertices =
   {
@@ -426,11 +419,13 @@ void RD_DXR_Experimental::addMesh(vector<vec3> mesh) {
     vertices
   };
   */
+  
   meshList.push_back(mesh);
+  return meshList.size() - 1;
 }
 
 void RD_DXR_Experimental::addInstance(Instance inst) {
-  instances.push_back(inst);
+  instancesList.push_back(inst);
 }
 
 void RD_DXR_Experimental::initGeometry() {
@@ -439,13 +434,15 @@ void RD_DXR_Experimental::initGeometry() {
   {mat4(), 0, 0},
   {translate(mat4(), vec3(-2, 0, 0)), 1, 4},
   {translate(mat4(), vec3(2, 0, 0)), 1, 6}
-  };*/
+  };
+  for (auto inst : instances) {
+    addInstance(inst);
+  }*/
 
   for (auto m : meshList) {
     mpVertexBuffer.push_back(createVB(mpDevice, m));
   }
-  vector<AccelerationStructureBuffers> bottomLevelBuffers;
-
+  
   int i = 0;
   for (auto m : meshList) {
     bottomLevelBuffers.push_back(createSingleGeomBottomLevelAS(mpDevice, mpCmdList, mpVertexBuffer.data() + i, m.size()));
@@ -457,7 +454,7 @@ void RD_DXR_Experimental::initGeometry() {
 void RD_DXR_Experimental::createAccelerationStructures()
 {
   // Create the TLAS
-  AccelerationStructureBuffers topLevelBuffers = createTopLevelAS(mpDevice, mpCmdList, mpBottomLevelAS.data(), instances, mTlasSize);
+  AccelerationStructureBuffers topLevelBuffers = createTopLevelAS(mpDevice, mpCmdList, mpBottomLevelAS, instancesList, mTlasSize);
 
   // The tutorial doesn't have any resource lifetime management, so we flush and sync here. This is not required by the DXR spec - you can submit the list whenever you like as long as you take care of the resources lifetime.
   mFenceValue = submitCommandList(mpCmdList, mpCmdQueue, mpFence, mFenceValue);
@@ -1112,13 +1109,13 @@ HRDriverAllocInfo RD_DXR_Experimental::AllocAll(HRDriverAllocInfo a_info)
       vec3(100, -1,  -2),
       vec3(100, -1,  100)
   };
-
+  
   vector<vector<vec3>> meshList = {
     verticesp,
     vertices
   };
   for (auto m : meshList) {
-    addMesh(m);
+    //addMesh(m);
   }
 
   vector<Instance> instances = {
@@ -1128,16 +1125,12 @@ HRDriverAllocInfo RD_DXR_Experimental::AllocAll(HRDriverAllocInfo a_info)
   };
 
   for (auto m : instances) {
-    addInstance(m);
+  //  addInstance(m);
   }
 
-  initGeometry();
-  createAccelerationStructures();                 // Tutorial 03
-  createRtPipelineState();                        // Tutorial 04
-  createShaderResources();                        // Tutorial 06
   createConstantBuffers();                        // Tutorial 10. Yes, we need to do it before creating the shader-table
   createCameraConstantBuffers();
-  createShaderTable();
+
 
   return a_info;
 }
@@ -1325,6 +1318,9 @@ bool RD_DXR_Experimental::UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode
         currMesh.push_back(glm::vec3(a_input.pos4f[vInd * 4 + 0], a_input.pos4f[vInd * 4 + 1], a_input.pos4f[vInd * 4 + 2]));
       }
     }
+
+    meshIdToReal[a_meshId].push_back(addMesh(currMesh));
+    
     MeshAttrib<glm::vec3> c;
     c.data = currMesh;
     sceneCoord.push_back(c);
@@ -1370,6 +1366,17 @@ void RD_DXR_Experimental::EndScene()
 
   meshes.push_back(vertices);
   meshes.push_back(vertices2);
+
+  static bool init = true;
+
+  if (init) {
+    init = false;
+    initGeometry();
+    createAccelerationStructures();                 // Tutorial 03
+    createRtPipelineState();                        // Tutorial 04
+    createShaderResources();                        // Tutorial 06
+    createShaderTable();
+  }
 
   updateShaderTable();                            // Tutorial 05
 }
@@ -1422,6 +1429,22 @@ void RD_DXR_Experimental::Draw()
 void RD_DXR_Experimental::InstanceMeshes(int32_t a_mesh_id, const float* a_matrices, int32_t a_instNum, const int* a_lightInstId, const int* a_remapId, const int* a_realInstId)
 {
   printf("InstanceMeshes\n");
+
+  for (int n = 0; n < a_instNum; n++) {
+    for (auto mid : meshIdToReal[a_mesh_id]) {
+      Instance inst;
+      inst.hitGroup = 0;
+      inst.meshid = mid;
+
+      for (int j = 0; j < 4; j++) {
+        for (int i = 0; i < 4; i++) {
+          inst.tr[i][j] = a_matrices[i + 4 * j + 16 * n];
+        }
+      }
+
+      addInstance(inst);
+    }
+  }
 }
 
 
