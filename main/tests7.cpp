@@ -625,7 +625,7 @@ bool test44_four_lights_and_compressed_mesh()
     plane.vTexCoord[i] *= 2.0f;
 
 
-  HRTextureNodeRef testTex2 = hrTexture2DCreateFromFileDL(L"data/textures/chess_red.bmp");
+  HRTextureNodeRef testTex2 = hrTexture2DCreateFromFileDL(L"data/textures/chess_red.bmp", -1, -1, -1, true);
 
   HRMaterialRef mat0 = hrMaterialCreate(L"mysimplemat");
   HRMaterialRef mat1 = hrMaterialCreate(L"mysimplemat2");
@@ -647,7 +647,7 @@ bool test44_four_lights_and_compressed_mesh()
     diff.append_attribute(L"brdf_type").set_value(L"lambert");
     diff.append_child(L"color").text().set(L"0.5 0.75 0.5");
 
-    HRTextureNodeRef testTex = hrTexture2DCreateFromFile(L"data/textures/texture1.bmp"); // hrTexture2DCreateFromFileDL
+    HRTextureNodeRef testTex = hrTexture2DCreateFromFileDL(L"data/textures/texture1.bmp", -1, -1, -1, true); // hrTexture2DCreateFromFileDL
     hrTextureBind(testTex, diff);
   }
   hrMaterialClose(mat0);
@@ -674,7 +674,7 @@ bool test44_four_lights_and_compressed_mesh()
     diff.append_attribute(L"brdf_type").set_value(L"lambert");
     diff.append_child(L"color").text().set(L"0.75 0.75 0.75");
 
-    HRTextureNodeRef testTex = hrTexture2DCreateFromFile(L"data/textures/relief_wood.jpg");
+    HRTextureNodeRef testTex = hrTexture2DCreateFromFileDL(L"data/textures/relief_wood.jpg", -1, -1, -1, true);
     hrTextureBind(testTex, diff);
   }
   hrMaterialClose(mat2);
@@ -713,7 +713,7 @@ bool test44_four_lights_and_compressed_mesh()
     diff.append_attribute(L"brdf_type").set_value(L"lambert");
     diff.append_child(L"color").text().set(L"0.75 0.75 0.25");
 
-    HRTextureNodeRef testTex = hrTexture2DCreateFromFileDL(L"data/textures/texture1.bmp");
+    HRTextureNodeRef testTex = hrTexture2DCreateFromFileDL(L"data/textures/texture1.bmp", -1, -1, -1, true);
     hrTextureBind(testTex, diff);
   }
   hrMaterialClose(mat5);

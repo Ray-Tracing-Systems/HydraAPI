@@ -145,8 +145,15 @@ int main(int argc, const char** argv)
 	  //run_all_alg_tests();
 	  //run_all_ipp_tests();
 
+    //{
+    //  hrSceneLibraryOpen(L"/home/frol/PROG/HydraAPI/temp", HR_WRITE_DISCARD);
+    //  HRMeshRef mesh = hrMeshCreateFromFile(L"/home/frol/PROG/HydraAPI/main/data/meshes/teapot.vsgf");
+    //  hrMeshSaveVSGFCompressed(mesh, L"/home/frol/PROG/CLSP/database/models/various/teapot.vsgfc");
+    //}
     //test40_several_changes();
+
     test44_four_lights_and_compressed_mesh();
+
     //test42_load_mesh_compressed();
     //test78_material_remap_list1();
     
