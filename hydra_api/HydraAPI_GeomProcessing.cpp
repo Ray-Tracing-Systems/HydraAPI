@@ -43,6 +43,11 @@ extern std::wstring      g_lastErrorCallerPlace;
 extern HR_ERROR_CALLBACK g_pErrorCallback;
 extern HRObjectManager   g_objManager;
 
+#ifdef WIN32
+#undef min
+#undef max
+#endif
+
 
 void HR_ComputeTangentSpaceSimple(const int     vertexCount, const int     triangleCount, const uint32_t* triIndices,
                                   const float4* verticesPos, const float4* verticesNorm, const float2* vertTexCoord,
