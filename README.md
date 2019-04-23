@@ -62,7 +62,7 @@ However if you find that for some reason you can't use one of these components, 
 Most of these components can be replaced.
 
 # FAQ and Problems
-* hrSceneLibraryOpen immediately lead to segmentation fault. Probably you have forgottenn call hrInit before hrSceneLibraryOpen.
+* hrSceneLibraryOpen immediately lead to segmentation fault. Probably you have forgotenn call hrInit before hrSceneLibraryOpen.
 
 
 # Acknowlegments
