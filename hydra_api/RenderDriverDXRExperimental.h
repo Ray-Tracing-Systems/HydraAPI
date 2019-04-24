@@ -10,6 +10,7 @@
 #include "RTX/d3dx12.h"
 
 #include <map>
+#include <algorithm>
 
 using namespace std;
 

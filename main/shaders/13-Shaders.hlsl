@@ -25,8 +25,17 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************/
-RaytracingAccelerationStructure gRtScene : register(t0);
+RaytracingAccelerationStructure gRtScene : register(t0, space0);
 RWTexture2D<float4> gOutput : register(u0);
+
+struct Vertex {
+  float3 pos;
+  float3 normal;
+  float2 tex_coord;
+};
+
+StructuredBuffer<Vertex> Vertices : register(t0, space1);
+StructuredBuffer<int> Indices : register(t0, space2);
 
 cbuffer PerFrame : register(b0, space0)
 {
@@ -109,8 +118,11 @@ void miss(inout RayPayload payload)
 [shader("closesthit")]
 void triangleChs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
+    uint vertId = 3 * PrimitiveIndex();
     float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
-    payload.color = float4(1, 0, 0, 1);//A * barycentrics.x + B * barycentrics.y + C * barycentrics.z;
+    payload.color = float3(1, 0 ,0);//Vertices[Indices[vertId + 0]].normal * barycentrics.x +
+                    Vertices[Indices[vertId + 1]].normal * barycentrics.y +
+                    Vertices[Indices[vertId + 2]].normal * barycentrics.z;
 }
 
 struct ShadowPayload

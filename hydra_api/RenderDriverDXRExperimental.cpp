@@ -858,6 +858,11 @@ void RD_DXR_Experimental::createRtPipelineState()
 // Tutorial 05
 //////////////////////////////////////////////////////////////////////////
 
+struct ShaderTableEntry {
+  const WCHAR* shader_name;
+  vector<D3D12_GPU_VIRTUAL_ADDRESS> addr;
+};
+
 void RD_DXR_Experimental::updateShaderTable() {
   /** The shader-table layout is as follows:
       Entry 0 - Ray-gen program
@@ -871,11 +876,32 @@ void RD_DXR_Experimental::updateShaderTable() {
       The triangle primary-ray hit program requires the largest entry - sizeof(program identifier) + 8 bytes for the constant-buffer root descriptor.
       The entry size must be aligned up to D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT
   */
+  // Entry 0 - ray-gen program ID and descriptor data
+
+  uint64_t heapStart = mpSrvUavHeap->GetGPUDescriptorHandleForHeapStart().ptr;
+
+  vector<ShaderTableEntry> entries = {
+    {kRayGenShader, vector<D3D12_GPU_VIRTUAL_ADDRESS>{heapStart, mpCameraConstantBuffer[0]->GetGPUVirtualAddress()}},
+    {kMissShader, vector<D3D12_GPU_VIRTUAL_ADDRESS>{}},
+    {kShadowMiss, vector<D3D12_GPU_VIRTUAL_ADDRESS>{}},
+    {kTriHitGroup, vector<D3D12_GPU_VIRTUAL_ADDRESS>{mpConstantBuffer[0]->GetGPUVirtualAddress()}},
+    {kShadowHitGroup, vector<D3D12_GPU_VIRTUAL_ADDRESS>{}},
+    {kPlaneHitGroup, vector<D3D12_GPU_VIRTUAL_ADDRESS>{heapStart + mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)}},
+    {kShadowHitGroup, vector<D3D12_GPU_VIRTUAL_ADDRESS>{}},
+    {kTriHitGroup, vector<D3D12_GPU_VIRTUAL_ADDRESS>{mpConstantBuffer[1]->GetGPUVirtualAddress()}},
+    {kShadowHitGroup, vector<D3D12_GPU_VIRTUAL_ADDRESS>{}},
+    {kTriHitGroup, vector<D3D12_GPU_VIRTUAL_ADDRESS>{ mpConstantBuffer[2]->GetGPUVirtualAddress() }},
+    {kShadowHitGroup, vector<D3D12_GPU_VIRTUAL_ADDRESS>{}},
+  };
+
+  auto mel = max_element(entries.begin(), entries.end(), [](const ShaderTableEntry& s1, const ShaderTableEntry& s2) {
+    return s1.addr.size() < s2.addr.size();
+  });
+
   mShaderTableEntrySize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
-  mShaderTableEntrySize += 8; // The hit shader constant-buffer descriptor
-  mShaderTableEntrySize += 8; // The hit shader constant-buffer descriptor
+  mShaderTableEntrySize += 8 * mel->addr.size();
   mShaderTableEntrySize = align_to(D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT, mShaderTableEntrySize);
-  uint32_t shaderTableSize = mShaderTableEntrySize * 14;
+  uint32_t shaderTableSize = mShaderTableEntrySize * entries.size();
 
   // Map the buffer
   uint8_t* pData;
@@ -885,57 +911,23 @@ void RD_DXR_Experimental::updateShaderTable() {
   ID3D12StateObjectPropertiesPtr pRtsoProps;
   mpPipelineState->QueryInterface(IID_PPV_ARGS(&pRtsoProps));
 
-  // Entry 0 - ray-gen program ID and descriptor data
-  memcpy(pData, pRtsoProps->GetShaderIdentifier(kRayGenShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-  uint64_t heapStart = mpSrvUavHeap->GetGPUDescriptorHandleForHeapStart().ptr;
-  *(uint64_t*)(pData + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) = heapStart;
-  assert(((uint64_t)(pData + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) % 8) == 0); // Root descriptor must be stored at an 8-byte aligned address
-  *(D3D12_GPU_VIRTUAL_ADDRESS*)(pData + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES + 8) = mpCameraConstantBuffer[0]->GetGPUVirtualAddress();
+  int ei = 0;
 
-  // Entry 1 - primary ray miss
-  memcpy(pData + mShaderTableEntrySize * 1, pRtsoProps->GetShaderIdentifier(kMissShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+  for (auto &e : entries) {
+    uint8_t *entryPtr = pData + ei * mShaderTableEntrySize;
+    memcpy(entryPtr, pRtsoProps->GetShaderIdentifier(e.shader_name), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
 
-  // Entry 2 - shadow-ray miss
-  memcpy(pData + mShaderTableEntrySize * 2, pRtsoProps->GetShaderIdentifier(kShadowMiss), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+    int i = 0;
 
-  // Entry 3 - Triangle 0, primary ray. ProgramID and constant-buffer data
-  uint8_t* pEntry3 = pData + mShaderTableEntrySize * 3;
-  memcpy(pEntry3, pRtsoProps->GetShaderIdentifier(kTriHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-  assert(((uint64_t)(pEntry3 + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) % 8) == 0); // Root descriptor must be stored at an 8-byte aligned address
-  *(D3D12_GPU_VIRTUAL_ADDRESS*)(pEntry3 + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) = mpConstantBuffer[0]->GetGPUVirtualAddress();
+    for (auto addr : e.addr) {
+      uint8_t* currPtr = entryPtr + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES + i * 8;
 
-  // Entry 4 - Triangle 0, shadow ray. ProgramID only
-  uint8_t* pEntry4 = pData + mShaderTableEntrySize * 4;
-  memcpy(pEntry4, pRtsoProps->GetShaderIdentifier(kShadowHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-
-  // Entry 5 - Plane, primary ray. ProgramID only and the TLAS SRV
-  uint8_t* pEntry5 = pData + mShaderTableEntrySize * 5;
-  memcpy(pEntry5, pRtsoProps->GetShaderIdentifier(kPlaneHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-  *(uint64_t*)(pEntry5 + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) = heapStart + mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV); // The SRV comes directly after the program id
-
-  // Entry 6 - Plane, shadow ray
-  uint8_t* pEntry6 = pData + mShaderTableEntrySize * 6;
-  memcpy(pEntry6, pRtsoProps->GetShaderIdentifier(kShadowHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-
-  // Entry 7 - Triangle 1, primary ray. ProgramID and constant-buffer data
-  uint8_t* pEntry7 = pData + mShaderTableEntrySize * 7;
-  memcpy(pEntry7, pRtsoProps->GetShaderIdentifier(kTriHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-  assert(((uint64_t)(pEntry7 + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) % 8) == 0); // Root descriptor must be stored at an 8-byte aligned address
-  *(D3D12_GPU_VIRTUAL_ADDRESS*)(pEntry7 + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) = mpConstantBuffer[1]->GetGPUVirtualAddress();
-
-  // Entry 8 - Triangle 1, shadow ray. ProgramID only
-  uint8_t* pEntry8 = pData + mShaderTableEntrySize * 8;
-  memcpy(pEntry8, pRtsoProps->GetShaderIdentifier(kShadowHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-
-  // Entry 9 - Triangle 2, primary ray. ProgramID and constant-buffer data
-  uint8_t* pEntry9 = pData + mShaderTableEntrySize * 9;
-  memcpy(pEntry9, pRtsoProps->GetShaderIdentifier(kTriHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-  assert(((uint64_t)(pEntry9 + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) % 8) == 0); // Root descriptor must be stored at an 8-byte aligned address
-  *(D3D12_GPU_VIRTUAL_ADDRESS*)(pEntry9 + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) = mpConstantBuffer[2]->GetGPUVirtualAddress();
-
-  // Entry 10 - Triangle 2, shadow ray. ProgramID only
-  uint8_t* pEntry10 = pData + mShaderTableEntrySize * 10;
-  memcpy(pEntry10, pRtsoProps->GetShaderIdentifier(kShadowHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+      assert(((uint64_t)(currPtr) % 8) == 0); // Root descriptor must be stored at an 8-byte aligned address
+      *(D3D12_GPU_VIRTUAL_ADDRESS*)(currPtr) = addr;
+      i++;
+    }
+    ei++;
+  }
 
   // Unmap
   mpShaderTable->Unmap(0, nullptr);
