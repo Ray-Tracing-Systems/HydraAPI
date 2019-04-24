@@ -161,6 +161,9 @@ size_t HR_SaveVSGFCompressed(const HydraGeomData& data, const wchar_t* a_outfile
   const auto& matDrawList = FormMatDrawListRLE(std::vector<uint32_t>(pInd, pInd+indSize));
   const auto& bbox        = CalcBoundingBox4f(data.getVertexPositionsFloat4Array(), data.getVerticesNumber());
 
+  //std::cout << "bbox.x_min\t" << bbox.x_min << std::endl;
+  //std::cout << "bbox.x_max\t" << bbox.x_max << std::endl;
+  
   //const std::string xmlNodeData = "";
 
   HydraHeaderC h2;

@@ -308,6 +308,14 @@ protected:
       fin.seekg(h2.customDataOffset, std::ios_base::beg);
       fin.read ((char*)matNames.c_str(), h2.customDataSize);
       fin.close();
+      
+      m_bbox.x_min = h2.boxMin[0];
+      m_bbox.y_min = h2.boxMin[1];
+      m_bbox.z_min = h2.boxMin[2];
+  
+      m_bbox.x_max = h2.boxMax[0];
+      m_bbox.y_max = h2.boxMax[1];
+      m_bbox.z_max = h2.boxMax[2];
     }
     else
     {

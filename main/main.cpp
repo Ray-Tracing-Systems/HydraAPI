@@ -145,14 +145,25 @@ int main(int argc, const char** argv)
 	  //run_all_alg_tests();
 	  //run_all_ipp_tests();
 
-    //{
-    //  hrSceneLibraryOpen(L"/home/frol/PROG/HydraAPI/temp", HR_WRITE_DISCARD);
-    //  HRMeshRef mesh = hrMeshCreateFromFile(L"/home/frol/PROG/HydraAPI/main/data/meshes/teapot.vsgf");
-    //  hrMeshSaveVSGFCompressed(mesh, L"/home/frol/PROG/CLSP/database/models/various/teapot.vsgfc");
-    //}
+    {
+      hrSceneLibraryOpen(L"/home/frol/PROG/HydraAPI/temp", HR_WRITE_DISCARD);
+      HRMeshRef mesh = hrMeshCreateFromFile(L"/home/frol/PROG/HydraAPI/main/data/meshes/bigtree.vsgf");
+      hrMeshSaveVSGFCompressed(mesh, L"/home/frol/PROG/CLSP_gitlab/database/models/various/bigtree.vsgfc");
+    
+      HRMeshInfo info = hrMeshGetInfo(mesh);
+      std::cout << "info.boxMin[0] = " << info.boxMin[0] << std::endl;
+      std::cout << "info.boxMax[0] = " << info.boxMax[0] << std::endl;
+    }
+    
     //test40_several_changes();
-
-    test44_four_lights_and_compressed_mesh();
+    
+    //std::cout << "begin" << std::endl;
+    //_hrCompressMesh(L"/home/frol/PROG/HydraAPI/main/data/meshes/bigtree.vsgf",
+    //                L"/home/frol/PROG/CLSP_gitlab/database/models/various/bigtree.vsgfc");
+    //
+    //std::cout << "end" << std::endl;
+    
+    //test44_four_lights_and_compressed_mesh();
 
     //test42_load_mesh_compressed();
     //test78_material_remap_list1();
