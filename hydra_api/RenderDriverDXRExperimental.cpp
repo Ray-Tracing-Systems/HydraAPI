@@ -242,7 +242,8 @@ ID3D12ResourcePtr createBuffer(ID3D12Device5Ptr pDevice, uint64_t size, D3D12_RE
 }
 
 
-ID3D12ResourcePtr createVB(ID3D12Device5Ptr pDevice, vector<vec3> mesh)
+template<typename T>
+ID3D12ResourcePtr createVB(ID3D12Device5Ptr pDevice, vector<T> mesh)
 {
   size_t bufferSize = mesh.size() * sizeof(mesh[0]);
 
@@ -283,7 +284,7 @@ ID3D12ResourcePtr createPlaneVB(ID3D12Device5Ptr pDevice)
   return createVB(pDevice, vertices);
 }
 
-AccelerationStructureBuffers createBottomLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pVB[], const uint32_t vertexCount[], uint32_t geometryCount)
+AccelerationStructureBuffers createBottomLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, pair<ID3D12ResourcePtr, ID3D12ResourcePtr> pVB[], const pair<uint32_t, uint32_t> vertexCount[], uint32_t geometryCount)
 {
   std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geomDesc;
   geomDesc.resize(geometryCount);
@@ -291,9 +292,12 @@ AccelerationStructureBuffers createBottomLevelAS(ID3D12Device5Ptr pDevice, ID3D1
   for (uint32_t i = 0; i < geometryCount; i++)
   {
     geomDesc[i].Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
-    geomDesc[i].Triangles.VertexBuffer.StartAddress = pVB[i]->GetGPUVirtualAddress();
-    geomDesc[i].Triangles.VertexBuffer.StrideInBytes = sizeof(vec3);
-    geomDesc[i].Triangles.VertexCount = vertexCount[i];
+    geomDesc[i].Triangles.VertexBuffer.StartAddress = get<0>(pVB[i])->GetGPUVirtualAddress();
+    geomDesc[i].Triangles.VertexBuffer.StrideInBytes = sizeof(Vertex);
+    geomDesc[i].Triangles.IndexBuffer = get<1>(pVB[i])->GetGPUVirtualAddress();
+    geomDesc[i].Triangles.IndexCount = get<1>(vertexCount[i]);
+    geomDesc[i].Triangles.IndexFormat = DXGI_FORMAT_R32_UINT;
+    geomDesc[i].Triangles.VertexCount = get<0>(vertexCount[i]);
     geomDesc[i].Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
     geomDesc[i].Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
   }
@@ -331,8 +335,8 @@ AccelerationStructureBuffers createBottomLevelAS(ID3D12Device5Ptr pDevice, ID3D1
   return buffers;
 }
 
-AccelerationStructureBuffers createSingleGeomBottomLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pVB, const uint32_t vertexCount) {
-  ID3D12ResourcePtr b[] = { pVB };
+AccelerationStructureBuffers createSingleGeomBottomLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, pair<ID3D12ResourcePtr, ID3D12ResourcePtr> pVB, const pair<uint32_t, uint32_t> vertexCount) {
+  pair<ID3D12ResourcePtr, ID3D12ResourcePtr> b[] = { pVB };
   return createBottomLevelAS(pDevice, pCmdList, b, &vertexCount, 1);
 }
 
@@ -393,7 +397,7 @@ AccelerationStructureBuffers createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12Gr
 
   return buffers;
 }
-size_t RD_DXR_Experimental::addMesh(vector<vec3> mesh) {
+size_t RD_DXR_Experimental::addMesh(pair<vector<Vertex>, vector<uint32_t>> mesh) {
   /*
   vector<vec3> vertices =
   {
@@ -440,12 +444,12 @@ void RD_DXR_Experimental::initGeometry() {
   }*/
 
   for (auto m : meshList) {
-    mpVertexBuffer.push_back(createVB(mpDevice, m));
+    mpVertexBuffer.push_back(make_pair(createVB(mpDevice, get<0>(m)), createVB(mpDevice, get<1>(m))));
   }
   
   int i = 0;
   for (auto m : meshList) {
-    bottomLevelBuffers.push_back(createSingleGeomBottomLevelAS(mpDevice, mpCmdList, mpVertexBuffer.data() + i, m.size()));
+    bottomLevelBuffers.push_back(createSingleGeomBottomLevelAS(mpDevice, mpCmdList, mpVertexBuffer[i], make_pair(get<0>(m).size(),get<1>(m).size())));
     mpBottomLevelAS.push_back(bottomLevelBuffers[i].pResult);
     i++;
   }
@@ -1318,8 +1322,21 @@ bool RD_DXR_Experimental::UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode
         currMesh.push_back(glm::vec3(a_input.pos4f[vInd * 4 + 0], a_input.pos4f[vInd * 4 + 1], a_input.pos4f[vInd * 4 + 2]));
       }
     }
+    
+    size_t ind_num = a_input.triNum * 3;
+    vector<uint32_t> indices(a_input.indices, a_input.indices + ind_num);
+  
+    size_t vertex_num = a_input.vertNum;
+    vector<Vertex> vertex(vertex_num);
 
-    meshIdToReal[a_meshId].push_back(addMesh(currMesh));
+    const float *read_ptr = a_input.pos4f;
+
+    for (auto &v : vertex) {
+      memcpy(&v.pos, read_ptr, sizeof(v.pos));
+      read_ptr += 4;
+    }
+
+    meshIdToReal[a_meshId].push_back(addMesh(make_pair(vertex, indices)));
     
     MeshAttrib<glm::vec3> c;
     c.data = currMesh;

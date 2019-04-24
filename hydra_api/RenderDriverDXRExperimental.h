@@ -29,6 +29,12 @@ struct AccelerationStructureBuffers
   ID3D12ResourcePtr pInstanceDesc;    // Used only for top-level AS
 };
 
+struct Vertex {
+  vec3 pos;
+  vec3 normal;
+  vec2 tex_coord;
+};
+
 struct RD_DXR_Experimental : public IHRRenderDriver
 {
   RD_DXR_Experimental();
@@ -120,7 +126,7 @@ protected:
   //////////////////////////////////////////////////////////////////////////
   // Tutorial 03, Tutorial 11
   //////////////////////////////////////////////////////////////////////////
-  size_t addMesh(vector<glm::vec3> mesh);
+  size_t addMesh(pair<vector<Vertex>, vector<uint32_t>> mesh);
 
   map<int32_t, vector<size_t>> meshIdToReal;
 
@@ -128,11 +134,11 @@ protected:
   void initGeometry();
   void createAccelerationStructures();
 
-  vector<vector<glm::vec3>> meshList;
+  vector<pair<vector<Vertex>, vector<uint32_t>>> meshList;
   vector<Instance> instancesList;
   vector<AccelerationStructureBuffers> bottomLevelBuffers;
 
-  vector<ID3D12ResourcePtr> mpVertexBuffer;
+  vector<pair<ID3D12ResourcePtr, ID3D12ResourcePtr>> mpVertexBuffer;
   ID3D12ResourcePtr mpTopLevelAS;
   vector<ID3D12ResourcePtr> mpBottomLevelAS;
   uint64_t mTlasSize = 0;
