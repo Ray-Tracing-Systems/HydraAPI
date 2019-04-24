@@ -35,7 +35,7 @@ struct Vertex {
 };
 
 StructuredBuffer<Vertex> Vertices : register(t0, space1);
-StructuredBuffer<int> Indices : register(t0, space2);
+StructuredBuffer<uint> Indices : register(t0, space2);
 
 cbuffer PerFrame : register(b0, space0)
 {
@@ -120,7 +120,7 @@ void triangleChs(inout RayPayload payload, in BuiltInTriangleIntersectionAttribu
 {
     uint vertId = 3 * PrimitiveIndex();
     float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
-    payload.color = float3(1, 0 ,0);//Vertices[Indices[vertId + 0]].normal * barycentrics.x +
+    payload.color = Vertices[Indices[vertId + 0]].normal * barycentrics.x +
                     Vertices[Indices[vertId + 1]].normal * barycentrics.y +
                     Vertices[Indices[vertId + 2]].normal * barycentrics.z;
 }

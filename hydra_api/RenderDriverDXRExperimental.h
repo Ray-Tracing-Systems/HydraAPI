@@ -36,6 +36,11 @@ struct Vertex {
   vec2 tex_coord;
 };
 
+struct ShaderTableEntry {
+  const WCHAR* shader_name;
+  vector<D3D12_GPU_VIRTUAL_ADDRESS> addr;
+};
+
 struct RD_DXR_Experimental : public IHRRenderDriver
 {
   RD_DXR_Experimental();
@@ -131,6 +136,7 @@ protected:
 
   map<int32_t, vector<size_t>> meshIdToReal;
 
+  vector<ShaderTableEntry> GetShaderTableEntryStructure();
   void addInstance(Instance inst);
   void initGeometry();
   void createAccelerationStructures();

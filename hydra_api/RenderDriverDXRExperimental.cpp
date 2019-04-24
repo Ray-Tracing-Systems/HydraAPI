@@ -368,7 +368,7 @@ AccelerationStructureBuffers createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12Gr
   for (auto inst : instances)
   {
     instanceDescs[i].InstanceID = i; // This value will be exposed to the shader via InstanceID()
-    instanceDescs[i].InstanceContributionToHitGroupIndex = inst.hitGroup;  // The indices are relative to to the start of the hit-table entries specified in Raytrace(), so we need 4 and 6
+    instanceDescs[i].InstanceContributionToHitGroupIndex = inst.meshid * 2 + 2;  // The indices are relative to to the start of the hit-table entries specified in Raytrace(), so we need 4 and 6
     instanceDescs[i].Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
     mat4 m = transpose(inst.tr); // GLM is column major, the INSTANCE_DESC is row major
     memcpy(instanceDescs[i].Transform, &m, sizeof(instanceDescs[i].Transform));
@@ -582,11 +582,29 @@ RootSignatureDesc createRayGenRootDesc()
 RootSignatureDesc createTriangleHitRootDesc()
 {
   RootSignatureDesc desc;
-  desc.rootParams.resize(1);
-  desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-  desc.rootParams[0].Descriptor.RegisterSpace = 0;
-  desc.rootParams[0].Descriptor.ShaderRegister = 0;
+  desc.range.resize(2);
+  desc.range[0].BaseShaderRegister = 0;
+  desc.range[0].NumDescriptors = 1;
+  desc.range[0].RegisterSpace = 1;
+  desc.range[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+  desc.range[0].OffsetInDescriptorsFromTableStart = 0;
+  
+  desc.range[1].BaseShaderRegister = 0;
+  desc.range[1].NumDescriptors = 1;
+  desc.range[1].RegisterSpace = 2;
+  desc.range[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+  desc.range[1].OffsetInDescriptorsFromTableStart = 1;
+  
+  desc.rootParams.resize(2);
+  desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+  desc.rootParams[0].DescriptorTable.NumDescriptorRanges = desc.range.size();
+  desc.rootParams[0].DescriptorTable.pDescriptorRanges = desc.range.data();
 
+  desc.rootParams[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+  desc.rootParams[1].Descriptor.RegisterSpace = 0;
+  desc.rootParams[1].Descriptor.ShaderRegister = 0;
+  
+  
   desc.desc.NumParameters = desc.rootParams.size();
   desc.desc.pParameters = desc.rootParams.data();
   desc.desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
@@ -858,10 +876,23 @@ void RD_DXR_Experimental::createRtPipelineState()
 // Tutorial 05
 //////////////////////////////////////////////////////////////////////////
 
-struct ShaderTableEntry {
-  const WCHAR* shader_name;
-  vector<D3D12_GPU_VIRTUAL_ADDRESS> addr;
-};
+
+vector<ShaderTableEntry> RD_DXR_Experimental::GetShaderTableEntryStructure() {
+  uint64_t heapStart = mpSrvUavHeap->GetGPUDescriptorHandleForHeapStart().ptr;
+
+  vector<ShaderTableEntry> entries = {
+    {kRayGenShader, vector<D3D12_GPU_VIRTUAL_ADDRESS>{heapStart, mpCameraConstantBuffer[0]->GetGPUVirtualAddress()}},
+    {kMissShader, vector<D3D12_GPU_VIRTUAL_ADDRESS>{}},
+    {kShadowMiss, vector<D3D12_GPU_VIRTUAL_ADDRESS>{}},
+  };
+
+  for (int i = 0; i < mpVertexBuffer.size(); i++) {
+    entries.push_back({ kTriHitGroup, vector<D3D12_GPU_VIRTUAL_ADDRESS>{ heapStart + mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * 2 * (i + 1), mpConstantBuffer[0]->GetGPUVirtualAddress()} });
+    entries.push_back({ kShadowHitGroup, vector<D3D12_GPU_VIRTUAL_ADDRESS>{} });
+  }
+
+  return entries;
+}
 
 void RD_DXR_Experimental::updateShaderTable() {
   /** The shader-table layout is as follows:
@@ -878,21 +909,7 @@ void RD_DXR_Experimental::updateShaderTable() {
   */
   // Entry 0 - ray-gen program ID and descriptor data
 
-  uint64_t heapStart = mpSrvUavHeap->GetGPUDescriptorHandleForHeapStart().ptr;
-
-  vector<ShaderTableEntry> entries = {
-    {kRayGenShader, vector<D3D12_GPU_VIRTUAL_ADDRESS>{heapStart, mpCameraConstantBuffer[0]->GetGPUVirtualAddress()}},
-    {kMissShader, vector<D3D12_GPU_VIRTUAL_ADDRESS>{}},
-    {kShadowMiss, vector<D3D12_GPU_VIRTUAL_ADDRESS>{}},
-    {kTriHitGroup, vector<D3D12_GPU_VIRTUAL_ADDRESS>{mpConstantBuffer[0]->GetGPUVirtualAddress()}},
-    {kShadowHitGroup, vector<D3D12_GPU_VIRTUAL_ADDRESS>{}},
-    {kPlaneHitGroup, vector<D3D12_GPU_VIRTUAL_ADDRESS>{heapStart + mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)}},
-    {kShadowHitGroup, vector<D3D12_GPU_VIRTUAL_ADDRESS>{}},
-    {kTriHitGroup, vector<D3D12_GPU_VIRTUAL_ADDRESS>{mpConstantBuffer[1]->GetGPUVirtualAddress()}},
-    {kShadowHitGroup, vector<D3D12_GPU_VIRTUAL_ADDRESS>{}},
-    {kTriHitGroup, vector<D3D12_GPU_VIRTUAL_ADDRESS>{ mpConstantBuffer[2]->GetGPUVirtualAddress() }},
-    {kShadowHitGroup, vector<D3D12_GPU_VIRTUAL_ADDRESS>{}},
-  };
+  vector<ShaderTableEntry> entries = GetShaderTableEntryStructure();
 
   auto mel = max_element(entries.begin(), entries.end(), [](const ShaderTableEntry& s1, const ShaderTableEntry& s2) {
     return s1.addr.size() < s2.addr.size();
@@ -947,11 +964,18 @@ void RD_DXR_Experimental::createShaderTable()
       The triangle primary-ray hit program requires the largest entry - sizeof(program identifier) + 8 bytes for the constant-buffer root descriptor.
       The entry size must be aligned up to D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT
   */
+  
+  vector<ShaderTableEntry> entries = GetShaderTableEntryStructure();
+
+  auto mel = max_element(entries.begin(), entries.end(), [](const ShaderTableEntry& s1, const ShaderTableEntry& s2) {
+    return s1.addr.size() < s2.addr.size();
+  });
+
   mShaderTableEntrySize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
-  mShaderTableEntrySize += 8; // The hit shader constant-buffer descriptor
-  mShaderTableEntrySize += 8; // The hit shader constant-buffer descriptor
+  mShaderTableEntrySize += 8 * mel->addr.size();
   mShaderTableEntrySize = align_to(D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT, mShaderTableEntrySize);
-  uint32_t shaderTableSize = mShaderTableEntrySize * 14;
+  uint32_t shaderTableSize = mShaderTableEntrySize * entries.size();
+
 
   // For simplicity, we create the shader-table on the upload heap. You can also create it on the default heap
   mpShaderTable = createBuffer(mpDevice, shaderTableSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
@@ -976,7 +1000,7 @@ void RD_DXR_Experimental::createShaderResources()
   d3d_call(mpDevice->CreateCommittedResource(&kDefaultHeapProps, D3D12_HEAP_FLAG_NONE, &resDesc, D3D12_RESOURCE_STATE_COPY_SOURCE, nullptr, IID_PPV_ARGS(&mpOutputResource))); // Starting as copy-source to simplify onFrameRender()
 
   // Create an SRV/UAV descriptor heap. Need 2 entries - 1 SRV for the scene and 1 UAV for the output
-  mpSrvUavHeap = createDescriptorHeap(mpDevice, 2, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true);
+  mpSrvUavHeap = createDescriptorHeap(mpDevice, 2 + 2 * mpVertexBuffer.size(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true);
 
   // Create the UAV. Based on the root signature we created it should be the first entry
   D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
@@ -990,7 +1014,43 @@ void RD_DXR_Experimental::createShaderResources()
   srvDesc.RaytracingAccelerationStructure.Location = mpTopLevelAS->GetGPUVirtualAddress();
   D3D12_CPU_DESCRIPTOR_HANDLE srvHandle = mpSrvUavHeap->GetCPUDescriptorHandleForHeapStart();
   srvHandle.ptr += mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
   mpDevice->CreateShaderResourceView(nullptr, &srvDesc, srvHandle);
+
+  int i = 0;
+  for (auto v : mpVertexBuffer) {
+    {
+      srvHandle.ptr +=
+        mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+      D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc2 = {};
+      srvDesc2.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+      srvDesc2.Format = DXGI_FORMAT_UNKNOWN;
+      srvDesc2.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+      srvDesc2.Buffer.FirstElement = 0;
+      srvDesc2.Buffer.NumElements = static_cast<uint>(meshList[i].first.size());
+      srvDesc2.Buffer.StructureByteStride = sizeof(meshList[i].first[0]);
+      srvDesc2.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+      // Write the per-instance properties buffer view in the heap
+      mpDevice->CreateShaderResourceView(get<0>(mpVertexBuffer[i]), &srvDesc2, srvHandle);
+    }
+    {
+      srvHandle.ptr +=
+        mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+      D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc2 = {};
+      srvDesc2.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+      srvDesc2.Format = DXGI_FORMAT_UNKNOWN;
+      srvDesc2.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+      srvDesc2.Buffer.FirstElement = 0;
+      srvDesc2.Buffer.NumElements = static_cast<uint>(meshList[i].second.size());
+      srvDesc2.Buffer.StructureByteStride = sizeof(meshList[i].second[0]);
+      srvDesc2.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+      // Write the per-instance properties buffer view in the heap
+      mpDevice->CreateShaderResourceView(get<1>(mpVertexBuffer[i]), &srvDesc2, srvHandle);
+    }
+    i++;
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1322,10 +1382,14 @@ bool RD_DXR_Experimental::UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode
     vector<Vertex> vertex(vertex_num);
 
     const float *read_ptr = a_input.pos4f;
-
+    const float *read_ptr_normal = a_input.norm4f;
+    
     for (auto &v : vertex) {
       memcpy(&v.pos, read_ptr, sizeof(v.pos));
+      memcpy(&v.normal, read_ptr_normal, sizeof(v.normal));
+      
       read_ptr += 4;
+      read_ptr_normal += 4;
     }
 
     meshIdToReal[a_meshId].push_back(addMesh(make_pair(vertex, indices)));
@@ -1415,7 +1479,7 @@ void RD_DXR_Experimental::Draw()
   size_t hitOffset = 3 * mShaderTableEntrySize;
   raytraceDesc.HitGroupTable.StartAddress = mpShaderTable->GetGPUVirtualAddress() + hitOffset;
   raytraceDesc.HitGroupTable.StrideInBytes = mShaderTableEntrySize;
-  raytraceDesc.HitGroupTable.SizeInBytes = mShaderTableEntrySize * 8;    // 8 hit-entries
+  raytraceDesc.HitGroupTable.SizeInBytes = mShaderTableEntrySize * 6;    // 8 hit-entries
 
   // Bind the empty root signature
   mpCmdList->SetComputeRootSignature(mpEmptyRootSig);
