@@ -91,8 +91,45 @@ void _hrDecompressMesh(const std::wstring& a_path, const std::wstring& a_newPath
 
 void demo_01_plane_box();
 
+
+void render_test_scene()
+{
+  hrInit(L"");
+  hrInfoCallback(&InfoCallBack);
+  
+  //hrSceneLibraryOpen(L".", HR_OPEN_EXISTING); //#NOTE: assume your working directoty is "CLSP/database"
+  hrSceneLibraryOpen(L"/home/frol/PROG/CLSP_gitlab/database/statex_00001.xml", HR_OPEN_EXISTING);
+  
+  HRRenderRef    render; render.id = 0;
+  HRSceneInstRef scene;  scene.id  = 0;
+  
+  hrFlush(scene, render);
+  
+  while (true)
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    
+    HRRenderUpdateInfo info = hrRenderHaveUpdate(render);
+    
+    if (info.haveUpdateFB)
+    {
+      auto pres = std::cout.precision(2);
+      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout.precision(pres);
+    }
+    
+    if (info.finalUpdate)
+      break;
+  }
+  
+  hrRenderSaveFrameBufferLDR(render, L"z_out.png");
+  
+}
+
 int main(int argc, const char** argv)
 {
+  //render_test_scene();
+  
   hrInit(L"-copy_textures_to_local_folder 0 -local_data_path 1 -sort_indices 1 -compute_bboxes 1");
   hrInfoCallback(&InfoCallBack);
 
@@ -136,7 +173,7 @@ int main(int argc, const char** argv)
   {
     //GEO_TESTS::test_001_mesh_from_memory();
     //demo_01_plane_box();
-    //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_46", L"opengl1Debug");
+    window_main_free_look(L"/home/frol/PROG/CLSP_gitlab/database/statex_00002.xml", L"opengl1Debug");
     
     //run_all_api_tests();
     //run_all_geo_tests();
@@ -145,15 +182,15 @@ int main(int argc, const char** argv)
 	  //run_all_alg_tests();
 	  //run_all_ipp_tests();
 
-    {
-      hrSceneLibraryOpen(L"/home/frol/PROG/HydraAPI/temp", HR_WRITE_DISCARD);
-      HRMeshRef mesh = hrMeshCreateFromFile(L"/home/frol/PROG/HydraAPI/main/data/meshes/bigtree.vsgf");
-      hrMeshSaveVSGFCompressed(mesh, L"/home/frol/PROG/CLSP_gitlab/database/models/various/bigtree.vsgfc");
-    
-      HRMeshInfo info = hrMeshGetInfo(mesh);
-      std::cout << "info.boxMin[0] = " << info.boxMin[0] << std::endl;
-      std::cout << "info.boxMax[0] = " << info.boxMax[0] << std::endl;
-    }
+    //{
+    //  hrSceneLibraryOpen(L"/home/frol/PROG/HydraAPI/temp", HR_WRITE_DISCARD);
+    //  HRMeshRef mesh = hrMeshCreateFromFile(L"/home/frol/PROG/HydraAPI/main/data/meshes/bigtree.vsgf");
+    //  hrMeshSaveVSGFCompressed(mesh, L"/home/frol/PROG/CLSP_gitlab/database/models/various/bigtree.vsgfc");
+    //
+    //  HRMeshInfo info = hrMeshGetInfo(mesh);
+    //  std::cout << "info.boxMin[0] = " << info.boxMin[0] << std::endl;
+    //  std::cout << "info.boxMax[0] = " << info.boxMax[0] << std::endl;
+    //}
     
     //test40_several_changes();
     

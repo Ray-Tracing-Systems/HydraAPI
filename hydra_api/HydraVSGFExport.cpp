@@ -313,3 +313,9 @@ VSGFOffsets CalcOffsets(int numVert, int numInd, bool a_haveTangents, bool a_hav
 
   return res;
 }
+
+size_t CalcVSGFSize(int numVert, int numInd)
+{
+  VSGFOffsets offsets = CalcOffsets(numVert, numInd, true, true);
+  return offsets.offsetMind + (numInd/3)*sizeof(int);
+}

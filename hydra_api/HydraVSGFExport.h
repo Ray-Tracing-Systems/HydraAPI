@@ -94,3 +94,4 @@ struct VSGFOffsets
 
 VSGFOffsets CalcOffsets(int numVert, int numInd, bool a_haveTangents = true, bool a_haveNormals = true);
 
+size_t CalcVSGFSize(int numVert, int numInd);

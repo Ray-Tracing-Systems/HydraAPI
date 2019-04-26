@@ -39,8 +39,6 @@ inline float rnd(float s, float e)
 bool check_images(const char* a_path, const int a_numImages = 1, const float a_mse = 10.0f);
 void initGLIfNeeded();
 
-
-
 namespace TEST_UTILS
 {
   bool FileExists(const char* a_fileName);

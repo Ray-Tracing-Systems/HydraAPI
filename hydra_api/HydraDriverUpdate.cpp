@@ -729,13 +729,16 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, std::vector<HRBatchInfo>& a
   hr_ifstream_open(fin, path);
 
   if(!fin.is_open())
+  {
+    HrError(L"UpdateMeshFromChunk: Can't open file: ", path);
     return;
+  }
   
   HydraGeomData::Header header;
   fin.read((char*)&header, sizeof(header));
   fin.close();
   
-  const std::wstring tail = str_tail(path,6);
+  const std::wstring tail = str_tail(path, 6);
   if(tail != L".vsgfc" && header.fileSizeInBytes != a_byteSize)
   {
     HrPrint(HR_SEVERITY_WARNING, L"UpdateMeshFromChunk, different byte size of chunk, may be broken mesh: ", path);
@@ -754,7 +757,24 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, std::vector<HRBatchInfo>& a
   
   // (1) process the case when we don't have tangents or normals ...
   //
-  if(dontHaveTangents || dontHaveNormals)
+  // (2) decompress '.vsgfc' format
+  //
+  if(tail == L".vsgfc")
+  {
+    data                = HR_LoadVSGFCompressedData(path, g_objManager.m_tempBuffer, &a_batches);
+    
+    input.vertNum       = data.getVerticesNumber();
+    input.triNum        = data.getIndicesNumber()/3;
+    
+    input.pos4f         = data.getVertexPositionsFloat4Array();
+    input.norm4f        = data.getVertexNormalsFloat4Array();
+    input.tan4f         = data.getVertexTangentsFloat4Array();
+    input.texcoord2f    = data.getVertexTexcoordFloat2Array();
+    input.indices       = (const int*)data.getTriangleVertexIndicesArray();
+    input.triMatIndices = (const int*)data.getTriangleMaterialIndicesArray();
+    input.allData       = (char*)g_objManager.m_tempBuffer.data();
+  }
+  else if(dontHaveTangents || dontHaveNormals)
   {
     data.read(path);
     HR_CopyMeshToInputMeshFromHydraGeomData(data, mesh2);
@@ -771,23 +791,6 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, std::vector<HRBatchInfo>& a
     input.indices       = (const int*)mesh2.triIndices.data();
     input.triMatIndices = (const int*)mesh2.matIndices.data();
     input.allData       = nullptr;
-  }
-  // (2) decompress '.vsgfc' format
-  //
-  else if(tail == L".vsgfc")
-  {
-    data                = HR_LoadVSGFCompressedData(path, g_objManager.m_tempBuffer, &a_batches);
-
-    input.vertNum       = data.getVerticesNumber();
-    input.triNum        = data.getIndicesNumber()/3;
-  
-    input.pos4f         = data.getVertexPositionsFloat4Array();
-    input.norm4f        = data.getVertexNormalsFloat4Array();
-    input.tan4f         = data.getVertexTangentsFloat4Array();
-    input.texcoord2f    = data.getVertexTexcoordFloat2Array();
-    input.indices       = (const int*)data.getTriangleVertexIndicesArray();
-    input.triMatIndices = (const int*)data.getTriangleMaterialIndicesArray();
-    input.allData       = (char*)g_objManager.m_tempBuffer.data();
   }
   // (3) read it "as is"
   //
