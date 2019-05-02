@@ -9,6 +9,8 @@
 #include "RTX/Externals/GLM/glm/glm.hpp"
 #include "RTX/d3dx12.h"
 
+#include "RTX/Externals/GLM/glm/gtc/matrix_inverse.hpp"
+
 #include <map>
 #include <algorithm>
 
@@ -177,7 +179,7 @@ protected:
   // Tutorial 10
   //////////////////////////////////////////////////////////////////////////
   void createConstantBuffers();
-  ID3D12ResourcePtr mpConstantBuffer[3];
+  vector<ID3D12ResourcePtr> mpConstantBuffer;
   
   void createCameraConstantBuffers();
   void updateCameraConstantBuffers(glm::mat4 proj, glm::mat4 view);

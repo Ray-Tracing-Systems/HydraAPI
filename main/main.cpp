@@ -131,8 +131,12 @@ int main(int argc, const char** argv)
   {
     //GEO_TESTS::test_001_mesh_from_memory();
     //demo_01_plane_box();
-    window_main_free_look(L"tests/test_41", L"dxrExperimental");
-    
+    //window_main_free_look(L"tests/test_41", L"dxrExperimental");
+    //window_main_free_look(L"E:/HydraScenes/scenes/01_sponza", L"dxrExperimental");
+    //window_main_free_look(L"E:/HydraScenes/scenes/02_cry_sponza", L"dxrExperimental");
+    window_main_free_look(L"E:/HydraScenes/scenes/03_san_miguel", L"dxrExperimental");
+    //window_main_free_look(L"E:/HydraScenes/scenes/04_hair_balls", L"dxrExperimental");
+
     //run_all_api_tests();
     //run_all_geo_tests();
     //run_all_mtl_tests();

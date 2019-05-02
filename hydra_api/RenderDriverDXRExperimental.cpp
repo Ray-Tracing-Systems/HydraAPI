@@ -368,7 +368,7 @@ AccelerationStructureBuffers createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12Gr
   for (auto inst : instances)
   {
     instanceDescs[i].InstanceID = i; // This value will be exposed to the shader via InstanceID()
-    instanceDescs[i].InstanceContributionToHitGroupIndex = inst.meshid * 2 + 2;  // The indices are relative to to the start of the hit-table entries specified in Raytrace(), so we need 4 and 6
+    instanceDescs[i].InstanceContributionToHitGroupIndex = i * 2;  // The indices are relative to to the start of the hit-table entries specified in Raytrace(), so we need 4 and 6
     instanceDescs[i].Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
     mat4 m = transpose(inst.tr); // GLM is column major, the INSTANCE_DESC is row major
     memcpy(instanceDescs[i].Transform, &m, sizeof(instanceDescs[i].Transform));
@@ -886,8 +886,8 @@ vector<ShaderTableEntry> RD_DXR_Experimental::GetShaderTableEntryStructure() {
     {kShadowMiss, vector<D3D12_GPU_VIRTUAL_ADDRESS>{}},
   };
 
-  for (int i = 0; i < mpVertexBuffer.size(); i++) {
-    entries.push_back({ kTriHitGroup, vector<D3D12_GPU_VIRTUAL_ADDRESS>{ heapStart + mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * 2 * (i + 1), mpConstantBuffer[0]->GetGPUVirtualAddress()} });
+  for (int i = 0; i < instancesList.size(); i++) {
+    entries.push_back({ kTriHitGroup, vector<D3D12_GPU_VIRTUAL_ADDRESS>{ heapStart + mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * 2 * (i + 1), mpConstantBuffer[i]->GetGPUVirtualAddress()} });
     entries.push_back({ kShadowHitGroup, vector<D3D12_GPU_VIRTUAL_ADDRESS>{} });
   }
 
@@ -1000,7 +1000,7 @@ void RD_DXR_Experimental::createShaderResources()
   d3d_call(mpDevice->CreateCommittedResource(&kDefaultHeapProps, D3D12_HEAP_FLAG_NONE, &resDesc, D3D12_RESOURCE_STATE_COPY_SOURCE, nullptr, IID_PPV_ARGS(&mpOutputResource))); // Starting as copy-source to simplify onFrameRender()
 
   // Create an SRV/UAV descriptor heap. Need 2 entries - 1 SRV for the scene and 1 UAV for the output
-  mpSrvUavHeap = createDescriptorHeap(mpDevice, 2 + 2 * mpVertexBuffer.size(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true);
+  mpSrvUavHeap = createDescriptorHeap(mpDevice, 2 + 2 * instancesList.size(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true);
 
   // Create the UAV. Based on the root signature we created it should be the first entry
   D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
@@ -1018,7 +1018,7 @@ void RD_DXR_Experimental::createShaderResources()
   mpDevice->CreateShaderResourceView(nullptr, &srvDesc, srvHandle);
 
   int i = 0;
-  for (auto v : mpVertexBuffer) {
+  for (auto inst : instancesList) {
     {
       srvHandle.ptr +=
         mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -1028,11 +1028,11 @@ void RD_DXR_Experimental::createShaderResources()
       srvDesc2.Format = DXGI_FORMAT_UNKNOWN;
       srvDesc2.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
       srvDesc2.Buffer.FirstElement = 0;
-      srvDesc2.Buffer.NumElements = static_cast<uint>(meshList[i].first.size());
-      srvDesc2.Buffer.StructureByteStride = sizeof(meshList[i].first[0]);
+      srvDesc2.Buffer.NumElements = static_cast<uint>(meshList[inst.meshid].first.size());
+      srvDesc2.Buffer.StructureByteStride = sizeof(meshList[inst.meshid].first[0]);
       srvDesc2.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
       // Write the per-instance properties buffer view in the heap
-      mpDevice->CreateShaderResourceView(get<0>(mpVertexBuffer[i]), &srvDesc2, srvHandle);
+      mpDevice->CreateShaderResourceView(get<0>(mpVertexBuffer[inst.meshid]), &srvDesc2, srvHandle);
     }
     {
       srvHandle.ptr +=
@@ -1043,11 +1043,11 @@ void RD_DXR_Experimental::createShaderResources()
       srvDesc2.Format = DXGI_FORMAT_UNKNOWN;
       srvDesc2.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
       srvDesc2.Buffer.FirstElement = 0;
-      srvDesc2.Buffer.NumElements = static_cast<uint>(meshList[i].second.size());
-      srvDesc2.Buffer.StructureByteStride = sizeof(meshList[i].second[0]);
+      srvDesc2.Buffer.NumElements = static_cast<uint>(meshList[inst.meshid].second.size());
+      srvDesc2.Buffer.StructureByteStride = sizeof(meshList[inst.meshid].second[0]);
       srvDesc2.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
       // Write the per-instance properties buffer view in the heap
-      mpDevice->CreateShaderResourceView(get<1>(mpVertexBuffer[i]), &srvDesc2, srvHandle);
+      mpDevice->CreateShaderResourceView(get<1>(mpVertexBuffer[inst.meshid]), &srvDesc2, srvHandle);
     }
     i++;
   }
@@ -1058,32 +1058,33 @@ void RD_DXR_Experimental::createShaderResources()
 //////////////////////////////////////////////////////////////////////////
 void RD_DXR_Experimental::createConstantBuffers()
 {
-  // The shader declares each CB with 3 float3. However, due to HLSL packing rules, we create the CB with vec4 (each float3 needs to start on a 16-byte boundary)
-  vec4 bufferData[] = {
-    // Instance 0
-    vec4(1.0f, 0.0f, 0.0f, 1.0f),
-    vec4(1.0f, 1.0f, 0.0f, 1.0f),
-    vec4(1.0f, 0.0f, 1.0f, 1.0f),
+  mpConstantBuffer.clear();
+  mpConstantBuffer.resize(instancesList.size());
 
-    // Instance 1
-    vec4(0.0f, 1.0f, 0.0f, 1.0f),
-    vec4(0.0f, 1.0f, 1.0f, 1.0f),
-    vec4(1.0f, 1.0f, 0.0f, 1.0f),
+  int i = 0;
 
-    // Instance 2
-    vec4(0.0f, 0.0f, 1.0f, 1.0f),
-    vec4(1.0f, 0.0f, 1.0f, 1.0f),
-    vec4(0.0f, 1.0f, 1.0f, 1.0f),
-  };
+  for (auto inst : instancesList) {
+  
+    mat3 model;
 
-  for (uint32_t i = 0; i < 3; i++)
-  {
-    const uint32_t bufferSize = sizeof(vec4) * 3;
-    mpConstantBuffer[i] = createBuffer(mpDevice, bufferSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+    for (int x = 0; x < 3; x++)
+    for (int y = 0; y < 3; y++) {
+      model[x][y] = inst.tr[y][x];
+    }
+
+    mat3 bufferData = glm::inverse(model);
+    mat4 finalData(bufferData);
+
+    const uint32_t bufferSize = sizeof(finalData);
+    
+    mpConstantBuffer[i] = (createBuffer(mpDevice, bufferSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps));
     uint8_t* pData;
     d3d_call(mpConstantBuffer[i]->Map(0, nullptr, (void**)&pData));
-    memcpy(pData, &bufferData[i * 3], sizeof(bufferData));
+    float data[] = {1, 0, 0, 0, 2, 0, 0, 0, 0, 1, 0, 0 };
+    memcpy(pData, &finalData, sizeof(bufferData));
     mpConstantBuffer[i]->Unmap(0, nullptr);
+    mpConstantBuffer[i]->Unmap(0, nullptr);
+    i++;
   }
 }
 
@@ -1093,15 +1094,13 @@ void RD_DXR_Experimental::createCameraConstantBuffers() {
     mat4()
   };
 
-  for (uint32_t i = 0; i < 1; i++)
-  {
-    const uint32_t bufferSize = sizeof(bufferData) * 2;
-    mpCameraConstantBuffer[i] = createBuffer(mpDevice, bufferSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
-    uint8_t* pData;
-    d3d_call(mpCameraConstantBuffer[i]->Map(0, nullptr, (void**)&pData));
-    memcpy(pData, &bufferData[i], sizeof(bufferData));
-    mpCameraConstantBuffer[i]->Unmap(0, nullptr);
-  }
+  size_t i = 0;
+  const uint32_t bufferSize = sizeof(bufferData);
+  mpCameraConstantBuffer[i] = createBuffer(mpDevice, bufferSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+  uint8_t* pData;
+  d3d_call(mpCameraConstantBuffer[i]->Map(0, nullptr, (void**)&pData));
+  memcpy(pData, &bufferData[i], sizeof(bufferData));
+  mpCameraConstantBuffer[i]->Unmap(0, nullptr);
 }
 
 void RD_DXR_Experimental::updateCameraConstantBuffers(mat4 proj, mat4 view) {
@@ -1110,7 +1109,7 @@ void RD_DXR_Experimental::updateCameraConstantBuffers(mat4 proj, mat4 view) {
     view
   };
 
-  for (uint32_t i = 0; i < 1; i++)
+  size_t i = 0;
   {
     uint8_t* pData;
     d3d_call(mpCameraConstantBuffer[i]->Map(0, nullptr, (void**)&pData));
@@ -1166,13 +1165,6 @@ HRDriverAllocInfo RD_DXR_Experimental::AllocAll(HRDriverAllocInfo a_info)
       vec3(100, -1,  100)
   };
   
-  vector<vector<vec3>> meshList = {
-    verticesp,
-    vertices
-  };
-  for (auto m : meshList) {
-    //addMesh(m);
-  }
 
   vector<Instance> instances = {
     {mat4(), 0, 0},
@@ -1184,7 +1176,6 @@ HRDriverAllocInfo RD_DXR_Experimental::AllocAll(HRDriverAllocInfo a_info)
   //  addInstance(m);
   }
 
-  createConstantBuffers();                        // Tutorial 10. Yes, we need to do it before creating the shader-table
   createCameraConstantBuffers();
 
 
@@ -1355,12 +1346,44 @@ bool RD_DXR_Experimental::UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode
     return true;
   }
 
+  size_t vertex_num = a_input.vertNum;
+  vector<Vertex> vertex(vertex_num);
+
+  const float *read_ptr = a_input.pos4f;
+  const float *read_ptr_normal = a_input.norm4f;
+
+  const vec3 colors[] = {
+    vec3(1, 0, 0),
+    vec3(1, 1, 0),
+    vec3(1, 1, 1),
+    vec3(1, 0, 1),
+    vec3(0, 1, 1),
+    vec3(0, 1, 0),
+    vec3(0, 0, 1),
+    vec3(0, 0, 0),
+  };
+
+  //static int curr = 0;
+
+  for (auto &v : vertex) {
+    memcpy(&v.pos, read_ptr, sizeof(v.pos));
+    memcpy(&v.normal, read_ptr_normal, sizeof(v.normal));
+
+    v.normal = normalize(v.normal);
+
+    read_ptr += 4;
+    read_ptr_normal += 4;
+  }
+
   for (int32_t batchId = 0; batchId < a_listSize; batchId++)
   {
     HRBatchInfo batch = a_batchList[batchId];
     const int drawElementsNum = batch.triEnd - batch.triBegin;
 
     vector<glm::vec3> currMesh;
+
+    size_t ind_num = a_input.triNum * 3;
+    vector<uint32_t> indices;
 
     for (int triid = batch.triBegin; triid < batch.triBegin + drawElementsNum; triid++)
     {
@@ -1369,35 +1392,22 @@ bool RD_DXR_Experimental::UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode
         a_input.indices[triid * 3 + 1],
         a_input.indices[triid * 3 + 2]
       };
-      
+        
       for (auto vInd : vInds) {
-        currMesh.push_back(glm::vec3(a_input.pos4f[vInd * 4 + 0], a_input.pos4f[vInd * 4 + 1], a_input.pos4f[vInd * 4 + 2]));
+        indices.push_back(vInd);
+      //  currMesh.push_back(glm::vec3(a_input.pos4f[vInd * 4 + 0], a_input.pos4f[vInd * 4 + 1], a_input.pos4f[vInd * 4 + 2]));
       }
     }
-    
-    size_t ind_num = a_input.triNum * 3;
-    vector<uint32_t> indices(a_input.indices, a_input.indices + ind_num);
   
-    size_t vertex_num = a_input.vertNum;
-    vector<Vertex> vertex(vertex_num);
-
-    const float *read_ptr = a_input.pos4f;
-    const float *read_ptr_normal = a_input.norm4f;
     
-    for (auto &v : vertex) {
-      memcpy(&v.pos, read_ptr, sizeof(v.pos));
-      memcpy(&v.normal, read_ptr_normal, sizeof(v.normal));
-      
-      read_ptr += 4;
-      read_ptr_normal += 4;
-    }
 
     meshIdToReal[a_meshId].push_back(addMesh(make_pair(vertex, indices)));
     
-    MeshAttrib<glm::vec3> c;
-    c.data = currMesh;
-    sceneCoord.push_back(c);
+    //MeshAttrib<glm::vec3> c;
+    //c.data = currMesh;
+    //sceneCoord.push_back(c);
   }
+  //curr = (curr + 1) % (sizeof(colors) / sizeof(colors[0]));
   return true;
 }
 
@@ -1408,6 +1418,8 @@ void RD_DXR_Experimental::BeginScene(pugi::xml_node a_sceneNode)
 
   printf("BeginScene\n");
 }
+
+static bool init = true;
 
 void RD_DXR_Experimental::EndScene()
 {
@@ -1440,18 +1452,19 @@ void RD_DXR_Experimental::EndScene()
   meshes.push_back(vertices);
   meshes.push_back(vertices2);
 
-  static bool init = true;
 
   if (init) {
     init = false;
     initGeometry();
+    createConstantBuffers();                        // Tutorial 10. Yes, we need to do it before creating the shader-table
     createAccelerationStructures();                 // Tutorial 03
     createRtPipelineState();                        // Tutorial 04
     createShaderResources();                        // Tutorial 06
     createShaderTable();
-  }
+    updateShaderTable();                            // Tutorial 05
 
-  updateShaderTable();                            // Tutorial 05
+    meshList.clear();
+  }
 }
 
 void RD_DXR_Experimental::Draw()
@@ -1479,7 +1492,7 @@ void RD_DXR_Experimental::Draw()
   size_t hitOffset = 3 * mShaderTableEntrySize;
   raytraceDesc.HitGroupTable.StartAddress = mpShaderTable->GetGPUVirtualAddress() + hitOffset;
   raytraceDesc.HitGroupTable.StrideInBytes = mShaderTableEntrySize;
-  raytraceDesc.HitGroupTable.SizeInBytes = mShaderTableEntrySize * 6;    // 8 hit-entries
+  raytraceDesc.HitGroupTable.SizeInBytes = mShaderTableEntrySize * instancesList.size();    // 8 hit-entries
 
   // Bind the empty root signature
   mpCmdList->SetComputeRootSignature(mpEmptyRootSig);
@@ -1502,6 +1515,9 @@ void RD_DXR_Experimental::Draw()
 void RD_DXR_Experimental::InstanceMeshes(int32_t a_mesh_id, const float* a_matrices, int32_t a_instNum, const int* a_lightInstId, const int* a_remapId, const int* a_realInstId)
 {
   printf("InstanceMeshes\n");
+  if (!init) {
+    return;
+  }
 
   for (int n = 0; n < a_instNum; n++) {
     for (auto mid : meshIdToReal[a_mesh_id]) {

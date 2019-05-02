@@ -37,11 +37,9 @@ struct Vertex {
 StructuredBuffer<Vertex> Vertices : register(t0, space1);
 StructuredBuffer<uint> Indices : register(t0, space2);
 
-cbuffer PerFrame : register(b0, space0)
+cbuffer PerInstance : register(b0, space0)
 {
-    float3 A;
-    float3 B;
-    float3 C;
+    float3x3 normM;
 }
 
 float3 linearToSrgb(float3 c)
@@ -95,7 +93,7 @@ void rayGen()
     TraceRay( gRtScene, 0 /*rayFlags*/, 0xFF, 0 /* ray index*/, 2, 0, ray, payload );
     
     
-    float3 col = linearToSrgb(payload.color);
+    float3 col = payload.color;//linearToSrgb(payload.color);
     /*
     if (view[0][0] == 1.0 &&
         view[1][0] == 2.0 &&
@@ -120,9 +118,25 @@ void triangleChs(inout RayPayload payload, in BuiltInTriangleIntersectionAttribu
 {
     uint vertId = 3 * PrimitiveIndex();
     float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
-    payload.color = Vertices[Indices[vertId + 0]].normal * barycentrics.x +
+    float3 normal = Vertices[Indices[vertId + 0]].normal * barycentrics.x +
                     Vertices[Indices[vertId + 1]].normal * barycentrics.y +
                     Vertices[Indices[vertId + 2]].normal * barycentrics.z;
+    normal = normalize(normal);
+    normal = mul(normM, normal);
+    //normal = normalize(normal);
+    float3 dir = float3(-1, 1, 1);
+    dir = normalize(dir);
+
+    //payload.color = max(dot(normal, dir), 0) * float3(1, 1, 1);
+/*
+    if (normM[0][1] == 2) {
+        payload.color = float3(0, 1, 0);
+    } else {
+        //payload.color = normal * 0.5 + float3(0.5, 0.5, 0.5);
+        payload.color = float3(1, 0, 0);
+    }*/
+    //payload.color = normal * 0.5 + float3(0.5, 0.5, 0.5);    
+    payload.color = float3(1, 1, 1) * dot(normal, dir);
 }
 
 struct ShadowPayload
