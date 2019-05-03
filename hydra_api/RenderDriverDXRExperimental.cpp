@@ -582,7 +582,7 @@ RootSignatureDesc createRayGenRootDesc()
 RootSignatureDesc createTriangleHitRootDesc()
 {
   RootSignatureDesc desc;
-  desc.range.resize(2);
+  desc.range.resize(3);
   desc.range[0].BaseShaderRegister = 0;
   desc.range[0].NumDescriptors = 1;
   desc.range[0].RegisterSpace = 1;
@@ -594,15 +594,26 @@ RootSignatureDesc createTriangleHitRootDesc()
   desc.range[1].RegisterSpace = 2;
   desc.range[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
   desc.range[1].OffsetInDescriptorsFromTableStart = 1;
-  
-  desc.rootParams.resize(2);
+
+  // gRtScene
+  desc.range[2].BaseShaderRegister = 0;
+  desc.range[2].NumDescriptors = 1;
+  desc.range[2].RegisterSpace = 0;
+  desc.range[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+  desc.range[2].OffsetInDescriptorsFromTableStart = 1;
+
+  desc.rootParams.resize(3);
   desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-  desc.rootParams[0].DescriptorTable.NumDescriptorRanges = desc.range.size();
+  desc.rootParams[0].DescriptorTable.NumDescriptorRanges = desc.range.size() - 1;
   desc.rootParams[0].DescriptorTable.pDescriptorRanges = desc.range.data();
 
   desc.rootParams[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
   desc.rootParams[1].Descriptor.RegisterSpace = 0;
   desc.rootParams[1].Descriptor.ShaderRegister = 0;
+
+  desc.rootParams[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+  desc.rootParams[2].DescriptorTable.NumDescriptorRanges = 1;
+  desc.rootParams[2].DescriptorTable.pDescriptorRanges = desc.range.data() + 2;
   
   
   desc.desc.NumParameters = desc.rootParams.size();
@@ -846,7 +857,7 @@ void RD_DXR_Experimental::createRtPipelineState()
   subobjects[index++] = emptyRootAssociation.subobject; // 11 Associate empty root sig to Plane Hit Group and Miss shader
 
   // Bind the payload size to all programs
-  ShaderConfig primaryShaderConfig(sizeof(float) * 2, sizeof(float) * 3);
+  ShaderConfig primaryShaderConfig(sizeof(float) * 2, sizeof(int) + sizeof(float) * (3 * 5 + 2 * 1));
   subobjects[index] = primaryShaderConfig.subobject; // 12
 
   uint32_t primaryShaderConfigIndex = index++;
@@ -855,7 +866,7 @@ void RD_DXR_Experimental::createRtPipelineState()
   subobjects[index++] = primaryConfigAssociation.subobject; // 13 Associate shader config to all programs
 
   // Create the pipeline config
-  PipelineConfig config(2); // maxRecursionDepth - 1 TraceRay() from the ray-gen, 1 TraceRay() from the primary hit-shader
+  PipelineConfig config(5); // maxRecursionDepth - 1 TraceRay() from the ray-gen, 1 TraceRay() from the primary hit-shader
   subobjects[index++] = config.subobject; // 14
 
   // Create the global root signature and store the empty signature
@@ -887,7 +898,7 @@ vector<ShaderTableEntry> RD_DXR_Experimental::GetShaderTableEntryStructure() {
   };
 
   for (int i = 0; i < instancesList.size(); i++) {
-    entries.push_back({ kTriHitGroup, vector<D3D12_GPU_VIRTUAL_ADDRESS>{ heapStart + mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * 2 * (i + 1), mpConstantBuffer[i]->GetGPUVirtualAddress()} });
+    entries.push_back({ kTriHitGroup, vector<D3D12_GPU_VIRTUAL_ADDRESS>{ heapStart + mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * 2 * (i + 1), mpConstantBuffer[i]->GetGPUVirtualAddress(), heapStart} });
     entries.push_back({ kShadowHitGroup, vector<D3D12_GPU_VIRTUAL_ADDRESS>{} });
   }
 
@@ -1056,6 +1067,12 @@ void RD_DXR_Experimental::createShaderResources()
 //////////////////////////////////////////////////////////////////////////
 // Tutorial 10
 //////////////////////////////////////////////////////////////////////////
+struct PerInstance {
+  mat4 model;
+  float mat[12];
+  vec3 color;
+};
+
 void RD_DXR_Experimental::createConstantBuffers()
 {
   mpConstantBuffer.clear();
@@ -1064,25 +1081,59 @@ void RD_DXR_Experimental::createConstantBuffers()
   int i = 0;
 
   for (auto inst : instancesList) {
-  
+
     mat3 model;
 
     for (int x = 0; x < 3; x++)
-    for (int y = 0; y < 3; y++) {
-      model[x][y] = inst.tr[y][x];
+      for (int y = 0; y < 3; y++) {
+        model[x][y] = inst.tr[x][y];
+      }
+
+    mat3 bufferData = glm::inverseTranspose(model);
+    vector<float> finalData;
+    for (int x = 0; x < 3; x++)
+    for (int y = 0; y < 4; y++) {
+      if (y == 3) {
+        finalData.push_back(0);
+      } else {
+        finalData.push_back(bufferData[x][y]);
+      }
     }
+    
+    PerInstance pinst;
 
-    mat3 bufferData = glm::inverse(model);
-    mat4 finalData(bufferData);
+    vector<vec3> colors = {
+      vec3(0.5, 0, 0),
+      vec3(0.5, 0.5, 0),
+      vec3(0.5, 0.5, 0.5),
+      vec3(0, 0.5, 0),
+      vec3(0.5, 0, 0.5),
+      vec3(0, 0, 0.5),
+      vec3(1, 0, 0),
+      vec3(1, 1, 0),
+      vec3(1, 1, 1),
+      vec3(0, 1, 0),
+      vec3(1, 0, 1),
+      vec3(0, 0, 1),
+      vec3(1, 0.5, 0.5),
+      vec3(1, 1, 0.5),
+      vec3(1, 1, 1),
+      vec3(0.5, 1, 0.5),
+      vec3(1, 0.5, 1),
+      vec3(0.5, 0.5, 1),
+    };
 
-    const uint32_t bufferSize = sizeof(finalData);
+    memcpy(pinst.mat, finalData.data(), sizeof(pinst.mat));
+    pinst.color = colors[i % colors.size()];
+    pinst.model = (inst.tr);
+
+    const uint32_t bufferSize = sizeof(PerInstance);
     
     mpConstantBuffer[i] = (createBuffer(mpDevice, bufferSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps));
     uint8_t* pData;
     d3d_call(mpConstantBuffer[i]->Map(0, nullptr, (void**)&pData));
-    float data[] = {1, 0, 0, 0, 2, 0, 0, 0, 0, 1, 0, 0 };
-    memcpy(pData, &finalData, sizeof(bufferData));
-    mpConstantBuffer[i]->Unmap(0, nullptr);
+    
+    memcpy(pData, &pinst, sizeof(PerInstance));
     mpConstantBuffer[i]->Unmap(0, nullptr);
     i++;
   }
@@ -1095,11 +1146,12 @@ void RD_DXR_Experimental::createCameraConstantBuffers() {
   };
 
   size_t i = 0;
-  const uint32_t bufferSize = sizeof(bufferData);
+  const uint32_t bufferSize = sizeof(bufferData) + sizeof(int);
   mpCameraConstantBuffer[i] = createBuffer(mpDevice, bufferSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
   uint8_t* pData;
   d3d_call(mpCameraConstantBuffer[i]->Map(0, nullptr, (void**)&pData));
   memcpy(pData, &bufferData[i], sizeof(bufferData));
+  memcpy(pData + sizeof(bufferData), &frame, sizeof(int));
   mpCameraConstantBuffer[i]->Unmap(0, nullptr);
 }
 
@@ -1114,8 +1166,10 @@ void RD_DXR_Experimental::updateCameraConstantBuffers(mat4 proj, mat4 view) {
     uint8_t* pData;
     d3d_call(mpCameraConstantBuffer[i]->Map(0, nullptr, (void**)&pData));
     memcpy(pData, &bufferData[i], sizeof(bufferData));
+    memcpy(pData + sizeof(bufferData), &frame, sizeof(int));
     mpCameraConstantBuffer[i]->Unmap(0, nullptr);
   }
+  frame++;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1144,6 +1198,8 @@ HRDriverAllocInfo RD_DXR_Experimental::AllocAll(HRDriverAllocInfo a_info)
   GetClientRect(mainWindowHWND, &r);
   int g_width = r.right - r.left;
   int g_height = r.bottom - r.top;
+
+  frame = 1;
 
   initDXR(mainWindowHWND, g_width, g_height);        // Tutorial 02
   vector<vec3> vertices =
@@ -1351,7 +1407,8 @@ bool RD_DXR_Experimental::UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode
 
   const float *read_ptr = a_input.pos4f;
   const float *read_ptr_normal = a_input.norm4f;
-
+  const float *read_ptr_tan4f = a_input.tan4f;
+  
   const vec3 colors[] = {
     vec3(1, 0, 0),
     vec3(1, 1, 0),
@@ -1368,11 +1425,14 @@ bool RD_DXR_Experimental::UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode
   for (auto &v : vertex) {
     memcpy(&v.pos, read_ptr, sizeof(v.pos));
     memcpy(&v.normal, read_ptr_normal, sizeof(v.normal));
+    memcpy(&v.tangent, read_ptr_tan4f, sizeof(v.tangent));
 
+    v.tangent = normalize(v.tangent);
     v.normal = normalize(v.normal);
 
     read_ptr += 4;
     read_ptr_normal += 4;
+    read_ptr_tan4f += 4;
   }
 
   for (int32_t batchId = 0; batchId < a_listSize; batchId++)

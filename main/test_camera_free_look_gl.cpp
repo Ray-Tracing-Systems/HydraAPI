@@ -35,8 +35,8 @@ using namespace HydraXMLHelpers;
 
 GLFWwindow* g_window = nullptr;
 Input g_input;
-int   g_width  = 1024;
-int   g_height = 1024;
+int   g_width  = 1920;
+int   g_height = 1080;
 int   g_ssao = 1;
 int   g_lightgeo = 0;
 static int g_filling = 0;

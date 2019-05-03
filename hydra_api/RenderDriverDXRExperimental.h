@@ -35,6 +35,7 @@ struct AccelerationStructureBuffers
 struct Vertex {
   vec3 pos;
   vec3 normal;
+  vec3 tangent;
   vec2 tex_coord;
 };
 
@@ -100,6 +101,7 @@ protected:
   float camFarPlane;
   int   m_width;
   int   m_height;
+public: int frame;
 
   void initDXR(HWND winHandle, uint32_t winWidth, uint32_t winHeight);
   uint32_t beginFrame();

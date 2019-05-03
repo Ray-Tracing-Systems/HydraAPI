@@ -31,6 +31,7 @@ RWTexture2D<float4> gOutput : register(u0);
 struct Vertex {
   float3 pos;
   float3 normal;
+  float3 tangent;
   float2 tex_coord;
 };
 
@@ -39,7 +40,9 @@ StructuredBuffer<uint> Indices : register(t0, space2);
 
 cbuffer PerInstance : register(b0, space0)
 {
+    float4x4 model;
     float3x3 normM;
+    float3 color;
 }
 
 float3 linearToSrgb(float3 c)
@@ -54,14 +57,50 @@ float3 linearToSrgb(float3 c)
 
 struct RayPayload
 {
+    float3 raydir;
     float3 color;
+    float3 normal, pos, tangent;
+    int depth;
+    float2 dims;
 };
 
 cbuffer Camera : register(b0, space1)
 {
     matrix projI;
     matrix viewI;
+    int frame;
 }
+
+float2 rand_2_0004(in float2 uv)
+{
+    float noiseX = (frac(sin(dot(uv, float2(12.9898,78.233)      )) * 43758.5453));
+    float noiseY = (frac(sin(dot(uv, float2(12.9898,78.233) * 2.0)) * 43758.5453));
+    return float2(noiseX, noiseY);
+}
+
+static const float PI = 3.14159265f;
+
+float3 UniformSampleHemisphere(float u1, float u2)
+{
+    const float r = sqrt(1.0f - u1 * u1);
+    const float phi = 2 * PI * u2;
+ 
+    return normalize(float3(cos(phi) * r, sin(phi) * r, u1));
+}
+
+float3 RandomHemiDir(in float3 n, in float3 t , in float2 seed) {
+    float3 ret;
+    seed = abs(seed);
+    float3 vhemi = UniformSampleHemisphere(seed.x, seed.y);
+
+    float3 b = cross(t, n);
+    float3x3 rot = float3x3(t.x, b.x, n.x,
+                            t.y, b.y, n.y,
+                            t.z, b.z, n.z);
+    ret = mul(rot, vhemi);
+    return ret;
+}
+
 
 [shader("raygeneration")]
 void rayGen()
@@ -90,10 +129,20 @@ void rayGen()
     ray.TMax = 100000;
 
     RayPayload payload;
+    payload.raydir = normalize(ray.Direction); 
+    payload.color = 0;
+    
+//    for (int i = 0; i < MAX_DEPTH; i++) {
+//        stack[i].nrays = 0;
+//    }
+
+    payload.dims = rand_2_0004(crd / (float2)dims);
+    payload.dims += rand_2_0004(frame * float2(3.12354, 2.1232));
+    payload.depth = 1;
     TraceRay( gRtScene, 0 /*rayFlags*/, 0xFF, 0 /* ray index*/, 2, 0, ray, payload );
+
     
-    
-    float3 col = payload.color;//linearToSrgb(payload.color);
+    float3 col = linearToSrgb(payload.color);
     /*
     if (view[0][0] == 1.0 &&
         view[1][0] == 2.0 &&
@@ -104,39 +153,98 @@ void rayGen()
         gOutput[launchIndex.xy] = float4(1,0,0,1);    
     }*/
     //gOutput[launchIndex.xy] = float4(1,0,0,1);
-    gOutput[launchIndex.xy] = float4(col, 1);
+    
+    gOutput[launchIndex.xy] = (gOutput[launchIndex.xy] * (frame - 1) + float4(col, 1)) / frame;
 }
 
 [shader("miss")]
 void miss(inout RayPayload payload)
 {
-    payload.color = float3(0.4, 0.6, 0.2);
+    float ndotl = dot(payload.raydir, normalize(float3(0, 1, 2)));
+    if (ndotl >= 0.95 && ndotl <= 1.0) {
+        payload.color = float3(1, 1, 1);
+    } else {
+        payload.color = 0.1 * float3(0.1, 0.2, 0.4);//0.2 * lerp(float3(1,0,0), float3(0,1,0), float3(1,1,1) * (0.5 + 0.5 * sin(ndotl* 20)));//float3(0.2, 0.3, 0.5);
+    }
+
+    payload.color *= 200;
+}
+
+void ComputeVertexAttribs(in float3 barycentrics, out float3 normal, out float3 tangent, out float3 pos) {
+    uint vertId = 3 * PrimitiveIndex();
+    normal =        Vertices[Indices[vertId + 0]].normal * barycentrics.x +
+                    Vertices[Indices[vertId + 1]].normal * barycentrics.y +
+                    Vertices[Indices[vertId + 2]].normal * barycentrics.z;
+    tangent =       Vertices[Indices[vertId + 0]].tangent * barycentrics.x +
+                    Vertices[Indices[vertId + 1]].tangent * barycentrics.y +
+                    Vertices[Indices[vertId + 2]].tangent * barycentrics.z;
+    pos    =        Vertices[Indices[vertId + 0]].pos * barycentrics.x +
+                    Vertices[Indices[vertId + 1]].pos * barycentrics.y +
+                    Vertices[Indices[vertId + 2]].pos * barycentrics.z;
+    
+    tangent = mul(normM, tangent);
+    normal = mul(normM, normal);
+    float4 pos4 = mul(model, float4(pos, 1));
+    pos = pos4.xyz / pos4.w;
+
+    tangent = normalize(tangent);
+    normal = normalize(normal);
 }
 
 [shader("closesthit")]
 void triangleChs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
-    uint vertId = 3 * PrimitiveIndex();
+    const int MAX_DEPTH = 5;
+    const int PER_DEPTH_RAYS = 2;
+    
+    if (payload.depth >= MAX_DEPTH) {
+        return;
+    }
+    
     float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
-    float3 normal = Vertices[Indices[vertId + 0]].normal * barycentrics.x +
-                    Vertices[Indices[vertId + 1]].normal * barycentrics.y +
-                    Vertices[Indices[vertId + 2]].normal * barycentrics.z;
-    normal = normalize(normal);
-    normal = mul(normM, normal);
+    
+    float3 normal, tangent, pos;
+    
+    ComputeVertexAttribs(barycentrics, normal, tangent, pos);
+    
+
+    RayPayload npayload;
+    npayload.tangent = tangent;
+    npayload.normal = normal;
+    npayload.pos = pos;
+    npayload.depth = payload.depth + 1;
+    npayload.color = 0;
     //normal = normalize(normal);
     float3 dir = float3(-1, 1, 1);
     dir = normalize(dir);
+    float3 accum = 0;
 
-    //payload.color = max(dot(normal, dir), 0) * float3(1, 1, 1);
-/*
-    if (normM[0][1] == 2) {
-        payload.color = float3(0, 1, 0);
-    } else {
-        //payload.color = normal * 0.5 + float3(0.5, 0.5, 0.5);
-        payload.color = float3(1, 0, 0);
-    }*/
-    //payload.color = normal * 0.5 + float3(0.5, 0.5, 0.5);    
-    payload.color = float3(1, 1, 1) * dot(normal, dir);
+    npayload.dims = payload.dims;
+        
+    for (int nrays = 0; nrays < PER_DEPTH_RAYS; nrays++) {
+        RayDesc ray;
+        
+        ray.Origin = pos + normal * 0.00001;
+
+        float2 seed = rand_2_0004(npayload.dims);
+        ray.Direction = RandomHemiDir(normal, tangent, seed);
+        npayload.dims += seed * float2(1.12312, -3.78645);
+        ray.TMin = 0;
+        ray.TMax = 10000000;
+        npayload.raydir = ray.Direction;
+        npayload.color = 0;
+    
+        TraceRay( gRtScene, 0 , 0xFF, 0 , 2, 0, ray, npayload );
+        
+        //accum += abs(min(dot(normal, ray.Direction), 0)) * float3(1, 1, 1);
+        accum += npayload.color *  max(dot(ray.Direction, normal), 0);
+    }
+    payload.color += accum / PER_DEPTH_RAYS;
+    payload.dims = npayload.dims;
+
+    //payload.color = pos;
+    //payload.color = tangents * 0.5 + float3(0.5, 0.5, 0.5);    
+    //payload.color = float3(1, 1, 1) * dot(normal, dir);
 }
 
 struct ShadowPayload
@@ -164,7 +272,7 @@ void planeChs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes
     TraceRay(gRtScene, 0  /*rayFlags*/, 0xFF, 1 /* ray index*/, 0, 1, ray, shadowPayload);
 
     float factor = shadowPayload.hit ? 0.1 : 1.0;
-    payload.color = float4(0.9f, 0.9f, 0.9f, 1.0f) * factor;
+    payload.color = 0;//float4(0.9f, 0.9f, 0.9f, 1.0f) * factor;
 }
 
 [shader("closesthit")]
