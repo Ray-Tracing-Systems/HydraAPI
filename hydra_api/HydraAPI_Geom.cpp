@@ -1090,7 +1090,7 @@ HAPI HRMeshInfo  hrMeshGetInfo(HRMeshRef a_mesh)
   {
     mig_data.batches     = pImpl->MList();
     info.batchesList     = mig_data.batches.data();
-    info.batchesListSize = mig_data.batches.size();
+    info.batchesListSize = int32_t(mig_data.batches.size());
     
     // create wchar_t** pointers ...
     //
@@ -1111,7 +1111,7 @@ HAPI HRMeshInfo  hrMeshGetInfo(HRMeshRef a_mesh)
     }
     
     info.matNamesList     = mig_data.mptrs.data();
-    info.matNamesListSize = mig_data.mptrs.size();
+    info.matNamesListSize = int32_t(mig_data.mptrs.size());
   
     auto box = pImpl->getBBox();
     info.boxMin[0] = box.x_min;
@@ -1122,8 +1122,8 @@ HAPI HRMeshInfo  hrMeshGetInfo(HRMeshRef a_mesh)
     info.boxMax[1] = box.y_max;
     info.boxMax[2] = box.z_max;
   
-    info.indicesNum = pImpl->vertNum();
-    info.vertNum    = pImpl->indNum();
+    info.indicesNum = int32_t(pImpl->vertNum());
+    info.vertNum    = int32_t(pImpl->indNum());
   }
   else
   {
@@ -1275,7 +1275,7 @@ HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, int indexNum)
   }
   
   HRMesh::InputTriMesh& mesh = pMesh->m_input;
-  const int vertexCount      = pMesh->m_input.verticesPos.size()/4;
+  const int vertexCount      = int(pMesh->m_input.verticesPos.size()/4);
   mesh.verticesTangent.resize(vertexCount*4); // #TODO: not 0-th element, last vertex from prev append!
   ComputeVertexTangents(mesh, indexNum);
 }

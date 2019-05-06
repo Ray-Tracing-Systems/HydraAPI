@@ -18,7 +18,7 @@
 
 namespace HydraLiteMath 
 {
-  const float eps        = 1e-5;
+  const float eps = 1e-5f;
   //const float DEG_TO_RAD = float(3.14159265358979323846f) / 180.0f;
   using std::isfinite;
   struct float2
