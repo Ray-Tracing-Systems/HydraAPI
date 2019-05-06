@@ -1063,15 +1063,6 @@ HAPI void* hrMeshGetPrimitiveAttribPointer(HRMeshRef a_mesh, const wchar_t* attr
 
 }
 
-
-struct MeshGetInfoGlobalData
-{
-  std::vector<const wchar_t*> mptrs;
-  std::wstring                mlist;
-  std::vector<HRBatchInfo>    batches;
-} mig_data;
-
-
 std::wstring s2ws(const std::string& s);
 
 HAPI HRMeshInfo  hrMeshGetInfo(HRMeshRef a_mesh)
@@ -1084,8 +1075,9 @@ HAPI HRMeshInfo  hrMeshGetInfo(HRMeshRef a_mesh)
 
   HRMesh::InputTriMesh& mesh = pMesh->m_input;
   
-  auto pImpl = pMesh->pImpl;
-  
+  auto pImpl     = pMesh->pImpl;
+  auto& mig_data = pMesh->mig_data;
+
   if(pImpl != nullptr)
   {
     mig_data.batches     = pImpl->MList();

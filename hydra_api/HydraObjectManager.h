@@ -260,6 +260,13 @@ struct HRMesh : public HRObject<IHRMesh>
   InputTriMeshPointers m_inputPointers;
   int                  m_allMeshMatId;
   bool                 m_empty;
+
+  struct MeshGetInfoGlobalData
+  {
+    std::vector<const wchar_t*> mptrs;
+    std::wstring                mlist;
+    std::vector<HRBatchInfo>    batches;
+  } mig_data;
 };
 
 struct HRLight : public HRObject<IHRLight>
