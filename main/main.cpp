@@ -173,7 +173,7 @@ int main(int argc, const char** argv)
   {
     //GEO_TESTS::test_001_mesh_from_memory();
     //demo_01_plane_box();
-    window_main_free_look(L"/home/frol/PROG/CLSP_gitlab/database/statex_00002.xml", L"opengl1Debug");
+    //window_main_free_look(L"/home/frol/PROG/CLSP_gitlab/database/statex_00002.xml", L"opengl1Debug");
     
     //run_all_api_tests();
     //run_all_geo_tests();
@@ -182,15 +182,50 @@ int main(int argc, const char** argv)
 	  //run_all_alg_tests();
 	  //run_all_ipp_tests();
 
-    //{
-    //  hrSceneLibraryOpen(L"/home/frol/PROG/HydraAPI/temp", HR_WRITE_DISCARD);
-    //  HRMeshRef mesh = hrMeshCreateFromFile(L"/home/frol/PROG/HydraAPI/main/data/meshes/bigtree.vsgf");
-    //  hrMeshSaveVSGFCompressed(mesh, L"/home/frol/PROG/CLSP_gitlab/database/models/various/bigtree.vsgfc");
-    //
-    //  HRMeshInfo info = hrMeshGetInfo(mesh);
-    //  std::cout << "info.boxMin[0] = " << info.boxMin[0] << std::endl;
-    //  std::cout << "info.boxMax[0] = " << info.boxMax[0] << std::endl;
-    //}
+    {
+      hrSceneLibraryOpen(L"./temp", HR_WRITE_DISCARD);
+      HRMeshRef mesh1 = hrMeshCreateFromFileDL(L"E:/PROG/CLSP/database/models/various/bunny.vsgfc");
+      HRMeshRef mesh2 = hrMeshCreateFromFileDL(L"E:/PROG/CLSP/database/models/chairs/blendswap_78757_office.vsgfc");
+      HRMeshRef mesh3 = hrMeshCreateFromFileDL(L"E:/PROG/CLSP/database/models/chairs/blendswap_918.vsgfc");
+      HRMeshRef mesh4 = hrMeshCreateFromFileDL(L"E:/PROG/CLSP/database/models/tables/blendswap_69351_kitchen.vsgfc");
+     
+      HRMeshInfo info1 = hrMeshGetInfo(mesh1);
+      HRMeshInfo info2 = hrMeshGetInfo(mesh2);
+      HRMeshInfo info3 = hrMeshGetInfo(mesh3);
+      HRMeshInfo info4 = hrMeshGetInfo(mesh4);
+
+      std::cout << "info1.boxMin[0] = " << info1.boxMin[0] << std::endl;
+      std::cout << "info1.boxMax[0] = " << info1.boxMax[0] << std::endl;
+
+      for (int i = 0; i < info1.matNamesListSize; i++)
+        std::wcout << info1.batchesList[i].matId << "\t:\t" << info1.matNamesList[i] << std::endl;
+
+      std::cout << std::endl;
+
+      std::cout << "info2.boxMin[0] = " << info2.boxMin[0] << std::endl;
+      std::cout << "info2.boxMax[0] = " << info2.boxMax[0] << std::endl;
+
+      for (int i = 0; i < info2.matNamesListSize; i++)
+        std::wcout << info2.batchesList[i].matId << "\t:\t" << info2.matNamesList[i] << std::endl;
+
+      std::cout << std::endl;
+
+      std::cout << "info3.boxMin[0] = " << info3.boxMin[0] << std::endl;
+      std::cout << "info3.boxMax[0] = " << info3.boxMax[0] << std::endl;
+
+      for (int i = 0; i < info3.matNamesListSize; i++)
+        std::wcout << info3.batchesList[i].matId << "\t:\t" << info3.matNamesList[i] << std::endl;
+
+      std::cout << std::endl;
+
+      std::cout << "info4.boxMin[0] = " << info4.boxMin[0] << std::endl;
+      std::cout << "info4.boxMax[0] = " << info4.boxMax[0] << std::endl;
+
+      for (int i = 0; i < info4.matNamesListSize; i++)
+        std::wcout << info4.batchesList[i].matId << "\t:\t" << info4.matNamesList[i] << std::endl;
+
+      std::cout << std::endl;
+    }
     
     //test40_several_changes();
     
