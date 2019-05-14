@@ -16,11 +16,22 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 find_package(FreeImage REQUIRED)
 include_directories(${FREEIMAGE_INCLUDE_DIRS})
 if(WIN32)
-	set(LIBS ${LIBS} ${FREEIMAGE_LIBRARIES} ${CMAKE_SOURCE_DIR}/../../hydra_api/x64/Release/HydraAPI.lib ${CMAKE_SOURCE_DIR}/../../hydra_api/x64/Release/ies_parser.lib
-											${CMAKE_SOURCE_DIR}/../../hydra_api/x64/Release/clew.lib ${CMAKE_SOURCE_DIR}/../../bin/mikktspace.lib)
+	set(LIBS
+					${LIBS}
+					${FREEIMAGE_LIBRARIES}
+					${CMAKE_SOURCE_DIR}/../../hydra_api/x64/Release/HydraAPI.lib
+					${CMAKE_SOURCE_DIR}/../../hydra_api/x64/Release/ies_parser.lib
+					${CMAKE_SOURCE_DIR}/../../hydra_api/x64/Release/clew.lib
+					${CMAKE_SOURCE_DIR}/../../bin/mikktspace.lib
+					${CMAKE_SOURCE_DIR}/../../bin/corto.lib)
 else()
-	set(LIBS ${LIBS} ${FREEIMAGE_LIBRARIES} ${CMAKE_SOURCE_DIR}/../../bin/libhydra_api.a ${CMAKE_SOURCE_DIR}/../../bin/libies_parser.a
-			${CMAKE_SOURCE_DIR}/../../bin/libmikktspace.a )
+	set(LIBS
+					${LIBS}
+					${FREEIMAGE_LIBRARIES}
+					${CMAKE_SOURCE_DIR}/../../bin/libhydra_api.a
+					${CMAKE_SOURCE_DIR}/../../bin/libies_parser.a
+					${CMAKE_SOURCE_DIR}/../../bin/libmikktspace.a
+					${CMAKE_SOURCE_DIR}/../../bin/libcorto.a)
 
   find_package(glfw3 REQUIRED)
   include_directories(${GLFW_INCLUDE_DIRS})
