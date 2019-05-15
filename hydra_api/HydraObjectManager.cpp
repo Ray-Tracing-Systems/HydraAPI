@@ -52,7 +52,7 @@ void HRObjectManager::init(const wchar_t* a_className)
   m_useLocalPath               = false;
   m_copyTexFilesToLocalStorage = false;
   m_sortTriIndices             = false;
-  m_attachMode                    = false;
+  m_attachMode                 = false;
   m_computeBBoxes              = false;
 
   std::wistringstream instr(a_className);
@@ -304,6 +304,9 @@ void HRObjectManager::CommitChanges(pugi::xml_document& a_from, pugi::xml_docume
 
 void clear_node(pugi::xml_node a_xmlNode)
 {
+  if (a_xmlNode == nullptr)
+    return;
+
   // clear all attribures
   //
   for (pugi::xml_attribute attr = a_xmlNode.first_attribute(); attr; )
@@ -319,6 +322,9 @@ void clear_node(pugi::xml_node a_xmlNode)
 
 void clear_node_childs(pugi::xml_node a_xmlNode)
 {
+  if (a_xmlNode == nullptr)
+    return;
+
   for (pugi::xml_node child = a_xmlNode.first_child(); child;)
   {
     pugi::xml_node next = child.next_sibling();
@@ -653,6 +659,8 @@ void HRSceneData::init(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock)
   
   if(!a_attachMode)                                       // will do this init later inside HRSceneData::init_existing when open scene
     init_virtual_buffer(false, a_pVBSysMutexLock);
+
+  m_initIsDone = true;
 }
 
 void HRSceneData::init_existing(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock)
@@ -676,6 +684,8 @@ void HRSceneData::init_existing(bool a_attachMode, HRSystemMutex* a_pVBSysMutexL
   m_trashNode = m_xmlDocChanges.child(L"trash");
   
   init_virtual_buffer(a_attachMode, a_pVBSysMutexLock);
+
+  m_initIsDone = true;
 }
 
 void HRSceneData::init_virtual_buffer(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock)
@@ -699,13 +709,24 @@ void HRSceneData::init_virtual_buffer(bool a_attachMode, HRSystemMutex* a_pVBSys
 
 void HRSceneData::clear()
 {
+  if (textures.size() == 0 && meshes.size() == 0 && materials.size() == 0 && cameras.size() == 0 && lights.size() == 0 && m_commitId == 0 && !m_initIsDone) // was cleared before
+    return;
+      
+  //std::cout << std::endl;
+  //std::cout << "textures.size()  = " << textures.size()  << std::endl;
+  //std::cout << "meshes.size()    = " << meshes.size()    << std::endl;
+  //std::cout << "materials.size() = " << materials.size() << std::endl;
+  //std::cout << "cameras.size()   = " << cameras.size()   << std::endl;
+  //std::cout << "lights.size()    = " << lights.size()    << std::endl;
+  //std::cout << "m_commitId       = " << m_commitId       << std::endl;      
+
   meshes.clear();
   lights.clear();
   materials.clear();
   cameras.clear();
   textures.clear();
 
-  clear_node(m_texturesLib);
+  clear_node(m_texturesLib);  
   clear_node(m_materialsLib);
   clear_node(m_lightsLib);
   clear_node(m_cameraLib);
@@ -728,6 +749,8 @@ void HRSceneData::clear()
 
   m_materialToMeshDependency.clear();
   m_shadowCatchers.clear();
+
+  m_initIsDone = false;
 }
 
 void HRSceneData::clear_changes()

@@ -76,7 +76,7 @@ std::wstring ToWString(unsigned int i)
 HAPI void hrInit(const wchar_t* a_className)
 {
   FreeImage_Initialise(true);
-  g_objManager.destroy();
+  g_objManager.destroy();  // #TODO: check that is was actually init
   g_objManager.init(a_className);
   setlocale(LC_ALL, "C");
 }
@@ -206,6 +206,9 @@ HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMod
 
   if (a_openMode == HR_WRITE_DISCARD) // total clear of all objects
   {
+    if(!g_objManager.scnData.m_initIsDone)
+      g_objManager.scnData.init(false, g_objManager.m_pVBSysMutex);
+
     if (a_libPath != nullptr && !std::wstring(a_libPath).empty())
     {
     #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
@@ -1048,7 +1051,7 @@ HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pC
   std::wstring cngPath = outStr2.str();
   std::wstring newPath = outStr3.str();
 
-  g_objManager.scnData.m_xmlDoc.save_file(oldPath.c_str(), L"  ");
+  //g_objManager.scnData.m_xmlDoc.save_file(oldPath.c_str(), L"  ");
   g_objManager.m_tempPathToChangeFile = cngPath; // postpone g_objManager.scnData.m_xmlDocChanges.save_file(cngPath.c_str(), L"  ");
 
   hrCommit(a_pScn, a_pRender, a_pCam);
