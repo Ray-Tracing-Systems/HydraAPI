@@ -364,11 +364,7 @@ struct HRSceneData : public HRObject<IHRSceneData>
   static const int CAMERAS_RESERVE  = 100;
   static const int MESHES_RESERVE   = 10000;
 
-  HRSceneData() : pImpl(nullptr), m_commitId(0),
-                  m_texturesLib(nullptr), m_materialsLib(nullptr), m_lightsLib(nullptr), m_cameraLib(nullptr), m_geometryLib(nullptr), m_sceneNode(nullptr), m_settingsNode(nullptr), m_trashNode(nullptr), 
-                  m_texturesLibChanges(nullptr), m_materialsLibChanges(nullptr), m_lightsLibChanges(nullptr), m_cameraLibChanges(nullptr), m_geometryLibChanges(nullptr), m_sceneNodeChanges(nullptr), m_settingsNodeChanges(nullptr), 
-                  m_initIsDone(false) 
-                  { }
+  HRSceneData() : pImpl(nullptr), m_commitId(0) {}
 
   std::shared_ptr<IHRSceneData> pImpl;
 
@@ -421,9 +417,6 @@ struct HRSceneData : public HRObject<IHRSceneData>
   std::wstring m_path;
   std::wstring m_pathState;
   std::wstring m_fileState;
-
-  bool m_initIsDone;
-
 protected:
   void init_virtual_buffer(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock);
 };
