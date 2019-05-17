@@ -267,32 +267,22 @@ void FindNewObjects(ChangeList& objects, HRSceneInst& scn)
 
 }
 
-
-void InsertChangedIds(std::unordered_set<int32_t>& a_set, const std::unordered_set<int32_t>& a_usedByDRV, pugi::xml_node a_node, const wchar_t* a_childName)
+template<typename Container, typename MySet>
+void InsertObjectsThatWasChanged(const Container& a_container, MySet& a_set)
 {
-  for (pugi::xml_node node = a_node.first_child(); node != nullptr; node = node.next_sibling())
+  for(const auto& mesh : a_container)
   {
-    if (std::wstring(node.name()) != std::wstring(a_childName))
-      continue;
-
-    const int32_t id = node.attribute(L"id").as_int();
-    if (a_usedByDRV.find(id) != a_usedByDRV.end())
-      a_set.insert(id);
+    if(mesh.wasChanged)
+      a_set.insert(mesh.id);
   }
 }
 
 void FindOldObjectsThatWeNeedToUpdate(ChangeList& objects, HRSceneInst& scn)
 {
-  pugi::xml_node meshesChanges   = g_objManager.scnData.m_geometryLibChanges;
-  pugi::xml_node lightsChanges   = g_objManager.scnData.m_lightsLibChanges;
-  pugi::xml_node matsChanges     = g_objManager.scnData.m_materialsLibChanges;
-  pugi::xml_node texturesChanges = g_objManager.scnData.m_texturesLibChanges;
-
-  InsertChangedIds(objects.meshUsed,     scn.meshUsedByDrv,  meshesChanges, L"mesh");
-  InsertChangedIds(objects.lightUsed,    scn.lightUsedByDrv, lightsChanges, L"light");
-  InsertChangedIds(objects.matUsed,      scn.matUsedByDrv,   matsChanges, L"material");
-  InsertChangedIds(objects.texturesUsed, scn.texturesUsedByDrv, texturesChanges, L"texture");
-  InsertChangedIds(objects.texturesUsed, scn.texturesUsedByDrv, texturesChanges, L"texture_advanced");
+  InsertObjectsThatWasChanged(g_objManager.scnData.meshes,    objects.meshUsed);
+  InsertObjectsThatWasChanged(g_objManager.scnData.lights,    objects.lightUsed);
+  InsertObjectsThatWasChanged(g_objManager.scnData.materials, objects.matUsed);
+  InsertObjectsThatWasChanged(g_objManager.scnData.textures,  objects.texturesUsed);
 
   // AddMaterialsFromSceneRemapList
   //
@@ -538,6 +528,8 @@ int32_t HR_DriverUpdateTextures(HRSceneInst& scn, ChangeList& objList, IHRRender
     }
 
     texturesUpdated++;
+
+    g_objManager.scnData.textures[texId].wasChanged = false;
   }
 
   a_pDriver->EndTexturesUpdate();
@@ -573,6 +565,8 @@ int32_t HR_DriverUpdateMaterials(HRSceneInst& scn, ChangeList& objList, IHRRende
       if (std::wstring(L"shadow_catcher") == node.attribute(L"type").as_string())
         g_objManager.scnData.m_shadowCatchers.insert(matId);
       updatedMaterials++;
+
+      g_objManager.scnData.materials[matId].wasChanged = false;
     }
     else
       g_objManager.BadMaterialId(matId);
@@ -599,6 +593,8 @@ int32_t _hr_UtilityDriverUpdateMaterials(HRSceneInst& scn, IHRRenderDriver* a_pD
       pugi::xml_node node = g_objManager.scnData.materials[matId].xml_node_immediate();
       a_pDriver->UpdateMaterial(matId, node);
       updatedMaterials++;
+
+      g_objManager.scnData.materials[matId].wasChanged = false;
     }
     else
       g_objManager.BadMaterialId(matId);
@@ -629,6 +625,7 @@ int32_t HR_DriverUpdateLight(HRSceneInst& scn, ChangeList& objList, IHRRenderDri
       scn.lightUsedByDrv.insert(id);
       a_pDriver->UpdateLight(int32_t(id), node);
       updatedLights++;
+      g_objManager.scnData.lights[id].wasChanged = false;
     }
   }
 
@@ -952,6 +949,8 @@ void HR_DriverUpdateCamera(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
   HRCamera& cam = g_objManager.scnData.cameras[g_objManager.m_currCamId];
 
   a_pDriver->UpdateCamera(cam.xml_node_immediate());
+
+  cam.wasChanged = false;
 }
 
 void HR_DriverUpdateSettings(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
@@ -959,10 +958,11 @@ void HR_DriverUpdateSettings(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
   if (g_objManager.renderSettings.empty())
     return;
 
-
   auto& settings = g_objManager.renderSettings[g_objManager.m_currRenderId];
 
   a_pDriver->UpdateSettings(settings.xml_node_immediate());
+
+  settings.wasChanged = false;
 }
 
 

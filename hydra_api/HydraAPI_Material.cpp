@@ -251,8 +251,9 @@ HAPI void hrMaterialClose(HRMaterialRef a_pMat)
   auto matNode = pMat->xml_node_immediate();
   VerifyTex(a_pMat.id, matNode);
   
-  pMat->opened = false;
-  pMat->pImpl  = nullptr;
+  pMat->opened     = false;
+  pMat->pImpl      = nullptr;
+  pMat->wasChanged = true;
 }
 
 HAPI pugi::xml_node hrMaterialParamNode(HRMaterialRef a_matRef)

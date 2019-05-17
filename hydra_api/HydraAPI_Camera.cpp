@@ -103,7 +103,8 @@ HAPI void hrCameraClose(HRCameraRef a_pCam)
     return;
   }
 
-  pCam->opened = false;
+  pCam->opened     = false;
+  pCam->wasChanged = true;
 }
 
 HAPI pugi::xml_node hrCameraParamNode(HRCameraRef a_camRef)

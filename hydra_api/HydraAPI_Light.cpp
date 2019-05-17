@@ -626,8 +626,10 @@ bool HR_UpdateLightGeomAndMaterial(pugi::xml_node a_lightNode, const std::wstrin
 }
 
 
-void HR_UpdateLightsGeometryAndMaterial(pugi::xml_node a_lightLibChanges, pugi::xml_node a_lightLib, pugi::xml_node a_sceneInstances)
+void HR_UpdateLightsGeometryAndMaterial(pugi::xml_node a_lightLib, pugi::xml_node a_sceneInstances)
 {
+  //pugi::xml_node a_lightLibChanges
+
   // list lights
   //
   std::unordered_map<int32_t, pugi::xml_node> lightsHash;  // #TODO: form global hashes before each commit operation. Opt. this crap.
@@ -644,9 +646,12 @@ void HR_UpdateLightsGeometryAndMaterial(pugi::xml_node a_lightLibChanges, pugi::
   // iterate lights libChange to form lighNodes and lightsHash; Override (!!!) references in lightsHash with new ones that were changed in the last commit.
   //
   std::vector<pugi::xml_node> lighNodes; lighNodes.reserve(1000);
-  for (pugi::xml_node lightNode = a_lightLibChanges.first_child(); lightNode != nullptr; lightNode = lightNode.next_sibling())
+  //for (pugi::xml_node lightNode = a_lightLibChanges.first_child(); lightNode != nullptr; lightNode = lightNode.next_sibling())
+  for(auto& light : g_objManager.scnData.lights)
   {
-    int32_t lightId = lightNode.attribute(L"id").as_int();
+    const int32_t lightId = light.id;
+    const auto lightNode  = light.xml_node_immediate();
+    //int32_t lightId = lightNode.attribute(L"id").as_int();
     lighNodes.push_back(lightNode);
     lightsHash[lightId] = lightNode;
   }
