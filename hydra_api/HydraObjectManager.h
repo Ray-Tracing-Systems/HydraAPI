@@ -458,7 +458,29 @@ struct HRRender : public HRObject<IHRRender>
       m_pDriver->ClearAll();
     m_pDriver = nullptr;
     maxRaysPerPixel = 0;
+  
+    m_updatedTextures.clear();
+    m_updatedMaterials.clear();
+    m_updatedMeshes.clear();
+    m_updatedLights.clear();
+    
+    if(m_updatedTextures.size() == 0)
+      m_updatedTextures.reserve(1024);
+  
+    if(m_updatedMaterials.size() == 0)
+      m_updatedMaterials.reserve(4096);
+  
+    if(m_updatedMeshes.size() == 0)
+      m_updatedMeshes.reserve(1024);
+    
+    if(m_updatedLights.size() == 0)
+      m_updatedLights.reserve(256);
   }
+  
+  std::unordered_set<int32_t> m_updatedTextures;
+  std::unordered_set<int32_t> m_updatedMaterials;
+  std::unordered_set<int32_t> m_updatedMeshes;
+  std::unordered_set<int32_t> m_updatedLights;
 };
 
 

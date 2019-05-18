@@ -367,8 +367,9 @@ std::wstring ChunkName(const ChunkPointer& a_chunk);
 std::unique_ptr<IHRRenderDriver> CreateRenderFromString(const wchar_t *a_className, const wchar_t *a_options);
 
 struct HRSceneInst;
-void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver);
-void HR_DriverDraw(HRSceneInst& scn, IHRRenderDriver* a_pDriver);
+struct HRRender;
+void HR_DriverUpdate(HRSceneInst& scn, HRRender* a_pRender);
+void HR_DriverDraw(HRSceneInst& scn, HRRender* a_pRender);
 
 std::wstring HR_UtilityDriverStart(const wchar_t* state_path);
 std::wstring SaveFixedStateXML(pugi::xml_document &doc, const std::wstring &oldPath, const std::wstring &suffix);

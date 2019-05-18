@@ -257,118 +257,6 @@ void clear_node_childs(pugi::xml_node a_xmlNode)
   }
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/**
-\brief copy a_proto without its internal nodes. Only attributes are copied.
-\param a_to    - node data we want to copy
-\param a_proto - node where we want copy data from a_proto to.
-
-*/
-
-inline pugi::xml_node append_copy_lite(pugi::xml_node a_to, pugi::xml_node a_proto) ///< not deep (i.e. lite) copy for xml node
-{
-  const wchar_t* nodeName = a_proto.name();
-
-  pugi::xml_node copy = a_to.append_child(nodeName);
-  for (pugi::xml_attribute attr = a_proto.first_attribute(); attr != nullptr; attr = attr.next_attribute())
-    copy.append_copy(attr);
-  
-  return copy;
-}
-
-/**
-\brief copy a_proto data to nodeCopyTo by replacing all nodeCopyTo's internal data. nodeCopyTo is a child of libNodeTo
-\param a_proto    - node data we want to copy
-\param nodeCopyTo - node where we want copy data from a_proto to.
-\param libNodeTo  - parent of nodeCopyTo. Note that nodeCopyTo mat be null ,so we must pass libNodeTo explicit from some-where.
-\param a_lite     - make deep or lite copy
-
-*/
-
-inline pugi::xml_node replace_copy(pugi::xml_node a_proto, pugi::xml_node& nodeCopyTo, pugi::xml_node& libNodeTo, bool a_lite)
-{
-  if (nodeCopyTo == nullptr)
-  {
-    if (a_lite)
-      nodeCopyTo = append_copy_lite(libNodeTo, a_proto);
-    else
-      nodeCopyTo = libNodeTo.append_copy(a_proto);
-      //nodeCopyTo = libNodeTo.append_move(a_proto);
-  }
-  else
-  {
-    pugi::xml_node resNode = libNodeTo.insert_copy_after(a_proto, nodeCopyTo);
-    libNodeTo.remove_child(nodeCopyTo);
-    nodeCopyTo = resNode;
-  }
-
-  return nodeCopyTo;
-}
-
-
-
-inline pugi::xml_node lite_copy_node_to(pugi::xml_node a_proto, pugi::xml_node libNodeTo, pugi::xml_node& nodeCopyTo)
-{
-  pugi::xml_node resNode;
-
-  if (nodeCopyTo != nullptr)
-  {
-    resNode = libNodeTo.insert_copy_after(a_proto, nodeCopyTo); //#TODO implement lite version of insert_copy_after
-    libNodeTo.remove_child(nodeCopyTo);
-  }
-  else
-    resNode = append_copy_lite(libNodeTo, a_proto);
-
-  return resNode;
-}
-
-inline pugi::xml_node copy_node_to(pugi::xml_node a_proto, pugi::xml_node libNodeTo, pugi::xml_node& nodeCopyTo)
-{
-  pugi::xml_node resNode;
-
-  if (nodeCopyTo != nullptr)
-  {
-    resNode = libNodeTo.insert_copy_after(a_proto, nodeCopyTo); //#TODO implement lite version of insert_copy_after
-    libNodeTo.remove_child(nodeCopyTo);
-  }
-  else
-    resNode = libNodeTo.append_copy(a_proto);
-
-  return resNode;
-}
-
-pugi::xml_node HRSceneInst::append_instances_back(pugi::xml_node a_node)
-{
-  const wchar_t* sceneId     = a_node.attribute(L"id").value();
-  pugi::xml_node sceneToCopy = g_objManager.scnData.m_sceneNode.find_child_by_attribute(L"id", sceneId);
-
-  if (sceneToCopy == nullptr)
-    sceneToCopy = g_objManager.scnData.m_sceneNode.append_copy(a_node);
-
-  // #TODO: optimize this with special two-list scanning algorithm
-  //
-  std::unordered_map<std::wstring, pugi::xml_node> nodeByIdAndType;
-  for (pugi::xml_node inst = sceneToCopy.first_child(); inst != nullptr; inst = inst.next_sibling())
-  {
-    std::wstringstream ss;
-    ss << inst.attribute(L"id").as_int() << inst.name();
-    nodeByIdAndType[ss.str()] = inst;
-  }
-
-  for (pugi::xml_node inst = a_node.first_child(); inst != nullptr; inst = inst.next_sibling())
-  {
-    std::wstringstream ss;
-    ss << inst.attribute(L"id").as_int() << inst.name();
-    pugi::xml_node& nodeCopyTo = nodeByIdAndType[ss.str()];
-    //lite_copy_node_to(inst, sceneToCopy, nodeCopyTo);
-    copy_node_to(inst, sceneToCopy, nodeCopyTo);
-  }
-
-  return sceneToCopy; 
-}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -380,9 +268,9 @@ void HRSceneData::init(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock)
 {
   m_texturesLib  = m_xmlDoc.append_child(L"textures_lib");
   m_materialsLib = m_xmlDoc.append_child(L"materials_lib");
+  m_geometryLib  = m_xmlDoc.append_child(L"geometry_lib");
   m_lightsLib    = m_xmlDoc.append_child(L"lights_lib");
   m_cameraLib    = m_xmlDoc.append_child(L"cam_lib");
-  m_geometryLib  = m_xmlDoc.append_child(L"geometry_lib");
   m_settingsNode = m_xmlDoc.append_child(L"render_lib");
   m_sceneNode    = m_xmlDoc.append_child(L"scenes");
   

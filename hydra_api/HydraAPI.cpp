@@ -290,9 +290,10 @@ HAPI HRSceneLibraryFileInfo hrSceneLibraryExists(const wchar_t* a_libPath, wchar
 
   auto texturesLib  = xmlDoc.child(L"textures_lib");
   auto materialsLib = xmlDoc.child(L"materials_lib");
-  auto lightsLib    = xmlDoc.child(L"lights_lib");
-  auto cameraLib    = xmlDoc.child(L"cam_lib");
   auto geometryLib  = xmlDoc.child(L"geometry_lib");
+  auto lightsLib    = xmlDoc.child(L"lights_lib");
+  
+  auto cameraLib    = xmlDoc.child(L"cam_lib");
   auto settingsNode = xmlDoc.child(L"render_lib");
   auto sceneNode    = xmlDoc.child(L"scenes");
 
@@ -937,7 +938,7 @@ HAPI void hrDrawPassOnly(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraR
     return;
   }
 
-  HR_DriverDraw(g_objManager.scnInst[g_objManager.m_currSceneId], g_objManager.m_pDriver.get());
+  HR_DriverDraw(g_objManager.scnInst[g_objManager.m_currSceneId], pSettings);
 }
 
 HAPI void hrRenderEvalGbuffer(HRRenderRef a_pRender)
@@ -992,8 +993,8 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
   if (g_objManager.m_pDriver != nullptr && g_objManager.m_currSceneId < g_objManager.scnInst.size())
   {
     g_objManager.m_pDriver->SetInfoCallBack(g_pInfoCallback);
-    HR_DriverUpdate(g_objManager.scnInst[g_objManager.m_currSceneId], g_objManager.m_pDriver.get());
-    HR_DriverDraw  (g_objManager.scnInst[g_objManager.m_currSceneId], g_objManager.m_pDriver.get());
+    HR_DriverUpdate(g_objManager.scnInst[g_objManager.m_currSceneId], pSettings);
+    HR_DriverDraw  (g_objManager.scnInst[g_objManager.m_currSceneId], pSettings);
   }
 
   //g_objManager.CommitChanges(g_objManager.scnData.m_xmlDocChanges, g_objManager.scnData.m_xmlDoc);   // copy nodes from m_xmlDocChanges to m_xmlDoc

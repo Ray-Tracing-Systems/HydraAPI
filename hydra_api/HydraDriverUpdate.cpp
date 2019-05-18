@@ -30,12 +30,19 @@ using resolution_dict = std::unordered_map<uint32_t, std::pair<uint32_t, uint32_
 
 struct ChangeList
 {
-  ChangeList() = default;
-  ChangeList(ChangeList&& a_list) : meshUsed(std::move(a_list.meshUsed)), matUsed(std::move(a_list.matUsed)), 
-                                    lightUsed(std::move(a_list.lightUsed)), texturesUsed(std::move(a_list.texturesUsed)),
-                                    drawSeq(std::move(a_list.drawSeq))
+  //ChangeList() = default;
+  
+  ChangeList(HRRender* a_pRender) : meshUsed(a_pRender->m_updatedMeshes), matUsed(a_pRender->m_updatedMaterials),
+                                    lightUsed(a_pRender->m_updatedLights), texturesUsed(a_pRender->m_updatedTextures)
   {
-    
+  
+  }
+  
+  ChangeList(ChangeList&& a_list) : drawSeq(std::move(a_list.drawSeq)),
+                                    meshUsed(a_list.meshUsed), matUsed(a_list.matUsed),
+                                    lightUsed(a_list.lightUsed), texturesUsed(a_list.texturesUsed)
+  {
+  
   }
 
   ChangeList& operator=(ChangeList&& a_list)
@@ -48,10 +55,10 @@ struct ChangeList
     return *this;
   }
 
-  std::unordered_set<int32_t> meshUsed;
-  std::unordered_set<int32_t> matUsed;
-  std::unordered_set<int32_t> lightUsed;
-  std::unordered_set<int32_t> texturesUsed;
+  std::unordered_set<int32_t>& meshUsed;
+  std::unordered_set<int32_t>& matUsed;
+  std::unordered_set<int32_t>& lightUsed;
+  std::unordered_set<int32_t>& texturesUsed;
 
   struct InstancesInfo
   {
@@ -371,18 +378,16 @@ void FindObjectsByDependency(ChangeList& objList, HRSceneInst& scn, IHRRenderDri
 
 /// collect all id's of objects we need to Update
 //
-ChangeList FindChangedObjects(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
+ChangeList FindChangedObjects(HRSceneInst& scn, HRRender* a_pRender)
 {
-  ChangeList objects;
-
-  objects.meshUsed.reserve(1000);
-  objects.matUsed.reserve(1000);
-  objects.lightUsed.reserve(1000);
-  objects.texturesUsed.reserve(1000);
-
+  ChangeList objects(a_pRender);
+  
   FindNewObjects(objects, scn);
   FindOldObjectsThatWeNeedToUpdate(objects, scn);
-  FindObjectsByDependency(objects, scn, a_pDriver);
+  
+  auto* pDriver = a_pRender->m_pDriver.get();
+  if(a_pRender->m_pDriver != nullptr)
+    FindObjectsByDependency(objects, scn, pDriver);
 
   return objects;
 }
@@ -1228,12 +1233,14 @@ bool g_hydraApiDisableSceneLoadInfo = false;
 
 /////
 //
-void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
+void HR_DriverUpdate(HRSceneInst& scn, HRRender* a_pRender)
 {
+  IHRRenderDriver* a_pDriver = a_pRender->m_pDriver.get();
+  
   if (a_pDriver == nullptr)
     return;
 
-  ChangeList objList = FindChangedObjects(scn, a_pDriver);
+  ChangeList objList = FindChangedObjects(scn, a_pRender);
 
   auto p = g_objManager.driverAllocated.find(a_pDriver);
   if (p == g_objManager.driverAllocated.end())
@@ -1373,8 +1380,12 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
   scn.driverDirtyFlag = false; 
 }
 
-void HR_DriverDraw(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
+void HR_DriverDraw(HRSceneInst& scn, HRRender* a_pRender)
 {
+  IHRRenderDriver* a_pDriver = a_pRender->m_pDriver.get();
+  if(a_pDriver == nullptr)
+    return;
+  
   a_pDriver->Draw();
 }
 
@@ -1383,10 +1394,7 @@ void _hr_UtilityDriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 {
   if (a_pDriver == nullptr)
     return;
-
-  //ChangeList objList = FindChangedObjects(scn, a_pDriver);
-
-
+  
   HRDriverAllocInfo allocInfo;
 
   const auto p1 = std::max_element(scn.meshUsedByDrv.begin(), scn.meshUsedByDrv.end());
