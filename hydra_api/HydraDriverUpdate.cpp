@@ -883,6 +883,7 @@ int32_t HR_DriverUpdateMeshes(HRSceneInst& scn, ChangeList& objList, IHRRenderDr
       }
 
       updatedMeshes++;
+      g_objManager.scnData.meshes[id].wasChanged = false;
     }
     
   }
