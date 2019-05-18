@@ -343,8 +343,7 @@ struct HRSceneData : public HRObject<IHRSceneData>
 
   // dependency data
   //
-  std::unordered_multimap<int32_t, int32_t> m_materialToMeshDependency;
-  std::unordered_set<int32_t>               m_shadowCatchers;
+  std::unordered_set<int32_t>                    m_shadowCatchers;
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
   

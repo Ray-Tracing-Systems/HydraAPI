@@ -358,11 +358,13 @@ void FindObjectsByDependency(ChangeList& objList, HRSceneInst& scn, IHRRenderDri
 
   if (dInfo.meshDependsOfMaterial)
   {
-    auto& depHashMap = g_objManager.scnData.m_materialToMeshDependency;
-
-    for (auto p = objList.matUsed.begin(); p != objList.matUsed.end(); ++p)
-      for (auto meshListIter = depHashMap.find(*p); meshListIter != depHashMap.end() && meshListIter->first == (*p); ++meshListIter)
-        objList.meshUsed.insert(meshListIter->second);
+    // for (auto& mat : objList.matUsed)
+    // {
+    //   //if( ... )
+    //   //{
+    //   //  objList.meshUsed.insert(some mesh that depends of material mat);
+    //   //}
+    // }
   }
 
   //if (dInfo.lightDependsOfMesh)

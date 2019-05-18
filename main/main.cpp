@@ -175,77 +175,20 @@ int main(int argc, const char** argv)
     //demo_01_plane_box();
     //window_main_free_look(L"/home/frol/PROG/CLSP_gitlab/database/statex_00002.xml", L"opengl1Debug");
     
-    run_all_api_tests();
+    //run_all_api_tests();
     //run_all_geo_tests();
     //run_all_mtl_tests();
     //run_all_lgt_tests();
 	  //run_all_alg_tests();
 	  //run_all_ipp_tests();
-
-    /*
-    {
-      hrSceneLibraryOpen(L"./temp", HR_WRITE_DISCARD);
-      HRMeshRef mesh1 = hrMeshCreateFromFileDL(L"E:/PROG/CLSP/database/models/various/bunny.vsgfc");
-      HRMeshRef mesh2 = hrMeshCreateFromFileDL(L"E:/PROG/CLSP/database/models/chairs/blendswap_78757_office.vsgfc");
-      HRMeshRef mesh3 = hrMeshCreateFromFileDL(L"E:/PROG/CLSP/database/models/chairs/blendswap_918.vsgfc");
-      HRMeshRef mesh4 = hrMeshCreateFromFileDL(L"E:/PROG/CLSP/database/models/tables/blendswap_69351_kitchen.vsgfc");
-     
-      HRMeshInfo info1 = hrMeshGetInfo(mesh1);
-      HRMeshInfo info2 = hrMeshGetInfo(mesh2);
-      HRMeshInfo info3 = hrMeshGetInfo(mesh3);
-      HRMeshInfo info4 = hrMeshGetInfo(mesh4);
-
-      std::cout << "info1.boxMin[0] = " << info1.boxMin[0] << std::endl;
-      std::cout << "info1.boxMax[0] = " << info1.boxMax[0] << std::endl;
-
-      for (int i = 0; i < info1.matNamesListSize; i++)
-        std::wcout << info1.batchesList[i].matId << "\t:\t" << info1.matNamesList[i] << std::endl;
-
-      std::cout << std::endl;
-
-      std::cout << "info2.boxMin[0] = " << info2.boxMin[0] << std::endl;
-      std::cout << "info2.boxMax[0] = " << info2.boxMax[0] << std::endl;
-
-      for (int i = 0; i < info2.matNamesListSize; i++)
-        std::wcout << info2.batchesList[i].matId << "\t:\t" << info2.matNamesList[i] << std::endl;
-
-      std::cout << std::endl;
-
-      std::cout << "info3.boxMin[0] = " << info3.boxMin[0] << std::endl;
-      std::cout << "info3.boxMax[0] = " << info3.boxMax[0] << std::endl;
-
-      for (int i = 0; i < info3.matNamesListSize; i++)
-        std::wcout << info3.batchesList[i].matId << "\t:\t" << info3.matNamesList[i] << std::endl;
-
-      std::cout << std::endl;
-
-      std::cout << "info4.boxMin[0] = " << info4.boxMin[0] << std::endl;
-      std::cout << "info4.boxMax[0] = " << info4.boxMax[0] << std::endl;
-
-      for (int i = 0; i < info4.matNamesListSize; i++)
-        std::wcout << info4.batchesList[i].matId << "\t:\t" << info4.matNamesList[i] << std::endl;
-
-      std::cout << std::endl;
-    }
-    */
-    //test40_several_changes();
-    
-    //std::cout << "begin" << std::endl;
-    //_hrCompressMesh(L"/home/frol/PROG/HydraAPI/main/data/meshes/bigtree.vsgf",
-    //                L"/home/frol/PROG/CLSP_gitlab/database/models/various/bigtree.vsgfc");
-    //
-    //std::cout << "end" << std::endl;
+  
+	  std::cout << test56_mesh_change_open_existing() << std::endl;
+    std::cout << test57_single_instance() << std::endl;
     
     //test44_four_lights_and_compressed_mesh();
-
     //test42_load_mesh_compressed();
     //test78_material_remap_list1();
     
-    
-    //hrSceneLibraryOpen(L"/home/frol/temp", HR_WRITE_DISCARD);
-    //_hrConvertOldVSGFMesh(L"data/meshes/teapot.vsgf", L"data/meshes/teapot2.vsgf");
-    ////_hrDebugPrintVSGF(L"data/meshes/teapot.vsgf",    L"/home/frol/temp/teapot1.txt");
-    ////_hrDebugPrintVSGF(L"data/meshes/teapot2.vsgf",   L"/home/frol/temp/teapot2.txt");
 
     //std::cout << test38_save_mesh_and_delayed_load() << std::endl;
     //std::cout << test49_light_geom_disk() << std::endl;
@@ -254,22 +197,12 @@ int main(int argc, const char** argv)
     //std::cout << test89_proc_texture_dirty() << std::endl;
     //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_49", L"opengl1"); // &test02_draw
     //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_38", L"opengl1Debug"); // &test02_draw
-  
-    //_hrCompressMesh  (L"/home/frol/temp/original.vsgf",    L"/home/frol/temp/compressed.vsgfc");
-    //_hrDecompressMesh(L"/home/frol/temp/compressed.vsgfc", L"/home/frol/temp/decompressed.vsgf");
-    //_hrDebugPrintVSGF(L"/home/frol/temp/original.vsgf",    L"/home/frol/temp/original.txt");
-    //_hrDebugPrintVSGF(L"/home/frol/temp/decompressed.vsgf",L"/home/frol/temp/decompressed.txt");
 
     //test82_proc_texture();
     //test93_proc_tex_recursive();
     //test39_mmlt_or_ibpt();
     //test42_load_library_basic();
     //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
-    
-    //std::cout << ALGR_TESTS::test_404_cornell_glossy() << std::endl;
-    //std::cout << ALGR_TESTS::test_405_cornell_with_mirror() << std::endl;
-    //std::cout << ALGR_TESTS::test_406_env_glass_ball_caustic() << std::endl;
-    //std::cout << std::endl << "g_MSEOutput = " << g_MSEOutput << std::endl;
     
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
     //window_main_free_look(L"tests_f/test_241", L"opengl1Debug");

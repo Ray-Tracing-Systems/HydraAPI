@@ -941,14 +941,14 @@ bool test56_mesh_change_open_existing()
     auto center3 = to_float3(center);
     for (size_t i = 0; i < vertNum; i++)
     {
-      if (i % 8 == 0 && i != (vertNum-1))
+      if (i % 8 == 0 && i < (vertNum-1))
       {
-        float r  = length(to_float3(vpos[i]) - center3);
+        float r   = length   (to_float3(vpos[i + 0]) - center3);
         auto dir1 = normalize(to_float3(vpos[i + 0]) - center3);
         auto dir2 = normalize(to_float3(vpos[i + 1]) - center3);
 
-        vpos[i] = HydraLiteMath::to_float4(center3 + 1.25f*r*dir1, 1.0f);
-        vpos[i] = HydraLiteMath::to_float4(center3 + 1.25f*r*dir2, 1.0f);
+        //vpos[i+0] = HydraLiteMath::to_float4(center3 + 1.25f*r*dir1, 1.0f);
+        //vpos[i+1] = HydraLiteMath::to_float4(center3 + 1.25f*r*dir2, 1.0f);
       }
     }
 

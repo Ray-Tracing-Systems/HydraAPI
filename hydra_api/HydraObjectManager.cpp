@@ -330,8 +330,7 @@ void HRSceneData::clear()
   m_vbCache.Clear();
   m_textureCache.clear();
   m_iesCache.clear();
-
-  m_materialToMeshDependency.clear();
+  
   m_shadowCatchers.clear();
 }
 

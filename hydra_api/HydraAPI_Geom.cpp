@@ -512,10 +512,16 @@ HAPI void hrMeshClose(HRMeshRef a_mesh, bool a_compress)
 
   // construct dependency list for material -> mesh
   //
-  auto& mindices = pMesh->m_input.matIndices;
-  for (size_t i = 0; i < mindices.size(); i++)
-    g_objManager.scnData.m_materialToMeshDependency.emplace(mindices[i], a_mesh.id);
-
+  
+  //auto& mindices       = pMesh->m_input.matIndices;
+  //const size_t maxSize = g_objManager.scnData.materials.size();
+  //for (size_t i = 0; i < mindices.size(); i++)
+  //{
+  //  const int32_t matIndex = mindices[i];
+  //  if(matIndex >= 0 && matIndex < maxSize)
+  //    g_objManager.scnData.m_materialToMeshDependency.emplace(matIndex, a_mesh.id);
+  //}
+  
   pMesh->pImpl  = g_objManager.m_pFactory->CreateVSGFFromSimpleInputMesh(pMesh, a_compress);
   pMesh->opened = false;
 
@@ -1006,33 +1012,20 @@ HAPI void* hrMeshGetAttribPointer(HRMeshRef a_mesh, const wchar_t* attributeName
 	HRMesh* pMesh = g_objManager.PtrById(a_mesh);
   if (pMesh == nullptr)
     return nullptr;
-
+  
+  
   if (pMesh->opened)
   {
     HRMesh::InputTriMesh& mesh = pMesh->m_input;
-
+  
+    //std::cout << "mesh.verticesPos.size() = " << mesh.verticesPos.size() << std::endl;
+    
     if (!wcscmp(attributeName, L"pos"))
-    {
-      if (mesh.verticesPos.empty())
-        return nullptr;
-      else
-        return (void*)&(mesh.verticesPos[0]);
-    }
+      return mesh.verticesPos.data();
     else if (!wcscmp(attributeName, L"norm"))
-    {
-      if (mesh.verticesNorm.empty())
-        return nullptr;
-      else
-        return (void*)&(mesh.verticesNorm[0]);
-
-    }
+      return mesh.verticesNorm.data();
     else if (!wcscmp(attributeName, L"uv"))
-    {
-      if (mesh.verticesTexCoord.empty())
-        return nullptr;
-      else
-        return (void*)&(mesh.verticesTexCoord[0]);
-    }
+      return mesh.verticesTexCoord.data();
     else
       return nullptr;
   }
