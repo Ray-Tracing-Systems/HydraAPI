@@ -182,8 +182,8 @@ int main(int argc, const char** argv)
 	  //run_all_alg_tests();
 	  //run_all_ipp_tests();
   
-	  std::cout << test56_mesh_change_open_existing() << std::endl;
-    //std::cout << test57_single_instance() << std::endl;
+	  //std::cout << test56_mesh_change_open_existing() << std::endl;
+    std::cout << test33_update_from_file() << std::endl;
     
     //test44_four_lights_and_compressed_mesh();
     //test42_load_mesh_compressed();

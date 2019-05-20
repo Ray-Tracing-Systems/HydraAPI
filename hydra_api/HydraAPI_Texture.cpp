@@ -322,7 +322,7 @@ HAPI HRTextureNodeRef hrTexture2DUpdateFromMemory(HRTextureNodeRef currentRef, i
 	auto pTextureImpl      = g_objManager.m_pFactory->CreateTexture2DFromMemory(&texture, w, h, bpp, a_data);
 	texture.pImpl          = pTextureImpl;
 
-	pugi::xml_node texNodeXml = g_objManager.textures_lib_append_child();
+	pugi::xml_node texNodeXml = texture.xml_node_immediate();
 
 	auto byteSize = size_t(w)*size_t(h)*size_t(bpp);
 
