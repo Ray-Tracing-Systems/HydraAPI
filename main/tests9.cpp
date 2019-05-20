@@ -761,6 +761,8 @@ bool test56_mesh_change_open_existing()
 
   hrMeshOpen(sphereRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
   {
+    std::cout << "sphere.vPos.size() = " << sphere.vPos.size() << std::endl;
+    
     hrMeshVertexAttribPointer4f(sphereRef, L"pos", &sphere.vPos[0]);
     hrMeshVertexAttribPointer4f(sphereRef, L"norm", &sphere.vNorm[0]);
     hrMeshVertexAttribPointer2f(sphereRef, L"texcoord", &sphere.vTexCoord[0]);
@@ -947,8 +949,8 @@ bool test56_mesh_change_open_existing()
         auto dir1 = normalize(to_float3(vpos[i + 0]) - center3);
         auto dir2 = normalize(to_float3(vpos[i + 1]) - center3);
 
-        //vpos[i+0] = HydraLiteMath::to_float4(center3 + 1.25f*r*dir1, 1.0f);
-        //vpos[i+1] = HydraLiteMath::to_float4(center3 + 1.25f*r*dir2, 1.0f);
+        vpos[i+0] = HydraLiteMath::to_float4(center3 + 1.25f*r*dir1, 1.0f);
+        vpos[i+1] = HydraLiteMath::to_float4(center3 + 1.25f*r*dir2, 1.0f);
       }
     }
 

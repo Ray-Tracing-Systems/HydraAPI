@@ -719,7 +719,15 @@ static void AddCommonAttributesFromPointers(HRMesh* pMesh, int maxVertexId)
 
 	const bool hasNormals  = (normPtr != nullptr);
   const bool hasTangents = (tangPtr != nullptr);
-
+  
+  pMesh->m_input.verticesPos.reserve(maxVertexId*4);
+  pMesh->m_input.verticesTexCoord.reserve(maxVertexId*2);
+  
+  if (hasNormals)
+    pMesh->m_input.verticesNorm.reserve(maxVertexId*4);
+  if (hasTangents)
+    pMesh->m_input.verticesTangent.reserve(maxVertexId*4);
+    
   for (int i = 0; i <= maxVertexId; i++)
   {
     pMesh->m_input.verticesPos.push_back(posPtr[0]);
@@ -1107,8 +1115,8 @@ HAPI HRMeshInfo  hrMeshGetInfo(HRMeshRef a_mesh)
     info.boxMax[1] = box.y_max;
     info.boxMax[2] = box.z_max;
   
-    info.indicesNum = int32_t(pImpl->vertNum());
-    info.vertNum    = int32_t(pImpl->indNum());
+    info.indicesNum = int32_t(pImpl->indNum());
+    info.vertNum    = int32_t(pImpl->vertNum());
   }
   else
   {

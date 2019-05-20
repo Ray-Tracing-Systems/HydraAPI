@@ -410,8 +410,8 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
 
   // sorting triIndices by matIndices
   
-  const uint32_t* triIndices = &input.triIndices[0];
-  const uint32_t* matIndices = &input.matIndices[0];
+  const uint32_t* triIndices = input.triIndices.data();
+  const uint32_t* matIndices = input.matIndices.data();
 
   std::vector<uint32_t> sortedTriIndices;
   std::vector<uint32_t> sortedMatIndices;
@@ -443,7 +443,7 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
 
   // (1) common mesh attributes
   //
-  data.setData(uint32_t(totalVertNumber), &input.verticesPos[0], &input.verticesNorm[0], &input.verticesTangent[0], &input.verticesTexCoord[0],
+  data.setData(uint32_t(totalVertNumber), input.verticesPos.data(), input.verticesNorm.data(), input.verticesTangent.data(), input.verticesTexCoord.data(),
                uint32_t(totalMeshTriIndices), triIndices, matIndices);
 
   const size_t totalByteSizeCommon = data.sizeInBytes();
