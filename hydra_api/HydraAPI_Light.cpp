@@ -626,29 +626,22 @@ bool HR_UpdateLightGeomAndMaterial(pugi::xml_node a_lightNode, const std::wstrin
 }
 
 
-void HR_UpdateLightsGeometryAndMaterial(pugi::xml_node a_lightLibChanges, pugi::xml_node a_lightLib, pugi::xml_node a_sceneInstances)
+void HR_UpdateLightsGeometryAndMaterial(pugi::xml_node a_lightLib, pugi::xml_node a_sceneInstances)
 {
-  // list lights
-  //
-  std::unordered_map<int32_t, pugi::xml_node> lightsHash;  // #TODO: form global hashes before each commit operation. Opt. this crap.
-
-  
   // iterate lights lib to fill lightsHash for ALL (!) lights (there can be lights that were instanced but were not changed in the last commit !!!)
   //
-  for (pugi::xml_node lightNode = a_lightLib.first_child(); lightNode != nullptr; lightNode = lightNode.next_sibling())
-  {
-    int32_t lightId = lightNode.attribute(L"id").as_int();
-    lightsHash[lightId] = lightNode;
-  }
-
+  std::unordered_map<int32_t, pugi::xml_node> lightsHash;  // #TODO: form global hashes before each commit operation. Opt. this crap.
+ 
   // iterate lights libChange to form lighNodes and lightsHash; Override (!!!) references in lightsHash with new ones that were changed in the last commit.
   //
   std::vector<pugi::xml_node> lighNodes; lighNodes.reserve(1000);
-  for (pugi::xml_node lightNode = a_lightLibChanges.first_child(); lightNode != nullptr; lightNode = lightNode.next_sibling())
+  //for (pugi::xml_node lightNode = a_lightLibChanges.first_child(); lightNode != nullptr; lightNode = lightNode.next_sibling())
+  for(auto& light : g_objManager.scnData.lights)
   {
-    int32_t lightId = lightNode.attribute(L"id").as_int();
-    lighNodes.push_back(lightNode);
-    lightsHash[lightId] = lightNode;
+    const int32_t lightId = light.id; //int32_t lightId = lightNode.attribute(L"id").as_int();
+    const auto lightNode  = light.xml_node_immediate();
+    if(light.wasChanged)
+      lighNodes.push_back(lightNode);
   }
 
   // insert light mesh
@@ -706,7 +699,7 @@ void HR_UpdateLightsGeometryAndMaterial(pugi::xml_node a_lightLibChanges, pugi::
       const int32_t  instId    = inst.attribute(L"id").as_int();
 
 
-      const pugi::xml_node lightNode = lightsHash[lightId];
+      const pugi::xml_node lightNode = g_objManager.scnData.lights[lightId].xml_node_immediate();
       const int32_t meshId           = lightNode.attribute(L"mesh_id").as_int();                                            
       const std::wstring lshape      = lightNode.attribute(L"shape").as_string();
 

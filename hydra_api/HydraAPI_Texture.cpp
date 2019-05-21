@@ -243,8 +243,8 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromMemory(int w, int h, int bpp, const v
   ref.id = HR_IDType(g_objManager.scnData.textures.size() - 1);
 
   HRTextureNode& texture = g_objManager.scnData.textures[ref.id];
-  auto pTextureImpl = g_objManager.m_pFactory->CreateTexture2DFromMemory(&texture, w, h, bpp, a_data);
-  texture.pImpl = pTextureImpl;
+  auto pTextureImpl      = g_objManager.m_pFactory->CreateTexture2DFromMemory(&texture, w, h, bpp, a_data);
+  texture.pImpl          = pTextureImpl;
 
   pugi::xml_node texNodeXml = g_objManager.textures_lib_append_child();
 
@@ -553,8 +553,9 @@ HAPI void hrTextureNodeClose(HRTextureNodeRef a_pNode)
     }
   }
 
-  pData->opened = false;
- // pData->pImpl  = nullptr;
+  pData->opened     = false;
+  pData->wasChanged = true;
+
 }
 
 

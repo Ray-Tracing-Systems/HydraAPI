@@ -30,12 +30,19 @@ using resolution_dict = std::unordered_map<uint32_t, std::pair<uint32_t, uint32_
 
 struct ChangeList
 {
-  ChangeList() = default;
-  ChangeList(ChangeList&& a_list) : meshUsed(std::move(a_list.meshUsed)), matUsed(std::move(a_list.matUsed)), 
-                                    lightUsed(std::move(a_list.lightUsed)), texturesUsed(std::move(a_list.texturesUsed)),
-                                    drawSeq(std::move(a_list.drawSeq))
+  //ChangeList() = default;
+  
+  ChangeList(HRRender* a_pRender) : meshUsed(a_pRender->m_updatedMeshes), matUsed(a_pRender->m_updatedMaterials),
+                                    lightUsed(a_pRender->m_updatedLights), texturesUsed(a_pRender->m_updatedTextures)
   {
-    
+  
+  }
+  
+  ChangeList(ChangeList&& a_list) : drawSeq(std::move(a_list.drawSeq)),
+                                    meshUsed(a_list.meshUsed), matUsed(a_list.matUsed),
+                                    lightUsed(a_list.lightUsed), texturesUsed(a_list.texturesUsed)
+  {
+  
   }
 
   ChangeList& operator=(ChangeList&& a_list)
@@ -48,10 +55,10 @@ struct ChangeList
     return *this;
   }
 
-  std::unordered_set<int32_t> meshUsed;
-  std::unordered_set<int32_t> matUsed;
-  std::unordered_set<int32_t> lightUsed;
-  std::unordered_set<int32_t> texturesUsed;
+  std::unordered_set<int32_t>& meshUsed;
+  std::unordered_set<int32_t>& matUsed;
+  std::unordered_set<int32_t>& lightUsed;
+  std::unordered_set<int32_t>& texturesUsed;
 
   struct InstancesInfo
   {
@@ -267,32 +274,22 @@ void FindNewObjects(ChangeList& objects, HRSceneInst& scn)
 
 }
 
-
-void InsertChangedIds(std::unordered_set<int32_t>& a_set, const std::unordered_set<int32_t>& a_usedByDRV, pugi::xml_node a_node, const wchar_t* a_childName)
+template<typename Container, typename MySet>
+void InsertObjectsThatWasChanged(const Container& a_container, MySet& a_set)
 {
-  for (pugi::xml_node node = a_node.first_child(); node != nullptr; node = node.next_sibling())
+  for(const auto& mesh : a_container)
   {
-    if (std::wstring(node.name()) != std::wstring(a_childName))
-      continue;
-
-    const int32_t id = node.attribute(L"id").as_int();
-    if (a_usedByDRV.find(id) != a_usedByDRV.end())
-      a_set.insert(id);
+    if(mesh.wasChanged)
+      a_set.insert(mesh.id);
   }
 }
 
 void FindOldObjectsThatWeNeedToUpdate(ChangeList& objects, HRSceneInst& scn)
 {
-  pugi::xml_node meshesChanges   = g_objManager.scnData.m_geometryLibChanges;
-  pugi::xml_node lightsChanges   = g_objManager.scnData.m_lightsLibChanges;
-  pugi::xml_node matsChanges     = g_objManager.scnData.m_materialsLibChanges;
-  pugi::xml_node texturesChanges = g_objManager.scnData.m_texturesLibChanges;
-
-  InsertChangedIds(objects.meshUsed,     scn.meshUsedByDrv,  meshesChanges, L"mesh");
-  InsertChangedIds(objects.lightUsed,    scn.lightUsedByDrv, lightsChanges, L"light");
-  InsertChangedIds(objects.matUsed,      scn.matUsedByDrv,   matsChanges, L"material");
-  InsertChangedIds(objects.texturesUsed, scn.texturesUsedByDrv, texturesChanges, L"texture");
-  InsertChangedIds(objects.texturesUsed, scn.texturesUsedByDrv, texturesChanges, L"texture_advanced");
+  InsertObjectsThatWasChanged(g_objManager.scnData.meshes,    objects.meshUsed);
+  InsertObjectsThatWasChanged(g_objManager.scnData.lights,    objects.lightUsed);
+  InsertObjectsThatWasChanged(g_objManager.scnData.materials, objects.matUsed);
+  InsertObjectsThatWasChanged(g_objManager.scnData.textures,  objects.texturesUsed);
 
   // AddMaterialsFromSceneRemapList
   //
@@ -361,11 +358,13 @@ void FindObjectsByDependency(ChangeList& objList, HRSceneInst& scn, IHRRenderDri
 
   if (dInfo.meshDependsOfMaterial)
   {
-    auto& depHashMap = g_objManager.scnData.m_materialToMeshDependency;
-
-    for (auto p = objList.matUsed.begin(); p != objList.matUsed.end(); ++p)
-      for (auto meshListIter = depHashMap.find(*p); meshListIter != depHashMap.end() && meshListIter->first == (*p); ++meshListIter)
-        objList.meshUsed.insert(meshListIter->second);
+    // for (auto& mat : objList.matUsed)
+    // {
+    //   //if( ... )
+    //   //{
+    //   //  objList.meshUsed.insert(some mesh that depends of material mat);
+    //   //}
+    // }
   }
 
   //if (dInfo.lightDependsOfMesh)
@@ -381,18 +380,16 @@ void FindObjectsByDependency(ChangeList& objList, HRSceneInst& scn, IHRRenderDri
 
 /// collect all id's of objects we need to Update
 //
-ChangeList FindChangedObjects(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
+ChangeList FindChangedObjects(HRSceneInst& scn, HRRender* a_pRender)
 {
-  ChangeList objects;
-
-  objects.meshUsed.reserve(1000);
-  objects.matUsed.reserve(1000);
-  objects.lightUsed.reserve(1000);
-  objects.texturesUsed.reserve(1000);
-
+  ChangeList objects(a_pRender);
+  
   FindNewObjects(objects, scn);
   FindOldObjectsThatWeNeedToUpdate(objects, scn);
-  FindObjectsByDependency(objects, scn, a_pDriver);
+  
+  auto* pDriver = a_pRender->m_pDriver.get();
+  if(a_pRender->m_pDriver != nullptr)
+    FindObjectsByDependency(objects, scn, pDriver);
 
   return objects;
 }
@@ -538,6 +535,8 @@ int32_t HR_DriverUpdateTextures(HRSceneInst& scn, ChangeList& objList, IHRRender
     }
 
     texturesUpdated++;
+
+    g_objManager.scnData.textures[texId].wasChanged = false;
   }
 
   a_pDriver->EndTexturesUpdate();
@@ -573,6 +572,8 @@ int32_t HR_DriverUpdateMaterials(HRSceneInst& scn, ChangeList& objList, IHRRende
       if (std::wstring(L"shadow_catcher") == node.attribute(L"type").as_string())
         g_objManager.scnData.m_shadowCatchers.insert(matId);
       updatedMaterials++;
+
+      g_objManager.scnData.materials[matId].wasChanged = false;
     }
     else
       g_objManager.BadMaterialId(matId);
@@ -599,6 +600,8 @@ int32_t _hr_UtilityDriverUpdateMaterials(HRSceneInst& scn, IHRRenderDriver* a_pD
       pugi::xml_node node = g_objManager.scnData.materials[matId].xml_node_immediate();
       a_pDriver->UpdateMaterial(matId, node);
       updatedMaterials++;
+
+      g_objManager.scnData.materials[matId].wasChanged = false;
     }
     else
       g_objManager.BadMaterialId(matId);
@@ -629,6 +632,7 @@ int32_t HR_DriverUpdateLight(HRSceneInst& scn, ChangeList& objList, IHRRenderDri
       scn.lightUsedByDrv.insert(id);
       a_pDriver->UpdateLight(int32_t(id), node);
       updatedLights++;
+      g_objManager.scnData.lights[id].wasChanged = false;
     }
   }
 
@@ -729,13 +733,16 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, std::vector<HRBatchInfo>& a
   hr_ifstream_open(fin, path);
 
   if(!fin.is_open())
+  {
+    HrError(L"UpdateMeshFromChunk: Can't open file: ", path);
     return;
+  }
   
   HydraGeomData::Header header;
   fin.read((char*)&header, sizeof(header));
   fin.close();
   
-  const std::wstring tail = str_tail(path,6);
+  const std::wstring tail = str_tail(path, 6);
   if(tail != L".vsgfc" && header.fileSizeInBytes != a_byteSize)
   {
     HrPrint(HR_SEVERITY_WARNING, L"UpdateMeshFromChunk, different byte size of chunk, may be broken mesh: ", path);
@@ -754,7 +761,24 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, std::vector<HRBatchInfo>& a
   
   // (1) process the case when we don't have tangents or normals ...
   //
-  if(dontHaveTangents || dontHaveNormals)
+  // (2) decompress '.vsgfc' format
+  //
+  if(tail == L".vsgfc")
+  {
+    data                = HR_LoadVSGFCompressedData(path, g_objManager.m_tempBuffer, &a_batches);
+    
+    input.vertNum       = data.getVerticesNumber();
+    input.triNum        = data.getIndicesNumber()/3;
+    
+    input.pos4f         = data.getVertexPositionsFloat4Array();
+    input.norm4f        = data.getVertexNormalsFloat4Array();
+    input.tan4f         = data.getVertexTangentsFloat4Array();
+    input.texcoord2f    = data.getVertexTexcoordFloat2Array();
+    input.indices       = (const int*)data.getTriangleVertexIndicesArray();
+    input.triMatIndices = (const int*)data.getTriangleMaterialIndicesArray();
+    input.allData       = (char*)g_objManager.m_tempBuffer.data();
+  }
+  else if(dontHaveTangents || dontHaveNormals)
   {
     data.read(path);
     HR_CopyMeshToInputMeshFromHydraGeomData(data, mesh2);
@@ -771,23 +795,6 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, std::vector<HRBatchInfo>& a
     input.indices       = (const int*)mesh2.triIndices.data();
     input.triMatIndices = (const int*)mesh2.matIndices.data();
     input.allData       = nullptr;
-  }
-  // (2) decompress '.vsgfc' format
-  //
-  else if(tail == L".vsgfc")
-  {
-    data                = HR_LoadVSGFCompressedData(path, g_objManager.m_tempBuffer, &a_batches);
-
-    input.vertNum       = data.getVerticesNumber();
-    input.triNum        = data.getIndicesNumber()/3;
-  
-    input.pos4f         = data.getVertexPositionsFloat4Array();
-    input.norm4f        = data.getVertexNormalsFloat4Array();
-    input.tan4f         = data.getVertexTangentsFloat4Array();
-    input.texcoord2f    = data.getVertexTexcoordFloat2Array();
-    input.indices       = (const int*)data.getTriangleVertexIndicesArray();
-    input.triMatIndices = (const int*)data.getTriangleMaterialIndicesArray();
-    input.allData       = (char*)g_objManager.m_tempBuffer.data();
   }
   // (3) read it "as is"
   //
@@ -883,6 +890,7 @@ int32_t HR_DriverUpdateMeshes(HRSceneInst& scn, ChangeList& objList, IHRRenderDr
       }
 
       updatedMeshes++;
+      g_objManager.scnData.meshes[id].wasChanged = false;
     }
     
   }
@@ -949,6 +957,8 @@ void HR_DriverUpdateCamera(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
   HRCamera& cam = g_objManager.scnData.cameras[g_objManager.m_currCamId];
 
   a_pDriver->UpdateCamera(cam.xml_node_immediate());
+
+  cam.wasChanged = false;
 }
 
 void HR_DriverUpdateSettings(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
@@ -956,10 +966,11 @@ void HR_DriverUpdateSettings(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
   if (g_objManager.renderSettings.empty())
     return;
 
-
   auto& settings = g_objManager.renderSettings[g_objManager.m_currRenderId];
 
   a_pDriver->UpdateSettings(settings.xml_node_immediate());
+
+  settings.wasChanged = false;
 }
 
 
@@ -1224,12 +1235,14 @@ bool g_hydraApiDisableSceneLoadInfo = false;
 
 /////
 //
-void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
+void HR_DriverUpdate(HRSceneInst& scn, HRRender* a_pRender)
 {
+  IHRRenderDriver* a_pDriver = a_pRender->m_pDriver.get();
+  
   if (a_pDriver == nullptr)
     return;
 
-  ChangeList objList = FindChangedObjects(scn, a_pDriver);
+  ChangeList objList = FindChangedObjects(scn, a_pRender);
 
   auto p = g_objManager.driverAllocated.find(a_pDriver);
   if (p == g_objManager.driverAllocated.end())
@@ -1369,8 +1382,12 @@ void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
   scn.driverDirtyFlag = false; 
 }
 
-void HR_DriverDraw(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
+void HR_DriverDraw(HRSceneInst& scn, HRRender* a_pRender)
 {
+  IHRRenderDriver* a_pDriver = a_pRender->m_pDriver.get();
+  if(a_pDriver == nullptr)
+    return;
+  
   a_pDriver->Draw();
 }
 
@@ -1379,10 +1396,7 @@ void _hr_UtilityDriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 {
   if (a_pDriver == nullptr)
     return;
-
-  //ChangeList objList = FindChangedObjects(scn, a_pDriver);
-
-
+  
   HRDriverAllocInfo allocInfo;
 
   const auto p1 = std::max_element(scn.meshUsedByDrv.begin(), scn.meshUsedByDrv.end());

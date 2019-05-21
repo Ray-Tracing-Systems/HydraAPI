@@ -91,8 +91,45 @@ void _hrDecompressMesh(const std::wstring& a_path, const std::wstring& a_newPath
 
 void demo_01_plane_box();
 
+
+void render_test_scene()
+{
+  hrInit(L"");
+  hrInfoCallback(&InfoCallBack);
+  
+  //hrSceneLibraryOpen(L".", HR_OPEN_EXISTING); //#NOTE: assume your working directoty is "CLSP/database"
+  hrSceneLibraryOpen(L"/home/frol/PROG/CLSP_gitlab/database/statex_00001.xml", HR_OPEN_EXISTING);
+  
+  HRRenderRef    render; render.id = 0;
+  HRSceneInstRef scene;  scene.id  = 0;
+  
+  hrFlush(scene, render);
+  
+  while (true)
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    
+    HRRenderUpdateInfo info = hrRenderHaveUpdate(render);
+    
+    if (info.haveUpdateFB)
+    {
+      auto pres = std::cout.precision(2);
+      std::cout << "rendering progress = " << info.progress << "% \r";
+      std::cout.precision(pres);
+    }
+    
+    if (info.finalUpdate)
+      break;
+  }
+  
+  hrRenderSaveFrameBufferLDR(render, L"z_out.png");
+  
+}
+
 int main(int argc, const char** argv)
 {
+  //render_test_scene();
+  
   hrInit(L"-copy_textures_to_local_folder 0 -local_data_path 1 -sort_indices 1 -compute_bboxes 1");
   hrInfoCallback(&InfoCallBack);
 
@@ -136,7 +173,7 @@ int main(int argc, const char** argv)
   {
     //GEO_TESTS::test_001_mesh_from_memory();
     //demo_01_plane_box();
-    //window_main_free_look(L"/home/denispavlov/Projects/Hydra/HydraAPI/main/tests/test_45", L"opengl1");
+    //window_main_free_look(L"/home/frol/PROG/CLSP_gitlab/database/statex_00002.xml", L"opengl1Debug");
     
     //run_all_api_tests();
     //run_all_geo_tests();
@@ -144,18 +181,14 @@ int main(int argc, const char** argv)
     //run_all_lgt_tests();
 	  //run_all_alg_tests();
 	  //run_all_ipp_tests();
-
-    test40_several_changes();
+  
+	  std::cout << test56_mesh_change_open_existing() << std::endl;
+    //std::cout << test57_single_instance() << std::endl;
+    
     //test44_four_lights_and_compressed_mesh();
     //test42_load_mesh_compressed();
     //test78_material_remap_list1();
-    //test45_mesh_from_vsgf_opengl_bug_teapot();
     
-    
-    //hrSceneLibraryOpen(L"/home/frol/temp", HR_WRITE_DISCARD);
-    //_hrConvertOldVSGFMesh(L"data/meshes/teapot.vsgf", L"data/meshes/teapot2.vsgf");
-    ////_hrDebugPrintVSGF(L"data/meshes/teapot.vsgf",    L"/home/frol/temp/teapot1.txt");
-    ////_hrDebugPrintVSGF(L"data/meshes/teapot2.vsgf",   L"/home/frol/temp/teapot2.txt");
 
     //std::cout << test38_save_mesh_and_delayed_load() << std::endl;
     //std::cout << test49_light_geom_disk() << std::endl;
@@ -164,22 +197,12 @@ int main(int argc, const char** argv)
     //std::cout << test89_proc_texture_dirty() << std::endl;
     //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_49", L"opengl1"); // &test02_draw
     //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_38", L"opengl1Debug"); // &test02_draw
-  
-    //_hrCompressMesh  (L"/home/frol/temp/original.vsgf",    L"/home/frol/temp/compressed.vsgfc");
-    //_hrDecompressMesh(L"/home/frol/temp/compressed.vsgfc", L"/home/frol/temp/decompressed.vsgf");
-    //_hrDebugPrintVSGF(L"/home/frol/temp/original.vsgf",    L"/home/frol/temp/original.txt");
-    //_hrDebugPrintVSGF(L"/home/frol/temp/decompressed.vsgf",L"/home/frol/temp/decompressed.txt");
 
     //test82_proc_texture();
     //test93_proc_tex_recursive();
     //test39_mmlt_or_ibpt();
     //test42_load_library_basic();
     //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
-    
-    //std::cout << ALGR_TESTS::test_404_cornell_glossy() << std::endl;
-    //std::cout << ALGR_TESTS::test_405_cornell_with_mirror() << std::endl;
-    //std::cout << ALGR_TESTS::test_406_env_glass_ball_caustic() << std::endl;
-    //std::cout << std::endl << "g_MSEOutput = " << g_MSEOutput << std::endl;
     
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
     //window_main_free_look(L"tests_f/test_241", L"opengl1Debug");

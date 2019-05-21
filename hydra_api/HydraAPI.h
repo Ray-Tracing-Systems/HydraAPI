@@ -345,14 +345,6 @@ HAPI HRTextureNodeRef  hrTexture2DCreateFromMemory(int w, int h, int bpp, const 
 */
 HAPI HRTextureNodeRef hrTexture2DUpdateFromMemory(HRTextureNodeRef currentRef, int w, int h, int bpp, const void* a_data);
 
-/**
-\brief create 1D float array
-\param pScnData - scene data object ptr.
-\param data     - pointer to float data
-\param a_size   - array size
-
-*/
-HAPI HRTextureNodeRef  hrArray1DCreateFromMemory(const float* data, int a_size);
 
 /**
 \brief create procedural 2D texture with callback.
@@ -804,25 +796,46 @@ HAPI void*             hrMeshGetAttribPointer(HRMeshRef a_mesh, const wchar_t* a
 */
 HAPI void*             hrMeshGetPrimitiveAttribPointer(HRMeshRef a_mesh, const wchar_t* attributeName);
 
+/** \brief Batch is a sequence of triangles with the same material id.
+*
+*/
+struct HRBatchInfo
+{
+  int32_t matId;    ///< material id
+  int32_t triBegin; ///< begin of triangle sequence that have same material id "matId"
+  int32_t triEnd;   ///< end of triangle sequence that have same material id "matId"
+};
+
 /**
 \brief Information about opened mesh. // You can't call this function if mesh is not open
 
 */
-struct HROpenedMeshInfo
+struct HRMeshInfo
 {
-  HROpenedMeshInfo() : vertNum(0), indicesNum(0) {}
+  HRMeshInfo() : vertNum(0), indicesNum(0),
+                 batchesList(nullptr), batchesListSize(0),
+                 matNamesList(nullptr), matNamesListSize(0){}
 
   int32_t vertNum;
   int32_t indicesNum;
+  float   boxMin[3] ; ///< mesh bounding box min (x,y,z)
+  float   boxMax[3] ; ///< mesh bounding box max (x,y,z)
+  
+  const HRBatchInfo* batchesList;
+  int32_t            batchesListSize;
+  
+  const wchar_t** matNamesList;
+  int32_t         matNamesListSize;
 };
 
 /**
-\brief get mesh info. You can't call this function if mesh is not open.
-\param a_meshRef - mesh reference
-\return  Information about opened mesh. 
+\brief get mesh info.
+\param a_meshRef - mesh reference.
+\return  Information about mesh.
 
 */
-HAPI HROpenedMeshInfo  hrMeshGetInfo(HRMeshRef a_mesh);
+HAPI HRMeshInfo hrMeshGetInfo(HRMeshRef a_mesh);
+
 
 /**
 \brief get params node for mesh
