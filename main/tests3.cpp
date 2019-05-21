@@ -415,8 +415,6 @@ bool test19_material_change()
 
     HRTextureNodeRef testTex = hrTexture2DCreateFromFile(L"data/textures/163.jpg");
     hrTextureBind(testTex, diff);
-
-
   }
   hrMaterialClose(mat3);
 

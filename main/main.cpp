@@ -175,7 +175,7 @@ int main(int argc, const char** argv)
     //demo_01_plane_box();
     //window_main_free_look(L"/home/frol/PROG/CLSP_gitlab/database/statex_00002.xml", L"opengl1Debug");
     
-    run_all_api_tests(); // passed
+    //run_all_api_tests(); // passed
     //run_all_geo_tests();
     //run_all_mtl_tests();
     //run_all_lgt_tests();
@@ -185,7 +185,7 @@ int main(int argc, const char** argv)
 	  //std::cout << test56_mesh_change_open_existing() << std::endl;
     //std::cout << test33_update_from_file() << std::endl;
   
-    //std::cout << test16_texture_add_change() << std::endl;
+    std::cout << test19_material_change() << std::endl;
     
     //test44_four_lights_and_compressed_mesh();
     //test42_load_mesh_compressed();

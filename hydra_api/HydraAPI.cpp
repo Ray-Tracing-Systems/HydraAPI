@@ -1102,7 +1102,7 @@ HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pC
   std::wstring cngPath = outStr2.str();
   std::wstring newPath = outStr3.str();
 
-  g_objManager.scnData.m_xmlDoc.save_file(oldPath.c_str(), L"  ");
+  //g_objManager.scnData.m_xmlDoc.save_file(oldPath.c_str(), L"  ");
   g_objManager.m_tempPathToChangeFile = cngPath; // postpone g_objManager.scnData.m_xmlDocChanges.save_file(cngPath.c_str(), L"  ");
 
   hrCommit(a_pScn, a_pRender, a_pCam);
