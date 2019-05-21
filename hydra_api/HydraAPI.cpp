@@ -1060,7 +1060,9 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
     HR_DriverDraw  (g_objManager.scnInst[g_objManager.m_currSceneId], pSettings);
   }
   
-  _hrSaveCurrentChanges(g_objManager.scnData);
+  _hrSaveCurrentChanges(g_objManager.scnData); // save change if needed
+
+  g_objManager.scnData.m_changeList.clear();
 
   size_t chunks = g_objManager.scnData.m_vbCache.size();
   force_attrib(g_objManager.scnData.m_geometryLib, L"total_chunks").set_value(chunks);

@@ -252,6 +252,7 @@ HAPI void hrMaterialClose(HRMaterialRef a_pMat)
   pMat->opened     = false;
   pMat->pImpl      = nullptr;
   pMat->wasChanged = true;
+  g_objManager.scnData.m_changeList.matUsed.insert(pMat->id);
 }
 
 HAPI pugi::xml_node hrMaterialParamNode(HRMaterialRef a_matRef)

@@ -46,6 +46,7 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFile(const wchar_t* a_fileName, int w
   texRes.id   = int32_t(g_objManager.scnData.textures.size());
   texRes.wasChanged = true;
   g_objManager.scnData.textures.push_back(texRes);
+  g_objManager.scnData.m_changeList.texturesUsed.insert(texRes.id);
 
   HRTextureNodeRef ref;
   ref.id = HR_IDType(g_objManager.scnData.textures.size() - 1);
@@ -140,6 +141,7 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, int
   texRes.id   = int32_t(g_objManager.scnData.textures.size());
   texRes.wasChanged = true;
   g_objManager.scnData.textures.push_back(texRes);
+  g_objManager.scnData.m_changeList.texturesUsed.insert(texRes.id);
 
   HRTextureNodeRef ref;
   ref.id = HR_IDType(g_objManager.scnData.textures.size() - 1);
@@ -218,6 +220,7 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromMemory(int w, int h, int bpp, const v
   texRes.name = outStr.str();
   texRes.wasChanged = true;
   g_objManager.scnData.textures.push_back(texRes);
+  g_objManager.scnData.m_changeList.texturesUsed.insert(texRes.id);
 
   HRTextureNodeRef ref;
   ref.id = HR_IDType(g_objManager.scnData.textures.size() - 1);
@@ -349,6 +352,7 @@ HAPI HRTextureNodeRef hrArray1DCreateFromMemory(const float* a_data, int a_size)
   texRes.name = outStr.str();
   texRes.wasChanged = true;
   g_objManager.scnData.textures.push_back(texRes);
+  g_objManager.scnData.m_changeList.texturesUsed.insert(texRes.id);
 
   HRTextureNodeRef ref;
   ref.id = HR_IDType(g_objManager.scnData.textures.size() - 1);
@@ -536,7 +540,7 @@ HAPI void hrTextureNodeClose(HRTextureNodeRef a_pNode)
 
   pData->opened     = false;
   pData->wasChanged = true;
-
+  g_objManager.scnData.m_changeList.texturesUsed.insert(pData->id);
 }
 
 
@@ -612,6 +616,7 @@ HAPI HRTextureNodeRef  hrTexture2DCreateBakedLDR(HR_TEXTURE2D_PROC_LDR_CALLBACK 
     texRes.customDataSize = customDataSize;
     texRes.wasChanged     = true;
     g_objManager.scnData.textures.push_back(texRes);
+    g_objManager.scnData.m_changeList.texturesUsed.insert(texRes.id);
 
     HRTextureNodeRef ref;
     ref.id = texRes.id;
@@ -681,6 +686,7 @@ HAPI HRTextureNodeRef  hrTexture2DCreateBakedHDR(HR_TEXTURE2D_PROC_HDR_CALLBACK 
     texRes.customDataSize = customDataSize;
     texRes.wasChanged = true;
     g_objManager.scnData.textures.push_back(texRes);
+    g_objManager.scnData.m_changeList.texturesUsed.insert(texRes.id);
 
     HRTextureNodeRef ref;
     ref.id = texRes.id;
@@ -807,6 +813,7 @@ HAPI HRTextureNodeRef hrTextureCreateAdvanced(const wchar_t* a_texType, const wc
 	texRes.id         = int32_t(g_objManager.scnData.textures.size());
   texRes.wasChanged = true;
 	g_objManager.scnData.textures.push_back(texRes);
+  g_objManager.scnData.m_changeList.texturesUsed.insert(texRes.id);
 
 	HRTextureNodeRef ref;
 	ref.id = HR_IDType(g_objManager.scnData.textures.size() - 1);

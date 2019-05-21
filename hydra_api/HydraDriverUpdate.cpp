@@ -28,50 +28,6 @@ extern HR_INFO_CALLBACK  g_pInfoCallback;
 
 using resolution_dict = std::unordered_map<uint32_t, std::pair<uint32_t, uint32_t> >;
 
-struct ChangeList
-{
-  //ChangeList() = default;
-  
-  ChangeList(HRRender* a_pRender) : meshUsed(a_pRender->m_updatedMeshes), matUsed(a_pRender->m_updatedMaterials),
-                                    lightUsed(a_pRender->m_updatedLights), texturesUsed(a_pRender->m_updatedTextures)
-  {
-  
-  }
-  
-  ChangeList(ChangeList&& a_list) : drawSeq(std::move(a_list.drawSeq)),
-                                    meshUsed(a_list.meshUsed), matUsed(a_list.matUsed),
-                                    lightUsed(a_list.lightUsed), texturesUsed(a_list.texturesUsed)
-  {
-  
-  }
-
-  ChangeList& operator=(ChangeList&& a_list)
-  {
-    meshUsed         = std::move(a_list.meshUsed);
-    matUsed          = std::move(a_list.matUsed);
-    lightUsed        = std::move(a_list.lightUsed);
-    texturesUsed     = std::move(a_list.texturesUsed);
-    drawSeq          = std::move(a_list.drawSeq);
-    return *this;
-  }
-
-  std::unordered_set<int32_t>& meshUsed;
-  std::unordered_set<int32_t>& matUsed;
-  std::unordered_set<int32_t>& lightUsed;
-  std::unordered_set<int32_t>& texturesUsed;
-
-  struct InstancesInfo
-  {
-    std::vector<float>    matrices;
-    std::vector<int32_t>  linstid;
-    std::vector<int32_t>  remapid;
-    std::vector<int32_t>  instIdReal;
-  };
-
-  std::unordered_map<int32_t, InstancesInfo > drawSeq;
-
-};
-
 void ScanXmlNodeRecursiveAndAppendTexture(pugi::xml_node a_node, std::unordered_set<int32_t>& a_outSet)
 {
   if (std::wstring(a_node.name()) == L"texture")
@@ -382,7 +338,7 @@ void FindObjectsByDependency(ChangeList& objList, HRSceneInst& scn, IHRRenderDri
 //
 ChangeList FindChangedObjects(HRSceneInst& scn, HRRender* a_pRender)
 {
-  ChangeList objects(a_pRender);
+  ChangeList& objects = g_objManager.scnData.m_changeList; // a_pRender->m_updated;
   
   FindNewObjects(objects, scn);
   FindOldObjectsThatWeNeedToUpdate(objects, scn);

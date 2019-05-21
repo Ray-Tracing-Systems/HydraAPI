@@ -105,6 +105,7 @@ HAPI void hrCameraClose(HRCameraRef a_pCam)
 
   pCam->opened     = false;
   pCam->wasChanged = true;
+  //g_objManager.scnData.m_changeList.cameraChanged.insert(pCam->id);
 }
 
 HAPI pugi::xml_node hrCameraParamNode(HRCameraRef a_camRef)

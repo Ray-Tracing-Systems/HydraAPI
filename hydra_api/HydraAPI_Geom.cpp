@@ -229,6 +229,7 @@ HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName, bool a_copyToLo
 
   pMesh->wasChanged = true;
   pMesh->m_empty    = (nodeXml.attribute(L"bytesize").as_ullong() == 0);
+  g_objManager.scnData.m_changeList.meshUsed.insert(pMesh->id);
 
   if(a_copyToLocalFolder)
   {
@@ -538,6 +539,7 @@ HAPI void hrMeshClose(HRMeshRef a_mesh, bool a_compress)
   pMesh->wasChanged = true;
   pMesh->m_empty    = (nodeXml.attribute(L"bytesize").as_int() == 0);
   pMesh->m_input.m_saveCompressed = a_compress;
+  g_objManager.scnData.m_changeList.meshUsed.insert(pMesh->id);
 
   nodeXml.attribute(L"dl") = 0; // if we 'open/close' mesh then it became common, not delayed load object
   if(a_compress)

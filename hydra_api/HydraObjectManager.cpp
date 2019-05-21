@@ -276,6 +276,9 @@ void HRSceneData::init(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock)
   
   if(!a_attachMode)                                       // will do this init later inside HRSceneData::init_existing when open scene
     init_virtual_buffer(false, a_pVBSysMutexLock);
+
+  m_changeList.clear();
+  m_changeList.reserve(2048);
 }
 
 void HRSceneData::init_existing(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock)
@@ -289,6 +292,8 @@ void HRSceneData::init_existing(bool a_attachMode, HRSystemMutex* a_pVBSysMutexL
   m_sceneNode    = m_xmlDoc.child(L"scenes");
   
   init_virtual_buffer(a_attachMode, a_pVBSysMutexLock);
+  m_changeList.clear();
+  m_changeList.reserve(1024);
 }
 
 void HRSceneData::init_virtual_buffer(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock)
@@ -332,5 +337,7 @@ void HRSceneData::clear()
   m_iesCache.clear();
   
   m_shadowCatchers.clear();
+
+  m_changeList.clear();
 }
 

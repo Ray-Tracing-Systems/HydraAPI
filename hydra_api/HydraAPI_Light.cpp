@@ -167,6 +167,7 @@ HAPI void hrLightClose(HRLightRef a_pLight)
 
   pLight->opened     = false;
   pLight->wasChanged = true;
+  g_objManager.scnData.m_changeList.lightUsed.insert(pLight->id);
 
 }
 
