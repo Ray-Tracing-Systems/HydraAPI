@@ -366,7 +366,7 @@ HAPI void hrSceneOpen(HRSceneInstRef a_pScn, HR_OPEN_MODE a_mode)
     return;
   }
 
-  pugi::xml_node sceneNode = pScn->xml_node_next(a_mode);
+  pugi::xml_node sceneNode = pScn->xml_node();
 
   if (a_mode == HR_WRITE_DISCARD)
   {
@@ -410,7 +410,7 @@ HAPI pugi::xml_node hrSceneParamNode(HRSceneInstRef a_pScn)
     return pugi::xml_node();
   }
 
-  return pScn->xml_node_next(pScn->openMode); // pScn->_xml_node_curr();  // 
+  return pScn->xml_node(); // pScn->_xml_node_curr();  //
 }
 
 HAPI void hrSceneClose(HRSceneInstRef a_pScn)
@@ -428,7 +428,7 @@ HAPI void hrSceneClose(HRSceneInstRef a_pScn)
     return;
   }
 
-  pugi::xml_node sceneNode = pScn->xml_node_next(pScn->openMode);
+  pugi::xml_node sceneNode = pScn->xml_node();
 
   HydraXMLHelpers::WriteBBox(sceneNode, pScn->m_bbox);
 
@@ -735,7 +735,7 @@ HAPI HRRenderRef hrRenderCreate(const wchar_t* a_className, const wchar_t* a_fla
   nodeXml.append_attribute(L"type").set_value(a_className);
   nodeXml.append_attribute(L"id").set_value(ref.id);
   
-  g_objManager.renderSettings[ref.id].update_next(nodeXml); // ???
+  g_objManager.renderSettings[ref.id].update(nodeXml); // ???
   g_objManager.renderSettings[ref.id].id = ref.id;
 	
   settings.m_pDriver = CreateRenderFromString(a_className, a_flags);
@@ -761,7 +761,7 @@ HAPI HRRenderRef hrRenderCreateFromExistingDriver(const wchar_t* a_className, st
   nodeXml.append_attribute(L"type").set_value(a_className);
   nodeXml.append_attribute(L"id").set_value(ref.id);
 
-  g_objManager.renderSettings[ref.id].update_next(nodeXml); // ???
+  g_objManager.renderSettings[ref.id].update(nodeXml); // ???
   g_objManager.renderSettings[ref.id].id = ref.id;
 
   settings.m_pDriver = a_pDriver;
@@ -786,9 +786,7 @@ HAPI void hrRenderOpen(HRRenderRef a_pRender, HR_OPEN_MODE a_mode)
     HrError(L"hrRenderOpen, double open settings, with id = ", pSettings->id);
     return;
   }
-
-  pugi::xml_node nodeXml = pSettings->xml_node_next(a_mode);
-
+  
   pSettings->opened   = true;
   pSettings->openMode = a_mode;
 }
@@ -809,7 +807,7 @@ HAPI void hrRenderClose(HRRenderRef a_pRender)
     return;
   }
 
-  pugi::xml_node node = pSettings->xml_node_immediate();
+  pugi::xml_node node = pSettings->xml_node();
   pugi::xml_node tool = node.child(L"maxRaysPerPixel");
 
   if (tool != nullptr)
@@ -836,7 +834,7 @@ HAPI pugi::xml_node hrRenderParamNode(HRRenderRef a_pRender)
     return pugi::xml_node();
   }
 
-  return pSettings->xml_node_next(HR_OPEN_EXISTING);
+  return pSettings->xml_node();
 }
 
 //const int MAX_DEVICES_NUM = 256;
@@ -980,7 +978,7 @@ void _hrSaveCurrentChanges(HRSceneData& a_scnData)
   {
     if(texture.wasChanged)
     {
-      texturesLib.append_copy(texture.xml_node_immediate());
+      texturesLib.append_copy(texture.xml_node());
       texture.wasChanged = false;
     }
   }
@@ -989,7 +987,7 @@ void _hrSaveCurrentChanges(HRSceneData& a_scnData)
   {
     if(material.wasChanged)
     {
-      materialsLib.append_copy(material.xml_node_immediate());
+      materialsLib.append_copy(material.xml_node());
       material.wasChanged = false;
     }
   }
@@ -998,7 +996,7 @@ void _hrSaveCurrentChanges(HRSceneData& a_scnData)
   {
     if(mesh.wasChanged)
     {
-      geometryLib.append_copy(mesh.xml_node_immediate());
+      geometryLib.append_copy(mesh.xml_node());
       mesh.wasChanged = false;
     }
   }
@@ -1007,7 +1005,7 @@ void _hrSaveCurrentChanges(HRSceneData& a_scnData)
   {
     if(light.wasChanged)
     {
-      lightsLib.append_copy(light.xml_node_immediate());
+      lightsLib.append_copy(light.xml_node());
       light.wasChanged = false;
     }
   }
@@ -1016,13 +1014,13 @@ void _hrSaveCurrentChanges(HRSceneData& a_scnData)
   {
     if(cam.wasChanged)
     {
-      cameraLib.append_copy(cam.xml_node_immediate());
+      cameraLib.append_copy(cam.xml_node());
       cam.wasChanged = false;
     }
   }
   
   for(auto& scene : g_objManager.scnInst)
-    sceneNode.append_copy(scene.xml_node_immediate());
+    sceneNode.append_copy(scene.xml_node());
   
   //#TODO: add renderer settings ...
   
@@ -1051,7 +1049,7 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
   //
   bool needToAddLightsAsGeometry = (g_objManager.m_pDriver == nullptr) || !g_objManager.m_pDriver->Info().createsLightGeometryItself;
   if (needToAddLightsAsGeometry && pScn != nullptr)
-    HR_UpdateLightsGeometryAndMaterial(g_objManager.scnData.m_lightsLib, pScn->xml_node_immediate());
+    HR_UpdateLightsGeometryAndMaterial(g_objManager.scnData.m_lightsLib, pScn->xml_node());
   
   // we must loop through all scene element to define what mesh, material and light we need to Update on the render driver side
   //
@@ -1116,7 +1114,7 @@ HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pC
   ////////////// Call utility render driver here
   if(g_objManager.m_pDriver != nullptr)
   {
-    auto settings = g_objManager.renderSettings[a_pRender.id].xml_node_immediate();
+    auto settings = g_objManager.renderSettings[a_pRender.id].xml_node();
     bool doPrepass      = false;
     bool doDisplacement = false;
     if (settings.child(L"scenePrepass") != nullptr)

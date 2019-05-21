@@ -117,7 +117,7 @@ void AddUsedMaterialChildrenRecursive(ChangeList& objects, int32_t matId)
 		return;
 
   HRMaterial& mat = g_objManager.scnData.materials[matId];
-  auto matNode = mat.xml_node_immediate();
+  auto matNode = mat.xml_node();
   auto matType = std::wstring(matNode.attribute(L"type").as_string());
 
   if (matType == L"hydra_blend")
@@ -244,7 +244,7 @@ void FindNewObjects(ChangeList& objects, HRSceneInst& scn)
 
         // (1.3.1) list all textures for mat, add them to set
         //
-        ScanXmlNodeRecursiveAndAppendTexture(mat.xml_node_immediate(), objects.texturesUsed);
+        ScanXmlNodeRecursiveAndAppendTexture(mat.xml_node(), objects.texturesUsed);
       }
       else
         g_objManager.BadMaterialId(int32_t(matId));
@@ -267,7 +267,7 @@ void FindNewObjects(ChangeList& objects, HRSceneInst& scn)
       if (lightId < g_objManager.scnData.lights.size())
       {
         HRLight& light = g_objManager.scnData.lights[lightId];
-        ScanXmlNodeRecursiveAndAppendTexture(light.xml_node_immediate(), objects.texturesUsed);
+        ScanXmlNodeRecursiveAndAppendTexture(light.xml_node(), objects.texturesUsed);
       }
     }
   }
@@ -293,7 +293,7 @@ void FindOldObjectsThatWeNeedToUpdate(ChangeList& objects, HRSceneInst& scn)
 
   // AddMaterialsFromSceneRemapList
   //
-  pugi::xml_node scnRemLists = scn.xml_node_immediate().child(L"remap_lists");
+  pugi::xml_node scnRemLists = scn.xml_node().child(L"remap_lists");
 
   for (auto remapList : scnRemLists.children())
   {
@@ -331,7 +331,7 @@ void FindOldObjectsThatWeNeedToUpdate(ChangeList& objects, HRSceneInst& scn)
 
       // (1.3.1) list all textures for mat, add them to set
       //
-      ScanXmlNodeRecursiveAndAppendTexture(mat.xml_node_immediate(), objects.texturesUsed);
+      ScanXmlNodeRecursiveAndAppendTexture(mat.xml_node(), objects.texturesUsed);
     }
     else
       g_objManager.BadMaterialId(int32_t(matId));
@@ -399,7 +399,7 @@ ChangeList FindChangedObjects(HRSceneInst& scn, HRRender* a_pRender)
 
 void UpdateImageFromFileOrChunk(int32_t a_id, HRTextureNode& img, IHRRenderDriver* a_pDriver) // #TODO: debug and test this
 {
-  pugi::xml_node node = img.xml_node_immediate();
+  pugi::xml_node node = img.xml_node();
 
   bool delayedLoad = (node.attribute(L"dl").as_int() == 1);
 
@@ -502,7 +502,7 @@ int32_t HR_DriverUpdateTextures(HRSceneInst& scn, ChangeList& objList, IHRRender
       }
     }
 
-    pugi::xml_node texNodeXML  = texNode.xml_node_immediate();
+    pugi::xml_node texNodeXML  = texNode.xml_node();
     uint64_t       dataOffset  = texNodeXML.attribute(L"offset").as_ullong(); //#SAFETY: check dataOffset for too big value ?
     bool           delayedLoad = (texNodeXML.attribute(L"dl").as_int() == 1);
     bool isProc = (texNodeXML.attribute(L"loc").as_string() == std::wstring(L"") && !delayedLoad);
@@ -564,7 +564,7 @@ int32_t HR_DriverUpdateMaterials(HRSceneInst& scn, ChangeList& objList, IHRRende
   {
     if (matId < g_objManager.scnData.materials.size())
     {
-      pugi::xml_node node = g_objManager.scnData.materials[matId].xml_node_immediate();
+      pugi::xml_node node = g_objManager.scnData.materials[matId].xml_node();
       scn.matUsedByDrv.insert(matId);
       a_pDriver->UpdateMaterial(int32_t(matId), node);
       if (std::wstring(L"shadow_catcher") == node.attribute(L"type").as_string())
@@ -593,7 +593,7 @@ int32_t _hr_UtilityDriverUpdateMaterials(HRSceneInst& scn, IHRRenderDriver* a_pD
   {
     if (matId < g_objManager.scnData.materials.size())
     {
-      pugi::xml_node node = g_objManager.scnData.materials[matId].xml_node_immediate();
+      pugi::xml_node node = g_objManager.scnData.materials[matId].xml_node();
       a_pDriver->UpdateMaterial(matId, node);
       updatedMaterials++;
     }
@@ -621,7 +621,7 @@ int32_t HR_DriverUpdateLight(HRSceneInst& scn, ChangeList& objList, IHRRenderDri
   {
     if (id >= 0)
     {
-      pugi::xml_node node = g_objManager.scnData.lights[id].xml_node_immediate();
+      pugi::xml_node node = g_objManager.scnData.lights[id].xml_node();
 
       scn.lightUsedByDrv.insert(id);
       a_pDriver->UpdateLight(int32_t(id), node);
@@ -720,7 +720,7 @@ void HR_CopyMeshToInputMeshFromHydraGeomData(const HydraGeomData& data,  HRMesh:
 
 void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, std::vector<HRBatchInfo>& a_batches, IHRRenderDriver* a_pDriver, const wchar_t* path, int64_t a_byteSize)
 {
-  pugi::xml_node nodeXML = mesh.xml_node_immediate();
+  pugi::xml_node nodeXML = mesh.xml_node();
 
   std::ifstream fin;
   hr_ifstream_open(fin, path);
@@ -853,7 +853,7 @@ int32_t HR_DriverUpdateMeshes(HRSceneInst& scn, ChangeList& objList, IHRRenderDr
   {
     HRMesh& mesh            = g_objManager.scnData.meshes[id];
     HRMeshDriverInput input = HR_GetMeshDataPointers(id);
-    pugi::xml_node meshNode = mesh.xml_node_immediate();
+    pugi::xml_node meshNode = mesh.xml_node();
 
     const std::wstring filePathStr = GetRealFilePathOfDelayedMesh(meshNode);
     const wchar_t* path            = filePathStr.c_str();
@@ -906,7 +906,7 @@ int32_t _hr_UtilityDriverUpdateMeshes(HRSceneInst& scn, IHRRenderDriver* a_pDriv
   {
     HRMesh& mesh            = g_objManager.scnData.meshes[p];
     HRMeshDriverInput input = HR_GetMeshDataPointers(p);
-    pugi::xml_node meshNode = mesh.xml_node_immediate();
+    pugi::xml_node meshNode = mesh.xml_node();
 
     const std::wstring delayedLoad = meshNode.attribute(L"dl").as_string();
     const std::wstring locStr      = g_objManager.GetLoc(meshNode);
@@ -948,7 +948,7 @@ void HR_DriverUpdateCamera(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 
   HRCamera& cam = g_objManager.scnData.cameras[g_objManager.m_currCamId];
 
-  a_pDriver->UpdateCamera(cam.xml_node_immediate());
+  a_pDriver->UpdateCamera(cam.xml_node());
 }
 
 void HR_DriverUpdateSettings(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
@@ -958,7 +958,7 @@ void HR_DriverUpdateSettings(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
 
   auto& settings = g_objManager.renderSettings[g_objManager.m_currRenderId];
 
-  a_pDriver->UpdateSettings(settings.xml_node_immediate());
+  a_pDriver->UpdateSettings(settings.xml_node());
 }
 
 
@@ -996,7 +996,7 @@ int64_t EstimateGeometryMem(const ChangeList& a_objList)
   for (auto texId : a_objList.meshUsed)
   {
     auto meshObj          = g_objManager.scnData.meshes[texId];
-    pugi::xml_node node   = meshObj.xml_node_immediate();
+    pugi::xml_node node   = meshObj.xml_node();
   
     size_t byteSize2 = 0;
     if(meshObj.pImpl == nullptr) // well, we try to estimate it in some way
@@ -1032,7 +1032,7 @@ int64_t EstimateTexturesMem(const ChangeList& a_objList, std::unordered_map<int3
       continue;
 
     auto texObj           = g_objManager.scnData.textures[texId];
-    pugi::xml_node node   = texObj.xml_node_immediate();
+    pugi::xml_node node   = texObj.xml_node();
 
     const size_t byteSize    = node.attribute(L"bytesize").as_llong();
     const int widthOriginal  = node.attribute(L"width").as_int();
@@ -1117,9 +1117,9 @@ int64_t EstimateTexturesMemBump(const ChangeList& a_objList, std::unordered_map<
       continue;
 
     auto& hmat = g_objManager.scnData.materials[mId];
-    pugi::xml_node matNode = hmat.xml_node_immediate();
+    pugi::xml_node matNode = hmat.xml_node();
   
-    matNodesById[mId] = hmat.xml_node_immediate();
+    matNodesById[mId] = hmat.xml_node();
   }
 
   for (auto matNodePair : matNodesById)
@@ -1135,7 +1135,7 @@ int64_t EstimateTexturesMemBump(const ChangeList& a_objList, std::unordered_map<
       continue;
 
     auto texObj           = g_objManager.scnData.textures[texId];
-    pugi::xml_node node   = texObj.xml_node_immediate();
+    pugi::xml_node node   = texObj.xml_node();
     const size_t byteSize = node.attribute(L"bytesize").as_llong();
 
     if (byteSize == 0)
@@ -1170,7 +1170,7 @@ void EstimateMemHungryLights(const ChangeList& a_objList, bool* pIsHDR, int* pHu
   for (auto lid : a_objList.lightUsed)
   {
     auto objLight       = g_objManager.scnData.lights[lid];
-    pugi::xml_node node = objLight.xml_node_immediate();
+    pugi::xml_node node = objLight.xml_node();
 
     if (std::wstring(node.attribute(L"distribution").as_string()) == L"ies" ||
         std::wstring(node.attribute(L"shape").as_string()) == L"mesh")
@@ -1191,7 +1191,7 @@ void EstimateMemHungryLights(const ChangeList& a_objList, bool* pIsHDR, int* pHu
       {
         int32_t texId          = attrId.as_int();
         auto texObj            = g_objManager.scnData.textures[texId];
-        pugi::xml_node nodeTex = texObj.xml_node_immediate();
+        pugi::xml_node nodeTex = texObj.xml_node();
 
         const int32_t width    = nodeTex.attribute(L"width").as_int();
         const int32_t height   = nodeTex.attribute(L"height").as_int();
@@ -1344,7 +1344,7 @@ void HR_DriverUpdate(HRSceneInst& scn, HRRender* a_pRender)
   {
     // draw/add instances to scene
     //
-    a_pDriver->BeginScene(scn.xml_node_immediate());
+    a_pDriver->BeginScene(scn.xml_node());
 
     for (auto p1 = objList.drawSeq.begin(); p1 != objList.drawSeq.end(); p1++)
     {
@@ -1403,7 +1403,7 @@ void _hr_UtilityDriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
   allocInfo.lightNum    = int32_t(lightNum + lightNum/3 + 100);
   
   auto& settings = g_objManager.renderSettings[g_objManager.m_currRenderId];
-  auto resources_path = settings.xml_node_immediate().child(L"resources_path").text().as_string();
+  auto resources_path = settings.xml_node().child(L"resources_path").text().as_string();
   
   allocInfo.resourcesPath = resources_path;
   allocInfo.libraryPath   = g_objManager.scnData.m_path.c_str();
@@ -1438,7 +1438,7 @@ void _hr_UtilityDriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
   }
 
   ////////////////////////
-  a_pDriver->BeginScene(scn.xml_node_immediate());
+  a_pDriver->BeginScene(scn.xml_node());
   {
     // draw/add instances to scene
     for (auto p = drawSeq.begin(); p != drawSeq.end(); p++)

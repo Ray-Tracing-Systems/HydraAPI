@@ -41,27 +41,16 @@ struct HRObject
 
   /////////////////////////////////////////////////////////////////////////////////// xml nodes
 
-  virtual void update_next(pugi::xml_node a_newNode)
+  virtual void update(pugi::xml_node a_newNode)
   {
     m_xmlNode = a_newNode;
   }
-
-  virtual void update_this(pugi::xml_node a_newNode)
-  {
-    m_xmlNode = a_newNode;
-  }
-
-  virtual pugi::xml_node xml_node_immediate()
+  
+  virtual pugi::xml_node xml_node()
   {
     return m_xmlNode;
   }
-
-  virtual pugi::xml_node xml_node_next(HR_OPEN_MODE a_openMode)
-  {
-    return m_xmlNode;
-  }
-
-
+  
 protected:
 
   pugi::xml_node m_xmlNode;
@@ -371,10 +360,6 @@ struct HRSceneInst : public HRObject<IHRSceneInst>
   {
     m_xmlNode = a_newNode;
   }
-  pugi::xml_node xml_node_next(HR_OPEN_MODE a_openMode) override
-  {
-    return m_xmlNode;
-  }
 
   void clear()
   {
@@ -497,7 +482,7 @@ struct HRObjectManager
  
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 
-  HRSceneData              scnData; /// In our first impl sceneData can be only one and it is directly related to HRObjectManager 
+  HRSceneData              scnData; /// In our first impl sceneData can be only one and it is directly related to HRObjectManager
   std::vector<HRSceneInst> scnInst;
   std::vector<HRRender>    renderSettings;
   int32_t m_currSceneId;

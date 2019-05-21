@@ -183,7 +183,7 @@ HAPI bool hrRenderSaveFrameBufferLDR(HRRenderRef a_pRender, const wchar_t* a_out
     return false;
   }
 
-  pugi::xml_node node = pRender->xml_node_immediate();
+  pugi::xml_node node = pRender->xml_node();
 
   int w = node.child(L"width").text().as_int();
   int h = node.child(L"height").text().as_int();
@@ -224,7 +224,7 @@ HAPI bool hrRenderSaveFrameBufferHDR(HRRenderRef a_pRender, const wchar_t* a_out
     return false;
   }
 
-  pugi::xml_node node = pRender->xml_node_immediate();
+  pugi::xml_node node = pRender->xml_node();
 
   const int w = node.child(L"width").text().as_int();
   const int h = node.child(L"height").text().as_int();

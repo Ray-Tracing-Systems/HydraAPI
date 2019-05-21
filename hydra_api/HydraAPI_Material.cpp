@@ -46,7 +46,7 @@ HAPI HRMaterialRef hrMaterialCreate(const wchar_t* a_objectName)
   matNodeXml.append_attribute(L"name").set_value(mat.name.c_str());
   matNodeXml.append_attribute(L"type").set_value(L"hydra_material");
 
-  g_objManager.scnData.materials[ref.id].update_next(matNodeXml);
+  g_objManager.scnData.materials[ref.id].update(matNodeXml);
 
   return ref;
 }
@@ -90,7 +90,7 @@ HAPI HRMaterialRef hrMaterialCreateBlend(const wchar_t* a_objectName, HRMaterial
   matNodeXml.append_attribute(L"node_top").set_value(a_pMat1.id);
   matNodeXml.append_attribute(L"node_bottom").set_value(a_pMat2.id);
 
-  g_objManager.scnData.materials[ref.id].update_next(matNodeXml);
+  g_objManager.scnData.materials[ref.id].update(matNodeXml);
 
   return ref;
 }
@@ -111,11 +111,9 @@ HAPI void hrMaterialOpen(HRMaterialRef a_pMat, HR_OPEN_MODE a_openMode)
     return;
   }
 
-  pugi::xml_node nodeXml = pMat->xml_node_next(a_openMode);
+  pugi::xml_node nodeXml = pMat->xml_node();
   if (a_openMode == HR_WRITE_DISCARD)
-  {
     clear_node_childs(nodeXml);
-  }
 
   pMat->opened   = true;
   pMat->openMode = a_openMode;
@@ -225,7 +223,7 @@ void VerifyTex(int a_matId, pugi::xml_node a_currNode)
     if(pTex == nullptr)
       HrPrint(HR_SEVERITY_WARNING, L"hrMaterialClose(",a_matId,")->VerifyTex: invalid texture id: ", texId);
   
-    ArgCheck(a_matId, pTex->xml_node_immediate().child(L"code").child(L"generated"), a_currNode);
+    ArgCheck(a_matId, pTex->xml_node().child(L"code").child(L"generated"), a_currNode);
   }
   
   for(auto child : a_currNode.children())
@@ -248,7 +246,7 @@ HAPI void hrMaterialClose(HRMaterialRef a_pMat)
     return;
   }
 
-  auto matNode = pMat->xml_node_immediate();
+  auto matNode = pMat->xml_node();
   VerifyTex(a_pMat.id, matNode);
   
   pMat->opened     = false;
@@ -271,7 +269,7 @@ HAPI pugi::xml_node hrMaterialParamNode(HRMaterialRef a_matRef)
     return  pugi::xml_node();
   }
 
-  return pMat->xml_node_next(pMat->openMode);
+  return pMat->xml_node();
 }
 
 

@@ -187,7 +187,7 @@ HAPI HRMeshRef hrMeshCreate(const wchar_t* a_objectName)
   nodeXml.append_attribute(L"dl").set_value(L"0");
   nodeXml.append_attribute(L"path").set_value(L"");
 
-  g_objManager.scnData.meshes[ref.id].update_next(nodeXml);
+  g_objManager.scnData.meshes[ref.id].update(nodeXml);
   g_objManager.scnData.meshes[ref.id].id = ref.id;
 
   return ref;
@@ -217,7 +217,7 @@ HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName, bool a_copyToLo
   if (pMesh->pImpl == nullptr)
     return ref;
 
-  auto nodeXml = pMesh->xml_node_next(HR_OPEN_EXISTING);
+  auto nodeXml = pMesh->xml_node();
   auto pImpl   = pMesh->pImpl;
 
   FillXMLFromMeshImpl(nodeXml, pImpl, false);
@@ -459,15 +459,15 @@ HAPI void hrMeshOpen(HRMeshRef a_mesh, HR_PRIM_TYPE a_type, HR_OPEN_MODE a_mode)
   pMesh->m_inputPointers.clear();
 
   pMesh->m_allMeshMatId  = -1;
-  pugi::xml_node nodeXml = pMesh->xml_node_next(a_mode);
+  pugi::xml_node nodeXml = pMesh->xml_node();
 
   if (a_mode == HR_WRITE_DISCARD)
   {
-    nodeXml.attribute(L"name").set_value(pMesh->name.c_str());
-    nodeXml.attribute(L"type").set_value(L"vsgf");
-    nodeXml.attribute(L"bytesize").set_value(L"0");
-    nodeXml.attribute(L"loc").set_value(L"unknown");
-    nodeXml.attribute(L"offset").set_value(L"0");
+    nodeXml.force_attribute(L"name").set_value(pMesh->name.c_str());
+    nodeXml.force_attribute(L"type").set_value(L"vsgf");
+    nodeXml.force_attribute(L"bytesize").set_value(L"0");
+    nodeXml.force_attribute(L"loc").set_value(L"unknown");
+    nodeXml.force_attribute(L"offset").set_value(L"0");
   }
   else // open existing or read only
   {
@@ -491,7 +491,7 @@ HAPI pugi::xml_node hrMeshParamNode(HRMeshRef a_mesh)
     return pugi::xml_node();
   }
 
-  return pMesh->xml_node_next(pMesh->openMode);
+  return pMesh->xml_node();
 }
 
 HAPI void hrMeshClose(HRMeshRef a_mesh, bool a_compress)
@@ -528,7 +528,7 @@ HAPI void hrMeshClose(HRMeshRef a_mesh, bool a_compress)
   if (pMesh->pImpl == nullptr)
     return;
 
-  auto nodeXml = pMesh->xml_node_next(HR_OPEN_EXISTING);
+  auto nodeXml = pMesh->xml_node();
   auto pImpl   = pMesh->pImpl;
 
   FillXMLFromMeshImpl(nodeXml, pImpl, false); 
@@ -1298,7 +1298,7 @@ void _hrConvertOldVSGFMesh(const std::wstring& a_path, const std::wstring& a_new
   hrMeshClose(ref);
 
   HRMesh* pMesh               = g_objManager.PtrById(ref);
-  pugi::xml_node node         = pMesh->xml_node_next(HR_OPEN_READ_ONLY);
+  pugi::xml_node node         = pMesh->xml_node();
   std::wstring newFilePath    = g_objManager.scnData.m_path + L"/" + node.attribute(L"loc").as_string();
 
   hrFlush();

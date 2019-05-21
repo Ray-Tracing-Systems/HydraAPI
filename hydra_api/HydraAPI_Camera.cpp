@@ -36,7 +36,7 @@ HAPI HRCameraRef hrCameraCreate(const wchar_t* a_objectName)
   nodeXml.append_attribute(L"name").set_value(a_objectName);
   nodeXml.append_attribute(L"type").set_value(L"default_cam");
 
-  g_objManager.scnData.cameras[ref.id].update_next(nodeXml);
+  g_objManager.scnData.cameras[ref.id].update(nodeXml);
   g_objManager.scnData.cameras[ref.id].id = ref.id;
 
   return ref;
@@ -64,7 +64,7 @@ HAPI void hrCameraOpen(HRCameraRef a_pCam, HR_OPEN_MODE a_openMode)
   pCam->opened   = true;
   pCam->openMode = a_openMode;
 
-  pugi::xml_node nodeXml = pCam->xml_node_next(a_openMode);
+  pugi::xml_node nodeXml = pCam->xml_node();
 
   if (a_openMode == HR_WRITE_DISCARD)
   {
@@ -122,7 +122,7 @@ HAPI pugi::xml_node hrCameraParamNode(HRCameraRef a_camRef)
     return pugi::xml_node();
   }
 
-  return pCam->xml_node_next(HR_OPEN_EXISTING);
+  return pCam->xml_node();
 }
 
 HAPI HRCameraRef hrFindCameraByName(const wchar_t *a_cameraName)
@@ -164,9 +164,9 @@ HAPI HRRenderRef hrFindRenderByTypeName(const wchar_t* a_renderTypeName)
 
   for (auto rend : g_objManager.renderSettings)
   {
-    if (typeName == rend.xml_node_immediate().attribute(L"type").as_string())
+    if (typeName == rend.xml_node().attribute(L"type").as_string())
     {
-      res.id = rend.xml_node_immediate().attribute(L"id").as_int();
+      res.id = rend.xml_node().attribute(L"id").as_int();
       break;
     }
   }
