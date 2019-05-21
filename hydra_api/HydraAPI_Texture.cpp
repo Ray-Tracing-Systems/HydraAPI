@@ -18,29 +18,6 @@ extern std::wstring      g_lastErrorCallerPlace;
 extern HR_ERROR_CALLBACK g_pErrorCallback;
 extern HRObjectManager   g_objManager;
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-static pugi::xml_node my_force_child(pugi::xml_node a_parent, const wchar_t* a_name) ///< helper function
-{
-  pugi::xml_node child = a_parent.child(a_name);
-  if (child != nullptr)
-    return child;
-  else
-    return a_parent.append_child(a_name);
-}
-
-static pugi::xml_attribute my_force_attrib(pugi::xml_node a_parent, const wchar_t* a_name) ///< helper function
-{
-  pugi::xml_attribute attr = a_parent.attribute(a_name);
-  if (attr != nullptr)
-    return attr;
-  else
-    return a_parent.append_attribute(a_name);
-}
-
 std::wstring LocalDataPathOfCurrentSceneLibrary();
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -67,6 +44,7 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFile(const wchar_t* a_fileName, int w
   HRTextureNode texRes;
   texRes.name = std::wstring(a_fileName);
   texRes.id   = int32_t(g_objManager.scnData.textures.size());
+  texRes.wasChanged = true;
   g_objManager.scnData.textures.push_back(texRes);
 
   HRTextureNodeRef ref;
@@ -160,6 +138,7 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, int
   HRTextureNode texRes;
   texRes.name = std::wstring(a_fileName);
   texRes.id   = int32_t(g_objManager.scnData.textures.size());
+  texRes.wasChanged = true;
   g_objManager.scnData.textures.push_back(texRes);
 
   HRTextureNodeRef ref;
@@ -237,6 +216,7 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromMemory(int w, int h, int bpp, const v
 
   HRTextureNode texRes; // int w, int h, int bpp, const void* a_data
   texRes.name = outStr.str();
+  texRes.wasChanged = true;
   g_objManager.scnData.textures.push_back(texRes);
 
   HRTextureNodeRef ref;
@@ -367,6 +347,7 @@ HAPI HRTextureNodeRef hrArray1DCreateFromMemory(const float* a_data, int a_size)
 
   HRTextureNode texRes; // const float* a_data, int a_size
   texRes.name = outStr.str();
+  texRes.wasChanged = true;
   g_objManager.scnData.textures.push_back(texRes);
 
   HRTextureNodeRef ref;
@@ -627,9 +608,9 @@ HAPI HRTextureNodeRef  hrTexture2DCreateBakedLDR(HR_TEXTURE2D_PROC_LDR_CALLBACK 
     texRes.id   = int32_t(g_objManager.scnData.textures.size());
     texRes.customData = malloc(customDataSize);
     memcpy(texRes.customData, a_customData, size_t(customDataSize));
-    texRes.ldrCallback = a_proc;
+    texRes.ldrCallback    = a_proc;
     texRes.customDataSize = customDataSize;
-
+    texRes.wasChanged     = true;
     g_objManager.scnData.textures.push_back(texRes);
 
     HRTextureNodeRef ref;
@@ -698,7 +679,7 @@ HAPI HRTextureNodeRef  hrTexture2DCreateBakedHDR(HR_TEXTURE2D_PROC_HDR_CALLBACK 
     memcpy(texRes.customData, a_customData, size_t(customDataSize));
     texRes.hdrCallback = a_proc;
     texRes.customDataSize = customDataSize;
-
+    texRes.wasChanged = true;
     g_objManager.scnData.textures.push_back(texRes);
 
     HRTextureNodeRef ref;
@@ -822,8 +803,9 @@ HAPI HRTextureNodeRef hrTextureCreateAdvanced(const wchar_t* a_texType, const wc
 {
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	HRTextureNode texRes;
-	texRes.name = std::wstring(a_objName);
-	texRes.id   = int32_t(g_objManager.scnData.textures.size());
+	texRes.name       = std::wstring(a_objName);
+	texRes.id         = int32_t(g_objManager.scnData.textures.size());
+  texRes.wasChanged = true;
 	g_objManager.scnData.textures.push_back(texRes);
 
 	HRTextureNodeRef ref;
