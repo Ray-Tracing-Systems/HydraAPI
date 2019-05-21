@@ -423,11 +423,6 @@ struct HRSceneInst : public HRObject<IHRSceneInst>
 
   void clear()
   {
-    meshUsedByDrv.clear();
-    matUsedByDrv.clear();
-    lightUsedByDrv.clear();
-    texturesUsedByDrv.clear();
-
     drawList.clear();
     drawListLights.clear();
     pImpl = nullptr;
@@ -472,11 +467,6 @@ struct HRSceneInst : public HRObject<IHRSceneInst>
   std::vector<Instance>     drawListLights;
   std::vector<std::wstring> drawLightsCustom;
   size_t                    drawBeginLight;
-
-  std::unordered_set<int32_t> meshUsedByDrv;
-  std::unordered_set<int32_t> matUsedByDrv;
-  std::unordered_set<int32_t> lightUsedByDrv;
-  std::unordered_set<int32_t> texturesUsedByDrv;
 
   std::vector< std::vector<int32_t> >   m_remapList;
   std::unordered_map<uint64_t, int32_t> m_remapCache;

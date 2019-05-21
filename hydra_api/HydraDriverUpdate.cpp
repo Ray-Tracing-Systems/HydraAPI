@@ -22,6 +22,7 @@
 #include "RenderDriverOpenGL3_Utility.h"
 
 #include <chrono>
+#include <cassert>
 
 extern HRObjectManager g_objManager;
 extern HR_INFO_CALLBACK  g_pInfoCallback;
@@ -120,25 +121,20 @@ void AddInstanceToDrawSequence(const HRSceneInst::Instance &instance,
 
 }
 
-void FindNewObjects(ChangeList& objects, HRSceneInst& scn)
+void FindNewObjects(ChangeList& objects, HRSceneInst& scn, HRRender* a_pRender)
 {
+  assert(a_pRender != nullptr);
+
   // (1.1) loop through all scene instances to define what meshes used in scene  --> ~ok
   //
-  //std::cout << "##FindNewObjects, scnlib.meshUsedByDrv.size() = " << scnlib.meshUsedByDrv.size() << std::endl;
-
   for (size_t i = 0; i < scn.drawList.size(); i++)
   {
     auto instance = scn.drawList[i];
     if (instance.meshId >= g_objManager.scnData.meshes.size()) //#TODO: ? add log message if need to debug some thiing here
       continue;
 
-    auto& mesh = g_objManager.scnData.meshes[instance.meshId];
-
-    if (scn.meshUsedByDrv.find(instance.meshId) == scn.meshUsedByDrv.end() || mesh.wasChanged)
-    {
+    if (a_pRender->m_updated.meshUsed.find(instance.meshId) == a_pRender->m_updated.meshUsed.end())
       objects.meshUsed.insert(instance.meshId);
-      mesh.wasChanged = false;
-    }
     
     // form draw sequence for each mesh
     //
@@ -149,14 +145,8 @@ void FindNewObjects(ChangeList& objects, HRSceneInst& scn)
   {
     auto instance = scn.drawListLights[i];
 
-    auto& light = g_objManager.scnData.lights[instance.lightId];
-
-    if (scn.lightUsedByDrv.find(instance.lightId) == scn.lightUsedByDrv.end() || light.wasChanged)
-    {
+    if (a_pRender->m_updated.lightUsed.find(instance.lightId) == a_pRender->m_updated.lightUsed.end())
       objects.lightUsed.insert(instance.lightId);
-      light.wasChanged = false;
-    }
-    
   }
 
   // (1.2) loop through needed meshed to define what material used in scene      --> ?
@@ -240,8 +230,10 @@ void InsertObjectsThatWasChanged(const Container& a_container, MySet& a_set)
   }
 }
 
-void FindOldObjectsThatWeNeedToUpdate(ChangeList& objects, HRSceneInst& scn)
+void FindOldObjectsThatWeNeedToUpdate(ChangeList& objects, HRSceneInst& scn, HRRender* a_pRender)
 {
+  assert(a_pRender != nullptr);
+
   InsertObjectsThatWasChanged(g_objManager.scnData.meshes,    objects.meshUsed);
   InsertObjectsThatWasChanged(g_objManager.scnData.lights,    objects.lightUsed);
   InsertObjectsThatWasChanged(g_objManager.scnData.materials, objects.matUsed);
@@ -266,7 +258,7 @@ void FindOldObjectsThatWeNeedToUpdate(ChangeList& objects, HRSceneInst& scn)
       inStrStream >> matId;
 
       if (objects.matUsed.find(matId)  == objects.matUsed.end() && // we don't add this object to list yet
-          scn.matUsedByDrv.find(matId) == scn.matUsedByDrv.end())  // and it was not added in previous updates
+          a_pRender->m_updated.matUsed.find(matId) == a_pRender->m_updated.matUsed.end())  // and it was not added in previous updates
       {
         objects.matUsed.insert(matId);
         AddUsedMaterialChildrenRecursive(objects, matId);
@@ -281,7 +273,7 @@ void FindOldObjectsThatWeNeedToUpdate(ChangeList& objects, HRSceneInst& scn)
   {
     int matId = (*p);
 
-    if (size_t(matId) < g_objManager.scnData.materials.size() && scn.texturesUsedByDrv.find(matId) == scn.texturesUsedByDrv.end())
+    if (size_t(matId) < g_objManager.scnData.materials.size() && a_pRender->m_updated.texturesUsed.find(matId) == a_pRender->m_updated.texturesUsed.end())
     {
       HRMaterial& mat = g_objManager.scnData.materials[matId];
 
@@ -338,10 +330,10 @@ void FindObjectsByDependency(ChangeList& objList, HRSceneInst& scn, IHRRenderDri
 //
 ChangeList FindChangedObjects(HRSceneInst& scn, HRRender* a_pRender)
 {
-  ChangeList& objects = g_objManager.scnData.m_changeList; // a_pRender->m_updated;
+  ChangeList objects = g_objManager.scnData.m_changeList;
   
-  FindNewObjects(objects, scn);
-  FindOldObjectsThatWeNeedToUpdate(objects, scn);
+  FindNewObjects(objects, scn, a_pRender);
+  FindOldObjectsThatWeNeedToUpdate(objects, scn, a_pRender);
   
   auto* pDriver = a_pRender->m_pDriver.get();
   if(a_pRender->m_pDriver != nullptr)
@@ -417,8 +409,9 @@ void UpdateImageFromFileOrChunk(int32_t a_id, HRTextureNode& img, IHRRenderDrive
 
 /////
 //
-int32_t HR_DriverUpdateTextures(HRSceneInst& scn, ChangeList& objList, IHRRenderDriver* a_pDriver)
+int32_t HR_DriverUpdateTextures(HRSceneInst& scn, ChangeList& objList, HRRender* a_pRender)
 {
+  IHRRenderDriver* a_pDriver = a_pRender->m_pDriver.get();
   if (g_objManager.scnData.textures.empty() || a_pDriver == nullptr)
     return 0;
 
@@ -478,7 +471,7 @@ int32_t HR_DriverUpdateTextures(HRSceneInst& scn, ChangeList& objList, IHRRender
       }
       else if(isProc)
       {
-        scn.texturesUsedByDrv.insert(texId);
+        a_pRender->m_updated.texturesUsed.insert(texId);
         a_pDriver->UpdateImage(texId, -1, -1, 4, nullptr, texNodeXML);
       }
       else
@@ -486,7 +479,7 @@ int32_t HR_DriverUpdateTextures(HRSceneInst& scn, ChangeList& objList, IHRRender
     }
     else
     {
-      scn.texturesUsedByDrv.insert(texId);
+      a_pRender->m_updated.texturesUsed.insert(texId);
       a_pDriver->UpdateImage(texId, w, h, bpp, dataPtr + dataOffset, texNodeXML);
     }
 
@@ -500,12 +493,13 @@ int32_t HR_DriverUpdateTextures(HRSceneInst& scn, ChangeList& objList, IHRRender
 
 /////
 //
-int32_t HR_DriverUpdateMaterials(HRSceneInst& scn, ChangeList& objList, IHRRenderDriver* a_pDriver)
+int32_t HR_DriverUpdateMaterials(HRSceneInst& scn, ChangeList& objList, HRRender* a_pRender)
 {
-  a_pDriver->BeginMaterialUpdate();
-
-  if (g_objManager.scnData.materials.empty())
+  IHRRenderDriver* a_pDriver = a_pRender->m_pDriver.get();
+  if (g_objManager.scnData.materials.empty() || a_pDriver == nullptr)
     return 0;
+
+  a_pDriver->BeginMaterialUpdate();
 
   // we should update meterials in their id order !!!
   //
@@ -521,7 +515,7 @@ int32_t HR_DriverUpdateMaterials(HRSceneInst& scn, ChangeList& objList, IHRRende
     if (matId < g_objManager.scnData.materials.size())
     {
       pugi::xml_node node = g_objManager.scnData.materials[matId].xml_node();
-      scn.matUsedByDrv.insert(matId);
+      a_pRender->m_updated.matUsed.insert(matId);
       a_pDriver->UpdateMaterial(int32_t(matId), node);
       if (std::wstring(L"shadow_catcher") == node.attribute(L"type").as_string())
         g_objManager.scnData.m_shadowCatchers.insert(matId);
@@ -536,16 +530,17 @@ int32_t HR_DriverUpdateMaterials(HRSceneInst& scn, ChangeList& objList, IHRRende
   return updatedMaterials;
 }
 
-int32_t _hr_UtilityDriverUpdateMaterials(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
+int32_t _hr_UtilityDriverUpdateMaterials(HRSceneInst& scn, HRRender* a_pRender)
 {
-  a_pDriver->BeginMaterialUpdate();
-
-  if (g_objManager.scnData.materials.empty())
+  IHRRenderDriver* a_pDriver = a_pRender->m_pDriver.get();
+  if (g_objManager.scnData.materials.empty() || a_pDriver == nullptr)
     return 0;
+
+  a_pDriver->BeginMaterialUpdate();
 
   int32_t updatedMaterials = 0;
 
-  for(auto matId : scn.matUsedByDrv)
+  for(auto matId : a_pRender->m_updated.matUsed)
   {
     if (matId < g_objManager.scnData.materials.size())
     {
@@ -564,12 +559,13 @@ int32_t _hr_UtilityDriverUpdateMaterials(HRSceneInst& scn, IHRRenderDriver* a_pD
 
 /////
 //
-int32_t HR_DriverUpdateLight(HRSceneInst& scn, ChangeList& objList, IHRRenderDriver* a_pDriver)
+int32_t HR_DriverUpdateLight(HRSceneInst& scn, ChangeList& objList, HRRender* a_pRender)
 {
-  a_pDriver->BeginLightsUpdate();
-
-  if (g_objManager.scnData.lights.empty())
+  IHRRenderDriver* a_pDriver = a_pRender->m_pDriver.get();
+  if (g_objManager.scnData.lights.empty() || a_pDriver == nullptr)
     return 0;
+
+  a_pDriver->BeginLightsUpdate();
 
   int32_t updatedLights = 0;
 
@@ -579,7 +575,7 @@ int32_t HR_DriverUpdateLight(HRSceneInst& scn, ChangeList& objList, IHRRenderDri
     {
       pugi::xml_node node = g_objManager.scnData.lights[id].xml_node();
 
-      scn.lightUsedByDrv.insert(id);
+      a_pRender->m_updated.lightUsed.insert(id);
       a_pDriver->UpdateLight(int32_t(id), node);
       updatedLights++;
     }
@@ -784,8 +780,12 @@ const std::wstring GetRealFilePathOfDelayedMesh(pugi::xml_node a_node);
 
 /////
 //
-int32_t HR_DriverUpdateMeshes(HRSceneInst& scn, ChangeList& objList, IHRRenderDriver* a_pDriver)
+int32_t HR_DriverUpdateMeshes(HRSceneInst& scn, ChangeList& objList, HRRender* a_pRender)
 {
+  IHRRenderDriver* a_pDriver = a_pRender->m_pDriver.get();
+  if (g_objManager.scnData.meshes.empty() || a_pDriver == nullptr)
+    return 0;
+
   a_pDriver->BeginGeomUpdate();
 
   //static bool wasThere = false;
@@ -820,7 +820,7 @@ int32_t HR_DriverUpdateMeshes(HRSceneInst& scn, ChangeList& objList, IHRRenderDr
 
       if (input.pos4f == nullptr)
       {
-        scn.meshUsedByDrv.insert(id);
+        a_pRender->m_updated.meshUsed.insert(id);
 
         if (info.supportMeshLoadFromInternalFormat)
         {
@@ -834,7 +834,7 @@ int32_t HR_DriverUpdateMeshes(HRSceneInst& scn, ChangeList& objList, IHRRenderDr
       }
       else
       {
-        scn.meshUsedByDrv.insert(id);
+        a_pRender->m_updated.meshUsed.insert(id);
         a_pDriver->UpdateMesh(int32_t(id), meshNode, input, &mlist[0], int32_t(mlist.size()));
       }
 
@@ -848,8 +848,12 @@ int32_t HR_DriverUpdateMeshes(HRSceneInst& scn, ChangeList& objList, IHRRenderDr
   return updatedMeshes;
 }
 
-int32_t _hr_UtilityDriverUpdateMeshes(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
+int32_t _hr_UtilityDriverUpdateMeshes(HRSceneInst& scn, HRRender* a_pRender)
 {
+  IHRRenderDriver* a_pDriver = a_pRender->m_pDriver.get();
+  if (g_objManager.scnData.meshes.empty() || a_pDriver == nullptr)
+    return 0;
+
   a_pDriver->BeginGeomUpdate();
 
   HRDriverInfo info = a_pDriver->Info();
@@ -858,7 +862,7 @@ int32_t _hr_UtilityDriverUpdateMeshes(HRSceneInst& scn, IHRRenderDriver* a_pDriv
   int32_t updatedMeshes = 0;
 
 
-  for(auto p : scn.meshUsedByDrv)
+  for(auto p : a_pRender->m_updated.meshUsed)
   {
     HRMesh& mesh            = g_objManager.scnData.meshes[p];
     HRMeshDriverInput input = HR_GetMeshDataPointers(p);
@@ -1194,10 +1198,10 @@ void HR_DriverUpdate(HRSceneInst& scn, HRRender* a_pRender)
     g_objManager.driverAllocated.insert(a_pDriver);
     HRDriverAllocInfo allocInfo;
 
-	  const auto p1 = std::max_element(objList.meshUsed.begin(), objList.meshUsed.end());
+	  const auto p1 = std::max_element(objList.meshUsed.begin(),     objList.meshUsed.end());
 	  const auto p2 = std::max_element(objList.texturesUsed.begin(), objList.texturesUsed.end());
-	  const auto p3 = std::max_element(objList.matUsed.begin(), objList.matUsed.end());
-	  const auto p4 = std::max_element(objList.lightUsed.begin(), objList.lightUsed.end());
+	  const auto p3 = std::max_element(objList.matUsed.begin(),      objList.matUsed.end());
+	  const auto p4 = std::max_element(objList.lightUsed.begin(),    objList.lightUsed.end());
 
 	  const size_t geomNum  = (p1 == objList.meshUsed.end())     ? 10 : *p1;
     const size_t imgNum   = (p2 == objList.texturesUsed.end()) ? 10 : *p2;
@@ -1274,14 +1278,14 @@ void HR_DriverUpdate(HRSceneInst& scn, HRRender* a_pRender)
   if(g_objManager.m_attachMode && !g_hydraApiDisableSceneLoadInfo)
     HrPrint(HR_SEVERITY_INFO, L"HydraAPI, loading textures ... ");
   
-  int32_t updatedTextures  = HR_DriverUpdateTextures (scn, objList, a_pDriver);
-  int32_t updatedMaterials = HR_DriverUpdateMaterials(scn, objList, a_pDriver);
+  int32_t updatedTextures  = HR_DriverUpdateTextures (scn, objList, a_pRender);
+  int32_t updatedMaterials = HR_DriverUpdateMaterials(scn, objList, a_pRender);
   
   if(g_objManager.m_attachMode && !g_hydraApiDisableSceneLoadInfo)
     HrPrint(HR_SEVERITY_INFO, L"HydraAPI, loading meshes   ... ");
   
-  int32_t updatedMeshes    = HR_DriverUpdateMeshes   (scn, objList, a_pDriver);
-  int32_t updatedLights    = HR_DriverUpdateLight    (scn, objList, a_pDriver);
+  int32_t updatedMeshes    = HR_DriverUpdateMeshes   (scn, objList, a_pRender);
+  int32_t updatedLights    = HR_DriverUpdateLight    (scn, objList, a_pRender);
 
   HR_CheckCommitErrors    (scn, objList);
   
@@ -1336,22 +1340,24 @@ void HR_DriverDraw(HRSceneInst& scn, HRRender* a_pRender)
 }
 
 
-void _hr_UtilityDriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
+void _hr_UtilityDriverUpdate(HRSceneInst& scn, HRRender* a_pRender)
 {
-  if (a_pDriver == nullptr)
+  IHRRenderDriver* a_pDriver = a_pRender->m_pDriver.get();
+  if(a_pDriver == nullptr)
     return;
+
   
   HRDriverAllocInfo allocInfo;
 
-  const auto p1 = std::max_element(scn.meshUsedByDrv.begin(), scn.meshUsedByDrv.end());
-  const auto p2 = std::max_element(scn.texturesUsedByDrv.begin(), scn.texturesUsedByDrv.end());
-  const auto p3 = std::max_element(scn.matUsedByDrv.begin(), scn.matUsedByDrv.end());
-  const auto p4 = std::max_element(scn.lightUsedByDrv.begin(), scn.lightUsedByDrv.end());
+  const auto p1 = std::max_element(a_pRender->m_updated.meshUsed.begin(),     a_pRender->m_updated.meshUsed.end());
+  const auto p2 = std::max_element(a_pRender->m_updated.texturesUsed.begin(), a_pRender->m_updated.texturesUsed.end());
+  const auto p3 = std::max_element(a_pRender->m_updated.matUsed.begin(),      a_pRender->m_updated.matUsed.end());
+  const auto p4 = std::max_element(a_pRender->m_updated.lightUsed.begin(),    a_pRender->m_updated.lightUsed.end());
 
-  const size_t geomNum  = (p1 == scn.meshUsedByDrv.end())     ? 10 : *p1;
-  const size_t imgNum   = (p2 == scn.texturesUsedByDrv.end()) ? 10 : *p2;
-  const size_t matNum   = (p3 == scn.matUsedByDrv.end())      ? 10 : *p3;
-  const size_t lightNum = (p4 == scn.lightUsedByDrv.end())    ? 10 : *p4;
+  const size_t geomNum  = (p1 == a_pRender->m_updated.meshUsed.end())     ? 10 : *p1;
+  const size_t imgNum   = (p2 == a_pRender->m_updated.texturesUsed.end()) ? 10 : *p2;
+  const size_t matNum   = (p3 == a_pRender->m_updated.matUsed.end())      ? 10 : *p3;
+  const size_t lightNum = (p4 == a_pRender->m_updated.lightUsed.end())    ? 10 : *p4;
 
   allocInfo.geomNum     = int32_t(geomNum  + geomNum/3  + 100);
   allocInfo.imgNum      = int32_t(imgNum   + imgNum/3   + 100);
@@ -1370,8 +1376,8 @@ void _hr_UtilityDriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver)
   HR_DriverUpdateCamera(scn, a_pDriver);
   HR_DriverUpdateSettings(scn, a_pDriver);
 
-  int32_t updatedMaterials = _hr_UtilityDriverUpdateMaterials(scn, a_pDriver);
-  int32_t updatedMeshes    = _hr_UtilityDriverUpdateMeshes   (scn, a_pDriver);
+  int32_t updatedMaterials = _hr_UtilityDriverUpdateMaterials(scn, a_pRender);
+  int32_t updatedMeshes    = _hr_UtilityDriverUpdateMeshes   (scn, a_pRender);
 
 
   const auto dInfo = a_pDriver->DependencyInfo();
@@ -1635,15 +1641,16 @@ std::wstring HR_UtilityDriverStart(const wchar_t* state_path)
   auto offscreen_context = InitGLForUtilityDriver();               //#TODO: refactor this
 #endif
 
-  std::unique_ptr<IHRRenderDriver> utilityDriver = CreateRenderFromString(L"opengl3Utility", L"");
+  HRRender tempRender;
+  tempRender.m_pDriver = CreateRenderFromString(L"opengl3Utility", L"");
 
-  if (utilityDriver != nullptr && g_objManager.m_currSceneId < g_objManager.scnInst.size())
+  if (tempRender.m_pDriver != nullptr && g_objManager.m_currSceneId < g_objManager.scnInst.size())
   {
-    utilityDriver->SetInfoCallBack(g_pInfoCallback);
+    tempRender.m_pDriver->SetInfoCallBack(g_pInfoCallback);
 
-    _hr_UtilityDriverUpdate(g_objManager.scnInst[g_objManager.m_currSceneId], utilityDriver.get());
+    _hr_UtilityDriverUpdate(g_objManager.scnInst[g_objManager.m_currSceneId], &tempRender);
 
-    auto mipLevelsDict = getMipLevelsFromUtilityDriver(utilityDriver.get());
+    auto mipLevelsDict = getMipLevelsFromUtilityDriver(tempRender.m_pDriver.get());
 //
 //#ifdef IN_DEBUG
 //    auto pImgTool = g_objManager.m_pImgTool;
