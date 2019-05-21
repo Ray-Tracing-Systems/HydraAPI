@@ -979,31 +979,46 @@ void _hrSaveCurrentChanges(HRSceneData& a_scnData)
   for(auto& texture : a_scnData.textures)
   {
     if(texture.wasChanged)
+    {
       texturesLib.append_copy(texture.xml_node_immediate());
+      texture.wasChanged = false;
+    }
   }
   
   for(auto& material : a_scnData.materials)
   {
     if(material.wasChanged)
+    {
       materialsLib.append_copy(material.xml_node_immediate());
+      material.wasChanged = false;
+    }
   }
   
   for(auto& mesh : a_scnData.meshes)
   {
     if(mesh.wasChanged)
+    {
       geometryLib.append_copy(mesh.xml_node_immediate());
+      mesh.wasChanged = false;
+    }
   }
   
   for(auto& light : a_scnData.lights)
   {
     if(light.wasChanged)
+    {
       lightsLib.append_copy(light.xml_node_immediate());
+      light.wasChanged = false;
+    }
   }
   
   for(auto& cam : a_scnData.cameras)
   {
     if(cam.wasChanged)
+    {
       cameraLib.append_copy(cam.xml_node_immediate());
+      cam.wasChanged = false;
+    }
   }
   
   for(auto& scene : g_objManager.scnInst)
@@ -1012,27 +1027,6 @@ void _hrSaveCurrentChanges(HRSceneData& a_scnData)
   //#TODO: add renderer settings ...
   
   xmlDoc.save_file(fileName.c_str(), L"  ");
-}
-
-void _hrResetDirtyFlags(HRSceneData& a_scnData)
-{
-  for(auto& texture : a_scnData.textures)
-    texture.wasChanged = false;
-  
-  for(auto& material : a_scnData.materials)
-    material.wasChanged = false;
-  
-  for(auto& mesh : a_scnData.meshes)
-    mesh.wasChanged = false;
-  
-  for(auto& light : a_scnData.lights)
-    light.wasChanged = false;
-  
-  for(auto& cam : a_scnData.cameras)
-    cam.wasChanged = false;
-  
-  for(auto& scene : g_objManager.scnInst)
-    scene.wasChanged = false;
 }
 
 HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pCam) ///< non blocking commit, send commands to renderer and return immediately 
@@ -1059,8 +1053,6 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
   if (needToAddLightsAsGeometry && pScn != nullptr)
     HR_UpdateLightsGeometryAndMaterial(g_objManager.scnData.m_lightsLib, pScn->xml_node_immediate());
   
-  _hrSaveCurrentChanges(g_objManager.scnData);
-  
   // we must loop through all scene element to define what mesh, material and light we need to Update on the render driver side
   //
   if (g_objManager.m_pDriver != nullptr && g_objManager.m_currSceneId < g_objManager.scnInst.size())
@@ -1069,10 +1061,8 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
     HR_DriverUpdate(g_objManager.scnInst[g_objManager.m_currSceneId], pSettings);
     HR_DriverDraw  (g_objManager.scnInst[g_objManager.m_currSceneId], pSettings);
   }
-  else // reset all "changed" flags due to no render driver is active. #NOTE: note the problem with updates to different render drivers again in current version
-  {
-    _hrResetDirtyFlags(g_objManager.scnData);
-  }
+  
+  _hrSaveCurrentChanges(g_objManager.scnData);
 
   size_t chunks = g_objManager.scnData.m_vbCache.size();
   force_attrib(g_objManager.scnData.m_geometryLib, L"total_chunks").set_value(chunks);

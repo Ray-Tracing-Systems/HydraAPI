@@ -1004,8 +1004,8 @@ bool test08_camera_add_change()
   bool noDups1 = check_all_duplicates(L"tests/test_08/statex_00001.xml");
   bool noDups2 = check_all_duplicates(L"tests/test_08/statex_00002.xml");
 
-  return check_test_08_1(L"tests/test_08/change_00000.xml") && check_test_08_1(L"tests/test_08/statex_00001.xml") && 
-         check_test_08_2(L"tests/test_08/change_00001.xml") && check_test_08_2(L"tests/test_08/statex_00002.xml") && noDups1 && noDups2;
+  return check_test_08_1(L"tests/test_08/change_00000.xml") && check_test_08_1(L"tests/test_08/statex_00000.xml") &&
+         check_test_08_2(L"tests/test_08/change_00001.xml") && check_test_08_2(L"tests/test_08/statex_00001.xml") && noDups1 && noDups2;
 }
 
 bool check_test_09()
@@ -1014,7 +1014,7 @@ bool check_test_09()
   bool ok3 = false, ok4 = false;
   {
     pugi::xml_document doc;
-    doc.load_file(L"tests/test_09/statex_00001.xml");
+    doc.load_file(L"tests/test_09/statex_00000.xml");
 
     pugi::xml_node libLights = doc.child(L"render_lib");
 
@@ -1025,7 +1025,7 @@ bool check_test_09()
   }
 
   pugi::xml_document doc;
-  doc.load_file(L"tests/test_09/statex_00002.xml");
+  doc.load_file(L"tests/test_09/statex_00001.xml");
 
   pugi::xml_node libLights = doc.child(L"render_lib");
 
@@ -1151,8 +1151,7 @@ bool check_test_16()
 
 	bool tex1_state_name_ok = std::wstring(ts1.attribute(L"name").value()) == L"data/textures/texture1.bmp";
 	bool tex2_state_name_ok = std::wstring(ts2.attribute(L"name").value()) == L"data/textures/163.jpg";
-
-
+	
 	pugi::xml_document doc2;
 	doc2.load_file(L"tests/test_16/change_00001.xml");
 
@@ -1163,8 +1162,6 @@ bool check_test_16()
 	
 	bool tex1_name_ok = std::wstring(t1.attribute(L"name").value()) == L"data/textures/163.jpg";
 	//bool tex2_name_ok = std::wstring(t2.attribute(L"name").value()) == L"data/textures/texture1.bmp";
-
-
 	
 	return tex1_id_ok && tex2_id_ok && tex1_name_ok && tex1_state_name_ok && tex2_state_name_ok;
 }
@@ -1173,8 +1170,7 @@ bool check_test_16()
 bool test16_texture_add_change()
 {
 	hrSceneLibraryOpen(L"tests/test_16", HR_WRITE_DISCARD);
-
-
+	
 	HRMaterialRef mat = hrMaterialCreate(L"MyTestMaterial_1");   
 	HRMaterialRef mat2 = hrMaterialCreate(L"MyTestMaterial_2"); 
 
@@ -1190,8 +1186,7 @@ bool test16_texture_add_change()
 
 	}
 	hrMaterialClose(mat); 
-
-
+ 
 	hrMaterialOpen(mat2, HR_WRITE_DISCARD);
 	{
 		xml_node matNode = hrMaterialParamNode(mat2);

@@ -184,6 +184,8 @@ int main(int argc, const char** argv)
   
 	  //std::cout << test56_mesh_change_open_existing() << std::endl;
     //std::cout << test33_update_from_file() << std::endl;
+  
+    //std::cout << test16_texture_add_change() << std::endl;
     
     //test44_four_lights_and_compressed_mesh();
     //test42_load_mesh_compressed();
