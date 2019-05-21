@@ -1004,8 +1004,8 @@ bool test08_camera_add_change()
   bool noDups1 = check_all_duplicates(L"tests/test_08/statex_00001.xml");
   bool noDups2 = check_all_duplicates(L"tests/test_08/statex_00002.xml");
 
-  return check_test_08_1(L"tests/test_08/change_00000.xml") && check_test_08_1(L"tests/test_08/statex_00000.xml") &&
-         check_test_08_2(L"tests/test_08/change_00001.xml") && check_test_08_2(L"tests/test_08/statex_00001.xml") && noDups1 && noDups2;
+  return check_test_08_1(L"tests/test_08/change_00000.xml") && check_test_08_1(L"tests/test_08/statex_00001.xml") &&
+         check_test_08_2(L"tests/test_08/change_00001.xml") && check_test_08_2(L"tests/test_08/statex_00002.xml") && noDups1 && noDups2;
 }
 
 bool check_test_09()
@@ -1014,7 +1014,7 @@ bool check_test_09()
   bool ok3 = false, ok4 = false;
   {
     pugi::xml_document doc;
-    doc.load_file(L"tests/test_09/statex_00000.xml");
+    doc.load_file(L"tests/test_09/statex_00001.xml");
 
     pugi::xml_node libLights = doc.child(L"render_lib");
 
@@ -1025,7 +1025,7 @@ bool check_test_09()
   }
 
   pugi::xml_document doc;
-  doc.load_file(L"tests/test_09/statex_00001.xml");
+  doc.load_file(L"tests/test_09/statex_00002.xml");
 
   pugi::xml_node libLights = doc.child(L"render_lib");
 
