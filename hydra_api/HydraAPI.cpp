@@ -962,6 +962,79 @@ HAPI IHRRenderDriver* hrRenderDriverPointer(HRRenderRef a_pRender)
   return pSettings->m_pDriver.get();
 }
 
+
+void _hrSaveCurrentChanges(HRSceneData& a_scnData)
+{
+  const std::wstring& fileName = g_objManager.m_tempPathToChangeFile;
+  
+  pugi::xml_document  xmlDoc;
+  auto texturesLib  = xmlDoc.append_child(L"textures_lib");
+  auto materialsLib = xmlDoc.append_child(L"materials_lib");
+  auto geometryLib  = xmlDoc.append_child(L"geometry_lib");
+  auto lightsLib    = xmlDoc.append_child(L"lights_lib");
+  auto cameraLib    = xmlDoc.append_child(L"cam_lib");
+  auto settingsNode = xmlDoc.append_child(L"render_lib");
+  auto sceneNode    = xmlDoc.append_child(L"scenes");
+  
+  for(auto& texture : a_scnData.textures)
+  {
+    if(texture.wasChanged)
+      texturesLib.append_copy(texture.xml_node_immediate());
+  }
+  
+  for(auto& material : a_scnData.materials)
+  {
+    if(material.wasChanged)
+      materialsLib.append_copy(material.xml_node_immediate());
+  }
+  
+  for(auto& mesh : a_scnData.meshes)
+  {
+    if(mesh.wasChanged)
+      geometryLib.append_copy(mesh.xml_node_immediate());
+  }
+  
+  for(auto& light : a_scnData.lights)
+  {
+    if(light.wasChanged)
+      lightsLib.append_copy(light.xml_node_immediate());
+  }
+  
+  for(auto& cam : a_scnData.cameras)
+  {
+    if(cam.wasChanged)
+      cameraLib.append_copy(cam.xml_node_immediate());
+  }
+  
+  for(auto& scene : g_objManager.scnInst)
+    sceneNode.append_copy(scene.xml_node_immediate());
+  
+  //#TODO: add renderer settings ...
+  
+  xmlDoc.save_file(fileName.c_str(), L"  ");
+}
+
+void _hrResetDirtyFlags(HRSceneData& a_scnData)
+{
+  for(auto& texture : a_scnData.textures)
+    texture.wasChanged = false;
+  
+  for(auto& material : a_scnData.materials)
+    material.wasChanged = false;
+  
+  for(auto& mesh : a_scnData.meshes)
+    mesh.wasChanged = false;
+  
+  for(auto& light : a_scnData.lights)
+    light.wasChanged = false;
+  
+  for(auto& cam : a_scnData.cameras)
+    cam.wasChanged = false;
+  
+  for(auto& scene : g_objManager.scnInst)
+    scene.wasChanged = false;
+}
+
 HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pCam) ///< non blocking commit, send commands to renderer and return immediately 
 {
   HRRender* pSettings = g_objManager.PtrById(a_pRender);
@@ -985,9 +1058,9 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
   bool needToAddLightsAsGeometry = (g_objManager.m_pDriver == nullptr) || !g_objManager.m_pDriver->Info().createsLightGeometryItself;
   if (needToAddLightsAsGeometry && pScn != nullptr)
     HR_UpdateLightsGeometryAndMaterial(g_objManager.scnData.m_lightsLib, pScn->xml_node_immediate());
-
-  //g_objManager.scnData.m_xmlDocChanges.save_file(g_objManager.m_tempPathToChangeFile.c_str(), L"  "); // do postponed save after HR_UpdateLightsGeometryAndMaetrial
-
+  
+  _hrSaveCurrentChanges(g_objManager.scnData);
+  
   // we must loop through all scene element to define what mesh, material and light we need to Update on the render driver side
   //
   if (g_objManager.m_pDriver != nullptr && g_objManager.m_currSceneId < g_objManager.scnInst.size())
@@ -996,9 +1069,10 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
     HR_DriverUpdate(g_objManager.scnInst[g_objManager.m_currSceneId], pSettings);
     HR_DriverDraw  (g_objManager.scnInst[g_objManager.m_currSceneId], pSettings);
   }
-
-  //g_objManager.CommitChanges(g_objManager.scnData.m_xmlDocChanges, g_objManager.scnData.m_xmlDoc);   // copy nodes from m_xmlDocChanges to m_xmlDoc
-  //g_objManager.scnData.m_commitId++;
+  else // reset all "changed" flags due to no render driver is active. #NOTE: note the problem with updates to different render drivers again in current version
+  {
+    _hrResetDirtyFlags(g_objManager.scnData);
+  }
 
   size_t chunks = g_objManager.scnData.m_vbCache.size();
   force_attrib(g_objManager.scnData.m_geometryLib, L"total_chunks").set_value(chunks);

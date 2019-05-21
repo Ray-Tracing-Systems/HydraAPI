@@ -456,7 +456,8 @@ bool check_test_05_changes1()
   std::wstring matStr = scene.child(L"instance").attribute(L"matrix").as_string();
   bool matrixIsOk = (matStr == L"2 0 0 0 0 2 0 0 0 0 2 0 0 0 0 2 ");
 
-  return matrixIsOk && (mesh == nullptr);
+  const bool res = (matrixIsOk && (mesh == nullptr));
+  return res;
 }
 
 bool test05_instances_write_discard()
@@ -600,8 +601,7 @@ bool test05_instances_write_discard()
   hrSceneClose(scnRef);
 
   hrFlush();
-
-
+  
   // draw scene (2)
   //
   hrSceneOpen(scnRef, HR_WRITE_DISCARD);
