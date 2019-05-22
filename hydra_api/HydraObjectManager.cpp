@@ -42,34 +42,13 @@ namespace HydraRender
   std::unique_ptr<IHRImageTool> CreateImageTool();
 };
 
-void HRObjectManager::init(const wchar_t* a_className)
+void HRObjectManager::init(HRInitInfo a_initInfo)
 {
-  m_useLocalPath               = false;
-  m_copyTexFilesToLocalStorage = false;
-  m_sortTriIndices             = false;
-  m_attachMode                    = false;
-  m_computeBBoxes              = false;
-
-  std::wistringstream instr(a_className);
-
-  while (!instr.eof())
-  {
-    std::wstring name;
-    int val = 0;
-
-    instr >> name >> val; // #TODO: make this code secure, check string length, prevent buffer overflow
-
-    if (std::wstring(name) == L"-copy_textures_to_local_folder" && val != 0)
-      m_copyTexFilesToLocalStorage = true;
-    else if (std::wstring(name) == L"-local_data_path" && val != 0)
-      m_useLocalPath = true;
-    else if (std::wstring(name) == L"-sort_indices" && val != 0)
-      m_sortTriIndices = true;
-    else if (std::wstring(name) == L"-emptyvirtualbuffer" && val != 0)
-      m_attachMode = true;
-    else if (std::wstring(name) == L"-compute_bboxes" && val != 0)
-      m_computeBBoxes = true;
-  }
+  m_useLocalPath               = a_initInfo.localDataPath;
+  m_copyTexFilesToLocalStorage = a_initInfo.copyTexturesToLocalFolder;
+  m_sortTriIndices             = a_initInfo.sortMaterialIndices;
+  m_attachMode                 = (a_initInfo.vbSize <= 1024*1024);
+  m_computeBBoxes              = a_initInfo.computeMeshBBoxes;
   
   m_pFactory = new HydraFactoryCommon;
   if(SharedVirtualBufferIsEnabled())
@@ -86,9 +65,6 @@ void _hrDestroyPostProcess();
 
 void HRObjectManager::destroy()
 {
-  hr_free_system_mutex(m_pVBSysMutex);
-  delete m_pFactory; m_pFactory = nullptr;
-  
   g_objManager.m_pDriver = nullptr; // delete curr render driver pointer to prevent global reference;
   for (auto& r : renderSettings)
     r.clear();
@@ -109,6 +85,10 @@ void HRObjectManager::destroy()
 	scnData.m_sceneNode    = pugi::xml_node();
 
 	scnData.m_vbCache.Destroy();
+
+  if(m_pVBSysMutex != nullptr)
+    hr_free_system_mutex(m_pVBSysMutex);
+  delete m_pFactory; m_pFactory = nullptr;
 }
 
 const std::wstring HRObjectManager::GetLoc(pugi::xml_node a_node) const

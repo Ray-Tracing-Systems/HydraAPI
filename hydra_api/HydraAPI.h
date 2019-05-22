@@ -167,27 +167,23 @@ typedef void(*HR_TEXTURE2D_PROC_HDR_CALLBACK)(float* a_buffer, int w, int h, voi
 typedef void(*HR_TEXTURE2D_PROC_LDR_CALLBACK)(unsigned char* a_buffer, int w, int h, void* a_customData);
 
 
+struct HRInitInfo
+{
+  HRInitInfo() : copyTexturesToLocalFolder(false), localDataPath(true), sortMaterialIndices(true), computeMeshBBoxes(true),
+                 vbSize(int64_t(2048)*int64_t(1024*1024)) {}
+
+  bool    copyTexturesToLocalFolder; ///<!
+  bool    localDataPath            ; ///<!
+  bool    sortMaterialIndices      ; ///<!
+  bool    computeMeshBBoxes        ; ///<!
+  int64_t vbSize                   ; ///<! virtual buffer size in bytes
+};
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/**
-  \brief initialize render API
-  \param a_className - calss name of actual API implementation. Can be "" or nullptr.
-  In this case API will select implementation automaticly.
-
-*/
-
-HAPI void hrInit(const wchar_t* a_className);
-
-/**
-  \brief destroy everything 
-
-*/
-
-HAPI void hrDestroy();
 
 /**
 \brief return last error message. If no error, return nullptr
@@ -257,12 +253,15 @@ HAPI HRSceneLibraryFileInfo hrSceneLibraryExists(const wchar_t* a_libPath, wchar
  Passing nullptr or L"" to a_libPath will cause just to clear everything.
 
 */
-HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMode);
-
+HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMode, HRInitInfo a_initInfo = HRInitInfo());
 
 /**
-\brief get information about current  "scene library" / "API state" 
+  \brief destroy everything
+*/
+HAPI void hrSceneLibraryClose();
 
+/**
+\brief get information about current  "scene library" / "API state"
 */
 HAPI HRSceneLibraryInfo hrSceneLibraryInfo();
 

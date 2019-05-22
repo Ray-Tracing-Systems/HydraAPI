@@ -73,15 +73,15 @@ std::wstring ToWString(unsigned int i)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-HAPI void hrInit(const wchar_t* a_className)
+HAPI void _hrInit(HRInitInfo a_initInfo)
 {
   FreeImage_Initialise(true);
   g_objManager.destroy();
-  g_objManager.init(a_className);
+  g_objManager.init(a_initInfo);
   setlocale(LC_ALL, "C");
 }
 
-HAPI void hrDestroy()
+HAPI void hrSceneLibraryClose()
 {
   for (size_t i = 0; i < g_objManager.renderSettings.size(); i++)
   {
@@ -129,8 +129,11 @@ HAPI void hrErrorCallerPlace(const wchar_t* a_placeName, int a_line)
 
 int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::wstring& a_stateFileName);
 
-HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMode)
+HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMode, HRInitInfo a_initInfo)
 {
+  //hrSceneLibraryClose() ?
+  _hrInit(a_initInfo);
+
   std::wstring input(a_libPath);
   
   int libStateId   = -1;
