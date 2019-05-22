@@ -141,7 +141,7 @@ BBox CalcBoundingBox4f(const float* in_array, const uint32_t a_vertexNumber)
   return res;
 }
 
-size_t HR_SaveVSGFCompressed(const HydraGeomData& data, const wchar_t* a_outfileName, const char* a_customData, const int a_customDataSize)
+size_t HR_SaveVSGFCompressed(const HydraGeomData& data, const wchar_t* a_outfileName, const char* a_customData, const int a_customDataSize, bool a_placeToOrigin)
 {
   // (1) open file
   //
@@ -159,7 +159,32 @@ size_t HR_SaveVSGFCompressed(const HydraGeomData& data, const wchar_t* a_outfile
   const auto      indSize = data.getIndicesNumber()/3;
 
   const auto& matDrawList = FormMatDrawListRLE(std::vector<uint32_t>(pInd, pInd+indSize));
-  const auto& bbox        = CalcBoundingBox4f(data.getVertexPositionsFloat4Array(), data.getVerticesNumber());
+  auto bbox               = CalcBoundingBox4f(data.getVertexPositionsFloat4Array(), data.getVerticesNumber());
+
+  if (a_placeToOrigin)
+  {
+    const float centerX = 0.5f*(bbox.x_min + bbox.x_max);
+    const float centerY = 0.5f*(bbox.y_min + bbox.y_max);
+    const float centerZ = 0.5f*(bbox.z_min + bbox.z_max);
+
+    bbox.x_min -= centerX;
+    bbox.y_min -= centerY;
+    bbox.z_min -= centerZ;
+
+    bbox.x_max -= centerX;
+    bbox.y_max -= centerY;
+    bbox.z_max -= centerZ;
+
+    const int vNum = data.getVerticesNumber();
+    float4* vertices = (float4*)data.getVertexPositionsFloat4Array();
+
+    for (int i = 0; i < vNum; i++)
+    {
+      vertices[i].x -= centerX;
+      vertices[i].y -= centerY;
+      vertices[i].z -= centerZ;
+    }
+  }
 
   //std::cout << "bbox.x_min\t" << bbox.x_min << std::endl;
   //std::cout << "bbox.x_max\t" << bbox.x_max << std::endl;
@@ -213,7 +238,7 @@ size_t HR_SaveVSGFCompressed(const HydraGeomData& data, const wchar_t* a_outfile
   return totalFileSize;
 }
 
-size_t HR_SaveVSGFCompressed(const void* vsgfData, size_t a_vsgfSize, const wchar_t* a_outfileName, const char* a_customData, const int a_dataSize)
+size_t HR_SaveVSGFCompressed(const void* vsgfData, size_t a_vsgfSize, const wchar_t* a_outfileName, const char* a_customData, const int a_dataSize, bool a_placeToOrigin)
 {
   HydraGeomData::Header* pHeader = (HydraGeomData::Header*)vsgfData;
 
@@ -227,7 +252,7 @@ size_t HR_SaveVSGFCompressed(const void* vsgfData, size_t a_vsgfSize, const wcha
                (float*)   (p + offsets.offsetTang),   (float*)(p + offsets.offsetTexc),
                uint32_t(pHeader->indicesNum),  (uint32_t*)(p + offsets.offsetInd), (uint32_t*)(p + offsets.offsetMind));
 
-  return HR_SaveVSGFCompressed(data, a_outfileName, a_customData, a_dataSize);
+  return HR_SaveVSGFCompressed(data, a_outfileName, a_customData, a_dataSize, a_placeToOrigin);
 }
 
 

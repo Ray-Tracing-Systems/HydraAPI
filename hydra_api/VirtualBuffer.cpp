@@ -628,14 +628,16 @@ void ChunkPointer::SwapToDisk()
   
     std::stringstream strOut;
     
+    bool placeToOrigin = false;
     if(this->sysObjectId >= 0 && this->sysObjectId < g_objManager.scnData.meshes.size())
     {
       auto* pMesh = &g_objManager.scnData.meshes[this->sysObjectId];
       PrintMaterialListNames(strOut, pMesh);
+      placeToOrigin = pMesh->m_input.m_placeToOrigin;
     }
     std::string matnames = strOut.str();
     
-    HR_SaveVSGFCompressed(pVB->m_dataHalfCurr + localAddress, sizeInBytes, name2.c_str(), matnames.c_str(), matnames.size());
+    HR_SaveVSGFCompressed(pVB->m_dataHalfCurr + localAddress, sizeInBytes, name2.c_str(), matnames.c_str(), matnames.size(), placeToOrigin);
   }
   else
   {

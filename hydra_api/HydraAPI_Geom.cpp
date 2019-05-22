@@ -495,7 +495,7 @@ HAPI pugi::xml_node hrMeshParamNode(HRMeshRef a_mesh)
   return pMesh->xml_node();
 }
 
-HAPI void hrMeshClose(HRMeshRef a_mesh, bool a_compress)
+HAPI void hrMeshClose(HRMeshRef a_mesh, bool a_compress, bool a_placeToOrigin)
 {
   HRMesh* pMesh = g_objManager.PtrById(a_mesh);
   if (pMesh == nullptr)
@@ -539,6 +539,7 @@ HAPI void hrMeshClose(HRMeshRef a_mesh, bool a_compress)
   pMesh->wasChanged = true;
   pMesh->m_empty    = (nodeXml.attribute(L"bytesize").as_int() == 0);
   pMesh->m_input.m_saveCompressed = a_compress;
+  pMesh->m_input.m_placeToOrigin  = a_placeToOrigin;
   g_objManager.scnData.m_changeList.meshUsed.insert(pMesh->id);
 
   nodeXml.attribute(L"dl") = 0; // if we 'open/close' mesh then it became common, not delayed load object
