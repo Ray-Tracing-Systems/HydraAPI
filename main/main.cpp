@@ -39,8 +39,8 @@ void InfoCallBack(const wchar_t* message, const wchar_t* callerPlace, HR_SEVERIT
 
 void destroy()
 {
-  std::cout << "call destroy() --> hrDestroy()" << std::endl;
-  hrDestroy();
+  std::cout << "call destroy() --> hrSceneLibraryClose()" << std::endl;
+  hrSceneLibraryClose();
 }
 
 #ifdef WIN32
@@ -66,8 +66,8 @@ void sig_handler(int signo)
     default     : std::cerr << "\nmain_app, SIG_UNKNOWN"; break;
     break;
   }
-  std::cerr << " --> hrDestroy()" << std::endl;
-  hrDestroy();
+  std::cerr << " --> hrSceneLibraryClose()" << std::endl;
+  hrSceneLibraryClose();
   destroyedBySig = true;
 }
 #endif
@@ -94,7 +94,6 @@ void demo_01_plane_box();
 
 void render_test_scene()
 {
-  hrInit(L"");
   hrInfoCallback(&InfoCallBack);
   
   //hrSceneLibraryOpen(L".", HR_OPEN_EXISTING); //#NOTE: assume your working directoty is "CLSP/database"
@@ -129,13 +128,12 @@ void render_test_scene()
 int main(int argc, const char** argv)
 {
   //render_test_scene();
-  
-  hrInit(L"-copy_textures_to_local_folder 0 -local_data_path 1 -sort_indices 1 -compute_bboxes 1");
+  //hrInit(L"-copy_textures_to_local_folder 0 -local_data_path 1 -sort_indices 1 -compute_bboxes 1");
   hrInfoCallback(&InfoCallBack);
 
   hrErrorCallerPlace(L"main");  // for debug needs only
 
-  atexit(&destroy);                           // if application will terminated you have to call hrDestroy to free all connections with hydra.exe
+  atexit(&destroy);                           // if application will terminated you have to call hrSceneLibraryClose to free all connections with hydra.exe
 #if defined WIN32
   SetConsoleCtrlHandler(&HandlerExit, TRUE);  // if some one kill console :)
   wchar_t NPath[512];
@@ -175,15 +173,17 @@ int main(int argc, const char** argv)
     //demo_01_plane_box();
     //window_main_free_look(L"/home/frol/PROG/CLSP_gitlab/database/statex_00002.xml", L"opengl1Debug");
     
-    //run_all_api_tests();
+    run_all_api_tests(); // passed
     //run_all_geo_tests();
     //run_all_mtl_tests();
     //run_all_lgt_tests();
 	  //run_all_alg_tests();
 	  //run_all_ipp_tests();
   
-	  std::cout << test56_mesh_change_open_existing() << std::endl;
-    //std::cout << test57_single_instance() << std::endl;
+	  //std::cout << test56_mesh_change_open_existing() << std::endl;
+    //std::cout << test33_update_from_file() << std::endl;
+  
+    //std::cout << test19_material_change() << std::endl;
     
     //test44_four_lights_and_compressed_mesh();
     //test42_load_mesh_compressed();
@@ -238,7 +238,7 @@ int main(int argc, const char** argv)
 
   hrErrorCallerPlace(L"main"); // for debug needs only
 
-  hrDestroy();
+  hrSceneLibraryClose();
 
   return 0;
 }

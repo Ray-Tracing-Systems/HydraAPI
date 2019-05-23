@@ -2992,7 +2992,7 @@ bool test49_light_geom_disk()
 
 void run_test_50()
 {
-	hrInit(L"OLOLO");
+	//hrInit(L"OLOLO");
 	hrSceneLibraryOpen(L"tests/test_50", HR_WRITE_DISCARD);
 
 	// material definition

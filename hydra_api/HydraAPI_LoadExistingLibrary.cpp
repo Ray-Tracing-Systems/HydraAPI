@@ -43,7 +43,7 @@ HRTextureNodeRef _hrTexture2DCreateFromNode(pugi::xml_node a_node)
   HRTextureNode& texture   = g_objManager.scnData.textures[ref.id];
   texture.m_loadedFromFile = true;
 
-  g_objManager.scnData.textures      [ref.id].update_this(a_node);
+  g_objManager.scnData.textures      [ref.id].update(a_node);
   g_objManager.scnData.m_textureCache[a_fileName2] = ref.id; // remember texture id for given file name
 
   if (a_chunkPath != L"")
@@ -63,7 +63,7 @@ HRMaterialRef _hrMaterialCreateFromNode(pugi::xml_node a_node)
   mat.name = std::wstring(a_objectName);
   mat.id = ref.id;
   g_objManager.scnData.materials.push_back(mat);
-  g_objManager.scnData.materials[ref.id].update_this(a_node);
+  g_objManager.scnData.materials[ref.id].update(a_node);
 
   return ref;
 }
@@ -95,7 +95,7 @@ HAPI HRMeshRef _hrMeshCreateFromNode(pugi::xml_node a_node)
   HRMesh mesh;
   mesh.name = std::wstring(a_objectName);
   mesh.id   = ref.id;
-  mesh.update_this(a_node);
+  mesh.update(a_node);
   g_objManager.scnData.meshes.push_back(mesh);
 
   HRMesh* pMesh = &g_objManager.scnData.meshes.back();
@@ -119,7 +119,7 @@ HRLightRef _hrLightCreateFromNode(pugi::xml_node a_node)
   light.id = ref.id;
   g_objManager.scnData.lights.push_back(light);
 
-  g_objManager.scnData.lights[ref.id].update_this(a_node);
+  g_objManager.scnData.lights[ref.id].update(a_node);
   g_objManager.scnData.lights[ref.id].id = ref.id;
 
   return ref;
@@ -138,7 +138,7 @@ HAPI HRCameraRef _hrCameraCreateFromNode(pugi::xml_node a_node)
   g_objManager.scnData.cameras.push_back(cam);
 
 
-  g_objManager.scnData.cameras[ref.id].update_this(a_node);
+  g_objManager.scnData.cameras[ref.id].update(a_node);
   g_objManager.scnData.cameras[ref.id].id = ref.id;
 
   return ref;
@@ -233,7 +233,7 @@ HRRenderRef _hrRenderSettingsFromNode(pugi::xml_node a_node)
 
   HRRender& settings = g_objManager.renderSettings[ref.id];
 
-  g_objManager.renderSettings[ref.id].update_this(a_node); // ???
+  g_objManager.renderSettings[ref.id].update(a_node); // ???
   g_objManager.renderSettings[ref.id].id = ref.id;
 
   settings.m_pDriver = CreateRenderFromString(a_className, L"");
@@ -438,7 +438,7 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
     }
     
     g_objManager.scnInst[a_pScn.id].driverDirtyFlag = true; // driver need to Update this scene
-    g_objManager.scnInst[a_pScn.id].update_this(node);
+    g_objManager.scnInst[a_pScn.id].update(node);
   }
 
   // (9) load render settings

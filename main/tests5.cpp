@@ -567,10 +567,10 @@ bool test33_update_from_file()
 
 	// geometry
 	//
-	HRMeshRef cubeRef = HRMeshFromSimpleMesh(L"my_cube", CreateCube(0.75f), 0);
+	HRMeshRef cubeRef  = HRMeshFromSimpleMesh(L"my_cube", CreateCube(0.75f), 0);
 	HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane", CreatePlane(2.0f), 1);
-	HRMeshRef sphRef = HRMeshFromSimpleMesh(L"my_sphere", CreateSphere(0.5f, 32), 2);
-	HRMeshRef torRef = HRMeshFromSimpleMesh(L"my_torus", CreateTorus(0.2f, 0.5f, 32, 32), 0);
+	HRMeshRef sphRef   = HRMeshFromSimpleMesh(L"my_sphere", CreateSphere(0.5f, 32), 2);
+	HRMeshRef torRef   = HRMeshFromSimpleMesh(L"my_torus", CreateTorus(0.2f, 0.5f, 32, 32), 0);
 
 	// material and textures
 	//
