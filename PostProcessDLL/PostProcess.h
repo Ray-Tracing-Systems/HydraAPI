@@ -787,8 +787,8 @@ void Bilinear3(const float3 inData, float3 outData[], float newPosX, float newPo
   // | dxy1 | dxy2 |
   // |------|------|
 
-  const int floorY = floor(newPosY);
-  const int floorX = floor(newPosX);
+  const int floorY = (int)floor(newPosY);
+  const int floorX = (int)floor(newPosX);
 
   const int     dxy1 = floorY * m_width + floorX;
   int           dxy2 = dxy1 + 1;

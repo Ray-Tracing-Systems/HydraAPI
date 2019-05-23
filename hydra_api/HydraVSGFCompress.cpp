@@ -161,6 +161,9 @@ size_t HR_SaveVSGFCompressed(const HydraGeomData& data, const wchar_t* a_outfile
   const auto& matDrawList = FormMatDrawListRLE(std::vector<uint32_t>(pInd, pInd+indSize));
   const auto& bbox        = CalcBoundingBox4f(data.getVertexPositionsFloat4Array(), data.getVerticesNumber());
 
+  //std::cout << "bbox.x_min\t" << bbox.x_min << std::endl;
+  //std::cout << "bbox.x_max\t" << bbox.x_max << std::endl;
+  
   //const std::string xmlNodeData = "";
 
   HydraHeaderC h2;
@@ -252,21 +255,24 @@ HydraGeomData HR_LoadVSGFCompressedData(const wchar_t* a_fileName, std::vector<i
   HR_LoadVSGFCompressedBothHeaders(fin,
                                    batchList, h1, h2);
 
-  dataBuffer.resize(h1.fileSizeInBytes / sizeof(int) + 1);
+  
+  const size_t bufferSize = CalcVSGFSize(h1.verticesNum, h1.indicesNum);
+  dataBuffer.resize(bufferSize/sizeof(int) + 1);
   char* p = (char*)dataBuffer.data();
 
   memcpy(p, &h1, sizeof(HydraGeomData::Header));
 
   const VSGFOffsets offsets = CalcOffsets(h1.verticesNum, h1.indicesNum);
-
+  
+  int* pMaterialsId = (int*)(p + offsets.offsetMind);
+  
   HydraGeomData data;
   data.setData(uint32_t(h1.verticesNum), (float*)(p + offsets.offsetPos),  (float*)(p + offsets.offsetNorm),
                                          (float*)(p + offsets.offsetTang), (float*)(p + offsets.offsetTexc),
-               uint32_t(h1.indicesNum),  (uint32_t*)(p + offsets.offsetInd), (uint32_t*)(p + offsets.offsetMind));
+               uint32_t(h1.indicesNum),  (uint32_t*)(p + offsets.offsetInd), (uint32_t*)(pMaterialsId));
 
   ReadCompressed(data, fin, h2.compressedSizeInBytes);
-
-  int* pMaterialsId = (int*)(p + offsets.offsetMind);
+  
 
   for(int batchId = 0; batchId < batchList.size(); batchId++)
   {

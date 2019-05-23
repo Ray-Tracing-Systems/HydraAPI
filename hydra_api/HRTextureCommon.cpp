@@ -130,7 +130,7 @@ std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTexture2DFromMemory(HR
   const size_t textureSizeInBytes     = size_t(width)*size_t(height)*size_t(bpp);
   const size_t totalByteSizeOfTexture = textureSizeInBytes + size_t(2 * sizeof(unsigned int));
   
-  const size_t chunkId = g_objManager.scnData.m_vbCache.AllocChunk(totalByteSizeOfTexture, pSysObj->id);
+  const size_t chunkId                = g_objManager.scnData.m_vbCache.AllocChunk(totalByteSizeOfTexture, pSysObj->id);
 
   if (chunkId == size_t(-1))
   {

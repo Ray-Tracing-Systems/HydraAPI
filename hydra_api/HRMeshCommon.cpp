@@ -132,6 +132,7 @@ BBox mergeBBoxes(const BBox &A, const BBox &B)
   return C;
 }
 
+std::string  ws2s(const std::wstring& s);
 
 struct MeshVSGF : public IHRMesh
 {
@@ -177,7 +178,38 @@ struct MeshVSGF : public IHRMesh
   
   const std::vector<HRBatchInfo>& MList() const override { return m_matDrawList; }
   std::vector<HRBatchInfo>&       MList() override { return m_matDrawList; }
-
+  
+  std::string MaterialNamesList() override
+  {
+    auto batchList = MList();
+    
+    std::stringstream strOut;
+    for(size_t i=0;i<batchList.size();i++)
+    {
+      int matId = batchList[i].matId;
+    
+      if(matId < 0)
+      {
+        strOut << "undefined;";
+        continue;
+      }
+    
+      HRMaterialRef matRef;
+      matRef.id = matId;
+    
+      auto* pMaterial = g_objManager.PtrById(matRef);
+      if(pMaterial == nullptr)
+      {
+        strOut << "undefined;";
+        continue;
+      }
+    
+      std::string matName = ws2s(pMaterial->name);
+      strOut << matName.c_str() << ";";
+    }
+    return strOut.str();
+  }
+  
   const std::unordered_map<std::wstring, std::tuple<std::wstring, size_t, size_t, int> >& GetOffsAndSizeForAttrs() const override { return m_custAttrOffsAndSize; }
 
   size_t   m_sizeInBytes;
@@ -244,6 +276,9 @@ struct MeshVSGFProxy : public MeshVSGF
   {
     ReadVSGFHeader(a_vsgfPath);
   }
+  
+  std::string MaterialNamesList() override { return matNames; }
+  std::string matNames;
 
 protected:
 
@@ -268,6 +303,19 @@ protected:
       m_chunkId     = size_t(-1);
 
       //#TODO: read file names list;
+      //
+      matNames.resize(h2.customDataSize);
+      fin.seekg(h2.customDataOffset, std::ios_base::beg);
+      fin.read ((char*)matNames.c_str(), h2.customDataSize);
+      fin.close();
+      
+      m_bbox.x_min = h2.boxMin[0];
+      m_bbox.y_min = h2.boxMin[1];
+      m_bbox.z_min = h2.boxMin[2];
+  
+      m_bbox.x_max = h2.boxMax[0];
+      m_bbox.y_max = h2.boxMax[1];
+      m_bbox.z_max = h2.boxMax[2];
     }
     else
     {
@@ -362,8 +410,8 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
 
   // sorting triIndices by matIndices
   
-  const uint32_t* triIndices = &input.triIndices[0];
-  const uint32_t* matIndices = &input.matIndices[0];
+  const uint32_t* triIndices = input.triIndices.data();
+  const uint32_t* matIndices = input.matIndices.data();
 
   std::vector<uint32_t> sortedTriIndices;
   std::vector<uint32_t> sortedMatIndices;
@@ -395,7 +443,7 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
 
   // (1) common mesh attributes
   //
-  data.setData(uint32_t(totalVertNumber), &input.verticesPos[0], &input.verticesNorm[0], &input.verticesTangent[0], &input.verticesTexCoord[0],
+  data.setData(uint32_t(totalVertNumber), input.verticesPos.data(), input.verticesNorm.data(), input.verticesTangent.data(), input.verticesTexCoord.data(),
                uint32_t(totalMeshTriIndices), triIndices, matIndices);
 
   const size_t totalByteSizeCommon = data.sizeInBytes();

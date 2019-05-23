@@ -7,6 +7,9 @@
 #include <csignal>
 #include "HydraLegacyUtils.h"
 
+#include <sys/types.h>
+#include <pwd.h>
+
 struct HydraProcessLauncher : IHydraNetPluginAPI
 {
   HydraProcessLauncher(const char* imageFileName, int width, int height, const char* connectionType, std::ostream* a_pLog = nullptr);
@@ -237,11 +240,12 @@ void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params
   
   if (m_connectionType == "main")
   {
-    char user_name[L_cuserid];
-    cuserid(user_name);
+    //char user_name[L_cuserid];
+    //cuserid(user_name);
 
+    auto username = getpwuid(geteuid());
     std::stringstream ss;
-    ss << "/home/" << user_name << "/hydra/";
+    ss << username->pw_dir << "/hydra/";
 
     std::string hydraPath = ss.str();
     if (a_params.customExePath != "")

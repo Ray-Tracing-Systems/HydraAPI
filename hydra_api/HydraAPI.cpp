@@ -290,9 +290,10 @@ HAPI HRSceneLibraryFileInfo hrSceneLibraryExists(const wchar_t* a_libPath, wchar
 
   auto texturesLib  = xmlDoc.child(L"textures_lib");
   auto materialsLib = xmlDoc.child(L"materials_lib");
-  auto lightsLib    = xmlDoc.child(L"lights_lib");
-  auto cameraLib    = xmlDoc.child(L"cam_lib");
   auto geometryLib  = xmlDoc.child(L"geometry_lib");
+  auto lightsLib    = xmlDoc.child(L"lights_lib");
+  
+  auto cameraLib    = xmlDoc.child(L"cam_lib");
   auto settingsNode = xmlDoc.child(L"render_lib");
   auto sceneNode    = xmlDoc.child(L"scenes");
 
@@ -916,7 +917,7 @@ static pugi::xml_attribute force_attrib(pugi::xml_node a_parent, const wchar_t* 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void HR_UpdateLightsGeometryAndMaterial(pugi::xml_node a_lightLibChanges, pugi::xml_node a_lightLib, pugi::xml_node a_sceneInstances);
+void HR_UpdateLightsGeometryAndMaterial(pugi::xml_node a_lightLib, pugi::xml_node a_sceneInstances);
 
 HAPI void hrDrawPassOnly(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pCam)
 {
@@ -942,7 +943,7 @@ HAPI void hrDrawPassOnly(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraR
     return;
   }
 
-  HR_DriverDraw(g_objManager.scnInst[g_objManager.m_currSceneId], g_objManager.m_pDriver.get());
+  HR_DriverDraw(g_objManager.scnInst[g_objManager.m_currSceneId], pSettings);
 }
 
 HAPI void hrRenderEvalGbuffer(HRRenderRef a_pRender)
@@ -988,20 +989,20 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
   //
   bool needToAddLightsAsGeometry = (g_objManager.m_pDriver == nullptr) || !g_objManager.m_pDriver->Info().createsLightGeometryItself;
   if (needToAddLightsAsGeometry && pScn != nullptr)
-    HR_UpdateLightsGeometryAndMaterial(g_objManager.scnData.m_lightsLibChanges, g_objManager.scnData.m_lightsLib, pScn->xml_node_immediate());
+    HR_UpdateLightsGeometryAndMaterial(g_objManager.scnData.m_lightsLib, pScn->xml_node_immediate());
 
-  g_objManager.scnData.m_xmlDocChanges.save_file(g_objManager.m_tempPathToChangeFile.c_str(), L"  "); // do postponed save after HR_UpdateLightsGeometryAndMaetrial
+  //g_objManager.scnData.m_xmlDocChanges.save_file(g_objManager.m_tempPathToChangeFile.c_str(), L"  "); // do postponed save after HR_UpdateLightsGeometryAndMaetrial
 
   // we must loop through all scene element to define what mesh, material and light we need to Update on the render driver side
   //
   if (g_objManager.m_pDriver != nullptr && g_objManager.m_currSceneId < g_objManager.scnInst.size())
   {
     g_objManager.m_pDriver->SetInfoCallBack(g_pInfoCallback);
-    HR_DriverUpdate(g_objManager.scnInst[g_objManager.m_currSceneId], g_objManager.m_pDriver.get());
-    HR_DriverDraw  (g_objManager.scnInst[g_objManager.m_currSceneId], g_objManager.m_pDriver.get());
+    HR_DriverUpdate(g_objManager.scnInst[g_objManager.m_currSceneId], pSettings);
+    HR_DriverDraw  (g_objManager.scnInst[g_objManager.m_currSceneId], pSettings);
   }
 
-  g_objManager.CommitChanges(g_objManager.scnData.m_xmlDocChanges, g_objManager.scnData.m_xmlDoc);   // copy nodes from m_xmlDocChanges to m_xmlDoc
+  //g_objManager.CommitChanges(g_objManager.scnData.m_xmlDocChanges, g_objManager.scnData.m_xmlDoc);   // copy nodes from m_xmlDocChanges to m_xmlDoc
   //g_objManager.scnData.m_commitId++;
 
   size_t chunks = g_objManager.scnData.m_vbCache.size();
@@ -1025,17 +1026,6 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
         chunkTable[i] = int64_t(-1);
     }
   }
-  
-  // clear temporary trash and changes xml
-  // 
-  clear_node_childs(g_objManager.trash_node()); 
-  clear_node_childs(g_objManager.scnData.m_texturesLibChanges);
-  clear_node_childs(g_objManager.scnData.m_materialsLibChanges);
-  clear_node_childs(g_objManager.scnData.m_geometryLibChanges);
-  clear_node_childs(g_objManager.scnData.m_lightsLibChanges);
-  clear_node_childs(g_objManager.scnData.m_cameraLibChanges);
-  clear_node_childs(g_objManager.scnData.m_sceneNodeChanges);
-  clear_node_childs(g_objManager.scnData.m_settingsNodeChanges);
   
   if(g_objManager.m_tempBuffer.size() > TEMP_BUFFER_MAX_SIZE_DONT_FREE)
     g_objManager.m_tempBuffer = g_objManager.EmptyBuffer();
@@ -1095,9 +1085,6 @@ HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pC
 
   if (pSettings != nullptr && pSettings->m_pDriver != nullptr)
     pSettings->m_pDriver->EndFlush();
-  
-  clear_node_childs( g_objManager.trash_node() );
-  g_objManager.scnData.clear_changes();
   
 } 
 

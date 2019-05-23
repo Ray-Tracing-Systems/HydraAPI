@@ -605,6 +605,8 @@ std::wstring ChunkName(const ChunkPointer& a_chunk)
 }
 
 size_t HR_SaveVSGFCompressed(int a_objId, const void* vsgfData, size_t a_vsgfSize, const wchar_t* a_outfileName);
+extern HRObjectManager g_objManager;
+void PrintMaterialListNames(std::ostream& strOut, HRMesh* pMesh);
 
 void ChunkPointer::SwapToDisk()
 {
@@ -623,7 +625,17 @@ void ChunkPointer::SwapToDisk()
   {
     const std::wstring name2 = name + L"c";
     std::wcout << L"save chunk " << name2.c_str() << " to compressed format" << std::endl;
-    HR_SaveVSGFCompressed(pVB->m_dataHalfCurr + localAddress, sizeInBytes, name2.c_str(), "", 0);
+  
+    std::stringstream strOut;
+    
+    if(this->sysObjectId >= 0 && this->sysObjectId < g_objManager.scnData.meshes.size())
+    {
+      auto* pMesh = &g_objManager.scnData.meshes[this->sysObjectId];
+      PrintMaterialListNames(strOut, pMesh);
+    }
+    std::string matnames = strOut.str();
+    
+    HR_SaveVSGFCompressed(pVB->m_dataHalfCurr + localAddress, sizeInBytes, name2.c_str(), matnames.c_str(), matnames.size());
   }
   else
   {

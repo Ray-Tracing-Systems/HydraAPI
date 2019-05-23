@@ -512,10 +512,16 @@ HAPI void hrMeshClose(HRMeshRef a_mesh, bool a_compress)
 
   // construct dependency list for material -> mesh
   //
-  auto& mindices = pMesh->m_input.matIndices;
-  for (size_t i = 0; i < mindices.size(); i++)
-    g_objManager.scnData.m_materialToMeshDependency.emplace(mindices[i], a_mesh.id);
-
+  
+  //auto& mindices       = pMesh->m_input.matIndices;
+  //const size_t maxSize = g_objManager.scnData.materials.size();
+  //for (size_t i = 0; i < mindices.size(); i++)
+  //{
+  //  const int32_t matIndex = mindices[i];
+  //  if(matIndex >= 0 && matIndex < maxSize)
+  //    g_objManager.scnData.m_materialToMeshDependency.emplace(matIndex, a_mesh.id);
+  //}
+  
   pMesh->pImpl  = g_objManager.m_pFactory->CreateVSGFFromSimpleInputMesh(pMesh, a_compress);
   pMesh->opened = false;
 
@@ -713,7 +719,15 @@ static void AddCommonAttributesFromPointers(HRMesh* pMesh, int maxVertexId)
 
 	const bool hasNormals  = (normPtr != nullptr);
   const bool hasTangents = (tangPtr != nullptr);
-
+  
+  pMesh->m_input.verticesPos.reserve(maxVertexId*4);
+  pMesh->m_input.verticesTexCoord.reserve(maxVertexId*2);
+  
+  if (hasNormals)
+    pMesh->m_input.verticesNorm.reserve(maxVertexId*4);
+  if (hasTangents)
+    pMesh->m_input.verticesTangent.reserve(maxVertexId*4);
+    
   for (int i = 0; i <= maxVertexId; i++)
   {
     pMesh->m_input.verticesPos.push_back(posPtr[0]);
@@ -1006,33 +1020,20 @@ HAPI void* hrMeshGetAttribPointer(HRMeshRef a_mesh, const wchar_t* attributeName
 	HRMesh* pMesh = g_objManager.PtrById(a_mesh);
   if (pMesh == nullptr)
     return nullptr;
-
+  
+  
   if (pMesh->opened)
   {
     HRMesh::InputTriMesh& mesh = pMesh->m_input;
-
+  
+    //std::cout << "mesh.verticesPos.size() = " << mesh.verticesPos.size() << std::endl;
+    
     if (!wcscmp(attributeName, L"pos"))
-    {
-      if (mesh.verticesPos.empty())
-        return nullptr;
-      else
-        return (void*)&(mesh.verticesPos[0]);
-    }
+      return mesh.verticesPos.data();
     else if (!wcscmp(attributeName, L"norm"))
-    {
-      if (mesh.verticesNorm.empty())
-        return nullptr;
-      else
-        return (void*)&(mesh.verticesNorm[0]);
-
-    }
+      return mesh.verticesNorm.data();
     else if (!wcscmp(attributeName, L"uv"))
-    {
-      if (mesh.verticesTexCoord.empty())
-        return nullptr;
-      else
-        return (void*)&(mesh.verticesTexCoord[0]);
-    }
+      return mesh.verticesTexCoord.data();
     else
       return nullptr;
   }
@@ -1063,23 +1064,70 @@ HAPI void* hrMeshGetPrimitiveAttribPointer(HRMeshRef a_mesh, const wchar_t* attr
 
 }
 
-HAPI HROpenedMeshInfo  hrMeshGetInfo(HRMeshRef a_mesh)
+std::wstring s2ws(const std::string& s);
+
+HAPI HRMeshInfo  hrMeshGetInfo(HRMeshRef a_mesh)
 {
-  HROpenedMeshInfo info;
-  info.indicesNum = 0;
-  info.vertNum    = 0;
+  HRMeshInfo info;
 
   HRMesh* pMesh = g_objManager.PtrById(a_mesh);
   if (pMesh == nullptr)
     return info;
 
-  if(!pMesh->opened)
-    return info;
-
   HRMesh::InputTriMesh& mesh = pMesh->m_input;
+  
+  auto pImpl     = pMesh->pImpl;
+  auto& mig_data = pMesh->mig_data;
 
-  info.indicesNum = int32_t(mesh.triIndices.size());
-  info.vertNum    = int32_t(mesh.verticesPos.size() / 4);
+  if(pImpl != nullptr)
+  {
+    mig_data.batches     = pImpl->MList();
+    info.batchesList     = mig_data.batches.data();
+    info.batchesListSize = int32_t(mig_data.batches.size());
+    
+    // create wchar_t** pointers ...
+    //
+    mig_data.mlist        = s2ws(pImpl->MaterialNamesList());
+  
+    mig_data.mptrs.resize(0);
+    mig_data.mptrs.push_back(mig_data.mlist.data());
+    
+    for(size_t i=0;i<mig_data.mlist.size();i++)
+    {
+      if(mig_data.mlist[i] == L";"[0])
+      {
+        mig_data.mlist[i] = 0; // "\0"
+        
+        if(i != mig_data.mlist.size()-1)
+          mig_data.mptrs.push_back(mig_data.mlist.data() + i + 1);
+      }
+    }
+    
+    info.matNamesList     = mig_data.mptrs.data();
+    info.matNamesListSize = int32_t(mig_data.mptrs.size());
+  
+    auto box = pImpl->getBBox();
+    info.boxMin[0] = box.x_min;
+    info.boxMin[1] = box.y_min;
+    info.boxMin[2] = box.z_min;
+  
+    info.boxMax[0] = box.x_max;
+    info.boxMax[1] = box.y_max;
+    info.boxMax[2] = box.z_max;
+  
+    info.indicesNum = int32_t(pImpl->indNum());
+    info.vertNum    = int32_t(pImpl->vertNum());
+  }
+  else
+  {
+    for(int i=0;i<3;i++)
+    {
+      info.boxMin[i] = 0;
+      info.boxMax[i] = 0;
+    }
+  }
+  
+ 
   return info;
 }
 
@@ -1220,7 +1268,7 @@ HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, int indexNum)
   }
 
   HRMesh::InputTriMesh& mesh = pMesh->m_input;
-  const int vertexCount      = pMesh->m_input.verticesPos.size()/4;
+  const int vertexCount      = int(pMesh->m_input.verticesPos.size()/4);
   mesh.verticesTangent.resize(vertexCount*4); // #TODO: not 0-th element, last vertex from prev append!
   ComputeVertexTangents(mesh, indexNum);
 }

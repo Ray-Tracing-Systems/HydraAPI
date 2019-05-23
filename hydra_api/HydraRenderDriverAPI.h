@@ -130,15 +130,6 @@ struct HRMeshDriverInput
   const char*  allData;
 };
 
-/** \brief Batch is a sequence of triangles with the same material id.
-*
-*/
-struct HRBatchInfo
-{
-  int32_t matId;    ///< material id
-  int32_t triBegin; ///< begin of triangle sequence that have same material id "matId"
-  int32_t triEnd;   ///< end of triangle sequence that have same material id "matId"
-};
 
 /** \brief Basic Render Driver.
 *
