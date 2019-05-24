@@ -2728,6 +2728,7 @@ bool test71_out_of_memory()
   hrErrorCallerPlace(L"test71_out_of_memory");
   hrSceneLibraryOpen(L"tests/test_71", HR_WRITE_DISCARD);
 
+  constexpr int64_t VIRTUAL_BUFFER_SIZE = int64_t(2048)*int64_t(1024 * 1024);
   const size_t numBytes = VIRTUAL_BUFFER_SIZE;
 
   char* memData = (char*)malloc(VIRTUAL_BUFFER_SIZE);
