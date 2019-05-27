@@ -2,10 +2,28 @@
 
 HRObjectManager g_objManager;
 
+
+void _Default_ErrorCallBack(const wchar_t* message, const wchar_t* callerPlace)
+{
+  std::wcout << callerPlace << L":\t" << message << std::endl;
+}
+
+void _Default_InfoCallBack(const wchar_t* message, const wchar_t* callerPlace, HR_SEVERITY_LEVEL a_level)
+{
+  if (a_level >= HR_SEVERITY_WARNING)
+  {
+    if (a_level == HR_SEVERITY_WARNING)
+      std::wcerr << L"WARNING: " << callerPlace << L": " << message; // << std::endl;
+    else
+      std::wcerr << L"ERROR  : " << callerPlace << L": " << message; // << std::endl;
+  }
+}
+
+
 std::wstring      g_lastErrorCallerPlace = L"";
-std::wstring      g_lastError = L"";
-HR_ERROR_CALLBACK g_pErrorCallback = nullptr;
-HR_INFO_CALLBACK  g_pInfoCallback  = nullptr;
+std::wstring      g_lastError      = L"";
+HR_ERROR_CALLBACK g_pErrorCallback = &_Default_ErrorCallBack;
+HR_INFO_CALLBACK  g_pInfoCallback  = &_Default_InfoCallBack;
 
 
 void HrError(std::wstring a_str) 
