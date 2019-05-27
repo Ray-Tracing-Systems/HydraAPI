@@ -5,7 +5,7 @@ HRObjectManager g_objManager;
 
 void _Default_ErrorCallBack(const wchar_t* message, const wchar_t* callerPlace)
 {
-  std::wcout << callerPlace << L":\t" << message << std::endl;
+  std::wcout << L"ERX: " << callerPlace << L":\t" << message << std::endl;
 }
 
 void _Default_InfoCallBack(const wchar_t* message, const wchar_t* callerPlace, HR_SEVERITY_LEVEL a_level)
@@ -13,9 +13,9 @@ void _Default_InfoCallBack(const wchar_t* message, const wchar_t* callerPlace, H
   if (a_level >= HR_SEVERITY_WARNING)
   {
     if (a_level == HR_SEVERITY_WARNING)
-      std::wcerr << L"WARNING: " << callerPlace << L": " << message; // << std::endl;
+      std::wcerr << L"WRN: " << callerPlace << L": " << message; // << std::endl;
     else
-      std::wcerr << L"ERROR  : " << callerPlace << L": " << message; // << std::endl;
+      std::wcerr << L"ERR: " << callerPlace << L": " << message; // << std::endl;
   }
 }
 
