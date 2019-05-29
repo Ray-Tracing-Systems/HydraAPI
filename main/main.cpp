@@ -171,9 +171,9 @@ int main(int argc, const char** argv)
   {
     //GEO_TESTS::test_001_mesh_from_memory();
     //demo_01_plane_box();
-    //window_main_free_look(L"/home/frol/PROG/CLSP_gitlab/database/statex_00002.xml", L"opengl1Debug");
+    window_main_free_look(L"/home/frol/PROG/clsp/database/statex_00001.xml", L"opengl1");
     
-    run_all_api_tests(); // passed
+    //run_all_api_tests(); // passed
     //run_all_geo_tests();
     //run_all_mtl_tests();
     //run_all_lgt_tests();

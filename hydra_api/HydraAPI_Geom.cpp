@@ -244,7 +244,6 @@ HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName, bool a_copyToLo
     nodeXml.attribute(L"path") = L"";
   }
 
-
   // (1) to have this function works, we temporary convert it via common mesh that placed in memory, not really DelayedLoad (!!!)
   //
   /*
