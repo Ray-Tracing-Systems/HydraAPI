@@ -289,8 +289,12 @@ void FindOldObjectsThatWeNeedToUpdate(ChangeList& objects, HRSceneInst& scn, HRR
 
 /// find objects that we have to Update because they depends of some other objects that we already know we have to Update. 
 //
-void FindObjectsByDependency(ChangeList& objList, HRSceneInst& scn, IHRRenderDriver* a_pDriver)
+void FindObjectsByDependency(ChangeList& objList, HRSceneInst& scn, HRRender* a_pRender)
 {
+  if(a_pRender == nullptr)
+    return;
+  
+  IHRRenderDriver* a_pDriver = a_pRender->m_pDriver.get();
   if (a_pDriver == nullptr)
     return;
 
@@ -306,13 +310,21 @@ void FindObjectsByDependency(ChangeList& objList, HRSceneInst& scn, IHRRenderDri
 
   if (dInfo.meshDependsOfMaterial)
   {
-    // for (auto& mat : objList.matUsed)
-    // {
-    //   //if( ... )
-    //   //{
-    //   //  objList.meshUsed.insert(some mesh that depends of material mat);
-    //   //}
-    // }
+    // damn inefficient, but simple and rarely used feature
+    //
+    for (auto meshId : a_pRender->m_updated.meshUsed)
+    {
+      const auto& meshSysObj = g_objManager.scnData.meshes[meshId];
+      if(meshSysObj.pImpl == nullptr)
+        continue;
+      
+      const auto& batches = meshSysObj.pImpl->MList();
+      for(auto batch : batches)
+      {
+        if( objList.matUsed.find(batch.matId) != objList.matUsed.end())
+          objList.meshUsed.insert(meshSysObj.id);
+      }
+    }
   }
 
   //if (dInfo.lightDependsOfMesh)
@@ -334,10 +346,7 @@ ChangeList FindChangedObjects(HRSceneInst& scn, HRRender* a_pRender)
   
   FindNewObjects(objects, scn, a_pRender);
   FindOldObjectsThatWeNeedToUpdate(objects, scn, a_pRender);
-  
-  auto* pDriver = a_pRender->m_pDriver.get();
-  if(a_pRender->m_pDriver != nullptr)
-    FindObjectsByDependency(objects, scn, pDriver);
+  FindObjectsByDependency(objects, scn, a_pRender);
 
   return objects;
 }

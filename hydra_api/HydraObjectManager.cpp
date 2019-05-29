@@ -2,10 +2,28 @@
 
 HRObjectManager g_objManager;
 
+
+void _Default_ErrorCallBack(const wchar_t* message, const wchar_t* callerPlace)
+{
+  std::wcout << L"ERX: " << callerPlace << L":\t" << message << std::endl;
+}
+
+void _Default_InfoCallBack(const wchar_t* message, const wchar_t* callerPlace, HR_SEVERITY_LEVEL a_level)
+{
+  if (a_level >= HR_SEVERITY_WARNING)
+  {
+    if (a_level == HR_SEVERITY_WARNING)
+      std::wcerr << L"WRN: " << callerPlace << L": " << message; // << std::endl;
+    else
+      std::wcerr << L"ERR: " << callerPlace << L": " << message; // << std::endl;
+  }
+}
+
+
 std::wstring      g_lastErrorCallerPlace = L"";
-std::wstring      g_lastError = L"";
-HR_ERROR_CALLBACK g_pErrorCallback = nullptr;
-HR_INFO_CALLBACK  g_pInfoCallback  = nullptr;
+std::wstring      g_lastError      = L"";
+HR_ERROR_CALLBACK g_pErrorCallback = &_Default_ErrorCallBack;
+HR_INFO_CALLBACK  g_pInfoCallback  = &_Default_InfoCallBack;
 
 
 void HrError(std::wstring a_str) 
@@ -55,7 +73,7 @@ void HRObjectManager::init(HRInitInfo a_initInfo)
     m_pVBSysMutex = hr_create_system_mutex("hydra_virtual_buffer_lock");
   else
     m_pVBSysMutex = nullptr;
-  scnData.init(m_attachMode, m_pVBSysMutex);
+  scnData.init(m_attachMode, m_pVBSysMutex, a_initInfo.vbSize);
 
   m_pImgTool = HydraRender::CreateImageTool();
   _hrInitPostProcess();
@@ -244,7 +262,7 @@ void clear_node_childs(pugi::xml_node a_xmlNode)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-void HRSceneData::init(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock)
+void HRSceneData::init(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock, size_t a_vbSize)
 {
   m_texturesLib  = m_xmlDoc.append_child(L"textures_lib");
   m_materialsLib = m_xmlDoc.append_child(L"materials_lib");
@@ -255,7 +273,7 @@ void HRSceneData::init(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock)
   m_sceneNode    = m_xmlDoc.append_child(L"scenes");
   
   if(!a_attachMode)                                       // will do this init later inside HRSceneData::init_existing when open scene
-    init_virtual_buffer(false, a_pVBSysMutexLock);
+    init_virtual_buffer(false, a_pVBSysMutexLock, a_vbSize);
 
   m_changeList.clear();
   m_changeList.reserve(2048);
@@ -271,18 +289,18 @@ void HRSceneData::init_existing(bool a_attachMode, HRSystemMutex* a_pVBSysMutexL
   m_settingsNode = m_xmlDoc.child(L"render_lib");
   m_sceneNode    = m_xmlDoc.child(L"scenes");
   
-  init_virtual_buffer(a_attachMode, a_pVBSysMutexLock);
+  init_virtual_buffer(a_attachMode, a_pVBSysMutexLock, 0);
   m_changeList.clear();
   m_changeList.reserve(1024);
 }
 
-void HRSceneData::init_virtual_buffer(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock)
+void HRSceneData::init_virtual_buffer(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock, size_t a_vbSize)
 {
   if (a_attachMode)
   {
     if(SharedVirtualBufferIsEnabled())
     {
-      bool attached = m_vbCache.Attach(VIRTUAL_BUFFER_SIZE, "HYDRAAPISHMEM2", &g_objManager.m_tempBuffer);
+      bool attached = m_vbCache.Attach(a_vbSize, "HYDRAAPISHMEM2", &g_objManager.m_tempBuffer);
       if (attached)
         m_vbCache.RestoreChunks();
       else
@@ -292,7 +310,7 @@ void HRSceneData::init_virtual_buffer(bool a_attachMode, HRSystemMutex* a_pVBSys
       m_vbCache.Init(4096, "NOSUCHSHMEM", &g_objManager.m_tempBuffer, a_pVBSysMutexLock);
   }
   else
-    m_vbCache.Init(VIRTUAL_BUFFER_SIZE, "HYDRAAPISHMEM2", &g_objManager.m_tempBuffer, a_pVBSysMutexLock);
+    m_vbCache.Init(a_vbSize, "HYDRAAPISHMEM2", &g_objManager.m_tempBuffer, a_pVBSysMutexLock);
 }
 
 void HRSceneData::clear()

@@ -171,9 +171,9 @@ int main(int argc, const char** argv)
   {
     //GEO_TESTS::test_001_mesh_from_memory();
     //demo_01_plane_box();
-    //window_main_free_look(L"/home/frol/PROG/CLSP_gitlab/database/statex_00002.xml", L"opengl1Debug");
+    window_main_free_look(L"/home/frol/PROG/clsp/database/statex_00001.xml", L"opengl1");
     
-    run_all_api_tests(); // passed
+    //run_all_api_tests(); // passed
     //run_all_geo_tests();
     //run_all_mtl_tests();
     //run_all_lgt_tests();
@@ -210,7 +210,7 @@ int main(int argc, const char** argv)
     //window_main_free_look(L"tests/test_gl32_002_", L"opengl32Deferred", &test_gl32_002_init, &test_gl32_002_draw);
     //window_main_free_look(L"tests/lucy_deferred", L"opengl3Utility", &test_gl32_001_init, &test_gl32_001_draw);
     //window_main_free_look(L"tests/test_gl32_002_", L"opengl3Utility", &test_gl32_002_init, &test_gl32_002_draw);
-    //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_39", L"opengl1", nullptr, &test02_draw);
+    //window_main_free_look(L"tests/test_39", L"opengl1Debug");
 
     //window_main_free_look(L"tests/zgl1_test_cube", L"opengl32Forward", &test_gl32_001_init, &test_gl32_001_draw);
     //window_main_free_look(L"D:/PROG/HydraCore/hydra_app/tests/test_42", L"opengl1DrawRays");
