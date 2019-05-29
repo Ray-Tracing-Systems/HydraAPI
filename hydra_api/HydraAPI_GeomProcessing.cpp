@@ -164,7 +164,7 @@ bool meshHasDisplacementMat(HRMeshRef a_mesh, pugi::xml_node &displaceXMLNode)
       auto mat = g_objManager.PtrById(tmpRef);
       if (mat != nullptr)
       {
-        auto d_node = mat->xml_node_next(HR_OPEN_EXISTING).child(L"displacement");
+        auto d_node = mat->xml_node().child(L"displacement");
 
         if (d_node.attribute(L"type").as_string() == std::wstring(L"true_displacement"))
         {
@@ -203,7 +203,7 @@ bool instanceHasDisplacementMat(HRMeshRef a_meshRef, const std::unordered_map<ui
       auto mat = g_objManager.PtrById(matRef);
       if (mat != nullptr)
       {
-        auto d_node = mat->xml_node_next(HR_OPEN_EXISTING).child(L"displacement");
+        auto d_node = mat->xml_node().child(L"displacement");
 
         if (d_node.attribute(L"type").as_string() == std::wstring(L"true_displacement"))
         {
@@ -251,7 +251,7 @@ void hrMeshDisplace(HRMeshRef a_mesh, const std::unordered_map<uint32_t, uint32_
       auto mat = g_objManager.PtrById(tmpRef);
       if(mat != nullptr)
       {
-        auto d_node = mat->xml_node_next(HR_OPEN_EXISTING).child(L"displacement");
+        auto d_node = mat->xml_node().child(L"displacement");
 
         if (d_node != nullptr &&
             std::wstring(d_node.attribute(L"type").as_string()) == std::wstring(L"true_displacement"))

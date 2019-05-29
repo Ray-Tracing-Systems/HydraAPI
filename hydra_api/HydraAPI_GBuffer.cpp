@@ -267,7 +267,7 @@ HAPI bool hrRenderSaveGBufferLayerLDR(HRRenderRef a_pRender, const wchar_t* a_ou
 
   std::wstring lname = std::wstring(a_layerName);
 
-  auto renderSettingsNode = pRender->xml_node_immediate();
+  auto renderSettingsNode = pRender->xml_node();
 
   const int width     = renderSettingsNode.child(L"width").text().as_int();
   const int height    = renderSettingsNode.child(L"height").text().as_int();
@@ -309,7 +309,7 @@ HAPI bool hrRenderSaveGBufferLayerLDR(HRRenderRef a_pRender, const wchar_t* a_ou
   HRSceneInstRef scnRef;
   scnRef.id = g_objManager.m_currSceneId;
   HRSceneInst *pScn = g_objManager.PtrById(scnRef);
-  auto scnNode = pScn->xml_node_immediate();
+  auto scnNode = pScn->xml_node();
 
   std::vector <int32_t> instanceIdToScnId(pScn->drawList.size(), 0);
 
@@ -426,7 +426,7 @@ bool HRUtils::hrRenderSaveDepthRaw(HRRenderRef a_pRender, const wchar_t* a_outFi
   if (pDriver == nullptr)
     return false;
 
-  auto renderSettingsNode = pRender->xml_node_immediate();
+  auto renderSettingsNode = pRender->xml_node();
 
   const int width     = renderSettingsNode.child(L"width").text().as_int();
   const int height    = renderSettingsNode.child(L"height").text().as_int();

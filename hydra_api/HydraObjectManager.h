@@ -41,27 +41,16 @@ struct HRObject
 
   /////////////////////////////////////////////////////////////////////////////////// xml nodes
 
-  virtual void update_next(pugi::xml_node a_newNode)
+  virtual void update(pugi::xml_node a_newNode)
   {
     m_xmlNode = a_newNode;
   }
-
-  virtual void update_this(pugi::xml_node a_newNode)
-  {
-    m_xmlNode = a_newNode;
-  }
-
-  virtual pugi::xml_node xml_node_immediate()
+  
+  virtual pugi::xml_node xml_node()
   {
     return m_xmlNode;
   }
-
-  virtual pugi::xml_node xml_node_next(HR_OPEN_MODE a_openMode)
-  {
-    return m_xmlNode;
-  }
-
-
+  
 protected:
 
   pugi::xml_node m_xmlNode;
@@ -86,7 +75,7 @@ struct HRMesh : public HRObject<IHRMesh>
 
   struct InputTriMesh
   {
-    InputTriMesh() : m_saveCompressed(false) { }
+    InputTriMesh() : m_saveCompressed(false), m_placeToOrigin(false) { }
 
     void clear()
     {
@@ -165,6 +154,7 @@ struct HRMesh : public HRObject<IHRMesh>
 
     std::vector<CustArray> customArrays;
     bool m_saveCompressed;
+    bool m_placeToOrigin;
   };
 
   struct InputTriMeshPointers
@@ -294,6 +284,73 @@ struct HRTextureNode : public HRObject<IHRTextureNode>
   HRExtensions::HR_TEXTURE_DISPLACEMENT_CALLBACK displaceCallback;
 };
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+struct ChangeList
+{
+  ChangeList() {}
+  ChangeList(const ChangeList& a_list) : drawSeq(a_list.drawSeq),
+                                   meshUsed(a_list.meshUsed), matUsed(a_list.matUsed),
+                                   lightUsed(a_list.lightUsed), texturesUsed(a_list.texturesUsed) { }
+
+  ChangeList(ChangeList&& a_list) : drawSeq(std::move(a_list.drawSeq)),
+                                    meshUsed(std::move(a_list.meshUsed)), matUsed(std::move(a_list.matUsed)),
+                                    lightUsed(std::move(a_list.lightUsed)), texturesUsed(std::move(a_list.texturesUsed)) { }
+
+  ChangeList& operator=(ChangeList& a_list)
+  {
+    meshUsed         = a_list.meshUsed;
+    matUsed          = a_list.matUsed;
+    lightUsed        = a_list.lightUsed;
+    texturesUsed     = a_list.texturesUsed;
+    drawSeq          = a_list.drawSeq;
+    return *this;
+  }
+
+  ChangeList& operator=(ChangeList&& a_list)
+  {
+    meshUsed         = std::move(a_list.meshUsed);
+    matUsed          = std::move(a_list.matUsed);
+    lightUsed        = std::move(a_list.lightUsed);
+    texturesUsed     = std::move(a_list.texturesUsed);
+    drawSeq          = std::move(a_list.drawSeq);
+    return *this;
+  }
+
+  std::unordered_set<int32_t> meshUsed;
+  std::unordered_set<int32_t> matUsed;
+  std::unordered_set<int32_t> lightUsed;
+  std::unordered_set<int32_t> texturesUsed;
+
+  struct InstancesInfo
+  {
+    std::vector<float>    matrices;
+    std::vector<int32_t>  linstid;
+    std::vector<int32_t>  remapid;
+    std::vector<int32_t>  instIdReal;
+  };
+
+  std::unordered_map<int32_t, InstancesInfo> drawSeq;
+
+  void clear()
+  {
+    meshUsed.clear();
+    matUsed.clear();
+    lightUsed.clear();
+    texturesUsed.clear();
+    drawSeq.clear();
+  }
+
+  void reserve(size_t a_n)
+  {
+    texturesUsed.reserve(a_n);
+    matUsed.reserve(a_n*4);
+    meshUsed.reserve(a_n*4);
+    lightUsed.reserve(a_n/4);
+    drawSeq.reserve(a_n*4);
+  }
+};
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -327,16 +384,6 @@ struct HRSceneData : public HRObject<IHRSceneData>
   pugi::xml_node             m_geometryLib;
   pugi::xml_node             m_sceneNode;
   pugi::xml_node             m_settingsNode;
-  //pugi::xml_node             m_trashNode;
-
-  //pugi::xml_document         m_xmlDocChanges;
-  //pugi::xml_node             m_texturesLibChanges;
-  //pugi::xml_node             m_materialsLibChanges;
-  //pugi::xml_node             m_lightsLibChanges;
-  //pugi::xml_node             m_cameraLibChanges;
-  //pugi::xml_node             m_geometryLibChanges;
-  //pugi::xml_node             m_sceneNodeChanges;
-  //pugi::xml_node             m_settingsNodeChanges;
 
   std::unordered_map<std::wstring, int32_t>      m_textureCache;
   std::unordered_map<std::wstring, std::wstring> m_iesCache;
@@ -355,6 +402,9 @@ struct HRSceneData : public HRObject<IHRSceneData>
   std::wstring m_path;
   std::wstring m_pathState;
   std::wstring m_fileState;
+
+  ChangeList m_changeList;
+
 protected:
   void init_virtual_buffer(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock);
 };
@@ -371,18 +421,9 @@ struct HRSceneInst : public HRObject<IHRSceneInst>
   {
     m_xmlNode = a_newNode;
   }
-  pugi::xml_node xml_node_next(HR_OPEN_MODE a_openMode) override
-  {
-    return m_xmlNode;
-  }
 
   void clear()
   {
-    meshUsedByDrv.clear();
-    matUsedByDrv.clear();
-    lightUsedByDrv.clear();
-    texturesUsedByDrv.clear();
-
     drawList.clear();
     drawListLights.clear();
     pImpl = nullptr;
@@ -428,11 +469,6 @@ struct HRSceneInst : public HRObject<IHRSceneInst>
   std::vector<std::wstring> drawLightsCustom;
   size_t                    drawBeginLight;
 
-  std::unordered_set<int32_t> meshUsedByDrv;
-  std::unordered_set<int32_t> matUsedByDrv;
-  std::unordered_set<int32_t> lightUsedByDrv;
-  std::unordered_set<int32_t> texturesUsedByDrv;
-
   std::vector< std::vector<int32_t> >   m_remapList;
   std::unordered_map<uint64_t, int32_t> m_remapCache;
 
@@ -457,29 +493,12 @@ struct HRRender : public HRObject<IHRRender>
       m_pDriver->ClearAll();
     m_pDriver = nullptr;
     maxRaysPerPixel = 0;
-  
-    m_updatedTextures.clear();
-    m_updatedMaterials.clear();
-    m_updatedMeshes.clear();
-    m_updatedLights.clear();
-    
-    if(m_updatedTextures.size() == 0)
-      m_updatedTextures.reserve(1024);
-  
-    if(m_updatedMaterials.size() == 0)
-      m_updatedMaterials.reserve(4096);
-  
-    if(m_updatedMeshes.size() == 0)
-      m_updatedMeshes.reserve(1024);
-    
-    if(m_updatedLights.size() == 0)
-      m_updatedLights.reserve(256);
+
+    m_updated.clear();
+    m_updated.reserve(1024);
   }
-  
-  std::unordered_set<int32_t> m_updatedTextures;
-  std::unordered_set<int32_t> m_updatedMaterials;
-  std::unordered_set<int32_t> m_updatedMeshes;
-  std::unordered_set<int32_t> m_updatedLights;
+
+  ChangeList m_updated;
 };
 
 
@@ -497,7 +516,7 @@ struct HRObjectManager
  
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 
-  HRSceneData              scnData; /// In our first impl sceneData can be only one and it is directly related to HRObjectManager 
+  HRSceneData              scnData; /// In our first impl sceneData can be only one and it is directly related to HRObjectManager
   std::vector<HRSceneInst> scnInst;
   std::vector<HRRender>    renderSettings;
   int32_t m_currSceneId;
@@ -508,7 +527,7 @@ struct HRObjectManager
   
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 
-  void init(const wchar_t* a_className);
+  void init(HRInitInfo a_initInfo);
   void destroy();
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 

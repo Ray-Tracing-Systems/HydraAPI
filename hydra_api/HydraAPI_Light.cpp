@@ -55,7 +55,7 @@ HAPI HRLightRef hrLightCreate(const wchar_t* a_objectName)
   nodeXml.append_attribute(L"distribution").set_value(L"omni");
 	nodeXml.append_attribute(L"visible").set_value(L"1");
 
-  g_objManager.scnData.lights[ref.id].update_next(nodeXml);
+  g_objManager.scnData.lights[ref.id].update(nodeXml);
   g_objManager.scnData.lights[ref.id].id = ref.id;
 
   return ref;
@@ -79,7 +79,7 @@ HAPI void hrLightOpen(HRLightRef a_pLight, HR_OPEN_MODE a_openMode)
   pLight->openMode = a_openMode;
   pLight->opened   = true;
 
-  pugi::xml_node nodeXml = pLight->xml_node_next(a_openMode);
+  pugi::xml_node nodeXml = pLight->xml_node();
 
   if (a_openMode == HR_WRITE_DISCARD)
   {
@@ -116,7 +116,7 @@ HAPI pugi::xml_node hrLightParamNode(HRLightRef a_lightRef)
     return pugi::xml_node();
   }
 
-  return pLight->xml_node_next(HR_OPEN_EXISTING);
+  return pLight->xml_node();
 }
 
 
@@ -137,7 +137,7 @@ HAPI void hrLightClose(HRLightRef a_pLight)
 
   // if have ies files, copy them to local data folder and alter 
   //
-  auto lightNode = pLight->xml_node_next(HR_OPEN_EXISTING);
+  auto lightNode = pLight->xml_node();
 
   if (lightNode.child(L"ies") != nullptr)
   {
@@ -167,6 +167,7 @@ HAPI void hrLightClose(HRLightRef a_pLight)
 
   pLight->opened     = false;
   pLight->wasChanged = true;
+  g_objManager.scnData.m_changeList.lightUsed.insert(pLight->id);
 
 }
 
@@ -589,7 +590,7 @@ bool HR_UpdateLightGeomAndMaterial(pugi::xml_node a_lightNode, const std::wstrin
       if (meshId >= 0)
       {
         HRMesh& mesh           = g_objManager.scnData.meshes[meshId];
-        pugi::xml_node nodeXMl = mesh.xml_node_immediate();
+        pugi::xml_node nodeXMl = mesh.xml_node();
         OpenHRMesh(&mesh, nodeXMl);
 
         lmesh.vPos       = mesh.m_input.verticesPos;
@@ -639,7 +640,7 @@ void HR_UpdateLightsGeometryAndMaterial(pugi::xml_node a_lightLib, pugi::xml_nod
   for(auto& light : g_objManager.scnData.lights)
   {
     const int32_t lightId = light.id; //int32_t lightId = lightNode.attribute(L"id").as_int();
-    const auto lightNode  = light.xml_node_immediate();
+    const auto lightNode  = light.xml_node();
     if(light.wasChanged)
       lighNodes.push_back(lightNode);
   }
@@ -699,7 +700,7 @@ void HR_UpdateLightsGeometryAndMaterial(pugi::xml_node a_lightLib, pugi::xml_nod
       const int32_t  instId    = inst.attribute(L"id").as_int();
 
 
-      const pugi::xml_node lightNode = g_objManager.scnData.lights[lightId].xml_node_immediate();
+      const pugi::xml_node lightNode = g_objManager.scnData.lights[lightId].xml_node();
       const int32_t meshId           = lightNode.attribute(L"mesh_id").as_int();                                            
       const std::wstring lshape      = lightNode.attribute(L"shape").as_string();
 
@@ -729,7 +730,7 @@ void HR_UpdateLightsGeometryAndMaterial(pugi::xml_node a_lightLib, pugi::xml_nod
   scnref.id         = g_objManager.m_currSceneId;
   HRSceneInst* pScn = g_objManager.PtrById(scnref);
 
-  pugi::xml_node sceneNode = pScn->xml_node_immediate();
+  pugi::xml_node sceneNode = pScn->xml_node();
 
   for (auto& instData : instToAdd)
   {
