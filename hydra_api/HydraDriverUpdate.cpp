@@ -342,16 +342,14 @@ void FindObjectsByDependency(ChangeList& objList, HRSceneInst& scn, HRRender* a_
 //
 ChangeList FindChangedObjects(HRSceneInst& scn, HRRender* a_pRender)
 {
-  ChangeList objects; objects.reserve(1000);
-  
+  ChangeList& objectsThatRenderAlreadyHas = a_pRender->m_updated;
+  ChangeList  objects                     = objectsThatRenderAlreadyHas.intersect_with(g_objManager.scnData.m_changeList);
+ 
   FindNewObjects                  (objects, scn, a_pRender);
   FindOldObjectsThatWeNeedToUpdate(objects, scn, a_pRender);
   FindObjectsByDependency         (objects, scn, a_pRender);
   
-  ChangeList& objectsThatRenderAlreadyHas = a_pRender->m_updated;
-  ChangeList  objectsOldThatMustBeUpdated = objectsThatRenderAlreadyHas.intersect_with(g_objManager.scnData.m_changeList);
-  
-  return objects.union_with(objectsOldThatMustBeUpdated);
+  return objects;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
