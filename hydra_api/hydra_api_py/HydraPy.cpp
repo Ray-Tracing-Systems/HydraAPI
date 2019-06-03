@@ -183,7 +183,6 @@ void hrMeshInstancePyRemap(HRSceneInstRef a_pScn, HRMeshRef a_pMesh, py::array_t
   }
 }
 
-
 void hrLightInstancePy(HRSceneInstRef pScn, HRLightRef pLight, py::array_t<float> &m)
 {
   auto mat = m.mutable_unchecked<1>();
@@ -223,7 +222,19 @@ std::vector<HRGBufferPixelPy> hrRenderGetGBufferLinePy(HRRenderRef a_pRender, in
   return buffer_py;
 }
 
+std::vector<float> getRandomPointsOnMeshPy(HRMeshRef mesh_ref, uint32_t n_points,
+                                           bool tri_area_weighted = true, uint32_t seed = 0u)
+{
+  std::vector<float> output;
+  if(n_points > 0)
+  {
+    output.resize(n_points * 3);
+    HRUtils::getRandomPointsOnMesh(mesh_ref, output.data(), n_points, tri_area_weighted, seed);
 
+  }
+
+  return output;
+}
 
 
 PYBIND11_MODULE(hydraPy, m)
@@ -344,9 +355,12 @@ PYBIND11_MODULE(hydraPy, m)
   m.def("hrErrorCallback", &hrErrorCallback);
   m.def("hrSceneLibraryInfo", &hrSceneLibraryInfo);
   m.def("hrSceneLibraryOpen", &hrSceneLibraryOpen);
-  m.def("hrTexture2DCreateFromFile", &hrTexture2DCreateFromFile, py::arg("a_fileName"), py::arg("w") = -1, py::arg("h") = -1, py::arg("bpp") = -1);
-  m.def("hrTexture2DCreateFromFileDL", &hrTexture2DCreateFromFileDL, py::arg("a_fileName"),  py::arg("w") = -1, py::arg("h") = -1, py::arg("bpp") = -1);
-  m.def("hrTexture2DUpdateFromFile", &hrTexture2DUpdateFromFile, py::arg("currentRef"), py::arg("a_fileName"), py::arg("w") = -1, py::arg("h") = -1, py::arg("bpp") = -1);
+  m.def("hrTexture2DCreateFromFile", &hrTexture2DCreateFromFile, py::arg("a_fileName"), py::arg("w") = -1,
+        py::arg("h") = -1, py::arg("bpp") = -1);
+  m.def("hrTexture2DCreateFromFileDL", &hrTexture2DCreateFromFileDL, py::arg("a_fileName"),  py::arg("w") = -1,
+        py::arg("h") = -1, py::arg("bpp") = -1, py::arg("a_copyFileToLocalData") = false);
+  m.def("hrTexture2DUpdateFromFile", &hrTexture2DUpdateFromFile, py::arg("currentRef"), py::arg("a_fileName"),
+        py::arg("w") = -1, py::arg("h") = -1, py::arg("bpp") = -1);
   //m.def("hrTexture2DCreateFromMemory", &hrTexture2DCreateFromMemory);
   //m.def("hrTexture2DUpdateFromMemory", &hrTexture2DUpdateFromMemory);
   //m.def("hrArray1DCreateFromMemory", &hrArray1DCreateFromMemory);
@@ -443,6 +457,8 @@ PYBIND11_MODULE(hydraPy, m)
   m.def("MergeOneLightIntoLibrary", &HRUtils::MergeOneLightIntoLibrary);
   m.def("MergeOneTextureIntoLibrary", &HRUtils::MergeOneTextureIntoLibrary, py::arg("a_libPath"), py::arg("a_texName"), py::arg("a_texId") = -1);
 
+  m.def("getRandomPointsOnMesh", &getRandomPointsOnMeshPy, py::arg("mesh_ref"), py::arg("n_points") = 1,
+        py::arg("tri_area_weighted") = false, py::arg("seed") = 0u);
 
   py::class_<pugi::xml_node>(m, "xml_node")
           .def("force_child", &pugi::xml_node::force_child)
