@@ -2108,16 +2108,16 @@ bool MTL_TESTS::test_156_proc_checker_precomp_update()
   rep2 = 2;
   rep3 = 2;
 
-  testTex1 = hrTexture2DUpdateBakedLDR(testTex1, &procTexCheckerLDR, (void *) (&rep1), sizeof(int), -1, -1);
-  testTex2 = hrTexture2DUpdateBakedLDR(testTex2, &procTexCheckerLDR, (void *) (&rep2), sizeof(int), -1, -1);
-  testTex3 = hrTexture2DUpdateBakedLDR(testTex3, &procTexCheckerLDR, (void *) (&rep3), sizeof(int), -1, -1);
+  hrTexture2DUpdateBakedLDR(testTex1, &procTexCheckerLDR, (void *) (&rep1), sizeof(int), -1, -1);
+  hrTexture2DUpdateBakedLDR(testTex2, &procTexCheckerLDR, (void *) (&rep2), sizeof(int), -1, -1);
+  hrTexture2DUpdateBakedLDR(testTex3, &procTexCheckerLDR, (void *) (&rep3), sizeof(int), -1, -1);
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Meshes
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  HRMeshRef cubeR = HRMeshFromSimpleMesh(L"cubeR", CreateCube(2.0f), matR.id);
-  HRMeshRef sphereG = HRMeshFromSimpleMesh(L"sphereG", CreateSphere(4.0f, 64), matG.id);
-  HRMeshRef torusB = HRMeshFromSimpleMesh(L"torusB", CreateTorus(0.8f, 2.0f, 64, 64), matB.id);
+  HRMeshRef cubeR    = HRMeshFromSimpleMesh(L"cubeR", CreateCube(2.0f), matR.id);
+  HRMeshRef sphereG  = HRMeshFromSimpleMesh(L"sphereG", CreateSphere(4.0f, 64), matG.id);
+  HRMeshRef torusB   = HRMeshFromSimpleMesh(L"torusB", CreateTorus(0.8f, 2.0f, 64, 64), matB.id);
   HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane", CreatePlane(10.0f), matGray.id);
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

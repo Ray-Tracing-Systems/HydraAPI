@@ -121,6 +121,20 @@ void AddInstanceToDrawSequence(const HRSceneInst::Instance &instance,
 
 }
 
+void AddMaterialsFromRemapList(const HRSceneInst::Instance &instance, const std::vector< std::vector<int32_t> >& a_remapLists,
+                               std::unordered_set<int32_t>& a_outMats)
+{
+  if(instance.remapListId >= 0 && instance.remapListId < a_remapLists.size() )
+  {
+    const auto& remapList = a_remapLists[instance.remapListId];
+    for(int i=0; i<remapList.size(); i+=2 )                    // [0->1, 2->5, 7->0, ... ] pairs of values ...
+    {
+      if(i+1 < remapList.size())
+        a_outMats.insert(remapList[i+1]);
+    }
+  }
+}
+
 void FindNewObjects(ChangeList& objects, HRSceneInst& scn, HRRender* a_pRender)
 {
   assert(a_pRender != nullptr);
@@ -130,7 +144,7 @@ void FindNewObjects(ChangeList& objects, HRSceneInst& scn, HRRender* a_pRender)
   for (size_t i = 0; i < scn.drawList.size(); i++)
   {
     auto instance = scn.drawList[i];
-    if (instance.meshId >= g_objManager.scnData.meshes.size()) //#TODO: ? add log message if need to debug some thiing here
+    if (instance.meshId >= g_objManager.scnData.meshes.size()) //#TODO: ? add log message if need to debug some thing here
       continue;
 
     if (a_pRender->m_updated.meshUsed.find(instance.meshId) == a_pRender->m_updated.meshUsed.end())
@@ -139,6 +153,7 @@ void FindNewObjects(ChangeList& objects, HRSceneInst& scn, HRRender* a_pRender)
     // form draw sequence for each mesh
     //
     AddInstanceToDrawSequence(instance, objects.drawSeq, int(i));
+    AddMaterialsFromRemapList(instance, scn.m_remapList, objects.matUsed);
   }
 
   for (size_t i = 0; i < scn.drawListLights.size(); i++)
@@ -220,24 +235,9 @@ void FindNewObjects(ChangeList& objects, HRSceneInst& scn, HRRender* a_pRender)
 
 }
 
-template<typename Container, typename MySet>
-void InsertObjectsThatWasChanged(const Container& a_container, MySet& a_set)
-{
-  for(const auto& mesh : a_container)
-  {
-    if(mesh.wasChanged)
-      a_set.insert(mesh.id);
-  }
-}
-
 void FindOldObjectsThatWeNeedToUpdate(ChangeList& objects, HRSceneInst& scn, HRRender* a_pRender)
 {
   assert(a_pRender != nullptr);
-
-  InsertObjectsThatWasChanged(g_objManager.scnData.meshes,    objects.meshUsed);
-  InsertObjectsThatWasChanged(g_objManager.scnData.lights,    objects.lightUsed);
-  InsertObjectsThatWasChanged(g_objManager.scnData.materials, objects.matUsed);
-  InsertObjectsThatWasChanged(g_objManager.scnData.textures,  objects.texturesUsed);
 
   // AddMaterialsFromSceneRemapList
   //
@@ -342,13 +342,16 @@ void FindObjectsByDependency(ChangeList& objList, HRSceneInst& scn, HRRender* a_
 //
 ChangeList FindChangedObjects(HRSceneInst& scn, HRRender* a_pRender)
 {
-  ChangeList objects = g_objManager.scnData.m_changeList;
+  ChangeList objects; objects.reserve(1000);
   
-  FindNewObjects(objects, scn, a_pRender);
+  FindNewObjects                  (objects, scn, a_pRender);
   FindOldObjectsThatWeNeedToUpdate(objects, scn, a_pRender);
-  FindObjectsByDependency(objects, scn, a_pRender);
-
-  return objects;
+  FindObjectsByDependency         (objects, scn, a_pRender);
+  
+  ChangeList& objectsThatRenderAlreadyHas = a_pRender->m_updated;
+  ChangeList  objectsOldThatMustBeUpdated = objectsThatRenderAlreadyHas.intersect_with(g_objManager.scnData.m_changeList);
+  
+  return objects.union_with(objectsOldThatMustBeUpdated);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
