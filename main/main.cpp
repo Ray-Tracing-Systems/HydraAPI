@@ -180,7 +180,7 @@ int main(int argc, const char** argv)
 	  run_all_alg_tests();
 	  run_all_ipp_tests();
   
-	  //std::cout << test10_render_ogl_cube() << std::endl;
+	  //std::cout << MTL_TESTS::test_154_proc_checker_precomp() << std::endl;
     //std::cout << test33_update_from_file() << std::endl;
   
     //std::cout << test19_material_change() << std::endl;
