@@ -61,9 +61,5 @@ So in general there should be no problem to use HydraAPI in your open source or 
 However if you find that for some reason you can't use one of these components, please let us know!
 Most of these components can be replaced.
 
-# FAQ and Problems
-* hrSceneLibraryOpen immediately lead to segmentation fault. Probably you have forgoten call hrInit before hrSceneLibraryOpen. The other case if you pass "-emptyvirtualbuffer 1" to hrInit and then open scene in HR_WRITE_DISCARD mode.
-
-
 # Acknowlegments
 This project is supported by RFBR 16-31-60048 "mol_a_dk".
