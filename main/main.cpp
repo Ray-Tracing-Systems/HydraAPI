@@ -173,14 +173,14 @@ int main(int argc, const char** argv)
     //demo_01_plane_box();
     //window_main_free_look(L"/home/frol/PROG/clsp/database/statex_00001.xml", L"opengl1");
     
-    run_all_api_tests(); // passed
-    run_all_geo_tests();
-    run_all_mtl_tests();
+    //run_all_api_tests(); // passed
+    //run_all_geo_tests();
+    //run_all_mtl_tests();
     //run_all_lgt_tests();
 	  //run_all_alg_tests();
 	  //run_all_ipp_tests();
   
-	  //std::cout << test56_mesh_change_open_existing() << std::endl;
+	  std::cout << test10_render_ogl_cube() << std::endl;
     //std::cout << test33_update_from_file() << std::endl;
   
     //std::cout << test19_material_change() << std::endl;

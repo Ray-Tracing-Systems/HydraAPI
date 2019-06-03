@@ -379,6 +379,7 @@ struct ChangeList
     res.matUsed      = _union_them(matUsed,      a_rhs.matUsed);
     res.lightUsed    = _union_them(lightUsed,    a_rhs.lightUsed);
     res.texturesUsed = _union_them(texturesUsed, a_rhs.texturesUsed);
+    res.drawSeq      = drawSeq;
     return res;
   }
   
