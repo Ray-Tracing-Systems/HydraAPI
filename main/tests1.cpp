@@ -1807,10 +1807,10 @@ void run_all_mtl_tests(int a_start)
                        &test_152_texture_color_replace_mode,
                        &test_153_opacity_shadow_matte_opacity,
 
-                       &test_154_proc_checker_precomp,
-                       &test_155_proc_checker_HDR_precomp,
-                       &test_156_proc_checker_precomp_update,
-                       &test_157_proc_checker_precomp_remap,
+                       &test_154_baked_checker_precomp,
+                       &test_155_baked_checker_HDR_precomp,
+                       &test_156_baked_checker_precomp_update,
+                       &test_157_baked_checker_precomp_remap,
                        
                        &test_158_proc_dirt1,
                        &test_159_proc_dirt2,

@@ -1294,7 +1294,7 @@ bool MTL_TESTS::test_153_opacity_shadow_matte_opacity()
 }
 
 
-bool MTL_TESTS::test_154_proc_checker_precomp()
+bool MTL_TESTS::test_154_baked_checker_precomp()
 {
   initGLIfNeeded();
 
@@ -1625,7 +1625,7 @@ bool MTL_TESTS::test_154_proc_checker_precomp()
   return check_images("test_154", 1, 60);
 }
 
-bool MTL_TESTS::test_155_proc_checker_HDR_precomp()
+bool MTL_TESTS::test_155_baked_checker_HDR_precomp()
 {
   initGLIfNeeded();
 
@@ -1953,7 +1953,7 @@ bool MTL_TESTS::test_155_proc_checker_HDR_precomp()
   return check_images("test_155", 1, 60);
 }
 
-bool MTL_TESTS::test_156_proc_checker_precomp_update()
+bool MTL_TESTS::test_156_baked_checker_precomp_update()
 {
   initGLIfNeeded();
 
@@ -2289,7 +2289,7 @@ bool MTL_TESTS::test_156_proc_checker_precomp_update()
   return check_images("test_156", 1, 60);
 }
 
-bool MTL_TESTS::test_157_proc_checker_precomp_remap()
+bool MTL_TESTS::test_157_baked_checker_precomp_remap()
 {
   initGLIfNeeded();
 

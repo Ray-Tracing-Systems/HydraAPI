@@ -281,10 +281,10 @@ namespace MTL_TESTS
   bool test_152_texture_color_replace_mode();
   bool test_153_opacity_shadow_matte_opacity();
 
-  bool test_154_proc_checker_precomp();
-  bool test_155_proc_checker_HDR_precomp();
-  bool test_156_proc_checker_precomp_update();
-  bool test_157_proc_checker_precomp_remap();
+  bool test_154_baked_checker_precomp();
+  bool test_155_baked_checker_HDR_precomp();
+  bool test_156_baked_checker_precomp_update();
+  bool test_157_baked_checker_precomp_remap();
 
   bool test_158_proc_dirt1();
   bool test_159_proc_dirt2();
