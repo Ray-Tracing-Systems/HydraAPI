@@ -169,53 +169,19 @@ int main(int argc, const char** argv)
   
   try
   {
-    //GEO_TESTS::test_001_mesh_from_memory();
-    //demo_01_plane_box();
-    //window_main_free_look(L"/home/frol/PROG/clsp/database/statex_00001.xml", L"opengl1");
+  
+    demo_01_plane_box();
     
     //run_all_api_tests(); // passed
     //run_all_geo_tests();
-    //run_all_mtl_tests(53);
+    //run_all_mtl_tests();
     //run_all_lgt_tests();
 	  //run_all_alg_tests();
 	  //run_all_ipp_tests();
   
-	  //std::cout << MTL_TESTS::test_154_baked_checker_precomp()        << std::endl;
-    //std::cout << MTL_TESTS::test_155_baked_checker_HDR_precomp()    << std::endl;
-    //std::cout << MTL_TESTS::test_156_baked_checker_precomp_update() << std::endl;
-    //std::cout << MTL_TESTS::test_157_baked_checker_precomp_remap()  << std::endl;
-    
-    std::cout << MTL_TESTS::test_167_subdiv() << std::endl;
-    std::cout << "g_MSE = " << g_MSEOutput << std::endl;
-    //std::cout << MTL_TESTS::test_168_diffuse_texture_recommended_res2() << std::endl;
-    
-    //std::cout << test44_four_lights_and_compressed_mesh() << std::endl;
-    
-    //test46_light_geom_rect();
-    //std::cout << test89_proc_texture_dirty() << std::endl;
-    //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_49", L"opengl1"); // &test02_draw
-    
-    //std::cout << "g_mse = " << g_MSEOutput << std::endl;
-    //window_main_free_look(L"tests_f/test_241", L"opengl1Debug");
-
-    //window_main_free_look(L"tests/test_gl32_002_", L"opengl32Deferred", &test_gl32_002_init, &test_gl32_002_draw);
-    //window_main_free_look(L"tests/lucy_deferred", L"opengl3Utility", &test_gl32_001_init, &test_gl32_001_draw);
-    //window_main_free_look(L"tests/test_gl32_002_", L"opengl3Utility", &test_gl32_002_init, &test_gl32_002_draw);
-    //window_main_free_look(L"tests/test_39", L"opengl1Debug");
-
-    //window_main_free_look(L"tests/zgl1_test_cube", L"opengl32Forward", &test_gl32_001_init, &test_gl32_001_draw);
-    //window_main_free_look(L"D:/PROG/HydraCore/hydra_app/tests/test_42", L"opengl1DrawRays");
-    //test_gl32_002();
-    //window_main_free_look(L"tests/test_gl32_002", L"opengl32Deferred");
-
-    //_hrDebugPrintVSGF(L"D:/temp/TestRenderFromPhil/data/chunk_00022.vsgf",   L"z_mesh_phil.txt");
-    //_hrDebugPrintVSGF(L"D:/temp/TestRenderFromSergey/data/chunk_00022.vsgf", L"z_mesh_serg.txt");
-
-	  //test_console_render(L"D:/Downloads/test(1)/test", L"D:/Downloads/test(1)/test/zzz.bmp");
-	  //test02_simple_gl1_render(L"opengl1Debug");
-    
-    //image_p_sandbox();
-
+    //MTL_TESTS::test_101_diffuse_lambert();
+  
+    //window_main_free_look(L"/home/frol/PROG/clsp/database/statex_00001.xml", L"opengl1");
 	  terminate_opengl();
   }
   catch (std::runtime_error& e)

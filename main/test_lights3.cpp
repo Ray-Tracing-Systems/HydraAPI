@@ -2095,14 +2095,6 @@ namespace LGHT_TESTS
 
       auto color = diff.append_child(L"color");
       color.append_attribute(L"val").set_value(L"0.0 0.6 0.0");
-
-      //auto refl = matNode.append_child(L"reflectivity");
-      //refl.append_attribute(L"brdf_type").set_value(L"torranse_sparrow");
-      //refl.append_child(L"color").append_attribute(L"val").set_value(L"0.8 0.8 0.8");
-      //refl.append_child(L"glossiness").append_attribute(L"val").set_value(L"0.98");
-      //refl.append_child(L"extrusion").append_attribute(L"val").set_value(L"maxcolor");
-      //refl.append_child(L"fresnel").append_attribute(L"val").set_value(1);
-      //refl.append_child(L"fresnel_IOR").append_attribute(L"val").set_value(8.0f);
     }
     hrMaterialClose(matRefl);
 
@@ -2210,9 +2202,30 @@ namespace LGHT_TESTS
     // Render settings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 768, 256, 2048);
 
-
+    HRRenderRef renderRef = hrRenderCreate(L"HydraModern");
+    hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
+  
+    hrRenderOpen(renderRef, HR_WRITE_DISCARD);
+    {
+      auto node = hrRenderParamNode(renderRef);
+    
+      node.append_child(L"width").text()  = 1024;
+      node.append_child(L"height").text() = 768;
+    
+      node.append_child(L"method_primary").text()   = L"pathtracing";
+      node.append_child(L"method_secondary").text() = L"pathtracing";
+      node.append_child(L"method_tertiary").text()  = L"pathtracing";
+      node.append_child(L"method_caustic").text()   = L"pathtracing";
+      node.append_child(L"shadows").text()          = L"1";
+    
+      node.append_child(L"trace_depth").text()      = L"6";
+      node.append_child(L"diff_trace_depth").text() = L"3";
+      node.append_child(L"maxRaysPerPixel").text()  = 8192;
+    }
+    hrRenderClose(renderRef);
+  
+  
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Create scene
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2314,9 +2327,6 @@ namespace LGHT_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2325,11 +2335,6 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
@@ -2344,7 +2349,7 @@ namespace LGHT_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_235/z_out.png");
 
-    return check_images("test_235", 1, 60);
+    return check_images("test_235", 1, 200);
   }
 
 
