@@ -175,18 +175,18 @@ int main(int argc, const char** argv)
     
     //run_all_api_tests(); // passed
     //run_all_geo_tests();
-    //run_all_mtl_tests();
+    //run_all_mtl_tests(53);
     //run_all_lgt_tests();
 	  //run_all_alg_tests();
 	  //run_all_ipp_tests();
   
 	  //std::cout << MTL_TESTS::test_154_baked_checker_precomp()        << std::endl;
-    //std::cout << MTL_TESTS::test_155_baked_checker_HDR_precomp()    << std::endl;
+    std::cout << MTL_TESTS::test_155_baked_checker_HDR_precomp()    << std::endl;
     //std::cout << MTL_TESTS::test_156_baked_checker_precomp_update() << std::endl;
     //std::cout << MTL_TESTS::test_157_baked_checker_precomp_remap()  << std::endl;
     
     //std::cout << MTL_TESTS::test_163_diffuse_texture_recommended_res() << std::endl;
-    std::cout << MTL_TESTS::test_168_diffuse_texture_recommended_res2() << std::endl;
+    //std::cout << MTL_TESTS::test_168_diffuse_texture_recommended_res2() << std::endl;
     
     //std::cout << test44_four_lights_and_compressed_mesh() << std::endl;
     

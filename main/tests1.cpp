@@ -1611,7 +1611,7 @@ void run_all_api_tests(const int startTestId)
                        &test39_mmlt_or_ibpt,
                        &test40_several_changes,
                        &test41_load_library_basic,
-                       &dummy_test,
+                       &test42_load_mesh_compressed,
                        &test43_test_direct_light,
                        &test44_four_lights_and_compressed_mesh,
                        &test45_mesh_from_vsgf_opengl_bug_teapot,

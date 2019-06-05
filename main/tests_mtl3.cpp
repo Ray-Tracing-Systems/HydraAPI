@@ -1447,9 +1447,9 @@ bool MTL_TESTS::test_154_baked_checker_precomp()
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Meshes
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  HRMeshRef cubeR = HRMeshFromSimpleMesh(L"cubeR", CreateCube(2.0f), matR.id);
-  HRMeshRef sphereG = HRMeshFromSimpleMesh(L"sphereG", CreateSphere(4.0f, 64), matG.id);
-  HRMeshRef torusB = HRMeshFromSimpleMesh(L"torusB", CreateTorus(0.8f, 2.0f, 64, 64), matB.id);
+  HRMeshRef cubeR    = HRMeshFromSimpleMesh(L"cubeR", CreateCube(2.0f), matR.id);
+  HRMeshRef sphereG  = HRMeshFromSimpleMesh(L"sphereG", CreateSphere(4.0f, 64), matG.id);
+  HRMeshRef torusB   = HRMeshFromSimpleMesh(L"torusB", CreateTorus(0.8f, 2.0f, 64, 64), matB.id);
   HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane", CreatePlane(10.0f), matGray.id);
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1468,13 +1468,13 @@ bool MTL_TESTS::test_154_baked_checker_precomp()
 
     auto sizeNode = lightNode.append_child(L"size");
 
-    sizeNode.append_attribute(L"half_length").set_value(L"8.0");
-    sizeNode.append_attribute(L"half_width").set_value(L"8.0");
+    sizeNode.append_attribute(L"half_length") = 1.0f;
+    sizeNode.append_attribute(L"half_width")  = 1.0f;
 
     auto intensityNode = lightNode.append_child(L"intensity");
 
-    intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"4.0");
+    intensityNode.append_child(L"color").append_attribute(L"val")      = L"1 1 1";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 200.0f;
     VERIFY_XML(lightNode);
   }
   hrLightClose(rectLight);
@@ -1506,7 +1506,7 @@ bool MTL_TESTS::test_154_baked_checker_precomp()
   int w = 1024;
   int h = 768;
 
-  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, w, h, 256, 1024);
+  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, w, h, 256, 2048);
 
   hrRenderOpen(renderRef, HR_OPEN_EXISTING);
   auto node = hrRenderParamNode(renderRef);
@@ -1591,23 +1591,16 @@ bool MTL_TESTS::test_154_baked_checker_precomp()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef);
-
-  glViewport(0, 0, w, h);
-  std::vector<int32_t> image(w * h);
+  
 
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
     HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, w, h, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
+      
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
@@ -1778,9 +1771,9 @@ bool MTL_TESTS::test_155_baked_checker_HDR_precomp()
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Meshes
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  HRMeshRef cubeR = HRMeshFromSimpleMesh(L"cubeR", CreateCube(2.0f), matR.id);
-  HRMeshRef sphereG = HRMeshFromSimpleMesh(L"sphereG", CreateSphere(4.0f, 64), matG.id);
-  HRMeshRef torusB = HRMeshFromSimpleMesh(L"torusB", CreateTorus(0.8f, 2.0f, 64, 64), matB.id);
+  HRMeshRef cubeR    = HRMeshFromSimpleMesh(L"cubeR",    CreateCube(2.0f), matR.id);
+  HRMeshRef sphereG  = HRMeshFromSimpleMesh(L"sphereG",  CreateSphere(4.0f, 64), matG.id);
+  HRMeshRef torusB   = HRMeshFromSimpleMesh(L"torusB",   CreateTorus(0.8f, 2.0f, 64, 64), matB.id);
   HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane", CreatePlane(10.0f), matGray.id);
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1799,13 +1792,13 @@ bool MTL_TESTS::test_155_baked_checker_HDR_precomp()
 
     auto sizeNode = lightNode.append_child(L"size");
 
-    sizeNode.append_attribute(L"half_length").set_value(L"2.0");
-    sizeNode.append_attribute(L"half_width").set_value(L"2.0");
+    sizeNode.append_attribute(L"half_length") = 1;
+    sizeNode.append_attribute(L"half_width")  = 1;
 
     auto intensityNode = lightNode.append_child(L"intensity");
 
-    intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"16.0");
+    intensityNode.append_child(L"color").append_attribute(L"val")      = L"1 1 1";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 64.0f;
     VERIFY_XML(lightNode);
   }
   hrLightClose(rectLight);

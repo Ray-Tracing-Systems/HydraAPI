@@ -1245,41 +1245,42 @@ void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::v
 //   }
 // }
 //
-// void InsertFixedMeshesAndInstancesXML(pugi::xml_document &stateToProcess,
-//                                       std::unordered_map<uint32_t, int32_t> &instToFixedMesh, int32_t sceneId)
-// {
-//   auto geolib = stateToProcess.child(L"geometry_lib");
-//   std::vector <std::pair<int, pugi::xml_node> > tmp_nodes;
-//
-//   if (geolib != nullptr)
-//   {
-//     for (auto& meshMap : instToFixedMesh)
-//     {
-//       auto geoLib_ch = g_objManager.scnData.m_geometryLibChanges;
-//
-//       auto mesh_node = geoLib_ch.find_child_by_attribute(L"id", std::to_wstring(meshMap.second).c_str());
-//       std::pair<int, pugi::xml_node> p(meshMap.second, mesh_node);
-//       tmp_nodes.push_back(p);
-//
-//       auto sceneNode = stateToProcess.child(L"scenes").find_child_by_attribute(L"scene", L"id", std::to_wstring(sceneId).c_str());
-//       if (sceneNode != nullptr)
-//       {
-//         auto node = sceneNode.find_child_by_attribute(L"instance", L"id", std::to_wstring(meshMap.first).c_str());
-//         if(node != nullptr)
-//         {
-//           node.attribute(L"mesh_id").set_value(meshMap.second);
-//         }
-//       }
-//     }
-//   }
-//
-//
-//   std::sort(tmp_nodes.begin(), tmp_nodes.end(),
-//           [&](auto a, auto b) { return a.first < b.first; });
-//
-//   for (auto& node : tmp_nodes)
-//     geolib.append_copy(node.second);
-// }
+
+void InsertFixedMeshesAndInstancesXML(pugi::xml_document &stateToProcess,
+                                      std::unordered_map<uint32_t, int32_t> &instToFixedMesh, int32_t sceneId)
+{
+  auto geolib = stateToProcess.child(L"geometry_lib");
+  std::vector <std::pair<int, pugi::xml_node> > tmp_nodes;
+  if (geolib != nullptr)
+  {
+    for (auto& meshMap : instToFixedMesh)
+    {
+      //auto geoLib_ch = g_objManager.scnData.m_geometryLibChanges;
+      //auto mesh_node = geoLib_ch.find_child_by_attribute(L"id", std::to_wstring(meshMap.second).c_str());
+      if(meshMap.second < 0 || meshMap.second >= g_objManager.scnData.meshes.size())
+        continue;
+      
+      auto mesh_node = g_objManager.scnData.meshes[meshMap.second].xml_node();
+      
+      std::pair<int, pugi::xml_node> p(meshMap.second, mesh_node);
+      tmp_nodes.push_back(p);
+      auto sceneNode = stateToProcess.child(L"scenes").find_child_by_attribute(L"scene", L"id", std::to_wstring(sceneId).c_str());
+      if (sceneNode != nullptr)
+      {
+        auto node = sceneNode.find_child_by_attribute(L"instance", L"id", std::to_wstring(meshMap.first).c_str());
+        if(node != nullptr)
+        {
+          node.attribute(L"mesh_id").set_value(meshMap.second);
+        }
+      }
+    }
+  }
+  std::sort(tmp_nodes.begin(), tmp_nodes.end(),
+            [&](auto a, auto b) { return a.first < b.first; });
+  
+  for (auto& node : tmp_nodes)
+    geolib.append_copy(node.second);
+}
 
 
 /*
@@ -1508,7 +1509,7 @@ std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
 
     if(anyChanges)
     {
-      //InsertFixedMeshesAndInstancesXML(stateToProcess, instToFixedMesh, g_objManager.m_currSceneId); //#TODO: #ALERT: displacement fixes !!!
+      InsertFixedMeshesAndInstancesXML(stateToProcess, instToFixedMesh, g_objManager.m_currSceneId);
       removeDisplacementFromMaterials(stateToProcess, displacementMatIDs);
     }
   }
