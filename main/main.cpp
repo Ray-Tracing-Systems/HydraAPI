@@ -188,28 +188,11 @@ int main(int argc, const char** argv)
     //std::cout << MTL_TESTS::test_163_diffuse_texture_recommended_res() << std::endl;
     std::cout << MTL_TESTS::test_168_diffuse_texture_recommended_res2() << std::endl;
     
-    //std::cout << test33_update_from_file() << std::endl;
-  
-    //std::cout << test19_material_change() << std::endl;
-    
     //std::cout << test44_four_lights_and_compressed_mesh() << std::endl;
-    //test42_load_mesh_compressed();
-    //test78_material_remap_list1();
-    
-
-    //std::cout << test38_save_mesh_and_delayed_load() << std::endl;
-    //std::cout << test49_light_geom_disk() << std::endl;
     
     //test46_light_geom_rect();
     //std::cout << test89_proc_texture_dirty() << std::endl;
     //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_49", L"opengl1"); // &test02_draw
-    //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_38", L"opengl1Debug"); // &test02_draw
-
-    //test82_proc_texture();
-    //test93_proc_tex_recursive();
-    //test39_mmlt_or_ibpt();
-    //test42_load_library_basic();
-    //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
     
     //std::cout << "g_mse = " << g_MSEOutput << std::endl;
     //window_main_free_look(L"tests_f/test_241", L"opengl1Debug");
