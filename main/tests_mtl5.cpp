@@ -368,7 +368,7 @@ bool check_test_163(const wchar_t* a_path)
   int32_t rw2 = tex2.attribute(L"rwidth").as_int();
   int32_t rh2 = tex2.attribute(L"rheight").as_int();
 
-  return (rw1 == 1024) && (rh1 == 1024) && (rw2 == 2048) && (rh2 == 2048);
+  return (rw1 == 256) && (rh1 == 256) && (rw2 == 2048) && (rh2 == 2048);
 }
 
 
@@ -706,10 +706,7 @@ bool MTL_TESTS::test_163_diffuse_texture_recommended_res()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef);
-
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-
+  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -718,11 +715,6 @@ bool MTL_TESTS::test_163_diffuse_texture_recommended_res()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);

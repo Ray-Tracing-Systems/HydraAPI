@@ -181,11 +181,12 @@ int main(int argc, const char** argv)
 	  //run_all_ipp_tests();
   
 	  //std::cout << MTL_TESTS::test_154_baked_checker_precomp()        << std::endl;
-    std::cout << MTL_TESTS::test_155_baked_checker_HDR_precomp()    << std::endl;
+    //std::cout << MTL_TESTS::test_155_baked_checker_HDR_precomp()    << std::endl;
     //std::cout << MTL_TESTS::test_156_baked_checker_precomp_update() << std::endl;
     //std::cout << MTL_TESTS::test_157_baked_checker_precomp_remap()  << std::endl;
     
-    //std::cout << MTL_TESTS::test_163_diffuse_texture_recommended_res() << std::endl;
+    std::cout << MTL_TESTS::test_167_subdiv() << std::endl;
+    std::cout << "g_MSE = " << g_MSEOutput << std::endl;
     //std::cout << MTL_TESTS::test_168_diffuse_texture_recommended_res2() << std::endl;
     
     //std::cout << test44_four_lights_and_compressed_mesh() << std::endl;

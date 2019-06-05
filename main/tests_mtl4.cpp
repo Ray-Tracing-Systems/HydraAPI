@@ -3009,9 +3009,9 @@ bool MTL_TESTS::test_167_subdiv()
 
   //HRTextureNodeRef texChecker = hrTexture2DCreateFromFile(L"data/textures/chess_white.bmp");
   //HRTextureNodeRef tex = hrTexture2DCreateFromFile(L"data/textures/ornament.jpg");
-  HRTextureNodeRef tex1 = hrTexture2DCreateFromFile(L"data/textures/height_map1_p1.png");
+  HRTextureNodeRef tex3 = hrTexture2DCreateFromFile(L"data/textures/height_map1_p1.png");
   HRTextureNodeRef tex2 = hrTexture2DCreateFromFile(L"data/textures/height_map1_p2.png");
-  HRTextureNodeRef tex3 = hrTexture2DCreateFromFile(L"data/textures/height_map1_p3.png");
+  HRTextureNodeRef tex1 = hrTexture2DCreateFromFile(L"data/textures/height_map1_p3.png");
 
   hrMaterialOpen(mat1, HR_WRITE_DISCARD);
   {
@@ -3033,7 +3033,7 @@ bool MTL_TESTS::test_167_subdiv()
     auto heightNode   = displacement.append_child(L"height_map");
 
     displacement.append_attribute(L"type").set_value(L"true_displacement");
-    displacement.append_attribute(L"subdivs").set_value(0);
+    displacement.append_attribute(L"subdivs").set_value(3);
     heightNode.append_attribute(L"amount").set_value(15.1f);
 
     auto texNode = hrTextureBind(tex1, heightNode);
@@ -3115,7 +3115,7 @@ bool MTL_TESTS::test_167_subdiv()
     auto heightNode   = displacement.append_child(L"height_map");
 
     displacement.append_attribute(L"type").set_value(L"true_displacement");
-    displacement.append_attribute(L"subdivs").set_value(3);
+    displacement.append_attribute(L"subdivs").set_value(0);
     heightNode.append_attribute(L"amount").set_value(15.1f);
 
     auto texNode = hrTextureBind(tex3, heightNode);
@@ -3238,7 +3238,7 @@ bool MTL_TESTS::test_167_subdiv()
   // Render settings
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 1024, 256, 512);
+  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 2048);
   hrRenderOpen(renderRef, HR_OPEN_EXISTING);
   {
     auto node = hrRenderParamNode(renderRef);
@@ -3266,24 +3266,21 @@ bool MTL_TESTS::test_167_subdiv()
   mRes.identity();
 
   mTranslate = translate4x4(float3(0.0f, -1.0f, 0.0f));
-  mScale = scale4x4(float3(1.0f, 1.0f, 1.0f));
-  mRes = mul(mTranslate, mScale);
+  mScale     = scale4x4(float3(1.0f, 1.0f, 1.0f));
+  mRes       = mul(mTranslate, mScale);
 
   hrMeshInstance(scnRef, tess1, mRes.L());
 
   mTranslate = translate4x4(float3(0.0f, -1.0f, -100.0f));
-  mScale = scale4x4(float3(1.0f, 1.0f, 1.0f));
-  mRes = mul(mTranslate, mScale);
-
-  int32_t remapList1[2] = { mat1.id, mat2.id};
+  mScale     = scale4x4(float3(1.0f, 1.0f, 1.0f));
+  mRes       = mul(mTranslate, mScale);
+  
   hrMeshInstance(scnRef, tess2, mRes.L());
-
-
+  
   mTranslate = translate4x4(float3(0.0f, -1.0f, -200.0f));
-  mScale = scale4x4(float3(1.0f, 1.0f, 1.0f));
-  mRes = mul(mTranslate, mScale);
-
-  int32_t remapList2[2] = { mat1.id, mat3.id};
+  mScale     = scale4x4(float3(1.0f, 1.0f, 1.0f));
+  mRes       = mul(mTranslate, mScale);
+  
   hrMeshInstance(scnRef, tess3, mRes.L());
 
   ///////////
@@ -3315,11 +3312,7 @@ bool MTL_TESTS::test_167_subdiv()
   ///////////
 
   hrSceneClose(scnRef);
-
   hrFlush(scnRef, renderRef);
-
-  glViewport(0, 0, 1024, 1024);
-  std::vector<int32_t> image(1024 * 1024);
 
   while (true)
   {
@@ -3329,11 +3322,6 @@ bool MTL_TESTS::test_167_subdiv()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 1024, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 1024, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
@@ -3348,7 +3336,7 @@ bool MTL_TESTS::test_167_subdiv()
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_167/z_out.png");
 
-  return check_images("test_167", 1, 30);
+  return check_images("test_167", 1, 20);
 }
 
 
