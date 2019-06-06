@@ -11,21 +11,17 @@
 #include "../hydra_api/HydraAPI.h"
 #include "../hydra_api/HydraXMLVerify.h"
 
-// #include "../hydra_api/LiteMath.h"
-//
-// using namespace HydraLiteMath;
-//
+
 #include "mesh_utils.h"
 // #include "simplerandom.h"
 
-void initGLIfNeeded();
 
 void demo_01_plane_box()
 {
-  initGLIfNeeded();
-  
   hrSceneLibraryOpen(L"demos/demo_01", HR_WRITE_DISCARD);
   
+  // create materials for plane and cubes
+  //
   auto mat0 = hrMaterialCreate(L"MyFirstMaterial");
   auto mat1 = hrMaterialCreate(L"MyFirstMaterial");
   
@@ -53,6 +49,8 @@ void demo_01_plane_box()
   }
   hrMaterialClose(mat1);
   
+  // create plane and cube meshes. #NOTE: 'SimpleMesh' is just an example class, not the part of HydraAPI!
+  //
   SimpleMesh meshPlane = CreatePlane(10.0f);
   SimpleMesh meshCube  = CreateCube(1.0f);
   
@@ -84,10 +82,8 @@ void demo_01_plane_box()
   }
   hrMeshClose(planeRef);
   
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Light
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  
+  // create area light
+  //
   HRLightRef rectLight = hrLightCreate(L"my_area_light");
   
   hrLightOpen(rectLight, HR_WRITE_DISCARD);
@@ -96,27 +92,25 @@ void demo_01_plane_box()
     
     lightNode.attribute(L"type").set_value(L"area");
     lightNode.attribute(L"shape").set_value(L"rect");
-    lightNode.attribute(L"distribution").set_value(L"diffuse");
+    lightNode.attribute(L"distribution").set_value(L"diffuse"); // you can use both 'set_value' or '='
     
     auto sizeNode = lightNode.append_child(L"size");
     
-    sizeNode.append_attribute(L"half_length").set_value(1.0f);
-    sizeNode.append_attribute(L"half_width").set_value(1.0f);
+    sizeNode.append_attribute(L"half_length") = 1.0f;
+    sizeNode.append_attribute(L"half_width")  = 1.0f;
     
     auto intensityNode = lightNode.append_child(L"intensity");
     
-    intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"8.0");
+    intensityNode.append_child(L"color").append_attribute(L"val")      = L"1 1 1";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 8.0f;
     
     VERIFY_XML(lightNode);
   }
   hrLightClose(rectLight);
   
   
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Camera
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  
+  // create and set up camera
+  //
   HRCameraRef camRef = hrCameraCreate(L"my camera");
   
   hrCameraOpen(camRef, HR_WRITE_DISCARD);
@@ -136,10 +130,10 @@ void demo_01_plane_box()
   hrCameraClose(camRef);
   
   
-  //HRRenderRef renderRef = hrRenderCreate(L"opengl1");
-  
+  // create and set up renderer object
+  //
   HRRenderRef renderRef = hrRenderCreate(L"HydraModern");
-  hrRenderEnableDevice(renderRef, 1, true);
+  hrRenderEnableDevice(renderRef, 0, true);
   
   hrRenderOpen(renderRef, HR_WRITE_DISCARD);
   {
@@ -149,28 +143,23 @@ void demo_01_plane_box()
     node.append_child(L"height").text() = 512;
     
     node.append_child(L"method_primary").text()   = L"pathtracing";
-    node.append_child(L"method_secondary").text() = L"pathtracing";
-    node.append_child(L"trace_depth").text()      = L"6";
-    node.append_child(L"diff_trace_depth").text() = L"3";
+    node.append_child(L"trace_depth").text()      = 6;
+    node.append_child(L"diff_trace_depth").text() = 4;
     node.append_child(L"maxRaysPerPixel").text()  = 256;
+    node.append_child(L"qmc_variant").text()      = 7;
   }
   hrRenderClose(renderRef);
   
   
-  //hrRenderOpen(renderRef, HR_WRITE_DISCARD);
-  //{
-  //  auto node = hrRenderParamNode(renderRef);
+  // create and set up scene
   //
-  //  node.append_child(L"width").text() = 512;
-  //  node.append_child(L"height").text() = 512;
-  //}
-  //hrRenderClose(renderRef);
-  
   HRSceneInstRef sceneRef = hrSceneCreate(L"myscene");
-  
-  for(int frame = 0; frame < 10; frame++)
+  const int NFrames = 10;
+  for(int frame = 0; frame < NFrames; frame++)
   {
-    
+  
+    // #NOTE: each frame we discard old scene and create the new one by instancing of existing geometry and lights
+    //
     hrSceneOpen(sceneRef, HR_WRITE_DISCARD);
     {
     
@@ -192,8 +181,7 @@ void demo_01_plane_box()
       hrMeshInstance(sceneRef, planeRef, m1);
       hrMeshInstance(sceneRef, cubeRef, m2);
       hrLightInstance(sceneRef, rectLight, m3);
-    
-    
+      
       for (int z = -2; z <= 2; z++)
       {
         for (int x = -2; x <= 2; x++)
@@ -210,12 +198,15 @@ void demo_01_plane_box()
     }
     hrSceneClose(sceneRef);
   
-  
+    // now we launch our renderer
+    //
     hrFlush(sceneRef, renderRef, camRef);
   
-    std::cout << "rendering frame " << frame << std::endl;
+    std::cout << "rendering frame " << frame << " of " << NFrames << std::endl;
     std::cout.flush();
     
+    // and wait while it finish
+    //
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -240,4 +231,6 @@ void demo_01_plane_box()
     hrRenderSaveFrameBufferLDR(renderRef, str.c_str());
   
   }
+  
+  std::cout << "please look at the folder 'main/demos/demo01'" << std::endl;
 }
