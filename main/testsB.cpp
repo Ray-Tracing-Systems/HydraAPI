@@ -45,7 +45,7 @@ using HydraLiteMath::float4;
 
 bool test81_custom_attributes()
 {
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test81");
 
@@ -261,7 +261,7 @@ namespace hlm = HydraLiteMath;
 
 bool test38_save_mesh_and_delayed_load()
 {
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test_38");
 
@@ -678,7 +678,7 @@ bool test38_save_mesh_and_delayed_load()
 
 bool test82_proc_texture()
 {
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test_82");
 
@@ -974,8 +974,8 @@ bool test82_proc_texture()
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
 
     if (info.finalUpdate)
@@ -991,7 +991,7 @@ bool test82_proc_texture()
 
 bool test83_proc_texture2()
 {
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test_83");
 
@@ -1289,8 +1289,8 @@ bool test83_proc_texture2()
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
 
     if (info.finalUpdate)
@@ -1305,7 +1305,7 @@ bool test83_proc_texture2()
 
 bool test84_proc_texture2()
 {
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test_84");
 
@@ -1629,8 +1629,8 @@ bool test84_proc_texture2()
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
 
     if (info.finalUpdate)
@@ -1645,7 +1645,7 @@ bool test84_proc_texture2()
 
 bool test85_proc_texture_ao()
 {
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test_85"); 
 
@@ -1981,8 +1981,8 @@ bool test85_proc_texture_ao()
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
 
     if (info.finalUpdate)
@@ -1997,7 +1997,7 @@ bool test85_proc_texture_ao()
 
 bool test86_proc_texture_ao_dirt()
 {
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test_86"); 
 
@@ -2330,8 +2330,8 @@ bool test86_proc_texture_ao_dirt()
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
 
     if (info.finalUpdate)
@@ -3129,8 +3129,8 @@ bool test88_proc_texture_convex_rust()
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
 
     if (info.finalUpdate)
@@ -3496,8 +3496,8 @@ bool test89_proc_texture_dirty()
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
 
     if (info.finalUpdate)
@@ -3782,7 +3782,7 @@ bool test99_triplanar()
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
     }
 
     if (info.finalUpdate)
@@ -4091,7 +4091,7 @@ bool test96_hexaplanar()
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
     }
 
     if (info.finalUpdate)

@@ -33,7 +33,7 @@ namespace LGHT_TESTS
 {
   bool test_200_spot()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_200");
 
@@ -272,8 +272,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -287,7 +287,7 @@ namespace LGHT_TESTS
 
   bool test_201_sphere()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_201");
 
@@ -480,8 +480,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -495,7 +495,7 @@ namespace LGHT_TESTS
 
   bool test_202_sky_color()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_202");
 
@@ -684,8 +684,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -699,8 +699,6 @@ namespace LGHT_TESTS
 
   bool test_203_sky_hdr()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_203");
 
     hrSceneLibraryOpen(L"tests_f/test_203", HR_WRITE_DISCARD);
@@ -905,8 +903,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -1400,8 +1398,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -1640,8 +1638,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -1877,7 +1875,7 @@ namespace LGHT_TESTS
         std::cout.precision(pres);
 
         glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
       }
 
       if (info.finalUpdate)
@@ -2112,7 +2110,7 @@ namespace LGHT_TESTS
         std::cout.precision(pres);
 
         glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
       }
 
       if (info.finalUpdate)
@@ -2468,7 +2466,7 @@ namespace LGHT_TESTS
         std::cout.precision(pres);
 
         glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
       }
 
       if (info.finalUpdate)
@@ -2842,7 +2840,7 @@ namespace LGHT_TESTS
         std::cout.precision(pres);
 
         glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
       }
 
       if (info.finalUpdate)

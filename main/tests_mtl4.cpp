@@ -48,7 +48,7 @@ bool MTL_TESTS::test_158_proc_dirt1()
   const int THIS_TEST_WIDTH  = 1024;
   const int THIS_TEST_HEIGHT = 1024;
 
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test_158");
 
@@ -632,8 +632,8 @@ bool MTL_TESTS::test_158_proc_dirt1()
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
 
     if (info.finalUpdate)
@@ -651,7 +651,7 @@ bool MTL_TESTS::test_159_proc_dirt2()
   const int THIS_TEST_WIDTH  = 1024;
   const int THIS_TEST_HEIGHT = 1024;
 
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test_159");
 
@@ -1265,8 +1265,8 @@ bool MTL_TESTS::test_159_proc_dirt2()
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
 
     if (info.finalUpdate)
@@ -1284,7 +1284,7 @@ bool MTL_TESTS::test_160_proc_dirt3()
   const int THIS_TEST_WIDTH  = 1024;
   const int THIS_TEST_HEIGHT = 1024;
 
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test_160");
 
@@ -1954,8 +1954,8 @@ bool MTL_TESTS::test_160_proc_dirt3()
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
 
     if (info.finalUpdate)
@@ -1970,7 +1970,7 @@ bool MTL_TESTS::test_160_proc_dirt3()
 
 bool MTL_TESTS::test_161_simple_displacement()
 {
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test_161");
 
@@ -2195,8 +2195,8 @@ bool MTL_TESTS::test_161_simple_displacement()
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
 
     if (info.finalUpdate)
@@ -2210,7 +2210,7 @@ bool MTL_TESTS::test_161_simple_displacement()
 
 bool MTL_TESTS::test_164_simple_displacement_proctex()
 {
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test_164");
 
@@ -2428,8 +2428,8 @@ bool MTL_TESTS::test_164_simple_displacement_proctex()
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
 
     if (info.finalUpdate)
@@ -2672,7 +2672,7 @@ bool MTL_TESTS::test_165_simple_displacement_mesh()
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
     }
 
     if (info.finalUpdate)
@@ -2922,7 +2922,7 @@ bool MTL_TESTS::test_166_displace_by_noise()
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
     }
 
     if (info.finalUpdate)

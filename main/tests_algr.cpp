@@ -38,7 +38,7 @@ using namespace TEST_UTILS;
 
 bool ALGR_TESTS::test_401_ibpt_and_glossy_glass()
 {
-  initGLIfNeeded();
+  
   
   hrErrorCallerPlace(L"test_401");
   
@@ -282,7 +282,7 @@ bool ALGR_TESTS::test_401_ibpt_and_glossy_glass()
       std::cout.precision(pres);
       
       glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
     }
     
     if (info.finalUpdate)
@@ -297,7 +297,7 @@ bool ALGR_TESTS::test_401_ibpt_and_glossy_glass()
 
 bool ALGR_TESTS::test_402_ibpt_and_glossy_double_glass()
 {
-  initGLIfNeeded();
+  
   
   hrErrorCallerPlace(L"test_402");
   
@@ -543,7 +543,7 @@ bool ALGR_TESTS::test_402_ibpt_and_glossy_double_glass()
       std::cout.precision(pres);
       
       glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
     }
     
     if (info.finalUpdate)
@@ -558,7 +558,7 @@ bool ALGR_TESTS::test_402_ibpt_and_glossy_double_glass()
 
 bool ALGR_TESTS::test_403_light_inside_double_glass()
 {
-  initGLIfNeeded();
+  
   
   hrErrorCallerPlace(L"test_403");
   
@@ -803,7 +803,7 @@ bool ALGR_TESTS::test_403_light_inside_double_glass()
       std::cout.precision(pres);
       
       glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
     }
     
     if (info.finalUpdate)

@@ -296,7 +296,7 @@ namespace LGHT_TESTS
       }
 
       glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
 
       if (info.finalUpdate)
         break;
@@ -550,7 +550,7 @@ namespace LGHT_TESTS
       }
 
       glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
 
       if (info.finalUpdate)
         break;
@@ -847,7 +847,7 @@ namespace LGHT_TESTS
       }
 
       glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
 
       if (info.finalUpdate)
         break;
@@ -1157,7 +1157,7 @@ namespace LGHT_TESTS
       }
 
       glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
 
       if (info.finalUpdate)
         break;
@@ -1560,7 +1560,7 @@ namespace LGHT_TESTS
         std::cout.precision(pres);
 
         glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
       }
 
       if (info.finalUpdate)

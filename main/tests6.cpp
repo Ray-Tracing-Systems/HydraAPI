@@ -444,7 +444,7 @@ bool test35_cornell_with_light()
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
+      
       glfwPollEvents();
     }
 

@@ -38,7 +38,7 @@ extern GLFWwindow* g_window;
 
 bool test31_procedural_texture_LDR()
 {
-	initGLIfNeeded();
+	
 
 	hrErrorCallerPlace(L"test31");
 
@@ -267,8 +267,8 @@ bool test31_procedural_texture_LDR()
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
       
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
     
     if (info.finalUpdate)
@@ -282,7 +282,7 @@ bool test31_procedural_texture_LDR()
 
 bool test32_procedural_texture_HDR()
 {
-	initGLIfNeeded();
+	
 
 	hrErrorCallerPlace(L"test32");
 
@@ -517,8 +517,8 @@ bool test32_procedural_texture_HDR()
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
       
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
     
     if (info.finalUpdate)
@@ -532,7 +532,7 @@ bool test32_procedural_texture_HDR()
 
 bool test33_update_from_file()
 {
-	initGLIfNeeded();
+	
 
 	hrErrorCallerPlace(L"test_33");
 
@@ -748,7 +748,7 @@ bool test33_update_from_file()
 
 bool test36_update_from_memory()
 {
-	initGLIfNeeded();
+	
 
 	hrErrorCallerPlace(L"test_36");
 

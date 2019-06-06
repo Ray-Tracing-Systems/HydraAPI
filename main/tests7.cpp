@@ -40,7 +40,7 @@ namespace hlm = HydraLiteMath;
 
 bool test41_load_library_basic()
 {
-  initGLIfNeeded();
+  
   hrErrorCallerPlace(L"test41");
 
   hrSceneLibraryOpen(L"tests/test_41", HR_OPEN_EXISTING);
@@ -326,7 +326,7 @@ bool test42_load_mesh_compressed()
 
 bool test43_test_direct_light()
 {
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test43");
 
@@ -581,8 +581,8 @@ bool test43_test_direct_light()
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
 
     if (info.finalUpdate)
@@ -1027,7 +1027,7 @@ bool test44_four_lights_and_compressed_mesh()
 
 bool test45_mesh_from_vsgf_opengl_bug_teapot()
 {
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test_45");
 
@@ -1381,7 +1381,7 @@ bool test45_mesh_from_vsgf_opengl_bug_teapot()
 
 bool test46_light_geom_rect()
 {
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test_46");
 
@@ -1770,8 +1770,8 @@ bool test46_light_geom_rect()
   //     std::cout << "rendering progress = " << info.progress << "% \r";
   //     std::cout.precision(pres);
   // 
-  //     glfwSwapBuffers(g_window);
-  //     glfwPollEvents();
+  //
+  //
   //   }
   // 
   //   if (info.finalUpdate)
@@ -1785,7 +1785,7 @@ bool test46_light_geom_rect()
 
 bool test47_light_geom_disk()
 {
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test_47");
 
@@ -2184,8 +2184,8 @@ bool test47_light_geom_disk()
   //     std::cout << "rendering progress = " << info.progress << "% \r";
   //     std::cout.precision(pres);
   // 
-  //     glfwSwapBuffers(g_window);
-  //     glfwPollEvents();
+  //
+  //
   //   }
   // 
   //   if (info.finalUpdate)
@@ -2200,7 +2200,7 @@ bool test47_light_geom_disk()
 
 bool test48_light_geom_sphere()
 {
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test_48");
 
@@ -3064,7 +3064,7 @@ bool test50_open_library_several_times()
 
 void test_console_render(const wchar_t* a_libPath, const wchar_t* a_savePath)
 {
-	initGLIfNeeded();
+	
 
 	hrSceneLibraryOpen(a_libPath, HR_OPEN_EXISTING);
 
@@ -3100,8 +3100,8 @@ void test_console_render(const wchar_t* a_libPath, const wchar_t* a_savePath)
 			std::cout << "rendering progress = " << info.progress << "% \r";
 			std::cout.precision(pres);
 
-			glfwSwapBuffers(g_window);
-			glfwPollEvents();
+			
+			
 		}
 
 		if (info.finalUpdate)

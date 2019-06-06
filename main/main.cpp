@@ -123,16 +123,15 @@ int main(int argc, const char** argv)
   
   try
   {
-    demo_01_plane_box();
+    //demo_01_plane_box();
     //MTL_TESTS::test_101_diffuse_lambert();
     //std::cout << test42_load_mesh_compressed() << std::endl;
-
-    //run_all_api_tests(); // passed
-    //run_all_geo_tests();
-    //run_all_mtl_tests();
-    //run_all_lgt_tests();
-	  //run_all_alg_tests();
-	  //run_all_ipp_tests();
+    run_all_api_tests(); // passed
+    run_all_geo_tests();
+    run_all_mtl_tests();
+    run_all_lgt_tests();
+	  run_all_alg_tests();
+	  run_all_ipp_tests();
 
     //window_main_free_look(L"/home/frol/PROG/clsp/database/statex_00001.xml", L"opengl1");
 	  terminate_opengl();

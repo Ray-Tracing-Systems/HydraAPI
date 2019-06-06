@@ -37,7 +37,7 @@ namespace LGHT_TESTS
 
   bool test_237_cubemap_ldr()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_237");
 
@@ -257,8 +257,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -275,7 +275,7 @@ namespace LGHT_TESTS
 
   bool test_238_mesh_light_one_triangle()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_238");
 
@@ -489,8 +489,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -504,7 +504,7 @@ namespace LGHT_TESTS
 
   bool test_239_mesh_light_two_triangle()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_239");
 
@@ -717,8 +717,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -732,7 +732,7 @@ namespace LGHT_TESTS
 
   bool test_240_mesh_light_torus()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_240");
 
@@ -1074,8 +1074,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -1089,7 +1089,7 @@ namespace LGHT_TESTS
 
   bool test_241_mesh_light_torus_texture_ldr()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_241");
 
@@ -1462,8 +1462,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -1478,7 +1478,7 @@ namespace LGHT_TESTS
 
   bool test_242_mesh_light_torus_texture_hdr()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_242");
 
@@ -1856,8 +1856,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -1871,7 +1871,7 @@ namespace LGHT_TESTS
 
   bool test_243_mesh_light_do_not_sample_me()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_243");
 
@@ -2213,8 +2213,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -2228,7 +2228,7 @@ namespace LGHT_TESTS
 
   bool test_244_do_not_sample_me()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_244");
 
@@ -2402,8 +2402,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -2418,7 +2418,7 @@ namespace LGHT_TESTS
 
   bool test_245_cylinder_tex_nearest()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_245");
     hrSceneLibraryOpen(L"tests_f/test_245", HR_WRITE_DISCARD);
@@ -2653,8 +2653,8 @@ namespace LGHT_TESTS
         counter++;
       }
 
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
 
       if (info.finalUpdate)
         break;

@@ -36,7 +36,7 @@ namespace GEO_TESTS
 
   bool test_001_mesh_from_memory()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_001");
 
@@ -238,8 +238,8 @@ namespace GEO_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -254,7 +254,7 @@ namespace GEO_TESTS
   bool test_002_mesh_from_vsgf()
   {
     
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_002");
 
@@ -397,8 +397,8 @@ namespace GEO_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -413,7 +413,7 @@ namespace GEO_TESTS
   bool test_003_compute_normals()
   {
    
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_003");
     hrSceneLibraryOpen(L"tests_f/test_003", HR_WRITE_DISCARD);
@@ -589,8 +589,8 @@ namespace GEO_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -608,7 +608,7 @@ namespace GEO_TESTS
   bool test_004_dof()
   {
 
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_004");
 
@@ -889,8 +889,8 @@ namespace GEO_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -907,7 +907,7 @@ namespace GEO_TESTS
 
   bool test_005_instancing()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_005");
 
@@ -1257,8 +1257,8 @@ namespace GEO_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -1274,7 +1274,7 @@ namespace GEO_TESTS
   bool test_006_points_on_mesh()
   {
 
-    initGLIfNeeded();
+    
     hrErrorCallerPlace(L"test_006");
     hrSceneLibraryOpen(L"tests_f/test_006", HR_WRITE_DISCARD);
 
@@ -1485,8 +1485,8 @@ namespace GEO_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)

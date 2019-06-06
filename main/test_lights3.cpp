@@ -33,7 +33,7 @@ namespace LGHT_TESTS
   
   bool test_226_area_spot_simple()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_226");
 
@@ -204,8 +204,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -219,7 +219,7 @@ namespace LGHT_TESTS
 
   bool test_227_point_spot_glossy_wall()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_227");
     hrSceneLibraryOpen(L"tests_f/test_227", HR_WRITE_DISCARD);
@@ -438,8 +438,8 @@ namespace LGHT_TESTS
         std::cout.precision(pres);
         std::cout.flush();
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -453,7 +453,7 @@ namespace LGHT_TESTS
 
   bool test_228_point_ies_for_bpt()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_228");
 
@@ -622,8 +622,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -637,7 +637,7 @@ namespace LGHT_TESTS
 
   bool test_229_point_ies_for_bpt()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_229");
 
@@ -806,8 +806,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -821,7 +821,7 @@ namespace LGHT_TESTS
 
   bool test_230_area_ies_for_bpt()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_230");
 
@@ -992,8 +992,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -1007,7 +1007,7 @@ namespace LGHT_TESTS
 
   bool test_231_direct_soft_shadow()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_231");
 
@@ -1271,8 +1271,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -1286,7 +1286,7 @@ namespace LGHT_TESTS
 
   bool test_232_point_area_ies()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_232");
 
@@ -1491,8 +1491,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -1594,7 +1594,7 @@ namespace LGHT_TESTS
 
   bool test_233_light_group_point_area_ies()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_233");
 
@@ -1771,8 +1771,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -1786,7 +1786,7 @@ namespace LGHT_TESTS
 
   bool test_234_light_group_light_inst_cust_params()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_234");
 
@@ -1972,8 +1972,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -1987,7 +1987,7 @@ namespace LGHT_TESTS
 
   bool test_235_stadium()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_235");
 
@@ -2267,8 +2267,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -2339,7 +2339,7 @@ namespace LGHT_TESTS
   
   bool test_236_light_group_point_area_ies2()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_236");
 
@@ -2509,8 +2509,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
