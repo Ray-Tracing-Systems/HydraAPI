@@ -261,7 +261,7 @@ bool test42_load_mesh_compressed()
     
     node.append_child(L"trace_depth").text()      = L"8";
     node.append_child(L"diff_trace_depth").text() = L"4";
-    node.append_child(L"maxRaysPerPixel").text()  = 256;
+    node.append_child(L"maxRaysPerPixel").text()  = 1024;
   }
   hrRenderClose(renderRef);
   
@@ -320,7 +320,7 @@ bool test42_load_mesh_compressed()
   
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_42/z_out.png");
   
-  return check_images("test_42", 1, 10);
+  return check_images("test_42", 1, 20);
 }
 
 
