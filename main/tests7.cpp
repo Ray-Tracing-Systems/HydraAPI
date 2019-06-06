@@ -259,9 +259,9 @@ bool test42_load_mesh_compressed()
     node.append_child(L"method_tertiary").text()  = L"IBPT";
     node.append_child(L"method_caustic").text()   = L"IBPT";
     
-    node.append_child(L"trace_depth").text()      = L"8";
-    node.append_child(L"diff_trace_depth").text() = L"4";
-    node.append_child(L"maxRaysPerPixel").text()  = 1024;
+    node.append_child(L"trace_depth").text()      = 8;
+    node.append_child(L"diff_trace_depth").text() = 4;
+    node.append_child(L"maxRaysPerPixel").text()  = 2048;
   }
   hrRenderClose(renderRef);
   
@@ -320,7 +320,7 @@ bool test42_load_mesh_compressed()
   
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_42/z_out.png");
   
-  return check_images("test_42", 1, 20);
+  return check_images("test_42", 1, 30);
 }
 
 
