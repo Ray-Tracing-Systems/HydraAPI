@@ -76,54 +76,8 @@ extern float g_MSEOutput;
 void test02_draw();
 void test02_init();
 
-void test_gl32_001_init(void);
-void test_gl32_001_draw(void);
-
-void test_gl32_002_init(void);
-void test_gl32_002_draw(void);
-
-void _hrDebugPrintVSGF(const wchar_t* a_fileNameIn, const wchar_t* a_fileNameOut);
-void _hrConvertOldVSGFMesh(const std::wstring& a_path, const std::wstring& a_newPath);
-
-void _hrCompressMesh(const std::wstring& a_inPath, const std::wstring& a_outPath);
-void _hrDecompressMesh(const std::wstring& a_path, const std::wstring& a_newPath);
-
-
 void demo_01_plane_box();
 
-
-void render_test_scene()
-{
-  hrInfoCallback(&InfoCallBack);
-  
-  //hrSceneLibraryOpen(L".", HR_OPEN_EXISTING); //#NOTE: assume your working directoty is "CLSP/database"
-  hrSceneLibraryOpen(L"/home/frol/PROG/CLSP_gitlab/database/statex_00001.xml", HR_OPEN_EXISTING);
-  
-  HRRenderRef    render; render.id = 0;
-  HRSceneInstRef scene;  scene.id  = 0;
-  
-  hrFlush(scene, render);
-  
-  while (true)
-  {
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    
-    HRRenderUpdateInfo info = hrRenderHaveUpdate(render);
-    
-    if (info.haveUpdateFB)
-    {
-      auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
-      std::cout.precision(pres);
-    }
-    
-    if (info.finalUpdate)
-      break;
-  }
-  
-  hrRenderSaveFrameBufferLDR(render, L"z_out.png");
-  
-}
 
 int main(int argc, const char** argv)
 {
@@ -169,18 +123,15 @@ int main(int argc, const char** argv)
   
   try
   {
-    
     //demo_01_plane_box();
+    //MTL_TESTS::test_101_diffuse_lambert();
     
     //run_all_api_tests(); // passed
     //run_all_geo_tests();
-    //run_all_mtl_tests();
-    //run_all_lgt_tests();
+    run_all_mtl_tests(50);
+    run_all_lgt_tests();
 	  //run_all_alg_tests();
 	  //run_all_ipp_tests();
-  
-    MTL_TESTS::test_101_diffuse_lambert();
-  
     //window_main_free_look(L"/home/frol/PROG/clsp/database/statex_00001.xml", L"opengl1");
 	  terminate_opengl();
   }
