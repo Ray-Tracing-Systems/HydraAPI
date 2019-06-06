@@ -229,9 +229,6 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef, camRef);
 
-    glViewport(0, 0, 512, 512);
-    std::vector<int32_t> image(512 * 512);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -240,11 +237,6 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
@@ -476,9 +468,6 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -487,11 +476,6 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
@@ -792,9 +776,6 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 512, 512);
-    std::vector<int32_t> image(512 * 512);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -803,11 +784,6 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
@@ -1052,10 +1028,7 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1064,11 +1037,6 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
@@ -1305,9 +1273,6 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1316,11 +1281,6 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
@@ -1552,9 +1512,6 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1563,11 +1520,6 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
@@ -1811,9 +1763,6 @@ namespace MTL_TESTS
 
 	  hrFlush(scnRef, renderRef);
 
-	  glViewport(0, 0, 1024, 768);
-	  std::vector<int32_t> image(1024 * 768);
-
 	  while (true)
 	  {
 		  std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1822,11 +1771,6 @@ namespace MTL_TESTS
 
 		  if (info.haveUpdateFB)
 		  {
-			  hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-			  glDisable(GL_TEXTURE_2D);
-			  glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
 			  auto pres = std::cout.precision(2);
 			  std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
 			  std::cout.precision(pres);
@@ -2131,9 +2075,6 @@ namespace MTL_TESTS
 
 	  hrFlush(scnRef, renderRef);
 
-	  glViewport(0, 0, 512, 512);
-	  std::vector<int32_t> image(512 * 512);
-
 	  while (true)
 	  {
 		  std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2142,11 +2083,6 @@ namespace MTL_TESTS
 
 		  if (info.haveUpdateFB)
 		  {
-			  hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-			  glDisable(GL_TEXTURE_2D);
-			  glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
 			  auto pres = std::cout.precision(2);
 			  std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
 			  std::cout.precision(pres);
@@ -2660,9 +2596,6 @@ namespace MTL_TESTS
 
 	  hrFlush(scnRef, renderRef);
 
-	  glViewport(0, 0, 1024, 768);
-	  std::vector<int32_t> image(1024 * 768);
-
 	  while (true)
 	  {
 		  std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2671,11 +2604,7 @@ namespace MTL_TESTS
 
 		  if (info.haveUpdateFB)
 		  {
-			  hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-			  glDisable(GL_TEXTURE_2D);
-			  glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
+		   
 			  auto pres = std::cout.precision(2);
 			  std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
 			  std::cout.precision(pres);
@@ -2945,10 +2874,7 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2957,11 +2883,6 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
@@ -3264,10 +3185,7 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 512, 512);
-    std::vector<int32_t> image(512 * 512);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -3276,11 +3194,6 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
@@ -3610,10 +3523,7 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
+    
     int counter = 0;
 
     while (true)
@@ -3624,11 +3534,6 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
@@ -3962,10 +3867,7 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -3974,11 +3876,6 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
@@ -4305,9 +4202,6 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -4316,11 +4210,6 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
@@ -4650,9 +4539,6 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -4661,11 +4547,6 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
@@ -4991,10 +4872,7 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -5003,11 +4881,6 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
@@ -5367,10 +5240,7 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -5379,11 +5249,6 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
@@ -5725,10 +5590,7 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -5737,11 +5599,6 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
@@ -6071,10 +5928,7 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -6083,11 +5937,6 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
@@ -6356,9 +6205,6 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 512, 512);
-    std::vector<int32_t> image(512 * 512);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -6367,11 +6213,6 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
@@ -6625,10 +6466,7 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 512, 512);
-    std::vector<int32_t> image(512 * 512);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -6637,11 +6475,6 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
@@ -6940,10 +6773,7 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 512, 512);
-    std::vector<int32_t> image(512 * 512);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -6952,11 +6782,6 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
@@ -7233,10 +7058,7 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 512, 512);
-    std::vector<int32_t> image(512 * 512);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -7245,11 +7067,6 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
@@ -7577,10 +7394,7 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 512, 512);
-    std::vector<int32_t> image(512 * 512);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -7589,11 +7403,6 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
@@ -7896,10 +7705,7 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -7908,11 +7714,6 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
@@ -8205,9 +8006,6 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -8216,11 +8014,6 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
@@ -8519,9 +8312,6 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -8530,11 +8320,6 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
@@ -8830,9 +8615,6 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -8841,11 +8623,6 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
@@ -9151,9 +8928,6 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -9162,11 +8936,6 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
@@ -9493,9 +9262,6 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -9504,11 +9270,6 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);

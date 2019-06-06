@@ -269,9 +269,6 @@ bool ALGR_TESTS::test_401_ibpt_and_glossy_glass()
   
   hrFlush(scnRef, renderRef);
   
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -280,11 +277,6 @@ bool ALGR_TESTS::test_401_ibpt_and_glossy_glass()
     
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-      
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-      
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
@@ -538,9 +530,6 @@ bool ALGR_TESTS::test_402_ibpt_and_glossy_double_glass()
   
   hrFlush(scnRef, renderRef);
   
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -549,11 +538,6 @@ bool ALGR_TESTS::test_402_ibpt_and_glossy_double_glass()
     
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-      
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-      
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
@@ -806,9 +790,6 @@ bool ALGR_TESTS::test_403_light_inside_double_glass()
   
   hrFlush(scnRef, renderRef);
   
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -817,11 +798,6 @@ bool ALGR_TESTS::test_403_light_inside_double_glass()
     
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-      
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-      
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);

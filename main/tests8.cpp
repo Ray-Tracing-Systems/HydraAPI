@@ -432,9 +432,6 @@ bool test90_proc_tex_normalmap()
   
   hrFlush(scnRef, renderRef, camRef);
   
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -443,11 +440,6 @@ bool test90_proc_tex_normalmap()
     
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-      
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-      
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
@@ -794,9 +786,6 @@ bool test91_proc_tex_bump()
   
   hrFlush(scnRef, renderRef, camRef);
   
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -805,11 +794,6 @@ bool test91_proc_tex_bump()
     
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-      
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-      
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
@@ -1155,9 +1139,6 @@ bool test92_proc_tex_bump2()
   
   hrFlush(scnRef, renderRef, camRef);
   
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1166,11 +1147,6 @@ bool test92_proc_tex_bump2()
     
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-      
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-      
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
@@ -1506,9 +1482,6 @@ bool test93_proc_tex_recursive()
 
   hrFlush(scnRef, renderRef, camRef);
 
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1517,11 +1490,6 @@ bool test93_proc_tex_recursive()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
@@ -1929,9 +1897,6 @@ bool test_126_debug_bump()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1940,11 +1905,6 @@ bool test_126_debug_bump()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
@@ -2308,9 +2268,6 @@ bool test51_instance_many_trees_and_opacity()
   
   hrFlush(scnRef, renderRef);
   
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2319,11 +2276,6 @@ bool test51_instance_many_trees_and_opacity()
   
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-  
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-  
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
@@ -2657,9 +2609,6 @@ bool test52_instance_perf_test()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef, camRef);
-
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
   
   while (true)
   {
@@ -2669,11 +2618,6 @@ bool test52_instance_perf_test()
   
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-  
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-  
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
@@ -2847,9 +2791,6 @@ bool test53_crysponza_perf()
 
   hrFlush(scnRef, renderRef, camRef);
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2858,11 +2799,6 @@ bool test53_crysponza_perf()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
@@ -3033,10 +2969,7 @@ bool test54_portalsroom_perf()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef, camRef);
-
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-
+  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -3045,11 +2978,6 @@ bool test54_portalsroom_perf()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);

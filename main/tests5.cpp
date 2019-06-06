@@ -255,9 +255,6 @@ bool test31_procedural_texture_LDR()
 
 	hrFlush(scnRef, settingsRef, camRef);
   
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -266,11 +263,6 @@ bool test31_procedural_texture_LDR()
     
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(settingsRef, 512, 512, &image[0]);
-      
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-      
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
@@ -513,9 +505,6 @@ bool test32_procedural_texture_HDR()
 
 	hrFlush(scnRef, settingsRef, camRef);
   
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -524,11 +513,6 @@ bool test32_procedural_texture_HDR()
     
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(settingsRef, 512, 512, &image[0]);
-      
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-      
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);

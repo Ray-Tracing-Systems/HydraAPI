@@ -1112,9 +1112,6 @@ bool test57_single_instance()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1123,11 +1120,6 @@ bool test57_single_instance()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
@@ -1320,9 +1312,6 @@ bool test58_crysponza_and_opacity1_perf()
 
   hrFlush(scnRef, renderRef, camRef);
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1331,11 +1320,6 @@ bool test58_crysponza_and_opacity1_perf()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
@@ -1585,9 +1569,6 @@ bool test59_cornell_water_mlt()
 
   hrFlush(scnRef, renderRef, camRef);
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1596,11 +1577,6 @@ bool test59_cornell_water_mlt()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
@@ -2430,9 +2406,6 @@ bool test61_cornell_with_light_near_wall_and_glossy_wall()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef);
-
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
   
   while (true)
   {
@@ -2442,11 +2415,6 @@ bool test61_cornell_with_light_near_wall_and_glossy_wall()
   
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-  
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-  
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
@@ -2870,9 +2838,6 @@ bool test63_cornell_with_caustic_from_torus()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 1024, 1024);
-  std::vector<int32_t> image(1024 * 1024);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2881,11 +2846,6 @@ bool test63_cornell_with_caustic_from_torus()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 1024, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 1024, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
@@ -3066,9 +3026,6 @@ bool test100_dummy_hydra_exec()
 
 	hrFlush(scnRef, renderRef);
 
-	glViewport(0, 0, 1024, 768);
-	std::vector<int32_t> image(1024 * 768);
-
 	while (true)
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -3077,11 +3034,6 @@ bool test100_dummy_hydra_exec()
 
 		if (info.haveUpdateFB)
 		{
-			hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-			glDisable(GL_TEXTURE_2D);
-			glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
 			auto pres = std::cout.precision(2);
 			std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
 			std::cout.precision(pres);

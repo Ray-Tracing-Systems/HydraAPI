@@ -619,10 +619,7 @@ bool MTL_TESTS::test_158_proc_dirt1()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef, camRef);
-
-  glViewport(0, 0, THIS_TEST_WIDTH, THIS_TEST_HEIGHT);
-  std::vector<int32_t> image(THIS_TEST_WIDTH * THIS_TEST_HEIGHT);
-
+  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -631,11 +628,6 @@ bool MTL_TESTS::test_158_proc_dirt1()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, THIS_TEST_WIDTH, THIS_TEST_HEIGHT, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(THIS_TEST_WIDTH, THIS_TEST_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
@@ -1261,9 +1253,6 @@ bool MTL_TESTS::test_159_proc_dirt2()
 
   hrFlush(scnRef, renderRef, camRef);
 
-  glViewport(0, 0, THIS_TEST_WIDTH, THIS_TEST_HEIGHT);
-  std::vector<int32_t> image(THIS_TEST_WIDTH * THIS_TEST_HEIGHT);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1272,11 +1261,6 @@ bool MTL_TESTS::test_159_proc_dirt2()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, THIS_TEST_WIDTH, THIS_TEST_HEIGHT, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(THIS_TEST_WIDTH, THIS_TEST_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
@@ -1958,9 +1942,6 @@ bool MTL_TESTS::test_160_proc_dirt3()
 
   hrFlush(scnRef, renderRef, camRef);
 
-  glViewport(0, 0, THIS_TEST_WIDTH, THIS_TEST_HEIGHT);
-  std::vector<int32_t> image(THIS_TEST_WIDTH * THIS_TEST_HEIGHT);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1969,11 +1950,6 @@ bool MTL_TESTS::test_160_proc_dirt3()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, THIS_TEST_WIDTH, THIS_TEST_HEIGHT, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(THIS_TEST_WIDTH, THIS_TEST_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
@@ -2206,10 +2182,7 @@ bool MTL_TESTS::test_161_simple_displacement()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef);
-
-  glViewport(0, 0, 1024, 1024);
-  std::vector<int32_t> image(1024 * 1024);
-
+  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2218,11 +2191,6 @@ bool MTL_TESTS::test_161_simple_displacement()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 1024, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 1024, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
@@ -2448,9 +2416,6 @@ bool MTL_TESTS::test_164_simple_displacement_proctex()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2459,11 +2424,6 @@ bool MTL_TESTS::test_164_simple_displacement_proctex()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
@@ -2698,10 +2658,7 @@ bool MTL_TESTS::test_165_simple_displacement_mesh()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef);
-
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-
+  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2710,11 +2667,6 @@ bool MTL_TESTS::test_165_simple_displacement_mesh()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
@@ -2957,9 +2909,6 @@ bool MTL_TESTS::test_166_displace_by_noise()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2968,11 +2917,6 @@ bool MTL_TESTS::test_166_displace_by_noise()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
@@ -3568,9 +3512,6 @@ bool MTL_TESTS::test_169_displace_custom_callback()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -3579,11 +3520,6 @@ bool MTL_TESTS::test_169_displace_custom_callback()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
@@ -3834,11 +3770,7 @@ bool MTL_TESTS::test_171_simple_displacement_triplanar()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef, camRef);
-
-
-  glViewport(0, 0, w , h);
-  std::vector<int32_t> image(w * h);
-
+  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -3847,11 +3779,6 @@ bool MTL_TESTS::test_171_simple_displacement_triplanar()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, w,h , &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);

@@ -191,10 +191,7 @@ namespace LGHT_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, TESTS_IMG_SIZE, TESTS_IMG_SIZE);
-    std::vector<int32_t> image(TESTS_IMG_SIZE * TESTS_IMG_SIZE);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -203,11 +200,6 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, TESTS_IMG_SIZE, TESTS_IMG_SIZE, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(TESTS_IMG_SIZE, TESTS_IMG_SIZE, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
@@ -432,10 +424,7 @@ namespace LGHT_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, TESTS_IMG_SIZE, TESTS_IMG_SIZE);
-    std::vector<int32_t> image(TESTS_IMG_SIZE * TESTS_IMG_SIZE);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -444,11 +433,6 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, TESTS_IMG_SIZE, TESTS_IMG_SIZE, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(TESTS_IMG_SIZE, TESTS_IMG_SIZE, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
@@ -626,9 +610,6 @@ namespace LGHT_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, TESTS_IMG_SIZE, TESTS_IMG_SIZE);
-    std::vector<int32_t> image(TESTS_IMG_SIZE * TESTS_IMG_SIZE);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -637,11 +618,6 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, TESTS_IMG_SIZE, TESTS_IMG_SIZE, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(TESTS_IMG_SIZE, TESTS_IMG_SIZE, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
@@ -817,10 +793,7 @@ namespace LGHT_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, TESTS_IMG_SIZE, TESTS_IMG_SIZE);
-    std::vector<int32_t> image(TESTS_IMG_SIZE * TESTS_IMG_SIZE);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -829,11 +802,6 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, TESTS_IMG_SIZE, TESTS_IMG_SIZE, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(TESTS_IMG_SIZE, TESTS_IMG_SIZE, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
@@ -1011,10 +979,7 @@ namespace LGHT_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, TESTS_IMG_SIZE, TESTS_IMG_SIZE);
-    std::vector<int32_t> image(TESTS_IMG_SIZE * TESTS_IMG_SIZE);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1023,11 +988,6 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, TESTS_IMG_SIZE, TESTS_IMG_SIZE, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(TESTS_IMG_SIZE, TESTS_IMG_SIZE, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
@@ -1299,9 +1259,6 @@ namespace LGHT_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, TESTS_IMG_SIZE, TESTS_IMG_SIZE);
-    std::vector<int32_t> image(TESTS_IMG_SIZE * TESTS_IMG_SIZE);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1310,11 +1267,6 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, TESTS_IMG_SIZE, TESTS_IMG_SIZE, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(TESTS_IMG_SIZE, TESTS_IMG_SIZE, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
@@ -1526,10 +1478,7 @@ namespace LGHT_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, TESTS_IMG_SIZE, TESTS_IMG_SIZE);
-    std::vector<int32_t> image(TESTS_IMG_SIZE * TESTS_IMG_SIZE);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1538,11 +1487,6 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, TESTS_IMG_SIZE, TESTS_IMG_SIZE, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(TESTS_IMG_SIZE, TESTS_IMG_SIZE, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
@@ -1815,9 +1759,6 @@ namespace LGHT_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, TESTS_IMG_SIZE, TESTS_IMG_SIZE);
-    std::vector<int32_t> image(TESTS_IMG_SIZE * TESTS_IMG_SIZE);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1826,11 +1767,6 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, TESTS_IMG_SIZE, TESTS_IMG_SIZE, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(TESTS_IMG_SIZE, TESTS_IMG_SIZE, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
@@ -2024,9 +1960,6 @@ namespace LGHT_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, TESTS_IMG_SIZE, TESTS_IMG_SIZE);
-    std::vector<int32_t> image(TESTS_IMG_SIZE * TESTS_IMG_SIZE);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2035,11 +1968,6 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, TESTS_IMG_SIZE, TESTS_IMG_SIZE, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(TESTS_IMG_SIZE, TESTS_IMG_SIZE, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
@@ -2569,11 +2497,6 @@ namespace LGHT_TESTS
 
     hrSceneClose(scnRef);
 
-    hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, TESTS_IMG_SIZE, TESTS_IMG_SIZE);
-    std::vector<int32_t> image(TESTS_IMG_SIZE * TESTS_IMG_SIZE);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2582,11 +2505,6 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, TESTS_IMG_SIZE, TESTS_IMG_SIZE, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(TESTS_IMG_SIZE, TESTS_IMG_SIZE, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);

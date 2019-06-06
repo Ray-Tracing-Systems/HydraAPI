@@ -15,6 +15,9 @@
 #include "mesh_utils.h"
 // #include "simplerandom.h"
 
+#define QMC_DOF_FLAG 1
+#define QMC_MTL_FLAG 2
+#define QMC_LGT_FLAG 4
 
 void demo_01_plane_box()
 {
@@ -146,7 +149,7 @@ void demo_01_plane_box()
     node.append_child(L"trace_depth").text()      = 6;
     node.append_child(L"diff_trace_depth").text() = 4;
     node.append_child(L"maxRaysPerPixel").text()  = 256;
-    node.append_child(L"qmc_variant").text()      = 7;
+    node.append_child(L"qmc_variant").text()      = (QMC_DOF_FLAG | QMC_MTL_FLAG | QMC_LGT_FLAG); // enable all of them, results to '7'
   }
   hrRenderClose(renderRef);
   

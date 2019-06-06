@@ -123,8 +123,8 @@ int main(int argc, const char** argv)
   
   try
   {
-    //demo_01_plane_box();
-    MTL_TESTS::test_101_diffuse_lambert();
+    demo_01_plane_box();
+    //MTL_TESTS::test_101_diffuse_lambert();
     //std::cout << test42_load_mesh_compressed() << std::endl;
 
     //run_all_api_tests(); // passed

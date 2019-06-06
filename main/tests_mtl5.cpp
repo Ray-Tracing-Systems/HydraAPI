@@ -314,9 +314,6 @@ bool MTL_TESTS::test_162_shadow_matte_back1()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, IMG_WIDTH, IMG_HEIGHT);
-  std::vector<int32_t> image(IMG_WIDTH * IMG_HEIGHT);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -325,11 +322,6 @@ bool MTL_TESTS::test_162_shadow_matte_back1()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, IMG_WIDTH, IMG_HEIGHT, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(IMG_WIDTH, IMG_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
@@ -1438,9 +1430,6 @@ bool MTL_TESTS::test_170_fresnel_blend()
   
   hrFlush(scnRef, renderRef, camRef);
   
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1449,11 +1438,6 @@ bool MTL_TESTS::test_170_fresnel_blend()
     
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-      
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-      
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
@@ -1633,9 +1617,6 @@ bool MTL_TESTS::test_172_glossy_dark_edges_phong()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1644,11 +1625,6 @@ bool MTL_TESTS::test_172_glossy_dark_edges_phong()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
@@ -1827,9 +1803,6 @@ bool MTL_TESTS::test_173_glossy_dark_edges_microfacet()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1838,11 +1811,6 @@ bool MTL_TESTS::test_173_glossy_dark_edges_microfacet()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
