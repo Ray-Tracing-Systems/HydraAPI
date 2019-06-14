@@ -5,6 +5,7 @@
 #include <vector>
 #include "pugixml.hpp"
 
+
 /**
  \file
  \brief Hydra Renderer API
@@ -50,7 +51,7 @@
 
   //#if defined(__GNUC__)
 
-  #define HAPI                       ///< mark all functions as 'extern "C"'; This is needed if you want to load DLL in dynamic;
+  #define HAPI                       ///< mark all functions as 'extern "C"'; This is needed if you want to load DLL dynamically;
 
 #endif
 
@@ -668,15 +669,6 @@ enum HR_PRIM_TYPE { HR_TRIANGLE_LIST  = 0,    ///< simple triangle list
 HAPI HRMeshRef hrMeshCreate(const wchar_t* a_objectName);
 
 /**
-\brief parse .obj file and return a vector of meshes.
-\param a_pScn     - pointer to scene library
-\param a_fileName - file name of the mesh.
-\param a_copyToLocalFolder - indicates if we need to copy input '.vsgf' file to local folder
-
-*/
-HAPI std::vector<HRMeshRef> hrMeshCreateFromObj(const wchar_t* a_fileName, bool a_copyToLocalFolder = false);
-
-/**
 \brief parse .obj file and merge all the shapes into one mesh
 \param a_pScn     - pointer to scene library
 \param a_fileName - file name of the mesh.
@@ -1211,6 +1203,10 @@ namespace HRUtils
   HRTextureNodeRef MergeOneTextureIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_texName, int a_texId = -1);
 
   bool hrRenderSaveDepthRaw(HRRenderRef a_pRender, const wchar_t* a_outFileName);
+
+  // Parses the .obj file, consisting of 1+ shapes
+  MergeInfo LoadMultipleShapesFromObj(const wchar_t* a_fileName, bool a_copyToLocalFolder = false);
+
 };
 
 namespace HRExtensions

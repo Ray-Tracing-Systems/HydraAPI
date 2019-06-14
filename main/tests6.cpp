@@ -1980,12 +1980,16 @@ bool test40_several_changes()
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  //HRMeshRef teapotRef = hrMeshCreateFromFile(L"data/meshes/teapot.vsgf");
-  //std::vector<HRMeshRef> ref_vec = hrMeshCreateFromObj(L"data/meshes/bunnycube.obj");
-  HRMeshRef teapotRef = hrMeshCreateFromObjMerged(L"data/meshes/bunnycube.obj");
+  // Example of loading of the .obj file with shapes' merging
+  //HRMeshRef teapotRef = hrMeshCreateFromObjMerged(L"data/meshes/bunnycube.obj");
 
+  // Example of loading of the .obj file while separating the shapes
+  //HRUtils::MergeInfo bunnycube_info = HRUtils::LoadMultipleShapesFromObj(L"data/meshes/bunnycube.obj");
+  // Now iterate over mesh's id
+  //HRMeshRef mesh0; mesh0.id = bunnycube_info.meshRange[0];
+  //HRMeshRef meshN; meshN.id = bunnycube_info.meshRange[1] - 1;
 
-
+  HRMeshRef teapotRef = hrMeshCreateFromFile(L"data/meshes/teapot.vsgf");
 
   HRMeshRef cubeOpenRef = hrMeshCreate(L"my_box");
   HRMeshRef planeRef    = hrMeshCreate(L"my_plane");
@@ -2176,6 +2180,9 @@ bool test40_several_changes()
 
   hrFlush(scnRef, renderRef);
 
+  std::vector<int32_t> image(512*512);
+  glViewport(0,0,512,512);
+
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2187,6 +2194,11 @@ bool test40_several_changes()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
+
+      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
+
+      glDisable(GL_TEXTURE_2D);
+      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       glfwSwapBuffers(g_window);
       glfwPollEvents();
