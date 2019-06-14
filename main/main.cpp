@@ -186,7 +186,8 @@ int main(int argc, const char** argv)
     //std::cout << test19_material_change() << std::endl;
     
     //std::cout << test44_four_lights_and_compressed_mesh() << std::endl;
-    test42_load_mesh_compressed();
+    test40_several_changes();
+    //test42_load_mesh_compressed();
     //test78_material_remap_list1();
     
 

@@ -2012,7 +2012,12 @@ bool test40_several_changes()
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  HRMeshRef teapotRef = hrMeshCreateFromFileDL(L"data/meshes/teapot.vsgf"); // chunk_00009.vsgf // teapot.vsgf // chunk_00591.vsgf
+  //HRMeshRef teapotRef = hrMeshCreateFromFile(L"data/meshes/teapot.vsgf");
+  //std::vector<HRMeshRef> ref_vec = hrMeshCreateFromObj(L"data/meshes/bunnycube.obj");
+  HRMeshRef teapotRef = hrMeshCreateFromObjMerged(L"data/meshes/bunnycube.obj");
+
+
+
 
   HRMeshRef cubeOpenRef = hrMeshCreate(L"my_box");
   HRMeshRef planeRef    = hrMeshCreate(L"my_plane");
@@ -2180,10 +2185,11 @@ bool test40_several_changes()
   mat4x4_translate(mTranslate, 0.0f, -0.70f*3.65f, -5.0f + 5.0f);
   mat4x4_scale(mRot1, mRot1, 3.65f);
   mat4x4_mul(mRes, mTranslate, mRot1);
-  mat4x4_transpose(matrixT, mRes); // this fucking math library swap rows and columns
+  mat4x4_transpose(matrixT, mRes); // this fucking math library swaps rows and columns
   matrixT[3][3] = 1.0f;
 
   hrMeshInstance(scnRef, teapotRef, &matrixT[0][0]);
+  //hrMeshInstance(scnRef, ref_vec[1], &matrixT[0][0]);
 
   mat4x4_identity(mRot1);
   mat4x4_rotate_Y(mRot1, mRot1, 180.0f*DEG_TO_RAD);
@@ -2321,6 +2327,7 @@ bool test40_several_changes()
   matrixT[3][3] = 1.0f;
 
   hrMeshInstance(scnRef, teapotRef, &matrixT[0][0]);
+  //hrMeshInstance(scnRef, ref_vec[1], &matrixT[0][0]);
 
   mat4x4_identity(mRot1);
   mat4x4_rotate_Y(mRot1, mRot1, 180.0f*DEG_TO_RAD);
