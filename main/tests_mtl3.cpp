@@ -329,9 +329,6 @@ bool MTL_TESTS::test_150_gloss_mirror_cos_div()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -340,11 +337,6 @@ bool MTL_TESTS::test_150_gloss_mirror_cos_div()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
@@ -664,9 +656,6 @@ bool MTL_TESTS::test_151_gloss_mirror_cos_div2()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -675,11 +664,6 @@ bool MTL_TESTS::test_151_gloss_mirror_cos_div2()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
@@ -952,9 +936,6 @@ bool MTL_TESTS::test_152_texture_color_replace_mode()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -963,11 +944,6 @@ bool MTL_TESTS::test_152_texture_color_replace_mode()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
@@ -1255,9 +1231,6 @@ bool MTL_TESTS::test_153_opacity_shadow_matte_opacity()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1266,11 +1239,6 @@ bool MTL_TESTS::test_153_opacity_shadow_matte_opacity()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
@@ -1294,7 +1262,7 @@ bool MTL_TESTS::test_153_opacity_shadow_matte_opacity()
 }
 
 
-bool MTL_TESTS::test_154_proc_checker_precomp()
+bool MTL_TESTS::test_154_baked_checker_precomp()
 {
   initGLIfNeeded();
 
@@ -1447,9 +1415,9 @@ bool MTL_TESTS::test_154_proc_checker_precomp()
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Meshes
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  HRMeshRef cubeR = HRMeshFromSimpleMesh(L"cubeR", CreateCube(2.0f), matR.id);
-  HRMeshRef sphereG = HRMeshFromSimpleMesh(L"sphereG", CreateSphere(4.0f, 64), matG.id);
-  HRMeshRef torusB = HRMeshFromSimpleMesh(L"torusB", CreateTorus(0.8f, 2.0f, 64, 64), matB.id);
+  HRMeshRef cubeR    = HRMeshFromSimpleMesh(L"cubeR", CreateCube(2.0f), matR.id);
+  HRMeshRef sphereG  = HRMeshFromSimpleMesh(L"sphereG", CreateSphere(4.0f, 64), matG.id);
+  HRMeshRef torusB   = HRMeshFromSimpleMesh(L"torusB", CreateTorus(0.8f, 2.0f, 64, 64), matB.id);
   HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane", CreatePlane(10.0f), matGray.id);
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1468,13 +1436,13 @@ bool MTL_TESTS::test_154_proc_checker_precomp()
 
     auto sizeNode = lightNode.append_child(L"size");
 
-    sizeNode.append_attribute(L"half_length").set_value(L"8.0");
-    sizeNode.append_attribute(L"half_width").set_value(L"8.0");
+    sizeNode.append_attribute(L"half_length") = 1.0f;
+    sizeNode.append_attribute(L"half_width")  = 1.0f;
 
     auto intensityNode = lightNode.append_child(L"intensity");
 
-    intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"4.0");
+    intensityNode.append_child(L"color").append_attribute(L"val")      = L"1 1 1";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 200.0f;
     VERIFY_XML(lightNode);
   }
   hrLightClose(rectLight);
@@ -1506,7 +1474,7 @@ bool MTL_TESTS::test_154_proc_checker_precomp()
   int w = 1024;
   int h = 768;
 
-  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, w, h, 256, 1024);
+  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, w, h, 256, 2048);
 
   hrRenderOpen(renderRef, HR_OPEN_EXISTING);
   auto node = hrRenderParamNode(renderRef);
@@ -1591,23 +1559,16 @@ bool MTL_TESTS::test_154_proc_checker_precomp()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef);
-
-  glViewport(0, 0, w, h);
-  std::vector<int32_t> image(w * h);
+  
 
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
     HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, w, h, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
+      
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
@@ -1625,7 +1586,7 @@ bool MTL_TESTS::test_154_proc_checker_precomp()
   return check_images("test_154", 1, 60);
 }
 
-bool MTL_TESTS::test_155_proc_checker_HDR_precomp()
+bool MTL_TESTS::test_155_baked_checker_HDR_precomp()
 {
   initGLIfNeeded();
 
@@ -1778,9 +1739,9 @@ bool MTL_TESTS::test_155_proc_checker_HDR_precomp()
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Meshes
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  HRMeshRef cubeR = HRMeshFromSimpleMesh(L"cubeR", CreateCube(2.0f), matR.id);
-  HRMeshRef sphereG = HRMeshFromSimpleMesh(L"sphereG", CreateSphere(4.0f, 64), matG.id);
-  HRMeshRef torusB = HRMeshFromSimpleMesh(L"torusB", CreateTorus(0.8f, 2.0f, 64, 64), matB.id);
+  HRMeshRef cubeR    = HRMeshFromSimpleMesh(L"cubeR",    CreateCube(2.0f), matR.id);
+  HRMeshRef sphereG  = HRMeshFromSimpleMesh(L"sphereG",  CreateSphere(4.0f, 64), matG.id);
+  HRMeshRef torusB   = HRMeshFromSimpleMesh(L"torusB",   CreateTorus(0.8f, 2.0f, 64, 64), matB.id);
   HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane", CreatePlane(10.0f), matGray.id);
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1799,13 +1760,13 @@ bool MTL_TESTS::test_155_proc_checker_HDR_precomp()
 
     auto sizeNode = lightNode.append_child(L"size");
 
-    sizeNode.append_attribute(L"half_length").set_value(L"2.0");
-    sizeNode.append_attribute(L"half_width").set_value(L"2.0");
+    sizeNode.append_attribute(L"half_length") = 1;
+    sizeNode.append_attribute(L"half_width")  = 1;
 
     auto intensityNode = lightNode.append_child(L"intensity");
 
-    intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"16.0");
+    intensityNode.append_child(L"color").append_attribute(L"val")      = L"1 1 1";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 64.0f;
     VERIFY_XML(lightNode);
   }
   hrLightClose(rectLight);
@@ -1920,9 +1881,6 @@ bool MTL_TESTS::test_155_proc_checker_HDR_precomp()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1931,17 +1889,9 @@ bool MTL_TESTS::test_155_proc_checker_HDR_precomp()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -1953,7 +1903,7 @@ bool MTL_TESTS::test_155_proc_checker_HDR_precomp()
   return check_images("test_155", 1, 60);
 }
 
-bool MTL_TESTS::test_156_proc_checker_precomp_update()
+bool MTL_TESTS::test_156_baked_checker_precomp_update()
 {
   initGLIfNeeded();
 
@@ -2256,9 +2206,6 @@ bool MTL_TESTS::test_156_proc_checker_precomp_update()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2267,11 +2214,6 @@ bool MTL_TESTS::test_156_proc_checker_precomp_update()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
@@ -2289,7 +2231,7 @@ bool MTL_TESTS::test_156_proc_checker_precomp_update()
   return check_images("test_156", 1, 60);
 }
 
-bool MTL_TESTS::test_157_proc_checker_precomp_remap()
+bool MTL_TESTS::test_157_baked_checker_precomp_remap()
 {
   initGLIfNeeded();
 
@@ -2721,9 +2663,6 @@ bool MTL_TESTS::test_157_proc_checker_precomp_remap()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2732,11 +2671,6 @@ bool MTL_TESTS::test_157_proc_checker_precomp_remap()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);

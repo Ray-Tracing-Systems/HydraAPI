@@ -45,7 +45,7 @@ using HydraLiteMath::float4;
 
 bool test81_custom_attributes()
 {
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test81");
 
@@ -261,7 +261,7 @@ namespace hlm = HydraLiteMath;
 
 bool test38_save_mesh_and_delayed_load()
 {
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test_38");
 
@@ -678,7 +678,7 @@ bool test38_save_mesh_and_delayed_load()
 
 bool test82_proc_texture()
 {
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test_82");
 
@@ -962,9 +962,6 @@ bool test82_proc_texture()
 
   hrFlush(scnRef, renderRef, camRef);
 
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -973,17 +970,12 @@ bool test82_proc_texture()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
 
     if (info.finalUpdate)
@@ -999,7 +991,7 @@ bool test82_proc_texture()
 
 bool test83_proc_texture2()
 {
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test_83");
 
@@ -1285,9 +1277,6 @@ bool test83_proc_texture2()
 
   hrFlush(scnRef, renderRef, camRef);
 
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1296,17 +1285,12 @@ bool test83_proc_texture2()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
 
     if (info.finalUpdate)
@@ -1321,7 +1305,7 @@ bool test83_proc_texture2()
 
 bool test84_proc_texture2()
 {
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test_84");
 
@@ -1633,9 +1617,6 @@ bool test84_proc_texture2()
 
   hrFlush(scnRef, renderRef, camRef);
 
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1644,17 +1625,12 @@ bool test84_proc_texture2()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
 
     if (info.finalUpdate)
@@ -1669,7 +1645,7 @@ bool test84_proc_texture2()
 
 bool test85_proc_texture_ao()
 {
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test_85"); 
 
@@ -1993,9 +1969,6 @@ bool test85_proc_texture_ao()
 
   hrFlush(scnRef, renderRef, camRef);
 
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2004,17 +1977,12 @@ bool test85_proc_texture_ao()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
 
     if (info.finalUpdate)
@@ -2029,7 +1997,7 @@ bool test85_proc_texture_ao()
 
 bool test86_proc_texture_ao_dirt()
 {
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test_86"); 
 
@@ -2350,9 +2318,6 @@ bool test86_proc_texture_ao_dirt()
 
   hrFlush(scnRef, renderRef, camRef);
 
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2361,17 +2326,12 @@ bool test86_proc_texture_ao_dirt()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
 
     if (info.finalUpdate)
@@ -2713,10 +2673,7 @@ bool test87_proc_texture_reflect()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef, camRef);
-
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-
+  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2725,17 +2682,9 @@ bool test87_proc_texture_reflect()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -3167,10 +3116,7 @@ bool test88_proc_texture_convex_rust()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef, camRef);
-
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-
+  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -3179,17 +3125,12 @@ bool test88_proc_texture_convex_rust()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
 
     if (info.finalUpdate)
@@ -3542,11 +3483,7 @@ bool test89_proc_texture_dirty()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef, camRef);
-
-
-  glViewport(0, 0, w , h);
-  std::vector<int32_t> image(w * h);
-
+  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -3555,17 +3492,12 @@ bool test89_proc_texture_dirty()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, w,h , &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
 
     if (info.finalUpdate)
@@ -3837,10 +3769,6 @@ bool test99_triplanar()
 
   hrFlush(scnRef, renderRef, camRef);
 
-
-  glViewport(0, 0, w , h);
-  std::vector<int32_t> image(w * h);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -3849,17 +3777,12 @@ bool test99_triplanar()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, w,h , &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
     }
 
     if (info.finalUpdate)
@@ -4155,10 +4078,6 @@ bool test96_hexaplanar()
 
   hrFlush(scnRef, renderRef, camRef);
 
-
-  glViewport(0, 0, w , h);
-  std::vector<int32_t> image(w * h);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -4167,17 +4086,12 @@ bool test96_hexaplanar()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, w,h , &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
       glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
     }
 
     if (info.finalUpdate)
@@ -4490,10 +4404,7 @@ bool test95_bump()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef, camRef);
-
-
-  glViewport(0, 0, w , h);
-  std::vector<int32_t> image(w * h);
+  
 
   while (true)
   {
@@ -4503,11 +4414,6 @@ bool test95_bump()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, w,h , &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);

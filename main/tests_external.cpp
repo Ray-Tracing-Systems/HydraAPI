@@ -249,9 +249,6 @@ bool test_x1_displace_car_by_noise()
 
   hrFlush(scnRef, renderRef, camRef);
 
-  glViewport(0, 0, w, h);
-  std::vector<int32_t> image(w * h);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -260,11 +257,6 @@ bool test_x1_displace_car_by_noise()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, w, h, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
@@ -483,9 +475,7 @@ bool test_x2_car_displacement_triplanar()
     auto bbox = HRUtils::InstanceSceneIntoScene(merged_car, scnRef, mRes.L(), false, remapList1, 2);
 
     hrFlush(scnRef, renderRef, camRef);
-
-    glViewport(0, 0, w, h);
-    std::vector<int32_t> image(w * h);
+    
 
     while (true)
     {
@@ -495,11 +485,6 @@ bool test_x2_car_displacement_triplanar()
 
         if (info.haveUpdateFB)
         {
-            hrRenderGetFrameBufferLDR1i(renderRef, w, h, &image[0]);
-
-            glDisable(GL_TEXTURE_2D);
-            glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
             auto pres = std::cout.precision(2);
             std::cout << "rendering progress = " << info.progress << "% \r";
             std::cout.precision(pres);
@@ -834,9 +819,6 @@ bool test_x3_car_fresnel_ice()
 
   hrFlush(scnRef, renderRef, camRef);
 
-  glViewport(0, 0, w, h);
-  std::vector<int32_t> image(w * h);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -845,11 +827,6 @@ bool test_x3_car_fresnel_ice()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, w, h, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
@@ -1133,12 +1110,8 @@ bool test_x4_car_triplanar(const int i)
 	  p9.attribute(L"val") = bboxMax.c_str();
   }
   hrMaterialClose(newBodyMat);
-
-
+  
   hrFlush(scnRef, renderRef, camRef);
-
-  glViewport(0, 0, w, h);
-  std::vector<int32_t> image(w * h);
 
   while (true)
   {
@@ -1148,11 +1121,6 @@ bool test_x4_car_triplanar(const int i)
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, w, h, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
@@ -1392,9 +1360,6 @@ bool test_depth_mesh()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 1024, 1024);
-  std::vector<int32_t> image(1024 * 1024);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1403,11 +1368,6 @@ bool test_depth_mesh()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 1024, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 1024, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
@@ -1703,9 +1663,6 @@ bool test_precomp_depth_mesh()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, w, h);
-  std::vector<int32_t> image(w * h);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1714,11 +1671,6 @@ bool test_precomp_depth_mesh()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, w, h, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);

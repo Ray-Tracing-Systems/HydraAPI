@@ -36,7 +36,7 @@ extern GLFWwindow* g_window;
 
 bool test1000_loadlibrary_and_edit()
 {
-  initGLIfNeeded();
+  
 
   hrSceneLibraryOpen(L"tests/test_1000", HR_OPEN_EXISTING);
 
@@ -130,7 +130,7 @@ bool test1000_loadlibrary_and_edit()
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
+      
       glfwPollEvents();
     }
 
@@ -145,7 +145,7 @@ bool test1000_loadlibrary_and_edit()
 
 bool test1001_loadlibrary_and_add_textures()
 {
-  initGLIfNeeded();
+  
 
   hrSceneLibraryOpen(L"tests/test_1001", HR_OPEN_EXISTING);
 
@@ -239,7 +239,7 @@ bool test1001_loadlibrary_and_add_textures()
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
+      
       glfwPollEvents();
     }
 
@@ -254,7 +254,7 @@ bool test1001_loadlibrary_and_add_textures()
 
 bool test1002_get_material_by_name_and_edit()
 {
-  initGLIfNeeded();
+  
 
   hrSceneLibraryOpen(L"tests/test_1002", HR_OPEN_EXISTING);
 
@@ -359,7 +359,7 @@ bool test1002_get_material_by_name_and_edit()
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
+      
       glfwPollEvents();
     }
 
@@ -374,7 +374,7 @@ bool test1002_get_material_by_name_and_edit()
 
 bool test1003_get_light_by_name_and_edit()
 {
-  initGLIfNeeded();
+  
 
   hrSceneLibraryOpen(L"tests/test_1003", HR_OPEN_EXISTING);
 
@@ -494,7 +494,7 @@ bool test1003_get_light_by_name_and_edit()
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
+      
       glfwPollEvents();
     }
 
@@ -509,7 +509,7 @@ bool test1003_get_light_by_name_and_edit()
 
 bool test1004_get_camera_by_name_and_edit()
 {
-  initGLIfNeeded();
+  
 
   hrSceneLibraryOpen(L"tests/test_1004", HR_OPEN_EXISTING);
 
@@ -592,7 +592,7 @@ bool test1004_get_camera_by_name_and_edit()
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
+      
       glfwPollEvents();
     }
 
@@ -607,7 +607,7 @@ bool test1004_get_camera_by_name_and_edit()
 
 bool test1005_transform_all_instances()
 {
-  initGLIfNeeded();
+  
 
   hrSceneLibraryOpen(L"tests/test_1005", HR_OPEN_EXISTING);
 
@@ -673,7 +673,7 @@ bool test1005_transform_all_instances()
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
+      
       glfwPollEvents();
     }
 
@@ -688,7 +688,7 @@ bool test1005_transform_all_instances()
 
 bool test1006_transform_all_instances_origin()
 {
-  initGLIfNeeded();
+  
 
   hrSceneLibraryOpen(L"tests/test_1006", HR_OPEN_EXISTING);
 
@@ -754,7 +754,7 @@ bool test1006_transform_all_instances_origin()
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
+      
       glfwPollEvents();
     }
 
@@ -769,7 +769,7 @@ bool test1006_transform_all_instances_origin()
 
 bool test1007_merge_library()
 {
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test_1007");
 
@@ -1003,7 +1003,7 @@ bool test1007_merge_library()
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
+      
       glfwPollEvents();
     }
 
@@ -1254,7 +1254,7 @@ bool test1008_merge_one_texture()
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
+      
       glfwPollEvents();
     }
 
@@ -1508,7 +1508,7 @@ bool test1009_merge_one_material()
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
+      
       glfwPollEvents();
     }
 
@@ -1761,7 +1761,7 @@ bool test1010_merge_one_mesh()
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
+      
       glfwPollEvents();
     }
 
@@ -2010,7 +2010,7 @@ bool test1011_merge_scene()
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
+      
       glfwPollEvents();
     }
 
@@ -2263,7 +2263,7 @@ bool test1012_merge_one_light()
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
+      
       glfwPollEvents();
     }
 
@@ -2386,7 +2386,7 @@ bool test1013_commit_without_render()
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
+      
       glfwPollEvents();
     }
 
@@ -2694,7 +2694,7 @@ bool test1014_print_matlib_map()
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
+      
       glfwPollEvents();
     }
 

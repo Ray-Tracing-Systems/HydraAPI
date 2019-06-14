@@ -38,7 +38,7 @@ extern GLFWwindow* g_window;
 
 bool test31_procedural_texture_LDR()
 {
-	initGLIfNeeded();
+	
 
 	hrErrorCallerPlace(L"test31");
 
@@ -255,9 +255,6 @@ bool test31_procedural_texture_LDR()
 
 	hrFlush(scnRef, settingsRef, camRef);
   
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -266,17 +263,12 @@ bool test31_procedural_texture_LDR()
     
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(settingsRef, 512, 512, &image[0]);
-      
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-      
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
       
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
     
     if (info.finalUpdate)
@@ -290,7 +282,7 @@ bool test31_procedural_texture_LDR()
 
 bool test32_procedural_texture_HDR()
 {
-	initGLIfNeeded();
+	
 
 	hrErrorCallerPlace(L"test32");
 
@@ -513,9 +505,6 @@ bool test32_procedural_texture_HDR()
 
 	hrFlush(scnRef, settingsRef, camRef);
   
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -524,17 +513,12 @@ bool test32_procedural_texture_HDR()
     
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(settingsRef, 512, 512, &image[0]);
-      
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-      
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
       
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
     
     if (info.finalUpdate)
@@ -548,7 +532,7 @@ bool test32_procedural_texture_HDR()
 
 bool test33_update_from_file()
 {
-	initGLIfNeeded();
+	
 
 	hrErrorCallerPlace(L"test_33");
 
@@ -764,7 +748,7 @@ bool test33_update_from_file()
 
 bool test36_update_from_memory()
 {
-	initGLIfNeeded();
+	
 
 	hrErrorCallerPlace(L"test_36");
 

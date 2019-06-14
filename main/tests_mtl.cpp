@@ -36,7 +36,7 @@ namespace MTL_TESTS
   bool test_101_diffuse_lambert()
   {
     initGLIfNeeded();
-
+    
     hrErrorCallerPlace(L"test_101");
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -229,9 +229,9 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef, camRef);
 
-    glViewport(0, 0, 512, 512);
-    std::vector<int32_t> image(512 * 512);
-
+    std::vector<int32_t> image(512*512);
+    glViewport(0,0,512,512);
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -240,15 +240,15 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-
+  
+        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
+  
+        glDisable(GL_TEXTURE_2D);
+        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+  
         glfwSwapBuffers(g_window);
         glfwPollEvents();
       }
@@ -264,8 +264,6 @@ namespace MTL_TESTS
 
   bool test_102_diffuse_orennayar()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_102");
 
     hrSceneLibraryOpen(L"tests_f/test_102", HR_WRITE_DISCARD);
@@ -476,9 +474,6 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -487,17 +482,9 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -511,8 +498,7 @@ namespace MTL_TESTS
 
   bool test_103_diffuse_texture()
   {
-    initGLIfNeeded();
-
+    
     hrErrorCallerPlace(L"test_103");
 
     hrSceneLibraryOpen(L"tests_f/test_103", HR_WRITE_DISCARD);
@@ -792,9 +778,6 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 512, 512);
-    std::vector<int32_t> image(512 * 512);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -803,17 +786,9 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -827,8 +802,6 @@ namespace MTL_TESTS
 
   bool test_104_reflect_phong()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_104");
 
     hrSceneLibraryOpen(L"tests_f/test_104", HR_WRITE_DISCARD);
@@ -1052,10 +1025,7 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1064,17 +1034,9 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -1089,8 +1051,6 @@ namespace MTL_TESTS
 
   bool test_105_reflect_microfacet()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_105");
 
     hrSceneLibraryOpen(L"tests_f/test_105", HR_WRITE_DISCARD);
@@ -1305,9 +1265,6 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1316,17 +1273,9 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -1341,8 +1290,6 @@ namespace MTL_TESTS
 
   bool test_106_reflect_fresnel_ior()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_106");
 
     hrSceneLibraryOpen(L"tests_f/test_106", HR_WRITE_DISCARD);
@@ -1552,9 +1499,6 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1563,17 +1507,9 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -1588,8 +1524,6 @@ namespace MTL_TESTS
 
   bool test_107_reflect_extrusion()
   {
-	  initGLIfNeeded();
-
 	  hrErrorCallerPlace(L"test_107");
 
 	  hrSceneLibraryOpen(L"tests_f/test_107", HR_WRITE_DISCARD);
@@ -1811,9 +1745,6 @@ namespace MTL_TESTS
 
 	  hrFlush(scnRef, renderRef);
 
-	  glViewport(0, 0, 1024, 768);
-	  std::vector<int32_t> image(1024 * 768);
-
 	  while (true)
 	  {
 		  std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1822,17 +1753,9 @@ namespace MTL_TESTS
 
 		  if (info.haveUpdateFB)
 		  {
-			  hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-			  glDisable(GL_TEXTURE_2D);
-			  glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
 			  auto pres = std::cout.precision(2);
 			  std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
 			  std::cout.precision(pres);
-
-			  glfwSwapBuffers(g_window);
-			  glfwPollEvents();
 		  }
 
 		  if (info.finalUpdate)
@@ -1846,8 +1769,6 @@ namespace MTL_TESTS
 
   bool test_108_reflect_texture()
   {
-	  initGLIfNeeded();
-
 	  hrErrorCallerPlace(L"test_108");
 
 	  hrSceneLibraryOpen(L"tests_f/test_108", HR_WRITE_DISCARD);
@@ -2131,9 +2052,6 @@ namespace MTL_TESTS
 
 	  hrFlush(scnRef, renderRef);
 
-	  glViewport(0, 0, 512, 512);
-	  std::vector<int32_t> image(512 * 512);
-
 	  while (true)
 	  {
 		  std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2142,17 +2060,9 @@ namespace MTL_TESTS
 
 		  if (info.haveUpdateFB)
 		  {
-			  hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-			  glDisable(GL_TEXTURE_2D);
-			  glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
 			  auto pres = std::cout.precision(2);
 			  std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
 			  std::cout.precision(pres);
-
-			  glfwSwapBuffers(g_window);
-			  glfwPollEvents();
 		  }
 
 		  if (info.finalUpdate)
@@ -2167,8 +2077,6 @@ namespace MTL_TESTS
 
   bool test_109_reflect_glossiness_texture()
   {
-	  initGLIfNeeded();
-
 	  hrErrorCallerPlace(L"test_109");
 
 	  hrSceneLibraryOpen(L"tests_f/test_109", HR_WRITE_DISCARD);
@@ -2660,9 +2568,6 @@ namespace MTL_TESTS
 
 	  hrFlush(scnRef, renderRef);
 
-	  glViewport(0, 0, 1024, 768);
-	  std::vector<int32_t> image(1024 * 768);
-
 	  while (true)
 	  {
 		  std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2671,17 +2576,10 @@ namespace MTL_TESTS
 
 		  if (info.haveUpdateFB)
 		  {
-			  hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-			  glDisable(GL_TEXTURE_2D);
-			  glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
+		   
 			  auto pres = std::cout.precision(2);
 			  std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
 			  std::cout.precision(pres);
-
-			  glfwSwapBuffers(g_window);
-			  glfwPollEvents();
 		  }
 
 		  if (info.finalUpdate)
@@ -2696,8 +2594,6 @@ namespace MTL_TESTS
 
   bool test_110_texture_sampler()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_110");
 
     hrSceneLibraryOpen(L"tests_f/test_110", HR_WRITE_DISCARD);
@@ -2945,10 +2841,7 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2957,17 +2850,9 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -2981,8 +2866,6 @@ namespace MTL_TESTS
 
   bool test_111_glossiness_texture_sampler()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_111");
 
     hrSceneLibraryOpen(L"tests_f/test_111", HR_WRITE_DISCARD);
@@ -2997,8 +2880,7 @@ namespace MTL_TESTS
     HRMaterialRef matGray = hrMaterialCreate(L"matGray");
 
     HRTextureNodeRef texChecker = hrTexture2DCreateFromFile(L"data/textures/chess_white.bmp");
-
-
+    
     hrMaterialOpen(matR, HR_WRITE_DISCARD);
     {
       auto matNode = hrMaterialParamNode(matR);
@@ -3264,10 +3146,7 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 512, 512);
-    std::vector<int32_t> image(512 * 512);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -3276,17 +3155,9 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -3300,8 +3171,6 @@ namespace MTL_TESTS
 
   bool test_112_transparency()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_112");
 
     hrSceneLibraryOpen(L"tests_f/test_112", HR_WRITE_DISCARD);
@@ -3610,12 +3479,7 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
-    int counter = 0;
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -3624,29 +3488,13 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
         break;
-
-      counter++;
-
-      // if (counter == 10)
-      // {
-      //   hrRenderCommand(renderRef, L"exitnow");
-      //   break;
-      // }
     }
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_112/z_out.png");
@@ -3656,8 +3504,7 @@ namespace MTL_TESTS
 
   bool test_113_transparency_ior()
   {
-    initGLIfNeeded();
-
+    
     hrErrorCallerPlace(L"test_113");
 
     hrSceneLibraryOpen(L"tests_f/test_113", HR_WRITE_DISCARD);
@@ -3962,10 +3809,7 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -3974,17 +3818,9 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -3998,8 +3834,6 @@ namespace MTL_TESTS
 
   bool test_114_transparency_fog()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_114");
 
     hrSceneLibraryOpen(L"tests_f/test_114", HR_WRITE_DISCARD);
@@ -4305,9 +4139,6 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -4316,17 +4147,9 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -4341,8 +4164,6 @@ namespace MTL_TESTS
 
   bool test_115_transparency_fog_mult()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_115");
 
     hrSceneLibraryOpen(L"tests_f/test_115", HR_WRITE_DISCARD);
@@ -4650,9 +4471,6 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -4661,17 +4479,9 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -4685,8 +4495,6 @@ namespace MTL_TESTS
 
   bool test_116_transparency_thin()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_116");
 
     hrSceneLibraryOpen(L"tests_f/test_116", HR_WRITE_DISCARD);
@@ -4991,10 +4799,7 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -5003,17 +4808,9 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -5027,8 +4824,6 @@ namespace MTL_TESTS
 
   bool test_117_transparency_texture()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_117");
 
     hrSceneLibraryOpen(L"tests_f/test_117", HR_WRITE_DISCARD);
@@ -5367,10 +5162,7 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -5379,17 +5171,9 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -5403,8 +5187,6 @@ namespace MTL_TESTS
 
   bool test_118_transparency_glossiness_texture()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_118");
 
     hrSceneLibraryOpen(L"tests_f/test_118", HR_WRITE_DISCARD);
@@ -5725,10 +5507,7 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -5737,17 +5516,9 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -5761,8 +5532,6 @@ namespace MTL_TESTS
 
   bool test_119_opacity_texture()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_119");
 
     hrSceneLibraryOpen(L"tests_f/test_119", HR_WRITE_DISCARD);
@@ -6071,10 +5840,7 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -6083,18 +5849,10 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
       }
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
 
       if (info.finalUpdate)
         break;
@@ -6107,8 +5865,6 @@ namespace MTL_TESTS
 
   bool test_120_opacity_shadow_matte()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_120");
 
     hrSceneLibraryOpen(L"tests_f/test_120", HR_WRITE_DISCARD);
@@ -6356,9 +6112,6 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 512, 512);
-    std::vector<int32_t> image(512 * 512);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -6367,17 +6120,9 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -6396,8 +6141,6 @@ namespace MTL_TESTS
 
   bool test_121_translucency()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_121");
 
     hrSceneLibraryOpen(L"tests_f/test_121", HR_WRITE_DISCARD);
@@ -6610,9 +6353,7 @@ namespace MTL_TESTS
     mTranslate.identity();
     mRes.identity();
     mRot.identity();
-
     
-
     mTranslate = translate4x4(float3(0, 15.0f, 00.0));
     //mRot = rotate_X_4x4(45.f*DEG_TO_RAD);
     //mRes = mul(mRot, mRes);
@@ -6625,10 +6366,7 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 512, 512);
-    std::vector<int32_t> image(512 * 512);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -6637,17 +6375,9 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -6661,8 +6391,6 @@ namespace MTL_TESTS
 
   bool test_122_translucency_texture()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_122");
 
     hrSceneLibraryOpen(L"tests_f/test_122", HR_WRITE_DISCARD);
@@ -6940,10 +6668,7 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 512, 512);
-    std::vector<int32_t> image(512 * 512);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -6952,17 +6677,9 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -6976,8 +6693,6 @@ namespace MTL_TESTS
 
   bool test_123_emission()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_123");
 
     hrSceneLibraryOpen(L"tests_f/test_123", HR_WRITE_DISCARD);
@@ -7233,10 +6948,7 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 512, 512);
-    std::vector<int32_t> image(512 * 512);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -7245,17 +6957,9 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -7269,8 +6973,6 @@ namespace MTL_TESTS
 
   bool test_124_emission_texture()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_124");
 
     hrSceneLibraryOpen(L"tests_f/test_124", HR_WRITE_DISCARD);
@@ -7577,10 +7279,7 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 512, 512);
-    std::vector<int32_t> image(512 * 512);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -7589,17 +7288,9 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -7613,8 +7304,6 @@ namespace MTL_TESTS
 
   bool test_125_emission_cast_gi()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_125");
 
     hrSceneLibraryOpen(L"tests_f/test_125", HR_WRITE_DISCARD);
@@ -7896,10 +7585,7 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -7908,17 +7594,9 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -7932,8 +7610,6 @@ namespace MTL_TESTS
 
   bool test_126_bump_amount()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_126");
 
     hrSceneLibraryOpen(L"tests_f/test_126", HR_WRITE_DISCARD);
@@ -8205,9 +7881,6 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -8216,17 +7889,9 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -8240,8 +7905,6 @@ namespace MTL_TESTS
 
   bool test_127_normal_map_height()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_127");
 
     hrSceneLibraryOpen(L"tests_f/test_127", HR_WRITE_DISCARD);
@@ -8519,9 +8182,6 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -8530,17 +8190,9 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -8554,8 +8206,6 @@ namespace MTL_TESTS
 
   bool test_128_bump_radius()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_128");
 
     hrSceneLibraryOpen(L"tests_f/test_128", HR_WRITE_DISCARD);
@@ -8830,9 +8480,6 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -8841,17 +8488,9 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -8867,8 +8506,6 @@ namespace MTL_TESTS
   bool test_129_parallax()
   {
     return true; // parallax is not supported in current release!
-
-    initGLIfNeeded();
 
     hrErrorCallerPlace(L"test_129");
 
@@ -9151,9 +8788,6 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -9162,17 +8796,9 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -9187,8 +8813,6 @@ namespace MTL_TESTS
 
   bool test_130_bump_invert_normalY()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_130");
 
     hrSceneLibraryOpen(L"tests_f/test_130", HR_WRITE_DISCARD);
@@ -9493,9 +9117,6 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -9504,17 +9125,9 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -9525,8 +9138,5 @@ namespace MTL_TESTS
 
     return check_images("test_130", 1, 70);
   }
-
-
+  
 }
-
-

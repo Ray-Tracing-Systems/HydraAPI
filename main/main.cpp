@@ -76,54 +76,8 @@ extern float g_MSEOutput;
 void test02_draw();
 void test02_init();
 
-void test_gl32_001_init(void);
-void test_gl32_001_draw(void);
-
-void test_gl32_002_init(void);
-void test_gl32_002_draw(void);
-
-void _hrDebugPrintVSGF(const wchar_t* a_fileNameIn, const wchar_t* a_fileNameOut);
-void _hrConvertOldVSGFMesh(const std::wstring& a_path, const std::wstring& a_newPath);
-
-void _hrCompressMesh(const std::wstring& a_inPath, const std::wstring& a_outPath);
-void _hrDecompressMesh(const std::wstring& a_path, const std::wstring& a_newPath);
-
-
 void demo_01_plane_box();
 
-
-void render_test_scene()
-{
-  hrInfoCallback(&InfoCallBack);
-  
-  //hrSceneLibraryOpen(L".", HR_OPEN_EXISTING); //#NOTE: assume your working directoty is "CLSP/database"
-  hrSceneLibraryOpen(L"/home/frol/PROG/CLSP_gitlab/database/statex_00001.xml", HR_OPEN_EXISTING);
-  
-  HRRenderRef    render; render.id = 0;
-  HRSceneInstRef scene;  scene.id  = 0;
-  
-  hrFlush(scene, render);
-  
-  while (true)
-  {
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    
-    HRRenderUpdateInfo info = hrRenderHaveUpdate(render);
-    
-    if (info.haveUpdateFB)
-    {
-      auto pres = std::cout.precision(2);
-      std::cout << "rendering progress = " << info.progress << "% \r";
-      std::cout.precision(pres);
-    }
-    
-    if (info.finalUpdate)
-      break;
-  }
-  
-  hrRenderSaveFrameBufferLDR(render, L"z_out.png");
-  
-}
 
 int main(int argc, const char** argv)
 {
@@ -169,63 +123,20 @@ int main(int argc, const char** argv)
   
   try
   {
-    //GEO_TESTS::test_001_mesh_from_memory();
     //demo_01_plane_box();
+    //MTL_TESTS::test_101_diffuse_lambert();
+    //std::cout << test42_load_mesh_compressed() << std::endl;
+    run_all_api_tests(); // passed
+    run_all_geo_tests();
+    run_all_mtl_tests();
+    run_all_lgt_tests();
+	  run_all_alg_tests();
+	  run_all_ipp_tests();
+
+	  // to test .obj loader
+    //test40_several_changes();
+
     //window_main_free_look(L"/home/frol/PROG/clsp/database/statex_00001.xml", L"opengl1");
-    
-    //run_all_api_tests(); // passed
-    //run_all_geo_tests();
-    //run_all_mtl_tests();
-    //run_all_lgt_tests();
-	//run_all_alg_tests();
-	//run_all_ipp_tests();
-  
-	//std::cout << MTL_TESTS::test_154_proc_checker_precomp() << std::endl;
-    //std::cout << test33_update_from_file() << std::endl;
-  
-    //std::cout << test19_material_change() << std::endl;
-    
-    //std::cout << test44_four_lights_and_compressed_mesh() << std::endl;
-    test40_several_changes();
-    //test42_load_mesh_compressed();
-    //test78_material_remap_list1();
-    
-
-    //std::cout << test38_save_mesh_and_delayed_load() << std::endl;
-    //std::cout << test49_light_geom_disk() << std::endl;
-    
-    //test46_light_geom_rect();
-    //std::cout << test89_proc_texture_dirty() << std::endl;
-    //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_49", L"opengl1"); // &test02_draw
-    //window_main_free_look(L"/home/frol/PROG/HydraAPI/main/tests/test_38", L"opengl1Debug"); // &test02_draw
-
-    //test82_proc_texture();
-    //test93_proc_tex_recursive();
-    //test39_mmlt_or_ibpt();
-    //test42_load_library_basic();
-    //std::cout << test37_cornell_with_light_different_image_layers() << std::endl;
-    
-    //std::cout << "g_mse = " << g_MSEOutput << std::endl;
-    //window_main_free_look(L"tests_f/test_241", L"opengl1Debug");
-
-    //window_main_free_look(L"tests/test_gl32_002_", L"opengl32Deferred", &test_gl32_002_init, &test_gl32_002_draw);
-    //window_main_free_look(L"tests/lucy_deferred", L"opengl3Utility", &test_gl32_001_init, &test_gl32_001_draw);
-    //window_main_free_look(L"tests/test_gl32_002_", L"opengl3Utility", &test_gl32_002_init, &test_gl32_002_draw);
-    //window_main_free_look(L"tests/test_39", L"opengl1Debug");
-
-    //window_main_free_look(L"tests/zgl1_test_cube", L"opengl32Forward", &test_gl32_001_init, &test_gl32_001_draw);
-    //window_main_free_look(L"D:/PROG/HydraCore/hydra_app/tests/test_42", L"opengl1DrawRays");
-    //test_gl32_002();
-    //window_main_free_look(L"tests/test_gl32_002", L"opengl32Deferred");
-
-    //_hrDebugPrintVSGF(L"D:/temp/TestRenderFromPhil/data/chunk_00022.vsgf",   L"z_mesh_phil.txt");
-    //_hrDebugPrintVSGF(L"D:/temp/TestRenderFromSergey/data/chunk_00022.vsgf", L"z_mesh_serg.txt");
-
-	  //test_console_render(L"D:/Downloads/test(1)/test", L"D:/Downloads/test(1)/test/zzz.bmp");
-	  //test02_simple_gl1_render(L"opengl1Debug");
-    
-    //image_p_sandbox();
-
 	  terminate_opengl();
   }
   catch (std::runtime_error& e)

@@ -37,7 +37,7 @@ namespace LGHT_TESTS
 
   bool test_237_cubemap_ldr()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_237");
 
@@ -245,9 +245,6 @@ namespace LGHT_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -256,17 +253,12 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -283,7 +275,7 @@ namespace LGHT_TESTS
 
   bool test_238_mesh_light_one_triangle()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_238");
 
@@ -478,16 +470,12 @@ namespace LGHT_TESTS
     mRes       = mul(mTranslate, mRes);
 
     hrLightInstance(scnRef, spot2, mRes.L());
-
-
+    
     ///////////
 
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, TEST_IMG_SIZE, TEST_IMG_SIZE);
-    std::vector<int32_t> image(TEST_IMG_SIZE * TEST_IMG_SIZE);
 
     while (true)
     {
@@ -497,17 +485,12 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, TEST_IMG_SIZE, TEST_IMG_SIZE, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(TEST_IMG_SIZE, TEST_IMG_SIZE, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -521,7 +504,7 @@ namespace LGHT_TESTS
 
   bool test_239_mesh_light_two_triangle()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_239");
 
@@ -722,9 +705,6 @@ namespace LGHT_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 512, 512);
-    std::vector<int32_t> image(512 * 512);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -733,17 +713,12 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -757,7 +732,7 @@ namespace LGHT_TESTS
 
   bool test_240_mesh_light_torus()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_240");
 
@@ -1086,10 +1061,7 @@ namespace LGHT_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 512, 512);
-    std::vector<int32_t> image(512 * 512);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1098,17 +1070,12 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -1122,7 +1089,7 @@ namespace LGHT_TESTS
 
   bool test_241_mesh_light_torus_texture_ldr()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_241");
 
@@ -1483,9 +1450,6 @@ namespace LGHT_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 512, 512);
-    std::vector<int32_t> image(512 * 512);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1494,17 +1458,12 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -1519,7 +1478,7 @@ namespace LGHT_TESTS
 
   bool test_242_mesh_light_torus_texture_hdr()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_242");
 
@@ -1885,9 +1844,6 @@ namespace LGHT_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 512, 512);
-    std::vector<int32_t> image(512 * 512);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1896,17 +1852,12 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -1920,7 +1871,7 @@ namespace LGHT_TESTS
 
   bool test_243_mesh_light_do_not_sample_me()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_243");
 
@@ -2250,9 +2201,6 @@ namespace LGHT_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 512, 512);
-    std::vector<int32_t> image(512 * 512);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2261,17 +2209,12 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -2285,7 +2228,7 @@ namespace LGHT_TESTS
 
   bool test_244_do_not_sample_me()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_244");
 
@@ -2447,9 +2390,6 @@ namespace LGHT_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 512, 512);
-    std::vector<int32_t> image(512 * 512);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2458,17 +2398,12 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -2483,7 +2418,7 @@ namespace LGHT_TESTS
 
   bool test_245_cylinder_tex_nearest()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_245");
     hrSceneLibraryOpen(L"tests_f/test_245", HR_WRITE_DISCARD);
@@ -2702,9 +2637,6 @@ namespace LGHT_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 512, 512);
-    std::vector<int32_t> image(512 * 512);
-
     int counter = 0;
 
     while (true)
@@ -2715,19 +2647,14 @@ namespace LGHT_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
         counter++;
       }
 
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
 
       if (info.finalUpdate)
         break;

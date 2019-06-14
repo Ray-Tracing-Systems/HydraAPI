@@ -1355,7 +1355,6 @@ void _hr_UtilityDriverUpdate(HRSceneInst& scn, HRRender* a_pRender)
   IHRRenderDriver* a_pDriver = a_pRender->m_pDriver.get();
   if(a_pDriver == nullptr)
     return;
-
   
   HRDriverAllocInfo allocInfo;
 
@@ -1374,7 +1373,7 @@ void _hr_UtilityDriverUpdate(HRSceneInst& scn, HRRender* a_pRender)
   allocInfo.matNum      = int32_t(matNum   + matNum/3   + 100);
   allocInfo.lightNum    = int32_t(lightNum + lightNum/3 + 100);
   
-  auto& settings = g_objManager.renderSettings[g_objManager.m_currRenderId];
+  auto& settings      = g_objManager.renderSettings[g_objManager.m_currRenderId];
   auto resources_path = settings.xml_node().child(L"resources_path").text().as_string();
   
   allocInfo.resourcesPath = resources_path;
@@ -1611,7 +1610,7 @@ void HydraDestroyHiddenWindow();
 bool HydraCreateHiddenWindow(int width, int height, int a_major, int a_minor, int a_flags);
 #endif
 
-std::wstring HR_UtilityDriverStart(const wchar_t* state_path)
+std::wstring HR_UtilityDriverStart(const wchar_t* state_path, HRRender* a_pOriginalRender)
 {
   std::wstring new_state_path(L"");
 
@@ -1657,6 +1656,7 @@ std::wstring HR_UtilityDriverStart(const wchar_t* state_path)
   if (tempRender.m_pDriver != nullptr && g_objManager.m_currSceneId < g_objManager.scnInst.size())
   {
     tempRender.m_pDriver->SetInfoCallBack(g_pInfoCallback);
+    tempRender.m_updated = a_pOriginalRender->m_updated; // pass same objects to the utility render
 
     _hr_UtilityDriverUpdate(g_objManager.scnInst[g_objManager.m_currSceneId], &tempRender);
 
