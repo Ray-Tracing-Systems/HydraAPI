@@ -1982,6 +1982,7 @@ bool test40_several_changes()
 
   // Example of loading of the .obj file with shapes' merging
   //HRMeshRef teapotRef = hrMeshCreateFromObjMerged(L"data/meshes/bunnycube.obj");
+  HRMeshRef teapotRef = hrMeshCreateFromFile(L"data/meshes/teapot.vsgf");
 
   // Example of loading of the .obj file while separating the shapes
   //HRUtils::MergeInfo bunnycube_info = HRUtils::LoadMultipleShapesFromObj(L"data/meshes/bunnycube.obj");
@@ -1989,8 +1990,7 @@ bool test40_several_changes()
   //HRMeshRef mesh0; mesh0.id = bunnycube_info.meshRange[0];
   //HRMeshRef meshN; meshN.id = bunnycube_info.meshRange[1] - 1;
 
-  HRMeshRef teapotRef = hrMeshCreateFromFile(L"data/meshes/teapot.vsgf");
-
+  
   HRMeshRef cubeOpenRef = hrMeshCreate(L"my_box");
   HRMeshRef planeRef    = hrMeshCreate(L"my_plane");
   HRMeshRef sphereRef   = hrMeshCreate(L"my_sphere");

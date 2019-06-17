@@ -19,8 +19,13 @@
 #define QMC_MTL_FLAG 2
 #define QMC_LGT_FLAG 4
 
+int  hr_mkdir(const wchar_t* a_folder);
+
 void demo_01_plane_box()
 {
+  hr_mkdir(L"demos");
+  hr_mkdir(L"demos/demo_01");
+
   hrSceneLibraryOpen(L"demos/demo_01", HR_WRITE_DISCARD);
   
   // create materials for plane and cubes

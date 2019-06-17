@@ -81,8 +81,6 @@ void demo_01_plane_box();
 
 int main(int argc, const char** argv)
 {
-  //render_test_scene();
-  //hrInit(L"-copy_textures_to_local_folder 0 -local_data_path 1 -sort_indices 1 -compute_bboxes 1");
   hrInfoCallback(&InfoCallBack);
 
   hrErrorCallerPlace(L"main");  // for debug needs only
@@ -123,8 +121,10 @@ int main(int argc, const char** argv)
   
   try
   {
-    //demo_01_plane_box();
+    demo_01_plane_box();
+    
     //MTL_TESTS::test_101_diffuse_lambert();
+
     //std::cout << test42_load_mesh_compressed() << std::endl;
     //run_all_api_tests(); // passed
     //run_all_geo_tests();
@@ -133,8 +133,7 @@ int main(int argc, const char** argv)
     //run_all_alg_tests();
     //run_all_ipp_tests();
 
-    // to test .obj loader
-    test40_several_changes();
+    //test40_several_changes(); // to test .obj loader
 
     //window_main_free_look(L"/home/frol/PROG/clsp/database/statex_00001.xml", L"opengl1");
 	  terminate_opengl();
