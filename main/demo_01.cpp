@@ -8,6 +8,8 @@
 #include <chrono>
 #include <thread>
 
+#include <iomanip> // for (std::fixed, std::setfill, std::setw)
+
 #include "../hydra_api/HydraAPI.h"
 #include "../hydra_api/HydraXMLVerify.h"
 
@@ -227,7 +229,7 @@ void demo_01_plane_box()
     }
   
     std::wstringstream strOut;
-    strOut << L"demos/demo_01/out_" << frame << L".png";
+    strOut << std::fixed  << L"demos/demo_01/zout_" << std::setfill(L"0"[0]) << std::setw(2) << frame << L".png";
     auto str = strOut.str();
     
     //hrRenderSaveFrameBufferLDR(renderRef, L"demos/demo_01/out.png");
