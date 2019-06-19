@@ -669,15 +669,6 @@ enum HR_PRIM_TYPE { HR_TRIANGLE_LIST  = 0,    ///< simple triangle list
 HAPI HRMeshRef hrMeshCreate(const wchar_t* a_objectName);
 
 /**
-\brief parse .obj file and merge all the shapes into one mesh
-\param a_pScn     - pointer to scene library
-\param a_fileName - file name of the mesh.
-\param a_copyToLocalFolder - indicates if we need to copy input '.vsgf' file to local folder
-
-*/
-HAPI HRMeshRef hrMeshCreateFromObjMerged(const wchar_t* a_fileName, bool a_copyToLocalFolder = false);
-
-/**
 \brief create mesh from internal vsgf format with delayed load.
 \param a_pScn     - pointer to scene library
 \param a_fileName - file name of the mesh.
@@ -1260,3 +1251,13 @@ If camera with name = a_cameraName does not exist, HRCameraRef with id = -1 is r
 
 */
 HAPI HRRenderRef hrFindRenderByTypeName(const wchar_t *a_renderTypeName);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#define HYDRA_QMC_DOF_FLAG 1
+#define HYDRA_QMC_MTL_FLAG 2
+#define HYDRA_QMC_LGT_FLAG 4
+

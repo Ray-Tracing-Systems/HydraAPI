@@ -77,6 +77,7 @@ void test02_draw();
 void test02_init();
 
 void demo_01_plane_box();
+void demo_02_load_obj();
 
 
 int main(int argc, const char** argv)
@@ -123,7 +124,8 @@ int main(int argc, const char** argv)
   
   try
   {
-    demo_01_plane_box();
+    //demo_01_plane_box();
+    demo_02_load_obj();
     
     //MTL_TESTS::test_101_diffuse_lambert();
     //std::cout << test42_load_mesh_compressed() << std::endl;

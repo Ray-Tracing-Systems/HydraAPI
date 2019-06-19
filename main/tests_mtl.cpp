@@ -35,8 +35,6 @@ namespace MTL_TESTS
 
   bool test_101_diffuse_lambert()
   {
-    initGLIfNeeded();
-    
     hrErrorCallerPlace(L"test_101");
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -228,9 +226,6 @@ namespace MTL_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef, camRef);
-
-    std::vector<int32_t> image(512*512);
-    glViewport(0,0,512,512);
     
     while (true)
     {
@@ -243,14 +238,6 @@ namespace MTL_TESTS
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-  
-        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-  
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-  
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)

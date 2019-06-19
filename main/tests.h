@@ -37,7 +37,7 @@ inline float rnd(float s, float e)
 
 
 bool check_images(const char* a_path, const int a_numImages = 1, const float a_mse = 10.0f);
-void initGLIfNeeded();
+void initGLIfNeeded(int a_width = 512, int a_height = 512, const char* a_name = "glfw demo");
 
 namespace TEST_UTILS
 {

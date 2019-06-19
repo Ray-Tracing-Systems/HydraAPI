@@ -15,19 +15,13 @@
 
 
 #include "mesh_utils.h"
-// #include "simplerandom.h"
 
-#define QMC_DOF_FLAG 1
-#define QMC_MTL_FLAG 2
-#define QMC_LGT_FLAG 4
-
-int  hr_mkdir(const wchar_t* a_folder);
+//int hr_mkdir(const wchar_t* a_folder); // not a part of an API, just to make folder
 
 void demo_01_plane_box()
 {
-  hr_mkdir(L"demos");
-  hr_mkdir(L"demos/demo_01");
-
+  //hr_mkdir(L"demos");
+  
   hrSceneLibraryOpen(L"demos/demo_01", HR_WRITE_DISCARD);
   
   // create materials for plane and cubes
@@ -156,7 +150,7 @@ void demo_01_plane_box()
     node.append_child(L"trace_depth").text()      = 6;
     node.append_child(L"diff_trace_depth").text() = 4;
     node.append_child(L"maxRaysPerPixel").text()  = 256;
-    node.append_child(L"qmc_variant").text()      = (QMC_DOF_FLAG | QMC_MTL_FLAG | QMC_LGT_FLAG); // enable all of them, results to '7'
+    node.append_child(L"qmc_variant").text()      = (HYDRA_QMC_DOF_FLAG | HYDRA_QMC_MTL_FLAG | HYDRA_QMC_LGT_FLAG); // enable all of them, results to '7'
   }
   hrRenderClose(renderRef);
   

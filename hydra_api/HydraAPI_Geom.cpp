@@ -198,7 +198,8 @@ HAPI HRMeshRef hrMeshCreate(const wchar_t* a_objectName)
   return ref;
 }
 
-HAPI HRMeshRef hrMeshCreateFromObjMerged(const wchar_t* a_objectName, bool a_copyToLocalFolder){
+HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, bool a_copyToLocalFolder)
+{
   tinyobj::attrib_t attrib;
   std::vector<tinyobj::shape_t> shapes;
   std::vector<tinyobj::material_t> materials;
@@ -376,11 +377,16 @@ HAPI HRMeshRef hrMeshCreateFromFile(const wchar_t* a_fileName, bool a_copyToLoca
   HydraGeomData data;
   std::vector<int> dataBuffer;
 
-  if(tail == L".vsgfc") {
+  if(tail == L".obj")
+    return _hrMeshCreateFromObjMerged(a_fileName, a_copyToLocalFolder);
+  else if(tail == L".vsgfc")
     data = HR_LoadVSGFCompressedData(a_fileName, dataBuffer);
-  }
-  else {
+  else if(tail == L".vsgf")
     data.read(a_fileName);
+  else
+  {
+    HrPrint(HR_SEVERITY_ERROR, L"hrMeshCreateFromFile, unsupported file extension ", tail.c_str());
+    return HRMeshRef();
   }
 
   if (data.getVerticesNumber() == 0)
