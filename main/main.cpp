@@ -78,7 +78,7 @@ void test02_init();
 
 void demo_01_plane_box();
 void demo_02_load_obj();
-
+void demo_03_caustics();
 
 int main(int argc, const char** argv)
 {
@@ -125,10 +125,11 @@ int main(int argc, const char** argv)
   try
   {
     //demo_01_plane_box();
-    demo_02_load_obj();
+    //demo_02_load_obj();
+    demo_03_caustics();
     
     //MTL_TESTS::test_101_diffuse_lambert();
-    //std::cout << test42_load_mesh_compressed() << std::endl;
+    
     //run_all_api_tests(); // passed
     //run_all_geo_tests();
     //run_all_mtl_tests();
@@ -136,6 +137,8 @@ int main(int argc, const char** argv)
     //run_all_alg_tests();
     //run_all_ipp_tests();
 
+    //std::cout << ALGR_TESTS::test_404_cornell_glossy() << std::endl;
+    
     //window_main_free_look(L"/home/frol/PROG/clsp/database/statex_00001.xml", L"opengl1");
 	  terminate_opengl();
   }
