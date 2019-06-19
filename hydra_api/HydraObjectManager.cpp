@@ -62,6 +62,7 @@ namespace HydraRender
 
 void HRObjectManager::init(HRInitInfo a_initInfo)
 {
+  m_lastInitInfo               = a_initInfo;
   m_useLocalPath               = a_initInfo.localDataPath;
   m_copyTexFilesToLocalStorage = a_initInfo.copyTexturesToLocalFolder;
   m_sortTriIndices             = a_initInfo.sortMaterialIndices;
@@ -279,7 +280,7 @@ void HRSceneData::init(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock, size
   m_changeList.reserve(2048);
 }
 
-void HRSceneData::init_existing(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock)
+void HRSceneData::init_existing(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock, const size_t a_size)
 {
   m_texturesLib  = m_xmlDoc.child(L"textures_lib");
   m_materialsLib = m_xmlDoc.child(L"materials_lib");
@@ -288,8 +289,10 @@ void HRSceneData::init_existing(bool a_attachMode, HRSystemMutex* a_pVBSysMutexL
   m_geometryLib  = m_xmlDoc.child(L"geometry_lib");
   m_settingsNode = m_xmlDoc.child(L"render_lib");
   m_sceneNode    = m_xmlDoc.child(L"scenes");
-  
-  init_virtual_buffer(a_attachMode, a_pVBSysMutexLock, 0);
+
+
+  init_virtual_buffer(a_attachMode, a_pVBSysMutexLock, a_size);
+
   m_changeList.clear();
   m_changeList.reserve(1024);
 }

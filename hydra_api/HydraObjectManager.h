@@ -429,7 +429,7 @@ struct HRSceneData : public HRObject<IHRSceneData>
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
   
   void init(bool a_emptyvb, HRSystemMutex* a_pVBSysMutexLock, size_t a_size);
-  void init_existing(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock);
+  void init_existing(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock, size_t a_size);
   void clear();
 
   int32_t m_commitId;
@@ -558,6 +558,7 @@ struct HRObjectManager
   int32_t m_currCamId;
   
   HRSystemMutex*           m_pVBSysMutex;
+  HRInitInfo               m_lastInitInfo;
   
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 
