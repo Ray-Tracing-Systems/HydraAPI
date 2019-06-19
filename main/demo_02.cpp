@@ -127,7 +127,6 @@ bool demo_02_load_obj()
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
   HRMeshRef cubeOpenRef = hrMeshCreate(L"my_box");
-  HRMeshRef planeRef    = hrMeshCreate(L"my_plane");
   HRMeshRef bunnyRef    = hrMeshCreateFromFile(L"data/meshes/bunny.obj"); //#NOTE: loaded from ".obj" models are guarantee to have material id '0' for all triangles
                                                                           // to apply other material, please see further for remap list application to object instance
   hrMeshOpen(cubeOpenRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
@@ -234,9 +233,8 @@ bool demo_02_load_obj()
     auto mtranslate = hlm::translate4x4(hlm::float3(1, -4.2, 0));
     auto mres       = hlm::mul(mtranslate,mscale);
     
-    int32_t remapList[2] = {0, mat4.id}; // 0 --> mat4.id
-    
-    hrMeshInstance(scnRef, bunnyRef, mres.L(), remapList, sizeof(remapList)/sizeof(int32_t));
+    int32_t remapList[2] = {0, mat4.id};                                                       // #NOTE: remaplist of size 1 here: [0 --> mat4.id]
+    hrMeshInstance(scnRef, bunnyRef, mres.L(), remapList, sizeof(remapList)/sizeof(int32_t));  //
     
     auto mrot = hlm::rotate_Y_4x4(180.0f*DEG_TO_RAD);
     hrMeshInstance(scnRef, cubeOpenRef, mrot.L());

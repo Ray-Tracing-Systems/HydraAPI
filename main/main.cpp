@@ -136,9 +136,6 @@ int main(int argc, const char** argv)
     //run_all_alg_tests();
     //run_all_ipp_tests();
 
-    
-    // test40_several_changes(); // to test .obj loader
-
     //window_main_free_look(L"/home/frol/PROG/clsp/database/statex_00001.xml", L"opengl1");
 	  terminate_opengl();
   }
