@@ -371,7 +371,7 @@ struct HRRender;
 void HR_DriverUpdate(HRSceneInst& scn, HRRender* a_pRender);
 void HR_DriverDraw(HRSceneInst& scn, HRRender* a_pRender);
 
-std::wstring HR_UtilityDriverStart(const wchar_t* state_path);
+std::wstring HR_UtilityDriverStart(const wchar_t* state_path, HRRender* a_pOriginalRender);
 std::wstring SaveFixedStateXML(pugi::xml_document &doc, const std::wstring &oldPath, const std::wstring &suffix);
 
 HRMeshDriverInput HR_GetMeshDataPointers(size_t a_meshId);

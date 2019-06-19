@@ -41,15 +41,8 @@ struct HRObject
 
   /////////////////////////////////////////////////////////////////////////////////// xml nodes
 
-  virtual void update(pugi::xml_node a_newNode)
-  {
-    m_xmlNode = a_newNode;
-  }
-  
-  virtual pugi::xml_node xml_node()
-  {
-    return m_xmlNode;
-  }
+  virtual void update(pugi::xml_node a_newNode) { m_xmlNode = a_newNode; }
+  virtual pugi::xml_node xml_node()             { return m_xmlNode; }
   
 protected:
 
@@ -287,6 +280,24 @@ struct HRTextureNode : public HRObject<IHRTextureNode>
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+static inline std::unordered_set<int32_t> _intersect_them(const std::unordered_set<int32_t>& set1, const std::unordered_set<int32_t>& set2)
+{
+  std::unordered_set<int32_t> res;
+  for(int32_t elemA : set1)
+  {
+    if(set2.find(elemA) != set2.end())
+      res.insert(elemA);
+  }
+  return res;
+}
+
+static inline std::unordered_set<int32_t> _union_them(const std::unordered_set<int32_t> &in1, const std::unordered_set<int32_t> &in2)
+{
+  std::unordered_set<int32_t> out = in1;
+  out.insert(in2.begin(), in2.end());
+  return out;
+}
+
 struct ChangeList
 {
   ChangeList() {}
@@ -350,6 +361,29 @@ struct ChangeList
     lightUsed.reserve(a_n/4);
     drawSeq.reserve(a_n*4);
   }
+  
+  ChangeList intersect_with(const ChangeList& a_rhs)
+  {
+    ChangeList res;
+    res.meshUsed     = _intersect_them(meshUsed,     a_rhs.meshUsed);
+    res.matUsed      = _intersect_them(matUsed,      a_rhs.matUsed);
+    res.lightUsed    = _intersect_them(lightUsed,    a_rhs.lightUsed);
+    res.texturesUsed = _intersect_them(texturesUsed, a_rhs.texturesUsed);
+    return res;
+  }
+  
+  ChangeList union_with(const ChangeList& a_rhs)
+  {
+    ChangeList res;
+    res.meshUsed     = _union_them(meshUsed,     a_rhs.meshUsed);
+    res.matUsed      = _union_them(matUsed,      a_rhs.matUsed);
+    res.lightUsed    = _union_them(lightUsed,    a_rhs.lightUsed);
+    res.texturesUsed = _union_them(texturesUsed, a_rhs.texturesUsed);
+    res.drawSeq      = drawSeq;
+    return res;
+  }
+  
+  
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

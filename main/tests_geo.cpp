@@ -36,7 +36,7 @@ namespace GEO_TESTS
 
   bool test_001_mesh_from_memory()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_001");
 
@@ -226,9 +226,6 @@ namespace GEO_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, TEST_IMG_SIZE, TEST_IMG_SIZE);
-    std::vector<int32_t> image(TEST_IMG_SIZE * TEST_IMG_SIZE);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -237,17 +234,12 @@ namespace GEO_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, TEST_IMG_SIZE, TEST_IMG_SIZE, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(TEST_IMG_SIZE, TEST_IMG_SIZE, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -262,7 +254,7 @@ namespace GEO_TESTS
   bool test_002_mesh_from_vsgf()
   {
     
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_002");
 
@@ -392,10 +384,7 @@ namespace GEO_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, TEST_IMG_SIZE, TEST_IMG_SIZE);
-    std::vector<int32_t> image(TEST_IMG_SIZE * TEST_IMG_SIZE);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -404,17 +393,12 @@ namespace GEO_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, TEST_IMG_SIZE, TEST_IMG_SIZE, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(TEST_IMG_SIZE, TEST_IMG_SIZE, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -429,7 +413,7 @@ namespace GEO_TESTS
   bool test_003_compute_normals()
   {
    
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_003");
     hrSceneLibraryOpen(L"tests_f/test_003", HR_WRITE_DISCARD);
@@ -593,9 +577,6 @@ namespace GEO_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, TEST_IMG_SIZE, TEST_IMG_SIZE);
-    std::vector<int32_t> image(TEST_IMG_SIZE * TEST_IMG_SIZE);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -604,17 +585,12 @@ namespace GEO_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, TEST_IMG_SIZE, TEST_IMG_SIZE, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(TEST_IMG_SIZE, TEST_IMG_SIZE, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -632,7 +608,7 @@ namespace GEO_TESTS
   bool test_004_dof()
   {
 
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_004");
 
@@ -900,10 +876,7 @@ namespace GEO_TESTS
     hrFlush(scnRef, renderRef);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    glViewport(0, 0, TEST_IMG_SIZE, TEST_IMG_SIZE);
-    std::vector<int32_t> image(TEST_IMG_SIZE * TEST_IMG_SIZE);
-
+    
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -912,17 +885,12 @@ namespace GEO_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, TEST_IMG_SIZE, TEST_IMG_SIZE, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(TEST_IMG_SIZE, TEST_IMG_SIZE, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -939,7 +907,7 @@ namespace GEO_TESTS
 
   bool test_005_instancing()
   {
-    initGLIfNeeded();
+    
 
     hrErrorCallerPlace(L"test_005");
 
@@ -1051,19 +1019,13 @@ namespace GEO_TESTS
     // Meshes
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
-    std::cout << "test_005 (1) " << std::endl;
-    
     HRMeshRef cubeR    = HRMeshFromSimpleMesh(L"cubeR", CreateCube(2.0f), matCube.id);
     HRMeshRef pillar   = HRMeshFromSimpleMesh(L"pillar", CreateCube(1.0f), matGray.id);
     HRMeshRef sphereG  = HRMeshFromSimpleMesh(L"sphereG", CreateSphere(4.0f, 64), matTrunk.id);
     HRMeshRef torusB   = HRMeshFromSimpleMesh(L"torusB", CreateTorus(0.8f, 2.0f, 64, 64), matTrunk.id);
     HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane", CreatePlane(10000.0f), matGray.id);
-  
-    std::cout << "test_005 (2) " << std::endl;
     
     HRMeshRef treeRef  = hrMeshCreateFromFileDL(L"data/meshes/bigtree.vsgf");
-  
-    std::cout << "test_005 (3) " << std::endl;
     
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Light
@@ -1251,19 +1213,10 @@ namespace GEO_TESTS
     mRes  = mul(mTranslate, mRes);
 
     hrLightInstance(scnRef, sun, mRes.L());
-
-    ///////////
-  
-    std::cout << "test_005 (4) " << std::endl;
+    
     
     hrSceneClose(scnRef);
-  
-  
-    std::cout << "test_005 (5) " << std::endl;
     
-    // hrFlush(scnRef);
-    //return false;
-
     HRRenderRef renderRef = hrRenderCreate(L"HydraModern");
     
     hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
@@ -1289,16 +1242,9 @@ namespace GEO_TESTS
       node.append_child(L"maxRaysPerPixel").text() = 2048;
     }
     hrRenderClose(renderRef);
-  
-    std::cout << "test_005 (6) " << std::endl;
     
     hrFlush(scnRef, renderRef);
-  
-    std::cout << "test_005 (7) " << std::endl;
     
-    glViewport(0, 0, TEST_IMG_SIZE, TEST_IMG_SIZE);
-    std::vector<int32_t> image(TEST_IMG_SIZE * TEST_IMG_SIZE);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1307,17 +1253,12 @@ namespace GEO_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, TEST_IMG_SIZE, TEST_IMG_SIZE, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(TEST_IMG_SIZE, TEST_IMG_SIZE, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -1333,7 +1274,7 @@ namespace GEO_TESTS
   bool test_006_points_on_mesh()
   {
 
-    initGLIfNeeded();
+    
     hrErrorCallerPlace(L"test_006");
     hrSceneLibraryOpen(L"tests_f/test_006", HR_WRITE_DISCARD);
 
@@ -1532,9 +1473,6 @@ namespace GEO_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 512, 512);
-    std::vector<int32_t> image(512 * 512);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1543,17 +1481,12 @@ namespace GEO_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)

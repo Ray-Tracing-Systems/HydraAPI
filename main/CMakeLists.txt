@@ -43,7 +43,7 @@ set(SOURCE_FILES
         Timer.h
         utils.cpp
         simplerandom.h
-        tests_external.cpp demo_01.cpp tests_algr.cpp)
+        tests_external.cpp demo_01.cpp demo_02.cpp tests_algr.cpp)
 
 #set (CMAKE_CXX_FLAGS_DEBUG  "${CMAKE_CXX_FLAGS_DEBUG}")
 

@@ -431,10 +431,7 @@ bool test35_cornell_with_light()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef);
-
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-
+  
   while(true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -443,17 +440,9 @@ bool test35_cornell_with_light()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -865,9 +854,6 @@ bool test37_cornell_with_light_different_image_layers()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -876,17 +862,9 @@ bool test37_cornell_with_light_different_image_layers()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
     else if (info.haveUpdateMSG)
     {
@@ -1388,9 +1366,6 @@ bool test38_test_for_mlt()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1399,17 +1374,9 @@ bool test38_test_for_mlt()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
     else if (info.haveUpdateMSG)
     {
@@ -1430,8 +1397,6 @@ bool test38_test_for_mlt()
 
 bool test39_mmlt_or_ibpt()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_39");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1794,9 +1759,6 @@ bool test39_mmlt_or_ibpt()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef);
-
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
   
   Timer timer(true);
   
@@ -1808,17 +1770,9 @@ bool test39_mmlt_or_ibpt()
   
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-  
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-  
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-  
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
   
     if (info.finalUpdate)
@@ -2012,8 +1966,17 @@ bool test40_several_changes()
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  HRMeshRef teapotRef = hrMeshCreateFromFileDL(L"data/meshes/teapot.vsgf"); // chunk_00009.vsgf // teapot.vsgf // chunk_00591.vsgf
+  // Example of loading of the .obj file with shapes' merging
+  //HRMeshRef teapotRef = hrMeshCreateFromObjMerged(L"data/meshes/bunnycube.obj");
+  HRMeshRef teapotRef = hrMeshCreateFromFile(L"data/meshes/teapot.vsgf");
 
+  // Example of loading of the .obj file while separating the shapes
+  //HRUtils::MergeInfo bunnycube_info = HRUtils::LoadMultipleShapesFromObj(L"data/meshes/bunnycube.obj");
+  // Now iterate over mesh's id
+  //HRMeshRef mesh0; mesh0.id = bunnycube_info.meshRange[0];
+  //HRMeshRef meshN; meshN.id = bunnycube_info.meshRange[1] - 1;
+
+  
   HRMeshRef cubeOpenRef = hrMeshCreate(L"my_box");
   HRMeshRef planeRef    = hrMeshCreate(L"my_plane");
   HRMeshRef sphereRef   = hrMeshCreate(L"my_sphere");
@@ -2180,10 +2143,11 @@ bool test40_several_changes()
   mat4x4_translate(mTranslate, 0.0f, -0.70f*3.65f, -5.0f + 5.0f);
   mat4x4_scale(mRot1, mRot1, 3.65f);
   mat4x4_mul(mRes, mTranslate, mRot1);
-  mat4x4_transpose(matrixT, mRes); // this fucking math library swap rows and columns
+  mat4x4_transpose(matrixT, mRes); // this fucking math library swaps rows and columns
   matrixT[3][3] = 1.0f;
 
   hrMeshInstance(scnRef, teapotRef, &matrixT[0][0]);
+  //hrMeshInstance(scnRef, ref_vec[1], &matrixT[0][0]);
 
   mat4x4_identity(mRot1);
   mat4x4_rotate_Y(mRot1, mRot1, 180.0f*DEG_TO_RAD);
@@ -2202,9 +2166,6 @@ bool test40_several_changes()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2213,17 +2174,9 @@ bool test40_several_changes()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -2257,17 +2210,9 @@ bool test40_several_changes()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -2321,6 +2266,7 @@ bool test40_several_changes()
   matrixT[3][3] = 1.0f;
 
   hrMeshInstance(scnRef, teapotRef, &matrixT[0][0]);
+  //hrMeshInstance(scnRef, ref_vec[1], &matrixT[0][0]);
 
   mat4x4_identity(mRot1);
   mat4x4_rotate_Y(mRot1, mRot1, 180.0f*DEG_TO_RAD);
@@ -2363,17 +2309,9 @@ bool test40_several_changes()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)

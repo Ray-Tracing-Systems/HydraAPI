@@ -962,12 +962,15 @@ void test02_simple_gl1_render(const wchar_t* a_drvName)
 }
 
 
-void initGLIfNeeded()
+void initGLIfNeeded(int a_width, int a_height, const char* a_name)
 {
   static bool firstCall = true;
-
+  
   if (firstCall)
   {
+    g_width  = a_width;
+    g_height = a_height;
+    
     if (!glfwInit())
     {
       fprintf(stderr, "Failed to initialize GLFW\n");
@@ -976,7 +979,7 @@ void initGLIfNeeded()
 
     glfwWindowHint(GLFW_DEPTH_BITS, 24);
 
-    g_window = glfwCreateWindow(g_width, g_height, "OpenGL1 GLFW test", NULL, NULL);
+    g_window = glfwCreateWindow(g_width, g_height, a_name, NULL, NULL);
     if (!g_window)
     {
       fprintf(stderr, "Failed to open GLFW window\n");
@@ -996,6 +999,14 @@ void initGLIfNeeded()
     //reshape(g_window, g_width, g_height);
 
     firstCall = false;
+  }
+  else
+  {
+    g_width  = a_width;
+    g_height = a_height;
+  
+    glfwSetWindowSize(g_window, g_width, g_height);
+    glfwSetWindowTitle(g_window, a_name);
   }
 }
 

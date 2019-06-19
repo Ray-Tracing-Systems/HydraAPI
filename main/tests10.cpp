@@ -36,8 +36,6 @@ extern GLFWwindow* g_window;
 
 bool test1000_loadlibrary_and_edit()
 {
-  initGLIfNeeded();
-
   hrSceneLibraryOpen(L"tests/test_1000", HR_OPEN_EXISTING);
 
   /////////////////////////////////////////////////////////
@@ -104,9 +102,7 @@ bool test1000_loadlibrary_and_edit()
   //hrCommit(scnRef, renderRef);
   //hrRenderCommand(renderRef, L"resume");
   bool firstUpdate = true;
-
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
+  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -121,17 +117,10 @@ bool test1000_loadlibrary_and_edit()
         std::remove("tests/test_1000/statex_00002.xml");
         firstUpdate = false;
       }
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -145,7 +134,7 @@ bool test1000_loadlibrary_and_edit()
 
 bool test1001_loadlibrary_and_add_textures()
 {
-  initGLIfNeeded();
+  
 
   hrSceneLibraryOpen(L"tests/test_1001", HR_OPEN_EXISTING);
 
@@ -170,10 +159,7 @@ bool test1001_loadlibrary_and_add_textures()
   hrCommit(scnRef, renderRef);
   hrRenderCommand(renderRef, L"pause");
   std::this_thread::sleep_for(std::chrono::milliseconds(500)); //so render has some time to actually stop
-
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-
+  
 
   HRTextureNodeRef texEnv = hrTexture2DCreateFromFile(L"data/textures/LA_Downtown_Afternoon_Fishing_B_8k.jpg"); //23_antwerp_night.hdr LA_Downtown_Afternoon_Fishing_B_8k.jpg
 
@@ -230,17 +216,9 @@ bool test1001_loadlibrary_and_add_textures()
         firstUpdate = false;
       }
 
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -254,7 +232,7 @@ bool test1001_loadlibrary_and_add_textures()
 
 bool test1002_get_material_by_name_and_edit()
 {
-  initGLIfNeeded();
+  
 
   hrSceneLibraryOpen(L"tests/test_1002", HR_OPEN_EXISTING);
 
@@ -333,9 +311,7 @@ bool test1002_get_material_by_name_and_edit()
   //hrCommit(scnRef, renderRef);
   //hrRenderCommand(renderRef, L"resume");
   bool firstUpdate = true;
-
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
+  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -350,17 +326,10 @@ bool test1002_get_material_by_name_and_edit()
         std::remove("tests/test_1002/statex_00002.xml");
         firstUpdate = false;
       }
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -374,7 +343,7 @@ bool test1002_get_material_by_name_and_edit()
 
 bool test1003_get_light_by_name_and_edit()
 {
-  initGLIfNeeded();
+  
 
   hrSceneLibraryOpen(L"tests/test_1003", HR_OPEN_EXISTING);
 
@@ -468,9 +437,7 @@ bool test1003_get_light_by_name_and_edit()
   //hrCommit(scnRef, renderRef);
   //hrRenderCommand(renderRef, L"resume");
   bool firstUpdate = true;
-
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
+  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -485,17 +452,10 @@ bool test1003_get_light_by_name_and_edit()
         std::remove("tests/test_1003/statex_00002.xml");
         firstUpdate = false;
       }
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -509,7 +469,7 @@ bool test1003_get_light_by_name_and_edit()
 
 bool test1004_get_camera_by_name_and_edit()
 {
-  initGLIfNeeded();
+  
 
   hrSceneLibraryOpen(L"tests/test_1004", HR_OPEN_EXISTING);
 
@@ -567,8 +527,6 @@ bool test1004_get_camera_by_name_and_edit()
   //hrRenderCommand(renderRef, L"resume");
   bool firstUpdate = true;
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -583,17 +541,10 @@ bool test1004_get_camera_by_name_and_edit()
         std::remove("tests/test_1004/statex_00002.xml");
         firstUpdate = false;
       }
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -607,8 +558,6 @@ bool test1004_get_camera_by_name_and_edit()
 
 bool test1005_transform_all_instances()
 {
-  initGLIfNeeded();
-
   hrSceneLibraryOpen(L"tests/test_1005", HR_OPEN_EXISTING);
 
   /////////////////////////////////////////////////////////
@@ -647,9 +596,7 @@ bool test1005_transform_all_instances()
   //hrCommit(scnRef, renderRef);
   //hrRenderCommand(renderRef, L"resume");
   bool firstUpdate = true;
-
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
+  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -664,17 +611,10 @@ bool test1005_transform_all_instances()
         std::remove("tests/test_1005/statex_00002.xml");
         firstUpdate = false;
       }
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
+      
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -688,7 +628,7 @@ bool test1005_transform_all_instances()
 
 bool test1006_transform_all_instances_origin()
 {
-  initGLIfNeeded();
+  
 
   hrSceneLibraryOpen(L"tests/test_1006", HR_OPEN_EXISTING);
 
@@ -728,9 +668,7 @@ bool test1006_transform_all_instances_origin()
   //hrCommit(scnRef, renderRef);
   //hrRenderCommand(renderRef, L"resume");
   bool firstUpdate = true;
-
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
+  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -745,17 +683,10 @@ bool test1006_transform_all_instances_origin()
         std::remove("tests/test_1006/statex_00002.xml");
         firstUpdate = false;
       }
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -769,7 +700,7 @@ bool test1006_transform_all_instances_origin()
 
 bool test1007_merge_library()
 {
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test_1007");
 
@@ -982,10 +913,7 @@ bool test1007_merge_library()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef);
-
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-
+  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -994,17 +922,9 @@ bool test1007_merge_library()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -1018,8 +938,6 @@ bool test1007_merge_library()
 
 bool test1008_merge_one_texture()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_1008");
 
   hrSceneLibraryOpen(L"tests/test_1008", HR_WRITE_DISCARD);
@@ -1234,9 +1152,6 @@ bool test1008_merge_one_texture()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1245,17 +1160,9 @@ bool test1008_merge_one_texture()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -1270,8 +1177,6 @@ bool test1008_merge_one_texture()
 
 bool test1009_merge_one_material()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_1009");
 
   hrSceneLibraryOpen(L"tests/test_1009", HR_WRITE_DISCARD);
@@ -1488,9 +1393,6 @@ bool test1009_merge_one_material()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1499,17 +1401,9 @@ bool test1009_merge_one_material()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -1523,8 +1417,6 @@ bool test1009_merge_one_material()
 
 bool test1010_merge_one_mesh()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_1010");
 
   hrSceneLibraryOpen(L"tests/test_1010", HR_WRITE_DISCARD);
@@ -1741,9 +1633,6 @@ bool test1010_merge_one_mesh()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1752,17 +1641,9 @@ bool test1010_merge_one_mesh()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -1776,8 +1657,6 @@ bool test1010_merge_one_mesh()
 
 bool test1011_merge_scene()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_1011");
 
   hrSceneLibraryOpen(L"tests/test_1011", HR_WRITE_DISCARD);
@@ -1989,10 +1868,7 @@ bool test1011_merge_scene()
   HRUtils::InstanceSceneIntoScene(scnRef2, scnRef, mTranslate.L());
 
   hrFlush(scnRef, renderRef, camRef);
-
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-
+  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2001,17 +1877,9 @@ bool test1011_merge_scene()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -2243,9 +2111,6 @@ bool test1012_merge_one_light()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2254,17 +2119,9 @@ bool test1012_merge_one_light()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -2361,8 +2218,6 @@ bool test1013_commit_without_render()
   //hrRenderCommand(renderRef, L"resume");
   bool firstUpdate = true;
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2377,17 +2232,10 @@ bool test1013_commit_without_render()
         std::remove("tests/test_1013/statex_00002.xml");
         firstUpdate = false;
       }
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
 
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -2674,9 +2522,6 @@ bool test1014_print_matlib_map()
 
   hrFlush(scnRef, renderRef, camRef);
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2685,17 +2530,9 @@ bool test1014_print_matlib_map()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -2888,10 +2725,7 @@ bool test1015_merge_scene_with_remaps()
   HRUtils::InstanceSceneIntoScene(scnRef2, scnRef, mTranslate.L(), false);
 
   hrFlush(scnRef, renderRef, camRef);
-
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-
+  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2900,17 +2734,9 @@ bool test1015_merge_scene_with_remaps()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -3130,9 +2956,6 @@ bool test1016_merge_scene_remap_override()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -3334,10 +3157,7 @@ bool test1017_merge_scene_scene_id_mask()
   HRUtils::InstanceSceneIntoScene(scnRef3, scnRef, mRes.L(), false);
 
   hrFlush(scnRef, renderRef, camRef);
-
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-
+  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -3346,17 +3166,9 @@ bool test1017_merge_scene_scene_id_mask()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)

@@ -34,7 +34,7 @@ using namespace TEST_UTILS;
 
 bool test18_camera_move()
 {
-  initGLIfNeeded();
+  initGLIfNeeded(1024,768);
 
   hrErrorCallerPlace(L"test_18");
 
@@ -336,7 +336,7 @@ bool test18_camera_move()
 
 bool test19_material_change()
 {
-  initGLIfNeeded();
+  initGLIfNeeded(1024,768);
 
   hrErrorCallerPlace(L"test_19");
 
@@ -630,7 +630,7 @@ bool test19_material_change()
 
 bool test20_mesh_change()
 {
-  initGLIfNeeded();
+  initGLIfNeeded(1024, 768);
 
   hrErrorCallerPlace(L"test_20");
 
@@ -955,7 +955,7 @@ void ErrorCallBack3(const wchar_t* message, const wchar_t* callerPlace)
 
 bool test22_can_not_load_texture()
 {
-  initGLIfNeeded();
+  initGLIfNeeded(1024,768);
 
   g_test22ErrorIsOk = false;
 

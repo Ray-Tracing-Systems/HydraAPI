@@ -32,8 +32,6 @@ namespace MTL_TESTS
 {
   bool test_131_blend_simple()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_131");
 
     hrSceneLibraryOpen(L"tests_f/test_131", HR_WRITE_DISCARD);
@@ -445,9 +443,6 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 512, 512);
-    std::vector<int32_t> image(512 * 512);
-
     while (true)
     {
 
@@ -457,17 +452,12 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -482,8 +472,6 @@ namespace MTL_TESTS
 
   bool test_132_blend_recursive()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_132");
 
     hrSceneLibraryOpen(L"tests_f/test_132", HR_WRITE_DISCARD);
@@ -904,29 +892,20 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 512, 512);
-    std::vector<int32_t> image(512 * 512);
-
     while (true)
     {
-
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
       HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -940,8 +919,6 @@ namespace MTL_TESTS
 
   bool test_140_blend_emission()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_140");
 
     hrSceneLibraryOpen(L"tests_f/test_140", HR_WRITE_DISCARD);
@@ -1441,11 +1418,7 @@ namespace MTL_TESTS
     ///////////
 
     hrSceneClose(scnRef);
-
     hrFlush(scnRef, renderRef);
-
-    glViewport(0, 0, 512, 512);
-    std::vector<int32_t> image(512 * 512);
 
     while (true)
     {
@@ -1455,17 +1428,13 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
+        
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)
@@ -1474,13 +1443,11 @@ namespace MTL_TESTS
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_140/z_out.png");
 
-    return check_images("test_140", 1, 25);
+    return check_images("test_140", 1, 30);
   }
 
   bool test_142_blend_normalmap_heightmap()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_142");
 
     hrSceneLibraryOpen(L"tests_f/test_142", HR_WRITE_DISCARD);
@@ -1822,9 +1789,6 @@ namespace MTL_TESTS
 
     hrFlush(scnRef, renderRef);
 
-    glViewport(0, 0, 1024, 768);
-    std::vector<int32_t> image(1024 * 768);
-
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1833,17 +1797,12 @@ namespace MTL_TESTS
 
       if (info.haveUpdateFB)
       {
-        hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-        glDisable(GL_TEXTURE_2D);
-        glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
 
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
+        
+        
       }
 
       if (info.finalUpdate)

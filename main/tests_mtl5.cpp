@@ -49,9 +49,7 @@ bool MTL_TESTS::test_162_shadow_matte_back1()
 {
   const int IMG_WIDTH  = 1024;
   const int IMG_HEIGHT = 682;
-
-  initGLIfNeeded();
-
+  
   hrErrorCallerPlace(L"test_162");
 
   hrSceneLibraryOpen(L"tests_f/test_162", HR_WRITE_DISCARD);
@@ -314,9 +312,6 @@ bool MTL_TESTS::test_162_shadow_matte_back1()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, IMG_WIDTH, IMG_HEIGHT);
-  std::vector<int32_t> image(IMG_WIDTH * IMG_HEIGHT);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -325,17 +320,9 @@ bool MTL_TESTS::test_162_shadow_matte_back1()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, IMG_WIDTH, IMG_HEIGHT, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(IMG_WIDTH, IMG_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -368,14 +355,12 @@ bool check_test_163(const wchar_t* a_path)
   int32_t rw2 = tex2.attribute(L"rwidth").as_int();
   int32_t rh2 = tex2.attribute(L"rheight").as_int();
 
-  return (rw1 == 1024) && (rh1 == 1024) && (rw2 == 2048) && (rh2 == 2048);
+  return (rw1 == 256) && (rh1 == 256) && (rw2 == 2048) && (rh2 == 2048);
 }
 
 
 bool MTL_TESTS::test_163_diffuse_texture_recommended_res()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_163");
 
   hrSceneLibraryOpen(L"tests_f/test_163", HR_WRITE_DISCARD);
@@ -706,10 +691,7 @@ bool MTL_TESTS::test_163_diffuse_texture_recommended_res()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef);
-
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-
+  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -718,17 +700,9 @@ bool MTL_TESTS::test_163_diffuse_texture_recommended_res()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -761,14 +735,12 @@ bool check_test_168(const wchar_t* a_path)
   int32_t rw3 = tex3.attribute(L"rwidth").as_int();
   int32_t rh3 = tex3.attribute(L"rheight").as_int();
 
-  return (rw1 == 1024) && (rh1 == 1024) && (rw2 == 2048) && (rh2 == 2048) && (rw3 == 708) && (rh3 == 643);
+  return (rw1 == 256) && (rh1 == 256) && (rw2 == 2048) && (rh2 == 2048) && (rw3 == 708) && (rh3 == 643);
 }
 
 
 bool MTL_TESTS::test_168_diffuse_texture_recommended_res2()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_168");
 
   hrSceneLibraryOpen(L"tests_f/test_168", HR_WRITE_DISCARD);
@@ -1144,10 +1116,7 @@ bool MTL_TESTS::test_168_diffuse_texture_recommended_res2()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef);
-
-  /*glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-
+  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1156,17 +1125,9 @@ bool MTL_TESTS::test_168_diffuse_texture_recommended_res2()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -1174,8 +1135,6 @@ bool MTL_TESTS::test_168_diffuse_texture_recommended_res2()
   }
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_168/z_out.png");
-  */
- //or
   hrRenderCommand(renderRef, L"exitnow", nullptr);
 
   return check_test_168(L"tests_f/test_168/statex_00001_fixed.xml"); // check_images("test_168", 1, 30); // &&
@@ -1183,8 +1142,6 @@ bool MTL_TESTS::test_168_diffuse_texture_recommended_res2()
 
 bool MTL_TESTS::test_170_fresnel_blend()
 {
-  initGLIfNeeded();
-  
   hrErrorCallerPlace(L"test_170");
   
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1456,9 +1413,6 @@ bool MTL_TESTS::test_170_fresnel_blend()
   
   hrFlush(scnRef, renderRef, camRef);
   
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1467,17 +1421,9 @@ bool MTL_TESTS::test_170_fresnel_blend()
     
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-      
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-      
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-      
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
     
     if (info.finalUpdate)
@@ -1492,7 +1438,6 @@ bool MTL_TESTS::test_170_fresnel_blend()
 
 bool MTL_TESTS::test_172_glossy_dark_edges_phong()
 {
-  initGLIfNeeded();
   hrErrorCallerPlace(L"test_172");
   hrSceneLibraryOpen(L"tests_f/test_172", HR_WRITE_DISCARD);
 
@@ -1651,9 +1596,6 @@ bool MTL_TESTS::test_172_glossy_dark_edges_phong()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1662,17 +1604,9 @@ bool MTL_TESTS::test_172_glossy_dark_edges_phong()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -1686,7 +1620,6 @@ bool MTL_TESTS::test_172_glossy_dark_edges_phong()
 
 bool MTL_TESTS::test_173_glossy_dark_edges_microfacet()
 {
-  initGLIfNeeded();
   hrErrorCallerPlace(L"test_173");
   hrSceneLibraryOpen(L"tests_f/test_173", HR_WRITE_DISCARD);
 
@@ -1845,9 +1778,6 @@ bool MTL_TESTS::test_173_glossy_dark_edges_microfacet()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1856,17 +1786,9 @@ bool MTL_TESTS::test_173_glossy_dark_edges_microfacet()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)

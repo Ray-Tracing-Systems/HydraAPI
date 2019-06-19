@@ -48,7 +48,7 @@ bool MTL_TESTS::test_158_proc_dirt1()
   const int THIS_TEST_WIDTH  = 1024;
   const int THIS_TEST_HEIGHT = 1024;
 
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test_158");
 
@@ -619,10 +619,7 @@ bool MTL_TESTS::test_158_proc_dirt1()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef, camRef);
-
-  glViewport(0, 0, THIS_TEST_WIDTH, THIS_TEST_HEIGHT);
-  std::vector<int32_t> image(THIS_TEST_WIDTH * THIS_TEST_HEIGHT);
-
+  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -631,17 +628,12 @@ bool MTL_TESTS::test_158_proc_dirt1()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, THIS_TEST_WIDTH, THIS_TEST_HEIGHT, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(THIS_TEST_WIDTH, THIS_TEST_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
 
     if (info.finalUpdate)
@@ -659,7 +651,7 @@ bool MTL_TESTS::test_159_proc_dirt2()
   const int THIS_TEST_WIDTH  = 1024;
   const int THIS_TEST_HEIGHT = 1024;
 
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test_159");
 
@@ -1261,9 +1253,6 @@ bool MTL_TESTS::test_159_proc_dirt2()
 
   hrFlush(scnRef, renderRef, camRef);
 
-  glViewport(0, 0, THIS_TEST_WIDTH, THIS_TEST_HEIGHT);
-  std::vector<int32_t> image(THIS_TEST_WIDTH * THIS_TEST_HEIGHT);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1272,17 +1261,12 @@ bool MTL_TESTS::test_159_proc_dirt2()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, THIS_TEST_WIDTH, THIS_TEST_HEIGHT, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(THIS_TEST_WIDTH, THIS_TEST_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
 
     if (info.finalUpdate)
@@ -1300,7 +1284,7 @@ bool MTL_TESTS::test_160_proc_dirt3()
   const int THIS_TEST_WIDTH  = 1024;
   const int THIS_TEST_HEIGHT = 1024;
 
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test_160");
 
@@ -1958,9 +1942,6 @@ bool MTL_TESTS::test_160_proc_dirt3()
 
   hrFlush(scnRef, renderRef, camRef);
 
-  glViewport(0, 0, THIS_TEST_WIDTH, THIS_TEST_HEIGHT);
-  std::vector<int32_t> image(THIS_TEST_WIDTH * THIS_TEST_HEIGHT);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1969,17 +1950,12 @@ bool MTL_TESTS::test_160_proc_dirt3()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, THIS_TEST_WIDTH, THIS_TEST_HEIGHT, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(THIS_TEST_WIDTH, THIS_TEST_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
 
     if (info.finalUpdate)
@@ -1994,7 +1970,7 @@ bool MTL_TESTS::test_160_proc_dirt3()
 
 bool MTL_TESTS::test_161_simple_displacement()
 {
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test_161");
 
@@ -2206,10 +2182,7 @@ bool MTL_TESTS::test_161_simple_displacement()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef);
-
-  glViewport(0, 0, 1024, 1024);
-  std::vector<int32_t> image(1024 * 1024);
-
+  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2218,17 +2191,12 @@ bool MTL_TESTS::test_161_simple_displacement()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 1024, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 1024, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
 
     if (info.finalUpdate)
@@ -2242,7 +2210,7 @@ bool MTL_TESTS::test_161_simple_displacement()
 
 bool MTL_TESTS::test_164_simple_displacement_proctex()
 {
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test_164");
 
@@ -2448,9 +2416,6 @@ bool MTL_TESTS::test_164_simple_displacement_proctex()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2459,17 +2424,12 @@ bool MTL_TESTS::test_164_simple_displacement_proctex()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
 
     if (info.finalUpdate)
@@ -2484,8 +2444,6 @@ bool MTL_TESTS::test_164_simple_displacement_proctex()
 
 bool MTL_TESTS::test_165_simple_displacement_mesh()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_165");
 
   hrSceneLibraryOpen(L"tests_f/test_165", HR_WRITE_DISCARD);
@@ -2698,10 +2656,7 @@ bool MTL_TESTS::test_165_simple_displacement_mesh()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef);
-
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-
+  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2710,17 +2665,9 @@ bool MTL_TESTS::test_165_simple_displacement_mesh()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -2735,8 +2682,6 @@ bool MTL_TESTS::test_165_simple_displacement_mesh()
 
 bool MTL_TESTS::test_166_displace_by_noise()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_166");
 
   hrSceneLibraryOpen(L"tests_f/test_166", HR_WRITE_DISCARD);
@@ -2957,9 +2902,6 @@ bool MTL_TESTS::test_166_displace_by_noise()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2968,17 +2910,9 @@ bool MTL_TESTS::test_166_displace_by_noise()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -2993,8 +2927,6 @@ bool MTL_TESTS::test_166_displace_by_noise()
 
 bool MTL_TESTS::test_167_subdiv()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_167");
 
   hrSceneLibraryOpen(L"tests_f/test_167", HR_WRITE_DISCARD);
@@ -3009,9 +2941,9 @@ bool MTL_TESTS::test_167_subdiv()
 
   //HRTextureNodeRef texChecker = hrTexture2DCreateFromFile(L"data/textures/chess_white.bmp");
   //HRTextureNodeRef tex = hrTexture2DCreateFromFile(L"data/textures/ornament.jpg");
-  HRTextureNodeRef tex1 = hrTexture2DCreateFromFile(L"data/textures/height_map1_p1.png");
+  HRTextureNodeRef tex3 = hrTexture2DCreateFromFile(L"data/textures/height_map1_p1.png");
   HRTextureNodeRef tex2 = hrTexture2DCreateFromFile(L"data/textures/height_map1_p2.png");
-  HRTextureNodeRef tex3 = hrTexture2DCreateFromFile(L"data/textures/height_map1_p3.png");
+  HRTextureNodeRef tex1 = hrTexture2DCreateFromFile(L"data/textures/height_map1_p3.png");
 
   hrMaterialOpen(mat1, HR_WRITE_DISCARD);
   {
@@ -3033,7 +2965,7 @@ bool MTL_TESTS::test_167_subdiv()
     auto heightNode   = displacement.append_child(L"height_map");
 
     displacement.append_attribute(L"type").set_value(L"true_displacement");
-    displacement.append_attribute(L"subdivs").set_value(0);
+    displacement.append_attribute(L"subdivs").set_value(3);
     heightNode.append_attribute(L"amount").set_value(15.1f);
 
     auto texNode = hrTextureBind(tex1, heightNode);
@@ -3115,7 +3047,7 @@ bool MTL_TESTS::test_167_subdiv()
     auto heightNode   = displacement.append_child(L"height_map");
 
     displacement.append_attribute(L"type").set_value(L"true_displacement");
-    displacement.append_attribute(L"subdivs").set_value(3);
+    displacement.append_attribute(L"subdivs").set_value(0);
     heightNode.append_attribute(L"amount").set_value(15.1f);
 
     auto texNode = hrTextureBind(tex3, heightNode);
@@ -3238,7 +3170,7 @@ bool MTL_TESTS::test_167_subdiv()
   // Render settings
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 1024, 1024, 256, 512);
+  HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, 512, 512, 256, 2048);
   hrRenderOpen(renderRef, HR_OPEN_EXISTING);
   {
     auto node = hrRenderParamNode(renderRef);
@@ -3266,24 +3198,21 @@ bool MTL_TESTS::test_167_subdiv()
   mRes.identity();
 
   mTranslate = translate4x4(float3(0.0f, -1.0f, 0.0f));
-  mScale = scale4x4(float3(1.0f, 1.0f, 1.0f));
-  mRes = mul(mTranslate, mScale);
+  mScale     = scale4x4(float3(1.0f, 1.0f, 1.0f));
+  mRes       = mul(mTranslate, mScale);
 
   hrMeshInstance(scnRef, tess1, mRes.L());
 
   mTranslate = translate4x4(float3(0.0f, -1.0f, -100.0f));
-  mScale = scale4x4(float3(1.0f, 1.0f, 1.0f));
-  mRes = mul(mTranslate, mScale);
-
-  int32_t remapList1[2] = { mat1.id, mat2.id};
+  mScale     = scale4x4(float3(1.0f, 1.0f, 1.0f));
+  mRes       = mul(mTranslate, mScale);
+  
   hrMeshInstance(scnRef, tess2, mRes.L());
-
-
+  
   mTranslate = translate4x4(float3(0.0f, -1.0f, -200.0f));
-  mScale = scale4x4(float3(1.0f, 1.0f, 1.0f));
-  mRes = mul(mTranslate, mScale);
-
-  int32_t remapList2[2] = { mat1.id, mat3.id};
+  mScale     = scale4x4(float3(1.0f, 1.0f, 1.0f));
+  mRes       = mul(mTranslate, mScale);
+  
   hrMeshInstance(scnRef, tess3, mRes.L());
 
   ///////////
@@ -3315,11 +3244,7 @@ bool MTL_TESTS::test_167_subdiv()
   ///////////
 
   hrSceneClose(scnRef);
-
   hrFlush(scnRef, renderRef);
-
-  glViewport(0, 0, 1024, 1024);
-  std::vector<int32_t> image(1024 * 1024);
 
   while (true)
   {
@@ -3329,17 +3254,9 @@ bool MTL_TESTS::test_167_subdiv()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 1024, 1024, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 1024, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -3348,14 +3265,12 @@ bool MTL_TESTS::test_167_subdiv()
 
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_167/z_out.png");
 
-  return check_images("test_167", 1, 30);
+  return check_images("test_167", 1, 20);
 }
 
 
 bool MTL_TESTS::test_169_displace_custom_callback()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_169");
 
   hrSceneLibraryOpen(L"tests_f/test_169", HR_WRITE_DISCARD);
@@ -3580,9 +3495,6 @@ bool MTL_TESTS::test_169_displace_custom_callback()
 
   hrFlush(scnRef, renderRef);
 
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -3591,17 +3503,9 @@ bool MTL_TESTS::test_169_displace_custom_callback()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -3615,8 +3519,6 @@ bool MTL_TESTS::test_169_displace_custom_callback()
 
 bool MTL_TESTS::test_171_simple_displacement_triplanar()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_171");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3846,11 +3748,7 @@ bool MTL_TESTS::test_171_simple_displacement_triplanar()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef, camRef);
-
-
-  glViewport(0, 0, w , h);
-  std::vector<int32_t> image(w * h);
-
+  
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -3859,17 +3757,9 @@ bool MTL_TESTS::test_171_simple_displacement_triplanar()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, w,h , &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)

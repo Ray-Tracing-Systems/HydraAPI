@@ -40,8 +40,8 @@ using namespace TEST_UTILS;
 
 bool test23_texture_from_memory()
 {
-  initGLIfNeeded();
-
+  initGLIfNeeded(1024, 768);
+ 
   hrErrorCallerPlace(L"test23");
 
   HRCameraRef    camRef;
@@ -224,7 +224,7 @@ bool test24_many_textures_big_data()
 {
   CreateTestBigTexturesFilesIfNeeded();
 
-  initGLIfNeeded();
+  
   hrSceneLibraryOpen(L"tests/test_24", HR_WRITE_DISCARD);
   
   const int NMats = 20;
@@ -430,7 +430,7 @@ bool test25_many_textures_big_data()
 {
   CreateTestBigTexturesFilesIfNeeded();
 
-  initGLIfNeeded();
+  
   hrSceneLibraryOpen(L"tests/test_25", HR_WRITE_DISCARD);
 
   const int NMats = 10;
@@ -617,7 +617,7 @@ bool test26_many_textures_big_data()
 {
   CreateTestBigTexturesFilesIfNeeded();
 
-  initGLIfNeeded();
+  
   hrSceneLibraryOpen(L"tests/test_26", HR_WRITE_DISCARD);
 
   const int NMats = 10;
@@ -802,7 +802,7 @@ bool test26_many_textures_big_data()
 
 bool test27_many_textures_big_data_from_mem()
 {
-  initGLIfNeeded();
+  
   hrSceneLibraryOpen(L"tests/test_27", HR_WRITE_DISCARD);
 
   const int NMats = 20;
@@ -991,7 +991,7 @@ bool test27_many_textures_big_data_from_mem()
 
 bool test29_many_textures_and_meshes()
 {
-  initGLIfNeeded();
+  
   hrSceneLibraryOpen(L"tests/test_29", HR_WRITE_DISCARD);
 
   const int NMats = 100;
@@ -1174,7 +1174,7 @@ bool test29_many_textures_and_meshes()
 
 bool test30_many_textures_and_meshes()
 {
-  initGLIfNeeded();
+  
   hrSceneLibraryOpen(L"tests/test_30", HR_WRITE_DISCARD);
 
   const int NMats = 100;
@@ -1355,9 +1355,10 @@ bool test30_many_textures_and_meshes()
 
 bool test34_delayed_textures_does_not_exists()
 {
+  initGLIfNeeded(1024,768);
+  
   CreateTestBigTexturesFilesIfNeeded();
-
-  initGLIfNeeded();
+  
   hrSceneLibraryOpen(L"tests/test_34", HR_WRITE_DISCARD);
 
   const int NMats = 10;

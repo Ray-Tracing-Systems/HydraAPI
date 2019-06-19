@@ -40,7 +40,7 @@ namespace hlm = HydraLiteMath;
 
 bool test41_load_library_basic()
 {
-  initGLIfNeeded();
+  initGLIfNeeded(1024, 768);
   hrErrorCallerPlace(L"test41");
 
   hrSceneLibraryOpen(L"tests/test_41", HR_OPEN_EXISTING);
@@ -259,9 +259,9 @@ bool test42_load_mesh_compressed()
     node.append_child(L"method_tertiary").text()  = L"IBPT";
     node.append_child(L"method_caustic").text()   = L"IBPT";
     
-    node.append_child(L"trace_depth").text()      = L"8";
-    node.append_child(L"diff_trace_depth").text() = L"4";
-    node.append_child(L"maxRaysPerPixel").text()  = 256;
+    node.append_child(L"trace_depth").text()      = 8;
+    node.append_child(L"diff_trace_depth").text() = 4;
+    node.append_child(L"maxRaysPerPixel").text()  = 2048;
   }
   hrRenderClose(renderRef);
   
@@ -320,13 +320,13 @@ bool test42_load_mesh_compressed()
   
   hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_42/z_out.png");
   
-  return check_images("test_42", 1, 10);
+  return check_images("test_42", 1, 30);
 }
 
 
 bool test43_test_direct_light()
 {
-  initGLIfNeeded();
+  
 
   hrErrorCallerPlace(L"test43");
 
@@ -569,9 +569,6 @@ bool test43_test_direct_light()
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-
   while(true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -580,17 +577,12 @@ bool test43_test_direct_light()
 
     if (info.haveUpdateFB)
     {
-      hrRenderGetFrameBufferLDR1i(renderRef, 512, 512, &image[0]);
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
 
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
+      
+      
     }
 
     if (info.finalUpdate)
@@ -1035,8 +1027,8 @@ bool test44_four_lights_and_compressed_mesh()
 
 bool test45_mesh_from_vsgf_opengl_bug_teapot()
 {
-  initGLIfNeeded();
-
+  initGLIfNeeded(1024,768);
+  
   hrErrorCallerPlace(L"test_45");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1389,8 +1381,8 @@ bool test45_mesh_from_vsgf_opengl_bug_teapot()
 
 bool test46_light_geom_rect()
 {
-  initGLIfNeeded();
-
+  initGLIfNeeded(1024,768);
+  
   hrErrorCallerPlace(L"test_46");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1765,10 +1757,7 @@ bool test46_light_geom_rect()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef);
-
-  // glViewport(0, 0, 1024, 768);
-  // std::vector<int32_t> image(1024 * 768);
-  // 
+  
   // while (true)
   // {
   //   std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1777,17 +1766,12 @@ bool test46_light_geom_rect()
   // 
   //   if (info.haveUpdateFB)
   //   {
-  //     hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-  // 
-  //     glDisable(GL_TEXTURE_2D);
-  //     glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-  // 
   //     auto pres = std::cout.precision(2);
   //     std::cout << "rendering progress = " << info.progress << "% \r";
   //     std::cout.precision(pres);
   // 
-  //     glfwSwapBuffers(g_window);
-  //     glfwPollEvents();
+  //
+  //
   //   }
   // 
   //   if (info.finalUpdate)
@@ -1801,8 +1785,8 @@ bool test46_light_geom_rect()
 
 bool test47_light_geom_disk()
 {
-  initGLIfNeeded();
-
+  initGLIfNeeded(1024,768);
+  
   hrErrorCallerPlace(L"test_47");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2187,10 +2171,7 @@ bool test47_light_geom_disk()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef);
-
-  // glViewport(0, 0, 1024, 768);
-  // std::vector<int32_t> image(1024 * 768);
-  // 
+  
   // while (true)
   // {
   //   std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -2199,17 +2180,12 @@ bool test47_light_geom_disk()
   // 
   //   if (info.haveUpdateFB)
   //   {
-  //     hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-  // 
-  //     glDisable(GL_TEXTURE_2D);
-  //     glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-  // 
   //     auto pres = std::cout.precision(2);
   //     std::cout << "rendering progress = " << info.progress << "% \r";
   //     std::cout.precision(pres);
   // 
-  //     glfwSwapBuffers(g_window);
-  //     glfwPollEvents();
+  //
+  //
   //   }
   // 
   //   if (info.finalUpdate)
@@ -2224,8 +2200,8 @@ bool test47_light_geom_disk()
 
 bool test48_light_geom_sphere()
 {
-  initGLIfNeeded();
-
+  initGLIfNeeded(1024,768);
+  
   hrErrorCallerPlace(L"test_48");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3088,7 +3064,7 @@ bool test50_open_library_several_times()
 
 void test_console_render(const wchar_t* a_libPath, const wchar_t* a_savePath)
 {
-	initGLIfNeeded();
+	
 
 	hrSceneLibraryOpen(a_libPath, HR_OPEN_EXISTING);
 
@@ -3112,10 +3088,6 @@ void test_console_render(const wchar_t* a_libPath, const wchar_t* a_savePath)
 
 	hrCommit(scnRef, renderRef);
 
-
-	glViewport(0, 0, 1024, 768);
-	std::vector<int32_t> image(1024 * 768);
-
 	while (true)
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -3124,17 +3096,12 @@ void test_console_render(const wchar_t* a_libPath, const wchar_t* a_savePath)
 
 		if (info.haveUpdateFB)
 		{
-			hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-
-			glDisable(GL_TEXTURE_2D);
-			glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
 			auto pres = std::cout.precision(2);
 			std::cout << "rendering progress = " << info.progress << "% \r";
 			std::cout.precision(pres);
 
-			glfwSwapBuffers(g_window);
-			glfwPollEvents();
+			
+			
 		}
 
 		if (info.finalUpdate)

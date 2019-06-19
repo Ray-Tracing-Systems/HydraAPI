@@ -16,7 +16,7 @@ Windows:
 3. Open 'hydra_api/HydraNewAPI1.sln' under windows with visual studio 2015 or later; If use 2015 you will need to downgrade platform toolset to v140 (2015).
 4. **Select x64 configuration**
 5. Set 'main' as startup project.
-6. Now you can try 'HydraModern' with some tests. Try 'test39_mmlt_or_ibpt' for example. It is simple cornell box test.
+6. Now you can run some demo and tests
 
 Linux:
 1. Clone HydraAPI repo
@@ -60,10 +60,6 @@ So in general there should be no problem to use HydraAPI in your open source or 
 
 However if you find that for some reason you can't use one of these components, please let us know!
 Most of these components can be replaced.
-
-# FAQ and Problems
-* hrSceneLibraryOpen immediately lead to segmentation fault. Probably you have forgoten call hrInit before hrSceneLibraryOpen. The other case if you pass "-emptyvirtualbuffer 1" to hrInit and then open scene in HR_WRITE_DISCARD mode.
-
 
 # Acknowlegments
 This project is supported by RFBR 16-31-60048 "mol_a_dk".

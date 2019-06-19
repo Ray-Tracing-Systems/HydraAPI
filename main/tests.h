@@ -37,7 +37,7 @@ inline float rnd(float s, float e)
 
 
 bool check_images(const char* a_path, const int a_numImages = 1, const float a_mse = 10.0f);
-void initGLIfNeeded();
+void initGLIfNeeded(int a_width = 512, int a_height = 512, const char* a_name = "glfw demo");
 
 namespace TEST_UTILS
 {
@@ -138,7 +138,7 @@ bool test39_mmlt_or_ibpt();
 bool test40_several_changes();
 
 bool test41_load_library_basic();
-bool test42_load_mesh_compressed();   // not used (Why ???),  #TODO: get back scene load tests here
+bool test42_load_mesh_compressed();
 
 bool test43_test_direct_light();
 bool test44_four_lights_and_compressed_mesh();
@@ -281,10 +281,10 @@ namespace MTL_TESTS
   bool test_152_texture_color_replace_mode();
   bool test_153_opacity_shadow_matte_opacity();
 
-  bool test_154_proc_checker_precomp();
-  bool test_155_proc_checker_HDR_precomp();
-  bool test_156_proc_checker_precomp_update();
-  bool test_157_proc_checker_precomp_remap();
+  bool test_154_baked_checker_precomp();
+  bool test_155_baked_checker_HDR_precomp();
+  bool test_156_baked_checker_precomp_update();
+  bool test_157_baked_checker_precomp_remap();
 
   bool test_158_proc_dirt1();
   bool test_159_proc_dirt2();
