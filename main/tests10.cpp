@@ -1018,8 +1018,6 @@ bool test1007_merge_library()
 
 bool test1008_merge_one_texture()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_1008");
 
   hrSceneLibraryOpen(L"tests/test_1008", HR_WRITE_DISCARD);
@@ -1270,8 +1268,6 @@ bool test1008_merge_one_texture()
 
 bool test1009_merge_one_material()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_1009");
 
   hrSceneLibraryOpen(L"tests/test_1009", HR_WRITE_DISCARD);
@@ -1523,8 +1519,6 @@ bool test1009_merge_one_material()
 
 bool test1010_merge_one_mesh()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_1010");
 
   hrSceneLibraryOpen(L"tests/test_1010", HR_WRITE_DISCARD);
@@ -1776,8 +1770,6 @@ bool test1010_merge_one_mesh()
 
 bool test1011_merge_scene()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_1011");
 
   hrSceneLibraryOpen(L"tests/test_1011", HR_WRITE_DISCARD);

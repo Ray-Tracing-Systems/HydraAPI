@@ -93,7 +93,7 @@ bool check_images(const char* a_path, const int a_numImages, const float a_mse)
 
 bool test10_render_ogl_cube()
 {
-  initGLIfNeeded();
+  initGLIfNeeded(1024, 768);
 
   hrErrorCallerPlace(L"test10_render_ogl_cube");
 
@@ -324,7 +324,7 @@ bool test10_render_ogl_cube()
 
 bool test11_render_ogl_some_figures()
 {
-  initGLIfNeeded();
+  initGLIfNeeded(1024,768);
 
   hrErrorCallerPlace(L"test11");
 
@@ -689,7 +689,7 @@ bool test12_render_ogl_100_random_figures()
 
 bool test13_render_ogl_some_figures_diff_mats_prom_ptr()
 {
-  initGLIfNeeded();
+  initGLIfNeeded(1024,768);
 
   hrErrorCallerPlace(L"test11");
 
@@ -1140,7 +1140,7 @@ bool test14_bad_material_indices()
 
 bool test15_main_scene_and_mat_editor()
 {
-  initGLIfNeeded();
+  initGLIfNeeded(1024,768);
 
   HRCameraRef    camRef;
   HRSceneInstRef scnRef;

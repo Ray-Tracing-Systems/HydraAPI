@@ -33,8 +33,6 @@ namespace LGHT_TESTS
 
   bool test_219_cylinder_tex()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_219");
     hrSceneLibraryOpen(L"tests_f/test_219", HR_WRITE_DISCARD);
 
@@ -315,8 +313,6 @@ namespace LGHT_TESTS
 
   bool test_220_cylinder_tex2()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_220");
     hrSceneLibraryOpen(L"tests_f/test_220", HR_WRITE_DISCARD);
 
@@ -570,8 +566,6 @@ namespace LGHT_TESTS
 
   bool test_221_cylinder_tex3()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_221");
     hrSceneLibraryOpen(L"tests_f/test_221", HR_WRITE_DISCARD);
 
@@ -906,8 +900,6 @@ namespace LGHT_TESTS
 
   bool test_222_cylinder_with_end_face()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_222");
     hrSceneLibraryOpen(L"tests_f/test_222", HR_WRITE_DISCARD);
 
@@ -1177,8 +1169,6 @@ namespace LGHT_TESTS
 
   bool test_223_rotated_area_light()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_223");
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1575,8 +1565,6 @@ namespace LGHT_TESTS
 
   bool test_224_rotated_area_light2()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_224");
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2015,8 +2003,6 @@ namespace LGHT_TESTS
 
   bool test_225_point_spot_simple()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_225");
 
     hrSceneLibraryOpen(L"tests_f/test_225", HR_WRITE_DISCARD);

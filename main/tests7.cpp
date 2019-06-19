@@ -40,7 +40,7 @@ namespace hlm = HydraLiteMath;
 
 bool test41_load_library_basic()
 {
-  
+  initGLIfNeeded(1024, 768);
   hrErrorCallerPlace(L"test41");
 
   hrSceneLibraryOpen(L"tests/test_41", HR_OPEN_EXISTING);
@@ -1027,8 +1027,8 @@ bool test44_four_lights_and_compressed_mesh()
 
 bool test45_mesh_from_vsgf_opengl_bug_teapot()
 {
+  initGLIfNeeded(1024,768);
   
-
   hrErrorCallerPlace(L"test_45");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1381,8 +1381,8 @@ bool test45_mesh_from_vsgf_opengl_bug_teapot()
 
 bool test46_light_geom_rect()
 {
+  initGLIfNeeded(1024,768);
   
-
   hrErrorCallerPlace(L"test_46");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1785,8 +1785,8 @@ bool test46_light_geom_rect()
 
 bool test47_light_geom_disk()
 {
+  initGLIfNeeded(1024,768);
   
-
   hrErrorCallerPlace(L"test_47");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2200,8 +2200,8 @@ bool test47_light_geom_disk()
 
 bool test48_light_geom_sphere()
 {
+  initGLIfNeeded(1024,768);
   
-
   hrErrorCallerPlace(L"test_48");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1406,8 +1406,6 @@ bool test38_test_for_mlt()
 
 bool test39_mmlt_or_ibpt()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_39");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1784,9 +1782,6 @@ bool test39_mmlt_or_ibpt()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-  
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
   
     if (info.finalUpdate)

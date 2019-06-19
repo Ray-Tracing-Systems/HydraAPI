@@ -40,8 +40,8 @@ using namespace TEST_UTILS;
 
 bool test23_texture_from_memory()
 {
-  
-
+  initGLIfNeeded(1024, 768);
+ 
   hrErrorCallerPlace(L"test23");
 
   HRCameraRef    camRef;
@@ -1355,8 +1355,9 @@ bool test30_many_textures_and_meshes()
 
 bool test34_delayed_textures_does_not_exists()
 {
+  initGLIfNeeded(1024,768);
+  
   CreateTestBigTexturesFilesIfNeeded();
-
   
   hrSceneLibraryOpen(L"tests/test_34", HR_WRITE_DISCARD);
 

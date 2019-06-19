@@ -30,8 +30,6 @@ using namespace TEST_UTILS;
 
 bool MTL_TESTS::test_150_gloss_mirror_cos_div()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_150");
   hrSceneLibraryOpen(L"tests_f/test_150", HR_WRITE_DISCARD);
 
@@ -357,8 +355,6 @@ bool MTL_TESTS::test_150_gloss_mirror_cos_div()
 
 bool MTL_TESTS::test_151_gloss_mirror_cos_div2()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_151");
   hrSceneLibraryOpen(L"tests_f/test_151", HR_WRITE_DISCARD);
 
@@ -684,8 +680,6 @@ bool MTL_TESTS::test_151_gloss_mirror_cos_div2()
 
 bool MTL_TESTS::test_152_texture_color_replace_mode()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_152");
 
   hrSceneLibraryOpen(L"tests_f/test_152", HR_WRITE_DISCARD);
@@ -964,8 +958,6 @@ bool MTL_TESTS::test_152_texture_color_replace_mode()
 
 bool MTL_TESTS::test_153_opacity_shadow_matte_opacity()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_153");
 
   hrSceneLibraryOpen(L"tests_f/test_153", HR_WRITE_DISCARD);
@@ -1264,8 +1256,6 @@ bool MTL_TESTS::test_153_opacity_shadow_matte_opacity()
 
 bool MTL_TESTS::test_154_baked_checker_precomp()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_154");
 
   hrSceneLibraryOpen(L"tests_f/test_154", HR_WRITE_DISCARD);
@@ -1588,8 +1578,6 @@ bool MTL_TESTS::test_154_baked_checker_precomp()
 
 bool MTL_TESTS::test_155_baked_checker_HDR_precomp()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_155");
 
   hrSceneLibraryOpen(L"tests_f/test_155", HR_WRITE_DISCARD);
@@ -1905,8 +1893,6 @@ bool MTL_TESTS::test_155_baked_checker_HDR_precomp()
 
 bool MTL_TESTS::test_156_baked_checker_precomp_update()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_156");
 
   hrSceneLibraryOpen(L"tests_f/test_156", HR_WRITE_DISCARD);
@@ -2233,8 +2219,6 @@ bool MTL_TESTS::test_156_baked_checker_precomp_update()
 
 bool MTL_TESTS::test_157_baked_checker_precomp_remap()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_157");
 
   hrSceneLibraryOpen(L"tests_f/test_157", HR_WRITE_DISCARD);

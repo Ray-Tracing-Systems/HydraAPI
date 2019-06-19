@@ -33,8 +33,8 @@ void initGLIfNeeded(int a_width = 512, int a_height = 512, const char* name = "g
 
 bool demo_02_load_obj()
 {
-  const int DEMO_WIDTH  = 1024;
-  const int DEMO_HEIGHT = 1024;
+  const int DEMO_WIDTH  = 512;
+  const int DEMO_HEIGHT = 512;
   
   hrErrorCallerPlace(L"demo_02_load_obj");
   
@@ -108,11 +108,11 @@ bool demo_02_load_obj()
     xml_node refl    = matNode.append_child(L"reflectivity");
     
     diff.append_attribute(L"brdf_type").set_value(L"lambert");
-    diff.append_child(L"color").text().set(L"0.40 0.4 0");
+    diff.append_child(L"color").append_attribute(L"val") = L"0.40 0.4 0";
     
     refl.append_attribute(L"brdf_type").set_value(L"torranse_sparrow");
-    refl.append_child(L"color").text().set(L"0.10 0.10 0");
-    refl.append_child(L"glossiness").text().set(L"0.85");
+    refl.append_child(L"color").append_attribute(L"val")      = L"0.10 0.10 0";
+    refl.append_child(L"glossiness").append_attribute(L"val") = 0.85f;
   
     //refl.append_child(L"fresnel").text() = 1;                   // uncomment this to enable fresnel reflections
     //refl.append_child(L"fresnel_IOR").text().set(L"2.5");
@@ -132,8 +132,8 @@ bool demo_02_load_obj()
                                                                           // to apply other material, please see further for remap list application to object instance
   hrMeshOpen(cubeOpenRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
   {
-    hrMeshVertexAttribPointer4f(cubeOpenRef, L"pos", &cubeOpen.vPos[0]);
-    hrMeshVertexAttribPointer4f(cubeOpenRef, L"norm", &cubeOpen.vNorm[0]);
+    hrMeshVertexAttribPointer4f(cubeOpenRef, L"pos",      &cubeOpen.vPos[0]);
+    hrMeshVertexAttribPointer4f(cubeOpenRef, L"norm",     &cubeOpen.vNorm[0]);
     hrMeshVertexAttribPointer2f(cubeOpenRef, L"texcoord", &cubeOpen.vTexCoord[0]);
     
     int cubeMatIndices[10] = { mat3.id, mat3.id, mat3.id, mat3.id, mat3.id, mat3.id, mat2.id, mat2.id, mat1.id, mat1.id };
@@ -164,8 +164,8 @@ bool demo_02_load_obj()
     
     pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
     
-    intensityNode.append_child(L"color").text().set(L"1 1 1");
-    intensityNode.append_child(L"multiplier").text().set(L"8.0");
+    intensityNode.append_child(L"color").append_attribute(L"val")      = L"1 1 1";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 8.0f;
   
     VERIFY_XML(lightNode);
   }

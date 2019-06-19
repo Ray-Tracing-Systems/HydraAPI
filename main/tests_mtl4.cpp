@@ -2444,8 +2444,6 @@ bool MTL_TESTS::test_164_simple_displacement_proctex()
 
 bool MTL_TESTS::test_165_simple_displacement_mesh()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_165");
 
   hrSceneLibraryOpen(L"tests_f/test_165", HR_WRITE_DISCARD);
@@ -2670,9 +2668,6 @@ bool MTL_TESTS::test_165_simple_displacement_mesh()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      
     }
 
     if (info.finalUpdate)
@@ -2687,8 +2682,6 @@ bool MTL_TESTS::test_165_simple_displacement_mesh()
 
 bool MTL_TESTS::test_166_displace_by_noise()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_166");
 
   hrSceneLibraryOpen(L"tests_f/test_166", HR_WRITE_DISCARD);
@@ -2920,9 +2913,6 @@ bool MTL_TESTS::test_166_displace_by_noise()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      
     }
 
     if (info.finalUpdate)
@@ -2937,8 +2927,6 @@ bool MTL_TESTS::test_166_displace_by_noise()
 
 bool MTL_TESTS::test_167_subdiv()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_167");
 
   hrSceneLibraryOpen(L"tests_f/test_167", HR_WRITE_DISCARD);
@@ -3269,9 +3257,6 @@ bool MTL_TESTS::test_167_subdiv()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -3286,8 +3271,6 @@ bool MTL_TESTS::test_167_subdiv()
 
 bool MTL_TESTS::test_169_displace_custom_callback()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_169");
 
   hrSceneLibraryOpen(L"tests_f/test_169", HR_WRITE_DISCARD);
@@ -3523,9 +3506,6 @@ bool MTL_TESTS::test_169_displace_custom_callback()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -3539,8 +3519,6 @@ bool MTL_TESTS::test_169_displace_custom_callback()
 
 bool MTL_TESTS::test_171_simple_displacement_triplanar()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_171");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3782,9 +3760,6 @@ bool MTL_TESTS::test_171_simple_displacement_triplanar()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)

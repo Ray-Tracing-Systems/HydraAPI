@@ -532,7 +532,7 @@ bool test32_procedural_texture_HDR()
 
 bool test33_update_from_file()
 {
-	
+  initGLIfNeeded(1024,768);
 
 	hrErrorCallerPlace(L"test_33");
 
@@ -748,9 +748,9 @@ bool test33_update_from_file()
 
 bool test36_update_from_memory()
 {
-	
-
-	hrErrorCallerPlace(L"test_36");
+  initGLIfNeeded(1024,768);
+  
+  hrErrorCallerPlace(L"test_36");
 
 	HRCameraRef    camRef;
 	HRSceneInstRef scnRef;

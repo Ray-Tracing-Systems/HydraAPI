@@ -43,7 +43,7 @@ namespace hlm = HydraLiteMath;
 
 bool test90_proc_tex_normalmap()
 {
-  initGLIfNeeded();
+  initGLIfNeeded(512, 512);
   hrErrorCallerPlace(L"test_90");
   
   hrSceneLibraryOpen(L"tests/test_90", HR_WRITE_DISCARD);

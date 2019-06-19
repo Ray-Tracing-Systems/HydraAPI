@@ -13,7 +13,6 @@
 #include "../hydra_api/HydraAPI.h"
 #include "../hydra_api/HydraXMLVerify.h"
 
-
 #include "mesh_utils.h"
 
 //int hr_mkdir(const wchar_t* a_folder); // not a part of an API, just to make folder
@@ -38,6 +37,8 @@ void demo_01_plane_box()
   
     auto color = diff.append_child(L"color");
     color.append_attribute(L"val").set_value(L"0.5 0.75 0.5");
+  
+    VERIFY_XML(node);
   }
   hrMaterialClose(mat0);
   
@@ -50,6 +51,8 @@ void demo_01_plane_box()
     
     auto color = diff.append_child(L"color");
     color.append_attribute(L"val").set_value(L"0.25 0.25 0.25");
+  
+    VERIFY_XML(node);
   }
   hrMaterialClose(mat1);
   

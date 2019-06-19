@@ -39,8 +39,6 @@ extern GLFWwindow* g_window;
 
 bool test62_bad_textures()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test62");
 
   HRCameraRef    camRef;
@@ -237,8 +235,6 @@ static bool check_test_64(const std::wstring a_fileName1, const std::wstring a_f
 
 bool test64_several_changes_light_area()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_64");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -246,8 +242,6 @@ bool test64_several_changes_light_area()
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   hrSceneLibraryOpen(L"tests/test_64", HR_WRITE_DISCARD);
-  
-  initGLIfNeeded();
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Materials
@@ -431,9 +425,6 @@ bool test64_several_changes_light_area()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -497,8 +488,6 @@ bool test64_several_changes_light_area()
 
 bool test65_several_changes_light_rect()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_65");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -849,9 +838,6 @@ bool test65_several_changes_light_rect()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -1028,17 +1014,13 @@ bool test65_several_changes_light_rect()
 
 bool test66_fast_render_no_final_update()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_66");
-
   hrSceneLibraryOpen(L"tests/test_66", HR_WRITE_DISCARD);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Materials
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
+  
   HRMaterialRef matGray = hrMaterialCreate(L"matGray");
   HRMaterialRef matRefl = hrMaterialCreate(L"matRefl");
 
@@ -1097,8 +1079,6 @@ bool test66_fast_render_no_final_update()
     VERIFY_XML(lightNode);
   }
   hrLightClose(sky);
-
-
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Camera
@@ -1225,9 +1205,6 @@ bool test66_fast_render_no_final_update()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -1241,8 +1218,6 @@ bool test66_fast_render_no_final_update()
 
 bool test67_fast_empty_scene()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_67");
 
   hrSceneLibraryOpen(L"tests/test_67", HR_WRITE_DISCARD);
@@ -1452,8 +1427,6 @@ using HydraLiteMath::float3;
 
 bool test97_camera_from_matrices()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_97");
 
   HRSceneInstRef scnRef;
@@ -1828,8 +1801,6 @@ bool test68_scene_library_file_info()
 
 bool test69_pause_and_resume()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_69");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2200,9 +2171,6 @@ bool test69_pause_and_resume()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate || iter >= 10)
@@ -2253,8 +2221,6 @@ bool test69_pause_and_resume()
 
 bool test70_area_lights16()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_70");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2633,9 +2599,6 @@ bool test70_area_lights16()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -2706,8 +2669,6 @@ bool test71_out_of_memory()
 
 bool test72_load_library_single_teapot_with_opacity()
 {
-  initGLIfNeeded();
-
   hrSceneLibraryOpen(L"tests/test_72", HR_OPEN_EXISTING);
 
   /////////////////////////////////////////////////////////
@@ -3144,8 +3105,6 @@ bool test73_big_resolution()
 
 bool test74_frame_buffer_line()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_74");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3555,8 +3514,6 @@ bool test74_frame_buffer_line()
 
 bool test75_repeated_render()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_75");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3996,8 +3953,6 @@ const int TEST_IMG_SIZE = 512;
 
 bool test76_empty_mesh()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_76");
 
 
@@ -4212,8 +4167,6 @@ bool test76_empty_mesh()
 
 bool test77_save_gbuffer_layers()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_77");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4617,8 +4570,6 @@ bool test77_save_gbuffer_layers()
 
 bool test78_material_remap_list1()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_78");
 
   HRCameraRef    camRef;
@@ -5021,8 +4972,6 @@ bool test78_material_remap_list1()
 
 bool test79_material_remap_list2()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_79");
 
   HRCameraRef    camRef;
@@ -5578,8 +5527,6 @@ bool test79_material_remap_list2()
 
 bool test80_lt_rect_image()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_39");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

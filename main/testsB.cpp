@@ -45,8 +45,8 @@ using HydraLiteMath::float4;
 
 bool test81_custom_attributes()
 {
+  initGLIfNeeded(1024,768);
   
-
   hrErrorCallerPlace(L"test81");
 
   HRCameraRef    camRef;
@@ -2346,8 +2346,6 @@ bool test86_proc_texture_ao_dirt()
 
 bool test87_proc_texture_reflect()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_87");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2699,8 +2697,6 @@ bool test87_proc_texture_reflect()
 
 bool test88_proc_texture_convex_rust()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_88");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3128,9 +3124,6 @@ bool test88_proc_texture_convex_rust()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      
-      
     }
 
     if (info.finalUpdate)
@@ -3145,8 +3138,6 @@ bool test88_proc_texture_convex_rust()
 
 bool test89_proc_texture_dirty()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_89");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3495,9 +3486,6 @@ bool test89_proc_texture_dirty()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      
-      
     }
 
     if (info.finalUpdate)

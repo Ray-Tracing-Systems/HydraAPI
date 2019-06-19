@@ -32,8 +32,6 @@ namespace MTL_TESTS
 {
   bool test_131_blend_simple()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_131");
 
     hrSceneLibraryOpen(L"tests_f/test_131", HR_WRITE_DISCARD);
@@ -474,8 +472,6 @@ namespace MTL_TESTS
 
   bool test_132_blend_recursive()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_132");
 
     hrSceneLibraryOpen(L"tests_f/test_132", HR_WRITE_DISCARD);

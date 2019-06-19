@@ -400,8 +400,6 @@ bool test98_motion_blur()
 
 bool test55_clear_scene()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test55");
 
   HRCameraRef    camRef;
@@ -616,7 +614,7 @@ bool test55_clear_scene()
 
 bool test56_mesh_change_open_existing()
 {
-  initGLIfNeeded();
+  initGLIfNeeded(1024, 768);
 
   hrErrorCallerPlace(L"test_56");
 
@@ -973,8 +971,6 @@ extern GLFWwindow* g_window;
 
 bool test57_single_instance()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_57");
   hrSceneLibraryOpen(L"tests/test_57", HR_WRITE_DISCARD);
 
@@ -1123,9 +1119,6 @@ bool test57_single_instance()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -1140,8 +1133,6 @@ bool test57_single_instance()
 
 bool test58_crysponza_and_opacity1_perf()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_58");
   hrSceneLibraryOpen(L"tests/test_58", HR_WRITE_DISCARD);
 
@@ -1323,9 +1314,6 @@ bool test58_crysponza_and_opacity1_perf()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -1343,8 +1331,6 @@ bool test59_cornell_water_mlt()
 {
   g_testWasIgnored = true; // this test is disable untill we got MMLT working.
   return false;
-
-  initGLIfNeeded();
 
   hrErrorCallerPlace(L"test_59");
 
@@ -1580,9 +1566,6 @@ bool test59_cornell_water_mlt()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -1596,8 +1579,6 @@ bool test59_cornell_water_mlt()
 
 bool test60_debug_print()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_60");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1989,46 +1970,12 @@ bool test60_debug_print()
 
   hrFlush(scnRef, renderRef);
 
-  // glViewport(0, 0, 1024, 768);
-  // std::vector<int32_t> image(1024 * 768);
-  // 
-  // while(true)
-  // {
-  //   std::this_thread::sleep_for(std::chrono::milliseconds(500));
-  // 
-  //   HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
-  // 
-  //   if (info.haveUpdateFB)
-  //   {
-  //     hrRenderGetFrameBufferLDR1i(renderRef, 1024, 768, &image[0]);
-  // 
-  //     glDisable(GL_TEXTURE_2D);
-  //     glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-  // 
-  //     auto pres = std::cout.precision(2);
-  //     std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
-  //     std::cout.precision(pres);
-  // 
-  //     glfwSwapBuffers(g_window);
-  //     glfwPollEvents();
-  //   }
-  // 
-  //   if (info.finalUpdate)
-  //     break;
-  // }
-  // 
-  // hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_60/z_out.png");
-  // 
-  // return check_images("test_60");
-
   return true;
 }
 
 
 bool test61_cornell_with_light_near_wall_and_glossy_wall()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_61");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2418,9 +2365,6 @@ bool test61_cornell_with_light_near_wall_and_glossy_wall()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-  
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
   
     if (info.finalUpdate)
@@ -2439,8 +2383,6 @@ bool test61_cornell_with_light_near_wall_and_glossy_wall()
 
 bool test63_cornell_with_caustic_from_torus()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_63");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2849,9 +2791,6 @@ bool test63_cornell_with_caustic_from_torus()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -2864,11 +2803,8 @@ bool test63_cornell_with_caustic_from_torus()
 }
 
 
-
 bool test100_dummy_hydra_exec()
 {
-	initGLIfNeeded();
-
 	hrErrorCallerPlace(L"test_100");
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3037,9 +2973,6 @@ bool test100_dummy_hydra_exec()
 			auto pres = std::cout.precision(2);
 			std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
 			std::cout.precision(pres);
-
-			glfwSwapBuffers(g_window);
-			glfwPollEvents();
 		}
 		if (info.finalUpdate)
 			break;
