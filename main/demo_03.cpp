@@ -31,7 +31,7 @@ extern GLFWwindow* g_window;
 void initGLIfNeeded(int a_width = 512, int a_height = 512, const char* name = "glfw demo");
 ///////////////////////////////////////////////////////////////////////// window and opegl
 
-bool demo_03_caustics()
+void demo_03_caustics()
 {
   const int DEMO_WIDTH  = 1024;
   const int DEMO_HEIGHT = 1024;
@@ -359,5 +359,4 @@ bool demo_03_caustics()
   }
   
   hrRenderSaveFrameBufferLDR(renderRef, L"demos/demo_03/z_out.png");
-  
 }
