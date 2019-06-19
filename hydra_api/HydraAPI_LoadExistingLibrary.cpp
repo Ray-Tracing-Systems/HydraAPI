@@ -351,7 +351,7 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
   if (g_objManager.m_attachMode)
     HrPrint(HR_SEVERITY_INFO, L"HydraAPI, initialising virtual buffer");
 
-  g_objManager.scnData.init_existing(g_objManager.m_attachMode, g_objManager.m_pVBSysMutex);
+  g_objManager.scnData.init_existing(g_objManager.m_attachMode, g_objManager.m_pVBSysMutex, g_objManager.m_lastInitInfo.vbSize);
 
   // (2) set change id to curr value
   //
