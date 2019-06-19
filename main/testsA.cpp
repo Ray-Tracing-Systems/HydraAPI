@@ -465,9 +465,6 @@ bool test64_several_changes_light_area()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -893,9 +890,6 @@ bool test65_several_changes_light_rect()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -997,9 +991,6 @@ bool test65_several_changes_light_rect()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -3468,10 +3459,8 @@ bool test74_frame_buffer_line()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef);
-
-  glViewport(0, 0, 1024, 768);
-  std::vector<int32_t> image(1024 * 768);
-
+  
+  std::vector<int32_t>    image(1024 * 768);
   HydraRender::HDRImage4f hdrImage(1024, 768);
 
   float* data = hdrImage.data();
@@ -3490,16 +3479,10 @@ bool test74_frame_buffer_line()
         hrRenderGetFrameBufferLineLDR1i(renderRef, 256, 768, y, &image[y * 1024 + 256]);
         hrRenderGetFrameBufferLineHDR4f(renderRef, 256, 768, y, &data[(y * 1024 + 256)*4]);
       }
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
+      
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -3872,10 +3855,8 @@ bool test75_repeated_render()
   hrSceneClose(scnRef);
 
   hrFlush(scnRef, renderRef);
-
-  glViewport(0, 0, 512, 512);
-  std::vector<int32_t> image(512 * 512);
-
+  
+  std::vector<int32_t>    image(512 * 512);
   HydraRender::HDRImage4f hdrImage(512, 512);
 
   float* data = hdrImage.data();
@@ -3894,16 +3875,10 @@ bool test75_repeated_render()
         hrRenderGetFrameBufferLineLDR1i(renderRef, 0, 512, y, &image[y * 512]);
         hrRenderGetFrameBufferLineHDR4f(renderRef, 0, 512, y, &data[(y * 512) * 4]);
       }
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-
+      
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -3928,16 +3903,11 @@ bool test75_repeated_render()
         hrRenderGetFrameBufferLineLDR1i(renderRef, 0, 512, y, &image[y * 512]);
         hrRenderGetFrameBufferLineHDR4f(renderRef, 0, 512, y, &data[(y * 512) * 4]);
       }
-
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(512, 512, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+      
 
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -4151,9 +4121,6 @@ bool test76_empty_mesh()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -4533,9 +4500,6 @@ bool test77_save_gbuffer_layers()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -4900,9 +4864,6 @@ bool test78_material_remap_list1()
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -4954,9 +4915,6 @@ bool test78_material_remap_list1()
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -5373,9 +5331,6 @@ bool test79_material_remap_list2()
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -5510,9 +5465,6 @@ bool test79_material_remap_list2()
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -5893,9 +5845,6 @@ bool test80_lt_rect_image()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)

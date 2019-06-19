@@ -2625,9 +2625,6 @@ namespace MTL_TESTS
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
       }
 
       if (info.finalUpdate)
@@ -2966,9 +2963,6 @@ namespace MTL_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
       }
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
 
       if (info.finalUpdate)
         break;

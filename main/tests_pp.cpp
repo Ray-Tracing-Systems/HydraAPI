@@ -689,8 +689,6 @@ static inline int RealColorToUint32(const float real_color[4])
 
 bool PP_TESTS::test305_fbi_from_render()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_305");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1054,8 +1052,7 @@ bool PP_TESTS::test305_fbi_from_render()
   hrFlush(scnRef, renderRef);
 
   HRFBIRef frameBufferImage = hrFBICreate(L"temp", 1024, 768, 16);
-
-  glViewport(0, 0, 1024, 768);
+  
   std::vector<int32_t> imageDataLDR(1024 * 768);
   
   while (true)
@@ -1090,16 +1087,10 @@ bool PP_TESTS::test305_fbi_from_render()
       
         imageDataLDR[i] = RealColorToUint32(color);
       }
-  
-      glDisable(GL_TEXTURE_2D);
-      glDrawPixels(1024, 768, GL_RGBA, GL_UNSIGNED_BYTE, &imageDataLDR[0]);
-  
+      
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-  
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
   
     if (info.finalUpdate)

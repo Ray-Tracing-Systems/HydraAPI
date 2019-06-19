@@ -919,8 +919,6 @@ namespace MTL_TESTS
 
   bool test_140_blend_emission()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_140");
 
     hrSceneLibraryOpen(L"tests_f/test_140", HR_WRITE_DISCARD);
@@ -1450,8 +1448,6 @@ namespace MTL_TESTS
 
   bool test_142_blend_normalmap_heightmap()
   {
-    initGLIfNeeded();
-
     hrErrorCallerPlace(L"test_142");
 
     hrSceneLibraryOpen(L"tests_f/test_142", HR_WRITE_DISCARD);

@@ -49,9 +49,7 @@ bool MTL_TESTS::test_162_shadow_matte_back1()
 {
   const int IMG_WIDTH  = 1024;
   const int IMG_HEIGHT = 682;
-
-  initGLIfNeeded();
-
+  
   hrErrorCallerPlace(L"test_162");
 
   hrSceneLibraryOpen(L"tests_f/test_162", HR_WRITE_DISCARD);
@@ -325,9 +323,6 @@ bool MTL_TESTS::test_162_shadow_matte_back1()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -366,8 +361,6 @@ bool check_test_163(const wchar_t* a_path)
 
 bool MTL_TESTS::test_163_diffuse_texture_recommended_res()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_163");
 
   hrSceneLibraryOpen(L"tests_f/test_163", HR_WRITE_DISCARD);
@@ -710,9 +703,6 @@ bool MTL_TESTS::test_163_diffuse_texture_recommended_res()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -751,8 +741,6 @@ bool check_test_168(const wchar_t* a_path)
 
 bool MTL_TESTS::test_168_diffuse_texture_recommended_res2()
 {
-  initGLIfNeeded();
-
   hrErrorCallerPlace(L"test_168");
 
   hrSceneLibraryOpen(L"tests_f/test_168", HR_WRITE_DISCARD);
@@ -1140,9 +1128,6 @@ bool MTL_TESTS::test_168_diffuse_texture_recommended_res2()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -1157,8 +1142,6 @@ bool MTL_TESTS::test_168_diffuse_texture_recommended_res2()
 
 bool MTL_TESTS::test_170_fresnel_blend()
 {
-  initGLIfNeeded();
-  
   hrErrorCallerPlace(L"test_170");
   
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1441,9 +1424,6 @@ bool MTL_TESTS::test_170_fresnel_blend()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-      
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
     
     if (info.finalUpdate)
@@ -1458,7 +1438,6 @@ bool MTL_TESTS::test_170_fresnel_blend()
 
 bool MTL_TESTS::test_172_glossy_dark_edges_phong()
 {
-  initGLIfNeeded();
   hrErrorCallerPlace(L"test_172");
   hrSceneLibraryOpen(L"tests_f/test_172", HR_WRITE_DISCARD);
 
@@ -1628,9 +1607,6 @@ bool MTL_TESTS::test_172_glossy_dark_edges_phong()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -1644,7 +1620,6 @@ bool MTL_TESTS::test_172_glossy_dark_edges_phong()
 
 bool MTL_TESTS::test_173_glossy_dark_edges_microfacet()
 {
-  initGLIfNeeded();
   hrErrorCallerPlace(L"test_173");
   hrSceneLibraryOpen(L"tests_f/test_173", HR_WRITE_DISCARD);
 
@@ -1814,9 +1789,6 @@ bool MTL_TESTS::test_173_glossy_dark_edges_microfacet()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)

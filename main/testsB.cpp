@@ -4393,7 +4393,6 @@ bool test95_bump()
 
   hrFlush(scnRef, renderRef, camRef);
   
-
   while (true)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -4405,9 +4404,6 @@ bool test95_bump()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)

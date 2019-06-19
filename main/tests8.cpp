@@ -443,9 +443,6 @@ bool test90_proc_tex_normalmap()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-      
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
     
     if (info.finalUpdate)
@@ -461,7 +458,6 @@ bool test90_proc_tex_normalmap()
 
 bool test91_proc_tex_bump()
 {
-  initGLIfNeeded();
   hrErrorCallerPlace(L"test_91");
   
   hrSceneLibraryOpen(L"tests/test_91", HR_WRITE_DISCARD);
@@ -797,9 +793,6 @@ bool test91_proc_tex_bump()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-      
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
     
     if (info.finalUpdate)
@@ -1150,9 +1143,6 @@ bool test92_proc_tex_bump2()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-      
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
     
     if (info.finalUpdate)
@@ -1493,9 +1483,6 @@ bool test93_proc_tex_recursive()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -1908,9 +1895,6 @@ bool test_126_debug_bump()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -2279,9 +2263,6 @@ bool test51_instance_many_trees_and_opacity()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-  
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
   
     if (info.finalUpdate)
@@ -2621,9 +2602,6 @@ bool test52_instance_perf_test()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-  
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
   
     if (info.finalUpdate)
@@ -2802,9 +2780,6 @@ bool test53_crysponza_perf()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -2981,9 +2956,6 @@ bool test54_portalsroom_perf()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
