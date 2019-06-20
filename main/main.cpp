@@ -125,10 +125,11 @@ int main(int argc, const char** argv)
   try
   {
     //demo_01_plane_box();
-    //demo_02_load_obj();
-    demo_03_caustics();
+    demo_02_load_obj();
+    //demo_03_caustics();
     
     //MTL_TESTS::test_101_diffuse_lambert();
+    //std::cout << LGHT_TESTS::test_207_ies2() << std::endl;
     
     //run_all_api_tests(); // passed
     //run_all_geo_tests();
