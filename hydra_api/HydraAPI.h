@@ -2,7 +2,9 @@
 
 #include <cstdint>
 #include <limits>
+#include <vector>
 #include "pugixml.hpp"
+
 
 /**
  \file
@@ -49,7 +51,7 @@
 
   //#if defined(__GNUC__)
 
-  #define HAPI                       ///< mark all functions as 'extern "C"'; This is needed if you want to load DLL in dynamic;
+  #define HAPI                       ///< mark all functions as 'extern "C"'; This is needed if you want to load DLL dynamically;
 
 #endif
 
@@ -1192,6 +1194,10 @@ namespace HRUtils
   HRTextureNodeRef MergeOneTextureIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_texName, int a_texId = -1);
 
   bool hrRenderSaveDepthRaw(HRRenderRef a_pRender, const wchar_t* a_outFileName);
+
+  // Parses the .obj file, consisting of 1+ shapes
+  MergeInfo LoadMultipleShapesFromObj(const wchar_t* a_fileName, bool a_copyToLocalFolder = false);
+
 };
 
 namespace HRExtensions
@@ -1245,3 +1251,13 @@ If camera with name = a_cameraName does not exist, HRCameraRef with id = -1 is r
 
 */
 HAPI HRRenderRef hrFindRenderByTypeName(const wchar_t *a_renderTypeName);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#define HYDRA_QMC_DOF_FLAG 1
+#define HYDRA_QMC_MTL_FLAG 2
+#define HYDRA_QMC_LGT_FLAG 4
+

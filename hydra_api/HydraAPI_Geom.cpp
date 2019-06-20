@@ -20,8 +20,13 @@ using namespace HydraLiteMath;
 #include "HydraVSGFExport.h"
 #include "HydraXMLHelpers.h"
 #include "HydraTextureUtils.h"
+#include "HydraLegacyUtils.h"
 
 #include "HydraVSGFCompress.h"
+
+#define TINYOBJLOADER_IMPLEMENTATION
+#include "tiny_obj_loader.h"
+
 
 extern std::wstring      g_lastError;
 extern std::wstring      g_lastErrorCallerPlace;
@@ -193,6 +198,97 @@ HAPI HRMeshRef hrMeshCreate(const wchar_t* a_objectName)
   return ref;
 }
 
+HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, bool a_copyToLocalFolder)
+{
+  tinyobj::attrib_t attrib;
+  std::vector<tinyobj::shape_t> shapes;
+  std::vector<tinyobj::material_t> materials;
+
+  std::string warn;
+  std::string err;
+
+
+  bool res = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, ws2s(a_objectName).c_str());
+
+  // The number of indices
+  std::vector<size_t> shape_indices_number;
+  size_t comulative_indices_number = 0;
+  shape_indices_number.push_back(0);
+  for (size_t s = 0; s < shapes.size(); s++) {
+    shape_indices_number.push_back(shapes[s].mesh.indices.size());
+    comulative_indices_number += shapes[s].mesh.indices.size();
+  }
+
+  // Vertices, Normals, Texture coordinates, Indices
+  float* verts = new float[comulative_indices_number * 4];
+  float* norms = new float[comulative_indices_number * 4];
+  float* tex_s = new float[comulative_indices_number * 2];
+  int*   indxs = new int[comulative_indices_number];
+
+  bool has_normals = true;
+
+  for (size_t s = 0; s < shapes.size(); s++) {
+    size_t index_offset = 0;
+    size_t index_shape_offset = shape_indices_number[s];
+    size_t vertices_num = shapes[s].mesh.num_face_vertices.size();
+    for (size_t f = 0; f < vertices_num; f++) {
+      int fv = shapes[s].mesh.num_face_vertices[f];
+      // Loop over vertices in the face.
+      for (size_t v = 0; v < fv; v++) {
+        // Current index
+        tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
+        // Setting the actual index (we duplicate the vertices so that one vertex corresponds to only one index)
+        indxs[index_shape_offset + index_offset + v] = index_shape_offset + index_offset + v;
+        // Setting vertices
+        verts[4 * (index_shape_offset + index_offset + v) + 0] = attrib.vertices[3 * idx.vertex_index + 0];
+        verts[4 * (index_shape_offset + index_offset + v) + 1] = attrib.vertices[3 * idx.vertex_index + 1];
+        verts[4 * (index_shape_offset + index_offset + v) + 2] = attrib.vertices[3 * idx.vertex_index + 2];
+        verts[4 * (index_shape_offset + index_offset + v) + 3] = 1.0;
+        // Setting normals
+        if (idx.normal_index != -1) {
+            norms[4 * (index_shape_offset + index_offset + v) + 0] = attrib.normals[3 * idx.normal_index + 0];
+            norms[4 * (index_shape_offset + index_offset + v) + 1] = attrib.normals[3 * idx.normal_index + 1];
+            norms[4 * (index_shape_offset + index_offset + v) + 2] = attrib.normals[3 * idx.normal_index + 2];
+            norms[4 * (index_shape_offset + index_offset + v) + 3] = 0.0;
+        } else {
+            has_normals = false;
+        }
+        // Setting texture coordinates
+        if (idx.texcoord_index != -1) {
+            tex_s[2 * (index_shape_offset + index_offset + v) + 0] = attrib.texcoords[2 * idx.texcoord_index + 0];
+            tex_s[2 * (index_shape_offset + index_offset + v) + 1] = attrib.texcoords[2 * idx.texcoord_index + 1];
+        } else {
+            tex_s[2 * (index_shape_offset + index_offset + v) + 0] = 0.0;
+            tex_s[2 * (index_shape_offset + index_offset + v) + 1] = 0.0;
+        }
+      }
+        index_offset += fv;
+    }
+  }
+
+
+  HRMeshRef ref = hrMeshCreate(a_objectName);
+
+  hrMeshOpen(ref, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
+  {
+      hrMeshVertexAttribPointer4f(ref, L"pos", verts);
+
+      if (has_normals)
+          hrMeshVertexAttribPointer4f(ref, L"norm", norms);
+      else
+          hrMeshVertexAttribPointer4f(ref, L"norm", nullptr);
+
+      hrMeshVertexAttribPointer2f(ref, L"texcoord", tex_s);
+
+      hrMeshMaterialId(ref, 0);
+
+      hrMeshAppendTriangles3(ref, comulative_indices_number, indxs);
+  }
+  hrMeshClose(ref);
+
+  return ref;
+}
+
 std::wstring CutFileName(const std::wstring& fileName);
 std::wstring LocalDataPathOfCurrentSceneLibrary();
 
@@ -275,15 +371,23 @@ HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName, bool a_copyToLo
 
 HAPI HRMeshRef hrMeshCreateFromFile(const wchar_t* a_fileName, bool a_copyToLocalFolder)
 {
-  std::wstring tail = str_tail(a_fileName, 6);
-  
+  //std::wstring tail = str_tail(a_fileName, 6);
+  std::wstring tail = std::wstring(a_fileName).substr(std::wstring(a_fileName).find_last_of(L"."));
+
   HydraGeomData data;
   std::vector<int> dataBuffer;
-  
-  if(tail == L".vsgfc")
+
+  if(tail == L".obj")
+    return _hrMeshCreateFromObjMerged(a_fileName, a_copyToLocalFolder);
+  else if(tail == L".vsgfc")
     data = HR_LoadVSGFCompressedData(a_fileName, dataBuffer);
-  else
+  else if(tail == L".vsgf")
     data.read(a_fileName);
+  else
+  {
+    HrPrint(HR_SEVERITY_ERROR, L"hrMeshCreateFromFile, unsupported file extension ", tail.c_str());
+    return HRMeshRef();
+  }
 
   if (data.getVerticesNumber() == 0)
     return HRMeshRef();
@@ -295,7 +399,7 @@ HAPI HRMeshRef hrMeshCreateFromFile(const wchar_t* a_fileName, bool a_copyToLoca
     hrMeshVertexAttribPointer4f(ref, L"pos",      data.getVertexPositionsFloat4Array());
     hrMeshVertexAttribPointer4f(ref, L"norm",     data.getVertexNormalsFloat4Array());
 
-    if(data.getVertexTangentsFloat4Array() != nullptr)                                     // for the old format this never happen
+    if(data.getVertexTangentsFloat4Array() != nullptr)                                     // for the old format this never happens
       hrMeshVertexAttribPointer4f(ref, L"tangent", data.getVertexTangentsFloat4Array());   //
 
     hrMeshVertexAttribPointer2f(ref, L"texcoord", data.getVertexTexcoordFloat2Array());

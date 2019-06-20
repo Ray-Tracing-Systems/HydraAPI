@@ -1136,7 +1136,7 @@ HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pC
     //std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     std::wstring fixed_state = newPath;
     if (g_objManager.m_pDriver->Info().supportUtilityPrepass && doPrepass)
-      fixed_state = HR_UtilityDriverStart(newPath.c_str());
+      fixed_state = HR_UtilityDriverStart(newPath.c_str(), pSettings);
     //std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     //std::cout << "Resolution fix elapsed time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms" <<std::endl;
 
