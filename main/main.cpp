@@ -128,7 +128,7 @@ int main(int argc, const char** argv)
     demo_02_load_obj();
     //demo_03_caustics();
     
-    //MTL_TESTS::test_101_diffuse_lambert();
+    //MTL_TESTS::test_101_diffuse_lambert();`
     //std::cout << LGHT_TESTS::test_207_ies2() << std::endl;
     
     //run_all_api_tests(); // passed

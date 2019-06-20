@@ -378,17 +378,20 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
     HrPrint(HR_SEVERITY_INFO, L"HydraAPI, loading objects from xml ... ");
 
   for (pugi::xml_node node = g_objManager.scnData.m_texturesLib.first_child(); node != nullptr; node = node.next_sibling())
-    _hrTexture2DCreateFromNode(node);
+    if(node.attribute(L"id") != nullptr)
+      _hrTexture2DCreateFromNode(node);
 
   // (4) load materials
   //
   for (pugi::xml_node node = g_objManager.scnData.m_materialsLib.first_child(); node != nullptr; node = node.next_sibling())
-    _hrMaterialCreateFromNode(node);
+    if(node.attribute(L"id") != nullptr)
+      _hrMaterialCreateFromNode(node);
 
   // (5) load geom
   //
   for (pugi::xml_node node = g_objManager.scnData.m_geometryLib.first_child(); node != nullptr; node = node.next_sibling())
-    _hrMeshCreateFromNode(node);
+    if(node.attribute(L"id") != nullptr)
+      _hrMeshCreateFromNode(node);
 
   std::sort(
           g_objManager.scnData.meshes.begin(), g_objManager.scnData.meshes.end(),
