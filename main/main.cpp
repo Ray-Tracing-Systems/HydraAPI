@@ -125,18 +125,17 @@ int main(int argc, const char** argv)
   try
   {
     //demo_01_plane_box();
-    demo_02_load_obj();
+    //demo_02_load_obj();
     //demo_03_caustics();
-    
-    //MTL_TESTS::test_101_diffuse_lambert();`
-    //std::cout << LGHT_TESTS::test_207_ies2() << std::endl;
+  
+    //test42_load_mesh_compressed();
     
     //run_all_api_tests(); // passed
     //run_all_geo_tests();
     //run_all_mtl_tests();
-    //run_all_lgt_tests();
-    //run_all_alg_tests();
-    //run_all_ipp_tests();
+    run_all_lgt_tests();
+    run_all_alg_tests();
+    run_all_ipp_tests();
 
     //std::cout << ALGR_TESTS::test_404_cornell_glossy() << std::endl;
     

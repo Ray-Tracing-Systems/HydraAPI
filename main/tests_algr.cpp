@@ -280,9 +280,6 @@ bool ALGR_TESTS::test_401_ibpt_and_glossy_glass()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-      
-      glfwSwapBuffers(g_window);
-      
     }
     
     if (info.finalUpdate)
@@ -541,9 +538,6 @@ bool ALGR_TESTS::test_402_ibpt_and_glossy_double_glass()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-      
-      glfwSwapBuffers(g_window);
-      
     }
     
     if (info.finalUpdate)
@@ -801,9 +795,6 @@ bool ALGR_TESTS::test_403_light_inside_double_glass()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-      
-      glfwSwapBuffers(g_window);
-      
     }
     
     if (info.finalUpdate)

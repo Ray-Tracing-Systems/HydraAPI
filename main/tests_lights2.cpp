@@ -292,10 +292,7 @@ namespace LGHT_TESTS
         std::cout.precision(pres);
         counter++;
       }
-
-      glfwSwapBuffers(g_window);
       
-
       if (info.finalUpdate)
         break;
 
@@ -545,17 +542,8 @@ namespace LGHT_TESTS
         counter++;
       }
 
-      glfwSwapBuffers(g_window);
-      
-
       if (info.finalUpdate)
         break;
-
-      // if (counter == 10)
-      // {
-      //   hrRenderCommand(renderRef, L"exitnow");
-      //   break;
-      // }
     }
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_220/z_out.png");
@@ -839,18 +827,9 @@ namespace LGHT_TESTS
         std::cout.precision(pres);
         counter++;
       }
-
-      glfwSwapBuffers(g_window);
       
-
       if (info.finalUpdate)
         break;
-
-      // if (counter == 10)
-      // {
-      //   hrRenderCommand(renderRef, L"exitnow");
-      //   break;
-      // }
     }
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_221/z_out.png");
@@ -1147,18 +1126,9 @@ namespace LGHT_TESTS
         std::cout.precision(pres);
         counter++;
       }
-
-      glfwSwapBuffers(g_window);
       
-
       if (info.finalUpdate)
         break;
-
-      // if (counter == 10)
-      // {
-      //   hrRenderCommand(renderRef, L"exitnow");
-      //   break;
-      // }
     }
 
     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_222/z_out.png");
@@ -1548,9 +1518,6 @@ namespace LGHT_TESTS
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
-
-        glfwSwapBuffers(g_window);
-        
       }
 
       if (info.finalUpdate)
