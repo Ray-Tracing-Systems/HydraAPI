@@ -1103,14 +1103,6 @@ HAPI void hrFlush(HRSceneInstRef a_pScn = HRSceneInstRef(),
 
 typedef int32_t HR_IDType;
 
-constexpr int64_t VIRTUAL_BUFFER_SIZE = int64_t(2048)*int64_t(1024 * 1024);
-
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
 \brief An extension helper for groups of lights
@@ -1179,7 +1171,17 @@ namespace HRUtils
   BBox InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_scnTo, float a_mat[16], bool origin = true,
                               const int32_t* remapListOverride = nullptr, int32_t remapListSize = 0);
 
-  HRSceneInstRef MergeLibraryIntoLibrary(const wchar_t* a_libPath, bool mergeLights = false, bool copyScene = false);
+
+  struct MergeInfo
+  {
+    int32_t meshRange    [2]; ///<! stores [first, last)
+    int32_t texturesRange[2];
+    int32_t materialRange[2];
+    int32_t lightsRange  [2];
+  };
+
+  HRSceneInstRef MergeLibraryIntoLibrary(const wchar_t* a_libPath, bool mergeLights = false, bool copyScene = false,
+                                         const wchar_t* a_stateFileName = L"", MergeInfo* pInfo = nullptr);
 
   HRMaterialRef MergeOneMaterialIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_matName, int a_matId = -1);
 

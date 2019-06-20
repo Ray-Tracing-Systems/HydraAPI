@@ -394,7 +394,7 @@ struct HRSceneData : public HRObject<IHRSceneData>
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
   
-  void init(bool a_emptyvb, HRSystemMutex* a_pVBSysMutexLock);
+  void init(bool a_emptyvb, HRSystemMutex* a_pVBSysMutexLock, size_t a_size);
   void init_existing(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock);
   void clear();
 
@@ -406,7 +406,7 @@ struct HRSceneData : public HRObject<IHRSceneData>
   ChangeList m_changeList;
 
 protected:
-  void init_virtual_buffer(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock);
+  void init_virtual_buffer(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock, size_t a_size);
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -723,13 +723,19 @@ void _hrInstanceMergeFromNode(HRSceneInstRef a_scn, pugi::xml_node a_node, int32
 }
 
 
-HRSceneInstRef HRUtils::MergeLibraryIntoLibrary(const wchar_t* a_libPath, bool mergeLights, bool copyScene)
+HRSceneInstRef HRUtils::MergeLibraryIntoLibrary(const wchar_t* a_libPath, bool mergeLights, bool copyScene,
+                                                const wchar_t* a_stateFileName, MergeInfo* pInfo)
 {
-  std::wstring fileName;
+  std::wstring fileName(a_stateFileName);
   int stateId = 0;
 
-  _hrFindTargetOrLastState(a_libPath, -1,
-                           fileName, stateId);
+  if(fileName == L"")
+  {
+    _hrFindTargetOrLastState(a_libPath, -1,
+                             fileName, stateId);
+  }
+  else
+    fileName = std::wstring(a_libPath) + L"/" + a_stateFileName;
 
   HRSceneInstRef mergedScn;
 
@@ -749,11 +755,18 @@ HRSceneInstRef HRUtils::MergeLibraryIntoLibrary(const wchar_t* a_libPath, bool m
     return mergedScn;
   }
 
-  //auto numTexturesPreMerge  = int32_t(g_objManager.scnData.textures.size());
+  auto numTexturesPreMerge  = int32_t(g_objManager.scnData.textures.size());
   auto numMaterialsPreMerge = int32_t(g_objManager.scnData.materials.size());
-  auto numMeshesPreMerge  = int32_t(g_objManager.scnData.meshes.size());
-  int32_t numLightsPreMerge = 0;
-  //int32_t newTexturesMerged = 0;
+  auto numMeshesPreMerge    = int32_t(g_objManager.scnData.meshes.size());
+  auto numLightsPreMerge    = int32_t(g_objManager.scnData.lights.size());
+
+  if(pInfo != nullptr)
+  {
+    pInfo->texturesRange[0] = numTexturesPreMerge;
+    pInfo->materialRange[0] = numMaterialsPreMerge;
+    pInfo->meshRange    [0] = numMeshesPreMerge;
+    pInfo->lightsRange  [0] = numLightsPreMerge;
+  }
 
   std::unordered_map<int32_t, int32_t> texIdUpdates;
 
@@ -782,7 +795,6 @@ HRSceneInstRef HRUtils::MergeLibraryIntoLibrary(const wchar_t* a_libPath, bool m
 
   if(mergeLights)
   {
-    numLightsPreMerge = int32_t(g_objManager.scnData.lights.size());
     for (pugi::xml_node node = docToMerge.child(L"lights_lib").first_child(); node != nullptr; node = node.next_sibling())
       _hrLightMergeFromNode(node, std::wstring(a_libPath), texIdUpdates);
   }
@@ -819,6 +831,19 @@ HRSceneInstRef HRUtils::MergeLibraryIntoLibrary(const wchar_t* a_libPath, bool m
     }
 
     hrSceneClose(mergedScn);
+  }
+
+  auto numTexturesPostMerge  = int32_t(g_objManager.scnData.textures.size());
+  auto numMaterialsPostMerge = int32_t(g_objManager.scnData.materials.size());
+  auto numMeshesPostMerge    = int32_t(g_objManager.scnData.meshes.size());
+  auto numLightsPostMerge    = int32_t(g_objManager.scnData.lights.size());
+
+  if(pInfo != nullptr)
+  {
+    pInfo->texturesRange[1] = numTexturesPostMerge;
+    pInfo->materialRange[1] = numMaterialsPostMerge;
+    pInfo->meshRange    [1] = numMeshesPostMerge;
+    pInfo->lightsRange  [1] = numLightsPostMerge;
   }
 
   return mergedScn;
