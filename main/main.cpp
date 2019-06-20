@@ -78,6 +78,7 @@ void test02_init();
 
 void demo_01_plane_box();
 void demo_02_load_obj();
+void demo_02_surreal_load_obj();
 void demo_03_caustics();
 
 int main(int argc, const char** argv)
@@ -125,7 +126,7 @@ int main(int argc, const char** argv)
   try
   {
     //demo_01_plane_box();
-    demo_02_load_obj();
+    demo_02_surreal_load_obj();
     //demo_03_caustics();
     
     //MTL_TESTS::test_101_diffuse_lambert();`
