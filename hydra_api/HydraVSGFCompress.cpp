@@ -84,6 +84,22 @@ void ReadCompressed(HydraGeomData& a_data, std::istream& a_input, size_t a_compr
   }
   decoder.decode();
 
+    for(int i = 0; i < a_data.getIndicesNumber(); i += 3)
+    {
+      auto idx1 = a_data.getTriangleVertexIndicesArray()[i + 0];
+      auto idx2 = a_data.getTriangleVertexIndicesArray()[i + 1];
+      auto idx3 = a_data.getTriangleVertexIndicesArray()[i + 2];
+      if(idx1 < 0 || idx1 >= a_data.getVerticesNumber() ||
+         idx2 < 0 || idx2 >= a_data.getVerticesNumber() ||
+         idx3 < 0 || idx3 >= a_data.getVerticesNumber())
+      {
+        auto arr = (uint32_t*) a_data.getTriangleVertexIndicesArray();
+        arr[i + 0] = 0;
+        arr[i + 1] = 0;
+        arr[i + 2] = 0;
+      }
+    }
+
   float* positions = const_cast<float*>(a_data.getVertexPositionsFloat4Array());
   float* normals   = const_cast<float*>(a_data.getVertexNormalsFloat4Array());
   float* tangents  = const_cast<float*>(a_data.getVertexTangentsFloat4Array());
