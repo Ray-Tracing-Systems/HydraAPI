@@ -46,6 +46,7 @@ set(SOURCE_FILES
         tests_external.cpp
         demo_01.cpp
         demo_02.cpp
+        demo_02_surreal.cpp
         demo_03.cpp
         tests_algr.cpp)
 
