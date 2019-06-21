@@ -1138,8 +1138,10 @@ HAPI void* hrMeshGetAttribPointer(HRMeshRef a_mesh, const wchar_t* attributeName
       return mesh.verticesPos.data();
     else if (!wcscmp(attributeName, L"norm"))
       return mesh.verticesNorm.data();
-    else if (!wcscmp(attributeName, L"uv"))
+    else if (!wcscmp(attributeName, L"uv") || !wcscmp(attributeName, L"texcoord"))
       return mesh.verticesTexCoord.data();
+    else if (!wcscmp(attributeName, L"tang"))
+      return mesh.verticesTangent.data();
     else
       return nullptr;
   }
@@ -1160,8 +1162,10 @@ HAPI void* hrMeshGetPrimitiveAttribPointer(HRMeshRef a_mesh, const wchar_t* attr
   {
     HRMesh::InputTriMesh& mesh = pMesh->m_input;
 
-    if (!wcscmp(attributeName, L"mind") && !mesh.matIndices.empty())
+    if (!wcscmp(attributeName, L"mind"))
       return mesh.matIndices.data();
+    else if (!wcscmp(attributeName, L"tind"))
+      return mesh.triIndices.data();
     else
       return nullptr;
   }
