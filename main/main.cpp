@@ -126,16 +126,16 @@ int main(int argc, const char** argv)
   {
     //demo_01_plane_box();
     //demo_02_load_obj();
-    //demo_03_caustics();
+    demo_03_caustics();
   
     //test42_load_mesh_compressed();
     
     //run_all_api_tests(); // passed
     //run_all_geo_tests();
     //run_all_mtl_tests();
-    run_all_lgt_tests();
-    run_all_alg_tests();
-    run_all_ipp_tests();
+    //run_all_lgt_tests();
+    //run_all_alg_tests();
+    //run_all_ipp_tests();
 
     //std::cout << ALGR_TESTS::test_404_cornell_glossy() << std::endl;
     
