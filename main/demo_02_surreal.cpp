@@ -16,6 +16,8 @@ using pugi::xml_node;
 #include "../hydra_api/LiteMath.h"
 namespace hlm = HydraLiteMath;
 
+#include <cstring>
+
 ///////////////////////////////////////////////////////////////////////// window and opegl
 #if defined(WIN32)
 #include <FreeImage.h>
@@ -38,10 +40,89 @@ std::string ws2s(const std::wstring& s);
 std::wstring s2ws(const std::string& s);
 ///////////////////////////////////////////////////////////////////////// test
 
+HRMeshRef TransformedMesh(HRMeshRef a_mesh, hlm::float4x4 a_matrix, bool a_putInCenter)
+{
+  SimpleMesh meshData;
+  
+  auto mrotate = a_matrix; // kill translate in normal matrix
+  mrotate.M(0,3) = 0.0f;
+  mrotate.M(1,3) = 0.0f;
+  mrotate.M(2,3) = 0.0f;
+  mrotate.M(3,3) = 1.0f;
+  
+  auto meshInfo = hrMeshGetInfo(a_mesh);
+  
+  // move model in center first ...
+  if(a_putInCenter)
+  {
+    auto vmin = hlm::float3(meshInfo.boxMin[0], meshInfo.boxMin[1], meshInfo.boxMin[2]);
+    auto vmax = hlm::float3(meshInfo.boxMax[0], meshInfo.boxMax[1], meshInfo.boxMax[2]);
+    auto vcen = 0.5f*(vmin + vmax);
+    auto mtranslate = hlm::translate4x4(vcen*(-1.0f));
+    a_matrix = hlm::mul(mtranslate,a_matrix);
+  }
+  
+  hrMeshOpen(a_mesh, HR_TRIANGLE_IND3, HR_OPEN_READ_ONLY);
+  {
+    meshData.triIndices.resize(meshInfo.indicesNum);
+    meshData.matIndices.resize(meshInfo.indicesNum/3);
+    meshData.vPos.resize(meshInfo.vertNum*4);
+    meshData.vNorm.resize(meshInfo.vertNum*4);
+    meshData.vTexCoord.resize(meshInfo.vertNum*2);
+    
+    int32_t* mindices   = (int32_t*)hrMeshGetPrimitiveAttribPointer(a_mesh, L"mind");
+    int32_t* triangles  = (int32_t*)hrMeshGetPrimitiveAttribPointer(a_mesh, L"tind");
+    
+    hlm::float4* vpos   = (hlm::float4*)hrMeshGetAttribPointer(a_mesh, L"pos");
+    hlm::float4* vnorm  = (hlm::float4*)hrMeshGetAttribPointer(a_mesh, L"norm");
+    hlm::float2* vtexc  = (hlm::float2*)hrMeshGetAttribPointer(a_mesh, L"uv");
+    
+    for(int i=0;i<meshInfo.vertNum;i++)
+    {
+      hlm::float4 vertT = hlm::mul(a_matrix, vpos[i]);
+      hlm::float4 normT = hlm::mul(mrotate,  vnorm[i]);
+  
+      meshData.vPos[i*4+0] = vertT.x;
+      meshData.vPos[i*4+1] = vertT.y;
+      meshData.vPos[i*4+2] = vertT.z;
+      meshData.vPos[i*4+3] = 1.0f;
+  
+      meshData.vNorm[i*4+0] = normT.x;
+      meshData.vNorm[i*4+1] = normT.y;
+      meshData.vNorm[i*4+2] = normT.z;
+      meshData.vNorm[i*4+3] = 0.0f;
+    }
+    
+    memcpy(meshData.vTexCoord.data(),  vtexc, meshInfo.vertNum*2*sizeof(float));
+    memcpy(meshData.matIndices.data(), mindices, (meshInfo.indicesNum/3)*sizeof(int));
+    memcpy(meshData.triIndices.data(), triangles, (meshInfo.indicesNum)*sizeof(int));
+  }
+  hrMeshClose(a_mesh);
+  
+  
+  // now we simply make a copy
+  //
+  HRMeshRef newMesh = hrMeshCreate(L"tranformedhuman");
+  hrMeshOpen(newMesh, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
+  {
+    hrMeshVertexAttribPointer4f(newMesh, L"pos",      &meshData.vPos[0]);
+    hrMeshVertexAttribPointer4f(newMesh, L"norm",     &meshData.vNorm[0]);
+    hrMeshVertexAttribPointer2f(newMesh, L"texcoord", &meshData.vTexCoord[0]);
+    
+    hrMeshPrimitiveAttribPointer1i(newMesh, L"mind",  &meshData.matIndices[0]);
+    
+    hrMeshAppendTriangles3(newMesh, int32_t(meshData.triIndices.size()), &meshData.triIndices[0], false);
+  }
+  hrMeshClose(newMesh);
+  
+  return newMesh;
+}
+
 void demo_02_surreal_load_obj()
 {
   const int DEMO_WIDTH  = 512;
   const int DEMO_HEIGHT = 512;
+  const float DEG_TO_RAD = float(3.14159265358979323846f) / 180.0f;
   
   hrErrorCallerPlace(L"demo_02_surreal_load_obj");
   
@@ -142,43 +223,52 @@ void demo_02_surreal_load_obj()
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
-  auto filesForTest = hr_listfiles("/home/frol/temp2/humans/female");
+  auto filesForTest     = hr_listfiles("/home/frol/temp2/humans/female");
   
   HRSceneInstRef scnRef = hrSceneCreate(L"my scene");
+  HRMeshRef cubeOpenRef = hrMeshCreate(L"my_box");
   
-  for(auto fileTest : filesForTest)
+  // export models from file
+  if (false)
   {
-    const std::wstring pathW1 = s2ws(fileTest);
-    std::wcout << L"FILEPATH: " << pathW1.c_str() << std::endl;
-    HRMeshRef bunnyRef = hrMeshCreateFromFileDL(pathW1.c_str());
-  
-    HRMeshRef cubeOpenRef = hrMeshCreate(L"my_box");
-    //HRMeshRef bunnyRef    = hrMeshCreateFromFile(L"data/meshes/obj_001.obj"); //#NOTE: loaded from ".obj" models are guarantee to have material id '0' for all triangles
-    //HRMeshRef bunnyRef    =  hrMeshCreateFromFileDL(L"/home/frol/temp2/humans/female/obj_023.vsgfc");
+    const std::string path = "/home/frol/temp2/humans/male_obj";
+    auto files = hr_listfiles(path.c_str());
     
-    // export models from file
-    if (false)
+    for (auto f : files)
     {
-      const std::string path = "/home/frol/temp2/humans/male_obj";
-      auto files = hr_listfiles(path.c_str());
-    
-      for (auto f : files)
-      {
-        const std::wstring pathW1 = s2ws(f);
-        const std::wstring pathW2 = pathW1.substr(0, pathW1.size() - 4) + L".vsgfc";
+      const std::wstring pathW1 = s2ws(f);
+      const std::wstring pathW2 = pathW1.substr(0, pathW1.size() - 4) + L".vsgfc";
       
-        HRMeshRef objRef = hrMeshCreateFromFile(pathW1.c_str());
+      HRMeshRef objRef = hrMeshCreateFromFile(pathW1.c_str());
       
-        hrMeshSaveVSGFCompressed(objRef, pathW2.c_str());
+      hrMeshSaveVSGFCompressed(objRef, pathW2.c_str());
       
-        std::cout << f.c_str() << std::endl;
-      }
+      std::cout << f.c_str() << std::endl;
+    }
+  }
+  
+  //for(auto fileTest : filesForTest)
+  {
+    //const std::wstring pathW1 = s2ws(fileTest);
+    //std::wcout << L"FILEPATH: " << pathW1.c_str() << std::endl;
+    //HRMeshRef bunnyRef = hrMeshCreateFromFileDL(pathW1.c_str());
+
+    HRMeshRef bunnyRef    = hrMeshCreateFromFile(L"data/meshes/obj_001.obj"); //#NOTE: loaded from ".obj" models are guarantee to have material id '0' for all triangles
+    //HRMeshRef bunnyRef    =  hrMeshCreateFromFileDL(L"/home/frol/temp2/humans/female/obj_023.vsgfc");
+  
+    {
+      auto mscale     = hlm::scale4x4(hlm::float3(3, 3, 3));
+      auto mtranslate = hlm::translate4x4(hlm::float3(1, 0.0, 0));
+      auto mrotateX   = hlm::rotate_X_4x4(-90.0 * DEG_TO_RAD);
+      auto mrotateY   = hlm::rotate_Y_4x4(-90.0 * DEG_TO_RAD);
+      auto mres       = hlm::mul(mtranslate, hlm::mul(mscale, hlm::mul(mrotateY, mrotateX)));
+      
+      bunnyRef = TransformedMesh(bunnyRef, mres, true);
     }
     //hrMeshSaveVSGF(bunnyRef, L"/home/frol/temp2/test.vsgf");
     //hrMeshSaveVSGFCompressed(bunnyRef, L"/home/frol/temp2/test.vsgfc");
   
     //HRMeshRef bunnyRef = hrMeshCreateFromFile(L"/home/frol/temp2/test.vsgfc");
-  
   
     hrMeshOpen(cubeOpenRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
     {
@@ -271,21 +361,20 @@ void demo_02_surreal_load_obj()
     }
     hrRenderClose(renderRef);
   
-    const float DEG_TO_RAD = float(3.14159265358979323846f) / 180.0f;
-  
     hrSceneOpen(scnRef, HR_WRITE_DISCARD);
     {
       // instance bynny and cornell box
       //
-      auto mscale = hlm::scale4x4(hlm::float3(3, 3, 3));
+      auto mscale     = hlm::scale4x4(hlm::float3(3, 3, 3));
       auto mtranslate = hlm::translate4x4(hlm::float3(1, 0.0, 0));
-      auto mrotateX = hlm::rotate_X_4x4(-90.0 * DEG_TO_RAD);
-      auto mrotateY = hlm::rotate_Y_4x4(-90.0 * DEG_TO_RAD);
-      auto mres = hlm::mul(mtranslate, hlm::mul(mscale, hlm::mul(mrotateY, mrotateX)));
-    
-      int32_t remapList[2] = {0,
-                              mat0.id};                                                       // #NOTE: remaplist of size 1 here: [0 --> mat4.id]
-      hrMeshInstance(scnRef, bunnyRef, mres.L(), remapList, sizeof(remapList) / sizeof(int32_t));  //
+      auto mrotateX   = hlm::rotate_X_4x4(-90.0 * DEG_TO_RAD);
+      auto mrotateY   = hlm::rotate_Y_4x4(-90.0 * DEG_TO_RAD);
+      auto mres       = hlm::mul(mtranslate, hlm::mul(mscale, hlm::mul(mrotateY, mrotateX)));
+      
+      hlm::float4x4 midentity;
+      
+      int32_t remapList[2] = {0,mat0.id};                                                       // #NOTE: remaplist of size 1 here: [0 --> mat4.id]
+      hrMeshInstance(scnRef, bunnyRef, midentity.L(), remapList, sizeof(remapList) / sizeof(int32_t));  //
     
       auto mrot = hlm::rotate_Y_4x4(180.0f * DEG_TO_RAD);
       hrMeshInstance(scnRef, cubeOpenRef, mrot.L());
