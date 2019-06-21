@@ -231,7 +231,7 @@ void demo_02_surreal_load_obj()
   // export models from file
   if (false)
   {
-    const std::string path = "/home/frol/temp2/humans/male_obj";
+    const std::string path = "/home/frol/temp2/humans/female_obj";
     auto files = hr_listfiles(path.c_str());
     
     for (auto f : files)
@@ -239,7 +239,15 @@ void demo_02_surreal_load_obj()
       const std::wstring pathW1 = s2ws(f);
       const std::wstring pathW2 = pathW1.substr(0, pathW1.size() - 4) + L".vsgfc";
       
-      HRMeshRef objRef = hrMeshCreateFromFile(pathW1.c_str());
+      HRMeshRef objRef = hrMeshCreateFromFile(pathW1.c_str()) ;
+  
+      {
+        auto mscale     = hlm::scale4x4(hlm::float3(1, 1, 1));
+        auto mrotateX   = hlm::rotate_X_4x4(-90.0 * DEG_TO_RAD);
+        auto mrotateY   = hlm::rotate_Y_4x4(-90.0 * DEG_TO_RAD);
+        auto mres       = hlm::mul(mscale, hlm::mul(mrotateY, mrotateX));
+        objRef = TransformedMesh(objRef, mres, true);
+      }
       
       hrMeshSaveVSGFCompressed(objRef, pathW2.c_str());
       
@@ -247,25 +255,24 @@ void demo_02_surreal_load_obj()
     }
   }
   
-  //for(auto fileTest : filesForTest)
+  for(auto fileTest : filesForTest)
   {
-    //const std::wstring pathW1 = s2ws(fileTest);
-    //std::wcout << L"FILEPATH: " << pathW1.c_str() << std::endl;
-    //HRMeshRef bunnyRef = hrMeshCreateFromFileDL(pathW1.c_str());
+    const std::wstring pathW1 = s2ws(fileTest);
+    std::wcout << L"FILEPATH: " << pathW1.c_str() << std::endl;
+    HRMeshRef bunnyRef = hrMeshCreateFromFileDL(pathW1.c_str());
 
-    HRMeshRef bunnyRef    = hrMeshCreateFromFile(L"data/meshes/obj_001.obj"); //#NOTE: loaded from ".obj" models are guarantee to have material id '0' for all triangles
+    //HRMeshRef bunnyRef    = hrMeshCreateFromFile(L"data/meshes/obj_001.obj"); //#NOTE: loaded from ".obj" models are guarantee to have material id '0' for all triangles
     //HRMeshRef bunnyRef    =  hrMeshCreateFromFileDL(L"/home/frol/temp2/humans/female/obj_023.vsgfc");
   
-    {
-      auto mscale     = hlm::scale4x4(hlm::float3(3, 3, 3));
-      auto mtranslate = hlm::translate4x4(hlm::float3(1, 0.0, 0));
-      auto mrotateX   = hlm::rotate_X_4x4(-90.0 * DEG_TO_RAD);
-      auto mrotateY   = hlm::rotate_Y_4x4(-90.0 * DEG_TO_RAD);
-      auto mres       = hlm::mul(mtranslate, hlm::mul(mscale, hlm::mul(mrotateY, mrotateX)));
-      
-      bunnyRef = TransformedMesh(bunnyRef, mres, true);
-    }
-    //hrMeshSaveVSGF(bunnyRef, L"/home/frol/temp2/test.vsgf");
+    //{
+    //  auto mscale     = hlm::scale4x4(hlm::float3(1, 1, 1));
+    //  auto mrotateX   = hlm::rotate_X_4x4(-90.0 * DEG_TO_RAD);
+    //  auto mrotateY   = hlm::rotate_Y_4x4(-90.0 * DEG_TO_RAD);
+    //  auto mres       = hlm::mul(mscale, hlm::mul(mrotateY, mrotateX));
+    //
+    //  bunnyRef = TransformedMesh(bunnyRef, mres, true);
+    //}
+    ////hrMeshSaveVSGF(bunnyRef, L"/home/frol/temp2/test.vsgf");
     //hrMeshSaveVSGFCompressed(bunnyRef, L"/home/frol/temp2/test.vsgfc");
   
     //HRMeshRef bunnyRef = hrMeshCreateFromFile(L"/home/frol/temp2/test.vsgfc");
@@ -365,16 +372,12 @@ void demo_02_surreal_load_obj()
     {
       // instance bynny and cornell box
       //
-      auto mscale     = hlm::scale4x4(hlm::float3(3, 3, 3));
-      auto mtranslate = hlm::translate4x4(hlm::float3(1, 0.0, 0));
-      auto mrotateX   = hlm::rotate_X_4x4(-90.0 * DEG_TO_RAD);
-      auto mrotateY   = hlm::rotate_Y_4x4(-90.0 * DEG_TO_RAD);
-      auto mres       = hlm::mul(mtranslate, hlm::mul(mscale, hlm::mul(mrotateY, mrotateX)));
-      
-      hlm::float4x4 midentity;
+      auto mscale     = hlm::scale4x4(hlm::float3(4, 4, 4));
+      auto mtranslate = hlm::translate4x4(hlm::float3(1, -1.5, 0));
+      auto mres       = hlm::mul(mtranslate, mscale);
       
       int32_t remapList[2] = {0,mat0.id};                                                       // #NOTE: remaplist of size 1 here: [0 --> mat4.id]
-      hrMeshInstance(scnRef, bunnyRef, midentity.L(), remapList, sizeof(remapList) / sizeof(int32_t));  //
+      hrMeshInstance(scnRef, bunnyRef, mres.L(), remapList, sizeof(remapList) / sizeof(int32_t));  //
     
       auto mrot = hlm::rotate_Y_4x4(180.0f * DEG_TO_RAD);
       hrMeshInstance(scnRef, cubeOpenRef, mrot.L());
