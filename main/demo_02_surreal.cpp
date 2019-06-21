@@ -31,6 +31,13 @@ extern GLFWwindow* g_window;
 void initGLIfNeeded(int a_width = 512, int a_height = 512, const char* name = "glfw demo");
 ///////////////////////////////////////////////////////////////////////// window and opegl
 
+///////////////////////////////////////////////////////////////////////// test
+void _hrDebugPrintVSGF(const wchar_t* a_fileNameIn, const wchar_t* a_fileNameOut);
+std::vector<std::string> hr_listfiles(const std::string &a_folder);
+std::string ws2s(const std::wstring& s);
+std::wstring s2ws(const std::string& s);
+///////////////////////////////////////////////////////////////////////// test
+
 void demo_02_surreal_load_obj()
 {
   const int DEMO_WIDTH  = 512;
@@ -53,7 +60,7 @@ void demo_02_surreal_load_obj()
   HRMaterialRef mat3 = hrMaterialCreate(L"white");
   HRMaterialRef mat4 = hrMaterialCreate(L"gold");
 
-  HRTextureNodeRef tex_body = hrTexture2DCreateFromFile(L"/media/denispavlov/Data/smpl_data/textures/female/nongrey_female_0063.jpg");
+  HRTextureNodeRef tex_body = hrTexture2DCreateFromFile(L"/home/frol/temp2/humans/textures/female/nongrey_female_0063.jpg");
 
   hrMaterialOpen(mat0, HR_WRITE_DISCARD);
   {
@@ -137,7 +144,31 @@ void demo_02_surreal_load_obj()
   
   HRMeshRef cubeOpenRef = hrMeshCreate(L"my_box");
   HRMeshRef bunnyRef    = hrMeshCreateFromFile(L"data/meshes/obj_001.obj"); //#NOTE: loaded from ".obj" models are guarantee to have material id '0' for all triangles
-                                                                          // to apply other material, please see further for remap list application to object instance
+  
+  
+  // export models from file
+  {
+    const std::string path = "/home/frol/temp2/humans/male_obj";
+    auto files = hr_listfiles(path.c_str());
+    
+    for(auto f : files)
+    {
+      const std::wstring pathW1 = s2ws(f);
+      const std::wstring pathW2 = pathW1.substr(0, pathW1.size()-4) + L".vsgfc";
+      
+      HRMeshRef objRef = hrMeshCreateFromFile(pathW1.c_str());
+ 
+      hrMeshSaveVSGFCompressed(objRef, pathW2.c_str());
+      
+      std::cout << f.c_str() << std::endl;
+    }
+  }
+  //hrMeshSaveVSGF(bunnyRef, L"/home/frol/temp2/test.vsgf");
+  //hrMeshSaveVSGFCompressed(bunnyRef, L"/home/frol/temp2/test.vsgfc");
+  
+  //HRMeshRef bunnyRef = hrMeshCreateFromFile(L"/home/frol/temp2/test.vsgfc");
+  
+  
   hrMeshOpen(cubeOpenRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
   {
     hrMeshVertexAttribPointer4f(cubeOpenRef, L"pos",      &cubeOpen.vPos[0]);
