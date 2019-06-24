@@ -88,6 +88,22 @@ std::vector<std::string> hr_listfiles(const std::string &a_folder)
   return result;
 }
 
+std::string ws2s(const std::wstring& s);
+std::wstring s2ws(const std::string& s);
+
+std::vector<std::wstring> hr_listfilesW(const std::wstring &a_folder)
+{
+  auto pathS         = ws2s(a_folder);
+  auto commonstrings = hr_listfiles(pathS);
+  
+  std::vector<std::wstring> res(commonstrings.size());
+  
+  for(size_t i=0;i<res.size();i++)
+    res[i] = s2ws(commonstrings[i]);
+  
+  return res;
+}
+
 void hr_copy_file(const wchar_t* a_file1, const wchar_t* a_file2)
 {
 /*  int source = open(a_file1, O_RDONLY, 0);
