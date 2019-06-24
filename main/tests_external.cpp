@@ -260,9 +260,6 @@ bool test_x1_displace_car_by_noise()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -488,9 +485,6 @@ bool test_x2_car_displacement_triplanar()
             auto pres = std::cout.precision(2);
             std::cout << "rendering progress = " << info.progress << "% \r";
             std::cout.precision(pres);
-
-            glfwSwapBuffers(g_window);
-            glfwPollEvents();
         }
 
         if (info.finalUpdate)
@@ -830,9 +824,6 @@ bool test_x3_car_fresnel_ice()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -1124,9 +1115,6 @@ bool test_x4_car_triplanar(const int i)
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -1371,9 +1359,6 @@ bool test_depth_mesh()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r";
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
@@ -1674,9 +1659,6 @@ bool test_precomp_depth_mesh()
       auto pres = std::cout.precision(2);
       std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
       std::cout.precision(pres);
-
-      glfwSwapBuffers(g_window);
-      glfwPollEvents();
     }
 
     if (info.finalUpdate)
