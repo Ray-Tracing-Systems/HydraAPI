@@ -155,7 +155,7 @@ void demo_03_caustics()
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
   
-  HRMeshRef bunnyRef    = hrMeshCreateFromFile(L"data/meshes/bunny.obj");   //#NOTE: loaded from ".obj" models are guarantee to have material id '0' for all triangles
+  HRMeshRef bunnyRef    = hrMeshCreateFromFile(L"data/meshes/bunny.obj");   // #NOTE: loaded from ".obj" models are guarantee to have material id '0' for all triangles
   HRMeshRef teapotRef   = hrMeshCreateFromFile(L"data/meshes/teapot.vsgf"); // load teapot from our simple internal format
   
   HRMeshRef cubeOpenRef = hrMeshCreate(L"my_box");        // to apply other material, please see further for remap list application to object instance

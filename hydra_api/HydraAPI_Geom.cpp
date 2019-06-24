@@ -220,10 +220,10 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, bool a_co
   }
 
   // Vertices, Normals, Texture coordinates, Indices
-  float* verts = new float[comulative_indices_number * 4];
-  float* norms = new float[comulative_indices_number * 4];
-  float* tex_s = new float[comulative_indices_number * 2];
-  int*   indxs = new int[comulative_indices_number];
+  std::vector<float> verts(comulative_indices_number * 4);
+  std::vector<float> norms(comulative_indices_number * 4);
+  std::vector<float> tex_s(comulative_indices_number * 2);
+  std::vector<int  > indxs(comulative_indices_number);
 
   bool has_normals = true;
 
@@ -271,18 +271,16 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, bool a_co
 
   hrMeshOpen(ref, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
   {
-      hrMeshVertexAttribPointer4f(ref, L"pos", verts);
+    hrMeshVertexAttribPointer4f(ref, L"pos", verts.data());
 
-      if (has_normals)
-          hrMeshVertexAttribPointer4f(ref, L"norm", norms);
-      else
-          hrMeshVertexAttribPointer4f(ref, L"norm", nullptr);
+    if (has_normals)
+      hrMeshVertexAttribPointer4f(ref, L"norm", norms.data());
+    else
+      hrMeshVertexAttribPointer4f(ref, L"norm", nullptr);
 
-      hrMeshVertexAttribPointer2f(ref, L"texcoord", tex_s);
-
-      hrMeshMaterialId(ref, 0);
-
-      hrMeshAppendTriangles3(ref, comulative_indices_number, indxs);
+    hrMeshVertexAttribPointer2f(ref, L"texcoord", tex_s.data());
+    hrMeshMaterialId(ref, 0);
+    hrMeshAppendTriangles3(ref, comulative_indices_number, indxs.data());
   }
   hrMeshClose(ref);
 
