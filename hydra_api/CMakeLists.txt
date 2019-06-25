@@ -62,7 +62,8 @@ set(SOURCE_FILES
         HydraTextureUtils.cpp
         HydraTextureUtils.h
         HydraAPI_GeomProcessing.cpp
-        vfloat4_x64.h)
+        vfloat4_x64.h
+        HydraRngUtils.cpp)
 
 
 if (WIN32)
@@ -91,7 +92,7 @@ set(POST_PROC
         HydraPostProcessSpecial.h
         HydraPostProcessSpecial.cpp
         NonLocalMeans.cpp
-        HydraVSGFCompress.h HydraVSGFCompress.cpp hydra_api_py/HydraRngUtils.cpp)
+        HydraVSGFCompress.h HydraVSGFCompress.cpp)
 
 
 
