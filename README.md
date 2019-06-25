@@ -7,6 +7,9 @@ The Hydra Renderer consists of 3 heads:
 
 This repo contain the second one.
 
+![](image.jpg)
+<p align="center">An example of our renderer in 3ds max</p>
+
 # Usage
 
 Windows:
