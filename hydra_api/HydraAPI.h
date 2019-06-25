@@ -1141,11 +1141,37 @@ HAPI void  hrLightGroupInstanceExt(HRSceneInstRef pScn, HRLightGroupExt pLight, 
 
 namespace HRUtils
 {
+  struct MergeInfo
+  {
+    int32_t meshRange    [2]; ///<! stores [first, last)
+    int32_t texturesRange[2];
+    int32_t materialRange[2];
+    int32_t lightsRange  [2];
+  };
+
+  HRSceneInstRef MergeLibraryIntoLibrary(const wchar_t* a_libPath, bool mergeLights = false, bool copyScene = false,
+                                         const wchar_t* a_stateFileName = L"", MergeInfo* pInfo = nullptr);
+
+
+
+  HRMaterialRef MergeOneMaterialIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_matName, int a_matId = -1);
+
+  HRMeshRef MergeOneMeshIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_meshName);
+
+  HRLightRef MergeOneLightIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_lightName);
+
+  HRTextureNodeRef MergeOneTextureIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_texName, int a_texId = -1);
+
+  bool hrRenderSaveDepthRaw(HRRenderRef a_pRender, const wchar_t* a_outFileName);
+
+  // Parses the .obj file, consisting of 1+ shapes
+  MergeInfo LoadMultipleShapesFromObj(const wchar_t* a_fileName, bool a_copyToLocalFolder = false);
+
+
   /**
-  \brief Convert LDR cube map to LDR spheremap
+  \brief
 
   */
-
   struct BBox
   {
       float x_min;
@@ -1172,31 +1198,6 @@ namespace HRUtils
 
   BBox InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_scnTo, float a_mat[16], bool origin = true,
                               const int32_t* remapListOverride = nullptr, int32_t remapListSize = 0);
-
-
-  struct MergeInfo
-  {
-    int32_t meshRange    [2]; ///<! stores [first, last)
-    int32_t texturesRange[2];
-    int32_t materialRange[2];
-    int32_t lightsRange  [2];
-  };
-
-  HRSceneInstRef MergeLibraryIntoLibrary(const wchar_t* a_libPath, bool mergeLights = false, bool copyScene = false,
-                                         const wchar_t* a_stateFileName = L"", MergeInfo* pInfo = nullptr);
-
-  HRMaterialRef MergeOneMaterialIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_matName, int a_matId = -1);
-
-  HRMeshRef MergeOneMeshIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_meshName);
-
-  HRLightRef MergeOneLightIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_lightName);
-
-  HRTextureNodeRef MergeOneTextureIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_texName, int a_texId = -1);
-
-  bool hrRenderSaveDepthRaw(HRRenderRef a_pRender, const wchar_t* a_outFileName);
-
-  // Parses the .obj file, consisting of 1+ shapes
-  MergeInfo LoadMultipleShapesFromObj(const wchar_t* a_fileName, bool a_copyToLocalFolder = false);
 
 };
 

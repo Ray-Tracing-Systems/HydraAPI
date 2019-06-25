@@ -28,7 +28,7 @@ namespace hlm = HydraLiteMath;
 #endif
 
 extern GLFWwindow* g_window;
-void initGLIfNeeded(int a_width = 512, int a_height = 512, const char* name = "glfw demo");
+void initGLIfNeeded(int a_width, int a_height, const char* name);
 ///////////////////////////////////////////////////////////////////////// window and opegl
 
 void demo_02_load_obj()

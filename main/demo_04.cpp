@@ -34,7 +34,7 @@ namespace hlm = HydraLiteMath;
 #endif
 
 extern GLFWwindow* g_window;
-void initGLIfNeeded(int a_width = 512, int a_height = 512, const char* name = "glfw demo");
+void initGLIfNeeded(int a_width, int a_height, const char* name);
 ///////////////////////////////////////////////////////////////////////// window and opegl
 
 void demo_04_instancing()
@@ -343,7 +343,7 @@ void demo_04_instancing()
 
   //////////////////////////////////////////////////////// opengl
   std::vector<int32_t> image(DEMO_WIDTH*DEMO_HEIGHT);
-  initGLIfNeeded(DEMO_WIDTH,DEMO_HEIGHT, "load 'obj.' file demo");
+  initGLIfNeeded(DEMO_WIDTH,DEMO_HEIGHT, "instancing demo");
   glViewport(0,0,DEMO_WIDTH,DEMO_HEIGHT);
   //////////////////////////////////////////////////////// opengl
 
