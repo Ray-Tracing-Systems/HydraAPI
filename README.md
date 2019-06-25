@@ -57,6 +57,7 @@ Hydra API uses MIT licence itself, however it depends on the other software as f
 * 08 - glad MIT licence (glad is used in form of generated source code).
 * 09 - glfw BSD-like license (glfw is used in form of binaries only for demonstration purposes).
 * 10 - pybind11 BSD-style license (used in the form of sources) 
+* 11 - corto LGPL3 (used in the form of sources, mesh compression library).
 
 Most of them are simple MIT-like-licences without any serious restrictions. 
 So in general there should be no problem to use HydraAPI in your open source or commertial projects. 
