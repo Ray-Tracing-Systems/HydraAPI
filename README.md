@@ -7,6 +7,8 @@ The Hydra Renderer consists of 3 heads:
 
 This repo contain the second one.
 
+![](image.jpg)
+
 # Usage
 
 Windows:
