@@ -91,7 +91,7 @@ set(POST_PROC
         HydraPostProcessSpecial.h
         HydraPostProcessSpecial.cpp
         NonLocalMeans.cpp
-        HydraVSGFCompress.h HydraVSGFCompress.cpp)
+        HydraVSGFCompress.h HydraVSGFCompress.cpp hydra_api_py/HydraRngUtils.cpp)
 
 
 

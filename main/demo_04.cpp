@@ -20,8 +20,6 @@ using pugi::xml_node;
 #include "../hydra_api/LiteMath.h"
 namespace hlm = HydraLiteMath;
 
-#include "tests.h" // simplerandom
-
 ///////////////////////////////////////////////////////////////////////// window and opegl
 #if defined(WIN32)
 #include <FreeImage.h>
@@ -276,23 +274,22 @@ void demo_04_instancing()
 
   const float DEG_TO_RAD = float(3.14159265358979323846f) / 180.0f;
 
-  auto rgen = simplerandom::RandomGenInit(12368754);
+  auto rgen = hr_prng::RandomGenInit(12368754);
   const float sceneSize = 75.0f;
 
   hrSceneOpen(scnRef, HR_WRITE_DISCARD);
   {
-
     for(int i=0;i<200;i++)
     {
-      float teapotPosX  = simplerandom::rnd(rgen, -sceneSize, sceneSize);
-      float teapotPosY  = simplerandom::rnd(rgen, -2.0f, 1.0f);
-      float teapotPosZ  = simplerandom::rnd(rgen, -sceneSize, sceneSize);
-      float teapotScale = simplerandom::rnd(rgen, 1.0f, 3.0f);
-      float teapotRotX  = simplerandom::rnd(rgen, -45.0f, 45.0f);
-      float teapotRotY  = simplerandom::rnd(rgen, -45.0f, 45.0f);
+      float teapotPosX  = hr_prng::rndFloatUniform(rgen, -sceneSize, sceneSize);
+      float teapotPosY  = hr_prng::rndFloatUniform(rgen, -2.0f, 1.0f);
+      float teapotPosZ  = hr_prng::rndFloatUniform(rgen, -sceneSize, sceneSize);
+      float teapotScale = hr_prng::rndFloatUniform(rgen, 1.0f, 3.0f);
+      float teapotRotX  = hr_prng::rndFloatUniform(rgen, -45.0f, 45.0f);
+      float teapotRotY  = hr_prng::rndFloatUniform(rgen, -45.0f, 45.0f);
 
       int32_t matsNum     = (matGlass.id + 1); // matGlass was last added material ...
-      int32_t teapotMatId = (int32_t)simplerandom::rnd(rgen, 0.0f, float(matsNum));
+      int32_t teapotMatId = hr_prng::rndIntUniform(rgen,0,matsNum);
 
       if(teapotMatId >= matsNum) teapotMatId = matsNum-1;
 
@@ -310,13 +307,13 @@ void demo_04_instancing()
 
     for(int i=0;i<400;i++)
     {
-      float bynnuPosX  = simplerandom::rnd(rgen, -sceneSize, sceneSize);
-      float bynnuPosZ  = simplerandom::rnd(rgen, -sceneSize, sceneSize);
-      float bynnuScale = simplerandom::rnd(rgen, 1.0f, 2.0f);
-      float bunnyRotY  = simplerandom::rnd(rgen, -90.0f, 90.0f);
+      float bynnuPosX  = hr_prng::rndFloatUniform(rgen, -sceneSize, sceneSize);
+      float bynnuPosZ  = hr_prng::rndFloatUniform(rgen, -sceneSize, sceneSize);
+      float bynnuScale = hr_prng::rndFloatUniform(rgen, 1.0f, 2.0f);
+      float bunnyRotY  = hr_prng::rndFloatUniform(rgen, -90.0f, 90.0f);
 
       int32_t matsNum     = (matGlass.id + 1); // matGlass was last added material ...
-      int32_t bunnyMatId  = (int32_t)simplerandom::rnd(rgen, 0.0f, float(matsNum));
+      int32_t bunnyMatId  = hr_prng::rndIntUniform(rgen,0,matsNum);
 
       if(bunnyMatId >= matsNum)   bunnyMatId = matsNum-1;
 
