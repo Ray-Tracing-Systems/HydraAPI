@@ -24,6 +24,8 @@
 #include <chrono>
 #include <cassert>
 
+#include "tiny_obj_loader.h"
+
 extern HRObjectManager g_objManager;
 extern HR_INFO_CALLBACK  g_pInfoCallback;
 
@@ -680,6 +682,8 @@ void HR_CopyMeshToInputMeshFromHydraGeomData(const HydraGeomData& data,  HRMesh:
     memcpy(mesh2.verticesTangent.data(), data.getVertexTangentsFloat4Array(), sizeof(float)*4*data.getVerticesNumber());
 }
 
+std::string ws2s(const std::wstring& s);
+
 void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, std::vector<HRBatchInfo>& a_batches, IHRRenderDriver* a_pDriver, const wchar_t* path, int64_t a_byteSize)
 {
   pugi::xml_node nodeXML = mesh.xml_node();
@@ -713,18 +717,31 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, std::vector<HRBatchInfo>& a
   HRMeshDriverInput    input;
   HRMesh::InputTriMesh mesh2;
   HydraGeomData        data;
-  
-  // (1) process the case when we don't have tangents or normals ...
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////// obj loader
+  tinyobj::attrib_t attrib;
+  std::vector<tinyobj::shape_t> shapes;
+  std::vector<tinyobj::material_t> materials;
+  std::vector<float> verts;
+  std::vector<float> norms;
+  std::vector<float> tex_s;
+  std::vector<int  > indxs;
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////// obj loader
+
+  // decompress '.vsgfc' format
   //
-  // (2) decompress '.vsgfc' format
-  //
-  if(tail == L".vsgfc")
+  if(tail == L".obj")
+  {
+    HrPrint(HR_SEVERITY_ERROR, L"UpdateMeshFromChunk, obj loader is not implemented here, ", path);
+    return;
+  }
+  else if(tail == L".vsgfc")
   {
     data                = HR_LoadVSGFCompressedData(path, g_objManager.m_tempBuffer, &a_batches);
-    
+
     input.vertNum       = data.getVerticesNumber();
     input.triNum        = data.getIndicesNumber()/3;
-    
+
     input.pos4f         = data.getVertexPositionsFloat4Array();
     input.norm4f        = data.getVertexNormalsFloat4Array();
     input.tan4f         = data.getVertexTangentsFloat4Array();
@@ -733,7 +750,7 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, std::vector<HRBatchInfo>& a
     input.triMatIndices = (const int*)data.getTriangleMaterialIndicesArray();
     input.allData       = (char*)g_objManager.m_tempBuffer.data();
   }
-  else if(dontHaveTangents || dontHaveNormals)
+  else if(dontHaveTangents || dontHaveNormals)  // (1) process the case when we don't have tangents or normals ...
   {
     data.read(path);
     HR_CopyMeshToInputMeshFromHydraGeomData(data, mesh2);

@@ -207,8 +207,14 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, bool a_co
   std::string warn;
   std::string err;
 
+  auto pathS = ws2s(a_objectName);
+  bool res   = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, pathS.c_str());
 
-  bool res = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, ws2s(a_objectName).c_str());
+  if(!res)
+  {
+    HrPrint(HR_SEVERITY_ERROR, L"_hrMeshCreateFromObjMerged, failed to load obj file ", a_objectName);
+    return HRMeshRef();
+  }
 
   // The number of indices
   std::vector<size_t> shape_indices_number;

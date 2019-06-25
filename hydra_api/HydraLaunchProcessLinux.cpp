@@ -10,6 +10,8 @@
 #include <sys/types.h>
 #include <pwd.h>
 
+#include "HydraObjectManager.h" // for HrPrint
+
 struct HydraProcessLauncher : IHydraNetPluginAPI
 {
   HydraProcessLauncher(const char* imageFileName, int width, int height, const char* connectionType, std::ostream* a_pLog = nullptr);
@@ -224,7 +226,6 @@ int CreateProcessUnix(const char* exePath, const char* allArgs, const bool a_deb
   {
     execvp(exePath, argv.data());
     free(pLine);
-    exit(0);
     return 0;
   }
   else
@@ -253,6 +254,8 @@ void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params
 
     if (!isFileExist(hydraPath.c_str()))
     {
+      auto path = s2ws(hydraPath);
+      HrPrint(HR_SEVERITY_ERROR, L"execvp failed (perhaps you have forgoten to install hydra in your home directory): ", path.c_str());
       m_hydraServerStarted = false;
     }
     else
