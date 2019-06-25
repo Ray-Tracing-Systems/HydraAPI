@@ -1225,8 +1225,8 @@ namespace LGHT_TESTS
 
       intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1.0 0.85 0.64");
       intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"2.0");
-			
-	  VERIFY_XML(lightNode);
+
+	    VERIFY_XML(lightNode);
     }
     hrLightClose(sun);
 

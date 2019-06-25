@@ -79,6 +79,7 @@ void test02_init();
 void demo_01_plane_box();
 void demo_02_load_obj();
 void demo_03_caustics();
+void demo_04_instancing();
 
 int main(int argc, const char** argv)
 {
@@ -112,6 +113,7 @@ int main(int argc, const char** argv)
     sigemptyset(&sigIntHandler.sa_mask);
     sigIntHandler.sa_flags = SA_RESETHAND;
     sigaction(SIGINT,  &sigIntHandler, NULL);
+    sigaction(SIGSTOP, &sigIntHandler, NULL);
     sigaction(SIGABRT, &sigIntHandler, NULL);
     sigaction(SIGILL,  &sigIntHandler, NULL);
     sigaction(SIGTERM, &sigIntHandler, NULL);
@@ -126,8 +128,9 @@ int main(int argc, const char** argv)
   {
     //demo_01_plane_box();
     //demo_02_load_obj();
-    demo_03_caustics();
-  
+    //demo_03_caustics();
+    demo_04_instancing();
+
     //test42_load_mesh_compressed();
     
     //run_all_api_tests(); // passed
@@ -136,8 +139,6 @@ int main(int argc, const char** argv)
     //run_all_lgt_tests();
     //run_all_alg_tests();
     //run_all_ipp_tests();
-
-    //std::cout << ALGR_TESTS::test_404_cornell_glossy() << std::endl;
     
     //window_main_free_look(L"/home/frol/PROG/clsp/database/statex_00001.xml", L"opengl1");
 	  terminate_opengl();

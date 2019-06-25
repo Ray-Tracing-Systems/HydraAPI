@@ -47,7 +47,7 @@ set(SOURCE_FILES
         demo_01.cpp
         demo_02.cpp
         demo_03.cpp
-        tests_algr.cpp)
+        tests_algr.cpp demo_04.cpp)
 
 #set (CMAKE_CXX_FLAGS_DEBUG  "${CMAKE_CXX_FLAGS_DEBUG}")
 

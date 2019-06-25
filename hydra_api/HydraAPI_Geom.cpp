@@ -266,7 +266,6 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, bool a_co
     }
   }
 
-
   HRMeshRef ref = hrMeshCreate(a_objectName);
 
   hrMeshOpen(ref, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
