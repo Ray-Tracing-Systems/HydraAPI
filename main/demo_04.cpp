@@ -20,6 +20,8 @@ using pugi::xml_node;
 #include "../hydra_api/LiteMath.h"
 namespace hlm = HydraLiteMath;
 
+#include "tests.h" // simplerandom
+
 ///////////////////////////////////////////////////////////////////////// window and opegl
 #if defined(WIN32)
 #include <FreeImage.h>
@@ -237,7 +239,7 @@ void demo_04_instancing()
     camNode.append_child(L"farClipPlane").text().set(L"100.0");
 
     camNode.append_child(L"up").text().set(L"0 1 0");
-    camNode.append_child(L"position").text().set(L"0 0 14");
+    camNode.append_child(L"position").text().set(L"0 10 40");
     camNode.append_child(L"look_at").text().set(L"0 0 0");
 
     VERIFY_XML(camNode);
@@ -262,7 +264,7 @@ void demo_04_instancing()
     node.append_child(L"method_caustic").text()   = L"PT";
     node.append_child(L"qmc_variant").text()      = (HYDRA_QMC_DOF_FLAG | HYDRA_QMC_MTL_FLAG | HYDRA_QMC_LGT_FLAG); // enable all of them, results to '7'
 
-    node.append_child(L"trace_depth").text()      = 6;
+    node.append_child(L"trace_depth").text()      = 8;
     node.append_child(L"diff_trace_depth").text() = 3;
     node.append_child(L"maxRaysPerPixel").text()  = 1024;
   }
@@ -274,29 +276,60 @@ void demo_04_instancing()
 
   const float DEG_TO_RAD = float(3.14159265358979323846f) / 180.0f;
 
+  auto rgen = simplerandom::RandomGenInit(12368754);
+  const float sceneSize = 75.0f;
+
   hrSceneOpen(scnRef, HR_WRITE_DISCARD);
   {
-    // instance bynny and cornell box
-    //
-    auto mscale     = hlm::scale4x4(hlm::float3(4,4,4));
-    auto mtranslate = hlm::translate4x4(hlm::float3(-1.0f, 0.0f, 0.0f)); // -2.5
-    auto mrot       = hlm::rotate_Y_4x4(-30.0f*DEG_TO_RAD);
-    auto mrot3      = hlm::rotate_X_4x4(+30.0f*DEG_TO_RAD);
-    auto mres       = hlm::mul(mtranslate, hlm::mul(hlm::mul(mrot3,mrot), mscale));
 
-    int32_t remapList[6] = {0, mat4.id, 1, mat4.id, 2, mat4.id};                                // #NOTE: remaplist of size 1 here: [0 --> mat4.id]
-    hrMeshInstance(scnRef, teapotRef, mres.L(), remapList, sizeof(remapList)/sizeof(int32_t));  //
+    for(int i=0;i<200;i++)
+    {
+      float teapotPosX  = simplerandom::rnd(rgen, -sceneSize, sceneSize);
+      float teapotPosY  = simplerandom::rnd(rgen, -2.0f, 1.0f);
+      float teapotPosZ  = simplerandom::rnd(rgen, -sceneSize, sceneSize);
+      float teapotScale = simplerandom::rnd(rgen, 1.0f, 3.0f);
+      float teapotRotX  = simplerandom::rnd(rgen, -45.0f, 45.0f);
+      float teapotRotY  = simplerandom::rnd(rgen, -45.0f, 45.0f);
 
-    mscale     = hlm::scale4x4(hlm::float3(2,2,2));
-    mtranslate = hlm::translate4x4(hlm::float3(2.5f, -4.0, 2.0f));
-    mrot       = hlm::rotate_Y_4x4(+40.0f*DEG_TO_RAD);
-    mres       = hlm::mul(mtranslate, hlm::mul(mrot,mscale));
+      int32_t matsNum     = (matGlass.id + 1); // matGlass was last added material ...
+      int32_t teapotMatId = (int32_t)simplerandom::rnd(rgen, 0.0f, float(matsNum));
 
-    int32_t remapList2[2] = {0, matGlass.id};                                                    // #NOTE: remaplist of size 1 here: [0 --> mat4.id]
-    hrMeshInstance(scnRef, bunnyRef, mres.L(), remapList2, sizeof(remapList2)/sizeof(int32_t));  //
+      if(teapotMatId >= matsNum) teapotMatId = matsNum-1;
 
+      // instance bynny and cornell box
+      //
+      auto mscale     = hlm::scale4x4(hlm::float3(teapotScale, teapotScale, teapotScale));
+      auto mtranslate = hlm::translate4x4(hlm::float3(teapotPosX, teapotPosY, teapotPosZ)); // -2.5
+      auto mrot       = hlm::rotate_Y_4x4(teapotRotX * DEG_TO_RAD);
+      auto mrot3      = hlm::rotate_X_4x4(teapotRotY * DEG_TO_RAD);
+      auto mres       = hlm::mul(mtranslate, hlm::mul(hlm::mul(mrot3, mrot), mscale));
 
-    mtranslate = hlm::translate4x4(hlm::float3(0,-4,0));
+      int32_t remapList[6] = {0, teapotMatId, 1, teapotMatId, 2, teapotMatId};                      // #NOTE: remaplist of size 1 here: [0 --> mat4.id]
+      hrMeshInstance(scnRef, teapotRef, mres.L(), remapList, sizeof(remapList) / sizeof(int32_t));  //
+    }
+
+    for(int i=0;i<400;i++)
+    {
+      float bynnuPosX  = simplerandom::rnd(rgen, -sceneSize, sceneSize);
+      float bynnuPosZ  = simplerandom::rnd(rgen, -sceneSize, sceneSize);
+      float bynnuScale = simplerandom::rnd(rgen, 1.0f, 2.0f);
+      float bunnyRotY  = simplerandom::rnd(rgen, -90.0f, 90.0f);
+
+      int32_t matsNum     = (matGlass.id + 1); // matGlass was last added material ...
+      int32_t bunnyMatId  = (int32_t)simplerandom::rnd(rgen, 0.0f, float(matsNum));
+
+      if(bunnyMatId >= matsNum)   bunnyMatId = matsNum-1;
+
+      auto mscale     = hlm::scale4x4(hlm::float3(bynnuScale, bynnuScale, bynnuScale));
+      auto mtranslate = hlm::translate4x4(hlm::float3(bynnuPosX, -4.0, bynnuPosZ));
+      auto mrot       = hlm::rotate_Y_4x4(bunnyRotY * DEG_TO_RAD);
+      auto mres       = hlm::mul(mtranslate, hlm::mul(mrot, mscale));
+
+      int32_t remapList2[2] = {0, bunnyMatId};                                                       // #NOTE: remaplist of size 1 here: [0 --> mat4.id]
+      hrMeshInstance(scnRef, bunnyRef, mres.L(), remapList2, sizeof(remapList2) / sizeof(int32_t));  //
+    }
+
+    auto mtranslate = hlm::translate4x4(hlm::float3(0, -4, 0));
     hrMeshInstance(scnRef, planeRef, mtranslate.L());  //
 
     //// instance light (!!!)
