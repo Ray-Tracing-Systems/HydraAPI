@@ -7,7 +7,8 @@ The Hydra Renderer consists of 3 heads:
 
 This repo contain the second one.
 
-![An example of our renderer in 3ds max](image.jpg)
+![](image.jpg)
+An example of our renderer in 3ds max
 
 # Usage
 
