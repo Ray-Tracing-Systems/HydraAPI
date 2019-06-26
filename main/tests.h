@@ -265,9 +265,9 @@ namespace MTL_TESTS
   bool test_133_emissive_and_diffuse();
   bool test_134_diff_refl_transp();
   
-  bool test_135_opacity_metal();        // not smooth backface
-  bool test_136_opacity_glass();        // transparency work as thin;
-  bool test_137_opacity_emission();     //
+  bool test_135_opacity_metal();         // not smooth backface
+  bool test_136_opacity_glass();         // transparency work as thin;
+  bool test_137_shadow_matte_emission(); //
 
   bool test_138_translucency_and_diffuse();
   bool test_139_glass_and_bump();

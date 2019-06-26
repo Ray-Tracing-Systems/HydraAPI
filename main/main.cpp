@@ -127,11 +127,14 @@ int main(int argc, const char** argv)
   try
   {
     //demo_01_plane_box();
-    demo_02_load_obj();
+    //demo_02_load_obj();
     //demo_03_caustics();
     //demo_04_instancing();
 
     //test42_load_mesh_compressed();
+    
+    //MTL_TESTS::test_120_opacity_shadow_matte();
+    MTL_TESTS::test_137_shadow_matte_emission();
     
     //run_all_api_tests(); // passed
     //run_all_geo_tests();
