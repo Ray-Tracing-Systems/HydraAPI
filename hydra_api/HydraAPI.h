@@ -1141,11 +1141,40 @@ HAPI void  hrLightGroupInstanceExt(HRSceneInstRef pScn, HRLightGroupExt pLight, 
 
 namespace HRUtils
 {
+  struct MergeInfo
+  {
+    int32_t meshRange    [2]; ///<! stores [first, last)
+    int32_t texturesRange[2];
+    int32_t materialRange[2];
+    int32_t lightsRange  [2];
+  };
+
+  HRSceneInstRef MergeLibraryIntoLibrary(const wchar_t* a_libPath, bool mergeLights = false, bool copyScene = false,
+                                         const wchar_t* a_stateFileName = L"", MergeInfo* pInfo = nullptr);
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+  HRMaterialRef MergeOneMaterialIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_matName, int a_matId = -1);
+
+  HRMeshRef MergeOneMeshIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_meshName);
+
+  HRLightRef MergeOneLightIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_lightName);
+
+  HRTextureNodeRef MergeOneTextureIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_texName, int a_texId = -1);
+
+  bool hrRenderSaveDepthRaw(HRRenderRef a_pRender, const wchar_t* a_outFileName);
+
+  // Parses the .obj file, consisting of 1+ shapes
+  MergeInfo LoadMultipleShapesFromObj(const wchar_t* a_fileName, bool a_copyToLocalFolder = false);
+
+
   /**
-  \brief Convert LDR cube map to LDR spheremap
+  \brief
 
   */
-
   struct BBox
   {
       float x_min;
@@ -1172,31 +1201,6 @@ namespace HRUtils
 
   BBox InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_scnTo, float a_mat[16], bool origin = true,
                               const int32_t* remapListOverride = nullptr, int32_t remapListSize = 0);
-
-
-  struct MergeInfo
-  {
-    int32_t meshRange    [2]; ///<! stores [first, last)
-    int32_t texturesRange[2];
-    int32_t materialRange[2];
-    int32_t lightsRange  [2];
-  };
-
-  HRSceneInstRef MergeLibraryIntoLibrary(const wchar_t* a_libPath, bool mergeLights = false, bool copyScene = false,
-                                         const wchar_t* a_stateFileName = L"", MergeInfo* pInfo = nullptr);
-
-  HRMaterialRef MergeOneMaterialIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_matName, int a_matId = -1);
-
-  HRMeshRef MergeOneMeshIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_meshName);
-
-  HRLightRef MergeOneLightIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_lightName);
-
-  HRTextureNodeRef MergeOneTextureIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_texName, int a_texId = -1);
-
-  bool hrRenderSaveDepthRaw(HRRenderRef a_pRender, const wchar_t* a_outFileName);
-
-  // Parses the .obj file, consisting of 1+ shapes
-  MergeInfo LoadMultipleShapesFromObj(const wchar_t* a_fileName, bool a_copyToLocalFolder = false);
 
 };
 
@@ -1257,6 +1261,82 @@ HAPI HRRenderRef hrFindRenderByTypeName(const wchar_t *a_renderTypeName);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+namespace hr_prng
+{
+  struct uint2
+  {
+    unsigned int x;
+    unsigned int y;
+  };
+
+  typedef struct RandomGenT
+  {
+    uint2 state;
+
+  } RandomGen;
+
+  RandomGen RandomGenInit(const int a_seed);
+
+  /**
+   \brief get next pseudo random float value in range [0,1].
+   \param gen - pointer to current generator state
+   */
+  float rndFloat(RandomGen *gen);
+
+  /**
+   \brief get next pseudo random float value in range [s,e].
+   \param gen - reference to current generator state
+   \param s   - low  boundary of generated random number
+   \param e   - high boundary of generated random number
+   */
+  float rndFloatUniform(RandomGen& gen, float s, float e);
+
+  /**
+   \brief get next pseudo random integer value in range [s,e].
+   \param gen - reference to current generator state
+   \param s   - low  boundary of generated random number
+   \param e   - high boundary of generated random number
+   */
+  int rndIntUniform(RandomGen& gen, int a, int b);
+};
+
+namespace hr_qmc
+{
+  constexpr static int   QRNG_DIMENSIONS = 11;
+  constexpr static int   QRNG_RESOLUTION = 31;
+  constexpr static float INT_SCALE       = (1.0f / (float)0x80000001U);
+
+  void init(unsigned int table[hr_qmc::QRNG_DIMENSIONS][hr_qmc::QRNG_RESOLUTION]);
+
+  /**
+  \brief get arbitrary 'Sobol/Niederreiter' quasi random float value in range [0,1]
+  \param pos     - id of value in sequence (i.e. first, second, ... )
+  \param dim     - dimention/coordinate id (i.e. x,y,z,w, ... )
+  \param c_Table - some table previously initialised with hr_qmc::init function
+
+  */
+  float rndFloat(unsigned int pos, int dim, unsigned int *c_Table); ///< return
+
+  /**
+  \brief get arbitrary 'Sobol/Niederreiter' quasi random float value in range [s,e].
+  \param gen - pointer to current generator state
+  \param s   - low  boundary of generated random number
+  \param e   - high boundary of generated random number
+  */
+  float rndFloatUniform(unsigned int pos, int dim, unsigned int *c_Table, float s, float e);
+
+  /**
+  \brief get arbitrary 'Sobol/Niederreiter' quasi random integer value in range [s,e].
+  \param gen     - pointer to current generator state
+  \param s   - low  boundary of generated random number
+  \param e   - high boundary of generated random number
+  */
+  int rndIntUniform(unsigned int pos, int dim, unsigned int *c_Table, int a, int b);
+};
+
+/**
+  \brief these parameters are not related to hr_qmc namespace, they are for 'HydraModern' presets
+ */
 #define HYDRA_QMC_DOF_FLAG 1
 #define HYDRA_QMC_MTL_FLAG 2
 #define HYDRA_QMC_LGT_FLAG 4

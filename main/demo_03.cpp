@@ -28,7 +28,7 @@ namespace hlm = HydraLiteMath;
 #endif
 
 extern GLFWwindow* g_window;
-void initGLIfNeeded(int a_width = 512, int a_height = 512, const char* name = "glfw demo");
+void initGLIfNeeded(int a_width, int a_height, const char* name);
 ///////////////////////////////////////////////////////////////////////// window and opegl
 
 void demo_03_caustics()
@@ -45,7 +45,6 @@ void demo_03_caustics()
   
   hrSceneLibraryOpen(L"demos/demo_03", HR_WRITE_DISCARD);
   
-  SimpleMesh sphere   = CreateSphere(2.0f, 128);
   SimpleMesh cubeOpen = CreateCubeOpen(4.0f);
   
   HRMaterialRef mat0 = hrMaterialCreate(L"mysimplemat");
@@ -156,7 +155,8 @@ void demo_03_caustics()
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
   
-  HRMeshRef bunnyRef    = hrMeshCreateFromFile(L"data/meshes/bunny.obj"); //#NOTE: loaded from ".obj" models are guarantee to have material id '0' for all triangles
+  HRMeshRef bunnyRef    = hrMeshCreateFromFile(L"data/meshes/bunny.obj");   // #NOTE: loaded from ".obj" models are guarantee to have material id '0' for all triangles
+  HRMeshRef teapotRef   = hrMeshCreateFromFile(L"data/meshes/teapot.vsgf"); // load teapot from our simple internal format
   
   HRMeshRef cubeOpenRef = hrMeshCreate(L"my_box");        // to apply other material, please see further for remap list application to object instance
   hrMeshOpen(cubeOpenRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
@@ -172,19 +172,6 @@ void demo_03_caustics()
     hrMeshAppendTriangles3(cubeOpenRef, int(cubeOpen.triIndices.size()), &cubeOpen.triIndices[0]);
   }
   hrMeshClose(cubeOpenRef);
-  
-  HRMeshRef sphereRef = hrMeshCreate(L"my_sphere");
-  hrMeshOpen(sphereRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
-  {
-    hrMeshVertexAttribPointer4f(sphereRef, L"pos",      &sphere.vPos[0]);
-    hrMeshVertexAttribPointer4f(sphereRef, L"norm",     &sphere.vNorm[0]);
-    hrMeshVertexAttribPointer2f(sphereRef, L"texcoord", &sphere.vTexCoord[0]);
-    
-    hrMeshMaterialId(sphereRef, matGlass.id); // you can assign material id in this way also
-    
-    hrMeshAppendTriangles3(sphereRef, int(sphere.triIndices.size()), &sphere.triIndices[0]);
-  }
-  hrMeshClose(sphereRef);
   
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -267,6 +254,9 @@ void demo_03_caustics()
       node.append_child(L"mmlt_burn_iters").text() = 256;
       node.append_child(L"mmlt_step_power").text() = 1024.0f;
       node.append_child(L"mmlt_step_size").text()  = 0.5f;
+  
+      node.append_child(L"mlt_med_enable").text()    = 1;     // It is absolutely ok for Markov chains techniques.
+      node.append_child(L"mlt_med_threshold").text() = 0.1f;  // Due to they always sample groups of pixels, and never sample individual pixels.
     }
     else
     {
@@ -292,26 +282,22 @@ void demo_03_caustics()
   {
     // instance bynny and cornell box
     //
-    auto mscale     = hlm::scale4x4(hlm::float3(3,3,3));
-    auto mtranslate = hlm::translate4x4(hlm::float3(2.5, -2.0, -0.5f));
-    auto mrot       = hlm::rotate_Y_4x4(-40.0f*DEG_TO_RAD);
-    auto mres       = hlm::mul(mtranslate, hlm::mul(mrot, mscale));
+    auto mscale     = hlm::scale4x4(hlm::float3(4,4,4));
+    auto mtranslate = hlm::translate4x4(hlm::float3(-1.0f, 0.0f, 0.0f)); // -2.5
+    auto mrot       = hlm::rotate_Y_4x4(-30.0f*DEG_TO_RAD);
+    auto mrot3      = hlm::rotate_X_4x4(+30.0f*DEG_TO_RAD);
+    auto mres       = hlm::mul(mtranslate, hlm::mul(hlm::mul(mrot3,mrot), mscale));
     
-    int32_t remapList[2] = {0, mat4.id};                                                       // #NOTE: remaplist of size 1 here: [0 --> mat4.id]
-    hrMeshInstance(scnRef, bunnyRef, mres.L(), remapList, sizeof(remapList)/sizeof(int32_t));  //
+    int32_t remapList[6] = {0, mat4.id, 1, mat4.id, 2, mat4.id};                                // #NOTE: remaplist of size 1 here: [0 --> mat4.id]
+    hrMeshInstance(scnRef, teapotRef, mres.L(), remapList, sizeof(remapList)/sizeof(int32_t));  //
   
-    mscale     = hlm::scale4x4(hlm::float3(3,3,3));
-    mtranslate = hlm::translate4x4(hlm::float3(-1, -3.5, +0.5f));
+    mscale     = hlm::scale4x4(hlm::float3(2,2,2));
+    mtranslate = hlm::translate4x4(hlm::float3(2.5f, -4.0, 2.0f));
     mrot       = hlm::rotate_Y_4x4(+40.0f*DEG_TO_RAD);
     mres       = hlm::mul(mtranslate, hlm::mul(mrot,mscale));
-  
+    
     int32_t remapList2[2] = {0, matGlass.id};                                                    // #NOTE: remaplist of size 1 here: [0 --> mat4.id]
     hrMeshInstance(scnRef, bunnyRef, mres.L(), remapList2, sizeof(remapList2)/sizeof(int32_t));  //
-  
-    mscale     = hlm::scale4x4(hlm::float3(0.5f, 0.5f, 0.5f));
-    mtranslate = hlm::translate4x4(hlm::float3(2, -3, 2.5));
-    mres       = hlm::mul(mtranslate, mscale);
-    hrMeshInstance(scnRef, sphereRef, mres.L());  //
     
     auto mrot2 = hlm::rotate_Y_4x4(180.0f*DEG_TO_RAD);
     hrMeshInstance(scnRef, cubeOpenRef, mrot2.L());

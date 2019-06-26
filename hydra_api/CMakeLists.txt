@@ -62,7 +62,8 @@ set(SOURCE_FILES
         HydraTextureUtils.cpp
         HydraTextureUtils.h
         HydraAPI_GeomProcessing.cpp
-        vfloat4_x64.h)
+        vfloat4_x64.h
+        HydraRngUtils.cpp)
 
 
 if (WIN32)

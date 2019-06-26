@@ -183,6 +183,9 @@
     <ClCompile Include="HydraVSGFCompress.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="HydraRngUtils.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LiteMath.h">

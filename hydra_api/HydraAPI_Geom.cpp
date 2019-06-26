@@ -207,8 +207,14 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, bool a_co
   std::string warn;
   std::string err;
 
+  auto pathS = ws2s(a_objectName);
+  bool res   = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, pathS.c_str());
 
-  bool res = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, ws2s(a_objectName).c_str());
+  if(!res)
+  {
+    HrPrint(HR_SEVERITY_ERROR, L"_hrMeshCreateFromObjMerged, failed to load obj file ", a_objectName);
+    return HRMeshRef();
+  }
 
   // The number of indices
   std::vector<size_t> shape_indices_number;
@@ -220,10 +226,10 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, bool a_co
   }
 
   // Vertices, Normals, Texture coordinates, Indices
-  float* verts = new float[comulative_indices_number * 4];
-  float* norms = new float[comulative_indices_number * 4];
-  float* tex_s = new float[comulative_indices_number * 2];
-  int*   indxs = new int[comulative_indices_number];
+  std::vector<float> verts(comulative_indices_number * 4);
+  std::vector<float> norms(comulative_indices_number * 4);
+  std::vector<float> tex_s(comulative_indices_number * 2);
+  std::vector<int  > indxs(comulative_indices_number);
 
   bool has_normals = true;
 
@@ -266,23 +272,20 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, bool a_co
     }
   }
 
-
   HRMeshRef ref = hrMeshCreate(a_objectName);
 
   hrMeshOpen(ref, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
   {
-      hrMeshVertexAttribPointer4f(ref, L"pos", verts);
+    hrMeshVertexAttribPointer4f(ref, L"pos", verts.data());
 
-      if (has_normals)
-          hrMeshVertexAttribPointer4f(ref, L"norm", norms);
-      else
-          hrMeshVertexAttribPointer4f(ref, L"norm", nullptr);
+    if (has_normals)
+      hrMeshVertexAttribPointer4f(ref, L"norm", norms.data());
+    else
+      hrMeshVertexAttribPointer4f(ref, L"norm", nullptr);
 
-      hrMeshVertexAttribPointer2f(ref, L"texcoord", tex_s);
-
-      hrMeshMaterialId(ref, 0);
-
-      hrMeshAppendTriangles3(ref, comulative_indices_number, indxs);
+    hrMeshVertexAttribPointer2f(ref, L"texcoord", tex_s.data());
+    hrMeshMaterialId(ref, 0);
+    hrMeshAppendTriangles3(ref, comulative_indices_number, indxs.data());
   }
   hrMeshClose(ref);
 
@@ -1138,8 +1141,10 @@ HAPI void* hrMeshGetAttribPointer(HRMeshRef a_mesh, const wchar_t* attributeName
       return mesh.verticesPos.data();
     else if (!wcscmp(attributeName, L"norm"))
       return mesh.verticesNorm.data();
-    else if (!wcscmp(attributeName, L"uv"))
+    else if (!wcscmp(attributeName, L"uv") || !wcscmp(attributeName, L"texcoord"))
       return mesh.verticesTexCoord.data();
+    else if (!wcscmp(attributeName, L"tang"))
+      return mesh.verticesTangent.data();
     else
       return nullptr;
   }
@@ -1160,8 +1165,10 @@ HAPI void* hrMeshGetPrimitiveAttribPointer(HRMeshRef a_mesh, const wchar_t* attr
   {
     HRMesh::InputTriMesh& mesh = pMesh->m_input;
 
-    if (!wcscmp(attributeName, L"mind") && !mesh.matIndices.empty())
+    if (!wcscmp(attributeName, L"mind"))
       return mesh.matIndices.data();
+    else if (!wcscmp(attributeName, L"tind"))
+      return mesh.triIndices.data();
     else
       return nullptr;
   }
@@ -1482,7 +1489,7 @@ void PrintMaterialListNames(std::ostream& strOut, HRMesh* pMesh)
       continue;
     }
 
-    std::string matName = ws2s(pMaterial->name);
+    std::string matName = ws2s(pMaterial->xml_node().attribute(L"name").as_string());
     strOut << matName.c_str() << ";";
   }
 }

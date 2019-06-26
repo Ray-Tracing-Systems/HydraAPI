@@ -3,6 +3,8 @@
 //
 
 #include "HydraLegacyUtils.h"
+#include "HydraObjectManager.h"
+
 
 bool g_materialProcessStart = false;
 PROCESS_INFORMATION g_materialProcessInfo;
@@ -145,6 +147,7 @@ void PluginShmemPipe::runAllRenderProcesses(RenderProcessRunParams a_params, con
     if (!isFileExist(hydraPath.c_str()))
     {
       m_hydraServerStarted = false;
+      HrPrint(HR_SEVERITY_ERROR, L"hydra.exe was not found! (perhaps you have forgotten to install HydraCore to : ", hydraPath.c_str());
     }
     else
     {
@@ -202,7 +205,10 @@ void PluginShmemPipe::runAllRenderProcesses(RenderProcessRunParams a_params, con
           if (!m_hydraServerStarted && outp != nullptr)
           {
             (*outp) << "[syscall failed]: runAllRenderProcesses->(m_connectionType == 'main')->CreateProcessA " << std::endl;
+            HrPrint(HR_SEVERITY_ERROR, L"CreateProcessA have failed (perhaps you have forgottent to install C:/[Hydra]/bin2/hydra.exe)? : ", hydraPath.c_str());
           }
+          else if (!m_hydraServerStarted)
+            HrPrint(HR_SEVERITY_ERROR, L"CreateProcessA have failed (perhaps you have forgottent to install C:/[Hydra]/bin2/hydra.exe)? : ", hydraPath.c_str());
         }
 
         fout << cmdFull.c_str() << std::endl;
