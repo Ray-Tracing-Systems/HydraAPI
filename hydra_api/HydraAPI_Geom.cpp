@@ -1489,7 +1489,7 @@ void PrintMaterialListNames(std::ostream& strOut, HRMesh* pMesh)
       continue;
     }
 
-    std::string matName = ws2s(pMaterial->name);
+    std::string matName = ws2s(pMaterial->xml_node().attribute(L"name").as_string());
     strOut << matName.c_str() << ";";
   }
 }
