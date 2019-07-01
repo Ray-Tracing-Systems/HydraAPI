@@ -1829,8 +1829,8 @@ bool test60_debug_print()
 
     pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
 
-    intensityNode.append_child(L"color").text().set(L"1 1 1");
-    intensityNode.append_child(L"multiplier").text().set(L"8.0");
+    intensityNode.append_child(L"color").append_attribute(L"val")      = L"1 1 1";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 8.0f*IRRADIANCE_TO_RADIANCE;
 
     VERIFY_XML(lightNode);
   }
@@ -2250,7 +2250,7 @@ bool test61_cornell_with_light_near_wall_and_glossy_wall()
     pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
 
     intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"2.0");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(2.0f*IRRADIANCE_TO_RADIANCE);
   }
   hrLightClose(rectLight);
 
@@ -2670,8 +2670,8 @@ bool test63_cornell_with_caustic_from_torus()
 
     pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
 
-    intensityNode.append_child(L"color").text().set(L"1 1 1");
-    intensityNode.append_child(L"multiplier").text().set(L"32.0");
+    intensityNode.append_child(L"color").append_attribute(L"val")      = L"1 1 1";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 32.0f*IRRADIANCE_TO_RADIANCE;
   }
   hrLightClose(rectLight);
 
@@ -2863,8 +2863,8 @@ bool test100_dummy_hydra_exec()
 
 		pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
 
-		intensityNode.append_child(L"color").text().set(L"1 1 1");
-		intensityNode.append_child(L"multiplier").text().set(L"32.0");
+		intensityNode.append_child(L"color").append_attribute(L"val")      = L"1 1 1";
+		intensityNode.append_child(L"multiplier").append_attribute(L"val") = 32.0f*IRRADIANCE_TO_RADIANCE;
 	}
 	hrLightClose(rectLight);
 

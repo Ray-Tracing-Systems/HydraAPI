@@ -88,7 +88,7 @@ namespace LGHT_TESTS
       auto intensityNode = lightNode.append_child(L"intensity");
 
       intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-			intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"700");
+			intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(700*IRRADIANCE_TO_RADIANCE);
 
       lightNode.append_child(L"falloff_angle").append_attribute(L"val").set_value(100);
       lightNode.append_child(L"falloff_angle2").append_attribute(L"val").set_value(60);
@@ -303,7 +303,7 @@ namespace LGHT_TESTS
       auto intensityNode = lightNode.append_child(L"intensity");
 
       intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-			intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"50");
+			intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(50.0f*IRRADIANCE_TO_RADIANCE);
 
       lightNode.append_child(L"falloff_angle").append_attribute(L"val").set_value(100);
       lightNode.append_child(L"falloff_angle2").append_attribute(L"val").set_value(60);
@@ -504,7 +504,7 @@ namespace LGHT_TESTS
       auto intensityNode = lightNode.append_child(L"intensity");
 
       intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"10");
+      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(10.0f*IRRADIANCE_TO_RADIANCE);
 
       auto honioNode = lightNode.append_child(L"ies");
 
@@ -687,7 +687,7 @@ namespace LGHT_TESTS
       auto intensityNode = lightNode.append_child(L"intensity");
 
       intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"10");
+      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(10.0f*IRRADIANCE_TO_RADIANCE);
 
       auto honioNode = lightNode.append_child(L"ies");
 
@@ -873,7 +873,7 @@ namespace LGHT_TESTS
       auto intensityNode = lightNode.append_child(L"intensity");
 
       intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"100");
+      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(100.0f*IRRADIANCE_TO_RADIANCE);
 
       auto honioNode = lightNode.append_child(L"ies");
 
@@ -1340,7 +1340,7 @@ namespace LGHT_TESTS
       auto intensityNode = lightNode.append_child(L"intensity");
 
       intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"100");
+      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(100.0f*IRRADIANCE_TO_RADIANCE);
 
       auto honioNode = lightNode.append_child(L"ies");
 
@@ -1369,7 +1369,7 @@ namespace LGHT_TESTS
       auto intensityNode = lightNode.append_child(L"intensity");
 
       intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"100");
+      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(100.0f*IRRADIANCE_TO_RADIANCE);
 
       auto honioNode = lightNode.append_child(L"ies");
 
@@ -1531,7 +1531,7 @@ namespace LGHT_TESTS
       auto intensityNode = lightNode.append_child(L"intensity");
     
       intensityNode.append_child(L"color").append_attribute(L"val")      = a_colorStr.c_str();
-      intensityNode.append_child(L"multiplier").append_attribute(L"val") = 100;
+      intensityNode.append_child(L"multiplier").append_attribute(L"val") = 100.0f*IRRADIANCE_TO_RADIANCE;
     
       auto honioNode = lightNode.append_child(L"ies");
       honioNode.append_attribute(L"data")       = a_iesPath.c_str();
@@ -1646,7 +1646,7 @@ namespace LGHT_TESTS
       auto intensityNode = lightNode.append_child(L"intensity");
 
       intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"1000");
+      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(1000.0f*IRRADIANCE_TO_RADIANCE);
 
       auto honioNode = lightNode.append_child(L"ies");
 
@@ -1838,7 +1838,7 @@ namespace LGHT_TESTS
       auto intensityNode = lightNode.append_child(L"intensity");
 
       intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"1000");
+      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(1000.0f*IRRADIANCE_TO_RADIANCE);
 
       auto honioNode = lightNode.append_child(L"ies");
 
@@ -2089,7 +2089,7 @@ namespace LGHT_TESTS
       auto intensityNode = lightNode.append_child(L"intensity");
 
       intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"200");
+      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(200.0f*IRRADIANCE_TO_RADIANCE);
 
       auto honioNode = lightNode.append_child(L"ies");
 
@@ -2391,7 +2391,7 @@ namespace LGHT_TESTS
       auto intensityNode = lightNode.append_child(L"intensity");
 
       intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"1000");
+      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(1000.0f*IRRADIANCE_TO_RADIANCE);
 
       auto honioNode = lightNode.append_child(L"ies");
 

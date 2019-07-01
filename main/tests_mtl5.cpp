@@ -209,7 +209,7 @@ bool MTL_TESTS::test_162_shadow_matte_back1()
     auto intensityNode = lightNode.append_child(L"intensity");
 
     intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"20.0");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(20.0f*IRRADIANCE_TO_RADIANCE);
     VERIFY_XML(lightNode);
   }
   hrLightClose(rectLight);
@@ -564,7 +564,7 @@ bool MTL_TESTS::test_163_diffuse_texture_recommended_res()
     auto intensityNode = lightNode.append_child(L"intensity");
 
     intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"4.0");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(4.0f*IRRADIANCE_TO_RADIANCE);
 		VERIFY_XML(lightNode);
   }
   hrLightClose(rectLight);
@@ -976,7 +976,7 @@ bool MTL_TESTS::test_168_diffuse_texture_recommended_res2()
     auto intensityNode = lightNode.append_child(L"intensity");
 
     intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"4.0");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(4.0f*IRRADIANCE_TO_RADIANCE);
 		VERIFY_XML(lightNode);
   }
   hrLightClose(rectLight);
@@ -1322,8 +1322,8 @@ bool MTL_TESTS::test_170_fresnel_blend()
     
     pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
     
-    intensityNode.append_child(L"color").text().set(L"1 1 1");
-    intensityNode.append_child(L"multiplier").text().set(L"8.0");
+    intensityNode.append_child(L"color").append_attribute(L"val")      = L"1 1 1";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 8.0f*IRRADIANCE_TO_RADIANCE;
   }
   hrLightClose(rectLight);
   

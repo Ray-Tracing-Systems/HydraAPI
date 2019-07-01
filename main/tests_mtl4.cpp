@@ -524,8 +524,8 @@ bool MTL_TESTS::test_158_proc_dirt1()
 
     pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
 
-    intensityNode.append_child(L"color").text().set(L"1 1 1");
-    intensityNode.append_child(L"multiplier").text().set(L"8.0");
+    intensityNode.append_child(L"color").append_attribute(L"val")      = L"1 1 1";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 8.0f*IRRADIANCE_TO_RADIANCE;
   }
   hrLightClose(rectLight);
 
@@ -1156,8 +1156,8 @@ bool MTL_TESTS::test_159_proc_dirt2()
 
     pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
 
-    intensityNode.append_child(L"color").text().set(L"1 1 1");
-    intensityNode.append_child(L"multiplier").text().set(L"8.0");
+    intensityNode.append_child(L"color").append_attribute(L"val")      = L"1 1 1";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 8.0f*IRRADIANCE_TO_RADIANCE;
   }
   hrLightClose(rectLight);
 
@@ -1845,8 +1845,8 @@ bool MTL_TESTS::test_160_proc_dirt3()
 
     pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
 
-    intensityNode.append_child(L"color").text().set(L"1 1 1");
-    intensityNode.append_child(L"multiplier").text().set(L"8.0");
+    intensityNode.append_child(L"color").append_attribute(L"val") = L"1 1 1";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 8.0f*IRRADIANCE_TO_RADIANCE;
   }
   hrLightClose(rectLight);
 
@@ -2099,7 +2099,7 @@ bool MTL_TESTS::test_161_simple_displacement()
 
     auto intensityNode = lightNode.append_child(L"intensity");
     intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"6.0");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(6.0*IRRADIANCE_TO_RADIANCE);
 
     auto sizeNode = lightNode.append_child(L"size").append_attribute(L"radius").set_value(5.5f);
   }
@@ -2332,7 +2332,7 @@ bool MTL_TESTS::test_164_simple_displacement_proctex()
 
     auto intensityNode = lightNode.append_child(L"intensity");
     intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"6.0");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(6.0f*IRRADIANCE_TO_RADIANCE);
 
     auto sizeNode = lightNode.append_child(L"size").append_attribute(L"radius").set_value(5.5f);
   }
@@ -2574,7 +2574,7 @@ bool MTL_TESTS::test_165_simple_displacement_mesh()
 
     auto intensityNode = lightNode.append_child(L"intensity");
     intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"6.0");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(6.0f*IRRADIANCE_TO_RADIANCE);
 
     auto sizeNode = lightNode.append_child(L"size").append_attribute(L"radius").set_value(5.5f);
   }
@@ -2811,7 +2811,7 @@ bool MTL_TESTS::test_166_displace_by_noise()
 
     auto intensityNode = lightNode.append_child(L"intensity");
     intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"6.0");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(6.0f*IRRADIANCE_TO_RADIANCE);
 
     auto sizeNode = lightNode.append_child(L"size").append_attribute(L"radius").set_value(5.5f);
   }
@@ -3404,7 +3404,7 @@ bool MTL_TESTS::test_169_displace_custom_callback()
 
     auto intensityNode = lightNode.append_child(L"intensity");
     intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"6.0");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(6.0f*IRRADIANCE_TO_RADIANCE);
 
     auto sizeNode = lightNode.append_child(L"size").append_attribute(L"radius").set_value(5.5f);
   }
@@ -3648,7 +3648,7 @@ bool MTL_TESTS::test_171_simple_displacement_triplanar()
     pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
 
     intensityNode.append_child(L"color").text().set(L"1 1 1");
-    intensityNode.append_child(L"multiplier").text().set(L"2.0");
+    intensityNode.append_child(L"multiplier").text().set(2.0*IRRADIANCE_TO_RADIANCE);
   }
   hrLightClose(rectLight);
 

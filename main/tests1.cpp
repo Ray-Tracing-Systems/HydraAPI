@@ -220,8 +220,8 @@ bool check_test_03()
   pugi::xml_node l1 = libLights.find_child_by_attribute(L"id", L"0");
   pugi::xml_node l2 = libLights.find_child_by_attribute(L"id", L"1");
 
-  bool color1_ok = std::wstring(l1.child(L"intensity").child(L"color").text().get()) == L"10 10 10";
-  bool color2_ok = std::wstring(l2.child(L"intensity").child(L"color").text().get()) == L"1 1 1";
+  bool color1_ok = std::wstring(l1.child(L"intensity").child(L"color").attribute(L"val").as_string()) == L"10 10 10";
+  bool color2_ok = std::wstring(l2.child(L"intensity").child(L"color").attribute(L"val").as_string()) == L"1 1 1";
 
   return color1_ok && color2_ok;
 }
@@ -244,12 +244,12 @@ bool test03_lights_add()
     lightNode.attribute(L"shape").set_value(L"point");                // you don't have to add attributes, only modify them
     lightNode.attribute(L"distribution").set_value(L"onmi");          // you don't have to add attributes, only modify them
 
-    lightNode.append_child(L"position").text().set(L"0 10 0");
+    lightNode.append_child(L"position").append_attribute(L"val") = L"0 10 0";
 
     xml_node intensityNode = lightNode.append_child(L"intensity");
 
-    intensityNode.append_child(L"color").text().set(L"10 10 10");
-    intensityNode.append_child(L"multiplier").text().set(L"2");
+    intensityNode.append_child(L"color").append_attribute(L"val")      = L"10 10 10";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 2.0f*IRRADIANCE_TO_RADIANCE;
   }
   hrLightClose(light);
 
@@ -257,12 +257,12 @@ bool test03_lights_add()
   {
     xml_node lightNode = hrLightParamNode(light2);
 
-    lightNode.append_child(L"position").text().set(L"0 10 0");
+    lightNode.append_child(L"position").append_attribute(L"val") = L"0 10 0";
 
     xml_node intensityNode = lightNode.append_child(L"intensity");
 
-    intensityNode.append_child(L"color").text().set(L"1 1 1");
-    intensityNode.append_child(L"multiplier").text().set(L"1.5");
+    intensityNode.append_child(L"color").append_attribute(L"val")      = L"1 1 1";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 1.5f*IRRADIANCE_TO_RADIANCE;
   }
   hrLightClose(light2);
 
@@ -281,11 +281,11 @@ bool check_test_04()
   pugi::xml_node l1 = libLights.find_child_by_attribute(L"id", L"0");
   pugi::xml_node l2 = libLights.find_child_by_attribute(L"id", L"1");
 
-  bool color1_ok     = (std::wstring(l1.child(L"intensity").child(L"color").text().get()) == L"10 10 10");
+  bool color1_ok     = (std::wstring(l1.child(L"intensity").child(L"color").attribute(L"val").as_string()) == L"10 10 10");
   bool color2_not_ok = (l2.child(L"intensity").child(L"color") == nullptr);
 
-  bool pos1_ok       = (std::wstring(l1.child(L"position").text().get()) == L"0 10 0");
-  bool pos2_ok       = (std::wstring(l2.child(L"position").text().get()) == L"100 0 100");
+  bool pos1_ok       = (std::wstring(l1.child(L"position").attribute(L"val").as_string()) == L"0 10 0");
+  bool pos2_ok       = (std::wstring(l2.child(L"position").attribute(L"val").as_string()) == L"100 0 100");
 
   return color1_ok && color2_not_ok && pos1_ok && pos2_ok;
 }
@@ -321,12 +321,12 @@ bool test04_lights_add_change()
     lightNode.attribute(L"shape").set_value(L"point");                // you don't have to add attributes, only modify them
     lightNode.attribute(L"distribution").set_value(L"onmi");          // you don't have to add attributes, only modify them
 
-    lightNode.append_child(L"position").text().set(L"20 20 20");
+    lightNode.append_child(L"position").append_attribute(L"val") = L"20 20 20";
 
     xml_node intensityNode = lightNode.append_child(L"intensity");
 
-    intensityNode.append_child(L"color").text().set(L"10 10 10");
-    intensityNode.append_child(L"multiplier").text().set(L"2");
+    intensityNode.append_child(L"color").append_attribute(L"val")      = L"10 10 10";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 2.0f*IRRADIANCE_TO_RADIANCE;
   }
   hrLightClose(light);
 
@@ -334,12 +334,12 @@ bool test04_lights_add_change()
   {
     xml_node lightNode = hrLightParamNode(light2);
 
-    lightNode.append_child(L"position").text().set(L"0 10 0");
+    lightNode.append_child(L"position").append_attribute(L"val") = L"0 10 0";
 
     xml_node intensityNode = lightNode.append_child(L"intensity");
 
-    intensityNode.append_child(L"color").text().set(L"1 1 1");
-    intensityNode.append_child(L"multiplier").text().set(L"1.5");
+    intensityNode.append_child(L"color").append_attribute(L"val")      = L"1 1 1";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 1.5f*IRRADIANCE_TO_RADIANCE;
   }
   hrLightClose(light2);
 
@@ -348,14 +348,14 @@ bool test04_lights_add_change()
   hrLightOpen(light, HR_OPEN_EXISTING);
   {
     xml_node lightNode = hrLightParamNode(light);
-    lightNode.child(L"position").text().set(L"0 10 0");
+    lightNode.child(L"position").attribute(L"val") = L"0 10 0";
   }
   hrLightClose(light);
 
   hrLightOpen(light2, HR_WRITE_DISCARD);
   {
     xml_node lightNode = hrLightParamNode(light2);
-    lightNode.append_child(L"position").text().set(L"100 0 100");
+    lightNode.append_child(L"position").attribute(L"val") = L"100 0 100";
   }
   hrLightClose(light2);
 
@@ -856,8 +856,8 @@ bool check_test_07(const wchar_t* a_path)
 
   pugi::xml_node c1 = libLights.find_child_by_attribute(L"id", L"0");
 
-  bool ok1 = std::wstring(c1.child(L"position").text().get()) == L"0 0 4.50035";
-  bool ok2 = std::wstring(c1.child(L"look_at").text().get())  == L"0 1.62921e-005 -95.4996";
+  bool ok1 = std::wstring(c1.child(L"position").attribute(L"val").as_string()) == L"0 0 4.50035";
+  bool ok2 = std::wstring(c1.child(L"look_at").attribute(L"val").as_string())  == L"0 1.62921e-005 -95.4996";
 
   return ok1 && ok2;
 }
@@ -877,12 +877,12 @@ bool test07_camera_add()
     lightNode.attribute(L"shape").set_value(L"point");                // you don't have to add attributes, only modify them
     lightNode.attribute(L"distribution").set_value(L"onmi");          // you don't have to add attributes, only modify them
 
-    lightNode.append_child(L"position").text().set(L"0 10 0");
+    lightNode.append_child(L"position").append_attribute(L"val") = L"0 10 0";
 
     xml_node intensityNode = lightNode.append_child(L"intensity");
 
-    intensityNode.append_child(L"color").text().set(L"10 10 10");
-    intensityNode.append_child(L"multiplier").text().set(L"2");
+    intensityNode.append_child(L"color").append_attribute(L"val")      = L"10 10 10";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 2.0f*IRRADIANCE_TO_RADIANCE;
   }
   hrLightClose(light);
 

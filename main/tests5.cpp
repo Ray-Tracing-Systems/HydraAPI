@@ -167,7 +167,7 @@ bool test31_procedural_texture_LDR()
 		auto intensityNode = lightNode.append_child(L"intensity");
 		
 		intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-		intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"10.0");
+		intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(10.0f*IRRADIANCE_TO_RADIANCE);
 		
 		VERIFY_XML(lightNode);
 	}
@@ -412,7 +412,7 @@ bool test32_procedural_texture_HDR()
     auto intensityNode = lightNode.append_child(L"intensity");
     
     intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"10.0");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(10.0f*IRRADIANCE_TO_RADIANCE);
     
     VERIFY_XML(lightNode);
   }

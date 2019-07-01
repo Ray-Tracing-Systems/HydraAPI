@@ -292,8 +292,8 @@ bool test35_cornell_with_light()
 
     pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
 
-    intensityNode.append_child(L"color").text().set(L"1 1 1");
-    intensityNode.append_child(L"multiplier").text().set(L"8.0");
+    intensityNode.append_child(L"color").append_attribute(L"val")      = L"1 1 1";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 8.0f*IRRADIANCE_TO_RADIANCE;
   }
   hrLightClose(rectLight);
 
@@ -723,8 +723,8 @@ bool test37_cornell_with_light_different_image_layers()
 
     pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
 
-    intensityNode.append_child(L"color").text().set(L"1 1 1");
-    intensityNode.append_child(L"multiplier").text().set(L"8.0");
+    intensityNode.append_child(L"color").append_attribute(L"val")      = L"1 1 1";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 8.0f*IRRADIANCE_TO_RADIANCE;
   }
   hrLightClose(rectLight);
 
@@ -1230,8 +1230,8 @@ bool test38_test_for_mlt()
 
     pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
 
-    intensityNode.append_child(L"color").text().set(L"1 1 1");
-    intensityNode.append_child(L"multiplier").text().set(L"10.0");
+    intensityNode.append_child(L"color").append_attribute(L"val")      = L"1 1 1";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 10.0f*IRRADIANCE_TO_RADIANCE;
   }
   hrLightClose(rectLight);
 
@@ -1638,8 +1638,8 @@ bool test39_mmlt_or_ibpt()
 
     pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
 
-    intensityNode.append_child(L"color").text().set(L"1 1 1");
-    intensityNode.append_child(L"multiplier").text().set(L"10.0");
+    intensityNode.append_child(L"color").append_attribute(L"val")      = L"1 1 1";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 10.0f*IRRADIANCE_TO_RADIANCE;
   }
   hrLightClose(rectLight);
 
@@ -2045,8 +2045,8 @@ bool test40_several_changes()
 
     pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
 
-    intensityNode.append_child(L"color").text().set(L"1 1 1");
-    intensityNode.append_child(L"multiplier").text().set(L"10.0");
+    intensityNode.append_child(L"color").append_attribute(L"val") = L"1 1 1";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 10.0f*IRRADIANCE_TO_RADIANCE;
   }
   hrLightClose(rectLight);
 

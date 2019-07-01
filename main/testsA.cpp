@@ -709,8 +709,8 @@ bool test65_several_changes_light_rect()
 
     pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
 
-    intensityNode.append_child(L"color").text().set(L"1 1 1");
-    intensityNode.append_child(L"multiplier").text().set(L"10.0");
+    intensityNode.append_child(L"color").append_attribute(L"val")      = L"1 1 1";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 10.0*IRRADIANCE_TO_RADIANCE;
   }
   hrLightClose(rectLight);
 
@@ -872,8 +872,8 @@ bool test65_several_changes_light_rect()
 
     pugi::xml_node intensityNode = lightNode.child(L"intensity");
 
-    intensityNode.child(L"color").text().set(L"1 1 1");
-    intensityNode.child(L"multiplier").text().set(L"5.0");
+    intensityNode.child(L"color").append_attribute(L"val")      = L"1 1 1";
+    intensityNode.child(L"multiplier").append_attribute(L"val") = 5.0f*IRRADIANCE_TO_RADIANCE;
   }
   hrLightClose(rectLight);
 
@@ -2037,8 +2037,8 @@ bool test69_pause_and_resume()
 
     pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
 
-    intensityNode.append_child(L"color").text().set(L"1 1 1");
-    intensityNode.append_child(L"multiplier").text().set(L"10.0");
+    intensityNode.append_child(L"color").append_attribute(L"val")      = L"1 1 1";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 10.0f*IRRADIANCE_TO_RADIANCE;
   }
   hrLightClose(rectLight);
 
@@ -2472,7 +2472,7 @@ bool test70_area_lights16()
     pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
 
     intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"3.0");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(3.0f*IRRADIANCE_TO_RADIANCE);
   }
   hrLightClose(rectLight);
 
@@ -2958,8 +2958,8 @@ bool test73_big_resolution()
 
     pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
 
-    intensityNode.append_child(L"color").text().set(L"1 1 1");
-    intensityNode.append_child(L"multiplier").text().set(L"10.0");
+    intensityNode.append_child(L"color").append_attribute(L"val")      = L"1 1 1";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 10.0f*IRRADIANCE_TO_RADIANCE;
   }
   hrLightClose(rectLight);
 
@@ -3342,8 +3342,8 @@ bool test74_frame_buffer_line()
 
     pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
 
-    intensityNode.append_child(L"color").text().set(L"1 1 1");
-    intensityNode.append_child(L"multiplier").text().set(L"10.0");
+    intensityNode.append_child(L"color").append_attribute(L"val")      = L"1 1 1";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 10.0f*IRRADIANCE_TO_RADIANCE;
   }
   hrLightClose(rectLight);
 
@@ -3743,8 +3743,8 @@ bool test75_repeated_render()
 
     pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
 
-    intensityNode.append_child(L"color").text().set(L"1 1 1");
-    intensityNode.append_child(L"multiplier").text().set(L"10.0");
+    intensityNode.append_child(L"color").append_attribute(L"val")      = L"1 1 1";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 10.0f*IRRADIANCE_TO_RADIANCE;
   }
   hrLightClose(rectLight);
 
@@ -4015,7 +4015,7 @@ bool test76_empty_mesh()
     auto intensityNode = lightNode.append_child(L"intensity");
 
     intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"8.0");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(8.0f*IRRADIANCE_TO_RADIANCE);
 
     VERIFY_XML(lightNode);
   }
@@ -4377,8 +4377,8 @@ bool test77_save_gbuffer_layers()
 
     pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
 
-    intensityNode.append_child(L"color").text().set(L"1 1 1");
-    intensityNode.append_child(L"multiplier").text().set(L"10.0");
+    intensityNode.append_child(L"color").append_attribute(L"val")      = L"1 1 1";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 10.0f*IRRADIANCE_TO_RADIANCE;
   }
   hrLightClose(rectLight);
 
@@ -5726,7 +5726,7 @@ bool test80_lt_rect_image()
     pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
 
     intensityNode.append_child(L"color").text().set(L"1 1 1");
-    intensityNode.append_child(L"multiplier").text().set(L"10.0");
+    intensityNode.append_child(L"multiplier").text().set(10.0f*IRRADIANCE_TO_RADIANCE);
   }
   hrLightClose(rectLight);
 

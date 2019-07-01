@@ -100,7 +100,9 @@ int main(int argc, const char** argv)
   std::wcout << L"[main]: curr_dir = " << NPath << std::endl;
 #else
   std::string workingDir = "../main";
-  chdir(workingDir.c_str());
+  if(chdir(workingDir.c_str()) != 0)
+    std::cout << "chdir failed: " << workingDir.c_str() << std::endl;
+
   char cwd[1024];
   if (getcwd(cwd, sizeof(cwd)) != nullptr)
     std::cout << "[main]: curr_dir = " << cwd <<std::endl;
@@ -134,10 +136,10 @@ int main(int argc, const char** argv)
     //test42_load_mesh_compressed();
     
     //MTL_TESTS::test_120_opacity_shadow_matte();
-    MTL_TESTS::test_137_shadow_matte_emission();
+    //MTL_TESTS::test_137_shadow_matte_emission();
     
     //run_all_api_tests(); // passed
-    //run_all_geo_tests();
+    run_all_geo_tests();
     //run_all_mtl_tests();
     //run_all_lgt_tests();
     //run_all_alg_tests();

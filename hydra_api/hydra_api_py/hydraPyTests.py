@@ -114,7 +114,7 @@ def test01_render_cubes(report_file, inBG):
   intensityNode = lightNode.append_child("intensity")
 
   intensityNode.append_child("color").append_attribute("val").set_value("1 1 1")
-  intensityNode.append_child("multiplier").append_attribute("val").set_value("10.0")
+  intensityNode.append_child("multiplier").append_attribute("val").set_value("31.14")
   hy.hrLightClose(light)
 
 
@@ -228,7 +228,7 @@ def test02_mesh_from_vsgf(report_file, inBG):
   intensityNode = lightNode.append_child("intensity")
 
   intensityNode.append_child("color").append_attribute("val").set_value("1 1 1")
-  intensityNode.append_child("multiplier").append_attribute("val").set_value("10.0")
+  intensityNode.append_child("multiplier").append_attribute("val").set_value("31.14")
   hy.hrLightClose(light)
 
 
@@ -356,7 +356,7 @@ def test03_cornell_box(report_file, inBG):
 
   intensityNode = lightNode.append_child("intensity")
   intensityNode.append_child("color").append_attribute("val").set_value("1 1 1")
-  intensityNode.append_child("multiplier").append_attribute("val").set_value("10.0")
+  intensityNode.append_child("multiplier").append_attribute("val").set_value("31.14")
   hy.hrLightClose(light)
 
   renderRef = hy.hrRenderCreate("HydraModern")
@@ -871,7 +871,7 @@ def test06_blend_simple(report_file, inBG):
 
   intensityNode = lightNode.append_child("intensity")
   intensityNode.append_child("color").append_attribute("val").set_value("1 1 1")
-  intensityNode.append_child("multiplier").append_attribute("val").set_value("10.0")
+  intensityNode.append_child("multiplier").append_attribute("val").set_value("31.1416")
   hy.hrLightClose(light)
 
   renderRef = hy.hrRenderCreate("HydraModern")
@@ -1776,7 +1776,7 @@ def test17_material_remap_lists(report_file, inBG):
   intensityNode = lightNode.append_child("intensity")
 
   intensityNode.append_child("color").append_attribute("val").set_value("1 1 1")
-  intensityNode.append_child("multiplier").append_attribute("val").set_value("10.0")
+  intensityNode.append_child("multiplier").append_attribute("val").set_value("31.1416")
   hy.hrLightClose(light)
 
   renderRef = hy.hrRenderCreate("HydraModern")

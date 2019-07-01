@@ -132,7 +132,7 @@ namespace GEO_TESTS
       auto intensityNode = lightNode.append_child(L"intensity");
 
       intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"8.0");
+      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(8.0f*IRRADIANCE_TO_RADIANCE);
 
 			VERIFY_XML(lightNode);
     }
@@ -312,7 +312,7 @@ namespace GEO_TESTS
       auto intensityNode = lightNode.append_child(L"intensity");
 
       intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"8.0");
+      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(8.0f*IRRADIANCE_TO_RADIANCE);
 
 			VERIFY_XML(lightNode);
     }
@@ -487,7 +487,7 @@ namespace GEO_TESTS
       auto intensityNode = lightNode.append_child(L"intensity");
 
       intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"8.0");
+      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(8.0*IRRADIANCE_TO_RADIANCE);
 
 			VERIFY_XML(lightNode);
     }
@@ -1382,9 +1382,9 @@ namespace GEO_TESTS
 
       auto intensityNode = lightNode.append_child(L"intensity");
       intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"6.0");
+      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(6.0f*IRRADIANCE_TO_RADIANCE);
 
-      auto sizeNode = lightNode.append_child(L"size").append_attribute(L"radius").set_value(5.5f);
+      lightNode.append_child(L"size").append_attribute(L"radius").set_value(5.5f);
     }
     hrLightClose(sphereLight);
 

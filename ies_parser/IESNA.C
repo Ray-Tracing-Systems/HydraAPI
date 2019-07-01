@@ -302,7 +302,7 @@ extern "C" BOOL IE_ReadFile(char *fname, IE_DATA *pdata)
   if (status == TRUE)
   {
     /* Read in next two lines                                           */
-    status = IE_GetList(piesf, "%d%f%f%d%d%d%d%f%f%f",
+    status = IE_GetList(piesf, (char*)"%d%f%f%d%d%d%d%f%f%f",
         &(pdata->lamp.num_lamps), &(pdata->lamp.lumens_lamp),
         &(pdata->lamp.multiplier), &(pdata->photo.num_vert_angles),
         &(pdata->photo.num_horz_angles), &(pdata->photo.gonio_type),
@@ -312,7 +312,7 @@ extern "C" BOOL IE_ReadFile(char *fname, IE_DATA *pdata)
 
   if (status == TRUE)
   {
-    status = IE_GetList(piesf, "%f%f%f", &(pdata->elec.ball_factor),
+    status = IE_GetList(piesf, (char*)"%f%f%f", &(pdata->elec.ball_factor),
         &(pdata->elec.blp_factor), &(pdata->elec.input_watts));
   }
 

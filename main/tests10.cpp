@@ -389,7 +389,7 @@ bool test1003_get_light_by_name_and_edit()
 
       auto intensityNode = lightNode.append_child(L"intensity");
       intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"0.0 1.0 0.1");
-      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"4.0");
+      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(4.0f*IRRADIANCE_TO_RADIANCE);
 
       VERIFY_XML(lightNode);
     }
@@ -407,7 +407,7 @@ bool test1003_get_light_by_name_and_edit()
 
       auto intensityNode = lightNode.force_child(L"intensity");
       intensityNode.force_child(L"color").force_attribute(L"val").set_value(L"1.0 0.3 0.0");
-      intensityNode.force_child(L"multiplier").force_attribute(L"val").set_value(L"12.0");
+      intensityNode.force_child(L"multiplier").force_attribute(L"val").set_value(12.0f*IRRADIANCE_TO_RADIANCE);
 
       VERIFY_XML(lightNode);
     }
@@ -424,13 +424,12 @@ bool test1003_get_light_by_name_and_edit()
       auto lightNode = hrLightParamNode(lightRef3);
 
       auto intensityNode = lightNode.force_child(L"intensity");
-      intensityNode.force_child(L"multiplier").force_attribute(L"val").set_value(L"24.0");
+      intensityNode.force_child(L"multiplier").force_attribute(L"val").set_value(24.0f*IRRADIANCE_TO_RADIANCE);
 
       VERIFY_XML(lightNode);
     }
     hrLightClose(lightRef3);
   }
-
 
   hrFlush(scnRef, renderRef);
 

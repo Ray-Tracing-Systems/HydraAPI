@@ -448,4 +448,7 @@ static const int CURR_RENDER_DEVICE = 0;
 
 void run_all_mictofacet();
 
+
+#define IRRADIANCE_TO_RADIANCE (3.14159265358979323846f)
+
 #endif

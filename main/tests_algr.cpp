@@ -114,7 +114,7 @@ bool ALGR_TESTS::test_401_ibpt_and_glossy_glass()
     
     auto intensityNode = lightNode.append_child(L"intensity");
     intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 0.5 1");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"200.0");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(200.0*IRRADIANCE_TO_RADIANCE);
     
     auto sizeNode = lightNode.append_child(L"size").append_attribute(L"radius").set_value(0.1f);
     VERIFY_XML(lightNode);
@@ -133,7 +133,7 @@ bool ALGR_TESTS::test_401_ibpt_and_glossy_glass()
     
     auto intensityNode = lightNode.append_child(L"intensity");
     intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"0.5 1 0.5");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"200.0");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(200.0*IRRADIANCE_TO_RADIANCE);
     
     auto sizeNode = lightNode.append_child(L"size").append_attribute(L"radius").set_value(0.1f);
     VERIFY_XML(lightNode);
@@ -370,7 +370,7 @@ bool ALGR_TESTS::test_402_ibpt_and_glossy_double_glass()
     
     auto intensityNode = lightNode.append_child(L"intensity");
     intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 0.5 1");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"200.0");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(200.0*IRRADIANCE_TO_RADIANCE);
     
     auto sizeNode = lightNode.append_child(L"size").append_attribute(L"radius").set_value(0.1f);
     VERIFY_XML(lightNode);
@@ -389,13 +389,12 @@ bool ALGR_TESTS::test_402_ibpt_and_glossy_double_glass()
     
     auto intensityNode = lightNode.append_child(L"intensity");
     intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"0.5 1 0.5");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"200.0");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(200.0*IRRADIANCE_TO_RADIANCE);
     
     auto sizeNode = lightNode.append_child(L"size").append_attribute(L"radius").set_value(0.1f);
     VERIFY_XML(lightNode);
   }
   hrLightClose(sphere2);
-  
   
   
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -627,7 +626,7 @@ bool ALGR_TESTS::test_403_light_inside_double_glass()
     
     auto intensityNode = lightNode.append_child(L"intensity");
     intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 0.5 1");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"200.0");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(200.0*IRRADIANCE_TO_RADIANCE);
     
     auto sizeNode = lightNode.append_child(L"size").append_attribute(L"radius").set_value(0.1f);
     VERIFY_XML(lightNode);
@@ -646,7 +645,7 @@ bool ALGR_TESTS::test_403_light_inside_double_glass()
     
     auto intensityNode = lightNode.append_child(L"intensity");
     intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"0.5 1 0.5");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"200.0");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(200.0f*IRRADIANCE_TO_RADIANCE);
     
     lightNode.append_child(L"size").append_attribute(L"radius").set_value(0.1f);
     VERIFY_XML(lightNode);
