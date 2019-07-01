@@ -689,8 +689,6 @@ namespace GEO_TESTS
       lightNode.attribute(L"type").set_value(L"directional");
       lightNode.attribute(L"shape").set_value(L"point");
 
-      // lightNode.append_child(L"direction").text() = L"-0.340738 -0.766534 -0.544356"; // will be recalculated and overrided by light instance matrix
-
       pugi::xml_node sizeNode = lightNode.append_child(L"size");
 
       sizeNode.append_child(L"inner_radius").append_attribute(L"val") = 10.0f;
@@ -1036,7 +1034,6 @@ namespace GEO_TESTS
       VERIFY_XML(lightNode);
     }
     hrLightClose(sky);
-
 
     hrLightOpen(sun, HR_WRITE_DISCARD);
     {

@@ -13,6 +13,7 @@
 
 #include "HR_HDRImage.h"
 #include "HydraInternal.h"
+#include "HydraObjectManager.h"
 
 #include <mutex>
 #include <future>
@@ -868,12 +869,13 @@ HRRenderUpdateInfo RD_HydraConnection::HaveUpdateNow(int a_maxRaysPerPixel)
   result.haveUpdateFB  = false;
   result.haveUpdateMSG = false;
 
-  if (m_instancesNum == 0) // #TODO: Put error message here!
+  if (m_instancesNum == 0)
   {
     result.finalUpdate   = true;
     result.progress      = 100.0f;
     result.haveUpdateFB  = true;
-    result.haveUpdateMSG = false;  
+    result.haveUpdateMSG = false;
+    HrPrint(HR_SEVERITY_ERROR, L"RD_HydraConnection::HaveUpdateNow: no instances in scene!!");
     return result;
   }
 

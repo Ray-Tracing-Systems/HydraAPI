@@ -30,10 +30,10 @@ using namespace TEST_UTILS;
 namespace LGHT_TESTS
 {
   const int TESTS_IMG_SIZE = 512;
-  
+
   bool test_226_area_spot_simple()
   {
-    
+
 
     hrErrorCallerPlace(L"test_226");
 
@@ -79,7 +79,7 @@ namespace LGHT_TESTS
 
       lightNode.attribute(L"type").set_value(L"area");
       lightNode.attribute(L"shape").set_value(L"rect");
-      lightNode.attribute(L"distribution").set_value(L"spot"); 
+      lightNode.attribute(L"distribution").set_value(L"spot");
 
       auto sizeNode = lightNode.append_child(L"size");
       sizeNode.append_attribute(L"half_length").set_value(0.2f);
@@ -191,7 +191,7 @@ namespace LGHT_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-    
+
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -204,8 +204,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
 
-        
-        
+
+
       }
 
       if (info.finalUpdate)
@@ -219,7 +219,7 @@ namespace LGHT_TESTS
 
   bool test_227_point_spot_glossy_wall()
   {
-    
+
 
     hrErrorCallerPlace(L"test_227");
     hrSceneLibraryOpen(L"tests_f/test_227", HR_WRITE_DISCARD);
@@ -340,18 +340,18 @@ namespace LGHT_TESTS
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     HRRenderRef renderRef = hrRenderCreate(L"HydraModern");
-  
+
     hrRenderOpen(renderRef, HR_WRITE_DISCARD);
     {
       auto node = hrRenderParamNode(renderRef);
-    
+
       node.append_child(L"width").text()  = 512;
       node.append_child(L"height").text() = 512;
-    
+
       node.append_child(L"method_primary").text()   = L"IBPT";
       node.append_child(L"method_secondary").text() = L"IBPT";
       node.append_child(L"shadows").text()          = L"1";
-    
+
       node.append_child(L"trace_depth").text()      = L"6";
       node.append_child(L"diff_trace_depth").text() = L"3";
       node.append_child(L"maxRaysPerPixel").text()  = 1024;
@@ -424,7 +424,7 @@ namespace LGHT_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-    
+
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -438,8 +438,8 @@ namespace LGHT_TESTS
         std::cout.precision(pres);
         std::cout.flush();
 
-        
-        
+
+
       }
 
       if (info.finalUpdate)
@@ -453,7 +453,7 @@ namespace LGHT_TESTS
 
   bool test_228_point_ies_for_bpt()
   {
-    
+
 
     hrErrorCallerPlace(L"test_228");
 
@@ -622,8 +622,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
 
-        
-        
+
+
       }
 
       if (info.finalUpdate)
@@ -637,7 +637,7 @@ namespace LGHT_TESTS
 
   bool test_229_point_ies_for_bpt()
   {
-    
+
 
     hrErrorCallerPlace(L"test_229");
 
@@ -793,7 +793,7 @@ namespace LGHT_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-    
+
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -806,8 +806,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
 
-        
-        
+
+
       }
 
       if (info.finalUpdate)
@@ -821,7 +821,7 @@ namespace LGHT_TESTS
 
   bool test_230_area_ies_for_bpt()
   {
-    
+
 
     hrErrorCallerPlace(L"test_230");
 
@@ -979,7 +979,7 @@ namespace LGHT_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-    
+
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -992,8 +992,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
 
-        
-        
+
+
       }
 
       if (info.finalUpdate)
@@ -1007,7 +1007,7 @@ namespace LGHT_TESTS
 
   bool test_231_direct_soft_shadow()
   {
-    
+
 
     hrErrorCallerPlace(L"test_231");
 
@@ -1271,8 +1271,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
 
-        
-        
+
+
       }
 
       if (info.finalUpdate)
@@ -1286,7 +1286,7 @@ namespace LGHT_TESTS
 
   bool test_232_point_area_ies()
   {
-    
+
 
     hrErrorCallerPlace(L"test_232");
 
@@ -1478,7 +1478,7 @@ namespace LGHT_TESTS
     hrSceneClose(scnRef);
 
     hrFlush(scnRef, renderRef);
-    
+
     while (true)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -1491,8 +1491,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
 
-        
-        
+
+
       }
 
       if (info.finalUpdate)
@@ -1519,25 +1519,25 @@ namespace LGHT_TESTS
     hrLightOpen(a_light, HR_WRITE_DISCARD);
     {
       auto lightNode = hrLightParamNode(a_light);
-    
+
       lightNode.attribute(L"type").set_value(L"area");
       lightNode.attribute(L"shape").set_value(L"rect");
       lightNode.attribute(L"distribution").set_value(L"ies");
-    
+
       lightNode.append_child(L"size");
       lightNode.child(L"size").append_attribute(L"half_width")  = 0.1f;
       lightNode.child(L"size").append_attribute(L"half_length") = 0.1f;
-    
+
       auto intensityNode = lightNode.append_child(L"intensity");
-    
+
       intensityNode.append_child(L"color").append_attribute(L"val")      = a_colorStr.c_str();
       intensityNode.append_child(L"multiplier").append_attribute(L"val") = 100.0f*IRRADIANCE_TO_RADIANCE;
-    
+
       auto honioNode = lightNode.append_child(L"ies");
       honioNode.append_attribute(L"data")       = a_iesPath.c_str();
       honioNode.append_attribute(L"matrix")     = L"1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1";
       honioNode.append_attribute(L"point_area") = 1; /// indicates that we must always eval ies honiogram from the center of light, not from the point we actually sample/hit.
-    
+
       VERIFY_XML(lightNode);
     }
     hrLightClose(a_light);
@@ -1594,7 +1594,7 @@ namespace LGHT_TESTS
 
   bool test_233_light_group_point_area_ies()
   {
-    
+
 
     hrErrorCallerPlace(L"test_233");
 
@@ -1771,8 +1771,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
 
-        
-        
+
+
       }
 
       if (info.finalUpdate)
@@ -1786,7 +1786,7 @@ namespace LGHT_TESTS
 
   bool test_234_light_group_light_inst_cust_params()
   {
-    
+
 
     hrErrorCallerPlace(L"test_234");
 
@@ -1972,8 +1972,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
 
-        
-        
+
+
       }
 
       if (info.finalUpdate)
@@ -1987,7 +1987,7 @@ namespace LGHT_TESTS
 
   bool test_235_stadium()
   {
-    
+
 
     hrErrorCallerPlace(L"test_235");
 
@@ -2029,22 +2029,22 @@ namespace LGHT_TESTS
     // add some more materials because stadium have 11 different material ids
     //
     HRMaterialRef otherStadiumMats[10];
-    for (int i = 0; i < 10; i++) 
+    for (int i = 0; i < 10; i++)
     {
       otherStadiumMats[i] = hrMaterialCreate(L"matAux");
-    
+
       hrMaterialOpen(otherStadiumMats[i], HR_WRITE_DISCARD);
       {
         auto matNode = hrMaterialParamNode(otherStadiumMats[i]);
-    
+
         auto diff = matNode.append_child(L"diffuse");
         diff.append_attribute(L"brdf_type").set_value(L"lambert");
-    
+
         auto color = diff.append_child(L"color");
         color.append_attribute(L"val").set_value(L"0.5 0.5 0.5");
       }
       hrMaterialClose(otherStadiumMats[i]);
-    
+
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2133,27 +2133,27 @@ namespace LGHT_TESTS
 
     HRRenderRef renderRef = hrRenderCreate(L"HydraModern");
     hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
-  
+
     hrRenderOpen(renderRef, HR_WRITE_DISCARD);
     {
       auto node = hrRenderParamNode(renderRef);
-    
+
       node.append_child(L"width").text()  = 1024;
       node.append_child(L"height").text() = 768;
-    
+
       node.append_child(L"method_primary").text()   = L"pathtracing";
       node.append_child(L"method_secondary").text() = L"pathtracing";
       node.append_child(L"method_tertiary").text()  = L"pathtracing";
       node.append_child(L"method_caustic").text()   = L"pathtracing";
       node.append_child(L"shadows").text()          = L"1";
-    
+
       node.append_child(L"trace_depth").text()      = L"6";
       node.append_child(L"diff_trace_depth").text() = L"3";
       node.append_child(L"maxRaysPerPixel").text()  = 8192;
     }
     hrRenderClose(renderRef);
-  
-  
+
+
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Create scene
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2218,7 +2218,7 @@ namespace LGHT_TESTS
       mTranslate = translate4x4(float3(+95.0f - 2.5f, 0.0f, 0.0f + offZ));
       hrLightInstance(scnRef, spot1, mTranslate.L());
     }
-   
+
     for (float offX = -80.0f; offX < 80.0f; offX += 5.0f)
     {
       mTranslate = translate4x4(float3(offX, 0.0f, +160.0f));
@@ -2267,8 +2267,8 @@ namespace LGHT_TESTS
         std::cout << "rendering progress = " << info.progress << "% \r";
         std::cout.precision(pres);
 
-        
-        
+
+
       }
 
       if (info.finalUpdate)
@@ -2335,191 +2335,183 @@ namespace LGHT_TESTS
   }
 
 
-
-  
   bool test_236_light_group_point_area_ies2()
   {
-    
+     hrErrorCallerPlace(L"test_236");
 
-    hrErrorCallerPlace(L"test_236");
+     hrSceneLibraryOpen(L"tests_f/test_236", HR_WRITE_DISCARD);
 
-    hrSceneLibraryOpen(L"tests_f/test_236", HR_WRITE_DISCARD);
+     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     // Materials
+     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Materials
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     HRMaterialRef matGray = hrMaterialCreate(L"matGray");
 
-    HRMaterialRef matGray = hrMaterialCreate(L"matGray");
+     hrMaterialOpen(matGray, HR_WRITE_DISCARD);
+     {
+       auto matNode = hrMaterialParamNode(matGray);
 
-    hrMaterialOpen(matGray, HR_WRITE_DISCARD);
-    {
-      auto matNode = hrMaterialParamNode(matGray);
+       auto diff = matNode.append_child(L"diffuse");
+       diff.append_attribute(L"brdf_type").set_value(L"lambert");
 
-      auto diff = matNode.append_child(L"diffuse");
-      diff.append_attribute(L"brdf_type").set_value(L"lambert");
+       auto color = diff.append_child(L"color");
+       color.append_attribute(L"val").set_value(L"0.5 0.5 0.5");
 
-      auto color = diff.append_child(L"color");
-      color.append_attribute(L"val").set_value(L"0.5 0.5 0.5");
+ 			VERIFY_XML(matNode);
+     }
+     hrMaterialClose(matGray);
 
-			VERIFY_XML(matNode);
-    }
-    hrMaterialClose(matGray);
+     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     // Meshes
+     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     HRMeshRef sph1     = HRMeshFromSimpleMesh(L"sph1",    CreateSphere(2.0f, 64), matGray.id);
+     HRMeshRef sph2     = HRMeshFromSimpleMesh(L"sph2",    CreateSphere(2.0f, 64), matGray.id);
+     HRMeshRef cubeOpen = HRMeshFromSimpleMesh(L"my_cube", CreateCubeOpen(6.0f),   matGray.id);
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Meshes
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    HRMeshRef sph1     = HRMeshFromSimpleMesh(L"sph1",    CreateSphere(2.0f, 64), matGray.id);
-    HRMeshRef sph2     = HRMeshFromSimpleMesh(L"sph2",    CreateSphere(2.0f, 64), matGray.id);
-    HRMeshRef cubeOpen = HRMeshFromSimpleMesh(L"my_cube", CreateCubeOpen(6.0f),   matGray.id);
+     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     // Light
+     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Light
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     HRLightRef spot1 = hrLightCreate(L"spot1");
 
-    HRLightRef spot1 = hrLightCreate(L"spot1");
+     hrLightOpen(spot1, HR_WRITE_DISCARD);
+     {
+       auto lightNode = hrLightParamNode(spot1);
 
-    hrLightOpen(spot1, HR_WRITE_DISCARD);
-    {
-      auto lightNode = hrLightParamNode(spot1);
+       lightNode.attribute(L"type").set_value(L"area");
+       lightNode.attribute(L"shape").set_value(L"disk");
+       lightNode.attribute(L"distribution").set_value(L"ies");
 
-      lightNode.attribute(L"type").set_value(L"area");
-      lightNode.attribute(L"shape").set_value(L"disk");
-      lightNode.attribute(L"distribution").set_value(L"ies");
+       lightNode.append_child(L"size").append_attribute(L"radius") = 0.1f;
 
-      lightNode.append_child(L"size").append_attribute(L"radius") = 0.1f;
+       auto intensityNode = lightNode.append_child(L"intensity");
 
-      auto intensityNode = lightNode.append_child(L"intensity");
+       intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
+       intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(1000.0f*IRRADIANCE_TO_RADIANCE);
 
-      intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(1000.0f*IRRADIANCE_TO_RADIANCE);
+       auto honioNode = lightNode.append_child(L"ies");
 
-      auto honioNode = lightNode.append_child(L"ies");
+       honioNode.append_attribute(L"data")   = L"data/ies/ies_1.ies";
+       honioNode.append_attribute(L"matrix") = L"1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1";
 
-      honioNode.append_attribute(L"data")   = L"data/ies/ies_1.ies";
-      honioNode.append_attribute(L"matrix") = L"1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1";
+       VERIFY_XML(lightNode);
+     }
+     hrLightClose(spot1);
 
-      VERIFY_XML(lightNode);
-    }
-    hrLightClose(spot1);
-
-    HRLightGroupExt lightGroup = MyCAD_CreateAreaMatrixLEDLight(L"IntiLED_NxN", 6, 6, 1.5f);
+     HRLightGroupExt lightGroup = MyCAD_CreateAreaMatrixLEDLight(L"IntiLED_NxN", 6, 6, 1.5f);
 
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Camera
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     // Camera
+     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    HRCameraRef camRef = hrCameraCreate(L"my camera");
+     HRCameraRef camRef = hrCameraCreate(L"my camera");
 
-    hrCameraOpen(camRef, HR_WRITE_DISCARD);
-    {
-      auto camNode = hrCameraParamNode(camRef);
+     hrCameraOpen(camRef, HR_WRITE_DISCARD);
+     {
+       auto camNode = hrCameraParamNode(camRef);
 
-      camNode.append_child(L"fov").text().set(L"45");
-      camNode.append_child(L"nearClipPlane").text().set(L"0.01");
-      camNode.append_child(L"farClipPlane").text().set(L"100.0");
+       camNode.append_child(L"fov").text().set(L"45");
+       camNode.append_child(L"nearClipPlane").text().set(L"0.01");
+       camNode.append_child(L"farClipPlane").text().set(L"100.0");
 
-      camNode.append_child(L"up").text().set(L"0 1 0");
-      camNode.append_child(L"position").text().set(L"0 3 18");
-      camNode.append_child(L"look_at").text().set(L"0 3 0");
+       camNode.append_child(L"up").text().set(L"0 1 0");
+       camNode.append_child(L"position").text().set(L"0 3 18");
+       camNode.append_child(L"look_at").text().set(L"0 3 0");
 
-			VERIFY_XML(camNode);
-    }
-    hrCameraClose(camRef);
+ 			VERIFY_XML(camNode);
+     }
+     hrCameraClose(camRef);
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Render settings
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     // Render settings
+     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, TESTS_IMG_SIZE, TESTS_IMG_SIZE, 512, 4096);
+     HRRenderRef renderRef = CreateBasicTestRenderPT(CURR_RENDER_DEVICE, TESTS_IMG_SIZE, TESTS_IMG_SIZE, 512, 4096);
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Create scene
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     // Create scene
+     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    HRSceneInstRef scnRef = hrSceneCreate(L"my scene");
+     HRSceneInstRef scnRef = hrSceneCreate(L"my scene");
 
-    using namespace HydraLiteMath;
+     using namespace HydraLiteMath;
 
-    float4x4 mRot;
-    float4x4 mTranslate;
-    float4x4 mRes;
+     float4x4 mRot;
+     float4x4 mTranslate;
+     float4x4 mRes;
 
-    const float DEG_TO_RAD = 0.01745329251f; // float(3.14159265358979323846f) / 180.0f;
+     const float DEG_TO_RAD = 0.01745329251f; // float(3.14159265358979323846f) / 180.0f;
 
     hrSceneOpen(scnRef, HR_WRITE_DISCARD);
-    ///////////
-
-    mTranslate.identity();
-    mRes.identity();
-    mRot.identity();
-
-
-    mTranslate = translate4x4(float3(0.0f, 3.0f, 0.0f));
-    mRot = rotate_Y_4x4(180.0f*DEG_TO_RAD);
-    mRes = mul(mTranslate, mRot);
-
-    hrMeshInstance(scnRef, cubeOpen, mRes.L());
-
-    ///////////
-
-    mTranslate.identity();
-    mRes.identity();
-
-    mTranslate = translate4x4(float3(-3.0f, 1.25f, 0.0f));
-    mRes = mul(mTranslate, mRes);
-
-    hrMeshInstance(scnRef, sph1, mRes.L());
-
-    ///////////
-
-    mTranslate.identity();
-    mRes.identity();
-
-    mTranslate = translate4x4(float3(3.0f, 1.25f, 0.0f));
-    mRes = mul(mTranslate, mRes);
-
-    hrMeshInstance(scnRef, sph2, mRes.L());
-
-
-    ///////////
-
-    mTranslate.identity();
-    mRes.identity();
-
-    mTranslate = translate4x4(float3(-3.0f, 8.0f, -5.0f));
-    hrLightInstance(scnRef, spot1, mTranslate.L());
-
-    mTranslate = translate4x4(float3(+3.0f, 8.0f, -5.0f));
-    hrLightGroupInstanceExt(scnRef, lightGroup, mTranslate.L());
-
-    ///////////
-
-    hrSceneClose(scnRef);
-
-    while (true)
     {
-      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+      ///////////
+      mTranslate.identity();
+      mRes.identity();
+      mRot.identity();
 
-      HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
+      mTranslate = translate4x4(float3(0.0f, 3.0f, 0.0f));
+      mRot = rotate_Y_4x4(180.0f * DEG_TO_RAD);
+      mRes = mul(mTranslate, mRot);
 
-      if (info.haveUpdateFB)
-      {
-        auto pres = std::cout.precision(2);
-        std::cout << "rendering progress = " << info.progress << "% \r";
-        std::cout.precision(pres);
+      hrMeshInstance(scnRef, cubeOpen, mRes.L());
 
-        
-        
-      }
+      ///////////
 
-      if (info.finalUpdate)
-        break;
-    }
+      mTranslate.identity();
+      mRes.identity();
 
-    hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_236/z_out.png");
+      mTranslate = translate4x4(float3(-3.0f, 1.25f, 0.0f));
+      mRes = mul(mTranslate, mRes);
 
-    return check_images("test_236", 1, 25);
+      hrMeshInstance(scnRef, sph1, mRes.L());
+
+      ///////////
+      mTranslate.identity();
+      mRes.identity();
+
+      mTranslate = translate4x4(float3(3.0f, 1.25f, 0.0f));
+      mRes = mul(mTranslate, mRes);
+
+      hrMeshInstance(scnRef, sph2, mRes.L());
+
+      ///////////
+      mTranslate.identity();
+      mRes.identity();
+
+      mTranslate = translate4x4(float3(-3.0f, 8.0f, -5.0f));
+      hrLightInstance(scnRef, spot1, mTranslate.L());
+
+      mTranslate = translate4x4(float3(+3.0f, 8.0f, -5.0f));
+      hrLightGroupInstanceExt(scnRef, lightGroup, mTranslate.L());
+
+      ///////////
+     }
+     hrSceneClose(scnRef);
+
+     hrFlush(scnRef, renderRef, camRef);
+
+     while (true)
+     {
+       std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+       HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
+
+       if (info.haveUpdateFB)
+       {
+         auto pres = std::cout.precision(2);
+         std::cout << "rendering progress = " << info.progress << "% \r";
+         std::cout.precision(pres);
+       }
+
+       if (info.finalUpdate)
+         break;
+     }
+
+     hrRenderSaveFrameBufferLDR(renderRef, L"tests_images/test_236/z_out.png");
+
+     return check_images("test_236", 1, 25);
   }
+
 
 };

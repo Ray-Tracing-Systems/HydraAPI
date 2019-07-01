@@ -134,14 +134,13 @@ int main(int argc, const char** argv)
     //demo_04_instancing();
 
     //test42_load_mesh_compressed();
-    
-    //MTL_TESTS::test_120_opacity_shadow_matte();
-    //MTL_TESTS::test_137_shadow_matte_emission();
+    std::cout << GEO_TESTS::test_004_dof() << std::endl;
+    //std::cout << LGHT_TESTS::test_236_light_group_point_area_ies2() << std::endl;
     
     //run_all_api_tests(); // passed
-    run_all_geo_tests();
-    //run_all_mtl_tests();
+    //run_all_geo_tests();
     //run_all_lgt_tests();
+    //run_all_mtl_tests();
     //run_all_alg_tests();
     //run_all_ipp_tests();
     
