@@ -1274,7 +1274,7 @@ def test10_sky_sun_physical(report_file, inBG):
   intensityNode = lightNode.append_child("intensity")
 
   intensityNode.append_child("color").append_attribute("val").set_value("1.0 0.85 0.64")
-  intensityNode.append_child("multiplier").append_attribute("val").set_value("3.0")
+  intensityNode.append_child("multiplier").append_attribute("val").set_value("9.425")
   
   lightNode.append_child("angle_radius").append_attribute("val").set_value(0.5)
   hy.hrLightClose(sun)

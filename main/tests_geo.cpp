@@ -36,8 +36,6 @@ namespace GEO_TESTS
 
   bool test_001_mesh_from_memory()
   {
-    
-
     hrErrorCallerPlace(L"test_001");
 
 
@@ -253,9 +251,6 @@ namespace GEO_TESTS
 
   bool test_002_mesh_from_vsgf()
   {
-    
-    
-
     hrErrorCallerPlace(L"test_002");
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -412,9 +407,6 @@ namespace GEO_TESTS
 
   bool test_003_compute_normals()
   {
-   
-    
-
     hrErrorCallerPlace(L"test_003");
     hrSceneLibraryOpen(L"tests_f/test_003", HR_WRITE_DISCARD);
 
@@ -603,13 +595,8 @@ namespace GEO_TESTS
 
   }
 
-
-
   bool test_004_dof()
   {
-
-    
-
     hrErrorCallerPlace(L"test_004");
 
     HRCameraRef    camRef;
@@ -706,13 +693,13 @@ namespace GEO_TESTS
 
       pugi::xml_node sizeNode = lightNode.append_child(L"size");
 
-      sizeNode.append_child(L"inner_radius").text().set(L"10.0");
-      sizeNode.append_child(L"outer_radius").text().set(L"20.0");
+      sizeNode.append_child(L"inner_radius").append_attribute(L"val") = 10.0f;
+      sizeNode.append_child(L"outer_radius").append_attribute(L"val") = 20.0f;
 
       pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
 
-      intensityNode.append_child(L"color").text().set(L"1 1 1");
-      intensityNode.append_child(L"multiplier").text().set(L"2.0");
+      intensityNode.append_child(L"color").append_attribute(L"val")      = L"1 1 1";
+      intensityNode.append_child(L"multiplier").append_attribute(L"val") = 2.0f*IRRADIANCE_TO_RADIANCE;
     }
     hrLightClose(directLight);
 
@@ -888,9 +875,6 @@ namespace GEO_TESTS
         auto pres = std::cout.precision(2);
         std::cout << "rendering progress = " << info.progress << "% \r"; std::cout.flush();
         std::cout.precision(pres);
-
-        
-        
       }
 
       if (info.finalUpdate)
@@ -907,8 +891,6 @@ namespace GEO_TESTS
 
   bool test_005_instancing()
   {
-    
-
     hrErrorCallerPlace(L"test_005");
 
     hrSceneLibraryOpen(L"tests_f/test_005", HR_WRITE_DISCARD);
@@ -1044,7 +1026,7 @@ namespace GEO_TESTS
       auto intensityNode = lightNode.append_child(L"intensity");
 
       intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1 1 1");
-      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"1.0");
+      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(1.0f);
 
       auto sunModel = lightNode.append_child(L"perez");
 
@@ -1071,15 +1053,13 @@ namespace GEO_TESTS
       auto intensityNode = lightNode.append_child(L"intensity");
 
       intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1.0 0.85 0.64");
-      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"2.0");
+      intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(2.0f*IRRADIANCE_TO_RADIANCE);
 
       lightNode.append_child(L"shadow_softness").append_attribute(L"val").set_value(1.0f);
 
       VERIFY_XML(lightNode);
     }
     hrLightClose(sun);
-
-
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Camera

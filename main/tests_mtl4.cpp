@@ -3136,7 +3136,7 @@ bool MTL_TESTS::test_167_subdiv()
     auto intensityNode = lightNode.append_child(L"intensity");
 
     intensityNode.append_child(L"color").append_attribute(L"val").set_value(L"1.0 0.85 0.64");
-    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(L"2.0");
+    intensityNode.append_child(L"multiplier").append_attribute(L"val").set_value(2.0f*IRRADIANCE_TO_RADIANCE);
 
     //lightNode.append_child(L"shadow_softness").append_attribute(L"val").set_value(1.0f);
     lightNode.append_child(L"angle_radius").append_attribute(L"val").set_value(0.5f);
