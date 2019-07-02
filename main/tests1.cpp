@@ -310,7 +310,7 @@ bool test04_lights_add_change()
 
   HRLightRef light  = hrLightCreate(L"testPointLight1");
   HRLightRef light2 = hrLightCreate(L"testSpotLight2");
-  HRLightRef light3 = hrLightCreate(L"testPointLight3");
+  HRLightRef light3 = hrLightCreate(L"testSpotLight3");
 
   // simple light example; the container will be translated to point light;
   //
@@ -355,7 +355,7 @@ bool test04_lights_add_change()
   hrLightOpen(light2, HR_WRITE_DISCARD);
   {
     xml_node lightNode = hrLightParamNode(light2);
-    lightNode.append_child(L"position").attribute(L"val") = L"100 0 100";
+    lightNode.append_child(L"position").append_attribute(L"val") = L"100 0 100";
   }
   hrLightClose(light2);
 
@@ -856,8 +856,8 @@ bool check_test_07(const wchar_t* a_path)
 
   pugi::xml_node c1 = libLights.find_child_by_attribute(L"id", L"0");
 
-  bool ok1 = std::wstring(c1.child(L"position").attribute(L"val").as_string()) == L"0 0 4.50035";
-  bool ok2 = std::wstring(c1.child(L"look_at").attribute(L"val").as_string())  == L"0 1.62921e-005 -95.4996";
+  bool ok1 = std::wstring(c1.child(L"position").text().as_string()) == L"0 0 4.50035";
+  bool ok2 = std::wstring(c1.child(L"look_at").text().as_string())  == L"0 1.62921e-005 -95.4996";
 
   return ok1 && ok2;
 }

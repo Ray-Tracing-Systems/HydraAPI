@@ -96,6 +96,7 @@ bool check_all_duplicates(const std::wstring& a_fileName);
 bool test01_materials_add();
 bool test02_materials_changes_open_mode();
 bool test03_lights_add();
+bool test04_lights_add_change();
 bool test05_instances_write_discard();
 bool test06_instances_open_existent();
 bool test07_camera_add();

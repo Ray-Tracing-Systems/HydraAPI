@@ -129,14 +129,10 @@ int main(int argc, const char** argv)
   try
   {
     //demo_01_plane_box();
-    //demo_02_load_obj();
+    demo_02_load_obj();
     //demo_03_caustics();
     //demo_04_instancing();
 
-    //test42_load_mesh_compressed();
-    std::cout << GEO_TESTS::test_004_dof() << std::endl;
-    //std::cout << LGHT_TESTS::test_236_light_group_point_area_ies2() << std::endl;
-    
     //run_all_api_tests(); // passed
     //run_all_geo_tests();
     //run_all_lgt_tests();

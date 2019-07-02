@@ -326,8 +326,6 @@ bool test42_load_mesh_compressed()
 
 bool test43_test_direct_light()
 {
-  
-
   hrErrorCallerPlace(L"test43");
 
   HRCameraRef    camRef;
@@ -430,7 +428,7 @@ bool test43_test_direct_light()
     pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
 
     intensityNode.append_child(L"color").append_attribute(L"val")      = L"1 1 1";
-    intensityNode.append_child(L"multiplier").append_attribute(L"val") = L"2.0";
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 2.0f*IRRADIANCE_TO_RADIANCE;
   }
   hrLightClose(directLight);
 

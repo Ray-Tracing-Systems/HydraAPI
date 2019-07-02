@@ -872,8 +872,8 @@ bool test65_several_changes_light_rect()
 
     pugi::xml_node intensityNode = lightNode.child(L"intensity");
 
-    intensityNode.child(L"color").append_attribute(L"val")      = L"1 1 1";
-    intensityNode.child(L"multiplier").append_attribute(L"val") = 5.0f*IRRADIANCE_TO_RADIANCE;
+    intensityNode.child(L"color").attribute(L"val")      = L"1 1 1";
+    intensityNode.child(L"multiplier").attribute(L"val") = 5.0f*IRRADIANCE_TO_RADIANCE;
   }
   hrLightClose(rectLight);
 
