@@ -57,6 +57,29 @@ struct HRGBufferPixelPy
     int32_t instId;
 };
 
+struct MergeInfoPy
+{
+  MergeInfoPy(const MergeInfo &info)
+  {
+    meshRange.push_back(info.meshRange[0]);
+    meshRange.push_back(info.meshRange[1]);
+
+    texturesRange.push_back(info.texturesRange[0]);
+    texturesRange.push_back(info.texturesRange[1]);
+
+    materialRange.push_back(info.materialRange[0]);
+    materialRange.push_back(info.materialRange[1]);
+
+    lightsRange.push_back(info.lightsRange[0]);
+    lightsRange.push_back(info.lightsRange[1]);
+  }
+  MergeInfoPy(){};
+  std::vector<int32_t> meshRange;
+  std::vector<int32_t> texturesRange;
+  std::vector<int32_t> materialRange;
+  std::vector<int32_t> lightsRange;
+};
+
 void hrMeshOpenPy(HRMeshRef a_pMesh, HR_PRIM_TYPE a_type, HR_OPEN_MODE a_mode)
 {
   py::object gc = py::module::import("gc");
@@ -236,6 +259,50 @@ std::vector<float> getRandomPointsOnMeshPy(HRMeshRef mesh_ref, uint32_t n_points
   return output;
 }
 
+HRSceneInstRef MergeLibraryIntoLibraryPy(const wchar_t* a_libPath, bool mergeLights = false, bool copyScene = false,
+                                         const wchar_t* a_stateFileName = L"", MergeInfoPy pInfo = MergeInfoPy())
+{
+  MergeInfo info;
+  bool is_null = false;
+  if(pInfo.lightsRange.size() >= 2)
+  {
+    info.lightsRange[0] = pInfo.lightsRange[0];
+    info.lightsRange[1] = pInfo.lightsRange[1];
+
+  }
+  else
+    is_null = true;
+
+  if(pInfo.materialRange.size() >= 2)
+  {
+    info.materialRange[0] = pInfo.materialRange[0];
+    info.materialRange[1] = pInfo.materialRange[1];
+  }
+  else
+    is_null = true;
+
+  if(pInfo.meshRange.size() >= 2)
+  {
+    info.meshRange[0] = pInfo.meshRange[0];
+    info.meshRange[1] = pInfo.meshRange[1];
+  }
+  else
+    is_null = true;
+
+  if(pInfo.texturesRange.size() >= 2)
+  {
+    info.texturesRange[0] = pInfo.texturesRange[0];
+    info.texturesRange[1] = pInfo.texturesRange[1];
+  }
+  else
+    is_null = true;
+
+  if(!is_null)
+    return MergeLibraryIntoLibrary(a_libPath, mergeLights, copyScene, a_stateFileName, &info);
+  else
+    return MergeLibraryIntoLibrary(a_libPath, mergeLights, copyScene, a_stateFileName, nullptr);
+}
+
 
 PYBIND11_MODULE(hydraPy, m)
 {
@@ -272,6 +339,22 @@ PYBIND11_MODULE(hydraPy, m)
           .def_readwrite("camerasNum", &HRSceneLibraryInfo::camerasNum)
           .def_readwrite("scenesNum", &HRSceneLibraryInfo::scenesNum)
           .def_readwrite("renderDriversNum", &HRSceneLibraryInfo::renderDriversNum);
+
+  py::class_<HRInitInfo>(m, "HRInitInfo")
+      .def(py::init<>())
+      .def_readwrite("copyTexturesToLocalFolder", &HRInitInfo::copyTexturesToLocalFolder)
+      .def_readwrite("localDataPath", &HRInitInfo::localDataPath)
+      .def_readwrite("sortMaterialIndices", &HRInitInfo::sortMaterialIndices)
+      .def_readwrite("computeMeshBBoxes", &HRInitInfo::computeMeshBBoxes)
+      .def_readwrite("vbSize", &HRInitInfo::vbSize);
+
+  py::class_<MergeInfoPy>(m, "MergeInfo")
+      .def(py::init<>())
+      .def_readwrite("meshRange", &MergeInfoPy::meshRange)
+      .def_readwrite("texturesRange", &MergeInfoPy::texturesRange)
+      .def_readwrite("materialRange", &MergeInfoPy::materialRange)
+      .def_readwrite("lightsRange", &MergeInfoPy::lightsRange);
+
 
   py::class_<HRRenderDeviceInfoListElem>(m, "HRRenderDeviceInfoListElem")
           .def_readonly("name", &HRRenderDeviceInfoListElem::name)
@@ -322,9 +405,9 @@ PYBIND11_MODULE(hydraPy, m)
           .def_readonly("z_min", &HRUtils::BBox::z_min)
           .def_readonly("z_max", &HRUtils::BBox::z_max);
 
-  py::class_<HROpenedMeshInfo>(m, "HROpenedMeshInfo")
-          .def_readonly("vertNum", &HROpenedMeshInfo::vertNum)
-          .def_readonly("indicesNum", &HROpenedMeshInfo::indicesNum);
+//  py::class_<HROpenedMeshInfo>(m, "HROpenedMeshInfo")
+//          .def_readonly("vertNum", &HROpenedMeshInfo::vertNum)
+//          .def_readonly("indicesNum", &HROpenedMeshInfo::indicesNum);
 
   py::enum_<HR_OPEN_MODE>(m, "HR_OPEN_MODE", py::arithmetic())
           .value("HR_OPEN_EXISTING", HR_OPEN_EXISTING)
@@ -348,8 +431,8 @@ PYBIND11_MODULE(hydraPy, m)
           .value("HR_SEVERITY_CRITICAL_ERROR", HR_SEVERITY_CRITICAL_ERROR)
           .export_values();
 
-  m.def("hrInit", &hrInit);
-  m.def("hrDestroy", &hrDestroy);
+ // m.def("hrInit", &hrInit);
+//  m.def("hrDestroy", &hrDestroy);
   m.def("hrGetLastError", &hrGetLastError);
   m.def("hrErrorCallerPlace", &hrErrorCallerPlace);
   m.def("hrErrorCallback", &hrErrorCallback);
@@ -451,7 +534,8 @@ PYBIND11_MODULE(hydraPy, m)
         py::arg("a_mat").noconvert(), py::arg("origin") = true, py::arg("remap_override").noconvert() = (py::array_t<int32_t>*)nullptr);
 
 
-  m.def("MergeLibraryIntoLibrary", &HRUtils::MergeLibraryIntoLibrary, py::arg("a_libPath"), py::arg("mergeLights") = false, py::arg("copyScene") = false);
+  m.def("MergeLibraryIntoLibrary", &MergeLibraryIntoLibraryPy, py::arg("a_libPath"), py::arg("mergeLights") = false,
+      py::arg("copyScene") = false, py::arg("a_stateFileName") = "", py::arg("pInfo") = MergeInfoPy());
   m.def("MergeOneMaterialIntoLibrary", &HRUtils::MergeOneMaterialIntoLibrary, py::arg("a_libPath"), py::arg("a_matName"), py::arg("a_matId") = -1);
   m.def("MergeOneMeshIntoLibrary", &HRUtils::MergeOneMeshIntoLibrary);
   m.def("MergeOneLightIntoLibrary", &HRUtils::MergeOneLightIntoLibrary);
@@ -459,6 +543,9 @@ PYBIND11_MODULE(hydraPy, m)
 
   m.def("getRandomPointsOnMesh", &getRandomPointsOnMeshPy, py::arg("mesh_ref"), py::arg("n_points") = 1,
         py::arg("tri_area_weighted") = false, py::arg("seed") = 0u);
+
+  m.def("GetMeshBBox", &HRUtils::GetMeshBBox);
+
 
   py::class_<pugi::xml_node>(m, "xml_node")
           .def("force_child", &pugi::xml_node::force_child)
