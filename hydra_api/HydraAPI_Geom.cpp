@@ -218,24 +218,27 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, bool a_co
 
   // The number of indices
   std::vector<size_t> shape_indices_number;
-  size_t comulative_indices_number = 0;
+  size_t cumulative_indices_number = 0;
   shape_indices_number.push_back(0);
   for (size_t s = 0; s < shapes.size(); s++) {
     shape_indices_number.push_back(shapes[s].mesh.indices.size());
-    comulative_indices_number += shapes[s].mesh.indices.size();
+    cumulative_indices_number += shapes[s].mesh.indices.size();
   }
 
   // Vertices, Normals, Texture coordinates, Indices
-  std::vector<float> verts(comulative_indices_number * 4);
-  std::vector<float> norms(comulative_indices_number * 4);
-  std::vector<float> tex_s(comulative_indices_number * 2);
-  std::vector<int  > indxs(comulative_indices_number);
+  std::vector<float> verts(cumulative_indices_number * 4);
+  std::vector<float> norms(cumulative_indices_number * 4);
+  std::vector<float> tex_s(cumulative_indices_number * 2);
+  std::vector<int  > indxs(cumulative_indices_number);
 
   bool has_normals = true;
 
   for (size_t s = 0; s < shapes.size(); s++) {
     size_t index_offset = 0;
-    size_t index_shape_offset = shape_indices_number[s];
+    size_t index_shape_offset = 0;
+    for(int i = 0; i <= s; ++i){
+      index_shape_offset += shape_indices_number[i];
+    }
     size_t vertices_num = shapes[s].mesh.num_face_vertices.size();
     for (size_t f = 0; f < vertices_num; f++) {
       int fv = shapes[s].mesh.num_face_vertices[f];
@@ -285,7 +288,7 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, bool a_co
 
     hrMeshVertexAttribPointer2f(ref, L"texcoord", tex_s.data());
     hrMeshMaterialId(ref, 0);
-    hrMeshAppendTriangles3(ref, comulative_indices_number, indxs.data());
+    hrMeshAppendTriangles3(ref, cumulative_indices_number, indxs.data());
   }
   hrMeshClose(ref);
 
