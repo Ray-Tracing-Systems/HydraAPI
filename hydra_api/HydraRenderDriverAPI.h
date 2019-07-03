@@ -9,11 +9,14 @@
 #include <cstdint>
 #include <memory>
 #include <unordered_set>
+#include <unordered_map>
+#include <iostream>
 
 #include "pugixml.hpp"
 #include "HydraAPI.h"
 
 #include "HR_HDRImage.h"
+#include "HydraLegacyUtils.h"
 
 /** \brief Internal structure to help driver allocate less memory.
 *
@@ -65,6 +68,7 @@ struct HRDriverAllocInfo
 /** \brief This structure tell render HydraAPI what features are supported by driver.
 *
 */
+struct IHRRenderDriver;
 struct HRDriverInfo
 {
   HRDriverInfo() : supportMultiMaterialInstance(false), supportHDRFrameBuffer(false), supportHDRTextures(false),
@@ -84,7 +88,12 @@ struct HRDriverInfo
   bool supportGetFrameBufferLine;
   bool supportUtilityPrepass;
   bool supportDisplacement;
-  int64_t memTotal;
+  int64_t memTotal = 0l;
+
+  std::wstring driverName = L"";
+
+  using TCreateFunction = std::unique_ptr<IHRRenderDriver>(*)();
+  TCreateFunction createFunction = nullptr;
 };
 
 /** \brief This structure show which objects we have to Update if we change some of other objects
@@ -140,6 +149,8 @@ struct IHRRenderDriver
 {
   IHRRenderDriver()          = default;
   virtual ~IHRRenderDriver() = default;
+  IHRRenderDriver(const IHRRenderDriver& a_val)            = delete;
+  IHRRenderDriver& operator=(const IHRRenderDriver& a_val) = delete;
 
   virtual void              ClearAll()                         = 0; ///< clear everethyng insidide render engine (render driver)
   virtual HRDriverAllocInfo AllocAll(HRDriverAllocInfo a_info) = 0; ///< actual destructor, COM-like (!!!)
@@ -305,7 +316,7 @@ struct IHRRenderDriver
 
   // info and devices
   //
-  virtual HRDriverInfo           Info() = 0;                                            ///< return render driver info
+  HRDriverInfo Info() { return driverInfo; };                                            ///< return render driver info
   virtual HRDriverDependencyInfo DependencyInfo() { return HRDriverDependencyInfo(); }  ///< return render dependency info (look at OpenGL1 implementation with display lists to understand this. You have to update mesh when you update material because old mesh display list contains old material color).
 
   virtual const HRRenderDeviceInfoListElem* DeviceList() const = 0; ///< this method is for multi-GPU render. return device list or nullptr
@@ -338,22 +349,68 @@ struct IHRRenderDriver
 
 protected:
 
-  IHRRenderDriver(const IHRRenderDriver& a_val)            = delete;
-  IHRRenderDriver& operator=(const IHRRenderDriver& a_val) = delete;
-
-  HR_INFO_CALLBACK m_pInfoCallBack;
+  HR_INFO_CALLBACK m_pInfoCallBack = nullptr;
+  HRDriverInfo driverInfo;
 };
 
-IHRRenderDriver* CreateOpenGL1_RenderDriver();
-IHRRenderDriver* CreateOpenGL1Debug_RenderDriver();
-IHRRenderDriver* CreateOpenGL1_DelayedLoad_RenderDriver(bool a_canLoadMeshes);
 
-IHRRenderDriver* CreateOpenGL32Forward_RenderDriver();
-IHRRenderDriver* CreateOpenGL32Deferred_RenderDriver();
+struct RenderDriverFactory
+{
+private:
+  static std::unordered_map<std::wstring, HRDriverInfo> create_methods;
 
-IHRRenderDriver* CreateOpenGL3_Utilty_RenderDriver();
+public:
+  RenderDriverFactory() = delete;
 
-IHRRenderDriver* CreateVulkan_RenderDriver();
+  static bool Register(const std::wstring &renderdriver_name, HRDriverInfo &renderdriver_info)
+  {
+    auto it = create_methods.find(renderdriver_name);
+    if (it == create_methods.end())
+    {
+      create_methods[renderdriver_name] = renderdriver_info;
+      auto tmp = ws2s(renderdriver_name);
+      std::cout << "Registered render driver with name : " << tmp.c_str() << std::endl;
+      return true;
+    }
+    return false;
+  }
+
+  static std::unique_ptr<IHRRenderDriver> Create(const std::wstring& renderdriver_name)
+  {
+    auto it = create_methods.find(renderdriver_name);
+    if (it != create_methods.end())
+      return it->second.createFunction();
+
+    auto driver_name_str =  ws2s(renderdriver_name);
+    std::cerr << "Render driver " << driver_name_str.c_str() << " is not registered!" << std::endl;
+    return nullptr;
+  }
+
+  static HRDriverInfo GetDriverInfo(const std::wstring& renderdriver_name)
+  {
+    auto it = create_methods.find(renderdriver_name);
+    if (it != create_methods.end())
+      return it->second;
+
+    auto driver_name_str =  ws2s(renderdriver_name);
+    std::cerr << "Render driver " << driver_name_str.c_str() << " is not registered!" << std::endl;
+    return HRDriverInfo();
+  }
+
+  static std::vector<std::wstring> GetListOfRegisteredDrivers()
+  {
+    std::vector<std::wstring> res(create_methods.size());
+    for(const auto &it : create_methods)
+    {
+      res.push_back(it.second.driverName);
+    }
+    return res;
+  }
+};
+
+std::unique_ptr<IHRRenderDriver> CreateHydraConnection_RenderDriver();
+std::unique_ptr<IHRRenderDriver> CreateDebugPrint_RenderDriver();
+
 
 static constexpr uint32_t MAX_TEXTURE_RESOLUTION = 16384;
 

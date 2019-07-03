@@ -238,7 +238,7 @@ HRRenderRef _hrRenderSettingsFromNode(pugi::xml_node a_node)
   g_objManager.renderSettings[ref.id].update(a_node); // ???
   g_objManager.renderSettings[ref.id].id = ref.id;
 
-  settings.m_pDriver = CreateRenderFromString(a_className, L"");
+  settings.m_pDriver = RenderDriverFactory::Create(a_className);
 
   return ref;
 }

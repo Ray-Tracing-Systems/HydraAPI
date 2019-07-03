@@ -4,18 +4,14 @@ project(hydra_api C CXX)
 set(CMAKE_CXX_STANDARD 14)
 
 set(SOURCE_FILES
+        HydraAPI.h HydraAPI.cpp
         alloc16.h
         cube2sphere.cpp
-        HydraLegacyUtils.cpp
-        HydraLegacyUtils.h
-        HR_HDRImage.h
-        HR_HDRImage4f.cpp
-        HR_HDRImageTool.h
-        HR_HDRImageTool.cpp
+        HydraLegacyUtils.h HydraLegacyUtils.cpp
+        HR_HDRImage.h HR_HDRImage4f.cpp
+        HR_HDRImageTool.h HR_HDRImageTool.cpp
         HRMeshCommon.cpp
         HRTextureCommon.cpp
-        HydraAPI.cpp
-        HydraAPI.h
         HydraAPI_Camera.cpp
         HydraAPI_FrameBuffer.cpp
         HydraAPI_Geom.cpp
@@ -27,32 +23,19 @@ set(SOURCE_FILES
         HydraAPI_TextureProcLex.cpp
         HydraDriverUpdate.cpp
         HydraInternal.h
-        HydraObjectManager.cpp
-        HydraObjectManager.h
-        HydraRenderDriverAPI.h
-        HydraVSGFExport.cpp
-        HydraVSGFExport.h
-        HydraVSGFCompress.h
-        HydraVSGFCompress.cpp
-        HydraXMLHelpers.h
-        HydraXMLVerify.cpp
-        HydraXMLVerify.h
+        HydraObjectManager.h HydraObjectManager.cpp
+        HydraRenderDriverAPI.h HydraRenderDriverAPI.cpp
+        HydraVSGFExport.h HydraVSGFExport.cpp
+        HydraVSGFCompress.h HydraVSGFCompress.cpp
+        HydraXMLHelpers.h  HydraXMLVerify.h HydraXMLVerify.cpp
         LiteMath.h
         pugiconfig.hpp
         pugixml.cpp
         pugixml.hpp
-        RenderDriverDebugPrint.cpp
-        RenderDriverOpenGL1.cpp
-        RenderDriverOpenGL1.h
-        RenderDriverOpenGL1_DelayedLoad.cpp
-        RenderDriverOpenGL1_DrawBvhLevels.cpp
-        RenderDriverOpenGL1_TestSplit.cpp
-        RenderDriverOpenGL1Debug.cpp
-        RenderDriverOpenGL1DebugDrawRays.cpp
-        RenderDriverOpenGL1_TestCustomAttributes.cpp
         RenderDriverOpenGL3_Utility.h
         RenderDriverOpenGL3_Utility.cpp
         RenderDriverHydraConnection.cpp
+        RenderDriverDebugPrint.cpp
         ssemath.cpp
         ssemath.h
         VirtualBuffer.cpp

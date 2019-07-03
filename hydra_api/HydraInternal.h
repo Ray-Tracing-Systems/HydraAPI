@@ -67,6 +67,8 @@ void hrMeshComputeNormals(HRMeshRef a_mesh, int indexNum, bool useFaceNormals = 
 void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum);
 void runTSpaceCalc(HRMeshRef mesh_ref, bool basic);
 
+void registerBuiltInRenderDrivers();
+
 
 struct IHRMesh : public IHRObject ///< Not empty Data (reimplement DataSerialize/DataDeserialize)
 {
@@ -363,7 +365,7 @@ std::wstring ChunkName(const ChunkPointer& a_chunk);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-std::unique_ptr<IHRRenderDriver> CreateRenderFromString(const wchar_t *a_className, const wchar_t *a_options);
+//std::unique_ptr<IHRRenderDriver> CreateRenderFromString(const wchar_t *a_className, const wchar_t *a_options);
 
 struct HRSceneInst;
 struct HRRender;

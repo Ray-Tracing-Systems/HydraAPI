@@ -8,6 +8,11 @@
 #include "HydraXMLHelpers.h"
 
 
+std::unique_ptr<IHRRenderDriver> CreateOpenGL3_Utility_RenderDriver()
+{
+  return std::unique_ptr<IHRRenderDriver>(new RD_OGL32_Utility);
+}
+
 RD_OGL32_Utility::RD_OGL32_Utility()
 {
   camFov       = 45.0f;
@@ -314,23 +319,23 @@ HRDriverAllocInfo RD_OGL32_Utility::AllocAll(HRDriverAllocInfo a_info)
   return a_info;
 }
 
-HRDriverInfo RD_OGL32_Utility::Info()
-{
-  HRDriverInfo info;
-
-  info.supportHDRFrameBuffer        = false;
-  info.supportHDRTextures           = true;
-  info.supportMultiMaterialInstance = false;
-
-  info.supportImageLoadFromInternalFormat = false;
-  info.supportImageLoadFromExternalFormat = false;
-  info.supportMeshLoadFromInternalFormat  = false;
-  info.supportLighting                    = false;
-
-  info.memTotal = int64_t(8) * int64_t(1024 * 1024 * 1024); //TODO: ?
-
-  return info;
-}
+//HRDriverInfo RD_OGL32_Utility::Info()
+//{
+//  HRDriverInfo info;
+//
+//  info.supportHDRFrameBuffer        = false;
+//  info.supportHDRTextures           = true;
+//  info.supportMultiMaterialInstance = false;
+//
+//  info.supportImageLoadFromInternalFormat = false;
+//  info.supportImageLoadFromExternalFormat = false;
+//  info.supportMeshLoadFromInternalFormat  = false;
+//  info.supportLighting                    = false;
+//
+//  info.memTotal = int64_t(8) * int64_t(1024 * 1024 * 1024); //TODO: ?
+//
+//  return info;
+//}
 
 bool RD_OGL32_Utility::UpdateImage(int32_t a_texId, int32_t w, int32_t h, int32_t bpp, const void *a_data,
                                     pugi::xml_node a_texNode)
@@ -876,11 +881,6 @@ void RD_OGL32_Utility::GetFrameBufferLDR(int32_t w, int32_t h, int32_t *a_out)
   glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)a_out);
 }
 
-
-IHRRenderDriver* CreateOpenGL3_Utilty_RenderDriver()
-{
-  return new RD_OGL32_Utility;
-}
 
 #ifndef WIN32
 GLFWwindow * InitGLForUtilityDriver()

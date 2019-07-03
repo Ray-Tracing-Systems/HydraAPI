@@ -48,7 +48,7 @@ struct RD_OGL32_Utility : IHRRenderDriver
 
     void GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_lineData, int32_t a_startX, int32_t a_endX, const std::unordered_set<int32_t>& a_shadowCatchers) override {}
 
-    HRDriverInfo Info() override;
+//    HRDriverInfo Info() override;
     const HRRenderDeviceInfoListElem* DeviceList() const override { return nullptr; }
     bool EnableDevice(int32_t id, bool a_enable) override { return true; }
 
@@ -117,5 +117,7 @@ protected:
 
 GLFWwindow * InitGLForUtilityDriver();
 std::unordered_map<uint32_t, uint32_t> getMipLevelsFromUtilityDriver(IHRRenderDriver *driver);
+
+std::unique_ptr<IHRRenderDriver> CreateOpenGL3_Utility_RenderDriver();
 
 #endif //HYDRAAPI_EX_RENDERDRIVEROPENGL3_UTILITY_H

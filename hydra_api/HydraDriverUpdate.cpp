@@ -1668,7 +1668,7 @@ std::wstring HR_UtilityDriverStart(const wchar_t* state_path, HRRender* a_pOrigi
 #endif
 
   HRRender tempRender;
-  tempRender.m_pDriver = CreateRenderFromString(L"opengl3Utility", L"");
+  tempRender.m_pDriver = RenderDriverFactory::Create(L"opengl3Utility");
 
   if (tempRender.m_pDriver != nullptr && g_objManager.m_currSceneId < g_objManager.scnInst.size())
   {

@@ -3,7 +3,10 @@
 //
 #include "RenderDriverOpenGL32Forward.h"
 
-
+std::unique_ptr<IHRRenderDriver> CreateOpenGL32Forward_RenderDriver()
+{
+  return std::unique_ptr<IHRRenderDriver>(new RD_OGL32_Forward);
+}
 
 RD_OGL32_Forward::RD_OGL32_Forward()
 {
@@ -74,23 +77,23 @@ HRDriverAllocInfo RD_OGL32_Forward::AllocAll(HRDriverAllocInfo a_info)
   return a_info;
 }
 
-HRDriverInfo RD_OGL32_Forward::Info()
-{
-  HRDriverInfo info;
-
-  info.supportHDRFrameBuffer        = false;
-  info.supportHDRTextures           = false;
-  info.supportMultiMaterialInstance = false;
-
-  info.supportImageLoadFromInternalFormat = false;
-  info.supportImageLoadFromExternalFormat = false;
-  info.supportMeshLoadFromInternalFormat  = false;
-  info.supportLighting                    = false;
-
-  info.memTotal = int64_t(8) * int64_t(1024 * 1024 * 1024);
-
-  return info;
-}
+//HRDriverInfo RD_OGL32_Forward::Info()
+//{
+//  HRDriverInfo info;
+//
+//  info.supportHDRFrameBuffer        = false;
+//  info.supportHDRTextures           = false;
+//  info.supportMultiMaterialInstance = false;
+//
+//  info.supportImageLoadFromInternalFormat = false;
+//  info.supportImageLoadFromExternalFormat = false;
+//  info.supportMeshLoadFromInternalFormat  = false;
+//  info.supportLighting                    = false;
+//
+//  info.memTotal = int64_t(8) * int64_t(1024 * 1024 * 1024);
+//
+//  return info;
+//}
 
 bool RD_OGL32_Forward::UpdateImage(int32_t a_texId, int32_t w, int32_t h, int32_t bpp, const void *a_data,
                                  pugi::xml_node a_texNode)
@@ -443,7 +446,3 @@ void RD_OGL32_Forward::GetFrameBufferLDR(int32_t w, int32_t h, int32_t *a_out)
   glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)a_out);
 }
 
-IHRRenderDriver* CreateOpenGL32Forward_RenderDriver()
-{
-  return new RD_OGL32_Forward;
-}

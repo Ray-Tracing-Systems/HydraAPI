@@ -5,7 +5,10 @@
 #include <cmath>
 #include "RenderDriverOpenGL32Deferred.h"
 
-
+std::unique_ptr<IHRRenderDriver> CreateOpenGL32Deferred_RenderDriver()
+{
+  return std::unique_ptr<IHRRenderDriver>(new RD_OGL32_Deferred);
+}
 
 RD_OGL32_Deferred::RD_OGL32_Deferred()
 {
@@ -148,23 +151,23 @@ HRDriverAllocInfo RD_OGL32_Deferred::AllocAll(HRDriverAllocInfo a_info)
   return a_info;
 }
 
-HRDriverInfo RD_OGL32_Deferred::Info()
-{
-  HRDriverInfo info;
-
-  info.supportHDRFrameBuffer        = false;
-  info.supportHDRTextures           = false;
-  info.supportMultiMaterialInstance = false;
-
-  info.supportImageLoadFromInternalFormat = false;
-  info.supportImageLoadFromExternalFormat = false;
-  info.supportMeshLoadFromInternalFormat  = false;
-  info.supportLighting                    = false;
-
-  info.memTotal = int64_t(8) * int64_t(1024 * 1024 * 1024);
-
-  return info;
-}
+//HRDriverInfo RD_OGL32_Deferred::Info()
+//{
+//  HRDriverInfo info;
+//
+//  info.supportHDRFrameBuffer        = false;
+//  info.supportHDRTextures           = false;
+//  info.supportMultiMaterialInstance = false;
+//
+//  info.supportImageLoadFromInternalFormat = false;
+//  info.supportImageLoadFromExternalFormat = false;
+//  info.supportMeshLoadFromInternalFormat  = false;
+//  info.supportLighting                    = false;
+//
+//  info.memTotal = int64_t(8) * int64_t(1024 * 1024 * 1024);
+//
+//  return info;
+//}
 
 bool RD_OGL32_Deferred::UpdateImage(int32_t a_texId, int32_t w, int32_t h, int32_t bpp, const void *a_data,
                                    pugi::xml_node a_texNode)
@@ -927,7 +930,3 @@ void RD_OGL32_Deferred::GetFrameBufferLDR(int32_t w, int32_t h, int32_t *a_out)
 }
 
 
-IHRRenderDriver* CreateOpenGL32Deferred_RenderDriver()
-{
-  return new RD_OGL32_Deferred;
-}

@@ -36,23 +36,9 @@ using HydraRender::HDRImage4f;
 
 struct RD_HydraConnection : public IHRRenderDriver
 {
-  RD_HydraConnection() : m_pConnection(nullptr), m_pSharedImage(nullptr), m_progressVal(0.0f), m_firstUpdate(true), m_width(0), m_height(0),
-                         m_avgBrightness(0.0f), m_avgBCounter(0), m_enableMedianFilter(false), m_medianthreshold(0.4f), m_stopThreadImmediately(false),
-                         haveUpdateFromMT(false), m_threadIsRun(false), m_threadFinished(false), hadFinalUpdate(false), m_clewInitRes(-1), m_instancesNum(0),
-                         m_colorImageIsLocked(false)
-  {
-    InitBothDeviceList();
+  RD_HydraConnection();
 
-    m_oldCounter = 0;
-    m_oldSPP     = 0.0f;
-    m_dontRun    = false;
-    //#TODO: init m_presets
-
-    HydraSSE::exp2_init();
-    HydraSSE::log2_init();
-  }
-
-  ~RD_HydraConnection()
+  ~RD_HydraConnection() override
   {
     ClearAll();
   }
@@ -96,7 +82,6 @@ struct RD_HydraConnection : public IHRRenderDriver
   
   // info and devices
   //
-  HRDriverInfo Info() override;
   const HRRenderDeviceInfoListElem* DeviceList() const override;
   bool EnableDevice(int32_t id, bool a_enable) override;
 
@@ -379,6 +364,28 @@ void RD_HydraConnection::InitBothDeviceList()
   }
 }
 
+std::unique_ptr<IHRRenderDriver> CreateHydraConnection_RenderDriver()
+{
+  return std::unique_ptr<IHRRenderDriver>(new RD_HydraConnection);
+}
+
+
+RD_HydraConnection::RD_HydraConnection() : m_pConnection(nullptr), m_pSharedImage(nullptr), m_progressVal(0.0f), m_firstUpdate(true), m_width(0), m_height(0),
+                       m_avgBrightness(0.0f), m_avgBCounter(0), m_enableMedianFilter(false), m_medianthreshold(0.4f), m_stopThreadImmediately(false),
+                       haveUpdateFromMT(false), m_threadIsRun(false), m_threadFinished(false), hadFinalUpdate(false), m_clewInitRes(-1), m_instancesNum(0),
+                       m_colorImageIsLocked(false)
+{
+  InitBothDeviceList();
+
+  m_oldCounter = 0;
+  m_oldSPP     = 0.0f;
+  m_dontRun    = false;
+  //#TODO: init m_presets
+
+  HydraSSE::exp2_init();
+  HydraSSE::log2_init();
+}
+
 void RD_HydraConnection::ClearAll()
 {
   delete m_pConnection;
@@ -431,29 +438,6 @@ bool RD_HydraConnection::EnableDevice(int32_t id, bool a_enable)
     m_devList2[id].isEnabled = a_enable;
 
   return true;
-}
-
-HRDriverInfo RD_HydraConnection::Info()
-{
-  HRDriverInfo info;
-
-  info.supportHDRFrameBuffer              = true;
-  info.supportHDRTextures                 = true;
-  info.supportMultiMaterialInstance       = true;
-
-  info.supportImageLoadFromInternalFormat = true;
-  info.supportMeshLoadFromInternalFormat  = true;
-
-  info.supportImageLoadFromExternalFormat = true;
-  info.supportLighting                    = true;
-  info.createsLightGeometryItself         = false;
-  info.supportGetFrameBufferLine          = true;
-  info.supportUtilityPrepass              = true;
-  info.supportDisplacement                = true;
-
-  info.memTotal                           = int64_t(8) * int64_t(1024 * 1024 * 1024); // #TODO: wth i have to do with that ???
-
-  return info;
 }
 
 
@@ -1361,10 +1345,7 @@ void RD_HydraConnection::ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-IHRRenderDriver* CreateHydraConnection_RenderDriver()
-{
-  return new RD_HydraConnection;
-}
+
 
 
 

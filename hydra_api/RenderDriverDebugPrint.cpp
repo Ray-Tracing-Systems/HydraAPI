@@ -47,7 +47,7 @@ struct RD_DebugPrint : public IHRRenderDriver
 
   void GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_lineData, int32_t a_startX, int32_t a_endX, const std::unordered_set<int32_t>& a_shadowCatchers) override {}
 
-  HRDriverInfo Info() override;
+//  HRDriverInfo Info() override;
   const HRRenderDeviceInfoListElem* DeviceList() const override { return nullptr; } //#TODO: implement quering GPU info bu glGetString(GL_VENDOR) and e.t.c.
   bool EnableDevice(int32_t id, bool a_enable) override { return true; }
 
@@ -103,19 +103,8 @@ HRRenderUpdateInfo RD_DebugPrint::HaveUpdateNow(int a_maxRaysPerPixel)
   return res;
 }
 
-HRDriverInfo RD_DebugPrint::Info()
-{
-  HRDriverInfo info;
-  info.createsLightGeometryItself = false;
-  info.memTotal = 8* int64_t(1024*1024*1024);
-  info.supportHDRFrameBuffer = false;
-  info.supportHDRTextures = false;
-  info.supportImageLoadFromExternalFormat = false;
-  info.supportImageLoadFromInternalFormat = false;
-  info.supportLighting = false;
-  info.supportMeshLoadFromInternalFormat = false;
-  info.supportMultiMaterialInstance = false;
-  return info;
-}
 
-IHRRenderDriver* CreateDebugPrint_RenderDriver() { return new RD_DebugPrint; }
+std::unique_ptr<IHRRenderDriver> CreateDebugPrint_RenderDriver()
+{
+  return std::unique_ptr<IHRRenderDriver>(new RD_DebugPrint);
+}
