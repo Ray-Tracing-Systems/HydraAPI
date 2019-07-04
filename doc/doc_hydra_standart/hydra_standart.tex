@@ -130,7 +130,9 @@ I(\phi_{in}, \theta_{in}) = \int\limits_{\phi_{out}}\int\limits_{\theta_{out}}  
 
 \boldblue{(!) Implementation:} All BRDF and BTDF should be implemented without $cos(\theta_{out})$ term. For mirrors cosine shouldn't be applied, thus you should pre-divide $cos(\theta_{out})$ instead (so that the cosines cancel each other). Also note that we do not include color in BRDF/BTDF equations. The color should be multiplied with the BRDF value.
 
-\boldblue{(!) Implementation:} Please also note that texture color (that comes from PNG, JPG, BMP and othe LDR formats) should be transformed to linear space with gamma transform: $ C_{linear} = C_{srgb}^{2.2} $.
+\boldblue{(!) Implementation:} Note that texture color (that comes from PNG, JPG, BMP and othe LDR formats) should be transformed to linear space with gamma transform: $ C_{linear} = C_{srgb}^{2.2} $. Unlike textures values that are \textbf{specified explicitly} in XML (or other) assummed to be \textbf{already in linear space}.
+
+\boldblue{(!) Implementation:} Note that final color of the image should be first clamped and then transformed from HDR to LDR space with gamma correction: $ C_{srgb} = C_{linear}^{(1.0/2.2)} $. Clamping should be simple (i.e. losing color). For example color (1.5, 2.0, 10.0) should be clamped to (1,1,1) but not to (0.15, 0.2, 1.0) for example.
 
 \newpage
 
@@ -145,7 +147,7 @@ Basic support for Lambertian reflections. The BRDF function \textbf{must} be imp
 BRDF_{lambert} = \frac{1}{\pi}
 \end{equation}
 
-\boldblue{Test:} 101\_diffuse\_lambert.
+\boldblue{Test:} 101\_diffuse\_lambert. MSE should be less than 5.0 for 512x512 LDR image.
 \begin{figure}[htb]
 	\centering
 	\includegraphics[width=0.25\linewidth]{images/test_101/w_ref.png}           
@@ -171,7 +173,7 @@ BRDF_{lambert} = \frac{1}{\pi}
 Basic support for reflections via Modified Phong model \cite{fixedPhongpaper}. Note that mixing of phong and lambertian reflections is not needed at this level of standard. Renderer may suppose mutually exclusive phong or lambert. 
 
 \boldblue{Implementation:}
-Assume both reflection vector and generated direction (x,y,z) \textbf{are given in local basis} and thus reflection vector equals to (0,1,0). Then, further model can be used for sampling and BRDF evaluation:
+Assume both reflection vector and generated direction (x,y,z) \textbf{are given in local basis} and thus ideal reflection vector equals to (0,1,0). Then, further model can be used for sampling and BRDF evaluation:
 
 \begin{eqnarray*} \label{eq:fixedPhong}
 	h           = \sqrt{1-\xi_1^{\frac{2}{n+1}}} \\
@@ -181,7 +183,7 @@ Assume both reflection vector and generated direction (x,y,z) \textbf{are given 
 	pdf = \frac{n+1}{2\pi}cos(\alpha)^{n} \\
 \end{eqnarray*}
 
-\boldblue{Test:} 104\_reflect\_phong.
+\boldblue{Test:} 104\_reflect\_phong. MSE should be less than 20.0 for 512x512 LDR image.
 
 
 \begin{figure}[h]
@@ -195,7 +197,7 @@ Assume both reflection vector and generated direction (x,y,z) \textbf{are given 
 	\begin{minipage}[h]{0.33\linewidth}
 		\center{\includegraphics[width=1.0\linewidth]{images/test_104/w_ref3.png} \\ cosPower = 82}
 	\end{minipage}
-	\caption{Изображения шарика с моделью фонга для различных степеней косинуса.}
+	\caption{Phong for different cosine power and color (0.5, 0.5, 0.5).}
 \end{figure}
 
 
@@ -205,7 +207,7 @@ Pure specular reflection. Note that mixing of mirror and lambertian reflections 
 
 \reqirenment{emission}
 
-Basic support for emissive material. On this level of standart emissive materials don't combined with others. Renderer may suppose mutually exclusive: (emissive or 'some other'). Please note that emissve materials have not be considered as lights (i.e. they don't have to be sampled with any sampling strategy, however, of cource, they could), but they must cast GI.
+Basic support for emissive material. On this level of standart emissive materials don't combined with others. Renderer may suppose mutually exclusive: (emissive or 'some other'). Please note that emissive materials have not be considered as lights (i.e. they don't have to be sampled with any explicit sampling strategy, however, of cource, they could), but they must cast GI.
 
 \reqirenment{lambert\_texture\_color}
 

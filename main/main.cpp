@@ -135,12 +135,13 @@ int main(int argc, const char** argv)
 
     //run_all_api_tests(); // passed
     //run_all_geo_tests();
+    //run_all_mtl_tests();
     //run_all_lgt_tests();
-    //run_all_mtl_tests(53);
     //run_all_alg_tests();
     //run_all_ipp_tests();
     
     std::cout << MTL_TESTS::test_104_reflect_phong() << std::endl;
+    std::cout << "MSE = " << g_MSEOutput << std::endl;
     
     //window_main_free_look(L"/home/frol/PROG/clsp/database/statex_00001.xml", L"opengl1");
 	  terminate_opengl();

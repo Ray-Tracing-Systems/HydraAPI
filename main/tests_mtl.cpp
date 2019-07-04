@@ -43,7 +43,7 @@ namespace MTL_TESTS
 
     hrSceneLibraryOpen(L"tests_f/test_101", HR_WRITE_DISCARD);
 
-    SimpleMesh sphere   = CreateSphere(2.0f, 128);
+    SimpleMesh sphere   = CreateSphere(2.5f, 128);
     SimpleMesh cubeOpen = CreateCubeOpen(4.0f);
 
     HRMaterialRef mat0 = hrMaterialCreate(L"mysimplemat");
@@ -97,7 +97,6 @@ namespace MTL_TESTS
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     HRMeshRef cubeOpenRef = hrMeshCreate(L"my_box");
-    HRMeshRef planeRef    = hrMeshCreate(L"my_plane");
     HRMeshRef sphereRef   = hrMeshCreate(L"my_sphere");
 
     hrMeshOpen(cubeOpenRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
@@ -148,8 +147,8 @@ namespace MTL_TESTS
 
       pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
 
-      intensityNode.append_child(L"color").text().set(L"1 1 1");
-      intensityNode.append_child(L"multiplier").text().set(8.0f*IRRADIANCE_TO_RADIANCE);
+      intensityNode.append_child(L"color").append_attribute(L"val")      = L"1 1 1";
+      intensityNode.append_child(L"multiplier").append_attribute(L"val") = 8.0f*IRRADIANCE_TO_RADIANCE;
     }
     hrLightClose(rectLight);
 
@@ -185,20 +184,18 @@ namespace MTL_TESTS
     {
       pugi::xml_node node = hrRenderParamNode(renderRef);
 
-      node.append_child(L"width").text()  = L"512";
-      node.append_child(L"height").text() = L"512";
+      node.append_child(L"width").text()  = 512;
+      node.append_child(L"height").text() = 512;
 
       node.append_child(L"method_primary").text()   = L"pathtracing";
       node.append_child(L"method_secondary").text() = L"pathtracing";
       node.append_child(L"method_tertiary").text()  = L"pathtracing";
       node.append_child(L"method_caustic").text()   = L"pathtracing";
-      node.append_child(L"shadows").text()          = L"1";
+      node.append_child(L"qmc_variant").text()      = 7;
 
-      node.append_child(L"trace_depth").text()      = L"8";
-      node.append_child(L"diff_trace_depth").text() = L"4";
-      node.append_child(L"pt_error").text()         = L"2.0";
-      node.append_child(L"minRaysPerPixel").text()  = L"256";
-      node.append_child(L"maxRaysPerPixel").text()  = L"2048";
+      node.append_child(L"trace_depth").text()      = 8;
+      node.append_child(L"diff_trace_depth").text() = 4;
+      node.append_child(L"maxRaysPerPixel").text()  = 1024;
     }
     hrRenderClose(renderRef);
 
@@ -212,14 +209,12 @@ namespace MTL_TESTS
     {
       // instance sphere and cornell box
       //
-      auto mtranslate = hlm::translate4x4(hlm::float3(0, -2, 1));
+      auto mtranslate = hlm::translate4x4(hlm::float3(0.0f, -1.5f, 1.0f));
       hrMeshInstance(scnRef, sphereRef, mtranslate.L());
 
       auto mrot = hlm::rotate_Y_4x4(180.0f*DEG_TO_RAD);
       hrMeshInstance(scnRef, cubeOpenRef, mrot.L());
 
-      //// instance light (!!!)
-      //
       mtranslate = hlm::translate4x4(hlm::float3(0, 3.85f, 0));
       hrLightInstance(scnRef, rectLight, mtranslate.L());
     }
@@ -973,7 +968,7 @@ namespace MTL_TESTS
 
     // set up render settings
     //
-    HRRenderRef renderRef = hrRenderCreate(L"HydraModern"); // opengl1
+    HRRenderRef renderRef = hrRenderCreate(L"HydraModern");
     hrRenderEnableDevice(renderRef, CURR_RENDER_DEVICE, true);
 
     hrRenderOpen(renderRef, HR_WRITE_DISCARD);
@@ -1058,7 +1053,7 @@ namespace MTL_TESTS
       hrRenderSaveFrameBufferLDR(renderRef, outNames[j].c_str());
     } // for(int j=0;j<3;j++)
 
-    return check_images("test_104", 3, 40);
+    return check_images("test_104", 3, 20);
   }
 
 

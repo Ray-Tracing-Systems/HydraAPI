@@ -479,6 +479,90 @@ namespace HydraRender
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  /**
+  \brief load LDR image from file
+  */
+  bool LoadLDRImageFromFile(const char* a_fileName,
+                            int* pW, int* pH, std::vector<int32_t>& a_data)
+  {
+    FREE_IMAGE_FORMAT fif = FIF_PNG; // image format
+
+    fif = FreeImage_GetFileType(a_fileName, 0);
+
+    if (fif == FIF_UNKNOWN)
+      fif = FreeImage_GetFIFFromFilename(a_fileName);
+
+    FIBITMAP* dib = nullptr;
+    if (FreeImage_FIFSupportsReading(fif))
+      dib = FreeImage_Load(fif, a_fileName);
+    else
+    {
+      std::cout << "LoadLDRImageFromFile() : FreeImage_FIFSupportsReading/FreeImage_Load failed!" << std::endl;
+      return false;
+    }
+
+    FIBITMAP* converted = FreeImage_ConvertTo32Bits(dib);
+    BYTE* bits          = FreeImage_GetBits(converted);
+    auto width          = FreeImage_GetWidth(converted);
+    auto height         = FreeImage_GetHeight(converted);
+    auto bitsPerPixel   = FreeImage_GetBPP(converted);
+
+    a_data.resize(width*height);
+    BYTE* data = (BYTE*)&a_data[0];
+
+    for (unsigned int y = 0; y<height; y++)
+    {
+      int lineOffset1 = y*width;
+      int lineOffset2 = y*width;
+
+      for (unsigned int x = 0; x<width; x++)
+      {
+        int offset1 = lineOffset1 + x;
+        int offset2 = lineOffset2 + x;
+
+        data[4 * offset1 + 0] = bits[4 * offset2 + 2];
+        data[4 * offset1 + 1] = bits[4 * offset2 + 1];
+        data[4 * offset1 + 2] = bits[4 * offset2 + 0];
+        data[4 * offset1 + 3] = bits[4 * offset2 + 3];
+      }
+    }
+
+    FreeImage_Unload(dib);
+    FreeImage_Unload(converted);
+
+    (*pW) = width;
+    (*pH) = height;
+  }
+
+  float MSE_RGB_LDR(const std::vector<int32_t>& image1, const std::vector<int32_t>& image2)
+  {
+    if(image1.size() != image2.size())
+      return 0.0f;
+
+    double accum = 0.0;
+
+    for(int i=0;i<image1.size();i++)
+    {
+      const int pxData1 = image1[i];
+      const int pxData2 = image2[i];
+      const int r1 = (pxData1 & 0x00FF0000) >> 16;
+      const int g1 = (pxData1 & 0x0000FF00) >> 8;
+      const int b1 = (pxData1 & 0x000000FF);
+
+      const int r2 = (pxData2 & 0x00FF0000) >> 16;
+      const int g2 = (pxData2 & 0x0000FF00) >> 8;
+      const int b2 = (pxData2 & 0x000000FF);
+
+      accum += double( (r1-r2)*(r1-r2) + (b1-b2)*(b1-b2) + (g1-g2)*(g1-g2) );
+    }
+
+    return float(accum/double(image1.size()));
+  }
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
   class FreeImageTool : public IHRImageTool
   {
