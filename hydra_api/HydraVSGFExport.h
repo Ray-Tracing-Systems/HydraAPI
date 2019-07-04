@@ -95,3 +95,5 @@ struct VSGFOffsets
 VSGFOffsets CalcOffsets(int numVert, int numInd, bool a_haveTangents = true, bool a_haveNormals = true);
 
 size_t CalcVSGFSize(int numVert, int numInd);
+
+void _hrDebugPrintVSGF(const wchar_t* a_fileNameIn, const wchar_t* a_fileNameOut);
