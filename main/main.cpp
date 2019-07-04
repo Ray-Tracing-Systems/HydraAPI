@@ -129,7 +129,7 @@ int main(int argc, const char** argv)
   try
   {
     //demo_01_plane_box();
-    demo_02_load_obj();
+    //demo_02_load_obj();
     //demo_03_caustics();
     //demo_04_instancing();
 
@@ -140,7 +140,7 @@ int main(int argc, const char** argv)
     //run_all_alg_tests();
     //run_all_ipp_tests();
     
-    //std::cout << test39_mmlt_or_ibpt() << std::endl;
+    std::cout << MTL_TESTS::test_104_reflect_phong() << std::endl;
     
     //window_main_free_look(L"/home/frol/PROG/clsp/database/statex_00001.xml", L"opengl1");
 	  terminate_opengl();

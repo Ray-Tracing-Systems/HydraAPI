@@ -181,6 +181,24 @@ Assume both reflection vector and generated direction (x,y,z) \textbf{are given 
 	pdf = \frac{n+1}{2\pi}cos(\alpha)^{n} \\
 \end{eqnarray*}
 
+\boldblue{Test:} 104\_reflect\_phong.
+
+
+\begin{figure}[h]
+	\begin{minipage}[h]{0.33\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{images/test_104/w_ref.png} \\ cosPower = 12}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[h]{0.325\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{images/test_104/w_ref2.png} \\ cosPower = 32}
+	\end{minipage}
+	\begin{minipage}[h]{0.33\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{images/test_104/w_ref3.png} \\ cosPower = 82}
+	\end{minipage}
+	\caption{Изображения шарика с моделью фонга для различных степеней косинуса.}
+\end{figure}
+
+
 \reqirenment{mirror}
 
 Pure specular reflection. Note that mixing of mirror and lambertian reflections is not needed at this level of standard. Renderer may suppose mutually exclusive: (phong, mirror or lambert). 
