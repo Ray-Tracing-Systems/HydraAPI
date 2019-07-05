@@ -101,6 +101,24 @@ struct HRTextureNodeRef { int32_t id; HRTextureNodeRef () : id(-1) {} }; ///< Te
 struct HRSceneInstRef   { int32_t id; HRSceneInstRef()    : id(-1) {} }; ///< SceneInst reference
 struct HRRenderRef      { int32_t id; HRRenderRef()       : id(-1) {} }; ///< RenderSettings reference
 
+
+/// Settings for model importer
+
+struct HRModelLoadInfo
+{
+    HRModelLoadInfo() : mtlRelativePath(nullptr),
+                        useMaterial(true),
+                        useCentering(true),
+                        transform{1.0f, 0.0f, 0.0f, 0.0f,
+                                  0.0f, 1.0f, 0.0f, 0.0f,
+                                  0.0f, 0.0f, 1.0f, 0.0f,
+                                  0.0f, 0.0f, 0.0f, 1.0f} {};
+    wchar_t* mtlRelativePath;   ///< Relative path to .mtl files. Default setting = nullptr => importer will look for them in the same folder as .obj file.
+    bool     useMaterial;       ///< Flag, indicating whether to apply materials from .obj file or not. Default setting = true
+    bool     useCentering;      ///< Flag, indicating whether to perform centering around [0.0, 0.0, 0.0] or not. Default setting = true
+    float    transform[16];     ///< Transform matrix. Default setting = identity matrix. This flag overwrites 'useCentering' flag
+};
+
 /// When open any HRObject you must specify one of these 2 flags.
 
 enum HR_OPEN_MODE {
@@ -671,20 +689,19 @@ HAPI HRMeshRef hrMeshCreate(const wchar_t* a_objectName);
 /**
 \brief create mesh from internal vsgf format with delayed load.
 \param a_pScn     - pointer to scene library
-\param a_fileName - file name of the mesh.
+\param a_fileName - file name of the mesh
 \param a_copyToLocalFolder - indicates if we need to copy input '.vsgf' file to local folder
 
 */
 HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName, bool a_copyToLocalFolder = false);
 
 /**
-\brief create mesh from internal vsgf format.
-\param a_pScn     - pointer to scene library
-\param a_fileName - file name of the mesh.
-\param a_copyToLocalFolder - indicates if we need to copy input '.vsgf' file to local folder
+\brief create mesh from obj, obj+mtl or internal vsgf format.
+\param a_fileName - file name of the mesh
+\param a_modelInfo - structure, describing how to import the model
 
 */
-HAPI HRMeshRef hrMeshCreateFromFile(const wchar_t* a_fileName, bool a_copyToLocalFolder = false);
+HAPI HRMeshRef hrMeshCreateFromFile(const wchar_t* a_fileName, HRModelLoadInfo a_modelInfo = HRModelLoadInfo());
 
 /**
 \brief open mesh

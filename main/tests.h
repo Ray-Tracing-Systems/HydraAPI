@@ -218,6 +218,10 @@ namespace GEO_TESTS
   bool test_004_dof();
   bool test_005_instancing();
   bool test_006_points_on_mesh();
+  bool test_007_import_obj();
+  bool test_008_import_obj_w_mtl();
+  bool test_009_import_obj_fullscale();
+
 }
 
 namespace MTL_TESTS
