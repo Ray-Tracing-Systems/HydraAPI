@@ -70,16 +70,18 @@ bool check_images(const char* a_path, const int a_numImages, const float a_mse)
     path2 = path3;
 
     int w1, h1, w2, h2;
-    std::vector<float> data1, data2;
 
-    HydraRender::LoadImageFromFile(path1.c_str(), data1, w1, h1);
-    HydraRender::LoadImageFromFile(path2.c_str(), data2, w2, h2);
+    std::vector<int32_t> image1, image2;
+    HydraRender::LoadLDRImageFromFile(path1.c_str(), &w1, &h1, image1);
+    HydraRender::LoadLDRImageFromFile(path2.c_str(), &w2, &h2, image2);
 
     if (w1 != w2 || h1 != h2)
+    {
+      g_MSEOutput = 1000000.0f;
       return false;
+    }
 
-    float mseVal = float(w1*h1)*HydraRender::MSE(data1, data2);
-    //std::cout << "[check_images]: MSE = " << mseVal << std::endl;
+    const float mseVal = HydraRender::MSE_RGB_LDR(image1, image2);
     g_MSEOutput = fmax(g_MSEOutput, mseVal);
 
     result = result && (mseVal <= a_mse);
