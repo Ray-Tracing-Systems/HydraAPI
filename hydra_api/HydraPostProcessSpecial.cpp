@@ -190,13 +190,13 @@ void NonLocalMeansGuidedTexNormDepthFilter(const HDRImage4f& inImage, const HDRI
 
 #include <iostream>
 
-bool NLMDenoiserPut::Eval(ArgArray1& argsHDR, ArgArray2& argsLDR, pugi::xml_node setiings, std::shared_ptr<IHRRenderDriver> a_pDriver)
+bool NLMDenoiserPut::Eval(ArgArray1& argsHDR, ArgArray2& argsLDR, pugi::xml_node settings, std::shared_ptr<IHRRenderDriver> a_pDriver)
 {
   auto outImagePtr = argsHDR[L"out_color"];
   
   if (outImagePtr == nullptr)
   {
-    m_err = L"median: arg 'out_color' not found";
+    m_err = L"NLMPut: arg 'out_color' not found";
     return false;
   }
   

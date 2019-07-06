@@ -791,6 +791,14 @@ HAPI void*             hrMeshGetAttribPointer(HRMeshRef a_mesh, const wchar_t* a
 
 
 /**
+\brief get direct vertex attribute pointer to the data inside virtual buffer. The mesh must be closed! Else the function will return nullptr;
+\param a_pMesh       - pointer to mesh
+\param attributeName - attribute name (currently checks only for "pos", "norm" and "uv")
+
+*/
+HAPI const void*       hrMeshGetAttribConstPointer(HRMeshRef a_mesh, const wchar_t* attributeName);
+
+/**
 \brief get primitive attribute pointer. The mesh must be opened! Else the function will return nullptr;
 \param a_pMesh - pointer to mesh
 \param attributeName - attribute name (currently checks only for "mind", only)

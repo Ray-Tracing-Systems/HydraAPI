@@ -141,6 +141,7 @@ int main(int argc, const char** argv)
     //run_all_ipp_tests();
     
     //std::cout << test39_mmlt_or_ibpt() << std::endl;
+    MTL_TESTS::test_101_diffuse_lambert();
     
     //window_main_free_look(L"/home/frol/PROG/clsp/database/statex_00001.xml", L"opengl1");
 	  terminate_opengl();

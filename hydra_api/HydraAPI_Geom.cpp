@@ -1157,6 +1157,53 @@ HAPI void* hrMeshGetAttribPointer(HRMeshRef a_mesh, const wchar_t* attributeName
   }
 }
 
+HAPI const void*  hrMeshGetAttribConstPointer(HRMeshRef a_mesh, const wchar_t* attributeName)
+{
+  HRMesh* pMesh = g_objManager.PtrById(a_mesh);
+  if (pMesh == nullptr)
+    return nullptr;
+  
+  if (pMesh->opened)
+    return nullptr;
+  
+  auto pImpl = pMesh->pImpl;
+  if(pImpl == nullptr)
+    return nullptr;
+  
+  const char* basicPointer = (const char*)pMesh->pImpl->GetData();
+  
+  auto meshInfo = hrMeshGetInfo(a_mesh);
+  
+  auto offsets  = CalcOffsets(meshInfo.vertNum, meshInfo.indicesNum, true , true);
+  
+  if (!wcscmp(attributeName, L"pos"))
+  {
+    return (basicPointer + offsets.offsetPos);
+  }
+  else if (!wcscmp(attributeName, L"norm"))
+  {
+    return (basicPointer + offsets.offsetNorm);
+  }
+  else if (!wcscmp(attributeName, L"uv") || !wcscmp(attributeName, L"texcoord"))
+  {
+    return (basicPointer + offsets.offsetTexc);
+  }
+  else if (!wcscmp(attributeName, L"tang"))
+  {
+    return (basicPointer + offsets.offsetTang);
+  }
+  else if (!wcscmp(attributeName, L"ind"))
+  {
+    return (basicPointer + offsets.offsetInd);
+  }
+  else if (!wcscmp(attributeName, L"mind"))
+  {
+    return (basicPointer + offsets.offsetMind);
+  }
+  
+  return nullptr;
+}
+
 
 HAPI void* hrMeshGetPrimitiveAttribPointer(HRMeshRef a_mesh, const wchar_t* attributeName)
 {
@@ -1259,7 +1306,7 @@ void ComputeVertexNormals(HRMesh::InputTriMesh& mesh, const int indexNum, bool u
   
   for (auto i = 0; i < faceNum; ++i)
   {
-    float3 A = float3(mesh.verticesPos.at(4 * mesh.triIndices.at(3*i)), mesh.verticesPos.at(4 * mesh.triIndices.at(3*i) + 1), mesh.verticesPos.at(4 * mesh.triIndices.at(3*i) + 2));
+    float3 A = float3(mesh.verticesPos.at(4 * mesh.triIndices.at(3*i)),     mesh.verticesPos.at(4 * mesh.triIndices.at(3*i) + 1),     mesh.verticesPos.at(4 * mesh.triIndices.at(3*i) + 2));
     float3 B = float3(mesh.verticesPos.at(4 * mesh.triIndices.at(3*i + 1)), mesh.verticesPos.at(4 * mesh.triIndices.at(3*i + 1) + 1), mesh.verticesPos.at(4 * mesh.triIndices.at(3*i + 1) + 2));
     float3 C = float3(mesh.verticesPos.at(4 * mesh.triIndices.at(3*i + 2)), mesh.verticesPos.at(4 * mesh.triIndices.at(3*i + 2) + 1), mesh.verticesPos.at(4 * mesh.triIndices.at(3*i + 2) + 2));
     

@@ -180,11 +180,11 @@ bool MTL_TESTS::test_162_shadow_matte_back1()
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Meshes
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  HRMeshRef sph1 = HRMeshFromSimpleMesh(L"sph1", CreateSphere(1.0f, 64), matR.id);
-  HRMeshRef sph2 = HRMeshFromSimpleMesh(L"sph2", CreateSphere(1.0f, 64), matR.id);
-  HRMeshRef sph3 = HRMeshFromSimpleMesh(L"sph3", CreateSphere(1.0f, 64), matR.id);
-  HRMeshRef boxBG = HRMeshFromSimpleMesh(L"boxBG", CreateCube(1.0f), matBG.id);
-  HRMeshRef planeRef = HRMeshFromSimpleMesh(L"my_plane", CreatePlane(20.0f), matGray.id);
+  HRMeshRef sph1      = HRMeshFromSimpleMesh(L"sph1", CreateSphere(1.0f, 64), matR.id);
+  HRMeshRef sph2      = HRMeshFromSimpleMesh(L"sph2", CreateSphere(1.0f, 64), matR.id);
+  HRMeshRef sph3      = HRMeshFromSimpleMesh(L"sph3", CreateSphere(1.0f, 64), matR.id);
+  HRMeshRef boxBG     = HRMeshFromSimpleMesh(L"boxBG", CreateCube(1.0f), matBG.id);
+  HRMeshRef planeRef  = HRMeshFromSimpleMesh(L"my_plane", CreatePlane(20.0f), matGray.id);
   HRMeshRef planeRef2 = HRMeshFromSimpleMesh(L"my_plane2", CreatePlane(20.0f), matG.id);
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
