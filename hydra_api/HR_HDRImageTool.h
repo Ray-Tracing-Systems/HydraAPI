@@ -32,6 +32,11 @@ namespace HydraRender
   void LoadImageFromFile(const std::wstring& a_fileName, std::vector<float>& data, int& w, int& h);
   void LoadImageFromFile(const std::wstring& a_fileName, HydraRender::HDRImage4f& image);
 
+  bool LoadLDRImageFromFile(const char* a_fileName,
+                            int* pW, int* pH, std::vector<int32_t>& a_data);
+
+  float MSE_RGB_LDR(const std::vector<int32_t>& image1, const std::vector<int32_t>& image2);
+
   template<typename ContainerT>
   float MSE(const ContainerT& image1, const ContainerT& image2)
   {
@@ -51,6 +56,7 @@ namespace HydraRender
 
     return float(summ) / float(image1.size());
   }
+
 
   template<typename ContainerT>
   float MSE3(const ContainerT& image1, const ContainerT& image2)

@@ -23,6 +23,7 @@ using namespace HydraLiteMath;
 #include "HydraLegacyUtils.h"
 
 #include "HydraVSGFCompress.h"
+#include "HydraXMLVerify.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
@@ -32,7 +33,6 @@ extern std::wstring      g_lastError;
 extern std::wstring      g_lastErrorCallerPlace;
 extern HR_ERROR_CALLBACK g_pErrorCallback;
 extern HRObjectManager   g_objManager;
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -198,7 +198,38 @@ HAPI HRMeshRef hrMeshCreate(const wchar_t* a_objectName)
   return ref;
 }
 
-HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, bool a_copyToLocalFolder)
+/**** Some utilities for checking empty values and formatting wstrings ****/
+
+inline std::wstring fthree2ws(const float float3_array[3])
+{
+  std::ostringstream strs;
+  strs << float3_array[0] << " " << float3_array[1] << " " << float3_array[2];
+  std::wstring str = s2ws(strs.str());
+  return str;
+}
+
+inline bool f3filled(const float float3_array[3])
+{
+  for(int i = 0; i < 3; ++i){
+    if(float3_array[i] > 0)
+      return true;
+  }
+  return false;
+}
+
+inline bool f1filled(const float float1)
+{
+  if(float1 > 0)
+    return true;
+}
+
+inline bool s1filled(const std::string str)
+{
+  if(str.compare(""))
+    return true;
+}
+
+HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, HRModelLoadInfo a_modelInfo)
 {
   tinyobj::attrib_t attrib;
   std::vector<tinyobj::shape_t> shapes;
@@ -207,9 +238,23 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, bool a_co
   std::string warn;
   std::string err;
 
+  /*******************************************    Reading the .obj file    ********************************************/
   auto pathS = ws2s(a_objectName);
-  bool res   = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, pathS.c_str());
+  // Getting the path to the .obj file
+  int strLength = pathS.size() - pathS.substr(pathS.find_last_of("/")).size();
+  std::string upToLastSlash = pathS.substr(0, strLength);
+  bool res = false;
 
+  // Check for mtl file in the same folder as .obj file in case 'mtlRelativePath' is not provided
+  if(a_modelInfo.mtlRelativePath == nullptr)
+  {
+    res = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, pathS.c_str(), upToLastSlash.c_str());
+  }
+  else
+  {
+    res = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, pathS.c_str(), ws2s(a_modelInfo.mtlRelativePath).c_str());
+    upToLastSlash = ws2s(a_modelInfo.mtlRelativePath);
+  }
   if(!res)
   {
     HrPrint(HR_SEVERITY_ERROR, L"_hrMeshCreateFromObjMerged, failed to load obj file ", a_objectName);
@@ -225,6 +270,83 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, bool a_co
     cumulative_indices_number += shapes[s].mesh.indices.size();
   }
 
+  /*******************************************      Parsing materials      ********************************************/
+  bool ifMaterialsProvided = false;
+  std::vector<HRMaterialRef> h_materials;
+  // Check if there are materials associated with the .obj file
+  // If not, set material id to '0' for the whole mesh
+  if(a_modelInfo.useMaterial)
+    if(materials.size() != 0)
+      ifMaterialsProvided = true;
+    else
+      HrPrint(HR_SEVERITY_ERROR, L"Materials not found for: ", a_objectName);
+
+  if(ifMaterialsProvided) {
+    for (int m = 0; m < materials.size(); ++m) {
+
+      /// Checking the material properties
+      // Just setting [0.0, 0.0, 0.0] is case of empty variable
+      bool ifDiffuseRGB = f3filled(materials.at(m).diffuse);
+      bool ifDiffuseTexture = s1filled(materials.at(m).diffuse_texname);
+      bool ifSpecularRGB = f3filled(materials.at(m).specular);
+
+
+      HRMaterialRef current_material = hrMaterialCreate(s2ws(materials.at(m).name).c_str());
+
+      hrMaterialOpen(current_material, HR_WRITE_DISCARD);
+      {
+        pugi::xml_node matNode = hrMaterialParamNode(current_material);
+
+        if (ifDiffuseRGB || ifDiffuseTexture) {
+          pugi::xml_node diff = matNode.append_child(L"diffuse");
+          diff.append_attribute(L"brdf_type").set_value(L"lambert");
+          auto diffColor = diff.append_child(L"color");
+          if (ifDiffuseRGB) {
+            diffColor.append_attribute(L"val") = fthree2ws(materials.at(m).diffuse).c_str();
+          }
+          if (ifDiffuseTexture) {
+            diffColor.append_attribute(L"tex_apply_mode").set_value(L"multiply");
+            std::wstring wpath = s2ws(upToLastSlash + "/" + materials.at(
+                    m).diffuse_texname);//.substr(1, materials.at(m).diffuse_texname.size() - 1));
+            HRTextureNodeRef diffuse_texture = hrTexture2DCreateFromFile(wpath.c_str());
+            auto texNode = hrTextureBind(diffuse_texture, diffColor);
+            texNode.append_attribute(L"matrix");
+            float samplerMatrix[16] = {1, 0, 0, 0,
+                                       0, 1, 0, 0,
+                                       0, 0, 1, 0,
+                                       0, 0, 0, 1};
+            texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
+            texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
+            texNode.append_attribute(L"input_gamma").set_value(2.2f);
+            texNode.append_attribute(L"input_alpha").set_value(L"rgb");
+
+            HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
+          }
+
+        }
+
+        if (ifSpecularRGB) {
+          pugi::xml_node refl = matNode.append_child(L"reflectivity");
+          refl.append_attribute(L"brdf_type").set_value(L"phong");
+          refl.append_child(L"color").append_attribute(L"val") = fthree2ws(materials.at(m).specular).c_str();
+          refl.append_child(L"glossiness").append_attribute(L"val") = 1.0f;
+          refl.append_child(L"fresnel").append_attribute(L"val").set_value(1);
+          refl.append_child(L"fresnel_ior").append_attribute(L"val").set_value(1.5);
+
+        }
+        VERIFY_XML(matNode);
+      }
+      hrMaterialClose(current_material);
+
+      h_materials.push_back(current_material);
+    }
+  }
+
+  int mat_indxs_length = int(cumulative_indices_number / 3);
+  std::vector<int> mat_ids(mat_indxs_length);
+  int mat_counter = 0;
+  /*******************************************   Preparing the mesh data   ********************************************/
+
   // Vertices, Normals, Texture coordinates, Indices
   std::vector<float> verts(cumulative_indices_number * 4);
   std::vector<float> norms(cumulative_indices_number * 4);
@@ -232,6 +354,7 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, bool a_co
   std::vector<int  > indxs(cumulative_indices_number);
 
   bool has_normals = true;
+  bool has_tex = true;
 
   for (size_t s = 0; s < shapes.size(); s++) {
     size_t index_offset = 0;
@@ -241,6 +364,10 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, bool a_co
     }
     size_t vertices_num = shapes[s].mesh.num_face_vertices.size();
     for (size_t f = 0; f < vertices_num; f++) {
+      // Setting material's index for each polygon
+      if(ifMaterialsProvided)
+        mat_ids[mat_counter++] = h_materials.at(shapes[s].mesh.material_ids[f]).id;
+
       int fv = shapes[s].mesh.num_face_vertices[f];
       // Loop over vertices in the face.
       for (size_t v = 0; v < fv; v++) {
@@ -255,25 +382,29 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, bool a_co
         verts[4 * (index_shape_offset + index_offset + v) + 3] = 1.0;
         // Setting normals
         if (idx.normal_index != -1) {
-            norms[4 * (index_shape_offset + index_offset + v) + 0] = attrib.normals[3 * idx.normal_index + 0];
-            norms[4 * (index_shape_offset + index_offset + v) + 1] = attrib.normals[3 * idx.normal_index + 1];
-            norms[4 * (index_shape_offset + index_offset + v) + 2] = attrib.normals[3 * idx.normal_index + 2];
-            norms[4 * (index_shape_offset + index_offset + v) + 3] = 0.0;
+          norms[4 * (index_shape_offset + index_offset + v) + 0] = attrib.normals[3 * idx.normal_index + 0];
+          norms[4 * (index_shape_offset + index_offset + v) + 1] = attrib.normals[3 * idx.normal_index + 1];
+          norms[4 * (index_shape_offset + index_offset + v) + 2] = attrib.normals[3 * idx.normal_index + 2];
+          norms[4 * (index_shape_offset + index_offset + v) + 3] = 0.0;
         } else {
-            has_normals = false;
+          has_normals = false;
         }
         // Setting texture coordinates
         if (idx.texcoord_index != -1) {
-            tex_s[2 * (index_shape_offset + index_offset + v) + 0] = attrib.texcoords[2 * idx.texcoord_index + 0];
-            tex_s[2 * (index_shape_offset + index_offset + v) + 1] = attrib.texcoords[2 * idx.texcoord_index + 1];
+          tex_s[2 * (index_shape_offset + index_offset + v) + 0] = attrib.texcoords[2 * idx.texcoord_index + 0];
+          tex_s[2 * (index_shape_offset + index_offset + v) + 1] = attrib.texcoords[2 * idx.texcoord_index + 1];
         } else {
-            tex_s[2 * (index_shape_offset + index_offset + v) + 0] = 0.0;
-            tex_s[2 * (index_shape_offset + index_offset + v) + 1] = 0.0;
+          //has_tex = false;
+          tex_s[2 * (index_shape_offset + index_offset + v) + 0] = 0.5;
+          tex_s[2 * (index_shape_offset + index_offset + v) + 1] = 0.5;
         }
       }
-        index_offset += fv;
+      index_offset += fv;
     }
   }
+
+
+  /*******************************************   Setting up the buffers   *********************************************/
 
   HRMeshRef ref = hrMeshCreate(a_objectName);
 
@@ -286,8 +417,16 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, bool a_co
     else
       hrMeshVertexAttribPointer4f(ref, L"norm", nullptr);
 
-    hrMeshVertexAttribPointer2f(ref, L"texcoord", tex_s.data());
-    hrMeshMaterialId(ref, 0);
+    //if (has_tex)
+      hrMeshVertexAttribPointer2f(ref, L"texcoord", tex_s.data());
+    //else
+    //  hrMeshVertexAttribPointer2f(ref, L"texcoord", nullptr);
+
+    if(ifMaterialsProvided)
+      hrMeshPrimitiveAttribPointer1i(ref, L"mind", mat_ids.data());
+    else
+      hrMeshMaterialId(ref, 0);
+
     hrMeshAppendTriangles3(ref, cumulative_indices_number, indxs.data());
   }
   hrMeshClose(ref);
@@ -375,7 +514,7 @@ HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName, bool a_copyToLo
   return ref;
 }
 
-HAPI HRMeshRef hrMeshCreateFromFile(const wchar_t* a_fileName, bool a_copyToLocalFolder)
+HAPI HRMeshRef hrMeshCreateFromFile(const wchar_t* a_fileName, HRModelLoadInfo a_modelInfo)
 {
   //std::wstring tail = str_tail(a_fileName, 6);
   std::wstring tail = std::wstring(a_fileName).substr(std::wstring(a_fileName).find_last_of(L"."));
@@ -384,7 +523,7 @@ HAPI HRMeshRef hrMeshCreateFromFile(const wchar_t* a_fileName, bool a_copyToLoca
   std::vector<int> dataBuffer;
 
   if(tail == L".obj")
-    return _hrMeshCreateFromObjMerged(a_fileName, a_copyToLocalFolder);
+    return _hrMeshCreateFromObjMerged(a_fileName, a_modelInfo);
   else if(tail == L".vsgfc")
     data = HR_LoadVSGFCompressedData(a_fileName, dataBuffer);
   else if(tail == L".vsgf")
@@ -697,7 +836,7 @@ HAPI void hrMeshVertexAttribPointer2f(HRMeshRef a_mesh, const wchar_t* a_name, c
     return;
   }
 
-  // temporary "dirty" implementation ... 
+  // temporary "dirty" implementation ...
   //
   if (std::wstring(a_name) == L"tex" || std::wstring(a_name) == L"texcoord")
     pMesh->m_inputPointers.texCoords = a_pointer;
@@ -723,7 +862,7 @@ HAPI void hrMeshVertexAttribPointer3f(HRMeshRef a_mesh, const wchar_t* a_name, c
     return;
   }
 
-  // temporary "dirty" implementation ... 
+  // temporary "dirty" implementation ...
   //
   if (std::wstring(a_name) == L"pos" || std::wstring(a_name) == L"positions")
   {
@@ -759,7 +898,7 @@ HAPI void hrMeshVertexAttribPointer4f(HRMeshRef a_mesh, const wchar_t* a_name, c
     return;
   }
 
-  // temporary "dirty" implementation ... 
+  // temporary "dirty" implementation ...
   //
   if (std::wstring(a_name) == L"pos" || std::wstring(a_name) == L"positions")
   {
