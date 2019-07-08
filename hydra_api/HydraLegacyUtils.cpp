@@ -8,7 +8,9 @@
 
 #endif
 
-#include "../hydra_api/HydraInternal.h" // for use hr_mkdir
+#include "../hydra_api/HydraInternal.h"      // for use hr_mkdir
+#include "../hydra_api/HydraObjectManager.h" // for use HrPrint
+
 
 #pragma warning(disable:4996) // for sprintf to be ok
 
@@ -203,9 +205,14 @@ std::wstring GetAbsolutePath(const std::wstring& a_path)
   GetFullPathNameW(path.c_str(), 4096, buffer, NULL);
   return std::wstring(buffer);
 #else
+
   char actualpath [PATH_MAX+1];
   const std::string tmp(path.begin(), path.end());
-  realpath(tmp.c_str(), actualpath);
+  if(realpath(tmp.c_str(), actualpath) == nullptr)
+  {
+    HrPrint(HR_SEVERITY_ERROR, L"GetAbsolutePath: realpath failed for some reason");
+    return a_path;
+  }
 
   const size_t size = std::strlen(actualpath);
   std::wstring wstr;

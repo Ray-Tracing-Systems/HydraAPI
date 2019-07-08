@@ -286,7 +286,13 @@ protected:
   {
     std::ifstream fin;
     hr_ifstream_open(fin, a_fileName);
-
+    
+    if(!fin.is_open())
+    {
+      HrPrint(HR_SEVERITY_ERROR, L"MeshVSGFProxy::ReadVSGFHeader, can't open file: ", a_fileName);
+      throw std::runtime_error("MeshVSGFProxy::ReadVSGFHeader, can't open file");
+    }
+    
     std::wstring fileName(a_fileName);
     std::wstring ext = str_tail(fileName, 6);
 
