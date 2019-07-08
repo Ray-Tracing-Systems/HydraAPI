@@ -23,7 +23,7 @@
 
 
 #ifdef WIN32
-#include "../clew/clew.h"
+#include "../dependencies/clew/clew.h"
 #else
 #include <CL/cl.h>
 #endif

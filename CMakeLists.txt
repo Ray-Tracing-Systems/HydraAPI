@@ -8,16 +8,16 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 
 set(ADDITIONAL_INCLUDE_DIRS
-        ${CMAKE_CURRENT_SOURCE_DIR}/LIBRARY/include)
+        ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/include)
         
 set(ADDITIONAL_LIBRARY_DIRS
-        ${CMAKE_CURRENT_SOURCE_DIR}/LIBRARY/lib_x64)   
+        ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/lib_x64)
 
-add_subdirectory (ies_parser)
-add_subdirectory (mikktspace)
-add_subdirectory (corto)
+add_subdirectory (utils/ies_parser)
+add_subdirectory (utils/mikktspace)
+add_subdirectory (utils/corto)
 add_subdirectory (hydra_api)
-#add_subdirectory (hydra_api/hydra_api_py)
+#add_subdirectory (hydra_api_python)
 
 
 if(WIN32)

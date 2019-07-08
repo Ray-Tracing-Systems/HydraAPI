@@ -31,7 +31,7 @@ using namespace HydraLiteMath;
 #include "HydraXMLHelpers.h"
 #include "HydraTextureUtils.h"
 
-#include "../mikktspace/mikktspace.h"
+#include "../utils/mikktspace/mikktspace.h"
 
 #ifdef WIN32
 #undef min

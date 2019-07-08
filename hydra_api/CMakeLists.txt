@@ -44,7 +44,8 @@ set(SOURCE_FILES
         HydraTextureUtils.h
         HydraAPI_GeomProcessing.cpp
         vfloat4_x64.h
-        HydraRngUtils.cpp)
+        HydraRngUtils.cpp
+        HydraVSGFCompress.h HydraVSGFCompress.cpp)
 
 
 if (WIN32)
@@ -62,18 +63,7 @@ set(HR_EXTENSIONS HRExtensions.cpp)
 set(GL_DEPENDENT
         glad.c
         OpenGLCoreProfileUtils.h OpenGLCoreProfileUtils.cpp
-        RenderDriverOpenGL3_Utility.h RenderDriverOpenGL3_Utility.cpp
-        )
-
-set(POST_PROC
-        HydraPostProcessAPI.h
-        HydraPostProcessAPI.cpp
-        HydraPostProcessCommon.h
-        HydraPostProcessCommon.cpp
-        HydraPostProcessSpecial.h
-        HydraPostProcessSpecial.cpp
-        NonLocalMeans.cpp
-        HydraVSGFCompress.h HydraVSGFCompress.cpp)
+        RenderDriverOpenGL3_Utility.h RenderDriverOpenGL3_Utility.cpp)
 
 
 
