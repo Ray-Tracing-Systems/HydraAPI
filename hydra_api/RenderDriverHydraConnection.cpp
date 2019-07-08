@@ -1354,8 +1354,10 @@ void RD_HydraConnection::ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out)
   }
   
   if(needToStopProcess && m_pConnection != nullptr)
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(250));
     m_pConnection->stopAllRenderProcesses();
-  
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
