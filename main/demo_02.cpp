@@ -243,7 +243,7 @@ void demo_02_load_obj()
     //
     auto mscale     = hlm::scale4x4(hlm::float3(3,3,3));
     auto mtranslate = hlm::translate4x4(hlm::float3(1, -4.2, 0));
-    auto mres       = hlm::mul(hlm::rotate_X_4x4(25.0 * DEG_TO_RAD), hlm::scale4x4(hlm::float3(8.0, 8.0, 8.0))); //hlm::mul(mtranslate,mscale);
+    auto mres       = hlm::mul(mtranslate,mscale);
 
     auto str_info = hrMeshGetInfo(bunnyRef);
     auto first_mat_id = str_info.batchesList[0].matId;

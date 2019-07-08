@@ -107,7 +107,7 @@ struct HRRenderRef      { int32_t id; HRRenderRef()       : id(-1) {} }; ///< Re
 struct HRModelLoadInfo
 {
     HRModelLoadInfo() : mtlRelativePath(nullptr),
-                        useMaterial(true),
+                        useMaterial(false),
                         useCentering(true),
                         transform{1.0f, 0.0f, 0.0f, 0.0f,
                                   0.0f, 1.0f, 0.0f, 0.0f,

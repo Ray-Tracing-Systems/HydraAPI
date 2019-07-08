@@ -132,9 +132,11 @@ int main(int argc, const char** argv)
     //demo_02_load_obj();
     //demo_03_caustics();
     //demo_04_instancing();
-    GEO_TESTS::test_007_import_obj();
-    GEO_TESTS::test_008_import_obj_w_mtl();
-    GEO_TESTS::test_009_import_obj_fullscale();
+
+    //GEO_TESTS::test_007_import_obj();
+    //GEO_TESTS::test_008_import_obj_w_mtl();
+    //GEO_TESTS::test_009_import_obj_fullscale();
+
     //run_all_api_tests(); // passed
     //run_all_geo_tests();
     //run_all_mtl_tests();
