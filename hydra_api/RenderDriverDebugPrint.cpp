@@ -17,6 +17,8 @@ struct RD_DebugPrint : public IHRRenderDriver
 {
   RD_DebugPrint() = default;
 
+  void GetRenderDriverName(std::wstring &name) override { name = std::wstring(L"debugPrint");};
+
   void              ClearAll() override;
   HRDriverAllocInfo AllocAll(HRDriverAllocInfo a_info) override;
 
@@ -180,7 +182,7 @@ HRRenderUpdateInfo RD_DebugPrint::HaveUpdateNow(int a_maxRaysPerPixel)
 }
 
 
-std::unique_ptr<IHRRenderDriver> CreateDebugPrint_RenderDriver()
+IHRRenderDriver* CreateDebugPrint_RenderDriver()
 {
-  return std::unique_ptr<IHRRenderDriver>(new RD_DebugPrint);
+  return new RD_DebugPrint;
 }

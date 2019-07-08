@@ -129,7 +129,11 @@ HAPI bool hrRenderGetFrameBufferLineHDR4f(HRRenderRef a_pRender, int a_begin, in
     return false;
   }
 
-  if (!pRender->m_pDriver->Info().supportGetFrameBufferLine)
+  std::wstring driver_name;
+  pRender->m_pDriver->GetRenderDriverName(driver_name);
+  auto driver_info = RenderDriverFactory::GetDriverInfo(driver_name.c_str());
+
+  if (!driver_info.supportGetFrameBufferLine)
   {
     HrError(L"hrRenderGetFrameBufferLineHDR4f is not implemented for general case yet. try different render driver");
     return false;
@@ -154,7 +158,10 @@ HAPI bool hrRenderGetFrameBufferLineLDR1i(HRRenderRef a_pRender, int a_begin, in
     return false;
   }
 
-  if (!pRender->m_pDriver->Info().supportGetFrameBufferLine)
+  std::wstring driver_name;
+  pRender->m_pDriver->GetRenderDriverName(driver_name);
+  auto driver_info = RenderDriverFactory::GetDriverInfo(driver_name.c_str());
+  if (!driver_info.supportGetFrameBufferLine)
   {
     HrError(L"GetFrameBufferLineLDR1i is not implemented for general case yet. try different render driver");
     return false;

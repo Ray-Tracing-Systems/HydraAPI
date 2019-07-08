@@ -92,7 +92,7 @@ struct HRDriverInfo
 
   std::wstring driverName = L"";
 
-  using TCreateFunction = std::unique_ptr<IHRRenderDriver>(*)();
+  using TCreateFunction = IHRRenderDriver*(*)();
   TCreateFunction createFunction = nullptr;
 };
 
@@ -316,7 +316,8 @@ struct IHRRenderDriver
 
   // info and devices
   //
-  HRDriverInfo Info() { return driverInfo; };                                            ///< return render driver info
+  virtual void GetRenderDriverName(std::wstring &name) {}; ///< get name by which the render driver is registered
+  //HRDriverInfo Info() { return driverInfo; };                                            ///< return render driver info
   virtual HRDriverDependencyInfo DependencyInfo() { return HRDriverDependencyInfo(); }  ///< return render dependency info (look at OpenGL1 implementation with display lists to understand this. You have to update mesh when you update material because old mesh display list contains old material color).
 
   virtual const HRRenderDeviceInfoListElem* DeviceList() const = 0; ///< this method is for multi-GPU render. return device list or nullptr
@@ -375,11 +376,15 @@ public:
     return false;
   }
 
-  static std::unique_ptr<IHRRenderDriver> Create(const std::wstring& renderdriver_name)
+  static IHRRenderDriver* Create(const std::wstring& renderdriver_name)
   {
     auto it = create_methods.find(renderdriver_name);
     if (it != create_methods.end())
       return it->second.createFunction();
+
+    std::wstring core_drv_name = L"HydraCore";
+    if(renderdriver_name == core_drv_name)
+      return nullptr;
 
     auto driver_name_str =  ws2s(renderdriver_name);
     std::cerr << "Render driver " << driver_name_str.c_str() << " is not registered!" << std::endl;
@@ -391,6 +396,10 @@ public:
     auto it = create_methods.find(renderdriver_name);
     if (it != create_methods.end())
       return it->second;
+
+    std::wstring core_drv_name = L"HydraCore";
+    if(renderdriver_name == core_drv_name)
+      return HRDriverInfo();
 
     auto driver_name_str =  ws2s(renderdriver_name);
     std::cerr << "Render driver " << driver_name_str.c_str() << " is not registered!" << std::endl;
@@ -408,8 +417,8 @@ public:
   }
 };
 
-std::unique_ptr<IHRRenderDriver> CreateHydraConnection_RenderDriver();
-std::unique_ptr<IHRRenderDriver> CreateDebugPrint_RenderDriver();
+IHRRenderDriver* CreateHydraConnection_RenderDriver();
+IHRRenderDriver* CreateDebugPrint_RenderDriver();
 
 
 static constexpr uint32_t MAX_TEXTURE_RESOLUTION = 16384;

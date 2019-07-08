@@ -430,8 +430,9 @@ int32_t HR_DriverUpdateTextures(HRSceneInst& scn, ChangeList& objList, HRRender*
   a_pDriver->BeginTexturesUpdate();
 
   int32_t texturesUpdated = 0;
-
-  HRDriverInfo info = a_pDriver->Info();
+  std::wstring driver_name;
+  a_pDriver->GetRenderDriverName(driver_name);
+  auto info = RenderDriverFactory::GetDriverInfo(driver_name.c_str());
 
   std::vector<int32_t> texturesUsed;
   texturesUsed.assign(objList.texturesUsed.begin(), objList.texturesUsed.end());
@@ -816,7 +817,9 @@ int32_t HR_DriverUpdateMeshes(HRSceneInst& scn, ChangeList& objList, HRRender* a
   a_pDriver->BeginGeomUpdate();
 
   //static bool wasThere = false;
-  HRDriverInfo info = a_pDriver->Info();
+  std::wstring driver_name;
+  a_pDriver->GetRenderDriverName(driver_name);
+  auto info = RenderDriverFactory::GetDriverInfo(driver_name.c_str());
 
   //std::cout << std::endl;
   //std::cout << "##HR_DriverUpdateMeshes: objList.meshUsed.size() = " << objList.meshUsed.size() << std::endl;
@@ -883,8 +886,9 @@ int32_t _hr_UtilityDriverUpdateMeshes(HRSceneInst& scn, HRRender* a_pRender)
 
   a_pDriver->BeginGeomUpdate();
 
-  HRDriverInfo info = a_pDriver->Info();
-
+  std::wstring driver_name;
+  a_pDriver->GetRenderDriverName(driver_name);
+  auto info = RenderDriverFactory::GetDriverInfo(driver_name.c_str());
 
   int32_t updatedMeshes = 0;
 
@@ -1668,7 +1672,7 @@ std::wstring HR_UtilityDriverStart(const wchar_t* state_path, HRRender* a_pOrigi
 #endif
 
   HRRender tempRender;
-  tempRender.m_pDriver = RenderDriverFactory::Create(L"opengl3Utility");
+  tempRender.m_pDriver = std::shared_ptr<IHRRenderDriver>(RenderDriverFactory::Create(L"opengl3Utility"));
 
   if (tempRender.m_pDriver != nullptr && g_objManager.m_currSceneId < g_objManager.scnInst.size())
   {

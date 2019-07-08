@@ -747,7 +747,7 @@ HAPI HRRenderRef hrRenderCreate(const wchar_t* a_className, const wchar_t* a_fla
   g_objManager.renderSettings[ref.id].update(nodeXml); // ???
   g_objManager.renderSettings[ref.id].id = ref.id;
 	
-  settings.m_pDriver = RenderDriverFactory::Create(a_className);
+  settings.m_pDriver = std::shared_ptr<IHRRenderDriver>(RenderDriverFactory::Create(a_className));
 
   settings.m_pDriver->SetInfoCallBack(g_pInfoCallback);
 
@@ -1056,7 +1056,11 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
 
   // Add/Update light as geometry if Render Driver can't do it itself
   //
-  bool needToAddLightsAsGeometry = (g_objManager.m_pDriver == nullptr) || !g_objManager.m_pDriver->Info().createsLightGeometryItself;
+  std::wstring driver_name;
+  g_objManager.m_pDriver->GetRenderDriverName(driver_name);
+  auto driver_info = RenderDriverFactory::GetDriverInfo(driver_name.c_str());
+
+  bool needToAddLightsAsGeometry = (g_objManager.m_pDriver == nullptr) || !driver_info.createsLightGeometryItself;
   if (needToAddLightsAsGeometry && pScn != nullptr)
     HR_UpdateLightsGeometryAndMaterial(g_objManager.scnData.m_lightsLib, pScn->xml_node());
   
@@ -1136,13 +1140,20 @@ HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pC
 
     //std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     std::wstring fixed_state = newPath;
-    if (g_objManager.m_pDriver->Info().supportUtilityPrepass && doPrepass)
+    std::wstring driver_name;
+    g_objManager.m_pDriver->GetRenderDriverName(driver_name);
+    auto driver_info = RenderDriverFactory::GetDriverInfo(driver_name.c_str());
+
+    if (driver_info.supportUtilityPrepass && doPrepass)
+    {
+      std::cout << "Starting scene prepass..." << std::endl;
       fixed_state = HR_UtilityDriverStart(newPath.c_str(), pSettings);
+    }
     //std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     //std::cout << "Resolution fix elapsed time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms" <<std::endl;
 
 //#ifdef IN_DEBUG
-    if (g_objManager.m_pDriver->Info().supportDisplacement && doDisplacement)
+    if (driver_info.supportDisplacement && doDisplacement)
       fixed_state = HR_PreprocessMeshes(fixed_state.c_str());
 //#endif
   }

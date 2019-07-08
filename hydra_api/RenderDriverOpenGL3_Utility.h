@@ -6,7 +6,8 @@
 #define HYDRAAPI_EX_RENDERDRIVEROPENGL3_UTILITY_H
 
 #include "HydraRenderDriverAPI.h"
-#include "RenderDriverOpenGL32Forward.h"
+#include "HydraRenderDriverAPI.h"
+#include "OpenGLCoreProfileUtils.h"
 
 
 using namespace HydraLiteMath;
@@ -15,6 +16,8 @@ using namespace GL_RENDER_DRIVER_UTILS;
 struct RD_OGL32_Utility : IHRRenderDriver
 {
     RD_OGL32_Utility();
+
+    void GetRenderDriverName(std::wstring &name) override { name = std::wstring(L"opengl3Utility");};
 
     void ClearAll() override;
     HRDriverAllocInfo AllocAll(HRDriverAllocInfo a_info) override;
@@ -118,6 +121,6 @@ protected:
 GLFWwindow * InitGLForUtilityDriver();
 std::unordered_map<uint32_t, uint32_t> getMipLevelsFromUtilityDriver(IHRRenderDriver *driver);
 
-std::unique_ptr<IHRRenderDriver> CreateOpenGL3_Utility_RenderDriver();
+IHRRenderDriver* CreateOpenGL3_Utility_RenderDriver();
 
 #endif //HYDRAAPI_EX_RENDERDRIVEROPENGL3_UTILITY_H

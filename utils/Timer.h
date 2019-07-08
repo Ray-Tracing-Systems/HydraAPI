@@ -3,8 +3,7 @@
 #define TIMER_GUARDIAN
 #endif
 
-#if defined WIN32
-
+#ifdef WIN32
 #include <windows.h>
 #include <stdexcept>
 

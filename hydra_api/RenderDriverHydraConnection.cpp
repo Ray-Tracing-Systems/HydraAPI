@@ -43,6 +43,7 @@ struct RD_HydraConnection : public IHRRenderDriver
     ClearAll();
   }
 
+  void GetRenderDriverName(std::wstring &name) override { name = std::wstring(L"HydraModern");};
   void              ClearAll() override;
   HRDriverAllocInfo AllocAll(HRDriverAllocInfo a_info) override;
 
@@ -364,9 +365,9 @@ void RD_HydraConnection::InitBothDeviceList()
   }
 }
 
-std::unique_ptr<IHRRenderDriver> CreateHydraConnection_RenderDriver()
+IHRRenderDriver* CreateHydraConnection_RenderDriver()
 {
-  return std::unique_ptr<IHRRenderDriver>(new RD_HydraConnection);
+  return new RD_HydraConnection;
 }
 
 

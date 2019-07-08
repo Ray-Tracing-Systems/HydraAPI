@@ -8,9 +8,9 @@
 #include "HydraXMLHelpers.h"
 
 
-std::unique_ptr<IHRRenderDriver> CreateOpenGL3_Utility_RenderDriver()
+IHRRenderDriver* CreateOpenGL3_Utility_RenderDriver()
 {
-  return std::unique_ptr<IHRRenderDriver>(new RD_OGL32_Utility);
+  return new RD_OGL32_Utility;
 }
 
 RD_OGL32_Utility::RD_OGL32_Utility()

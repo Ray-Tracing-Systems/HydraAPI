@@ -32,8 +32,6 @@ set(SOURCE_FILES
         pugiconfig.hpp
         pugixml.cpp
         pugixml.hpp
-        RenderDriverOpenGL3_Utility.h
-        RenderDriverOpenGL3_Utility.cpp
         RenderDriverHydraConnection.cpp
         RenderDriverDebugPrint.cpp
         ssemath.cpp
@@ -61,11 +59,11 @@ endif()
 
 set(HR_EXTENSIONS HRExtensions.cpp)
 
-set(MODERN_GL_RENDER_DRIVER
+set(GL_DEPENDENT
         glad.c
-        RenderDriverOpenGL32Forward.h RenderDriverOpenGL32Forward.cpp
         OpenGLCoreProfileUtils.h OpenGLCoreProfileUtils.cpp
-        RenderDriverOpenGL32Deferred.h RenderDriverOpenGL32Deferred.cpp )
+        RenderDriverOpenGL3_Utility.h RenderDriverOpenGL3_Utility.cpp
+        )
 
 set(POST_PROC
         HydraPostProcessAPI.h
@@ -98,7 +96,7 @@ endif()
 
 
 #build hydra API static library
-add_library(hydra_api STATIC ${SOURCE_FILES} ${POST_PROC} ${MODERN_GL_RENDER_DRIVER} ${HR_EXTENSIONS})
+add_library(hydra_api STATIC ${SOURCE_FILES} ${POST_PROC} ${GL_DEPENDENT} ${HR_EXTENSIONS})
 target_include_directories (hydra_api PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${OPENGL_INCLUDE_DIR})
 
 
