@@ -17,6 +17,7 @@ add_subdirectory (utils/ies_parser)
 add_subdirectory (utils/mikktspace)
 add_subdirectory (utils/corto)
 add_subdirectory (hydra_api)
+add_subdirectory (main)
 #add_subdirectory (hydra_api_python)
 
 
