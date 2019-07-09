@@ -537,6 +537,7 @@ namespace HydraRender
 
     (*pW) = width;
     (*pH) = height;
+    return true;
   }
 
   float MSE_RGB_LDR(const std::vector<int32_t>& image1, const std::vector<int32_t>& image2)
