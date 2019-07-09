@@ -53,7 +53,7 @@ void _HrPrint(HR_SEVERITY_LEVEL a_level, const wchar_t* a_str)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void _hrInitPostProcess();
+
 
 namespace HydraRender
 {
@@ -77,10 +77,8 @@ void HRObjectManager::init(HRInitInfo a_initInfo)
   scnData.init(m_attachMode, m_pVBSysMutex, a_initInfo.vbSize);
 
   m_pImgTool = HydraRender::CreateImageTool();
-  _hrInitPostProcess();
 }
 
-void _hrDestroyPostProcess();
 
 void HRObjectManager::destroy()
 {
@@ -91,7 +89,6 @@ void HRObjectManager::destroy()
 
   scnData.clear(); // for all scnData --> .clear()
   scnInst.clear();
-  _hrDestroyPostProcess();
 
 	scnData.m_xmlDoc.reset();
 

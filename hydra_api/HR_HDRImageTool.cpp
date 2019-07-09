@@ -269,7 +269,10 @@ bool InternalImageTool::LoadImageFromFile(const wchar_t* a_fileName,
 #endif
 
   if (!fin.is_open())
+  {
+    HrPrint(HR_SEVERITY_ERROR, "LoadImageFromFile, can not open file");
     return false;
+  }
 
   int wh[2] = { 0,0 };
   fin.read((char*)wh, sizeof(int) * 2);
@@ -511,6 +514,7 @@ namespace HydraRender
     a_data.resize(width*height);
     BYTE* data = (BYTE*)&a_data[0];
 
+
     for (unsigned int y = 0; y<height; y++)
     {
       int lineOffset1 = y*width;
@@ -678,7 +682,7 @@ namespace HydraRender
     wcstombs(filename_s, filename, sizeof(filename_s));
     fif = FreeImage_GetFileType(filename_s, 0);
     #endif
-    
+
     if (fif == FIF_UNKNOWN)
     {
     #if defined WIN32
@@ -687,7 +691,7 @@ namespace HydraRender
       fif = FreeImage_GetFIFFromFilename(filename_s);
     #endif
     }
-    
+
     if (fif == FIF_UNKNOWN)
     {
       std::cerr << "FreeImage failed to guess file image format: " << filename << std::endl;
