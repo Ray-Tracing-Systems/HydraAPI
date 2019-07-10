@@ -3,11 +3,6 @@
 HRObjectManager g_objManager;
 
 
-void _Default_ErrorCallBack(const wchar_t* message, const wchar_t* callerPlace)
-{
-  std::wcout << L"ERX: " << callerPlace << L":\t" << message << std::endl;
-}
-
 void _Default_InfoCallBack(const wchar_t* message, const wchar_t* callerPlace, HR_SEVERITY_LEVEL a_level)
 {
   if (a_level >= HR_SEVERITY_WARNING)
@@ -22,7 +17,6 @@ void _Default_InfoCallBack(const wchar_t* message, const wchar_t* callerPlace, H
 
 std::wstring      g_lastErrorCallerPlace = L"";
 std::wstring      g_lastError      = L"";
-HR_ERROR_CALLBACK g_pErrorCallback = &_Default_ErrorCallBack;
 HR_INFO_CALLBACK  g_pInfoCallback  = &_Default_InfoCallBack;
 
 
@@ -30,9 +24,7 @@ void HrError(std::wstring a_str)
 { 
   if (g_pInfoCallback != nullptr)
     g_pInfoCallback(a_str.c_str(), g_lastErrorCallerPlace.c_str(), HR_SEVERITY_ERROR);
-  else if (g_pErrorCallback != nullptr)
-    g_pErrorCallback(g_lastError.c_str(), g_lastErrorCallerPlace.c_str());
-
+  
   g_lastError = a_str;
 }
 
@@ -40,19 +32,10 @@ void _HrPrint(HR_SEVERITY_LEVEL a_level, const wchar_t* a_str)
 {
   if (g_pInfoCallback != nullptr)
     g_pInfoCallback(a_str, g_lastErrorCallerPlace.c_str(), a_level);
-  
-  if (g_pErrorCallback != nullptr && a_level >= HR_SEVERITY_ERROR)
-    g_pErrorCallback(a_str, g_lastErrorCallerPlace.c_str());
 }
 
-// std::wstring&     getErrCallerWstrObject() { return g_lastErrorCallerPlace; }
-// std::wstring&     getErrWstrObject()       { return g_lastError; }
-// HR_ERROR_CALLBACK getErrorCallback()       { return g_pErrorCallback; }
-// HR_INFO_CALLBACK  getPrintCallback()       { return g_pInfoCallback; }
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 
 namespace HydraRender

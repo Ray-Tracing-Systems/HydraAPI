@@ -435,7 +435,6 @@ PYBIND11_MODULE(hydraPy, m)
 //  m.def("hrDestroy", &hrDestroy);
   m.def("hrGetLastError", &hrGetLastError);
   m.def("hrErrorCallerPlace", &hrErrorCallerPlace);
-  m.def("hrErrorCallback", &hrErrorCallback);
   m.def("hrSceneLibraryInfo", &hrSceneLibraryInfo);
   m.def("hrSceneLibraryOpen", &hrSceneLibraryOpen);
   m.def("hrTexture2DCreateFromFile", &hrTexture2DCreateFromFile, py::arg("a_fileName"), py::arg("w") = -1,

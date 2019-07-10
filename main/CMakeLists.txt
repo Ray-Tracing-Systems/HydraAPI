@@ -10,9 +10,9 @@ set(SOURCE_FILES
         ../utils/mesh_utils.cpp
    )
 
-set(HYDRA_API_ROOT_DIR ${CMAKE_SOURCE_DIR}/../HydraAPI CACHE PATH "Path to HydraAPI") #
-set(HYDRA_API_SRC_DIR ${HYDRA_API_ROOT_DIR}/hydra_api)
-set(HYDRA_API_LIB_DIR ${HYDRA_API_ROOT_DIR}/bin)
+set(HYDRA_API_ROOT_DIR      ${CMAKE_SOURCE_DIR}/../HydraAPI CACHE PATH "Path to HydraAPI") #
+set(HYDRA_API_SRC_DIR       ${HYDRA_API_ROOT_DIR}/hydra_api)
+set(HYDRA_API_LIB_DIR       ${HYDRA_API_ROOT_DIR}/bin)
 set(HYDRA_API_UTILS_SRC_DIR ${HYDRA_API_ROOT_DIR}/utils)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
@@ -32,10 +32,11 @@ endif()
 find_package(OpenGL REQUIRED)
 add_executable(main ${SOURCE_FILES} ${SOURCE_FILES_GL})
 include_directories(${ADDITIONAL_INCLUDE_DIRS} ${HYDRA_API_SRC_DIR} ${HYDRA_API_UTILS_SRC_DIR})
-find_library(HYDRA_API_LIB hydra_api HINTS ${HYDRA_API_LIB_DIR})
+
+find_library(HYDRA_API_LIB hydra_api             HINTS ${HYDRA_API_LIB_DIR})
 find_library(HYDRA_API_IES_PARSER_LIB ies_parser HINTS ${HYDRA_API_LIB_DIR})
-find_library(HYDRA_API_MIKKTSPACE mikktspace HINTS ${HYDRA_API_LIB_DIR})
-find_library(HYDRA_API_CORTO corto HINTS ${HYDRA_API_LIB_DIR})
+find_library(HYDRA_API_MIKKTSPACE mikktspace     HINTS ${HYDRA_API_LIB_DIR})
+find_library(HYDRA_API_CORTO corto               HINTS ${HYDRA_API_LIB_DIR})
 
 find_package(FreeImage REQUIRED)
 include_directories(${FREEIMAGE_INCLUDE_DIRS})

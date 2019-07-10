@@ -103,11 +103,6 @@ HAPI const wchar_t* hrGetLastError() // if null else see msg
     return g_lastError.c_str();
 }
 
-HAPI void hrErrorCallback(HR_ERROR_CALLBACK pCallback)
-{
-  g_pErrorCallback = pCallback;
-}
-
 HAPI void hrInfoCallback(HR_INFO_CALLBACK pCallback)
 {
   g_pInfoCallback = pCallback;
