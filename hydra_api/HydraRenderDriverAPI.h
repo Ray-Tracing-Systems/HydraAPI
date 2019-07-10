@@ -47,7 +47,6 @@ static void HrPrint(HR_SEVERITY_LEVEL a_level, Args ... a_args)
   _HrPrint(a_level, strOut.c_str());
 }
 
-HR_ERROR_CALLBACK getErrorCallback();
 HR_INFO_CALLBACK  getPrintCallback();
 std::wstring&     getErrWstrObject();
 std::wstring&     getErrCallerWstrObject();

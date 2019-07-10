@@ -138,15 +138,6 @@ enum HR_SEVERITY_LEVEL {
   HR_SEVERITY_CRITICAL_ERROR = 4,  ///< Absolutely bad thing had happened. Please display error message and immediately call hrDestroy();
 };
 
-
-/**
-\brief Deprecated (!!!) callback for printing error messages. 
-\param message     - actual error message that will be passed to callback when error happened
-\param callerPlace - the last string rememberd by hrErrorCallerPlace before error have rised
-Called each time when any error rises.
-*/
-typedef void(*HR_ERROR_CALLBACK)(const wchar_t* message, const wchar_t* callerPlace);
-
 /**
 \brief General callback for printing info and error messages.
 \param message     - actual error message that will be passed to callback when error happened

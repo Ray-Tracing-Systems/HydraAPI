@@ -18,7 +18,6 @@
 
 extern std::wstring      g_lastError;
 extern std::wstring      g_lastErrorCallerPlace;
-extern HR_ERROR_CALLBACK g_pErrorCallback;
 extern HRObjectManager   g_objManager;
 
 
