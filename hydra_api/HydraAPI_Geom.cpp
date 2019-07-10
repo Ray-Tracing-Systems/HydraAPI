@@ -436,13 +436,19 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, HRModelLo
 
 std::wstring CutFileName(const std::wstring& fileName);
 std::wstring LocalDataPathOfCurrentSceneLibrary();
+bool isFileExist(const wchar_t *fileName);
 
 HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName, bool a_copyToLocalFolder)
 {
   if (a_fileName == nullptr || std::wstring(a_fileName) == L"")
     return HRMeshRef();
-
-
+  
+  if(!isFileExist(a_fileName))
+  {
+    HrPrint(HR_SEVERITY_ERROR, L"hrMeshCreateFromFileDL, file does not exists: ", a_fileName);
+    return HRMeshRef();
+  }
+ 
   HRMeshRef ref = hrMeshCreate(a_fileName);
 
   HRMesh* pMesh = g_objManager.PtrById(ref);
@@ -511,12 +517,19 @@ HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName, bool a_copyToLo
   }
   hrMeshClose(ref);
   */
+  
   return ref;
 }
 
+
 HAPI HRMeshRef hrMeshCreateFromFile(const wchar_t* a_fileName, HRModelLoadInfo a_modelInfo)
 {
-  //std::wstring tail = str_tail(a_fileName, 6);
+  if(!isFileExist(a_fileName))
+  {
+    HrPrint(HR_SEVERITY_ERROR, L"hrMeshCreateFromFile, file does not exists: ", a_fileName);
+    return HRMeshRef();
+  }
+  
   std::wstring tail = std::wstring(a_fileName).substr(std::wstring(a_fileName).find_last_of(L"."));
 
   HydraGeomData data;
@@ -560,8 +573,16 @@ HAPI HRMeshRef hrMeshCreateFromFile(const wchar_t* a_fileName, HRModelLoadInfo a
 
 HAPI HRMeshRef hrMeshCreateFromFileDL_NoNormals(const wchar_t* a_fileName)
 {
+  
   if (a_fileName == nullptr || std::wstring(a_fileName) == L"")
     return HRMeshRef();
+  
+  if(!isFileExist(a_fileName))
+  {
+    HrPrint(HR_SEVERITY_ERROR, L"hrMeshCreateFromFileDL_NoNormals, file does not exists: ", a_fileName);
+    return HRMeshRef();
+  }
+  
   HydraGeomData data;
   data.read(a_fileName);
 
