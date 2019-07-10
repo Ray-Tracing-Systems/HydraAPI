@@ -17,7 +17,7 @@ struct RD_DebugPrint : public IHRRenderDriver
 {
   RD_DebugPrint() = default;
 
-  void GetRenderDriverName(std::wstring &name) override { name = std::wstring(L"debugPrint");};
+  void GetRenderDriverName(std::wstring &name) override { name = std::wstring(L"DebugPrint");};
 
   void              ClearAll() override;
   HRDriverAllocInfo AllocAll(HRDriverAllocInfo a_info) override;

@@ -18,6 +18,49 @@
 #include "HR_HDRImage.h"
 #include "HydraLegacyUtils.h"
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void HrError(std::wstring a_str);
+void _HrPrint(HR_SEVERITY_LEVEL a_level, const wchar_t* a_str);
+
+template <typename HEAD>
+void _HrPrint(std::wstringstream& out, HEAD head)
+{
+  out << head << std::endl;
+}
+
+template <typename HEAD, typename... TAIL>
+void _HrPrint(std::wstringstream& out, HEAD head, TAIL... tail)
+{
+  out << head;
+  _HrPrint(out, tail...);
+}
+
+template <typename ... Args>
+static void HrPrint(HR_SEVERITY_LEVEL a_level, Args ... a_args)
+{
+  std::wstringstream out;
+  _HrPrint(out, a_args...);
+  
+  std::wstring strOut = out.str();
+  _HrPrint(a_level, strOut.c_str());
+}
+
+HR_ERROR_CALLBACK getErrorCallback();
+HR_INFO_CALLBACK  getPrintCallback();
+std::wstring&     getErrWstrObject();
+std::wstring&     getErrCallerWstrObject();
+
+template<typename X>
+static void HrError(std::wstring a_str, X value)
+{
+  HrPrint(HR_SEVERITY_ERROR, a_str, value);
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 /** \brief Internal structure to help driver allocate less memory.
 *
 */
@@ -387,7 +430,8 @@ public:
       return nullptr;
 
     auto driver_name_str =  ws2s(renderdriver_name);
-    std::cerr << "Render driver " << driver_name_str.c_str() << " is not registered!" << std::endl;
+    //std::cerr << "Render driver " << driver_name_str.c_str() << " is not registered!" << std::endl;
+    HrPrint(HR_SEVERITY_WARNING, L"Render driver ", driver_name_str.c_str(), L" is not registered!");
     return nullptr;
   }
 
@@ -402,7 +446,8 @@ public:
       return HRDriverInfo();
 
     auto driver_name_str =  ws2s(renderdriver_name);
-    std::cerr << "Render driver " << driver_name_str.c_str() << " is not registered!" << std::endl;
+    //std::cerr << "Render driver " << driver_name_str.c_str() << " is not registered!" << std::endl;
+    HrPrint(HR_SEVERITY_WARNING, L"Render driver ", driver_name_str.c_str(), L" is not registered!");
     return HRDriverInfo();
   }
 

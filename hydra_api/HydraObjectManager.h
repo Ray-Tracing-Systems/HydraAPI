@@ -611,42 +611,7 @@ struct HRObjectManager
   bool m_computeBBoxes;
 };
 
-void HrError(std::wstring a_str);
-void _HrPrint(HR_SEVERITY_LEVEL a_level, const wchar_t* a_str);
 
-template <typename HEAD>
-void _HrPrint(std::wstringstream& out, HEAD head)
-{
-  out << head << std::endl;
-}
-
-template <typename HEAD, typename... TAIL>
-void _HrPrint(std::wstringstream& out, HEAD head, TAIL... tail)
-{
-  out << head;
-  _HrPrint(out, tail...);
-}
-
-template <typename ... Args>
-static void HrPrint(HR_SEVERITY_LEVEL a_level, Args ... a_args)
-{
-  std::wstringstream out;
-  _HrPrint(out, a_args...);
-
-  std::wstring strOut = out.str();
-  _HrPrint(a_level, strOut.c_str());
-}
-
-HR_ERROR_CALLBACK getErrorCallback();
-HR_INFO_CALLBACK  getPrintCallback();
-std::wstring&     getErrWstrObject();
-std::wstring&     getErrCallerWstrObject();
-
-template<typename X>
-static void HrError(std::wstring a_str, X value)
-{
-  HrPrint(HR_SEVERITY_ERROR, a_str, value);
-}
 
 std::wstring ToWString(uint64_t i);
 std::wstring ToWString(int64_t i);

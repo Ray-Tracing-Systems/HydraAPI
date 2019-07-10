@@ -1051,8 +1051,9 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
 
   // Add/Update light as geometry if Render Driver can't do it itself
   //
-  std::wstring driver_name;
-  g_objManager.m_pDriver->GetRenderDriverName(driver_name);
+  std::wstring driver_name = L"";
+  if(g_objManager.m_pDriver != nullptr)
+    g_objManager.m_pDriver->GetRenderDriverName(driver_name);
   auto driver_info = RenderDriverFactory::GetDriverInfo(driver_name.c_str());
 
   bool needToAddLightsAsGeometry = (g_objManager.m_pDriver == nullptr) || !driver_info.createsLightGeometryItself;

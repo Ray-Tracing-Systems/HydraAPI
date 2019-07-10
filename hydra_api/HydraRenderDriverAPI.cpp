@@ -59,8 +59,8 @@ void registerBuiltInRenderDrivers()
   debugPrintDriverInfo.supportMeshLoadFromInternalFormat = false;
   debugPrintDriverInfo.supportMultiMaterialInstance = false;
 
-  debugPrintDriverInfo.driverName = L"debugPrint";
+  debugPrintDriverInfo.driverName     = L"DebugPrint";
   debugPrintDriverInfo.createFunction = CreateDebugPrint_RenderDriver;
 
-  RenderDriverFactory::Register(L"debugPrint", debugPrintDriverInfo);
+  RenderDriverFactory::Register(L"DebugPrint", debugPrintDriverInfo);
 }
