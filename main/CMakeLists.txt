@@ -7,8 +7,7 @@ set(SOURCE_FILES
         main.cpp
         demo_01.cpp
         ../utils/mesh_utils.h
-        ../utils/mesh_utils.cpp
-   )
+        ../utils/mesh_utils.cpp)
 
 set(HYDRA_API_ROOT_DIR      ${CMAKE_SOURCE_DIR}/../HydraAPI CACHE PATH "Path to HydraAPI") #
 set(HYDRA_API_SRC_DIR       ${HYDRA_API_ROOT_DIR}/hydra_api)
@@ -33,15 +32,11 @@ find_package(OpenGL REQUIRED)
 add_executable(main ${SOURCE_FILES} ${SOURCE_FILES_GL})
 include_directories(${ADDITIONAL_INCLUDE_DIRS} ${HYDRA_API_SRC_DIR} ${HYDRA_API_UTILS_SRC_DIR})
 
-find_library(HYDRA_API_LIB hydra_api             HINTS ${HYDRA_API_LIB_DIR})
-find_library(HYDRA_API_IES_PARSER_LIB ies_parser HINTS ${HYDRA_API_LIB_DIR})
-find_library(HYDRA_API_MIKKTSPACE mikktspace     HINTS ${HYDRA_API_LIB_DIR})
-find_library(HYDRA_API_CORTO corto               HINTS ${HYDRA_API_LIB_DIR})
-
 find_package(FreeImage REQUIRED)
 include_directories(${FREEIMAGE_INCLUDE_DIRS})
 set(LIBS ${LIBS} ${FREEIMAGE_LIBRARIES})
 
+add_dependencies(main hydra_api corto ies_parser mikktspace)
 
 target_include_directories(main PUBLIC ${OPENGL_INCLUDE_DIR})
 
@@ -65,10 +60,8 @@ else()
   MESSAGE( STATUS "CMAKE_CXX_FLAGS(main): " ${CMAKE_CXX_FLAGS} )
   target_link_libraries(main LINK_PUBLIC
           ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY}
-          ${HYDRA_API_LIB}
-          ${LIBS}
-          ${HYDRA_API_IES_PARSER_LIB} ${HYDRA_API_MIKKTSPACE} ${HYDRA_API_CORTO}
-          Threads::Threads stdc++fs rt dl OpenCL glfw)
+          hydra_api corto ies_parser mikktspace
+          ${LIBS} Threads::Threads stdc++fs rt dl OpenCL glfw)
 
 endif()
 
