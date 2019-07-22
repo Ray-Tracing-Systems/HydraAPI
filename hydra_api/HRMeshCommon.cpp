@@ -451,6 +451,7 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromSimpleInputMesh(HRMes
   if (g_objManager.m_sortTriIndices)
   {
     std::vector<std::size_t> tmp_vec;
+    tmp_vec.reserve(input.matIndices.size());
     for (std::size_t i = 0; i != input.matIndices.size(); ++i) { tmp_vec.push_back(i); }
 
     std::sort(
