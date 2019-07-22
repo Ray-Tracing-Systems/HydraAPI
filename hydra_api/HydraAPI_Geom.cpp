@@ -1307,6 +1307,8 @@ HAPI void* hrMeshGetAttribPointer(HRMeshRef a_mesh, const wchar_t* attributeName
       return mesh.verticesTexCoord.data();
     else if (!wcscmp(attributeName, L"tang"))
       return mesh.verticesTangent.data();
+    else if (!wcscmp(attributeName, L"mind"))
+      return mesh.matIndices.data();
     else
       return nullptr;
   }
