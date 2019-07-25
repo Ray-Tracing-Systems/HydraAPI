@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ies_parser", "..\utils\ies_
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mikktspace", "..\utils\mikktspace\mikktspace.vcxproj", "{7844C04D-F5D4-4C90-B080-6744A10C3332}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "main", "..\main\main.vcxproj", "{F276469E-9751-4572-B988-E3130637E885}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		2020Release|Mixed Platforms = 2020Release|Mixed Platforms
@@ -115,6 +117,24 @@ Global
 		{7844C04D-F5D4-4C90-B080-6744A10C3332}.Release|Win32.Build.0 = Release|Win32
 		{7844C04D-F5D4-4C90-B080-6744A10C3332}.Release|x64.ActiveCfg = Release|x64
 		{7844C04D-F5D4-4C90-B080-6744A10C3332}.Release|x64.Build.0 = Release|x64
+		{F276469E-9751-4572-B988-E3130637E885}.2020Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{F276469E-9751-4572-B988-E3130637E885}.2020Release|Mixed Platforms.Build.0 = Release|Win32
+		{F276469E-9751-4572-B988-E3130637E885}.2020Release|Win32.ActiveCfg = Release|Win32
+		{F276469E-9751-4572-B988-E3130637E885}.2020Release|Win32.Build.0 = Release|Win32
+		{F276469E-9751-4572-B988-E3130637E885}.2020Release|x64.ActiveCfg = Release|x64
+		{F276469E-9751-4572-B988-E3130637E885}.2020Release|x64.Build.0 = Release|x64
+		{F276469E-9751-4572-B988-E3130637E885}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{F276469E-9751-4572-B988-E3130637E885}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{F276469E-9751-4572-B988-E3130637E885}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F276469E-9751-4572-B988-E3130637E885}.Debug|Win32.Build.0 = Debug|Win32
+		{F276469E-9751-4572-B988-E3130637E885}.Debug|x64.ActiveCfg = Debug|x64
+		{F276469E-9751-4572-B988-E3130637E885}.Debug|x64.Build.0 = Debug|x64
+		{F276469E-9751-4572-B988-E3130637E885}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{F276469E-9751-4572-B988-E3130637E885}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{F276469E-9751-4572-B988-E3130637E885}.Release|Win32.ActiveCfg = Release|Win32
+		{F276469E-9751-4572-B988-E3130637E885}.Release|Win32.Build.0 = Release|Win32
+		{F276469E-9751-4572-B988-E3130637E885}.Release|x64.ActiveCfg = Release|x64
+		{F276469E-9751-4572-B988-E3130637E885}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

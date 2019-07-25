@@ -189,6 +189,7 @@
     <ClCompile Include="HydraDriverUpdate.cpp" />
     <ClCompile Include="HydraLaunchProcessWin32.cpp" />
     <ClCompile Include="HydraLegacyUtils.cpp" />
+    <ClCompile Include="HydraRenderDriverAPI.cpp" />
     <ClCompile Include="HydraRngUtils.cpp" />
     <ClCompile Include="HydraTextureUtils.cpp" />
     <ClCompile Include="HydraVSGFCompress.cpp" />

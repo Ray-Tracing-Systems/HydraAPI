@@ -144,6 +144,9 @@
     <ClCompile Include="HydraRngUtils.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="HydraRenderDriverAPI.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LiteMath.h">
