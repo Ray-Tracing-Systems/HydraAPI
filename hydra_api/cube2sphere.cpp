@@ -4,15 +4,12 @@
 #include <cstring>
 #include <stdlib.h>
 
-#if defined(WIN32)
 #include <FreeImage.h>
 #include <GLFW/glfw3.h>
+
+#if defined(WIN32)
 #pragma comment(lib, "glfw3dll.lib")
 #pragma comment(lib, "FreeImage.lib")
-
-#else
-#include <FreeImage.h>
-#include <GLFW/glfw3.h>
 #endif
 
 

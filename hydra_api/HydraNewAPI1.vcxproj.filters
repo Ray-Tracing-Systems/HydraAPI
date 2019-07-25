@@ -16,9 +16,6 @@
     <Filter Include="Source\RenderDrivers">
       <UniqueIdentifier>{36a897ea-4841-48d0-964e-288ceeb42e02}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\PostProcessSource">
-      <UniqueIdentifier>{ce0d9e7d-ab01-4029-a7b7-11c348bd082f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Headers\PostProcessHeaders">
       <UniqueIdentifier>{123c70ff-8b16-44ea-9494-41c7a179c4a1}</UniqueIdentifier>
     </Filter>
@@ -90,43 +87,10 @@
     <ClCompile Include="HR_HDRImageTool.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="HydraPostProcessAPI.cpp">
-      <Filter>Source\PostProcessSource</Filter>
-    </ClCompile>
     <ClCompile Include="RenderDriverDebugPrint.cpp">
       <Filter>Source\RenderDrivers</Filter>
     </ClCompile>
     <ClCompile Include="RenderDriverHydraConnection.cpp">
-      <Filter>Source\RenderDrivers</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderDriverOpenGL1.cpp">
-      <Filter>Source\RenderDrivers</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderDriverOpenGL1_DelayedLoad.cpp">
-      <Filter>Source\RenderDrivers</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderDriverOpenGL1_DrawBvhLevels.cpp">
-      <Filter>Source\RenderDrivers</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderDriverOpenGL1_TestSplit.cpp">
-      <Filter>Source\RenderDrivers</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderDriverOpenGL1Debug.cpp">
-      <Filter>Source\RenderDrivers</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderDriverOpenGL1DebugDrawRays.cpp">
-      <Filter>Source\RenderDrivers</Filter>
-    </ClCompile>
-    <ClCompile Include="HydraPostProcessCommon.cpp">
-      <Filter>Source\PostProcessSource</Filter>
-    </ClCompile>
-    <ClCompile Include="HydraPostProcessSpecial.cpp">
-      <Filter>Source\PostProcessSource</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderDriverOpenGL32Deferred.cpp">
-      <Filter>Source\RenderDrivers</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderDriverOpenGL32Forward.cpp">
       <Filter>Source\RenderDrivers</Filter>
     </ClCompile>
     <ClCompile Include="OpenGLCoreProfileUtils.cpp">
@@ -156,9 +120,6 @@
     <ClCompile Include="HydraXMLHelpers.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="RenderDriverOpenGL1_TestCustomAttributes.cpp">
-      <Filter>Source\RenderDrivers</Filter>
-    </ClCompile>
     <ClCompile Include="RenderDriverOpenGL3_Utility.cpp">
       <Filter>Source\RenderDrivers</Filter>
     </ClCompile>
@@ -172,9 +133,6 @@
       <Filter>Source\OpenGLCoreUtils</Filter>
     </ClCompile>
     <ClCompile Include="HydraAPI_GeomProcessing.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="NonLocalMeans.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="HRExtensions.cpp">
@@ -241,12 +199,6 @@
     </ClInclude>
     <ClInclude Include="HydraPostProcessSpecial.h">
       <Filter>Headers\PostProcessHeaders</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderDriverOpenGL32Deferred.h">
-      <Filter>Source\RenderDrivers</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderDriverOpenGL32Forward.h">
-      <Filter>Source\RenderDrivers</Filter>
     </ClInclude>
     <ClInclude Include="OpenGLCoreProfileUtils.h">
       <Filter>Source\OpenGLCoreUtils</Filter>

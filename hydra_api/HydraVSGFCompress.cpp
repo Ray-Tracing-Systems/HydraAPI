@@ -2,19 +2,20 @@
 // Created by frol on 05.04.19.
 //
 
+
 #include "HydraVSGFCompress.h"
 #include <fstream>
 
 #include "HydraRenderDriverAPI.h"
 std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndices);
 
-#include "../utils/corto/corto.h"
-#include "LiteMath.h"
-
 #ifdef WIN32
 #undef min
 #undef max
 #endif
+
+#include "../utils/corto/corto.h"
+#include "LiteMath.h"
 
 size_t WriteCompressed(const HydraGeomData& a_data, std::ostream& a_out, const std::vector<HRBatchInfo>& a_batchesList)
 {

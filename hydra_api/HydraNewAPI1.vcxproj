@@ -42,14 +42,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='2020Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='2019Hybrid|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -71,23 +71,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>../LIBRARY/include;$(IncludePath)</IncludePath>
-    <LibraryPath>../LIBRARY/lib_x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>../dependencies/include;$(IncludePath)</IncludePath>
+    <LibraryPath>../dependencies/lib_x64_win;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>../LIBRARY/include;$(IncludePath)</IncludePath>
-    <LibraryPath>../LIBRARY/lib_x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>../dependencies/include;$(IncludePath)</IncludePath>
+    <LibraryPath>../dependencies/lib_x64_win;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='2020Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>../LIBRARY/include;$(IncludePath)</IncludePath>
-    <LibraryPath>../LIBRARY/lib_x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>../dependencies/include;$(IncludePath)</IncludePath>
+    <LibraryPath>../dependencies/lib_x64_win;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='2019Hybrid|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>../LIBRARY/include;$(IncludePath)</IncludePath>
-    <LibraryPath>../LIBRARY/lib_x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>../dependencies/include;$(IncludePath)</IncludePath>
+    <LibraryPath>../dependencies/lib_x64_win;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -189,9 +189,6 @@
     <ClCompile Include="HydraDriverUpdate.cpp" />
     <ClCompile Include="HydraLaunchProcessWin32.cpp" />
     <ClCompile Include="HydraLegacyUtils.cpp" />
-    <ClCompile Include="HydraPostProcessAPI.cpp" />
-    <ClCompile Include="HydraPostProcessCommon.cpp" />
-    <ClCompile Include="HydraPostProcessSpecial.cpp" />
     <ClCompile Include="HydraRngUtils.cpp" />
     <ClCompile Include="HydraTextureUtils.cpp" />
     <ClCompile Include="HydraVSGFCompress.cpp" />
@@ -199,21 +196,11 @@
     <ClCompile Include="HydraObjectManager.cpp" />
     <ClCompile Include="HydraXMLHelpers.cpp" />
     <ClCompile Include="HydraXMLVerify.cpp" />
-    <ClCompile Include="NonLocalMeans.cpp" />
     <ClCompile Include="OpenGLContextWin.cpp" />
     <ClCompile Include="OpenGLCoreProfileUtils.cpp" />
     <ClCompile Include="pugixml.cpp" />
     <ClCompile Include="RenderDriverDebugPrint.cpp" />
     <ClCompile Include="RenderDriverHydraConnection.cpp" />
-    <ClCompile Include="RenderDriverOpenGL1.cpp" />
-    <ClCompile Include="RenderDriverOpenGL1Debug.cpp" />
-    <ClCompile Include="RenderDriverOpenGL1_TestCustomAttributes.cpp" />
-    <ClCompile Include="RenderDriverOpenGL1_TestSplit.cpp" />
-    <ClCompile Include="RenderDriverOpenGL1_DelayedLoad.cpp" />
-    <ClCompile Include="RenderDriverOpenGL1_DrawBvhLevels.cpp" />
-    <ClCompile Include="RenderDriverOpenGL1DebugDrawRays.cpp" />
-    <ClCompile Include="RenderDriverOpenGL32Deferred.cpp" />
-    <ClCompile Include="RenderDriverOpenGL32Forward.cpp" />
     <ClCompile Include="RenderDriverOpenGL3_Utility.cpp" />
     <ClCompile Include="ssemath.cpp" />
     <ClCompile Include="SystemWin.cpp" />
@@ -242,28 +229,12 @@
     <ClInclude Include="pugiconfig.hpp" />
     <ClInclude Include="pugixml.hpp" />
     <ClInclude Include="RenderDriverOpenGL1.h" />
-    <ClInclude Include="RenderDriverOpenGL32Deferred.h" />
-    <ClInclude Include="RenderDriverOpenGL32Forward.h" />
     <ClInclude Include="RenderDriverOpenGL3_Utility.h" />
     <ClInclude Include="ssemath.h" />
     <ClInclude Include="xxhash.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram1.cd" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\clew\clew.vcxproj">
-      <Project>{5f13e40f-c0f1-4ef4-a775-ab8bc703de88}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\corto\corto.vcxproj">
-      <Project>{43666dca-d7ff-411f-823f-d04cfc49669c}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\ies_parser\ies_parser.vcxproj">
-      <Project>{1d53b494-4b7e-464b-82a1-a2052240f6ef}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\mikktspace\mikktspace.vcxproj">
-      <Project>{7844c04d-f5d4-4c90-b080-6744a10c3332}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
