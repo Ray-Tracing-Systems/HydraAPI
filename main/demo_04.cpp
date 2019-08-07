@@ -12,8 +12,7 @@
 
 #include "../hydra_api/HydraAPI.h"
 #include "../hydra_api/HydraXMLVerify.h"
-
-#include "mesh_utils.h"
+#include "../utils/mesh_utils.h"
 
 using pugi::xml_node;
 

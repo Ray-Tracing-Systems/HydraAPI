@@ -25,6 +25,11 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "cstream.h"
 #include "index_attribute.h"
 
+#ifdef WIN32
+#undef min
+#undef max
+#endif
+
 namespace crt {
 
 class VertexAttribute {
