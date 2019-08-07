@@ -6,8 +6,11 @@ set(CMAKE_CXX_STANDARD 14)
 set(SOURCE_FILES
         main.cpp
         demo_01.cpp
+        demo_02.cpp
+        demo_03.cpp
+        demo_04.cpp
         ../utils/mesh_utils.h
-        ../utils/mesh_utils.cpp)
+        ../utils/mesh_utils.cpp init_gl.cpp)
 
 set(HYDRA_API_ROOT_DIR      ${CMAKE_SOURCE_DIR}/../HydraAPI CACHE PATH "Path to HydraAPI") #
 set(HYDRA_API_SRC_DIR       ${HYDRA_API_ROOT_DIR}/hydra_api)

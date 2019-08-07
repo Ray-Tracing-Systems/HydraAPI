@@ -59,6 +59,11 @@ void sig_handler(int signo)
 #endif
 
 void demo_01_plane_box();
+void demo_02_load_obj();
+void demo_03_caustics();
+void demo_04_instancing();
+
+void terminateGL();
 
 int main(int argc, const char** argv)
 {
@@ -105,7 +110,10 @@ int main(int argc, const char** argv)
   
   try
   {
-    demo_01_plane_box();
+    //demo_01_plane_box();
+    demo_02_load_obj();
+    //demo_03_caustics();
+    //demo_04_instancing();
   }
   catch (std::runtime_error& e)
   {
@@ -119,6 +127,12 @@ int main(int argc, const char** argv)
   hrErrorCallerPlace(L"main"); // for debug needs only
 
   hrSceneLibraryClose();
-
+  
+  terminateGL();
+  
   return 0;
 }
+
+
+
+
