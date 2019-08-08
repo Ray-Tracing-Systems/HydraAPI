@@ -1036,6 +1036,18 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
   HRSceneInst* pScn   = g_objManager.PtrById(a_pScn);
   //HRCamera*    pCam   = g_objManager.PtrById(a_pCam);
 
+  if (pSettings == nullptr)
+  {
+    HrPrint(HR_SEVERITY_ERROR, L"hrCommit, nullptr render");
+    return;
+  }
+
+  if (pScn == nullptr)
+  {
+    HrPrint(HR_SEVERITY_ERROR, L"hrCommit, nullptr scene");
+    return;
+  }
+
   if (a_pRender.id != -1)
   {
     g_objManager.m_currRenderId = a_pRender.id;
