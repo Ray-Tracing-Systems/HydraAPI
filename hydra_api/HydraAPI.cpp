@@ -227,11 +227,11 @@ HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMod
   else
   {
     HrError(L"[hrSceneLibraryOpen]: bad a_openMode = ", a_openMode);
-    return -1;
+    return 0;
   }
 
   HrPrint(HR_SEVERITY_DEBUG, L"[hrSceneLibraryOpen]: success");
-  return 0;
+  return 1;
 }
 
 
@@ -1034,7 +1034,6 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
 {
   HRRender* pSettings = g_objManager.PtrById(a_pRender);
   HRSceneInst* pScn   = g_objManager.PtrById(a_pScn);
-  //HRCamera*    pCam   = g_objManager.PtrById(a_pCam);
 
   if (pSettings == nullptr)
   {

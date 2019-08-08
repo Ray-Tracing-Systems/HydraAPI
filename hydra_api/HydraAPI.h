@@ -258,6 +258,8 @@ HAPI HRSceneLibraryFileInfo hrSceneLibraryExists(const wchar_t* a_libPath, wchar
  Destroy All SceneData/SceneLibrary if (a_openMode == HR_WRITE_DISCARD).
  Passing nullptr or L"" to a_libPath will cause just to clear everything.
 
+ \return 1 if succeded, 0 otherwise
+
 */
 HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMode, HRInitInfo a_initInfo = HRInitInfo());
 

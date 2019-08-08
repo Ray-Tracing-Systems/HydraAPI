@@ -328,8 +328,8 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
   
 	if(fileName == L"")
 	{
-    HrError(L"_hrSceneLibraryLoad, can't find existing library at: ", a_libPath);
-	  return -1;
+    HrError(L"[_hrSceneLibraryLoad]: can't find existing library at: ", a_libPath);
+	  return 0;
   }
 
   // stateId--; // #NOTE: uncomment this if ypu need to chenge current state?
@@ -346,8 +346,8 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
 
   if (!loadResult)
   {
-    HrError(L"_hrSceneLibraryLoad, pugixml load: ", loadResult.description());
-    return -1;
+    HrError(L"[_hrSceneLibraryLoad]: pugixml load: ", loadResult.description());
+    return 0;
   }
 
   if (g_objManager.m_attachMode)
@@ -459,7 +459,7 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
     g_objManager.scnData.m_vbCache.ResizeAndAllocEmptyChunks(chunks);
   }
   
-  return 0;
+  return 1;
 }
 
 void fixTextureIds(pugi::xml_node a_node, const std::wstring &a_libPath, const std::unordered_map<int32_t, int32_t> &texIdUpdates,
