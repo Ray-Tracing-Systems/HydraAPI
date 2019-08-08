@@ -489,6 +489,8 @@ namespace HydraRender
   bool LoadLDRImageFromFile(const char* a_fileName,
                             int* pW, int* pH, std::vector<int32_t>& a_data)
   {
+    FreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);
+
     FREE_IMAGE_FORMAT fif = FIF_PNG; // image format
 
     fif = FreeImage_GetFileType(a_fileName, 0);
@@ -511,8 +513,15 @@ namespace HydraRender
     auto height         = FreeImage_GetHeight(converted);
     auto bitsPerPixel   = FreeImage_GetBPP(converted);
 
+
+    if (width == 0 || height == 0)
+    {
+      std::cerr << "Seems that 'FreeImage_ConvertTo32Bits' has failed " << std::endl;
+      return false;
+    }
+
     a_data.resize(width*height);
-    BYTE* data = (BYTE*)&a_data[0];
+    BYTE* data = (BYTE*)a_data.data();
 
 
     for (unsigned int y = 0; y<height; y++)
