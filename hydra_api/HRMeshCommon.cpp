@@ -398,6 +398,28 @@ std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndi
     }
   }
 
+  ////////////////////////////////////////////////////////////////////////////////// fix for last tringle
+  size_t last    = matIndices.size() - 1;
+  size_t preLast = matIndices.size() - 2;
+
+  if(matIndices.size() == 1 && matDrawList.size() == 0)
+  {
+    HRBatchInfo elem = {0,0,0};
+    elem.matId    = matIndices[0];
+    elem.triBegin = 0;
+    elem.triEnd   = 1;
+    matDrawList.push_back(elem);
+  }
+  else if (matIndices.size() > 1 && matIndices[last] != matIndices[preLast])
+  {
+    HRBatchInfo elem = {0,0,0};
+    elem.matId    = matIndices[last];
+    elem.triBegin = last;
+    elem.triEnd   = matIndices.size();
+    matDrawList.push_back(elem);
+  }
+  ////////////////////////////////////////////////////////////////////////////////// fix for last tringle
+
   return matDrawList;
 }
 
