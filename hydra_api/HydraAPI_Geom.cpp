@@ -1241,8 +1241,6 @@ HAPI void hrMeshAppendTriangles3(HRMeshRef a_mesh, int indNum, const int* indice
   if(!hasTangents)
     hrMeshComputeTangents(a_mesh, indNum);
 
-  //runTSpaceCalc(a_mesh, true);
-
   // append per triangle material id
   //
   if (matIndices != nullptr)
@@ -1580,6 +1578,8 @@ void ComputeVertexTangents(HRMesh::InputTriMesh& mesh, int indexNum)
                                verticesTang);
 }
 
+void MikeyTSpaceCalc(HRMesh::InputTriMesh* pInput, bool basic);
+
 HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, int indexNum)
 {
   HRMesh* pMesh = g_objManager.PtrById(a_mesh);
@@ -1589,10 +1589,18 @@ HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, int indexNum)
     return;
   }
 
+  if (!pMesh->opened)
+  {
+    HrError(L"hrMeshComputeTangents assume nesh is opened!");
+    return;
+  }
+
   HRMesh::InputTriMesh& mesh = pMesh->m_input;
   const int vertexCount      = int(pMesh->m_input.verticesPos.size()/4);
   mesh.verticesTangent.resize(vertexCount*4); // #TODO: not 0-th element, last vertex from prev append!
-  ComputeVertexTangents(mesh, indexNum);
+
+  MikeyTSpaceCalc(&mesh, false);           // mikktspace implementation
+  //ComputeVertexTangents(mesh, indexNum); // simple algotithm
 }
 
 

@@ -18,6 +18,7 @@
 #include <algorithm>
 
 #include <cmath>
+#include <cassert>
 #include <random>
 
 using std::isnan;
@@ -1745,9 +1746,9 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
 // Return number of primitives in the geometry.
 int getNumFaces(const SMikkTSpaceContext *context)
 {
-  HRMesh *pMesh = static_cast <HRMesh *> (context->m_pUserData);
+  auto *pInput = static_cast <HRMesh::InputTriMesh*> (context->m_pUserData);
 
-  return int(pMesh->m_input.triIndices.size()/3);
+  return int(pInput->triIndices.size()/3);
 }
 
 // Return number of vertices in the primitive given by index.
@@ -1759,33 +1760,33 @@ int getNumVerticesOfFace(const SMikkTSpaceContext *context, const int primnum)
 // Write 3-float position of the vertex's point.
 void getPosition(const SMikkTSpaceContext *context, float outpos[], const int primnum, const int vtxnum)
 {
-  HRMesh *pMesh = static_cast <HRMesh *> (context->m_pUserData);
-  auto index = pMesh->m_input.triIndices.at(primnum * 3 + vtxnum);
+  auto *pInput = static_cast <HRMesh::InputTriMesh*> (context->m_pUserData);
+  auto index   = pInput->triIndices.at(primnum * 3 + vtxnum);
 
-  outpos[0] = pMesh->m_input.verticesPos.at(index * 4 + 0);
-  outpos[1] = pMesh->m_input.verticesPos.at(index * 4 + 1);
-  outpos[2] = pMesh->m_input.verticesPos.at(index * 4 + 2);
+  outpos[0] = pInput->verticesPos.at(index * 4 + 0);
+  outpos[1] = pInput->verticesPos.at(index * 4 + 1);
+  outpos[2] = pInput->verticesPos.at(index * 4 + 2);
 }
 
 // Write 3-float vertex normal.
 void getNormal(const SMikkTSpaceContext *context, float outnormal[], const int primnum, const int vtxnum)
 {
-  HRMesh *pMesh = static_cast <HRMesh *> (context->m_pUserData);
-  auto index = pMesh->m_input.triIndices.at(primnum * 3 + vtxnum);
+  auto *pInput = static_cast <HRMesh::InputTriMesh*> (context->m_pUserData);
+  auto index   = pInput->triIndices.at(primnum * 3 + vtxnum);
 
-  outnormal[0] = pMesh->m_input.verticesNorm.at(index * 4 + 0);
-  outnormal[1] = pMesh->m_input.verticesNorm.at(index * 4 + 1);
-  outnormal[2] = pMesh->m_input.verticesNorm.at(index * 4 + 2);
+  outnormal[0] = pInput->verticesNorm.at(index * 4 + 0);
+  outnormal[1] = pInput->verticesNorm.at(index * 4 + 1);
+  outnormal[2] = pInput->verticesNorm.at(index * 4 + 2);
 }
 
 // Write 2-float vertex uv.
 void getTexCoord(const SMikkTSpaceContext *context, float outuv[], const int primnum, const int vtxnum)
 {
-  HRMesh *pMesh = static_cast <HRMesh *> (context->m_pUserData);
-  auto index = pMesh->m_input.triIndices.at(primnum * 3 + vtxnum);
+  auto *pInput = static_cast <HRMesh::InputTriMesh*> (context->m_pUserData);
+  auto index   = pInput->triIndices.at(primnum * 3 + vtxnum);
 
-  outuv[0] = pMesh->m_input.verticesNorm.at(index * 2 + 0);
-  outuv[1] = pMesh->m_input.verticesNorm.at(index * 2 + 1);
+  outuv[0] = pInput->verticesTexCoord.at(index * 2 + 0);
+  outuv[1] = pInput->verticesTexCoord.at(index * 2 + 1);
 }
 
 // Compute and set attributes on the geometry vertex. Basic version.
@@ -1795,8 +1796,8 @@ void setTSpaceBasic(const SMikkTSpaceContext *context,
                     const int primnum,
                     const int vtxnum)
 {
-  HRMesh *pMesh = static_cast <HRMesh *> (context->m_pUserData);
-  auto index = pMesh->m_input.triIndices.at(primnum * 3 + vtxnum);
+  auto *pInput = static_cast <HRMesh::InputTriMesh*> (context->m_pUserData);
+  auto index   = pInput->triIndices.at(primnum * 3 + vtxnum);
 
 //  if(sign < 0.0f)
 //  {
@@ -1806,11 +1807,12 @@ void setTSpaceBasic(const SMikkTSpaceContext *context,
 //  }
 //  else
   {
-    pMesh->m_input.verticesTangent.at(index * 4 + 0) = tangentu[0];
-    pMesh->m_input.verticesTangent.at(index * 4 + 1) = tangentu[1];
-    pMesh->m_input.verticesTangent.at(index * 4 + 2) = tangentu[2];
+    pInput->verticesTangent.at(index * 4 + 0) = tangentu[0];
+    pInput->verticesTangent.at(index * 4 + 1) = tangentu[1];
+    pInput->verticesTangent.at(index * 4 + 2) = tangentu[2];
   }
-  pMesh->m_input.verticesTangent.at(index * 4 + 3) = sign;
+
+  pInput->verticesTangent.at(index * 4 + 3) = sign;
 }
 
 void setTSpace(const SMikkTSpaceContext *context,
@@ -1822,37 +1824,31 @@ void setTSpace(const SMikkTSpaceContext *context,
                const int primnum,
                const int vtxnum)
 {
-  HRMesh *pMesh = static_cast <HRMesh *> (context->m_pUserData);
-  auto index = pMesh->m_input.triIndices[primnum * 3 + vtxnum];
+  auto *pInput = static_cast <HRMesh::InputTriMesh*> (context->m_pUserData);
+  auto index   = pInput->triIndices[primnum * 3 + vtxnum];
 
-  pMesh->m_input.verticesTangent[index * 4 + 0] = tangentv[0];
-  pMesh->m_input.verticesTangent[index * 4 + 1] = tangentv[1];
-  pMesh->m_input.verticesTangent[index * 4 + 2] = tangentv[2];
-  pMesh->m_input.verticesTangent[index * 4 + 3] = 1.0f;
+  pInput->verticesTangent[index * 4 + 0] = tangentu[0];
+  pInput->verticesTangent[index * 4 + 1] = tangentu[1];
+  pInput->verticesTangent[index * 4 + 2] = tangentu[2];
+  pInput->verticesTangent[index * 4 + 3] = 1.0f;
 }
 
-void runTSpaceCalc(HRMeshRef mesh_ref, bool basic)
-{
-  HRMesh* pMesh = g_objManager.PtrById(mesh_ref);
-  if (pMesh == nullptr)
-  {
-    HrError(L"runTSpaceCalc: nullptr input");
-    return;
-  }
+void MikeyTSpaceCalc(HRMesh::InputTriMesh* pInput, bool basic)
+{ 
+  assert(pInput != nullptr);
 
   SMikkTSpaceInterface iface;
-  iface.m_getNumFaces = getNumFaces;
+  iface.m_getNumFaces          = getNumFaces;
   iface.m_getNumVerticesOfFace = getNumVerticesOfFace;
-  iface.m_getPosition = getPosition;
-  iface.m_getNormal = getNormal;
-  iface.m_getTexCoord = getTexCoord;
-  iface.m_setTSpaceBasic = basic ? setTSpaceBasic : nullptr;
-  iface.m_setTSpace = basic ? nullptr : setTSpace;
+  iface.m_getPosition          = getPosition;
+  iface.m_getNormal            = getNormal;
+  iface.m_getTexCoord          = getTexCoord;
+  iface.m_setTSpaceBasic       = basic ? setTSpaceBasic : nullptr;
+  iface.m_setTSpace            = basic ? nullptr : setTSpace;
 
   SMikkTSpaceContext context;
   context.m_pInterface = &iface;
-  context.m_pUserData = pMesh;
-  pMesh->m_input.verticesTangent.resize(pMesh->m_input.verticesPos.size());
+  context.m_pUserData  = pInput;
 
   genTangSpaceDefault(&context);
 }
