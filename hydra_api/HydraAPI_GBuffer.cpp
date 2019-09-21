@@ -87,6 +87,22 @@ static void ExtractDepthLineU16(const HRGBufferPixel* a_inLine, unsigned short* 
   }
 }
 
+static void ExtractDepthLineSpecial(const HRGBufferPixel* a_inLine, int32_t* a_outLine, int a_width, const float dmax)
+{
+  for (int x = 0; x < a_width; x++)
+  {
+    const float d = a_inLine[x].depth / dmax;
+
+    float res[4];
+    res[0] = d;
+    res[1] = d;
+    res[2] = d;
+    res[3] = 1.0f;
+
+    a_outLine[x] = RealColorToUint32(res);
+  }
+}
+
 
 static void ExtractNormalsLine(const HRGBufferPixel* a_inLine, int32_t* a_outLine, int a_width)
 {
@@ -232,6 +248,7 @@ static void ExtractCoverage(const HRGBufferPixel* a_inLine, int32_t* a_outLine, 
     a_outLine[x]  = RealColorToUint32(col);
   }
 }
+
 
 HAPI bool hrRenderSaveGBufferLayerLDR(HRRenderRef a_pRender, const wchar_t* a_outFileName, const wchar_t* a_layerName,
                                       const int* a_palette, int a_paletteSize)

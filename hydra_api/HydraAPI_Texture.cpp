@@ -15,7 +15,6 @@
 
 extern std::wstring      g_lastError;
 extern std::wstring      g_lastErrorCallerPlace;
-extern HR_ERROR_CALLBACK g_pErrorCallback;
 extern HRObjectManager   g_objManager;
 
 std::wstring LocalDataPathOfCurrentSceneLibrary();
@@ -320,14 +319,14 @@ HAPI HRTextureNodeRef hrTexture2DUpdateFromMemory(HRTextureNodeRef currentRef, i
 	std::wstring location = ChunkName(chunk);
 	std::wstring bytesize = ToWString(byteSize);
 
-  texNodeXml.append_attribute(L"id").set_value(id.c_str());
-	texNodeXml.append_attribute(L"name").set_value(texName.c_str());
+  texNodeXml.force_attribute(L"id").set_value(id.c_str());
+	texNodeXml.force_attribute(L"name").set_value(texName.c_str());
   g_objManager.SetLoc(texNodeXml, location);
-	texNodeXml.append_attribute(L"offset").set_value(L"8");
-	texNodeXml.append_attribute(L"bytesize").set_value(bytesize.c_str());
-  texNodeXml.append_attribute(L"width")  = w;
-  texNodeXml.append_attribute(L"height") = h;
-  texNodeXml.append_attribute(L"dl").set_value(L"0");
+	texNodeXml.force_attribute(L"offset").set_value(L"8");
+	texNodeXml.force_attribute(L"bytesize").set_value(bytesize.c_str());
+  texNodeXml.force_attribute(L"width")  = w;
+  texNodeXml.force_attribute(L"height") = h;
+  texNodeXml.force_attribute(L"dl").set_value(L"0");
 
 	g_objManager.scnData.textures[ref.id].update(texNodeXml);
 

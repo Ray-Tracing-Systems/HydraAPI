@@ -49,7 +49,6 @@ Some examples can be found in hydra_api/hydra_api_py/hydraPyTests.py
 Hydra API uses MIT licence itself, however it depends on the other software as follows (see doc/licence directory):
 
 * 02 - FreeImage Public License - Version 1.0 (FreeImage is used in the form of binaries)
-* 03 - Embree Apache License 2.0 (Embree is used in the form of binaries)
 * 04 - xxhash BSD 3-clause "New" or "Revised" (xxhash is used in the form of sources)
 * 05 - pugixml MIT licence (pugixml is used in the form of sources)
 * 06 - clew Boost Software License - Version 1.0 - August 17th, 2003 (clew is used in the form of sources)

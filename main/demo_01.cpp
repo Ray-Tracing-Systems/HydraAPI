@@ -12,8 +12,7 @@
 
 #include "../hydra_api/HydraAPI.h"
 #include "../hydra_api/HydraXMLVerify.h"
-
-#include "mesh_utils.h"
+#include "../utils/mesh_utils.h"
 
 //int hr_mkdir(const wchar_t* a_folder); // not a part of an API, just to make folder
 

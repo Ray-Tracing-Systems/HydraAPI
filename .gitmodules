@@ -1,3 +1,3 @@
-[submodule "hydra_api/hydra_api_py/pybind11"]
-	path = hydra_api/hydra_api_py/pybind11
-	url = git://github.com/pybind/pybind11.git
+[submodule "hydra_api_python/pybind11"]
+	path = hydra_api_python/pybind11
+	url = https://github.com/pybind/pybind11.git

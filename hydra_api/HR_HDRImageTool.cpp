@@ -269,7 +269,10 @@ bool InternalImageTool::LoadImageFromFile(const wchar_t* a_fileName,
 #endif
 
   if (!fin.is_open())
+  {
+    HrPrint(HR_SEVERITY_ERROR, "LoadImageFromFile, can not open file");
     return false;
+  }
 
   int wh[2] = { 0,0 };
   fin.read((char*)wh, sizeof(int) * 2);
@@ -486,6 +489,8 @@ namespace HydraRender
   bool LoadLDRImageFromFile(const char* a_fileName,
                             int* pW, int* pH, std::vector<int32_t>& a_data)
   {
+    FreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);
+
     FREE_IMAGE_FORMAT fif = FIF_PNG; // image format
 
     fif = FreeImage_GetFileType(a_fileName, 0);
@@ -508,8 +513,16 @@ namespace HydraRender
     auto height         = FreeImage_GetHeight(converted);
     auto bitsPerPixel   = FreeImage_GetBPP(converted);
 
+
+    if (width == 0 || height == 0)
+    {
+      std::cerr << "Seems that 'FreeImage_ConvertTo32Bits' has failed " << std::endl;
+      return false;
+    }
+
     a_data.resize(width*height);
-    BYTE* data = (BYTE*)&a_data[0];
+    BYTE* data = (BYTE*)a_data.data();
+
 
     for (unsigned int y = 0; y<height; y++)
     {
@@ -533,6 +546,7 @@ namespace HydraRender
 
     (*pW) = width;
     (*pH) = height;
+    return true;
   }
 
   float MSE_RGB_LDR(const std::vector<int32_t>& image1, const std::vector<int32_t>& image2)
@@ -678,7 +692,7 @@ namespace HydraRender
     wcstombs(filename_s, filename, sizeof(filename_s));
     fif = FreeImage_GetFileType(filename_s, 0);
     #endif
-    
+
     if (fif == FIF_UNKNOWN)
     {
     #if defined WIN32
@@ -687,7 +701,7 @@ namespace HydraRender
       fif = FreeImage_GetFIFFromFilename(filename_s);
     #endif
     }
-    
+
     if (fif == FIF_UNKNOWN)
     {
       std::cerr << "FreeImage failed to guess file image format: " << filename << std::endl;

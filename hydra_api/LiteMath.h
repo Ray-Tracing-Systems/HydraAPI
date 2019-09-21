@@ -819,3 +819,17 @@ namespace HydraLiteMath
   // }
 
 }; // namespace HydraLiteMath 
+
+namespace std {
+    template<> struct hash<HydraLiteMath::float3> {
+        size_t operator()(HydraLiteMath::float3 const& f3) const {
+          return ((hash<float>()(f3.x) ^ (hash<float>()(f3.y) << 1)) >> 1) ^ (hash<float>()(f3.z) << 1);
+        }
+    };
+
+    template<> struct hash<HydraLiteMath::float2> {
+        size_t operator()(HydraLiteMath::float2 const& f2) const {
+          return ((hash<float>()(f2.x) ^ (hash<float>()(f2.y) << 1)) >> 1) ;
+        }
+    };
+}

@@ -1,5 +1,6 @@
 #include "HydraAPI.h"
 #include "HydraInternal.h"
+#include "HydraRenderDriverAPI.h"
 
 #include <memory>
 #include <vector>
@@ -27,7 +28,6 @@
 
 extern std::wstring      g_lastError;
 extern std::wstring      g_lastErrorCallerPlace;
-extern HR_ERROR_CALLBACK g_pErrorCallback;
 extern HR_INFO_CALLBACK  g_pInfoCallback;
 extern HRObjectManager   g_objManager;
 
@@ -79,6 +79,7 @@ HAPI void _hrInit(HRInitInfo a_initInfo)
   g_objManager.destroy();
   g_objManager.init(a_initInfo);
   setlocale(LC_ALL, "C");
+  registerBuiltInRenderDrivers();
 }
 
 HAPI void hrSceneLibraryClose()
@@ -99,11 +100,6 @@ HAPI const wchar_t* hrGetLastError() // if null else see msg
     return nullptr;
   else
     return g_lastError.c_str();
-}
-
-HAPI void hrErrorCallback(HR_ERROR_CALLBACK pCallback)
-{
-  g_pErrorCallback = pCallback;
 }
 
 HAPI void hrInfoCallback(HR_INFO_CALLBACK pCallback)
@@ -236,11 +232,11 @@ HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMod
   else
   {
     HrError(L"[hrSceneLibraryOpen]: bad a_openMode = ", a_openMode);
-    return -1;
+    return 0;
   }
 
   HrPrint(HR_SEVERITY_DEBUG, L"[hrSceneLibraryOpen]: success");
-  return 0;
+  return 1;
 }
 
 
@@ -684,48 +680,52 @@ HAPI void hrLightGroupInstanceExt(HRSceneInstRef a_pScn, HRLightGroupExt lightGr
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-IHRRenderDriver* CreateHydraConnection_RenderDriver();
 
-IHRRenderDriver* CreateOpenGL1DrawBVH_RenderDriver();   // debug drivers
-IHRRenderDriver* CreateOpenGL1TestSplit_RenderDriver();
-IHRRenderDriver* CreateDebugPrint_RenderDriver();
-IHRRenderDriver* CreateOpenGL1DrawRays_RenderDriver();
-IHRRenderDriver* CreateOpenGL1Debug_TestCustomAttributes();
+//IHRRenderDriver* CreateOpenGL1DrawBVH_RenderDriver();   // debug drivers
+//IHRRenderDriver* CreateOpenGL1TestSplit_RenderDriver();
+//IHRRenderDriver* CreateDebugPrint_RenderDriver();
+//IHRRenderDriver* CreateOpenGL1DrawRays_RenderDriver();
+//IHRRenderDriver* CreateOpenGL1Debug_TestCustomAttributes();
 
-std::unique_ptr<IHRRenderDriver> CreateRenderFromString(const wchar_t *a_className, const wchar_t *a_options)
-{
-  if (!wcscmp(a_className, L"opengl1"))
-    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1_RenderDriver());
-  else if (!wcscmp(a_className, L"opengl1Debug"))
-    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1Debug_RenderDriver());
-  else if (!wcscmp(a_className, L"opengl1TestSplit"))
-    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1TestSplit_RenderDriver());
-  else if (!wcscmp(a_className, L"opengl1DelayedLoad"))
-    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1_DelayedLoad_RenderDriver(false));
-  else if (!wcscmp(a_className, L"opengl1DelayedLoad2"))
-    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1_DelayedLoad_RenderDriver(true));
-  else if (!wcscmp(a_className, L"opengl1TestCustomAttributes"))
-    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1Debug_TestCustomAttributes());
-  else if (!wcscmp(a_className, L"opengl1DrawBvh"))
-    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1DrawBVH_RenderDriver());
-  else if (!wcscmp(a_className, L"opengl1DrawRays"))
-    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1DrawRays_RenderDriver());
-  else if (!wcscmp(a_className, L"DebugPrint"))
-    return std::unique_ptr<IHRRenderDriver>(CreateDebugPrint_RenderDriver());
-  else if (!wcscmp(a_className, L"opengl32Forward"))
-    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL32Forward_RenderDriver());
-  else if (!wcscmp(a_className, L"opengl32Deferred"))
-    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL32Deferred_RenderDriver());
-  else if (!wcscmp(a_className, L"opengl3Utility"))
-    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL3_Utilty_RenderDriver());
-  else if (!wcscmp(a_className, L"HydraModern"))
-    return std::unique_ptr<IHRRenderDriver>(CreateHydraConnection_RenderDriver());
-  else
-  {
-    HrPrint(HR_SEVERITY_ERROR, L"CreateRenderFromString, unknown render driver name ", a_className);
-    return nullptr;
-  }
-}
+//std::unique_ptr<IHRRenderDriver> CreateRenderFromString(const wchar_t *a_className, const wchar_t *a_options)
+//{
+//  if (!wcscmp(a_className, L"opengl1"))
+//    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1_RenderDriver());
+//  else if (!wcscmp(a_className, L"opengl1Debug"))
+//    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1Debug_RenderDriver());
+//  else if (!wcscmp(a_className, L"opengl1TestSplit"))
+//    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1TestSplit_RenderDriver());
+//  else if (!wcscmp(a_className, L"opengl1DelayedLoad"))
+//    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1_DelayedLoad_RenderDriver(false));
+//  else if (!wcscmp(a_className, L"opengl1DelayedLoad2"))
+//    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1_DelayedLoad_RenderDriver(true));
+//  else if (!wcscmp(a_className, L"opengl1TestCustomAttributes"))
+//    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1Debug_TestCustomAttributes());
+//  else if (!wcscmp(a_className, L"opengl1DrawBvh"))
+//    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1DrawBVH_RenderDriver());
+//  else if (!wcscmp(a_className, L"opengl1DrawRays"))
+//    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1DrawRays_RenderDriver());
+//  else if (!wcscmp(a_className, L"DebugPrint"))
+//    return std::unique_ptr<IHRRenderDriver>(CreateDebugPrint_RenderDriver());
+//  else if (!wcscmp(a_className, L"opengl32Forward"))
+//    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL32Forward_RenderDriver());
+//  else if (!wcscmp(a_className, L"opengl32Deferred"))
+//    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL32Deferred_RenderDriver());
+//  if (!wcscmp(a_className, L"opengl3Utility"))
+//    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL3_Utilty_RenderDriver());
+//  else if (!wcscmp(a_className, L"vulkan"))
+//  {
+//    HrPrint(HR_SEVERITY_ERROR, L"Define CreateVulkan_RenderDriver() and uncomment its call in CreateRenderFromString", a_className);
+////    return std::unique_ptr<IHRRenderDriver>(CreateVulkan_RenderDriver());
+//  }
+//  else if (!wcscmp(a_className, L"HydraModern"))
+//    return std::unique_ptr<IHRRenderDriver>(CreateHydraConnection_RenderDriver());
+//  else
+//  {
+//    HrPrint(HR_SEVERITY_ERROR, L"CreateRenderFromString, unknown render driver name ", a_className);
+//    return nullptr;
+//  }
+//}
 
 HAPI HRRenderRef hrRenderCreate(const wchar_t* a_className, const wchar_t* a_flags)
 { 
@@ -746,7 +746,7 @@ HAPI HRRenderRef hrRenderCreate(const wchar_t* a_className, const wchar_t* a_fla
   g_objManager.renderSettings[ref.id].update(nodeXml); // ???
   g_objManager.renderSettings[ref.id].id = ref.id;
 	
-  settings.m_pDriver = CreateRenderFromString(a_className, a_flags);
+  settings.m_pDriver = std::shared_ptr<IHRRenderDriver>(RenderDriverFactory::Create(a_className));
 
   settings.m_pDriver->SetInfoCallBack(g_pInfoCallback);
 
@@ -1039,7 +1039,18 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
 {
   HRRender* pSettings = g_objManager.PtrById(a_pRender);
   HRSceneInst* pScn   = g_objManager.PtrById(a_pScn);
-  //HRCamera*    pCam   = g_objManager.PtrById(a_pCam);
+
+  if (pSettings == nullptr)
+  {
+    HrPrint(HR_SEVERITY_ERROR, L"hrCommit, nullptr render");
+    return;
+  }
+
+  if (pScn == nullptr)
+  {
+    HrPrint(HR_SEVERITY_ERROR, L"hrCommit, nullptr scene");
+    return;
+  }
 
   if (a_pRender.id != -1)
   {
@@ -1055,7 +1066,12 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
 
   // Add/Update light as geometry if Render Driver can't do it itself
   //
-  bool needToAddLightsAsGeometry = (g_objManager.m_pDriver == nullptr) || !g_objManager.m_pDriver->Info().createsLightGeometryItself;
+  std::wstring driver_name = L"";
+  if(g_objManager.m_pDriver != nullptr)
+    g_objManager.m_pDriver->GetRenderDriverName(driver_name);
+  auto driver_info = RenderDriverFactory::GetDriverInfo(driver_name.c_str());
+
+  bool needToAddLightsAsGeometry = (g_objManager.m_pDriver == nullptr) || !driver_info.createsLightGeometryItself;
   if (needToAddLightsAsGeometry && pScn != nullptr)
     HR_UpdateLightsGeometryAndMaterial(g_objManager.scnData.m_lightsLib, pScn->xml_node());
   
@@ -1135,13 +1151,20 @@ HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pC
 
     //std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     std::wstring fixed_state = newPath;
-    if (g_objManager.m_pDriver->Info().supportUtilityPrepass && doPrepass)
+    std::wstring driver_name;
+    g_objManager.m_pDriver->GetRenderDriverName(driver_name);
+    auto driver_info = RenderDriverFactory::GetDriverInfo(driver_name.c_str());
+
+    if (driver_info.supportUtilityPrepass && doPrepass)
+    {
+      std::cout << "Starting scene prepass..." << std::endl;
       fixed_state = HR_UtilityDriverStart(newPath.c_str(), pSettings);
+    }
     //std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     //std::cout << "Resolution fix elapsed time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms" <<std::endl;
 
 //#ifdef IN_DEBUG
-    if (g_objManager.m_pDriver->Info().supportDisplacement && doDisplacement)
+    if (driver_info.supportDisplacement && doDisplacement)
       fixed_state = HR_PreprocessMeshes(fixed_state.c_str());
 //#endif
   }

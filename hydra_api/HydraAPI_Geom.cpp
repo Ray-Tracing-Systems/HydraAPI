@@ -31,7 +31,6 @@ using namespace HydraLiteMath;
 
 extern std::wstring      g_lastError;
 extern std::wstring      g_lastErrorCallerPlace;
-extern HR_ERROR_CALLBACK g_pErrorCallback;
 extern HRObjectManager   g_objManager;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -436,13 +435,19 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, HRModelLo
 
 std::wstring CutFileName(const std::wstring& fileName);
 std::wstring LocalDataPathOfCurrentSceneLibrary();
+bool isFileExist(const wchar_t *fileName);
 
 HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName, bool a_copyToLocalFolder)
 {
   if (a_fileName == nullptr || std::wstring(a_fileName) == L"")
     return HRMeshRef();
-
-
+  
+  if(!isFileExist(a_fileName))
+  {
+    HrPrint(HR_SEVERITY_ERROR, L"hrMeshCreateFromFileDL, file does not exists: ", a_fileName);
+    return HRMeshRef();
+  }
+ 
   HRMeshRef ref = hrMeshCreate(a_fileName);
 
   HRMesh* pMesh = g_objManager.PtrById(ref);
@@ -511,12 +516,19 @@ HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName, bool a_copyToLo
   }
   hrMeshClose(ref);
   */
+  
   return ref;
 }
 
+
 HAPI HRMeshRef hrMeshCreateFromFile(const wchar_t* a_fileName, HRModelLoadInfo a_modelInfo)
 {
-  //std::wstring tail = str_tail(a_fileName, 6);
+  if(!isFileExist(a_fileName))
+  {
+    HrPrint(HR_SEVERITY_ERROR, L"hrMeshCreateFromFile, file does not exists: ", a_fileName);
+    return HRMeshRef();
+  }
+  
   std::wstring tail = std::wstring(a_fileName).substr(std::wstring(a_fileName).find_last_of(L"."));
 
   HydraGeomData data;
@@ -560,8 +572,16 @@ HAPI HRMeshRef hrMeshCreateFromFile(const wchar_t* a_fileName, HRModelLoadInfo a
 
 HAPI HRMeshRef hrMeshCreateFromFileDL_NoNormals(const wchar_t* a_fileName)
 {
+  
   if (a_fileName == nullptr || std::wstring(a_fileName) == L"")
     return HRMeshRef();
+  
+  if(!isFileExist(a_fileName))
+  {
+    HrPrint(HR_SEVERITY_ERROR, L"hrMeshCreateFromFileDL_NoNormals, file does not exists: ", a_fileName);
+    return HRMeshRef();
+  }
+  
   HydraGeomData data;
   data.read(a_fileName);
 
@@ -1436,13 +1456,13 @@ HAPI HRMeshInfo  hrMeshGetInfo(HRMeshRef a_mesh)
 void ComputeVertexNormals(HRMesh::InputTriMesh& mesh, const int indexNum, bool useFaceNormals)
 {
   int faceNum = indexNum / 3;
-  
+
   //std::vector<float3> faceNormals;
   //faceNormals.reserve(faceNum);
-  
+
   std::vector<float3> vertexNormals(mesh.verticesPos.size() / 4, float3(0.0, 0.0, 0.0));
-  
-  
+
+
   for (auto i = 0; i < faceNum; ++i)
   {
     float3 A = float3(mesh.verticesPos.at(4 * mesh.triIndices.at(3*i)),     mesh.verticesPos.at(4 * mesh.triIndices.at(3*i) + 1),     mesh.verticesPos.at(4 * mesh.triIndices.at(3*i) + 2));
@@ -1451,10 +1471,10 @@ void ComputeVertexNormals(HRMesh::InputTriMesh& mesh, const int indexNum, bool u
     
     float3 edge1A = normalize(B - A);
     float3 edge2A = normalize(C - A);
-    
+
     float3 edge1B = normalize(A - B);
     float3 edge2B = normalize(C - B);
-    
+
     float3 edge1C = normalize(A - C);
     float3 edge2C = normalize(B - C);
 
@@ -1468,7 +1488,7 @@ void ComputeVertexNormals(HRMesh::InputTriMesh& mesh, const int indexNum, bool u
     float3 edge1C = normalize(C - A);
     float3 edge2C = normalize(C - B);
     */
-    
+
     float3 face_normal = normalize(cross(edge1A, edge2A));
     /*
     vertexNormals.at(mesh.triIndices.at(3 * i)) += face_normal;
@@ -1480,7 +1500,7 @@ void ComputeVertexNormals(HRMesh::InputTriMesh& mesh, const int indexNum, bool u
       float dotA = dot(edge1A, edge2A);
       float dotB = dot(edge1B, edge2B);
       float dotC = dot(edge1C, edge2C);
-      
+
       const float lenA = length(cross(edge1A, edge2A));
       const float lenB = length(cross(edge1B, edge2B));
       const float lenC = length(cross(edge1C, edge2C));
@@ -1493,11 +1513,11 @@ void ComputeVertexNormals(HRMesh::InputTriMesh& mesh, const int indexNum, bool u
 //                                     powf(edge1A.z * edge2A.x - edge1A.x * edge2A.z, 2) +
 //                                     powf(edge1A.x * edge2A.y - edge1A.y * edge2A.x, 2));
       float face_area = 1.0f;
-      
+
       float3 normalA = face_normal * wA * face_area;
       float3 normalB = face_normal * wB * face_area;
       float3 normalC = face_normal * wC * face_area;
-      
+
       vertexNormals.at(mesh.triIndices.at(3 * i + 0)) += normalA;
       vertexNormals.at(mesh.triIndices.at(3 * i + 1)) += normalB;
       vertexNormals.at(mesh.triIndices.at(3 * i + 2)) += normalC;
@@ -1510,20 +1530,20 @@ void ComputeVertexNormals(HRMesh::InputTriMesh& mesh, const int indexNum, bool u
     }
     //faceNormals.push_back(face_normal);
   }
-  
+
   if(mesh.verticesNorm.size() != mesh.verticesPos.size())
     mesh.verticesNorm.resize(mesh.verticesPos.size());
-  
+
   for (int i = 0; i < vertexNormals.size(); ++i)
   {
     float3 N = normalize(vertexNormals.at(i));
-    
+
     mesh.verticesNorm.at(4 * i + 0) = N.x;
     mesh.verticesNorm.at(4 * i + 1) = N.y;
     mesh.verticesNorm.at(4 * i + 2) = N.z;
     mesh.verticesNorm.at(4 * i + 3) = 0.0f;
   }
-  
+
 }
 
 void hrMeshComputeNormals(HRMeshRef a_mesh, const int indexNum, bool useFaceNormals)
@@ -1536,7 +1556,7 @@ void hrMeshComputeNormals(HRMeshRef a_mesh, const int indexNum, bool useFaceNorm
 	}
 
 	HRMesh::InputTriMesh& mesh = pMesh->m_input;
-  
+
   ComputeVertexNormals(mesh, indexNum, useFaceNormals);
 }
 
@@ -1548,13 +1568,13 @@ void ComputeVertexTangents(HRMesh::InputTriMesh& mesh, int indexNum)
 {
   const int vertexCount      = int(mesh.verticesPos.size()/4);                   // #TODO: not 0-th element, last vertex from prev append!
   const int triangleCount    = indexNum / 3;
- 
+
   const float4* verticesPos  = (const float4*)(mesh.verticesPos.data());         // #TODO: not 0-th element, last vertex from prev append!
   const float4* verticesNorm = (const float4*)(mesh.verticesNorm.data());        // #TODO: not 0-th element, last vertex from prev append!
   const float2* vertTexCoord = (const float2*)(mesh.verticesTexCoord.data());    // #TODO: not 0-th element, last vertex from prev append!
-  
+
   float4* verticesTang       = (float4*)(mesh.verticesTangent.data());           // #TODO: not 0-th element, last vertex from prev append!
-  
+
   HR_ComputeTangentSpaceSimple(vertexCount, triangleCount, mesh.triIndices.data(),
                                verticesPos, verticesNorm, vertTexCoord,
                                verticesTang);
@@ -1568,7 +1588,7 @@ HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, int indexNum)
     HrError(L"hrMeshComputeNormals: nullptr input");
     return;
   }
-  
+
   HRMesh::InputTriMesh& mesh = pMesh->m_input;
   const int vertexCount      = int(pMesh->m_input.verticesPos.size()/4);
   mesh.verticesTangent.resize(vertexCount*4); // #TODO: not 0-th element, last vertex from prev append!
@@ -1606,8 +1626,8 @@ void _hrConvertOldVSGFMesh(const std::wstring& a_path, const std::wstring& a_new
   hrFlush();
 
   hr_copy_file(newFilePath.c_str(), a_newPath.c_str());
+  
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -31,7 +31,7 @@ using namespace HydraLiteMath;
 #include "HydraXMLHelpers.h"
 #include "HydraTextureUtils.h"
 
-#include "../mikktspace/mikktspace.h"
+#include "../utils/mikktspace/mikktspace.h"
 
 #ifdef WIN32
 #undef min
@@ -40,7 +40,6 @@ using namespace HydraLiteMath;
 
 extern std::wstring      g_lastError;
 extern std::wstring      g_lastErrorCallerPlace;
-extern HR_ERROR_CALLBACK g_pErrorCallback;
 extern HRObjectManager   g_objManager;
 
 #ifdef WIN32
@@ -1888,8 +1887,8 @@ void HRUtils::getRandomPointsOnMesh(HRMeshRef mesh_ref, float *points, uint32_t 
   uint32_t vert_num = mesh.verticesPos.size();
   uint32_t tri_num = mesh.triIndices.size() / 3;
 
-//  std::random_device rand;
-  std::mt19937 rng(seed);
+  //std::mt19937 rng(seed);
+  hr_prng::RandomGen rgen = hr_prng::RandomGenInit(seed);
   std::uniform_real_distribution<float> select(0.0f, 1.0f);
 
   std::vector<uint32_t> triangle_indices;
@@ -1938,9 +1937,9 @@ void HRUtils::getRandomPointsOnMesh(HRMeshRef mesh_ref, float *points, uint32_t 
   {
     uint32_t triangle = 0u;
     if(tri_area_weighted)
-      triangle = triangle_indices[uint32_t(triangle_indices.size() * select(rng))];
+      triangle = triangle_indices[uint32_t(triangle_indices.size() * hr_prng::rndFloatUniform(rgen, 0.0f, 1.0f))];
     else
-      triangle = uint32_t(tri_num * select(rng));
+      triangle = uint32_t(tri_num * hr_prng::rndFloatUniform(rgen, 0.0f, 1.0f));
 
     uint32_t idx_A = mesh.triIndices.at(triangle * 3 + 0);
     uint32_t idx_B = mesh.triIndices.at(triangle * 3 + 1);
@@ -1950,8 +1949,8 @@ void HRUtils::getRandomPointsOnMesh(HRMeshRef mesh_ref, float *points, uint32_t 
     float3 B = make_float3(mesh.verticesPos.at(idx_B * 4 + 0), mesh.verticesPos.at(idx_B * 4 + 1), mesh.verticesPos.at(idx_B * 4 + 2));
     float3 C = make_float3(mesh.verticesPos.at(idx_C * 4 + 0), mesh.verticesPos.at(idx_C * 4 + 1), mesh.verticesPos.at(idx_C * 4 + 2));
 
-    float u = select(rng);
-    float v = select(rng);
+    float u = hr_prng::rndFloatUniform(rgen, 0.0f, 1.0f);
+    float v = hr_prng::rndFloatUniform(rgen, 0.0f, 1.0f);
     if( u + v > 1.0f)
     {
       u = 1.0f - u;

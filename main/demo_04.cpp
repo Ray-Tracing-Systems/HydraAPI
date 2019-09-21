@@ -12,8 +12,7 @@
 
 #include "../hydra_api/HydraAPI.h"
 #include "../hydra_api/HydraXMLVerify.h"
-
-#include "mesh_utils.h"
+#include "../utils/mesh_utils.h"
 
 using pugi::xml_node;
 
@@ -194,7 +193,7 @@ void demo_04_instancing()
     pugi::xml_node intensityNode = lightNode.append_child(L"intensity");
 
     intensityNode.append_child(L"color").append_attribute(L"val")      = L"1 1 1";
-    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 25.0f;
+    intensityNode.append_child(L"multiplier").append_attribute(L"val") = 8.0f;
 
     VERIFY_XML(lightNode);
   }

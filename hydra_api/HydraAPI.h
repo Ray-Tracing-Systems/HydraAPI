@@ -138,15 +138,6 @@ enum HR_SEVERITY_LEVEL {
   HR_SEVERITY_CRITICAL_ERROR = 4,  ///< Absolutely bad thing had happened. Please display error message and immediately call hrDestroy();
 };
 
-
-/**
-\brief Deprecated (!!!) callback for printing error messages. 
-\param message     - actual error message that will be passed to callback when error happened
-\param callerPlace - the last string rememberd by hrErrorCallerPlace before error have rised
-Called each time when any error rises.
-*/
-typedef void(*HR_ERROR_CALLBACK)(const wchar_t* message, const wchar_t* callerPlace);
-
 /**
 \brief General callback for printing info and error messages.
 \param message     - actual error message that will be passed to callback when error happened
@@ -230,11 +221,6 @@ It also don't have any stack or e.t.c., just a state, just one string! So please
 HAPI void hrErrorCallerPlace(const wchar_t* a_placeName, int a_line = 0);
 
 /**
-\brief set your custome printing error callback. @DEPRECATED !!! USE hrInfoCallback instead!!!
-*/
-HAPI void hrErrorCallback(HR_ERROR_CALLBACK pCallback);
-
-/**
 \brief set your custome printing error callback
 */
 HAPI void hrInfoCallback(HR_INFO_CALLBACK pCallback);
@@ -271,6 +257,8 @@ HAPI HRSceneLibraryFileInfo hrSceneLibraryExists(const wchar_t* a_libPath, wchar
 
  Destroy All SceneData/SceneLibrary if (a_openMode == HR_WRITE_DISCARD).
  Passing nullptr or L"" to a_libPath will cause just to clear everything.
+
+ \return 1 if succeded, 0 otherwise
 
 */
 HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMode, HRInitInfo a_initInfo = HRInitInfo());

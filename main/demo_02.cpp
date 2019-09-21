@@ -8,8 +8,7 @@
 
 #include "../hydra_api/HydraAPI.h"
 #include "../hydra_api/HydraXMLVerify.h"
-
-#include "mesh_utils.h"
+#include "../utils/mesh_utils.h"
 
 using pugi::xml_node;
 
@@ -51,7 +50,7 @@ void demo_02_load_obj()
   HRMaterialRef mat1 = hrMaterialCreate(L"red");
   HRMaterialRef mat2 = hrMaterialCreate(L"green");
   HRMaterialRef mat3 = hrMaterialCreate(L"white");
-  //HRMaterialRef mat4 = hrMaterialCreate(L"gold");
+  HRMaterialRef mat4 = hrMaterialCreate(L"gold");
   
   hrMaterialOpen(mat0, HR_WRITE_DISCARD);
   {
@@ -100,9 +99,7 @@ void demo_02_load_obj()
     VERIFY_XML(matNode);
   }
   hrMaterialClose(mat3);
-
-
-  /*
+  
   hrMaterialOpen(mat4, HR_WRITE_DISCARD);
   {
     xml_node matNode = hrMaterialParamNode(mat4);
@@ -122,7 +119,6 @@ void demo_02_load_obj()
     VERIFY_XML(matNode);
   }
   hrMaterialClose(mat4);
-  */
   
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -130,16 +126,8 @@ void demo_02_load_obj()
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
   HRMeshRef cubeOpenRef = hrMeshCreate(L"my_box");
-
-  HRModelLoadInfo objModelInfo;
-  objModelInfo.useMaterial = false;
-  // You can set the path to .mtl files manually in case they are located in different folder (not with .obj file)
-  //objModelInfo.mtlRelativePath = L"data/meshes/shapenet_test/test1";
-  HRMeshRef bunnyRef    = hrMeshCreateFromFile(L"data/meshes/bunny.obj", objModelInfo);
-
-
-
-
+  HRMeshRef bunnyRef    = hrMeshCreateFromFile(L"data/meshes/bunny.obj"); //#NOTE: loaded from ".obj" models are guarantee to have material id '0' for all triangles
+                                                                          // to apply other material, please see further for remap list application to object instance
   hrMeshOpen(cubeOpenRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
   {
     hrMeshVertexAttribPointer4f(cubeOpenRef, L"pos",      &cubeOpen.vPos[0]);
@@ -222,7 +210,6 @@ void demo_02_load_obj()
     node.append_child(L"method_secondary").text() = L"pathtracing";
     node.append_child(L"method_tertiary").text()  = L"pathtracing";
     node.append_child(L"method_caustic").text()   = L"pathtracing";
-    node.append_child(L"evalgbuffer").text()   = L"1";
     
     node.append_child(L"trace_depth").text()      = 8;
     node.append_child(L"diff_trace_depth").text() = 4;
@@ -239,17 +226,14 @@ void demo_02_load_obj()
   
   hrSceneOpen(scnRef, HR_WRITE_DISCARD);
   {
-    // instance bunny and cornell box
+    // instance bynny and cornell box
     //
     auto mscale     = hlm::scale4x4(hlm::float3(3,3,3));
     auto mtranslate = hlm::translate4x4(hlm::float3(1, -4.2, 0));
     auto mres       = hlm::mul(mtranslate,mscale);
-
-    auto str_info = hrMeshGetInfo(bunnyRef);
-    auto first_mat_id = str_info.batchesList[0].matId;
-
-    //int32_t remapList[2] = {0, first_mat_id};                                                       // #NOTE: remaplist of size 1 here: [0 --> mat4.id]
-    hrMeshInstance(scnRef, bunnyRef, mres.L());
+    
+    int32_t remapList[2] = {0, mat4.id};                                                       // #NOTE: remaplist of size 1 here: [0 --> mat4.id]
+    hrMeshInstance(scnRef, bunnyRef, mres.L(), remapList, sizeof(remapList)/sizeof(int32_t));  //
     
     auto mrot = hlm::rotate_Y_4x4(180.0f*DEG_TO_RAD);
     hrMeshInstance(scnRef, cubeOpenRef, mrot.L());
@@ -297,5 +281,5 @@ void demo_02_load_obj()
   }
   
   hrRenderSaveFrameBufferLDR(renderRef, L"demos/demo_02/z_out.png");
-  hrRenderSaveGBufferLayerLDR(renderRef, L"demos/demo_02/z_out_G.png", L"texcoord");
+  
 }

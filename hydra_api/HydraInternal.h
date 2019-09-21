@@ -56,7 +56,6 @@ protected:
 };
 
 using namespace HRUtils;
-
 BBox transformBBox(const BBox &a_bbox, const HydraLiteMath::float4x4 &m);
 BBox mergeBBoxes(const BBox &A, const BBox &B);
 BBox createBBoxFromFloat4V(const std::vector<HydraLiteMath::float4> &a_verts);
@@ -67,6 +66,8 @@ std::wstring HR_PreprocessMeshes(const wchar_t *state_path);
 void hrMeshComputeNormals(HRMeshRef a_mesh, int indexNum, bool useFaceNormals = false);
 void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum);
 void runTSpaceCalc(HRMeshRef mesh_ref, bool basic);
+
+void registerBuiltInRenderDrivers();
 
 
 struct IHRMesh : public IHRObject ///< Not empty Data (reimplement DataSerialize/DataDeserialize)
@@ -364,7 +365,7 @@ std::wstring ChunkName(const ChunkPointer& a_chunk);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-std::unique_ptr<IHRRenderDriver> CreateRenderFromString(const wchar_t *a_className, const wchar_t *a_options);
+//std::unique_ptr<IHRRenderDriver> CreateRenderFromString(const wchar_t *a_className, const wchar_t *a_options);
 
 struct HRSceneInst;
 struct HRRender;

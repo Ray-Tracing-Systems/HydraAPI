@@ -1,16 +1,9 @@
 #include <iostream>
 #include <vector>
-//#include <zconf.h>
 
 #include "../hydra_api/HydraAPI.h"
-#include "tests.h"
 
 using pugi::xml_node;
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////// just leave this it as it is :)
-#include "../hydra_api/HydraRenderDriverAPI.h"
-IHRRenderDriver* CreateDriverRTE(const wchar_t* a_cfg) { return nullptr; }
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #if defined WIN32
 #include <windows.h> // for SetConsoleCtrlHandler
@@ -18,12 +11,6 @@ IHRRenderDriver* CreateDriverRTE(const wchar_t* a_cfg) { return nullptr; }
 #include <unistd.h>
 #include <signal.h>
 #endif
-
-
-void ErrorCallBack(const wchar_t* message, const wchar_t* callerPlace)
-{
-  std::wcout << callerPlace << L":\t" << message << std::endl;
-}
 
 void InfoCallBack(const wchar_t* message, const wchar_t* callerPlace, HR_SEVERITY_LEVEL a_level)
 {
@@ -35,7 +22,6 @@ void InfoCallBack(const wchar_t* message, const wchar_t* callerPlace, HR_SEVERIT
       std::wcerr << L"ERROR  : " << callerPlace << L": " << message; // << std::endl;
   }
 }
-
 
 void destroy()
 {
@@ -72,19 +58,15 @@ void sig_handler(int signo)
 }
 #endif
 
-extern float g_MSEOutput;
-void test02_draw();
-void test02_init();
-
 void demo_01_plane_box();
 void demo_02_load_obj();
 void demo_03_caustics();
 void demo_04_instancing();
 
+void terminateGL();
+
 int main(int argc, const char** argv)
 {
-  //render_test_scene();
-  //hrInit(L"-copy_textures_to_local_folder 0 -local_data_path 1 -sort_indices 1 -compute_bboxes 1");
   hrInfoCallback(&InfoCallBack);
 
   hrErrorCallerPlace(L"main");  // for debug needs only
@@ -129,26 +111,9 @@ int main(int argc, const char** argv)
   try
   {
     //demo_01_plane_box();
-    //demo_02_load_obj();
+    demo_02_load_obj();
     //demo_03_caustics();
     //demo_04_instancing();
-
-    //GEO_TESTS::test_007_import_obj();
-    //GEO_TESTS::test_008_import_obj_w_mtl();
-    //GEO_TESTS::test_009_import_obj_fullscale();
-
-    //run_all_api_tests(); // passed
-    //run_all_geo_tests();
-    //run_all_mtl_tests();
-    //run_all_lgt_tests();
-    //run_all_alg_tests();
-    //run_all_ipp_tests();
-    
-    std::cout << MTL_TESTS::test_101_diffuse_lambert() << std::endl;
-    std::cout << "MSE = " << g_MSEOutput << std::endl;
-    
-    //window_main_free_look(L"/home/frol/PROG/clsp/database/statex_00001.xml", L"opengl1");
-	  terminate_opengl();
   }
   catch (std::runtime_error& e)
   {
@@ -162,6 +127,12 @@ int main(int argc, const char** argv)
   hrErrorCallerPlace(L"main"); // for debug needs only
 
   hrSceneLibraryClose();
-
+  
+  terminateGL();
+  
   return 0;
 }
+
+
+
+

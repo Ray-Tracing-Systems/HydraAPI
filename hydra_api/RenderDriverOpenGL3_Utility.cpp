@@ -8,6 +8,11 @@
 #include "HydraXMLHelpers.h"
 
 
+IHRRenderDriver* CreateOpenGL3_Utility_RenderDriver()
+{
+  return new RD_OGL32_Utility;
+}
+
 RD_OGL32_Utility::RD_OGL32_Utility()
 {
   camFov       = 45.0f;
@@ -69,6 +74,7 @@ out VS_OUT
 	vec2 TexCoords;
 	vec3 FragPos;
 	vec3 Normal;
+  float tessLvl;
 } vs_out;
 
 layout (std140) uniform matrixBuffer
@@ -82,14 +88,24 @@ uniform bool invertNormals;
 
 void main()
 {
+  float minDepth = 10.0f;
+  float maxDepth = 100.0f;
+
+  float minTess = 0.0f;
+  float maxTess = 4.0f;
+
 	vs_out.TexCoords  = texcoords;
 	vec4 viewPos      = view * model * vertex;
+  vec4 worldPos     = model * vertex;
 	vs_out.FragPos    = viewPos.xyz;
 	mat3 normalMatrix = mat3(transpose(inverse(view * model)));
 
 	vs_out.Normal = normalMatrix * normal.xyz;
 	vs_out.Normal = invertNormals ? -1.0f * vs_out.Normal : vs_out.Normal;
 	gl_Position   = projection * viewPos;
+
+  float depth = clamp((abs(viewPos.z) - minDepth) / (maxDepth - minDepth), 0.0, 1.0);
+  vs_out.tessLvl = mix(maxTess, minTess, depth);
 }
 )END";
 
@@ -97,12 +113,14 @@ const std::string lod_fs = R"END(
 #version 330 core
 layout (location = 0) out uvec4 lodbuf_1;
 layout (location = 1) out uvec4 lodbuf_2;
+layout (location = 2) out uvec4 lodbuf_3;
 
 in VS_OUT
 {
   vec2 TexCoords;
   vec3 FragPos;
   vec3 Normal;
+  float tessLvl;
 } fs_in;
 
 uniform usamplerBuffer materials1;
@@ -110,6 +128,7 @@ uniform usamplerBuffer materials2;
 uniform samplerBuffer materials_matrix;
 
 uniform int matID;
+uniform int meshID;
 uniform ivec2 max_tex_res;
 uniform ivec2 render_res;
 uniform ivec2 rasterization_res;
@@ -133,6 +152,7 @@ float mip_map_level(vec2 texture_coordinate)
 
 const uint texIdBits    = 0x00FFFFFFu;
 const uint mipLevelBits = 0xFF000000u;
+const float maxTess = 4.0f;
 
 mat2 getTexMatrix(int matId, int slotId)
 {
@@ -146,11 +166,37 @@ mat2 getTexMatrix(int matId, int slotId)
   return res;
 }
 
+float geo_lod(vec3 world_pos)
+{
+  vec3  dx_vtc        = (rasterization_res.x / float(render_res.x)) *  dFdx(world_pos);
+  vec3  dy_vtc        = (rasterization_res.y / float(render_res.y)) *  dFdy(world_pos);
+
+  float dx2           = dot(dx_vtc, dx_vtc);
+  float dy2           = dot(dy_vtc, dy_vtc);
+  float delta_max_sqr = max(dx2, dy2);
+
+  const float maxClamp = pow(2.0f, maxTess * 2.0f);
+  delta_max_sqr = clamp(delta_max_sqr, 1.0f, maxClamp);
+
+  return maxTess - 0.5f * log2(delta_max_sqr);
+}
+
 void main()
 {     
   uvec4 texIds1 = uvec4(0, 0, 0, 0);
   uvec4 texIds2 = uvec4(0, 0, 0, 0);
   uint mipLevel = 0u;
+
+  uint tess1 = 0u;
+  uint tess2 = 0u;
+  uvec4 tess = uvec4(0u, 0u, 0u, 0u);
+
+  if(meshID >= 0)
+  {
+    tess1 = uint(floor(fs_in.tessLvl));
+    tess2 = uint(floor(geo_lod(fs_in.FragPos)));
+    tess = uvec4(tess1, tess2, uint(meshID), 0);
+  }
 
   if(matID >= 0)
   {
@@ -184,6 +230,7 @@ void main()
 
   lodbuf_1 = texIds1;
   lodbuf_2 = texIds2;
+  lodbuf_3 = tess;
 }
 )END";
 
@@ -261,6 +308,7 @@ HRDriverAllocInfo RD_OGL32_Utility::AllocAll(HRDriverAllocInfo a_info)
   m_materials_pt2.resize((unsigned long)(a_info.matNum), int4(-1, -1, -1, -1));
   m_materials_matrix.resize((unsigned long)(a_info.matNum * 8), float4(1.0f, 0.0f, 0.0f, 1.0f));
 
+  m_meshNum = 0u;
 
   glGenTextures(1, &m_whiteTex);
   CreatePlaceholderWhiteTexture(m_whiteTex);
@@ -271,23 +319,23 @@ HRDriverAllocInfo RD_OGL32_Utility::AllocAll(HRDriverAllocInfo a_info)
   return a_info;
 }
 
-HRDriverInfo RD_OGL32_Utility::Info()
-{
-  HRDriverInfo info;
-
-  info.supportHDRFrameBuffer        = false;
-  info.supportHDRTextures           = true;
-  info.supportMultiMaterialInstance = false;
-
-  info.supportImageLoadFromInternalFormat = false;
-  info.supportImageLoadFromExternalFormat = false;
-  info.supportMeshLoadFromInternalFormat  = false;
-  info.supportLighting                    = false;
-
-  info.memTotal = int64_t(8) * int64_t(1024 * 1024 * 1024); //TODO: ?
-
-  return info;
-}
+//HRDriverInfo RD_OGL32_Utility::Info()
+//{
+//  HRDriverInfo info;
+//
+//  info.supportHDRFrameBuffer        = false;
+//  info.supportHDRTextures           = true;
+//  info.supportMultiMaterialInstance = false;
+//
+//  info.supportImageLoadFromInternalFormat = false;
+//  info.supportImageLoadFromExternalFormat = false;
+//  info.supportMeshLoadFromInternalFormat  = false;
+//  info.supportLighting                    = false;
+//
+//  info.memTotal = int64_t(8) * int64_t(1024 * 1024 * 1024); //TODO: ?
+//
+//  return info;
+//}
 
 bool RD_OGL32_Utility::UpdateImage(int32_t a_texId, int32_t w, int32_t h, int32_t bpp, const void *a_data,
                                     pugi::xml_node a_texNode)
@@ -482,6 +530,7 @@ bool RD_OGL32_Utility::UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode, c
 
   m_objects[a_meshId] = batchMeshData;
 
+  m_meshNum += 1;
   return true;
 }
 
@@ -655,6 +704,7 @@ void RD_OGL32_Utility::InstanceMeshes(int32_t a_mesh_id, const float *a_matrices
         matId = m_remapLists.at(remapId)[matId];
 
       m_lodBufferProgram.SetUniform("matID", matId);
+      m_lodBufferProgram.SetUniform("meshID", a_mesh_id);
 
       bindTextureBuffer(m_lodBufferProgram, 0, "materials1", m_materialsTBOs[0], m_materialsTBOTexIds[0], GL_RGBA32I);
       bindTextureBuffer(m_lodBufferProgram, 1, "materials2", m_materialsTBOs[1], m_materialsTBOTexIds[1], GL_RGBA32I);
@@ -739,11 +789,16 @@ void RD_OGL32_Utility::FillMipLevelsDict()
 {
   std::vector<unsigned int> texture_data((unsigned long)(m_width * m_height* 4 * 2), 0);
 
+  std::vector<unsigned int> texture_data_tess((unsigned long)(m_width * m_height * 4), 0);
+
   glBindTexture(GL_TEXTURE_2D, m_lodBuffer->GetTextureId(LODBuffer::LODBUF_TEX_1));
   glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA_INTEGER, GL_UNSIGNED_INT, &texture_data[0]); GL_CHECK_ERRORS;
 
   glBindTexture(GL_TEXTURE_2D, m_lodBuffer->GetTextureId(LODBuffer::LODBUF_TEX_2));
   glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA_INTEGER, GL_UNSIGNED_INT, &texture_data[m_width * m_height * 4]); GL_CHECK_ERRORS;
+
+  glBindTexture(GL_TEXTURE_2D, m_lodBuffer->GetTextureId(LODBuffer::LODBUF_TEX_3));
+  glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA_INTEGER, GL_UNSIGNED_INT, &texture_data_tess[0]); GL_CHECK_ERRORS;
 
   const unsigned int texIdBits    = 0x00FFFFFFu;
   //const unsigned int mipLevelBits = 0xFF000000u;
@@ -766,6 +821,45 @@ void RD_OGL32_Utility::FillMipLevelsDict()
         m_mipLevelDict[texId] = mipLevel;
     }
   }
+
+  std::unordered_map<uint32_t, uint32_t> m_tessLvlDict1; //meshId -> tessLevel1
+  std::unordered_map<uint32_t, uint32_t> m_tessLvlDict2; //meshId -> tessLevel2
+
+  for(int i = 0; i < texture_data_tess.size() / 4; i += 4)
+  {
+    auto tess1 = texture_data_tess[i * 4 + 0];
+    auto tess2 = texture_data_tess[i * 4 + 1];
+    auto meshId = texture_data_tess[i * 4 + 2];
+
+    if(meshId <= m_meshNum)
+    {
+      if (m_tessLvlDict1.find(meshId) != m_tessLvlDict1.end())
+      {
+        if (tess1 > m_tessLvlDict1[meshId])
+          m_tessLvlDict1[meshId] = tess1;
+      }
+      else
+        m_tessLvlDict1[meshId] = tess1;
+
+
+      if (m_tessLvlDict2.find(meshId) != m_tessLvlDict2.end())
+      {
+        if (tess2 > m_tessLvlDict2[meshId])
+          m_tessLvlDict2[meshId] = tess2;
+      }
+      else
+        m_tessLvlDict2[meshId] = tess2;
+    }
+  }
+
+  std::cout << "tess lvl v1 :" << std::endl;
+  for (std::pair<int32_t, int32_t> elem : m_tessLvlDict1)
+    std::cout << "meshID: " << elem.first << " tess: " << elem.second << std::endl;
+
+  std::cout << "tess lvl v2 :" << std::endl;
+  for (std::pair<int32_t, int32_t> elem : m_tessLvlDict2)
+    std::cout << "meshID: " << elem.first << " tess: " << elem.second << std::endl;
+
 }
 
 HRRenderUpdateInfo RD_OGL32_Utility::HaveUpdateNow(int a_maxRaysPerPixel)
@@ -787,11 +881,6 @@ void RD_OGL32_Utility::GetFrameBufferLDR(int32_t w, int32_t h, int32_t *a_out)
   glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)a_out);
 }
 
-
-IHRRenderDriver* CreateOpenGL3_Utilty_RenderDriver()
-{
-  return new RD_OGL32_Utility;
-}
 
 #ifndef WIN32
 GLFWwindow * InitGLForUtilityDriver()

@@ -271,18 +271,20 @@ void HR_LoadVSGFCompressedBothHeaders(std::ifstream& fin,
 
 struct MeshVSGFProxy : public MeshVSGF
 {
-  MeshVSGFProxy(){}
+  MeshVSGFProxy() : m_loaded(false) {}
   MeshVSGFProxy(const wchar_t* a_vsgfPath)
   {
-    ReadVSGFHeader(a_vsgfPath);
+    m_loaded = ReadVSGFHeader(a_vsgfPath);
   }
   
   std::string MaterialNamesList() override { return matNames; }
   std::string matNames;
 
+  bool m_loaded;
+  
 protected:
 
-  void ReadVSGFHeader(const wchar_t* a_fileName)
+  bool ReadVSGFHeader(const wchar_t* a_fileName)
   {
     std::ifstream fin;
     hr_ifstream_open(fin, a_fileName);
@@ -290,7 +292,7 @@ protected:
     if(!fin.is_open())
     {
       HrPrint(HR_SEVERITY_ERROR, L"MeshVSGFProxy::ReadVSGFHeader, can't open file: ", a_fileName);
-      throw std::runtime_error("MeshVSGFProxy::ReadVSGFHeader, can't open file");
+      return false;
     }
     
     std::wstring fileName(a_fileName);
@@ -348,6 +350,8 @@ protected:
 
     m_hasNormalsOnLoad = ((header.flags & HydraGeomData::HAS_NO_NORMALS) == 0);
     m_hasTangentOnLoad = ((header.flags & HydraGeomData::HAS_TANGENT)    != 0);
+    
+    return true;
   }
 
   const void* GetData() const override  // yes, don;t try to get data of MeshVSGFProxy. Find another option.
@@ -398,20 +402,20 @@ std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndi
   size_t last    = matIndices.size() - 1;
   size_t preLast = matIndices.size() - 2;
 
-  if (matIndices.size() == 1 && matDrawList.size() == 0)
+  if(matIndices.size() == 1 && matDrawList.size() == 0)
   {
-    HRBatchInfo elem = { 0,0,0 };
-    elem.matId       = matIndices[0];
-    elem.triBegin    = 0;
-    elem.triEnd      = 1;
+    HRBatchInfo elem = {0,0,0};
+    elem.matId    = matIndices[0];
+    elem.triBegin = 0;
+    elem.triEnd   = 1;
     matDrawList.push_back(elem);
   }
   else if (matIndices.size() > 1 && matIndices[last] != matIndices[preLast])
   {
-    HRBatchInfo elem = { 0,0,0 };
-    elem.matId       = matIndices[last];
-    elem.triBegin    = last;
-    elem.triEnd      = matIndices.size();
+    HRBatchInfo elem = {0,0,0};
+    elem.matId    = matIndices[last];
+    elem.triBegin = last;
+    elem.triEnd   = matIndices.size();
     matDrawList.push_back(elem);
   }
   ////////////////////////////////////////////////////////////////////////////////// fix for last tringle
@@ -649,6 +653,8 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromFile(HRMesh* pSysObj,
 
 std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFProxy(const wchar_t* a_fileName)
 {
-  std::shared_ptr<MeshVSGFProxy> pImpl = std::make_shared<MeshVSGFProxy>(a_fileName); // #TODO: check if file don't exists and return nullptr if it doesnt
+  std::shared_ptr<MeshVSGFProxy> pImpl = std::make_shared<MeshVSGFProxy>(a_fileName);
+  if(!pImpl->m_loaded)
+    return nullptr;
   return pImpl;
 }
