@@ -1799,19 +1799,9 @@ void setTSpaceBasic(const SMikkTSpaceContext *context,
   auto *pInput = static_cast <HRMesh::InputTriMesh*> (context->m_pUserData);
   auto index   = pInput->triIndices.at(primnum * 3 + vtxnum);
 
-//  if(sign < 0.0f)
-//  {
-//    pMesh->m_input.verticesTangent[index * 4 + 0] = -1.0f * tangentu[0];
-//    pMesh->m_input.verticesTangent[index * 4 + 1] = -1.0f * tangentu[1];
-//    pMesh->m_input.verticesTangent[index * 4 + 2] = -1.0f * tangentu[2];
-//  }
-//  else
-  {
-    pInput->verticesTangent.at(index * 4 + 0) = tangentu[0];
-    pInput->verticesTangent.at(index * 4 + 1) = tangentu[1];
-    pInput->verticesTangent.at(index * 4 + 2) = tangentu[2];
-  }
-
+  pInput->verticesTangent.at(index * 4 + 0) = tangentu[0];
+  pInput->verticesTangent.at(index * 4 + 1) = tangentu[1];
+  pInput->verticesTangent.at(index * 4 + 2) = tangentu[2];
   pInput->verticesTangent.at(index * 4 + 3) = sign;
 }
 
