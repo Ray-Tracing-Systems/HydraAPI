@@ -1599,7 +1599,7 @@ HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, int indexNum)
   const int vertexCount      = int(pMesh->m_input.verticesPos.size()/4);
   mesh.verticesTangent.resize(vertexCount*4); // #TODO: not 0-th element, last vertex from prev append!
 
-  MikeyTSpaceCalc(&mesh, false);           // mikktspace implementation
+  MikeyTSpaceCalc(&mesh, false);     // mikktspace implementation
   //ComputeVertexTangents(mesh, indexNum); // simple algotithm
 }
 

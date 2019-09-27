@@ -210,10 +210,11 @@ HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMod
     if (a_libPath != nullptr && !std::wstring(a_libPath).empty())
     {
       std::wstring dataPath = std::wstring(a_libPath) + L"/data";
-
+     
     #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
       hr_cleardir(libPath.c_str());
-      hr_mkdir(dataPath.c_str());
+      std::string dataPath2 = ws2s(a_libPath) + "/data";
+      hr_mkdir(dataPath2.c_str());
     #elif defined WIN32
       hr_cleardir(a_libPath);
       hr_cleardir(dataPath.c_str());
