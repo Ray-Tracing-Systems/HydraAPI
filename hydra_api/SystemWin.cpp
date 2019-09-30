@@ -40,7 +40,7 @@ void hr_cleardir(const wchar_t* a_folder)
 }
 
 
-std::vector<std::wstring> hr_listfiles(const wchar_t* a_folder)
+std::vector<std::wstring> hr_listfiles(const wchar_t* a_folder, bool excludeFolders = true)
 {
 	std::vector<std::wstring> result;
 	std::wstring tempFolder = std::wstring(a_folder) + L"/";

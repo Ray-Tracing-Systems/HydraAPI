@@ -247,11 +247,8 @@ HRRenderRef _hrRenderSettingsFromNode(pugi::xml_node a_node)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
-  std::vector<std::string> hr_listfiles(const std::string &a_folder);
-#elif defined WIN32
-  std::vector<std::wstring> hr_listfiles(const wchar_t* a_folder);
-#endif
+
+std::vector<std::string> hr_listfiles(const char* a_folder, bool excludeFolders = true);
 
 std::string ws2s(const std::wstring& s);
 std::wstring s2ws(const std::string& s);
@@ -270,7 +267,7 @@ void _hrFindTargetOrLastState(const wchar_t* a_libPath, int32_t a_stateId,
     std::wstring s1(a_libPath);
     std::string libPath = ws2s(s1);
     
-    auto fileList = hr_listfiles(libPath);
+    auto fileList = hr_listfiles(libPath.c_str());
     
     std::sort(fileList.begin(), fileList.end());
     
