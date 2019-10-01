@@ -51,9 +51,49 @@ int hr_cleardir(const char* a_folder)
 }
 
 
-std::vector<std::string> hr_listfiles(const std::string &a_folder)
+std::vector<std::string> hr_listfiles(const char* a_folder, bool excludeFolders = true)
 {
   std::vector<std::string> result;
+  class dirent *ent = nullptr;
+  class stat st;
+  
+  DIR* dir = opendir(a_folder);
+  if(dir == nullptr)
+  {
+    // std::cout << "[debug]: hr_listfiles, can't open DIR " << a_folder.c_str() << std::endl;
+    // std::cout << "[debug]: errno = " << strerror(errno) << std::endl;
+    return result;
+  }
+  
+  while ((ent = readdir(dir)) != nullptr)
+  {
+    const std::string file_name      = ent->d_name;
+    const std::string full_file_name = std::string(a_folder) + "/" + file_name;
+    
+    if (file_name[0] == '.')
+      continue;
+
+    if (stat(full_file_name.c_str(), &st) == -1)
+      continue;
+    
+    const bool is_directory = (st.st_mode & S_IFDIR) != 0 && excludeFolders;
+    
+    if (is_directory)
+      continue;
+    
+    result.push_back(full_file_name);
+  }
+  closedir(dir);
+
+  return result;
+}
+
+std::vector<std::wstring> hr_listfiles(const wchar_t* a_folder2, bool excludeFolders = true)
+{
+  
+  const std::string a_folder = ws2s(a_folder2);
+  
+  std::vector<std::wstring> result;
   class dirent *ent = nullptr;
   class stat st;
   
@@ -72,21 +112,22 @@ std::vector<std::string> hr_listfiles(const std::string &a_folder)
     
     if (file_name[0] == '.')
       continue;
-
+    
     if (stat(full_file_name.c_str(), &st) == -1)
       continue;
     
-    const bool is_directory = (st.st_mode & S_IFDIR) != 0;
+    const bool is_directory = (st.st_mode & S_IFDIR) != 0 && excludeFolders;
     
     if (is_directory)
       continue;
     
-    result.push_back(full_file_name);
+    result.push_back(s2ws(full_file_name));
   }
   closedir(dir);
-
+  
   return result;
 }
+
 
 void hr_copy_file(const wchar_t* a_file1, const wchar_t* a_file2)
 {
