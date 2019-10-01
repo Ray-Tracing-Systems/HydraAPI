@@ -91,6 +91,15 @@ void hr_copy_file(const wchar_t* a_file1, const wchar_t* a_file2)
   CopyFileW(a_file1, a_file2, FALSE);
 }
 
+void hr_deletefile(const wchar_t* a_file)
+{
+  DeleteFileW(a_file);
+}
+
+void hr_deletefile(const char* a_file)
+{
+  DeleteFileA(a_file);
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
