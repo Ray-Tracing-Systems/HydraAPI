@@ -63,6 +63,29 @@ std::vector<std::wstring> hr_listfiles(const wchar_t* a_folder)
 	return result;
 }
 
+std::vector<std::string> hr_listfiles(const char* a_folder)
+{
+  std::vector<std::string> result;
+  std::string tempFolder = std::string(a_folder) + "/";
+  std::string tempName   = tempFolder + "*";
+
+  WIN32_FIND_DATAA fd;
+  HANDLE hFind = ::FindFirstFileA(tempName.c_str(), &fd);
+  if (hFind != INVALID_HANDLE_VALUE)
+  {
+    do
+    {
+      std::string tempName2 = tempFolder + fd.cFileName;
+      result.push_back(tempName2);
+
+    } while (::FindNextFileA(hFind, &fd));
+
+    ::FindClose(hFind);
+  }
+
+  return result;
+}
+
 void hr_copy_file(const wchar_t* a_file1, const wchar_t* a_file2)
 {
   CopyFileW(a_file1, a_file2, FALSE);
