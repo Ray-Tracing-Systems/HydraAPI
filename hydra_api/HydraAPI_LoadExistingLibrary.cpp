@@ -249,6 +249,7 @@ HRRenderRef _hrRenderSettingsFromNode(pugi::xml_node a_node)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 std::vector<std::string> hr_listfiles(const char* a_folder, bool excludeFolders = true);
+std::vector<std::wstring> hr_listfiles(const wchar_t* a_folder, bool excludeFolders = true);
 
 std::string ws2s(const std::wstring& s);
 std::wstring s2ws(const std::string& s);
