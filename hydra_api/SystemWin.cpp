@@ -63,7 +63,7 @@ std::vector<std::wstring> hr_listfiles(const wchar_t* a_folder, bool excludeFold
 	return result;
 }
 
-std::vector<std::string> hr_listfiles(const char* a_folder)
+std::vector<std::string> hr_listfiles(const char* a_folder, bool excludeFolders = true)
 {
   std::vector<std::string> result;
   std::string tempFolder = std::string(a_folder) + "/";
