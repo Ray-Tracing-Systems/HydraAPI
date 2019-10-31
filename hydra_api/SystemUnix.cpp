@@ -145,6 +145,16 @@ void hr_copy_file(const wchar_t* a_file1, const wchar_t* a_file2)
   std_fs::copy_file(a_file1, a_file2, std_fs::copy_options::overwrite_existing);
 }
 
+void hr_delete_file(const wchar_t* a_file)
+{
+  std_fs::remove(a_file);
+}
+
+void hr_delete_file(const char* a_file)
+{
+  std_fs::remove(a_file);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 struct HRSystemMutex
