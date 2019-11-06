@@ -1274,6 +1274,8 @@ HAPI HRRenderRef hrFindRenderByTypeName(const wchar_t *a_renderTypeName);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////// UTILITY FUNCTIONS ///////////////////////////////////////////////////////
+
 namespace hr_prng
 {
   struct uint2
@@ -1347,10 +1349,32 @@ namespace hr_qmc
   int rndIntUniform(unsigned int pos, int dim, unsigned int *c_Table, int a, int b);
 };
 
+
+namespace hr_fs
+{
+  std::wstring s2ws(const std::string& str);
+  std::string  ws2s(const std::wstring& wstr);
+  
+  int mkdir(const char* a_folder);
+  int mkdir(const wchar_t* a_folder);
+  
+  int cleardir(const char* a_folder);
+  int cleardir(const wchar_t* a_folder);
+  
+  void deletefile(const char* a_file);
+  void deletefile(const wchar_t* a_file);
+  
+  void copyfile(const char* a_file1,    const char* a_file2);
+  void copyfile(const wchar_t* a_file1, const wchar_t* a_file2);
+  
+  std::vector<std::string>  listfiles(const char* a_folder,    bool excludeFolders = true);
+  std::vector<std::wstring> listfiles(const wchar_t* a_folder, bool excludeFolders = true);
+  
+};
+
 /**
   \brief these parameters are not related to hr_qmc namespace, they are for 'HydraModern' presets
  */
 #define HYDRA_QMC_DOF_FLAG 1
 #define HYDRA_QMC_MTL_FLAG 2
 #define HYDRA_QMC_LGT_FLAG 4
-

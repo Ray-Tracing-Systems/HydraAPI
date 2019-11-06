@@ -30,6 +30,12 @@ int hr_mkdir(const char* a_folder)
   return mkdir(a_folder, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 }
 
+int hr_mkdir(const wchar_t * a_folder)
+{
+  const std::string data = ws2s(std::wstring(a_folder));
+  return mkdir(data.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+}
+
 int unlink_cb(const char *fpath, const struct stat *sb, int typeflag, struct FTW *ftwbuf)
 {
   int rv;
@@ -45,9 +51,17 @@ int unlink_cb(const char *fpath, const struct stat *sb, int typeflag, struct FTW
   return rv;
 }
 
+
+
 int hr_cleardir(const char* a_folder)
 {
   return nftw(a_folder, unlink_cb, 64, FTW_DEPTH | FTW_PHYS);
+}
+
+int  hr_cleardir(const wchar_t* a_folder)
+{
+  const std::string data = ws2s(std::wstring(a_folder));
+  return hr_cleardir(data.c_str());
 }
 
 void hr_deletefile(const wchar_t* a_file)
@@ -62,7 +76,7 @@ void hr_deletefile(const char* a_file)
 }
 
 
-std::vector<std::string> hr_listfiles(const char* a_folder, bool excludeFolders = true)
+std::vector<std::string> hr_listfiles(const char* a_folder, bool excludeFolders)
 {
   std::vector<std::string> result;
   class dirent *ent = nullptr;
@@ -99,7 +113,7 @@ std::vector<std::string> hr_listfiles(const char* a_folder, bool excludeFolders 
   return result;
 }
 
-std::vector<std::wstring> hr_listfiles(const wchar_t* a_folder2, bool excludeFolders = true)
+std::vector<std::wstring> hr_listfiles(const wchar_t* a_folder2, bool excludeFolders)
 {
   
   const std::string a_folder = ws2s(a_folder2);
@@ -140,19 +154,13 @@ std::vector<std::wstring> hr_listfiles(const wchar_t* a_folder2, bool excludeFol
 }
 
 
+void hr_copy_file(const char* a_file1, const char* a_file2)
+{
+  std_fs::copy_file(a_file1, a_file2, std_fs::copy_options::overwrite_existing);
+}
+
 void hr_copy_file(const wchar_t* a_file1, const wchar_t* a_file2)
 {
-/*  int source = open(a_file1, O_RDONLY, 0);
-  int dest = open(a_file2, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-
-  struct stat stat_source;
-  fstat(source, &stat_source);
-
-  sendfile(dest, source, 0, stat_source.st_size);
-
-  close(source);
-  close(dest);*/
-
   std_fs::copy_file(a_file1, a_file2, std_fs::copy_options::overwrite_existing);
 }
 
