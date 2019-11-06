@@ -1138,6 +1138,9 @@ void RD_HydraConnection::GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_
   float* data0 = nullptr;
   float* data1 = nullptr;
   float* data2 = nullptr;
+  if (m_pSharedImage == nullptr)
+    return;
+  
   data0 = m_pSharedImage->ImageData(0);
   if (m_pSharedImage->Header()->depth == 4) // some other process already have computed gbuffer
   {

@@ -63,7 +63,7 @@ std::vector<std::wstring> hr_listfiles(const wchar_t* a_folder, bool excludeFold
 	return result;
 }
 
-std::vector<std::string> hr_listfiles(const char* a_folder)
+std::vector<std::string> hr_listfiles(const char* a_folder, bool excludeFolders = true)
 {
   std::vector<std::string> result;
   std::string tempFolder = std::string(a_folder) + "/";
@@ -91,12 +91,12 @@ void hr_copy_file(const wchar_t* a_file1, const wchar_t* a_file2)
   CopyFileW(a_file1, a_file2, FALSE);
 }
 
-void hr_deletefile(const wchar_t* a_file)
+void hr_delete_file(const wchar_t* a_file)
 {
   DeleteFileW(a_file);
 }
 
-void hr_deletefile(const char* a_file)
+void hr_delete_file(const char* a_file)
 {
   DeleteFileA(a_file);
 }
