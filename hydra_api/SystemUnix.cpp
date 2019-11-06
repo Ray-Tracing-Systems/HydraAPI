@@ -50,6 +50,17 @@ int hr_cleardir(const char* a_folder)
   return nftw(a_folder, unlink_cb, 64, FTW_DEPTH | FTW_PHYS);
 }
 
+void hr_deletefile(const wchar_t* a_file)
+{
+  const std::string file = ws2s(a_file);
+  remove(file.c_str());
+}
+
+void hr_deletefile(const char* a_file)
+{
+  remove(a_file);
+}
+
 
 std::vector<std::string> hr_listfiles(const char* a_folder, bool excludeFolders = true)
 {
