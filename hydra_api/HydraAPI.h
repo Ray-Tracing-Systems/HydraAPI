@@ -484,7 +484,7 @@ HAPI void              hrTextureNodeClose(HRTextureNodeRef a_pResource);
 \return resulting texture node
 
 */
-HAPI pugi::xml_node hrTextureBind(HRTextureNodeRef a_pTexNode, pugi::xml_node a_node);
+HAPI pugi::xml_node hrTextureBind(HRTextureNodeRef a_pTexNode, pugi::xml_node a_node, const wchar_t* nameChild = L"texture");
 
 
 /**
