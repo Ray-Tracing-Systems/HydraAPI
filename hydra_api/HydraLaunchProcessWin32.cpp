@@ -252,5 +252,25 @@ PluginShmemPipe::~PluginShmemPipe()
 
 bool PluginShmemPipe::hasConnection() const
 {
-  return true;
+  if (m_mdProcessList.size() == 0)
+    return true;
+
+  bool allProcessesAreBroken = true;
+
+  for (auto i = 0; i < m_mdProcessList.size(); i++)
+  {
+    if (m_mdProcessList[i].hProcess == 0 || m_mdProcessList[i].hProcess == INVALID_HANDLE_VALUE)
+      continue;
+    
+	DWORD exitCode;
+    GetExitCodeProcess(m_mdProcessList[i].hProcess, &exitCode);
+
+	if (exitCode == STILL_ACTIVE)
+	{
+      allProcessesAreBroken = false;
+	  break;
+	}
+  }
+
+  return !allProcessesAreBroken;
 }

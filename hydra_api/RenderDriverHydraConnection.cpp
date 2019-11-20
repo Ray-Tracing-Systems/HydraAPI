@@ -898,6 +898,14 @@ HRRenderUpdateInfo RD_HydraConnection::HaveUpdateNow(int a_maxRaysPerPixel)
     this->ExecuteCommand(L"exitnow", nullptr);
   }
 
+  // check if processes are still running
+  //
+  if (m_pConnection != nullptr && !m_pConnection->hasConnection())
+  { 
+    result.finalUpdate = true;
+	this->ExecuteCommand(L"exitnow", nullptr);
+  }  
+
   return result;
 }
 
