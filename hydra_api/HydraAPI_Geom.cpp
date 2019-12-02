@@ -218,14 +218,12 @@ inline bool f3filled(const float float3_array[3])
 
 inline bool f1filled(const float float1)
 {
-  if(float1 > 0)
-    return true;
+  return (float1 > 0);
 }
 
 inline bool s1filled(const std::string str)
 {
-  if(str.compare(""))
-    return true;
+  return str.compare("");
 }
 
 HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, HRModelLoadInfo a_modelInfo)
