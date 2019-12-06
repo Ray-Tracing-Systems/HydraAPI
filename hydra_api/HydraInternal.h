@@ -47,7 +47,7 @@ struct IHRObject
   virtual uint64_t    chunkId() const { return uint64_t(-1); }
   virtual size_t      DataSizeInBytes() const { return 0; }                        ///< The size of the second part (big data in virtual buffer) in bytes.
   virtual const void* GetData() const { return nullptr; }
-  virtual bool        ReadDataFromChunkTo(std::vector<int>& a_dataConteiner) { return false; }
+  virtual bool        ReadDataFromChunkTo(std::vector<int>& a_dataContainer) { return false; }
 
 protected:
 
@@ -56,7 +56,6 @@ protected:
 };
 
 using namespace HRUtils;
-
 BBox transformBBox(const BBox &a_bbox, const HydraLiteMath::float4x4 &m);
 BBox mergeBBoxes(const BBox &A, const BBox &B);
 BBox createBBoxFromFloat4V(const std::vector<HydraLiteMath::float4> &a_verts);
@@ -66,7 +65,8 @@ std::vector< HydraLiteMath::float4> getVerticesFromBBox(const BBox &a_bbox);
 std::wstring HR_PreprocessMeshes(const wchar_t *state_path);
 void hrMeshComputeNormals(HRMeshRef a_mesh, int indexNum, bool useFaceNormals = false);
 void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum);
-void runTSpaceCalc(HRMeshRef mesh_ref, bool basic);
+
+void registerBuiltInRenderDrivers();
 
 
 struct IHRMesh : public IHRObject ///< Not empty Data (reimplement DataSerialize/DataDeserialize)
@@ -82,6 +82,11 @@ struct IHRMesh : public IHRObject ///< Not empty Data (reimplement DataSerialize
   virtual BBox getBBox() const { return BBox();}
 
   virtual const std::vector<HRBatchInfo>& MList() const = 0;
+  virtual       std::vector<HRBatchInfo>& MList()       = 0;
+  
+  virtual size_t EstimatedDataSizeInBytes() const { return DataSizeInBytes(); }
+  virtual std::string MaterialNamesList() = 0;
+
   virtual const std::unordered_map<std::wstring, std::tuple<std::wstring, size_t, size_t, int> >& GetOffsAndSizeForAttrs() const = 0;
 };
 
@@ -153,8 +158,10 @@ struct IHydraFactory
   virtual std::shared_ptr<IHRTextureNode> CreateTexture2DFromMemory(HRTextureNode* pSysObj, int w, int h, int bpp, const void* a_data)                  = 0;
   virtual std::shared_ptr<IHRTextureNode> CreateTextureInfoFromChunkFile(HRTextureNode* pSysObj, const wchar_t* a_chunkFileName, pugi::xml_node a_node) = 0;
 
-  virtual std::shared_ptr<IHRMesh>        CreateVSGFFromSimpleInputMesh(HRMesh* pSysObj)                                               = 0;
-  virtual std::shared_ptr<IHRMesh>        CreateVSGFFromFile(HRMesh* pSysObj, const std::wstring& a_fileName, pugi::xml_node a_node)   = 0;
+  virtual std::shared_ptr<IHRMesh>        CreateVSGFFromSimpleInputMesh(HRMesh* pSysObj, bool a_saveCompressed)                                               = 0;
+  virtual std::shared_ptr<IHRMesh>        CreateVSGFFromFile           (HRMesh* pSysObj, const std::wstring& a_fileName, pugi::xml_node a_node)   = 0;
+
+  virtual std::shared_ptr<IHRMesh>        CreateVSGFProxy(const wchar_t* a_fileName) = 0;
 };
 
 int32_t ChunkIdFromFileName(const wchar_t* a_chunkFileName);
@@ -216,8 +223,8 @@ struct VirtualBuffer;
 */
 struct ChunkPointer
 {
-  ChunkPointer()                              : localAddress(-1), sizeInBytes(0), id(0), inUse(true), wasSaved(false), pVB(nullptr), useCounter(0), type(CHUNK_TYPE_UNKNOWN) {}
-  explicit ChunkPointer(VirtualBuffer* a_pVB) : localAddress(-1), sizeInBytes(0), id(0), inUse(true), wasSaved(false), pVB(a_pVB), useCounter(0), type(CHUNK_TYPE_UNKNOWN) {}
+  ChunkPointer()                              : localAddress(-1), sizeInBytes(0), id(0), inUse(true), wasSaved(false), pVB(nullptr), useCounter(0), sysObjectId(-1), type(CHUNK_TYPE_UNKNOWN), saveCompressed(false) {}
+  explicit ChunkPointer(VirtualBuffer* a_pVB) : localAddress(-1), sizeInBytes(0), id(0), inUse(true), wasSaved(false), pVB(a_pVB), useCounter(0), sysObjectId(-1), type(CHUNK_TYPE_UNKNOWN), saveCompressed(false) {}
 
   void* GetMemoryNow();
   const void* GetMemoryNow() const;
@@ -230,10 +237,12 @@ struct ChunkPointer
   uint64_t sizeInBytes;
   uint64_t id;
   uint32_t useCounter;
+  uint32_t sysObjectId;
   
   CHUNK_TYPE type;
   bool       inUse;
   bool       wasSaved;
+  bool       saveCompressed;
 
 protected:
 
@@ -334,32 +343,40 @@ std::wstring ChunkName(const ChunkPointer& a_chunk);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
   int  hr_mkdir(const char* a_folder);
+  int  hr_mkdir(const wchar_t * a_folder);
+
   int  hr_cleardir(const char* a_folder);
-#elif defined WIN32
-  int  hr_mkdir(const wchar_t* a_folder);
-  void hr_cleardir(const wchar_t* a_folder);
-#endif
-  
+  int  hr_cleardir(const wchar_t* a_folder);
+
+  void hr_deletefile(const wchar_t* a_file);
+  void hr_deletefile(const char* a_file);
+
+  void hr_copy_file(const char* a_file1, const char* a_file2);
   void hr_copy_file(const wchar_t* a_file1, const wchar_t* a_file2); //#TODO: implement this on Linux!!!
+  
+  void hr_ifstream_open(std::ifstream& a_stream, const wchar_t* a_fileName);
+  void hr_ofstream_open(std::ofstream& a_stream, const wchar_t* a_fileName);
 
-
-struct HRSystemMutex;
-HRSystemMutex* hr_create_system_mutex(const char* a_mutexName);
-void hr_free_system_mutex(HRSystemMutex*& a_mutex);
-bool hr_lock_system_mutex(HRSystemMutex* a_mutex, int a_msToWait = 1000);
-void hr_unlock_system_mutex(HRSystemMutex* a_mutex);
+  std::vector<std::string>  hr_listfiles(const char* a_folder, bool excludeFolders = true);
+  std::vector<std::wstring> hr_listfiles(const wchar_t* a_folder2, bool excludeFolders = true);
+  
+  struct HRSystemMutex;
+  HRSystemMutex* hr_create_system_mutex(const char* a_mutexName);
+  void hr_free_system_mutex(HRSystemMutex*& a_mutex);
+  bool hr_lock_system_mutex(HRSystemMutex* a_mutex, int a_msToWait = 1000);
+  void hr_unlock_system_mutex(HRSystemMutex* a_mutex);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-std::unique_ptr<IHRRenderDriver> CreateRenderFromString(const wchar_t *a_className, const wchar_t *a_options);
+//std::unique_ptr<IHRRenderDriver> CreateRenderFromString(const wchar_t *a_className, const wchar_t *a_options);
 
 struct HRSceneInst;
-void HR_DriverUpdate(HRSceneInst& scn, IHRRenderDriver* a_pDriver);
-void HR_DriverDraw(HRSceneInst& scn, IHRRenderDriver* a_pDriver);
+struct HRRender;
+void HR_DriverUpdate(HRSceneInst& scn, HRRender* a_pRender);
+void HR_DriverDraw(HRSceneInst& scn, HRRender* a_pRender);
 
-std::wstring HR_UtilityDriverStart(const wchar_t* state_path);
+std::wstring HR_UtilityDriverStart(const wchar_t* state_path, HRRender* a_pOriginalRender);
 std::wstring SaveFixedStateXML(pugi::xml_document &doc, const std::wstring &oldPath, const std::wstring &suffix);
 
 HRMeshDriverInput HR_GetMeshDataPointers(size_t a_meshId);
@@ -429,8 +446,9 @@ struct HydraFactoryCommon : public IHydraFactory
   std::shared_ptr<IHRTextureNode> CreateTexture2DFromMemory(HRTextureNode* pSysObj, int w, int h, int bpp, const void* a_data) override;
   std::shared_ptr<IHRTextureNode> CreateTextureInfoFromChunkFile(HRTextureNode* pSysObj, const wchar_t* a_chunkFileName, pugi::xml_node a_node) override;
 
-  std::shared_ptr<IHRMesh>        CreateVSGFFromSimpleInputMesh(HRMesh* pSysObj) override;
+  std::shared_ptr<IHRMesh>        CreateVSGFFromSimpleInputMesh(HRMesh* pSysObj, bool a_saveCompressed) override;
   std::shared_ptr<IHRMesh>        CreateVSGFFromFile(HRMesh* pSysObj, const std::wstring& a_fileName, pugi::xml_node) override;
+  std::shared_ptr<IHRMesh>        CreateVSGFProxy   (const wchar_t* a_fileName) override;
 };
 
 

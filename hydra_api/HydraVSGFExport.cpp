@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <cassert>
 
 HydraGeomData::HydraGeomData()
 {
@@ -15,16 +16,13 @@ HydraGeomData::HydraGeomData()
 
   m_triVertIndices     = nullptr;
   m_triMaterialIndices = nullptr;
-  m_materialNames      = nullptr;
 
-  m_matNamesTotalStringSize = 0;
-  fileSizeInBytes = 0;
-  verticesNum     = 0;
-  indicesNum      = 0;
-  materialsNum    = 0;
-  flags           = 0;
+  m_header.fileSizeInBytes  = 0;
+  m_header.verticesNum      = 0;
+  m_header.indicesNum       = 0;
+  m_header.materialsNum     = 0;
+  m_header.flags            = 0;
 }
-
 
 HydraGeomData::~HydraGeomData()
 {
@@ -34,27 +32,28 @@ HydraGeomData::~HydraGeomData()
 void HydraGeomData::freeMemIfNeeded()
 {
   if(m_ownMemory)
-    free(m_data);
+    delete [] m_data;
+  m_data = nullptr;
 }
 
-uint32_t HydraGeomData::getVerticesNumber() const { return verticesNum; }
+uint32_t     HydraGeomData::getVerticesNumber()             const { return m_header.verticesNum; }
 const float* HydraGeomData::getVertexPositionsFloat4Array() const { return (const float*)m_positions; }
 const float* HydraGeomData::getVertexNormalsFloat4Array()   const { return (const float*)m_normals;   }
 const float* HydraGeomData::getVertexTangentsFloat4Array()  const { return (const float*)m_tangents;  }
 const float* HydraGeomData::getVertexTexcoordFloat2Array()  const { return (const float*)m_texcoords; }
 
-uint32_t HydraGeomData::getIndicesNumber() const { return indicesNum; }
+uint32_t HydraGeomData::getIndicesNumber()                        const { return m_header.indicesNum; }
 const uint32_t* HydraGeomData::getTriangleVertexIndicesArray()    const { return m_triVertIndices; }
 const uint32_t* HydraGeomData::getTriangleMaterialIndicesArray()  const { return m_triMaterialIndices; }
 
-const float* HydraGeomData::getVertexLightmapTexcoordFloat2Array()  const { return nullptr; }
-const float* HydraGeomData::getVertexSphericalHarmonicCoeffs()  const {return nullptr; }
 
 void HydraGeomData::setData(uint32_t a_vertNum, const float* a_pos, const float* a_norm, const float* a_tangent, const float* a_texCoord,
                             uint32_t a_indicesNum, const uint32_t* a_triVertIndices, const uint32_t* a_triMatIndices)
 {
-  verticesNum = a_vertNum;
-  indicesNum  = a_indicesNum;
+  m_header.verticesNum     = a_vertNum;
+  m_header.indicesNum      = a_indicesNum;
+  m_header.fileSizeInBytes = sizeInBytes();
+  m_header.flags           = (a_tangent != nullptr) ? HAS_TANGENT : 0;
 
   m_positions = a_pos;
   m_normals   = a_norm;
@@ -62,14 +61,14 @@ void HydraGeomData::setData(uint32_t a_vertNum, const float* a_pos, const float*
 
   m_texcoords = a_texCoord;
 
-  m_triVertIndices = a_triVertIndices;
+  m_triVertIndices     = a_triVertIndices;
   m_triMaterialIndices = a_triMatIndices;
 }
 
 size_t HydraGeomData::sizeInBytes()
 {
-  const size_t szInBytes = size_t(sizeof(float))*(verticesNum*4*3  + verticesNum*2) +
-                           size_t(sizeof(int))*(indicesNum + indicesNum/3);
+  const size_t szInBytes = size_t(sizeof(float))*(m_header.verticesNum*4*3  + m_header.verticesNum*2) +
+                           size_t(sizeof(int))*(m_header.indicesNum + m_header.indicesNum/3);
 
   return szInBytes + size_t(sizeof(Header));
 }
@@ -77,89 +76,85 @@ size_t HydraGeomData::sizeInBytes()
 void HydraGeomData::write(std::ostream& a_out)
 {
   if(m_tangents != nullptr)
-    flags |= HAS_TANGENT;
+    m_header.flags |= HAS_TANGENT;
 
-  fileSizeInBytes = verticesNum*( sizeof(float)*4*2 + sizeof(float)*2 );
-  if(flags & HAS_TANGENT)
-    fileSizeInBytes += verticesNum*sizeof(float)*4;
-
-  fileSizeInBytes += (indicesNum / 3) * 4 * sizeof(uint32_t); // 3*num_triangles + num_triangles = 4*num_triangles
-  materialsNum = 0;
+  if(m_normals == nullptr)
+    m_header.flags |= HAS_NO_NORMALS;
+  
+  m_header.fileSizeInBytes = m_header.verticesNum*( sizeof(float)*4 + sizeof(float)*2 );
+  if(!(m_header.flags & HAS_NO_NORMALS))
+    m_header.fileSizeInBytes += m_header.verticesNum*sizeof(float)*4;
+  if(m_header.flags & HAS_TANGENT)
+    m_header.fileSizeInBytes += m_header.verticesNum*sizeof(float)*4;
+  
+  m_header.fileSizeInBytes += (m_header.indicesNum / 3) * 4 * sizeof(uint32_t); // 3*num_triangles + num_triangles = 4*num_triangles
+  m_header.materialsNum = 0;
 
   // write data
   //
-  a_out.write((const char*)&fileSizeInBytes, sizeof(uint64_t));
-  a_out.write((const char*)&verticesNum, sizeof(uint32_t));
-  a_out.write((const char*)&indicesNum, sizeof(uint32_t));
-  a_out.write((const char*)&materialsNum, sizeof(uint32_t));
-  a_out.write((const char*)&flags, sizeof(uint32_t));
+  a_out.write((const char*)&m_header.fileSizeInBytes, sizeof(uint64_t));
+  a_out.write((const char*)&m_header.verticesNum,     sizeof(uint32_t));
+  a_out.write((const char*)&m_header.indicesNum,      sizeof(uint32_t));
+  a_out.write((const char*)&m_header.materialsNum,    sizeof(uint32_t));
+  a_out.write((const char*)&m_header.flags,           sizeof(uint32_t));
 
-  a_out.write((const char*)m_positions, sizeof(float)*4*verticesNum);
-  a_out.write((const char*)m_normals, sizeof(float)*4*verticesNum);
+  a_out.write((const char*)m_positions, sizeof(float)*4*m_header.verticesNum);
 
-  if(flags & HAS_TANGENT)
-    a_out.write((const char*)m_tangents, sizeof(float)*4*verticesNum);
+  if(!(m_header.flags & HAS_NO_NORMALS))
+    a_out.write((const char*)m_normals, sizeof(float)*4*m_header.verticesNum);
 
-  a_out.write((const char*)m_texcoords, sizeof(float)*2*verticesNum);
+  if(m_header.flags & HAS_TANGENT)
+    a_out.write((const char*)m_tangents, sizeof(float)*4*m_header.verticesNum);
 
-  a_out.write((const char*)m_triVertIndices, sizeof(uint32_t)*indicesNum);
-  a_out.write((const char*)m_triMaterialIndices, sizeof(uint32_t)*(indicesNum / 3));
+  a_out.write((const char*)m_texcoords,  sizeof(float)*2*m_header.verticesNum);
 
-  //a_out.write(strData.c_str(), strData.size());
-
+  a_out.write((const char*)m_triVertIndices,     sizeof(uint32_t)*m_header.indicesNum);
+  a_out.write((const char*)m_triMaterialIndices, sizeof(uint32_t)*(m_header.indicesNum / 3));
 }
-
-// void mymemcpy(void* a_dst, void* a_src, int a_size)
-// {
-//   char* dst = (char*)a_dst;
-//   char* src = (char*)a_src;
-// 
-//   for (int i = 0; i < a_size; i++)
-//     dst[i] = src[i];
-// }
 
 void HydraGeomData::writeToMemory(char* a_dataToWrite)
 {
+  if (m_normals == nullptr)
+    m_header.flags |= HAS_NO_NORMALS;
 
   if (m_tangents != nullptr)
-    flags |= HAS_TANGENT;
+    m_header.flags |= HAS_TANGENT;
+  
+  m_header.fileSizeInBytes = m_header.verticesNum*(sizeof(float) * 4 + sizeof(float) * 2);
 
-  fileSizeInBytes = verticesNum*(sizeof(float) * 4 * 2 + sizeof(float) * 2);
-  if (flags & HAS_TANGENT)
-    fileSizeInBytes += verticesNum*sizeof(float) * 4;
+  if (!(m_header.flags & HAS_NO_NORMALS))
+    m_header.fileSizeInBytes += m_header.verticesNum*sizeof(float) * 4;
 
-  fileSizeInBytes += (indicesNum / 3) * 4 * sizeof(uint32_t); // 3*num_triangles + num_triangles = 4*num_triangles
-  fileSizeInBytes += sizeof(Header);
-  materialsNum = 0;
+  if (m_header.flags & HAS_TANGENT)
+    m_header.fileSizeInBytes += m_header.verticesNum*sizeof(float) * 4;
+  
+  m_header.fileSizeInBytes += (m_header.indicesNum / 3) * 4 * sizeof(uint32_t); // 3*num_triangles + num_triangles = 4*num_triangles
+  m_header.fileSizeInBytes += sizeof(Header);
+  m_header.materialsNum = 0;
 
   // write data
   //
-  char* ptr = a_dataToWrite;
+  char* ptr     = a_dataToWrite;
+  Header header = m_header;
 
-  Header header;
+  memcpy(ptr, &header,     sizeof(Header));                       ptr += sizeof(Header);
+  memcpy(ptr, m_positions, sizeof(float)*4*m_header.verticesNum); ptr += sizeof(float) * 4 * m_header.verticesNum;
 
-  header.fileSizeInBytes = fileSizeInBytes;
-  header.verticesNum     = verticesNum;
-  header.indicesNum      = indicesNum;
-  header.materialsNum    = materialsNum;
-  header.flags           = flags;
-
-  memcpy(ptr, &header,     sizeof(Header));              ptr += sizeof(Header);
-  memcpy(ptr, m_positions, sizeof(float)*4*verticesNum); ptr += sizeof(float) * 4 * verticesNum;
-  memcpy(ptr, m_normals,   sizeof(float)*4*verticesNum); ptr += sizeof(float) * 4 * verticesNum;
-
-  if (flags & HAS_TANGENT)
+  if(!(m_header.flags & HAS_NO_NORMALS))
   {
-    memcpy(ptr, m_tangents, sizeof(float) * 4 * verticesNum);
-    ptr += sizeof(float) * 4 * verticesNum;
+    memcpy(ptr, m_normals, sizeof(float) * 4 * m_header.verticesNum);
+    ptr += sizeof(float) * 4 * m_header.verticesNum;
   }
 
-  memcpy(ptr, m_texcoords, sizeof(float) * 2 * verticesNum); ptr += sizeof(float) * 2 * verticesNum;
+  if (m_header.flags & HAS_TANGENT)
+  {
+    memcpy(ptr, m_tangents, sizeof(float) * 4 * m_header.verticesNum);
+    ptr += sizeof(float) * 4 * m_header.verticesNum;
+  }
 
-  const int mindNum = (indicesNum / 3);
-
-  memcpy(ptr, m_triVertIndices, sizeof(uint32_t)*indicesNum);   ptr += sizeof(uint32_t)*indicesNum;
-  memcpy(ptr, m_triMaterialIndices, sizeof(uint32_t)*mindNum);  ptr += sizeof(uint32_t)*mindNum;
+  memcpy(ptr, m_texcoords,          sizeof(float)*2* m_header.verticesNum);      ptr += sizeof(float) * 2 * m_header.verticesNum;
+  memcpy(ptr, m_triVertIndices,     sizeof(uint32_t)*m_header.indicesNum);       ptr += sizeof(uint32_t)*m_header.indicesNum;
+  memcpy(ptr, m_triMaterialIndices, sizeof(uint32_t)*(m_header.indicesNum / 3)); ptr += sizeof(uint32_t)*(m_header.indicesNum / 3);
 }
 
 
@@ -171,7 +166,6 @@ void HydraGeomData::write(const std::string& a_fileName)
   fout.close();
 }
 
-
 inline const int readInt32(const unsigned char* ptr) // THIS IS CORRECT BOTH FOR X86 AND PPC !!!
 {
   const unsigned char b0 = ptr[0];
@@ -181,7 +175,6 @@ inline const int readInt32(const unsigned char* ptr) // THIS IS CORRECT BOTH FOR
 
   return (b3 << 24) | (b2 << 16) | (b1 << 8) | b0;
 }
-
 
 inline const uint64_t readInt64(const unsigned char* ptr) // THIS IS CORRECT BOTH FOR X86 AND PPC !!!
 {
@@ -205,9 +198,6 @@ void convertLittleBigEndian(unsigned int* a_buffer, int a_size)
     a_buffer[i] = readInt32(bbuffer + i*4);
 }
 
-
-// #include <iostream>
-
 void HydraGeomData::read(std::istream& a_input)
 {
   freeMemIfNeeded();
@@ -224,62 +214,56 @@ void HydraGeomData::read(std::istream& a_input)
   info.materialsNum    = readInt32(&temp1[16]);
   info.flags           = readInt32(&temp1[20]);
 
-  // std::cout << "HydraGeomData import:" << std::endl;
-  // std::cout << "info.fileSizeInBytes = " << info.fileSizeInBytes << std::endl;
-  // std::cout << "info.verticesNum     = " << info.verticesNum << std::endl;
-  // std::cout << "info.indicesNum      = " << info.indicesNum << std::endl;
-  // std::cout << "info.materialsNum    = " << info.materialsNum << std::endl;
-  // std::cout << "info.flags           = " << info.flags << std::endl;
-
-  fileSizeInBytes = info.fileSizeInBytes;
-  verticesNum     = info.verticesNum;
-  indicesNum      = info.indicesNum;
-  materialsNum    = info.materialsNum;
-  flags           = info.flags;
-
-  m_data = new char [info.fileSizeInBytes];
+  m_header = info;
+  m_data   = new char [info.fileSizeInBytes];
   a_input.read(m_data, info.fileSizeInBytes);
 
   // std::cout << "[HydraGeomData] data was read" << std::endl;
 
   char* ptr = m_data;
 
-  m_positions = (float*)ptr; ptr += sizeof(float)*4*verticesNum;
-  m_normals   = (float*)ptr; ptr += sizeof(float)*4*verticesNum;
+  m_positions = (float*)ptr; ptr += sizeof(float)*4*m_header.verticesNum;
 
-  if(flags & HAS_TANGENT)
+  if(!(m_header.flags & HAS_NO_NORMALS))
   {
-    m_tangents = (float*)ptr;
-    ptr += sizeof(float)*4*verticesNum;
+    m_normals = (float *) ptr;
+    ptr += sizeof(float) * 4 * m_header.verticesNum;
   }
 
-  m_texcoords   = (float*)ptr; ptr += sizeof(float)*2*verticesNum;
+  if(m_header.flags & HAS_TANGENT)
+  {
+    m_tangents = (float*)ptr;
+    ptr += sizeof(float)*4*m_header.verticesNum;
+  }
 
-  m_triVertIndices     = (uint32_t*)ptr; ptr += sizeof(uint32_t)*indicesNum;
-  m_triMaterialIndices = (uint32_t*)ptr; ptr += sizeof(uint32_t)*(indicesNum / 3);
+  m_texcoords   = (float*)ptr; ptr += sizeof(float)*2*m_header.verticesNum;
 
-  convertLittleBigEndian((unsigned int*)m_positions, verticesNum*4);
-  convertLittleBigEndian((unsigned int*)m_normals, verticesNum*4);
-  convertLittleBigEndian((unsigned int*)m_texcoords, verticesNum*2);
-  convertLittleBigEndian((unsigned int*)m_triVertIndices, indicesNum);
-  convertLittleBigEndian((unsigned int*)m_triMaterialIndices, (indicesNum/3));
+  m_triVertIndices     = (uint32_t*)ptr; ptr += sizeof(uint32_t)*m_header.indicesNum;
+  m_triMaterialIndices = (uint32_t*)ptr; ptr += sizeof(uint32_t)*(m_header.indicesNum / 3);
+  
+  // #NOTE: enable if use ppc
+  //convertLittleBigEndian((unsigned int*)m_positions, m_header.verticesNum*4);
+  //if (!(m_header.flags & HAS_NO_NORMALS))
+  //  convertLittleBigEndian((unsigned int*)m_normals, m_header.verticesNum*4);
+  //if (m_header.flags & HAS_TANGENT)
+  //  convertLittleBigEndian((unsigned int*)m_tangents, m_header.verticesNum*4);
+  //convertLittleBigEndian((unsigned int*)m_texcoords, m_header.verticesNum*2);
+  //convertLittleBigEndian((unsigned int*)m_triVertIndices, m_header.indicesNum);
+  //convertLittleBigEndian((unsigned int*)m_triMaterialIndices, (m_header.indicesNum/3));
 }
 
 void HydraGeomData::read(const std::string& a_fileName)
 {
   std::ifstream fin(a_fileName.c_str(), std::ios::binary);
-
   if (!fin.is_open())
     return;
 
   read(fin);
-
   fin.close();
 }
 
 void HydraGeomData::read(const std::wstring& a_fileName)
 {
-
 #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
   std::wstring s1(a_fileName);
   std::string  s2(s1.begin(), s1.end());
@@ -292,8 +276,46 @@ void HydraGeomData::read(const std::wstring& a_fileName)
     return;
 
   read(fin);
-
   fin.close();
 }
 
+VSGFOffsets CalcOffsets(int numVert, int numInd, bool a_haveTangents, bool a_haveNormals)
+{
+  VSGFOffsets res;
 
+  if(a_haveTangents && a_haveNormals)
+  {
+    res.offsetPos  = sizeof(HydraGeomData::Header);
+    res.offsetNorm = res.offsetPos  + numVert * sizeof(float) * 4; // after pos
+    res.offsetTang = res.offsetNorm + numVert * sizeof(float) * 4; // after norm
+    res.offsetTexc = res.offsetTang + numVert * sizeof(float) * 4; // after tangent
+    res.offsetInd  = res.offsetTexc + numVert * sizeof(float) * 2; // after texcoord
+    res.offsetMind = res.offsetInd  + numInd * sizeof(int);        // after ind
+  }
+  else if (!a_haveTangents && a_haveNormals)
+  {
+    res.offsetPos  = sizeof(HydraGeomData::Header);
+    res.offsetNorm = res.offsetPos  + numVert * sizeof(float) * 4; // after pos
+    res.offsetTang = res.offsetNorm; // res.offsetNorm + numVert * sizeof(float) * 4; // after norm
+    res.offsetTexc = res.offsetTang + numVert * sizeof(float) * 4; // after tangent
+    res.offsetInd  = res.offsetTexc + numVert * sizeof(float) * 2; // after texcoord
+    res.offsetMind = res.offsetInd  + numInd * sizeof(int);        // after ind
+  }
+  else
+  {
+    res.offsetPos  = sizeof(HydraGeomData::Header);
+    res.offsetNorm = res.offsetPos;  // res.offsetPos  + numVert * sizeof(float) * 4; // after pos
+    res.offsetTang = res.offsetNorm; // res.offsetNorm + numVert * sizeof(float) * 4; // after norm
+    res.offsetTexc = res.offsetTang + numVert * sizeof(float) * 4; // after tangent
+    res.offsetInd  = res.offsetTexc + numVert * sizeof(float) * 2; // after texcoord
+    res.offsetMind = res.offsetInd  + numInd * sizeof(int);        // after ind
+  }
+
+  return res;
+}
+
+size_t CalcVSGFSize(int numVert, int numInd)
+{
+  VSGFOffsets offsets = CalcOffsets(numVert, numInd, true, true);
+  return offsets.offsetMind + (numInd/3)*sizeof(int);
+}

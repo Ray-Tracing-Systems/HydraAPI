@@ -1,5 +1,6 @@
 #include "HydraAPI.h"
 #include "HydraInternal.h"
+#include "HydraRenderDriverAPI.h"
 
 #include <memory>
 #include <vector>
@@ -27,7 +28,6 @@
 
 extern std::wstring      g_lastError;
 extern std::wstring      g_lastErrorCallerPlace;
-extern HR_ERROR_CALLBACK g_pErrorCallback;
 extern HR_INFO_CALLBACK  g_pInfoCallback;
 extern HRObjectManager   g_objManager;
 
@@ -73,15 +73,16 @@ std::wstring ToWString(unsigned int i)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-HAPI void hrInit(const wchar_t* a_className)
+HAPI void _hrInit(HRInitInfo a_initInfo)
 {
   FreeImage_Initialise(true);
   g_objManager.destroy();
-  g_objManager.init(a_className);
+  g_objManager.init(a_initInfo);
   setlocale(LC_ALL, "C");
+  registerBuiltInRenderDrivers();
 }
 
-HAPI void hrDestroy()
+HAPI void hrSceneLibraryClose()
 {
   for (size_t i = 0; i < g_objManager.renderSettings.size(); i++)
   {
@@ -99,11 +100,6 @@ HAPI const wchar_t* hrGetLastError() // if null else see msg
     return nullptr;
   else
     return g_lastError.c_str();
-}
-
-HAPI void hrErrorCallback(HR_ERROR_CALLBACK pCallback)
-{
-  g_pErrorCallback = pCallback;
 }
 
 HAPI void hrInfoCallback(HR_INFO_CALLBACK pCallback)
@@ -129,8 +125,11 @@ HAPI void hrErrorCallerPlace(const wchar_t* a_placeName, int a_line)
 
 int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::wstring& a_stateFileName);
 
-HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMode)
+HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMode, HRInitInfo a_initInfo)
 {
+  //hrSceneLibraryClose() ?
+  _hrInit(a_initInfo);
+
   std::wstring input(a_libPath);
   
   int libStateId   = -1;
@@ -174,8 +173,10 @@ HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMod
 #elif defined WIN32
     std::wstring dataPath = std::wstring(a_libPath) + L"/data";
 
+    hr_cleardir(a_libPath);
     hr_mkdir(a_libPath);
     hr_mkdir(dataPath.c_str());
+
 #endif
 
   }
@@ -208,11 +209,15 @@ HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMod
   {
     if (a_libPath != nullptr && !std::wstring(a_libPath).empty())
     {
+      std::wstring dataPath = std::wstring(a_libPath) + L"/data";
+     
     #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
       hr_cleardir(libPath.c_str());
-      hr_mkdir(dataPath.c_str());
+      std::string dataPath2 = ws2s(a_libPath) + "/data";
+      hr_mkdir(dataPath2.c_str());
     #elif defined WIN32
       hr_cleardir(a_libPath);
+      hr_cleardir(dataPath.c_str());
     #endif
     }
     int32_t whileImage[4] = { int32_t(0xFFFFFFFF), int32_t(0xFFFFFFFF),
@@ -228,11 +233,11 @@ HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMod
   else
   {
     HrError(L"[hrSceneLibraryOpen]: bad a_openMode = ", a_openMode);
-    return -1;
+    return 0;
   }
 
   HrPrint(HR_SEVERITY_DEBUG, L"[hrSceneLibraryOpen]: success");
-  return 0;
+  return 1;
 }
 
 
@@ -290,9 +295,10 @@ HAPI HRSceneLibraryFileInfo hrSceneLibraryExists(const wchar_t* a_libPath, wchar
 
   auto texturesLib  = xmlDoc.child(L"textures_lib");
   auto materialsLib = xmlDoc.child(L"materials_lib");
-  auto lightsLib    = xmlDoc.child(L"lights_lib");
-  auto cameraLib    = xmlDoc.child(L"cam_lib");
   auto geometryLib  = xmlDoc.child(L"geometry_lib");
+  auto lightsLib    = xmlDoc.child(L"lights_lib");
+  
+  auto cameraLib    = xmlDoc.child(L"cam_lib");
   auto settingsNode = xmlDoc.child(L"render_lib");
   auto sceneNode    = xmlDoc.child(L"scenes");
 
@@ -365,7 +371,7 @@ HAPI void hrSceneOpen(HRSceneInstRef a_pScn, HR_OPEN_MODE a_mode)
     return;
   }
 
-  pugi::xml_node sceneNode = pScn->xml_node_next(a_mode);
+  pugi::xml_node sceneNode = pScn->xml_node();
 
   if (a_mode == HR_WRITE_DISCARD)
   {
@@ -409,7 +415,7 @@ HAPI pugi::xml_node hrSceneParamNode(HRSceneInstRef a_pScn)
     return pugi::xml_node();
   }
 
-  return pScn->xml_node_next(pScn->openMode); // pScn->_xml_node_curr();  // 
+  return pScn->xml_node(); // pScn->_xml_node_curr();  //
 }
 
 HAPI void hrSceneClose(HRSceneInstRef a_pScn)
@@ -427,7 +433,7 @@ HAPI void hrSceneClose(HRSceneInstRef a_pScn)
     return;
   }
 
-  pugi::xml_node sceneNode = pScn->xml_node_next(pScn->openMode);
+  pugi::xml_node sceneNode = pScn->xml_node();
 
   HydraXMLHelpers::WriteBBox(sceneNode, pScn->m_bbox);
 
@@ -537,6 +543,8 @@ HAPI int hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh,
                          float a_mat[16], const int32_t* a_mmListm, int32_t a_mmListSize)
 {
   HRSceneInst* pScn = g_objManager.PtrById(a_pScn);
+  HRMesh*     pMesh = g_objManager.PtrById(a_pMesh);
+
   if (pScn == nullptr)
   {
     HrError(L"hrMeshInstance: nullptr input");
@@ -549,11 +557,18 @@ HAPI int hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh,
     return 0;
   }
 
-  if (a_pMesh.id == -1)
+  if (a_pMesh.id == -1 || pMesh == nullptr)
   {
     HrError(L"hrMeshInstance: mesh with id == -1");
     return -1;
   }
+
+  if(pMesh->m_empty)
+  {
+    HrPrint(HR_SEVERITY_WARNING, L"hrMeshInstance: empty mesh with id = ", a_pMesh.id);
+    return -1;
+  }
+
 
   int32_t mmId = -1;
 
@@ -597,7 +612,6 @@ HAPI int hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh,
   model.scene_sid = pScn->instancedScenesCounter;
   pScn->drawList.push_back(model);
 
-  HRMesh *pMesh = g_objManager.PtrById(a_pMesh);
   if(g_objManager.m_computeBBoxes && pMesh->pImpl != nullptr)
   {
     auto bbox = pMesh->pImpl->getBBox();
@@ -667,48 +681,52 @@ HAPI void hrLightGroupInstanceExt(HRSceneInstRef a_pScn, HRLightGroupExt lightGr
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-IHRRenderDriver* CreateHydraConnection_RenderDriver();
 
-IHRRenderDriver* CreateOpenGL1DrawBVH_RenderDriver();   // debug drivers
-IHRRenderDriver* CreateOpenGL1TestSplit_RenderDriver();
-IHRRenderDriver* CreateDebugPrint_RenderDriver();
-IHRRenderDriver* CreateOpenGL1DrawRays_RenderDriver();
-IHRRenderDriver* CreateOpenGL1Debug_TestCustomAttributes();
+//IHRRenderDriver* CreateOpenGL1DrawBVH_RenderDriver();   // debug drivers
+//IHRRenderDriver* CreateOpenGL1TestSplit_RenderDriver();
+//IHRRenderDriver* CreateDebugPrint_RenderDriver();
+//IHRRenderDriver* CreateOpenGL1DrawRays_RenderDriver();
+//IHRRenderDriver* CreateOpenGL1Debug_TestCustomAttributes();
 
-std::unique_ptr<IHRRenderDriver> CreateRenderFromString(const wchar_t *a_className, const wchar_t *a_options)
-{
-  if (!wcscmp(a_className, L"opengl1"))
-    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1_RenderDriver());
-  else if (!wcscmp(a_className, L"opengl1Debug"))
-    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1Debug_RenderDriver());
-  else if (!wcscmp(a_className, L"opengl1TestSplit"))
-    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1TestSplit_RenderDriver());
-  else if (!wcscmp(a_className, L"opengl1DelayedLoad"))
-    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1_DelayedLoad_RenderDriver(false));
-  else if (!wcscmp(a_className, L"opengl1DelayedLoad2"))
-    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1_DelayedLoad_RenderDriver(true));
-  else if (!wcscmp(a_className, L"opengl1TestCustomAttributes"))
-    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1Debug_TestCustomAttributes());
-  else if (!wcscmp(a_className, L"opengl1DrawBvh"))
-    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1DrawBVH_RenderDriver());
-  else if (!wcscmp(a_className, L"opengl1DrawRays"))
-    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1DrawRays_RenderDriver());
-  else if (!wcscmp(a_className, L"DebugPrint"))
-    return std::unique_ptr<IHRRenderDriver>(CreateDebugPrint_RenderDriver());
-  else if (!wcscmp(a_className, L"opengl32Forward"))
-    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL32Forward_RenderDriver());
-  else if (!wcscmp(a_className, L"opengl32Deferred"))
-    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL32Deferred_RenderDriver());
-  else if (!wcscmp(a_className, L"opengl3Utility"))
-    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL3_Utilty_RenderDriver());
-  else if (!wcscmp(a_className, L"HydraModern"))
-    return std::unique_ptr<IHRRenderDriver>(CreateHydraConnection_RenderDriver());
-  else
-  {
-    HrPrint(HR_SEVERITY_ERROR, L"CreateRenderFromString, unknown render driver name ", a_className);
-    return nullptr;
-  }
-}
+//std::unique_ptr<IHRRenderDriver> CreateRenderFromString(const wchar_t *a_className, const wchar_t *a_options)
+//{
+//  if (!wcscmp(a_className, L"opengl1"))
+//    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1_RenderDriver());
+//  else if (!wcscmp(a_className, L"opengl1Debug"))
+//    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1Debug_RenderDriver());
+//  else if (!wcscmp(a_className, L"opengl1TestSplit"))
+//    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1TestSplit_RenderDriver());
+//  else if (!wcscmp(a_className, L"opengl1DelayedLoad"))
+//    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1_DelayedLoad_RenderDriver(false));
+//  else if (!wcscmp(a_className, L"opengl1DelayedLoad2"))
+//    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1_DelayedLoad_RenderDriver(true));
+//  else if (!wcscmp(a_className, L"opengl1TestCustomAttributes"))
+//    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1Debug_TestCustomAttributes());
+//  else if (!wcscmp(a_className, L"opengl1DrawBvh"))
+//    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1DrawBVH_RenderDriver());
+//  else if (!wcscmp(a_className, L"opengl1DrawRays"))
+//    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL1DrawRays_RenderDriver());
+//  else if (!wcscmp(a_className, L"DebugPrint"))
+//    return std::unique_ptr<IHRRenderDriver>(CreateDebugPrint_RenderDriver());
+//  else if (!wcscmp(a_className, L"opengl32Forward"))
+//    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL32Forward_RenderDriver());
+//  else if (!wcscmp(a_className, L"opengl32Deferred"))
+//    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL32Deferred_RenderDriver());
+//  if (!wcscmp(a_className, L"opengl3Utility"))
+//    return std::unique_ptr<IHRRenderDriver>(CreateOpenGL3_Utilty_RenderDriver());
+//  else if (!wcscmp(a_className, L"vulkan"))
+//  {
+//    HrPrint(HR_SEVERITY_ERROR, L"Define CreateVulkan_RenderDriver() and uncomment its call in CreateRenderFromString", a_className);
+////    return std::unique_ptr<IHRRenderDriver>(CreateVulkan_RenderDriver());
+//  }
+//  else if (!wcscmp(a_className, L"HydraModern"))
+//    return std::unique_ptr<IHRRenderDriver>(CreateHydraConnection_RenderDriver());
+//  else
+//  {
+//    HrPrint(HR_SEVERITY_ERROR, L"CreateRenderFromString, unknown render driver name ", a_className);
+//    return nullptr;
+//  }
+//}
 
 HAPI HRRenderRef hrRenderCreate(const wchar_t* a_className, const wchar_t* a_flags)
 { 
@@ -726,10 +744,10 @@ HAPI HRRenderRef hrRenderCreate(const wchar_t* a_className, const wchar_t* a_fla
   nodeXml.append_attribute(L"type").set_value(a_className);
   nodeXml.append_attribute(L"id").set_value(ref.id);
   
-  g_objManager.renderSettings[ref.id].update_next(nodeXml); // ???
+  g_objManager.renderSettings[ref.id].update(nodeXml); // ???
   g_objManager.renderSettings[ref.id].id = ref.id;
 	
-  settings.m_pDriver = CreateRenderFromString(a_className, a_flags);
+  settings.m_pDriver = std::shared_ptr<IHRRenderDriver>(RenderDriverFactory::Create(a_className));
 
   settings.m_pDriver->SetInfoCallBack(g_pInfoCallback);
 
@@ -752,7 +770,7 @@ HAPI HRRenderRef hrRenderCreateFromExistingDriver(const wchar_t* a_className, st
   nodeXml.append_attribute(L"type").set_value(a_className);
   nodeXml.append_attribute(L"id").set_value(ref.id);
 
-  g_objManager.renderSettings[ref.id].update_next(nodeXml); // ???
+  g_objManager.renderSettings[ref.id].update(nodeXml); // ???
   g_objManager.renderSettings[ref.id].id = ref.id;
 
   settings.m_pDriver = a_pDriver;
@@ -777,9 +795,7 @@ HAPI void hrRenderOpen(HRRenderRef a_pRender, HR_OPEN_MODE a_mode)
     HrError(L"hrRenderOpen, double open settings, with id = ", pSettings->id);
     return;
   }
-
-  pugi::xml_node nodeXml = pSettings->xml_node_next(a_mode);
-
+  
   pSettings->opened   = true;
   pSettings->openMode = a_mode;
 }
@@ -800,7 +816,7 @@ HAPI void hrRenderClose(HRRenderRef a_pRender)
     return;
   }
 
-  pugi::xml_node node = pSettings->xml_node_immediate();
+  pugi::xml_node node = pSettings->xml_node();
   pugi::xml_node tool = node.child(L"maxRaysPerPixel");
 
   if (tool != nullptr)
@@ -827,7 +843,7 @@ HAPI pugi::xml_node hrRenderParamNode(HRRenderRef a_pRender)
     return pugi::xml_node();
   }
 
-  return pSettings->xml_node_next(HR_OPEN_EXISTING);
+  return pSettings->xml_node();
 }
 
 //const int MAX_DEVICES_NUM = 256;
@@ -903,7 +919,7 @@ static pugi::xml_attribute force_attrib(pugi::xml_node a_parent, const wchar_t* 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void HR_UpdateLightsGeometryAndMaterial(pugi::xml_node a_lightLibChanges, pugi::xml_node a_lightLib, pugi::xml_node a_sceneInstances);
+void HR_UpdateLightsGeometryAndMaterial(pugi::xml_node a_lightLib, pugi::xml_node a_sceneInstances);
 
 HAPI void hrDrawPassOnly(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pCam)
 {
@@ -929,7 +945,7 @@ HAPI void hrDrawPassOnly(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraR
     return;
   }
 
-  HR_DriverDraw(g_objManager.scnInst[g_objManager.m_currSceneId], g_objManager.m_pDriver.get());
+  HR_DriverDraw(g_objManager.scnInst[g_objManager.m_currSceneId], pSettings);
 }
 
 HAPI void hrRenderEvalGbuffer(HRRenderRef a_pRender)
@@ -953,11 +969,83 @@ HAPI IHRRenderDriver* hrRenderDriverPointer(HRRenderRef a_pRender)
   return pSettings->m_pDriver.get();
 }
 
+
+void _hrSaveCurrentChanges(HRSceneData& a_scnData)
+{
+  const std::wstring& fileName = g_objManager.m_tempPathToChangeFile;
+  
+  pugi::xml_document  xmlDoc;
+  auto texturesLib  = xmlDoc.append_child(L"textures_lib");
+  auto materialsLib = xmlDoc.append_child(L"materials_lib");
+  auto geometryLib  = xmlDoc.append_child(L"geometry_lib");
+  auto lightsLib    = xmlDoc.append_child(L"lights_lib");
+  auto cameraLib    = xmlDoc.append_child(L"cam_lib");
+  auto settingsNode = xmlDoc.append_child(L"render_lib");
+  auto sceneNode    = xmlDoc.append_child(L"scenes");
+  
+  for(auto& texture : a_scnData.textures)
+  {
+    if(texture.wasChanged)
+    {
+      texturesLib.append_copy(texture.xml_node());
+      texture.wasChanged = false;
+    }
+  }
+  
+  for(auto& material : a_scnData.materials)
+  {
+    if(material.wasChanged)
+    {
+      materialsLib.append_copy(material.xml_node());
+      material.wasChanged = false;
+    }
+  }
+  
+  for(auto& mesh : a_scnData.meshes)
+  {
+    if(mesh.wasChanged)
+    {
+      geometryLib.append_copy(mesh.xml_node());
+      mesh.wasChanged = false;
+    }
+  }
+  
+  for(auto& light : a_scnData.lights)
+  {
+    if(light.wasChanged)
+    {
+      lightsLib.append_copy(light.xml_node());
+      light.wasChanged = false;
+    }
+  }
+  
+  for(auto& cam : a_scnData.cameras)
+  {
+    if(cam.wasChanged)
+    {
+      cameraLib.append_copy(cam.xml_node());
+      cam.wasChanged = false;
+    }
+  }
+  
+  for(auto& scene : g_objManager.scnInst)
+    sceneNode.append_copy(scene.xml_node());
+  
+  //#TODO: add renderer settings ...
+  
+  xmlDoc.save_file(fileName.c_str(), L"  ");
+}
+
 HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pCam) ///< non blocking commit, send commands to renderer and return immediately 
 {
   HRRender* pSettings = g_objManager.PtrById(a_pRender);
   HRSceneInst* pScn   = g_objManager.PtrById(a_pScn);
-  //HRCamera*    pCam   = g_objManager.PtrById(a_pCam);
+
+  if (pSettings == nullptr)
+    HrPrint(HR_SEVERITY_WARNING, L"hrCommit, nullptr render");
+
+  if (pScn == nullptr)
+    HrPrint(HR_SEVERITY_WARNING, L"hrCommit, nullptr scene");
 
   if (a_pRender.id != -1)
   {
@@ -973,23 +1061,28 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
 
   // Add/Update light as geometry if Render Driver can't do it itself
   //
-  bool needToAddLightsAsGeometry = (g_objManager.m_pDriver == nullptr) || !g_objManager.m_pDriver->Info().createsLightGeometryItself;
+  std::wstring driver_name = L"";
+  if(g_objManager.m_pDriver != nullptr)
+    g_objManager.m_pDriver->GetRenderDriverName(driver_name);
+  auto driver_info = RenderDriverFactory::GetDriverInfo(driver_name.c_str());
+
+  bool needToAddLightsAsGeometry = (g_objManager.m_pDriver == nullptr) || !driver_info.createsLightGeometryItself;
   if (needToAddLightsAsGeometry && pScn != nullptr)
-    HR_UpdateLightsGeometryAndMaterial(g_objManager.scnData.m_lightsLibChanges, g_objManager.scnData.m_lightsLib, pScn->xml_node_immediate());
-
-  g_objManager.scnData.m_xmlDocChanges.save_file(g_objManager.m_tempPathToChangeFile.c_str(), L"  "); // do postponed save after HR_UpdateLightsGeometryAndMaetrial
-
+    HR_UpdateLightsGeometryAndMaterial(g_objManager.scnData.m_lightsLib, pScn->xml_node());
+  
   // we must loop through all scene element to define what mesh, material and light we need to Update on the render driver side
   //
   if (g_objManager.m_pDriver != nullptr && g_objManager.m_currSceneId < g_objManager.scnInst.size())
   {
     g_objManager.m_pDriver->SetInfoCallBack(g_pInfoCallback);
-    HR_DriverUpdate(g_objManager.scnInst[g_objManager.m_currSceneId], g_objManager.m_pDriver.get());
-    HR_DriverDraw  (g_objManager.scnInst[g_objManager.m_currSceneId], g_objManager.m_pDriver.get());
+    HR_DriverUpdate(g_objManager.scnInst[g_objManager.m_currSceneId], pSettings);
+    HR_DriverDraw  (g_objManager.scnInst[g_objManager.m_currSceneId], pSettings);
   }
+  
+  if(g_objManager.m_lastInitInfo.saveChanges)
+    _hrSaveCurrentChanges(g_objManager.scnData); // save change if needed
 
-  g_objManager.CommitChanges(g_objManager.scnData.m_xmlDocChanges, g_objManager.scnData.m_xmlDoc);   // copy nodes from m_xmlDocChanges to m_xmlDoc
-  //g_objManager.scnData.m_commitId++;
+  g_objManager.scnData.m_changeList.clear();
 
   size_t chunks = g_objManager.scnData.m_vbCache.size();
   force_attrib(g_objManager.scnData.m_geometryLib, L"total_chunks").set_value(chunks);
@@ -1013,17 +1106,6 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
     }
   }
   
-  // clear temporary trash and changes xml
-  // 
-  clear_node_childs(g_objManager.trash_node()); 
-  clear_node_childs(g_objManager.scnData.m_texturesLibChanges);
-  clear_node_childs(g_objManager.scnData.m_materialsLibChanges);
-  clear_node_childs(g_objManager.scnData.m_geometryLibChanges);
-  clear_node_childs(g_objManager.scnData.m_lightsLibChanges);
-  clear_node_childs(g_objManager.scnData.m_cameraLibChanges);
-  clear_node_childs(g_objManager.scnData.m_sceneNodeChanges);
-  clear_node_childs(g_objManager.scnData.m_settingsNodeChanges);
-  
   if(g_objManager.m_tempBuffer.size() > TEMP_BUFFER_MAX_SIZE_DONT_FREE)
     g_objManager.m_tempBuffer = g_objManager.EmptyBuffer();
 }
@@ -1040,7 +1122,7 @@ HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pC
   std::wstring cngPath = outStr2.str();
   std::wstring newPath = outStr3.str();
 
-  g_objManager.scnData.m_xmlDoc.save_file(oldPath.c_str(), L"  ");
+  //g_objManager.scnData.m_xmlDoc.save_file(oldPath.c_str(), L"  ");
   g_objManager.m_tempPathToChangeFile = cngPath; // postpone g_objManager.scnData.m_xmlDocChanges.save_file(cngPath.c_str(), L"  ");
 
   hrCommit(a_pScn, a_pRender, a_pCam);
@@ -1054,20 +1136,31 @@ HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pC
   ////////////// Call utility render driver here
   if(g_objManager.m_pDriver != nullptr)
   {
-    auto settings = g_objManager.renderSettings[a_pRender.id].xml_node_immediate();
-    bool doPrepass = false;
+    auto settings = g_objManager.renderSettings[a_pRender.id].xml_node();
+    bool doPrepass      = false;
+    bool doDisplacement = false;
     if (settings.child(L"scenePrepass") != nullptr)
       doPrepass = settings.child(L"scenePrepass").text().as_bool();
+  
+    if (settings.child(L"doDisplacement") != nullptr)
+      doDisplacement = settings.child(L"doDisplacement").text().as_bool();
 
     //std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     std::wstring fixed_state = newPath;
-    if (g_objManager.m_pDriver->Info().supportUtilityPrepass && doPrepass)
-      fixed_state = HR_UtilityDriverStart(newPath.c_str());
+    std::wstring driver_name;
+    g_objManager.m_pDriver->GetRenderDriverName(driver_name);
+    auto driver_info = RenderDriverFactory::GetDriverInfo(driver_name.c_str());
+
+    if (driver_info.supportUtilityPrepass && doPrepass)
+    {
+      std::cout << "Starting scene prepass..." << std::endl;
+      fixed_state = HR_UtilityDriverStart(newPath.c_str(), pSettings);
+    }
     //std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     //std::cout << "Resolution fix elapsed time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms" <<std::endl;
 
 //#ifdef IN_DEBUG
-    if (g_objManager.m_pDriver->Info().supportDisplacement)
+    if (driver_info.supportDisplacement && doDisplacement)
       fixed_state = HR_PreprocessMeshes(fixed_state.c_str());
 //#endif
   }
@@ -1078,9 +1171,6 @@ HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pC
 
   if (pSettings != nullptr && pSettings->m_pDriver != nullptr)
     pSettings->m_pDriver->EndFlush();
-  
-  clear_node_childs( g_objManager.trash_node() );
-  g_objManager.scnData.clear_changes();
   
 } 
 

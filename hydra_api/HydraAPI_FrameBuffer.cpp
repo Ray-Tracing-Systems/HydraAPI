@@ -14,7 +14,6 @@
 
 extern std::wstring      g_lastError;
 extern std::wstring      g_lastErrorCallerPlace;
-extern HR_ERROR_CALLBACK g_pErrorCallback;
 extern HRObjectManager   g_objManager;
 
 #include <FreeImage.h>
@@ -24,6 +23,47 @@ extern HRObjectManager   g_objManager;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+HAPI bool hrRenderLockFrameBufferUpdate(HRRenderRef a_pRender)
+{
+  HRRender* pRender = g_objManager.PtrById(a_pRender);
+  
+  if (pRender == nullptr)
+  {
+    HrError(L"hrRenderLockFrameBufferUpdate, nullptr Render Driver ");
+    return false;
+  }
+  
+  if (pRender->m_pDriver == nullptr)
+  {
+    HrError(L"hrRenderLockFrameBufferUpdate, nullptr Render Driver impl ");
+    return false;
+  }
+  
+  pRender->m_pDriver->LockFrameBufferUpdate();
+
+  return true;
+}
+
+
+HAPI void hrRenderUnlockFrameBufferUpdate(HRRenderRef a_pRender)
+{
+  HRRender* pRender = g_objManager.PtrById(a_pRender);
+  
+  if (pRender == nullptr)
+  {
+    HrError(L"hrRenderUnlockFrameBufferUpdate, nullptr Render Driver ");
+    return;
+  }
+  
+  if (pRender->m_pDriver == nullptr)
+  {
+    HrError(L"hrRenderUnlockFrameBufferUpdate, nullptr Render Driver impl ");
+    return;
+  }
+  
+  pRender->m_pDriver->UnlockFrameBufferUpdate();
+}
 
 HAPI bool hrRenderGetFrameBufferHDR4f(HRRenderRef a_pRender, int w, int h, float* imgData, const wchar_t* a_layerName) // (w,h) is strongly related to viewport size; return true if image was final
 {
@@ -40,9 +80,11 @@ HAPI bool hrRenderGetFrameBufferHDR4f(HRRenderRef a_pRender, int w, int h, float
     HrError(L"hrRenderGetFrameBufferHDR4f, nullptr Render Driver impl ");
     return false;
   }
-
+  
+  pRender->m_pDriver->LockFrameBufferUpdate();
   pRender->m_pDriver->GetFrameBufferHDR(w, h, imgData, a_layerName);
-
+  pRender->m_pDriver->UnlockFrameBufferUpdate();
+  
   return true;
 }
 
@@ -62,9 +104,11 @@ HAPI bool hrRenderGetFrameBufferLDR1i(HRRenderRef a_pRender, int w, int h, int32
     HrError(L"hrRenderGetFrameBufferLDR1i, nullptr Render Driver impl ");
     return false;
   }
-
+  
+  pRender->m_pDriver->LockFrameBufferUpdate();
   pRender->m_pDriver->GetFrameBufferLDR(w, h, imgData);
-
+  pRender->m_pDriver->UnlockFrameBufferUpdate();
+  
   return true;
 }
 
@@ -84,7 +128,11 @@ HAPI bool hrRenderGetFrameBufferLineHDR4f(HRRenderRef a_pRender, int a_begin, in
     return false;
   }
 
-  if (!pRender->m_pDriver->Info().supportGetFrameBufferLine)
+  std::wstring driver_name;
+  pRender->m_pDriver->GetRenderDriverName(driver_name);
+  auto driver_info = RenderDriverFactory::GetDriverInfo(driver_name.c_str());
+
+  if (!driver_info.supportGetFrameBufferLine)
   {
     HrError(L"hrRenderGetFrameBufferLineHDR4f is not implemented for general case yet. try different render driver");
     return false;
@@ -109,7 +157,10 @@ HAPI bool hrRenderGetFrameBufferLineLDR1i(HRRenderRef a_pRender, int a_begin, in
     return false;
   }
 
-  if (!pRender->m_pDriver->Info().supportGetFrameBufferLine)
+  std::wstring driver_name;
+  pRender->m_pDriver->GetRenderDriverName(driver_name);
+  auto driver_info = RenderDriverFactory::GetDriverInfo(driver_name.c_str());
+  if (!driver_info.supportGetFrameBufferLine)
   {
     HrError(L"GetFrameBufferLineLDR1i is not implemented for general case yet. try different render driver");
     return false;
@@ -138,7 +189,7 @@ HAPI bool hrRenderSaveFrameBufferLDR(HRRenderRef a_pRender, const wchar_t* a_out
     return false;
   }
 
-  pugi::xml_node node = pRender->xml_node_immediate();
+  pugi::xml_node node = pRender->xml_node();
 
   int w = node.child(L"width").text().as_int();
   int h = node.child(L"height").text().as_int();
@@ -179,7 +230,7 @@ HAPI bool hrRenderSaveFrameBufferHDR(HRRenderRef a_pRender, const wchar_t* a_out
     return false;
   }
 
-  pugi::xml_node node = pRender->xml_node_immediate();
+  pugi::xml_node node = pRender->xml_node();
 
   const int w = node.child(L"width").text().as_int();
   const int h = node.child(L"height").text().as_int();
@@ -246,6 +297,15 @@ HAPI void hrRenderLogDir(HRRenderRef a_pRender, const wchar_t* a_logDir, bool a_
     return;
   }
 
-  pRender->m_pDriver->SetLogDir(a_logDir, a_hrRenderLogDir);
+  // fix directory path if it don't end with '\' or '/'
+  //
+  std::wstring copyOfPath(a_logDir);
+  if (copyOfPath != L"")
+  {
+    if (copyOfPath[copyOfPath.size() - 1] != L"/"[0] &&
+      copyOfPath[copyOfPath.size() - 1] != L"\\"[0])
+      copyOfPath += L"/";
+  }
+  pRender->m_pDriver->SetLogDir(copyOfPath.c_str(), a_hrRenderLogDir);
 
 }

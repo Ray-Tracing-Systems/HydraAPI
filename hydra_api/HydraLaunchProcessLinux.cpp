@@ -7,6 +7,11 @@
 #include <csignal>
 #include "HydraLegacyUtils.h"
 
+#include <sys/types.h>
+#include <pwd.h>
+
+#include "HydraObjectManager.h" // for HrPrint
+
 struct HydraProcessLauncher : IHydraNetPluginAPI
 {
   HydraProcessLauncher(const char* imageFileName, int width, int height, const char* connectionType, std::ostream* a_pLog = nullptr);
@@ -97,8 +102,8 @@ bool HydraProcessLauncher::hasConnection() const
 #include <cstring>
 #include <algorithm>
 
-void CommandLineToArgv(const std::string& line, int a_maxArgs,
-                       int& argc, char** argv)
+char* CommandLineToArgv(const std::string& line, int a_maxArgs,
+                        int& argc, char** argv)
 {
   typedef std::vector<char*> CharPtrVector;
   char const * WHITESPACE_STR = " \n\r\t";
@@ -197,6 +202,8 @@ void CommandLineToArgv(const std::string& line, int a_maxArgs,
   int a = 0;
   for (CharPtrVector::const_iterator it = tokens.begin(); it != tokens.end(); ++it )
     argv[a++] = (*it);
+
+  return pLine;
 }
 
 
@@ -211,19 +218,21 @@ int CreateProcessUnix(const char* exePath, const char* allArgs, const bool a_deb
   int argc = 0;
   
   argv[0] = (char*)exePath;
-  CommandLineToArgv(allArgs, 256,
-                    argc, argv.data() + 1);
+  char* pLine = CommandLineToArgv(allArgs, 256,
+                                  argc, argv.data() + 1);
   
   int pid = fork();
   if(pid == 0)
   {
     execvp(exePath, argv.data());
-    exit(0);
+    free(pLine);
     return 0;
   }
   else
+  {
+    free(pLine);
     return pid;
-  
+  }
 }
 
 void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params, const std::vector<HydraRenderDevice>& a_devList, const std::vector<int>& a_activeDevices, bool a_appendMode)
@@ -232,11 +241,12 @@ void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params
   
   if (m_connectionType == "main")
   {
-    char user_name[L_cuserid];
-    cuserid(user_name);
+    //char user_name[L_cuserid];
+    //cuserid(user_name);
 
+    auto username = getpwuid(geteuid());
     std::stringstream ss;
-    ss << "/home/" << user_name << "/hydra/";
+    ss << username->pw_dir << "/hydra/";
 
     std::string hydraPath = ss.str();
     if (a_params.customExePath != "")
@@ -244,6 +254,8 @@ void HydraProcessLauncher::runAllRenderProcesses(RenderProcessRunParams a_params
 
     if (!isFileExist(hydraPath.c_str()))
     {
+      auto path = s2ws(hydraPath);
+      HrPrint(HR_SEVERITY_ERROR, L"execvp failed (perhaps you have forgoten to install hydra in your home directory): ", path.c_str());
       m_hydraServerStarted = false;
     }
     else

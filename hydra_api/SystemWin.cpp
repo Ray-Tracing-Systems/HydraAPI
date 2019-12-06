@@ -14,13 +14,38 @@
 
 #endif
 
+int hr_mkdir(const char* a_folder)
+{
+  return _mkdir(a_folder);
+}
 
 int hr_mkdir(const wchar_t* a_folder)
 {
   return _wmkdir(a_folder);
 }
 
-void hr_cleardir(const wchar_t* a_folder)
+int hr_cleardir(const char* a_folder)
+{
+  std::string tempFolder = std::string(a_folder) + "/";
+  std::string tempName   = tempFolder + "*";
+  WIN32_FIND_DATAA fd;
+  HANDLE hFind = ::FindFirstFileA(tempName.c_str(), &fd);
+  if (hFind != INVALID_HANDLE_VALUE)
+  {
+    do
+    {
+      std::string tempName2 = tempFolder + fd.cFileName;
+      DeleteFileA(tempName2.c_str());
+
+    } while (::FindNextFileA(hFind, &fd));
+
+    ::FindClose(hFind);
+  }
+
+  return 0;
+}
+
+int hr_cleardir(const wchar_t* a_folder)
 {
   std::wstring tempFolder = std::wstring(a_folder) + L"/";
   std::wstring tempName = tempFolder + L"*";
@@ -37,10 +62,12 @@ void hr_cleardir(const wchar_t* a_folder)
 
     ::FindClose(hFind);
   }
+
+  return 0;
 }
 
 
-std::vector<std::wstring> hr_listfiles(const wchar_t* a_folder)
+std::vector<std::wstring> hr_listfiles(const wchar_t* a_folder, bool excludeFolders)
 {
 	std::vector<std::wstring> result;
 	std::wstring tempFolder = std::wstring(a_folder) + L"/";
@@ -63,11 +90,49 @@ std::vector<std::wstring> hr_listfiles(const wchar_t* a_folder)
 	return result;
 }
 
+std::vector<std::string> hr_listfiles(const char* a_folder, bool excludeFolders)
+{
+  std::vector<std::string> result;
+  std::string tempFolder = std::string(a_folder) + "/";
+  std::string tempName   = tempFolder + "*";
+
+  WIN32_FIND_DATAA fd;
+  HANDLE hFind = ::FindFirstFileA(tempName.c_str(), &fd);
+  if (hFind != INVALID_HANDLE_VALUE)
+  {
+    do
+    {
+      std::string tempName2 = tempFolder + fd.cFileName;
+      result.push_back(tempName2);
+
+    } while (::FindNextFileA(hFind, &fd));
+
+    ::FindClose(hFind);
+  }
+
+  return result;
+}
+
+void hr_copy_file(const char* a_file1, const char* a_file2)
+{
+  CopyFileA(a_file1, a_file2, FALSE);
+}
+
+
 void hr_copy_file(const wchar_t* a_file1, const wchar_t* a_file2)
 {
   CopyFileW(a_file1, a_file2, FALSE);
 }
 
+void hr_deletefile(const wchar_t* a_file)
+{
+  DeleteFileW(a_file);
+}
+
+void hr_deletefile(const char* a_file)
+{
+  DeleteFileA(a_file);
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -123,4 +188,16 @@ void hr_unlock_system_mutex(HRSystemMutex* a_mutex)
     return;
 
   ReleaseMutex(a_mutex->mutex);
+}
+
+#include <fstream>
+
+void hr_ifstream_open(std::ifstream& a_stream, const wchar_t* a_fileName)
+{
+  a_stream.open(a_fileName, std::ios::binary);
+}
+
+void hr_ofstream_open(std::ofstream& a_stream, const wchar_t* a_fileName)
+{
+  a_stream.open(a_fileName, std::ios::binary);
 }

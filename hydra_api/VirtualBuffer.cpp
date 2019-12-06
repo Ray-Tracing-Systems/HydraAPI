@@ -1,6 +1,8 @@
 #include "HydraInternal.h"
 #include "HydraObjectManager.h"
 
+#include "HydraVSGFCompress.h"
+
 #include <algorithm>
 #include <fstream>
 #include <sstream>
@@ -219,12 +221,12 @@ void VirtualBuffer::RestoreChunks()
   //
   const auto maxChunks = (VB_CHUNK_TABLE_SIZE)/sizeof(int64_t) - 2;
 
-  int chunksNum = 0, chunkOffset = 1;
-  do {
-
+  int chunksNum = 0;
+  int64_t chunkOffset = 1;
+  do 
+  {
     chunksNum++;
     chunkOffset = table[chunksNum];
-
   } while(chunksNum < maxChunks && chunkOffset != 0);
 
   // (2) restore chunk pointers (their localAddresses)
@@ -602,6 +604,9 @@ std::wstring ChunkName(const ChunkPointer& a_chunk)
   return namestream.str();
 }
 
+size_t HR_SaveVSGFCompressed(int a_objId, const void* vsgfData, size_t a_vsgfSize, const wchar_t* a_outfileName);
+extern HRObjectManager g_objManager;
+void PrintMaterialListNames(std::ostream& strOut, HRMesh* pMesh);
 
 void ChunkPointer::SwapToDisk()
 {
@@ -613,17 +618,35 @@ void ChunkPointer::SwapToDisk()
 
   if (wasSaved)
     return;
-
+  
   const std::wstring name = ChunkName(*this);
-#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
-  std::wstring s1(name);
-  std::string  s2(s1.begin(), s1.end());
-  std::ofstream fout(s2.c_str(), std::ios::binary);
-#elif defined WIN32
-  std::ofstream fout(name.c_str(), std::ios::binary);
-#endif
-  fout.write(pVB->m_dataHalfCurr + localAddress, sizeInBytes);
-  fout.close();
+  
+  if(saveCompressed && type == CHUNK_TYPE_VSGF)
+  {
+    const std::wstring name2 = name + L"c";
+    std::wcout << L"save chunk " << name2.c_str() << " to compressed format" << std::endl;
+  
+    std::stringstream strOut;
+    
+    bool placeToOrigin = false;
+    if(this->sysObjectId >= 0 && this->sysObjectId < g_objManager.scnData.meshes.size())
+    {
+      auto* pMesh = &g_objManager.scnData.meshes[this->sysObjectId];
+      PrintMaterialListNames(strOut, pMesh);
+      placeToOrigin = pMesh->m_input.m_placeToOrigin;
+    }
+    std::string matnames = strOut.str();
+    
+    HR_SaveVSGFCompressed(pVB->m_dataHalfCurr + localAddress, sizeInBytes, name2.c_str(), matnames.c_str(), matnames.size(), placeToOrigin);
+  }
+  else
+  {
+    std::ofstream fout;
+    hr_ofstream_open(fout, name.c_str());
+    fout.write(pVB->m_dataHalfCurr + localAddress, sizeInBytes);
+    fout.close();
+  }
+  
   wasSaved = true;
 }
 

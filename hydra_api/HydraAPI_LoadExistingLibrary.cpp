@@ -20,6 +20,8 @@ extern HRObjectManager g_objManager;
 #include "xxhash.h"
 #include "HydraXMLHelpers.h"
 
+#include "tiny_obj_loader.h"
+
 #include "LiteMath.h"
 using namespace HydraLiteMath;
 
@@ -43,7 +45,7 @@ HRTextureNodeRef _hrTexture2DCreateFromNode(pugi::xml_node a_node)
   HRTextureNode& texture   = g_objManager.scnData.textures[ref.id];
   texture.m_loadedFromFile = true;
 
-  g_objManager.scnData.textures      [ref.id].update_this(a_node);
+  g_objManager.scnData.textures      [ref.id].update(a_node);
   g_objManager.scnData.m_textureCache[a_fileName2] = ref.id; // remember texture id for given file name
 
   if (a_chunkPath != L"")
@@ -63,35 +65,43 @@ HRMaterialRef _hrMaterialCreateFromNode(pugi::xml_node a_node)
   mat.name = std::wstring(a_objectName);
   mat.id = ref.id;
   g_objManager.scnData.materials.push_back(mat);
-  g_objManager.scnData.materials[ref.id].update_this(a_node);
+  g_objManager.scnData.materials[ref.id].update(a_node);
 
   return ref;
 }
 
-HAPI HRMeshRef _hrMeshCreateFromNode(pugi::xml_node a_node)
+const std::wstring GetRealFilePathOfDelayedMesh(pugi::xml_node a_node)
 {
   const std::wstring dl       = a_node.attribute(L"dl").as_string();
   const std::wstring loc      = g_objManager.GetLoc(a_node);
   const wchar_t* a_objectName = a_node.attribute(L"name").as_string();
   const wchar_t* a_fileName   = (dl == L"1") ? a_node.attribute(L"path").as_string() : loc.c_str();
 
+  if(std::wstring(a_fileName) == L"") //  then get path from "loc" due to we actually copied file to 'data' folder
+    return loc;
+  else
+    return std::wstring(a_fileName);
+}
+
+
+HAPI HRMeshRef _hrMeshCreateFromNode(pugi::xml_node a_node)
+{
+  const std::wstring filePathStr = GetRealFilePathOfDelayedMesh(a_node);
+  const wchar_t* a_fileName      = filePathStr.c_str();
+  const wchar_t* a_objectName    = a_node.attribute(L"name").as_string();
+
   HRMeshRef ref;
 
-  ref.id = a_node.attribute(L"id").as_int();//HR_IDType(g_objManager.scnData.meshes.size());
-
-  if(ref.id == 43)
-    std::cout <<"1";
+  ref.id = a_node.attribute(L"id").as_int(); //HR_IDType(g_objManager.scnData.meshes.size());
 
   HRMesh mesh;
   mesh.name = std::wstring(a_objectName);
   mesh.id   = ref.id;
-  mesh.update_this(a_node);
+  mesh.update(a_node);
   g_objManager.scnData.meshes.push_back(mesh);
-//  g_objManager.scnData.meshes[ref.id].update_this(a_node);
-//  g_objManager.scnData.meshes[ref.id].id = ref.id;
 
   HRMesh* pMesh = &g_objManager.scnData.meshes.back();
-  pMesh->pImpl  = g_objManager.m_pFactory->CreateVSGFFromFile(pMesh, a_fileName, a_node); //#TODO: load custom attributes somewhere inside
+  pMesh->pImpl  = g_objManager.m_pFactory->CreateVSGFProxy(a_fileName); // delay mesh load untill it will be needed by RenderDriver::UpdateMesh
 
   if (pMesh->pImpl == nullptr)
     HrError(L"LoadExistingLibrary, _hrMeshCreateFromNode can't load mesh from location = ", a_fileName);
@@ -111,7 +121,7 @@ HRLightRef _hrLightCreateFromNode(pugi::xml_node a_node)
   light.id = ref.id;
   g_objManager.scnData.lights.push_back(light);
 
-  g_objManager.scnData.lights[ref.id].update_this(a_node);
+  g_objManager.scnData.lights[ref.id].update(a_node);
   g_objManager.scnData.lights[ref.id].id = ref.id;
 
   return ref;
@@ -130,7 +140,7 @@ HAPI HRCameraRef _hrCameraCreateFromNode(pugi::xml_node a_node)
   g_objManager.scnData.cameras.push_back(cam);
 
 
-  g_objManager.scnData.cameras[ref.id].update_this(a_node);
+  g_objManager.scnData.cameras[ref.id].update(a_node);
   g_objManager.scnData.cameras[ref.id].id = ref.id;
 
   return ref;
@@ -225,10 +235,10 @@ HRRenderRef _hrRenderSettingsFromNode(pugi::xml_node a_node)
 
   HRRender& settings = g_objManager.renderSettings[ref.id];
 
-  g_objManager.renderSettings[ref.id].update_this(a_node); // ???
+  g_objManager.renderSettings[ref.id].update(a_node); // ???
   g_objManager.renderSettings[ref.id].id = ref.id;
 
-  settings.m_pDriver = CreateRenderFromString(a_className, L"");
+  settings.m_pDriver = std::shared_ptr<IHRRenderDriver>(RenderDriverFactory::Create(a_className));
 
   return ref;
 }
@@ -237,11 +247,6 @@ HRRenderRef _hrRenderSettingsFromNode(pugi::xml_node a_node)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
-  std::vector<std::string> hr_listfiles(const std::string &a_folder);
-#elif defined WIN32
-  std::vector<std::wstring> hr_listfiles(const wchar_t* a_folder);
-#endif
 
 std::string ws2s(const std::wstring& s);
 std::wstring s2ws(const std::string& s);
@@ -260,7 +265,7 @@ void _hrFindTargetOrLastState(const wchar_t* a_libPath, int32_t a_stateId,
     std::wstring s1(a_libPath);
     std::string libPath = ws2s(s1);
     
-    auto fileList = hr_listfiles(libPath);
+    auto fileList = hr_listfiles(libPath.c_str());
     
     std::sort(fileList.begin(), fileList.end());
     
@@ -270,8 +275,11 @@ void _hrFindTargetOrLastState(const wchar_t* a_libPath, int32_t a_stateId,
       
       if (currFile.find("statex") != std::string::npos)
       {
-        fileName = s2ws(currFile);
-        stateId++;
+        fileName    = s2ws(currFile);
+        auto first  = currFile.find("statex_") + 7;
+        auto last   = currFile.find(".xml");
+        auto strNew = currFile.substr(first, last - first);
+        stateId     = atoi(strNew.c_str());
       }
     }
 #elif defined WIN32
@@ -287,7 +295,11 @@ void _hrFindTargetOrLastState(const wchar_t* a_libPath, int32_t a_stateId,
       if (currFile.find(L"statex") != std::wstring::npos)
       {
         fileName = currFile;
-        stateId++;
+        auto first  = fileName.find(L"statex_") + 7;
+        auto last   = fileName.find(L".xml");
+        auto strNew = fileName.substr(first, last - first);
+        auto strStd = ws2s(strNew);
+        stateId     = atoi(strStd.c_str());
       }
     }
 #endif
@@ -311,11 +323,11 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
   
 	if(fileName == L"")
 	{
-    HrError(L"_hrSceneLibraryLoad, can't find existing library at: ", a_libPath);
-	  return -1;
+    HrError(L"[_hrSceneLibraryLoad]: can't find existing library at: ", a_libPath);
+	  return 0;
   }
 
-  stateId--;
+  // stateId--; // #NOTE: uncomment this if ypu need to chenge current state?
 
   // (1) open last state.xml
   //
@@ -329,14 +341,14 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
 
   if (!loadResult)
   {
-    HrError(L"_hrSceneLibraryLoad, pugixml load: ", loadResult.description());
-    return -1;
+    HrError(L"[_hrSceneLibraryLoad]: pugixml load: ", loadResult.description());
+    return 0;
   }
 
   if (g_objManager.m_attachMode)
     HrPrint(HR_SEVERITY_INFO, L"HydraAPI, initialising virtual buffer");
 
-  g_objManager.scnData.init_existing(g_objManager.m_attachMode, g_objManager.m_pVBSysMutex);
+  g_objManager.scnData.init_existing(g_objManager.m_attachMode, g_objManager.m_pVBSysMutex, g_objManager.m_lastInitInfo.vbSize);
 
   // (2) set change id to curr value
   //
@@ -361,17 +373,20 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
     HrPrint(HR_SEVERITY_INFO, L"HydraAPI, loading objects from xml ... ");
 
   for (pugi::xml_node node = g_objManager.scnData.m_texturesLib.first_child(); node != nullptr; node = node.next_sibling())
-    _hrTexture2DCreateFromNode(node);
+    if(node.attribute(L"id") != nullptr)
+      _hrTexture2DCreateFromNode(node);
 
   // (4) load materials
   //
   for (pugi::xml_node node = g_objManager.scnData.m_materialsLib.first_child(); node != nullptr; node = node.next_sibling())
-    _hrMaterialCreateFromNode(node);
+    if(node.attribute(L"id") != nullptr)
+      _hrMaterialCreateFromNode(node);
 
   // (5) load geom
   //
   for (pugi::xml_node node = g_objManager.scnData.m_geometryLib.first_child(); node != nullptr; node = node.next_sibling())
-    _hrMeshCreateFromNode(node);
+    if(node.attribute(L"id") != nullptr)
+      _hrMeshCreateFromNode(node);
 
   std::sort(
           g_objManager.scnData.meshes.begin(), g_objManager.scnData.meshes.end(),
@@ -423,7 +438,7 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
     }
     
     g_objManager.scnInst[a_pScn.id].driverDirtyFlag = true; // driver need to Update this scene
-    g_objManager.scnInst[a_pScn.id].update_this(node);
+    g_objManager.scnInst[a_pScn.id].update(node);
   }
 
   // (9) load render settings
@@ -439,7 +454,7 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
     g_objManager.scnData.m_vbCache.ResizeAndAllocEmptyChunks(chunks);
   }
   
-  return 0;
+  return 1;
 }
 
 void fixTextureIds(pugi::xml_node a_node, const std::wstring &a_libPath, const std::unordered_map<int32_t, int32_t> &texIdUpdates,
@@ -708,13 +723,19 @@ void _hrInstanceMergeFromNode(HRSceneInstRef a_scn, pugi::xml_node a_node, int32
 }
 
 
-HRSceneInstRef HRUtils::MergeLibraryIntoLibrary(const wchar_t* a_libPath, bool mergeLights, bool copyScene)
+HRSceneInstRef HRUtils::MergeLibraryIntoLibrary(const wchar_t* a_libPath, bool mergeLights, bool copyScene,
+                                                const wchar_t* a_stateFileName, MergeInfo* pInfo)
 {
-  std::wstring fileName;
+  std::wstring fileName(a_stateFileName);
   int stateId = 0;
 
-  _hrFindTargetOrLastState(a_libPath, -1,
-                           fileName, stateId);
+  if(fileName == L"")
+  {
+    _hrFindTargetOrLastState(a_libPath, -1,
+                             fileName, stateId);
+  }
+  else
+    fileName = std::wstring(a_libPath) + L"/" + a_stateFileName;
 
   HRSceneInstRef mergedScn;
 
@@ -734,11 +755,18 @@ HRSceneInstRef HRUtils::MergeLibraryIntoLibrary(const wchar_t* a_libPath, bool m
     return mergedScn;
   }
 
-  //auto numTexturesPreMerge  = int32_t(g_objManager.scnData.textures.size());
+  auto numTexturesPreMerge  = int32_t(g_objManager.scnData.textures.size());
   auto numMaterialsPreMerge = int32_t(g_objManager.scnData.materials.size());
-  auto numMeshesPreMerge  = int32_t(g_objManager.scnData.meshes.size());
-  int32_t numLightsPreMerge = 0;
-  //int32_t newTexturesMerged = 0;
+  auto numMeshesPreMerge    = int32_t(g_objManager.scnData.meshes.size());
+  auto numLightsPreMerge    = int32_t(g_objManager.scnData.lights.size());
+
+  if(pInfo != nullptr)
+  {
+    pInfo->texturesRange[0] = numTexturesPreMerge;
+    pInfo->materialRange[0] = numMaterialsPreMerge;
+    pInfo->meshRange    [0] = numMeshesPreMerge;
+    pInfo->lightsRange  [0] = numLightsPreMerge;
+  }
 
   std::unordered_map<int32_t, int32_t> texIdUpdates;
 
@@ -767,7 +795,6 @@ HRSceneInstRef HRUtils::MergeLibraryIntoLibrary(const wchar_t* a_libPath, bool m
 
   if(mergeLights)
   {
-    numLightsPreMerge = int32_t(g_objManager.scnData.lights.size());
     for (pugi::xml_node node = docToMerge.child(L"lights_lib").first_child(); node != nullptr; node = node.next_sibling())
       _hrLightMergeFromNode(node, std::wstring(a_libPath), texIdUpdates);
   }
@@ -804,6 +831,19 @@ HRSceneInstRef HRUtils::MergeLibraryIntoLibrary(const wchar_t* a_libPath, bool m
     }
 
     hrSceneClose(mergedScn);
+  }
+
+  auto numTexturesPostMerge  = int32_t(g_objManager.scnData.textures.size());
+  auto numMaterialsPostMerge = int32_t(g_objManager.scnData.materials.size());
+  auto numMeshesPostMerge    = int32_t(g_objManager.scnData.meshes.size());
+  auto numLightsPostMerge    = int32_t(g_objManager.scnData.lights.size());
+
+  if(pInfo != nullptr)
+  {
+    pInfo->texturesRange[1] = numTexturesPostMerge;
+    pInfo->materialRange[1] = numMaterialsPostMerge;
+    pInfo->meshRange    [1] = numMeshesPostMerge;
+    pInfo->lightsRange  [1] = numLightsPostMerge;
   }
 
   return mergedScn;
@@ -974,7 +1014,7 @@ HRLightRef HRUtils::MergeOneLightIntoLibrary(const wchar_t* a_libPath, const wch
 }
 
 BBox HRUtils::InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_scnTo, float a_mat[16],
-                            bool origin, const int32_t* remapListOverride, int32_t remapListSize)
+                                     bool origin, const int32_t* remapListOverride, int32_t remapListSize)
 {
   HRSceneInst *pScn = g_objManager.PtrById(a_scnFrom);
   HRSceneInst *pScn2 = g_objManager.PtrById(a_scnTo);
@@ -1005,7 +1045,7 @@ BBox HRUtils::InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_
   }
   std::cout << std::endl;
 */
-  BBox bbox(transformBBox(pScn->m_bbox, HydraLiteMath::float4x4(a_mat)));
+  BBox bbox(HRUtils::transformBBox(pScn->m_bbox, a_mat));
 /*
   std::cout << "bbox of transformed scene: " << bbox.x_min << " " << bbox.x_max << " "
                                              << bbox.y_min << " " << bbox.y_max << " "
@@ -1075,5 +1115,94 @@ BBox HRUtils::InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_
 
   hrSceneClose(a_scnTo);
   return bbox;
+}
+
+MergeInfo HRUtils::LoadMultipleShapesFromObj(const wchar_t* a_objectName, bool a_copyToLocalFolder){
+  tinyobj::attrib_t attrib;
+  std::vector<tinyobj::shape_t> shapes;
+  std::vector<tinyobj::material_t> materials;
+
+  std::string warn;
+  std::string err;
+
+  MergeInfo res_mergeinfo;
+
+  bool res = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, ws2s(a_objectName).c_str());
+
+  for (size_t s = 0; s < shapes.size(); s++) {
+    // The number of indices
+    int indices_number = shapes[s].mesh.indices.size();
+
+    // Vertices, Normals, Texture coordinates, Indices
+    float *verts = new float[indices_number * 4];
+    float *norms = new float[indices_number * 4];
+    float *tex_s = new float[indices_number * 2];
+    int *indxs = new int[indices_number];
+
+    bool has_normals = true;
+
+    size_t index_offset = 0;
+    size_t vertices_num = shapes[s].mesh.num_face_vertices.size();
+    for (size_t f = 0; f < vertices_num; f++) {
+      int fv = shapes[0].mesh.num_face_vertices[f];
+      // Loop over vertices in the face.
+      for (size_t v = 0; v < fv; v++) {
+        // Current index
+        tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
+        // Setting the actual index (we duplicate the vertices so that one vertex corresponds to only one index)
+        indxs[index_offset + v] = index_offset + v;
+        // Setting vertices
+        verts[4 * (index_offset + v) + 0] = attrib.vertices[3 * idx.vertex_index + 0];
+        verts[4 * (index_offset + v) + 1] = attrib.vertices[3 * idx.vertex_index + 1];
+        verts[4 * (index_offset + v) + 2] = attrib.vertices[3 * idx.vertex_index + 2];
+        verts[4 * (index_offset + v) + 3] = 1.0;
+        // Setting normals
+        if (idx.normal_index != -1) {
+          norms[4 * (index_offset + v) + 0] = attrib.normals[3 * idx.normal_index + 0];
+          norms[4 * (index_offset + v) + 1] = attrib.normals[3 * idx.normal_index + 1];
+          norms[4 * (index_offset + v) + 2] = attrib.normals[3 * idx.normal_index + 2];
+          norms[4 * (index_offset + v) + 3] = 0.0;
+        } else {
+          has_normals = false;
+        }
+        // Setting texture coordinates
+        if (idx.texcoord_index != -1) {
+          tex_s[2 * (index_offset + v) + 0] = attrib.texcoords[2 * idx.texcoord_index + 0];
+          tex_s[2 * (index_offset + v) + 1] = attrib.texcoords[2 * idx.texcoord_index + 1];
+        } else {
+          tex_s[2 * (index_offset + v) + 0] = 0.0;
+          tex_s[2 * (index_offset + v) + 1] = 0.0;
+        }
+      }
+      index_offset += fv;
+    }
+
+
+    HRMeshRef ref = hrMeshCreate(a_objectName);
+
+    hrMeshOpen(ref, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
+    {
+      hrMeshVertexAttribPointer4f(ref, L"pos", verts);
+
+      if (has_normals)
+        hrMeshVertexAttribPointer4f(ref, L"norm", norms);
+      else
+        hrMeshVertexAttribPointer4f(ref, L"norm", nullptr);
+
+      hrMeshVertexAttribPointer2f(ref, L"texcoord", tex_s);
+
+      hrMeshMaterialId(ref, 0);
+
+      hrMeshAppendTriangles3(ref, indices_number, indxs);
+    }
+    hrMeshClose(ref);
+
+    if(s == 0)
+      res_mergeinfo.meshRange[0] = ref.id;
+    if(s == shapes.size() - 1)
+      res_mergeinfo.meshRange[1] = ref.id + 1;
+  }
+
+  return res_mergeinfo;
 }
 

@@ -56,15 +56,50 @@ static void ExtractDepthLine(const HRGBufferPixel* a_inLine, int32_t* a_outLine,
   {
     float d = (a_inLine[x].depth - dmin) / (dmax - dmin);
     if (d > 1e5f || a_inLine[x].matId < 0)
-      d = 0.0f;
+      d = 1.0f;
 
     float depth[4];
-    depth[0] = d;
-    depth[1] = d;
-    depth[2] = d;
+    depth[0] = 1.0f - d;
+    depth[1] = 1.0f - d;
+    depth[2] = 1.0f - d;
     depth[3] = 1.0f;
 
     a_outLine[x] = RealColorToUint32(depth);
+  }
+}
+
+static void ExtractDepthLineU16(const HRGBufferPixel* a_inLine, unsigned short* a_outLine, int a_width, const float dmin, const float dmax)
+{
+  for (int x = 0; x < a_width; x++)
+  {
+    const float d = (a_inLine[x].depth - dmin) / (dmax - dmin);
+
+    int r = (int)((1.0f-d)*65535.0f);
+    if(r > 65535)
+      r = 65535;
+    else if (r < 1)
+      r = 1;
+
+    if (d > 1e5f || a_inLine[x].matId < 0)
+      r = 0;
+
+    a_outLine[x] = (unsigned short)(r);
+  }
+}
+
+static void ExtractDepthLineSpecial(const HRGBufferPixel* a_inLine, int32_t* a_outLine, int a_width, const float dmax)
+{
+  for (int x = 0; x < a_width; x++)
+  {
+    const float d = a_inLine[x].depth / dmax;
+
+    float res[4];
+    res[0] = d;
+    res[1] = d;
+    res[2] = d;
+    res[3] = 1.0f;
+
+    a_outLine[x] = RealColorToUint32(res);
   }
 }
 
@@ -214,6 +249,7 @@ static void ExtractCoverage(const HRGBufferPixel* a_inLine, int32_t* a_outLine, 
   }
 }
 
+
 HAPI bool hrRenderSaveGBufferLayerLDR(HRRenderRef a_pRender, const wchar_t* a_outFileName, const wchar_t* a_layerName,
                                       const int* a_palette, int a_paletteSize)
 {
@@ -231,7 +267,7 @@ HAPI bool hrRenderSaveGBufferLayerLDR(HRRenderRef a_pRender, const wchar_t* a_ou
 
   std::wstring lname = std::wstring(a_layerName);
 
-  auto renderSettingsNode = pRender->xml_node_immediate();
+  auto renderSettingsNode = pRender->xml_node();
 
   const int width     = renderSettingsNode.child(L"width").text().as_int();
   const int height    = renderSettingsNode.child(L"height").text().as_int();
@@ -273,7 +309,7 @@ HAPI bool hrRenderSaveGBufferLayerLDR(HRRenderRef a_pRender, const wchar_t* a_ou
   HRSceneInstRef scnRef;
   scnRef.id = g_objManager.m_currSceneId;
   HRSceneInst *pScn = g_objManager.PtrById(scnRef);
-  auto scnNode = pScn->xml_node_immediate();
+  auto scnNode = pScn->xml_node();
 
   std::vector <int32_t> instanceIdToScnId(pScn->drawList.size(), 0);
 
@@ -292,12 +328,17 @@ HAPI bool hrRenderSaveGBufferLayerLDR(HRRenderRef a_pRender, const wchar_t* a_ou
   }
 
 
+  unsigned short* imageU16 = (unsigned short*)imageLDR.data();
+
+  hrRenderLockFrameBufferUpdate(a_pRender);
+
   for (int y = 0; y < height; y++)
   {
     pDriver->GetGBufferLine(y, &gbufferLine[0], 0, width, g_objManager.scnData.m_shadowCatchers);
 
     if (lname == L"depth")
-      ExtractDepthLine(&gbufferLine[0], &imageLDR[y*width], width, dmin, dmax);
+      //ExtractDepthLine(&gbufferLine[0], &imageLDR[y*width], width, dmin, dmax);
+      ExtractDepthLineU16(&gbufferLine[0], &imageU16[y*width], width, dmin, dmax);
     else if (lname == L"normals")
       ExtractNormalsLine(&gbufferLine[0], &imageLDR[y*width], width);
     else if (lname == L"texcoord")
@@ -361,9 +402,75 @@ HAPI bool hrRenderSaveGBufferLayerLDR(HRRenderRef a_pRender, const wchar_t* a_ou
     }
   }
 
-  g_objManager.m_pImgTool->SaveLDRImageToFileLDR(a_outFileName, width, height, imageLDR.data());
+  hrRenderUnlockFrameBufferUpdate(a_pRender);
+
+  if (lname == L"depth")
+    g_objManager.m_pImgTool->Save16BitMonoImageTo16BitPNG(a_outFileName, width, height, imageU16);
+  else
+    g_objManager.m_pImgTool->SaveLDRImageToFileLDR(a_outFileName, width, height, imageLDR.data());
 
   return true;
 }
 
+bool HRUtils::hrRenderSaveDepthRaw(HRRenderRef a_pRender, const wchar_t* a_outFileName)
+{
+  HRRender* pRender = g_objManager.PtrById(a_pRender);
 
+  if (pRender == nullptr)
+  {
+    HrError(L"hrRenderGetDeviceList: nullptr input");
+    return false;
+  }
+
+  auto pDriver = pRender->m_pDriver;
+  if (pDriver == nullptr)
+    return false;
+
+  auto renderSettingsNode = pRender->xml_node();
+
+  const int width     = renderSettingsNode.child(L"width").text().as_int();
+  const int height    = renderSettingsNode.child(L"height").text().as_int();
+  const int evalgbuff = renderSettingsNode.child(L"evalgbuffer").text().as_int();
+
+  if (evalgbuff != 1)
+  {
+    HrError(L"hrRenderSaveGBufferLayerLDR: don't have gbuffer; set 'evalgbuffer' = 1 and render again; ");
+    return false;
+  }
+
+  std::vector<float>          rawDepth(width * height);
+  std::vector<HRGBufferPixel> gbufferLine(width);
+
+  float* data = rawDepth.data();
+
+  for (int y = 0; y < height; y++)
+  {
+    pDriver->GetGBufferLine(y, &gbufferLine[0], 0, width, g_objManager.scnData.m_shadowCatchers);
+    for (int x = 0; x < width; x++)
+    {
+      const float d = gbufferLine[x].depth;
+
+      float res[4];
+      res[0] = d;
+      res[1] = d;
+      res[2] = d;
+      res[3] = 1.0f;
+
+      data[y * width + x] = d;
+    }
+  }
+
+  std::wstring s1(a_outFileName);
+  std::string  s2(s1.begin(), s1.end());
+  std::ofstream fout(s2.c_str(), std::ios::out | std::ios::binary);
+
+  fout.write((char*)&width, sizeof(int32_t));
+  fout.write((char*)&height, sizeof(int32_t));
+
+  fout.write((char*)data, width * height * sizeof(float));
+
+  fout.flush();
+  fout.close();
+
+  return true;
+}

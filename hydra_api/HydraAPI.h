@@ -2,7 +2,9 @@
 
 #include <cstdint>
 #include <limits>
+#include <vector>
 #include "pugixml.hpp"
+
 
 /**
  \file
@@ -49,7 +51,7 @@
 
   //#if defined(__GNUC__)
 
-  #define HAPI                       ///< mark all functions as 'extern "C"'; This is needed if you want to load DLL in dynamic;
+  #define HAPI                       ///< mark all functions as 'extern "C"'; This is needed if you want to load DLL dynamically;
 
 #endif
 
@@ -99,6 +101,24 @@ struct HRTextureNodeRef { int32_t id; HRTextureNodeRef () : id(-1) {} }; ///< Te
 struct HRSceneInstRef   { int32_t id; HRSceneInstRef()    : id(-1) {} }; ///< SceneInst reference
 struct HRRenderRef      { int32_t id; HRRenderRef()       : id(-1) {} }; ///< RenderSettings reference
 
+
+/// Settings for model importer
+
+struct HRModelLoadInfo
+{
+    HRModelLoadInfo() : mtlRelativePath(nullptr),
+                        useMaterial(false),
+                        useCentering(true),
+                        transform{1.0f, 0.0f, 0.0f, 0.0f,
+                                  0.0f, 1.0f, 0.0f, 0.0f,
+                                  0.0f, 0.0f, 1.0f, 0.0f,
+                                  0.0f, 0.0f, 0.0f, 1.0f} {};
+    wchar_t* mtlRelativePath;   ///< Relative path to .mtl files. Default setting = nullptr => importer will look for them in the same folder as .obj file.
+    bool     useMaterial;       ///< Flag, indicating whether to apply materials from .obj file or not. Default setting = true
+    bool     useCentering;      ///< Flag, indicating whether to perform centering around [0.0, 0.0, 0.0] or not. Default setting = true
+    float    transform[16];     ///< Transform matrix. Default setting = identity matrix. This flag overwrites 'useCentering' flag
+};
+
 /// When open any HRObject you must specify one of these 2 flags.
 
 enum HR_OPEN_MODE {
@@ -117,15 +137,6 @@ enum HR_SEVERITY_LEVEL {
   HR_SEVERITY_ERROR          = 3,  ///< Some-thing went damn wrong. The work with API is still can be continued, but the result is undefined. 
   HR_SEVERITY_CRITICAL_ERROR = 4,  ///< Absolutely bad thing had happened. Please display error message and immediately call hrDestroy();
 };
-
-
-/**
-\brief Deprecated (!!!) callback for printing error messages. 
-\param message     - actual error message that will be passed to callback when error happened
-\param callerPlace - the last string rememberd by hrErrorCallerPlace before error have rised
-Called each time when any error rises.
-*/
-typedef void(*HR_ERROR_CALLBACK)(const wchar_t* message, const wchar_t* callerPlace);
 
 /**
 \brief General callback for printing info and error messages.
@@ -167,27 +178,24 @@ typedef void(*HR_TEXTURE2D_PROC_HDR_CALLBACK)(float* a_buffer, int w, int h, voi
 typedef void(*HR_TEXTURE2D_PROC_LDR_CALLBACK)(unsigned char* a_buffer, int w, int h, void* a_customData);
 
 
+struct HRInitInfo
+{
+  HRInitInfo() : copyTexturesToLocalFolder(false), localDataPath(true), sortMaterialIndices(true), computeMeshBBoxes(true), saveChanges(true),
+                 vbSize(int64_t(2048)*int64_t(1024*1024)) {}
+
+  bool    copyTexturesToLocalFolder; ///<!
+  bool    localDataPath            ; ///<!
+  bool    sortMaterialIndices      ; ///<!
+  bool    computeMeshBBoxes        ; ///<!
+  bool    saveChanges              ; ///<!    
+  int64_t vbSize                   ; ///<! virtual buffer size in bytes
+};
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/**
-  \brief initialize render API
-  \param a_className - calss name of actual API implementation. Can be "" or nullptr.
-  In this case API will select implementation automaticly.
-
-*/
-
-HAPI void hrInit(const wchar_t* a_className);
-
-/**
-  \brief destroy everything 
-
-*/
-
-HAPI void hrDestroy();
 
 /**
 \brief return last error message. If no error, return nullptr
@@ -212,11 +220,6 @@ It also don't have any stack or e.t.c., just a state, just one string! So please
 
 */
 HAPI void hrErrorCallerPlace(const wchar_t* a_placeName, int a_line = 0);
-
-/**
-\brief set your custome printing error callback. @DEPRECATED !!! USE hrInfoCallback instead!!!
-*/
-HAPI void hrErrorCallback(HR_ERROR_CALLBACK pCallback);
 
 /**
 \brief set your custome printing error callback
@@ -256,27 +259,34 @@ HAPI HRSceneLibraryFileInfo hrSceneLibraryExists(const wchar_t* a_libPath, wchar
  Destroy All SceneData/SceneLibrary if (a_openMode == HR_WRITE_DISCARD).
  Passing nullptr or L"" to a_libPath will cause just to clear everything.
 
-*/
-HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMode);
+ \return 1 if succeded, 0 otherwise
 
+*/
+HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMode, HRInitInfo a_initInfo = HRInitInfo());
 
 /**
-\brief get information about current  "scene library" / "API state" 
+  \brief destroy everything
+*/
+HAPI void hrSceneLibraryClose();
 
+/**
+\brief get information about current  "scene library" / "API state"
 */
 HAPI HRSceneLibraryInfo hrSceneLibraryInfo();
 
 
 /**
-\brief create 2D texture from file
+\brief Creates 2D texture from file.
 \param pScnData   - scene data object ptr.
 \param a_fileName - file name
-\param w   - texture width; optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
-\param h   - texture height; optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
+\param w   - texture width;   optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
+\param h   - texture height;  optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
 \param bpp - bytes per pixel; optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
 
- passing w,h or bpp not equal to -1 ask render
-
+ Creates 2D texture from file.
+ Passing w,h or bpp not equal to -1 ask render to resize texture; however render does not have to resize texture. It is just a hint.
+ Note that all 'hrTexture2DCreateFromFile***' functions have their internal cache by 'a_fileName'. if you pass same file name twice, this function return existing texture id second time.
+ If you really need to update texture with new file data, use hrTextureUpdateFromFile please.
 */
 
 HAPI HRTextureNodeRef  hrTexture2DCreateFromFile(const wchar_t* a_fileName, int w = -1, int h = -1, int bpp = -1);
@@ -285,9 +295,10 @@ HAPI HRTextureNodeRef  hrTexture2DCreateFromFile(const wchar_t* a_fileName, int 
 \brief Create 2D texture from file with Delayed Load (DL means "Delayed Load").
 \param pScnData   - scene data object ptr.
 \param a_fileName - file name
-\param w   - texture width; optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
-\param h   - texture height; optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
+\param w   - texture width;   optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
+\param h   - texture height;  optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
 \param bpp - bytes per pixel; optional parameter, may be used by renderer as a hint for effitiency consideretions. In case if it is not set, render read it from file.
+\param a_copyFileToLocalData - indicates that texture should be copied to "data" folder (for further transmittion, for example)
 
  The "Delayed Load" means that texture will be load to memory only when passing it to render driver (or by render driver itself, if it can load images from external format).
  The advantage of using textures with delayed load is that if some texture is not really needed for rendering current frame it won't be touched at all.
@@ -298,9 +309,11 @@ HAPI HRTextureNodeRef  hrTexture2DCreateFromFile(const wchar_t* a_fileName, int 
  The normal case also - if you do know that your texture don't have full size copy in memory.
  Nevertheless, it is absolutely ok to use this function if you want to save memory or prevent unnecessary disk flush of internal HydraAPI cache in other cases.
 
+ Note that all 'hrTexture2DCreateFromFile***' functions have their internal cache by 'a_fileName'. if you pass same file name twice, this function return existing texture id second time.
+ If you really need to update texture with new file data, use hrTextureUpdateFromFile please.
 */
 
-HAPI HRTextureNodeRef  hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, int w = -1, int h = -1, int bpp = -1);
+HAPI HRTextureNodeRef  hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, int w = -1, int h = -1, int bpp = -1, bool a_copyFileToLocalData = false);
 
 /**
 \brief Update 2D texture from file
@@ -310,6 +323,7 @@ HAPI HRTextureNodeRef  hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, in
 \param h    - new texture height;
 \param bpp  - new bytes per pixel;
 
+ Use this function if you really need to update texture with new file data.
 */
 
 HAPI HRTextureNodeRef hrTexture2DUpdateFromFile(HRTextureNodeRef currentRef, const wchar_t* a_fileName, int w = -1, int h = -1, int bpp = -1);
@@ -339,14 +353,6 @@ HAPI HRTextureNodeRef  hrTexture2DCreateFromMemory(int w, int h, int bpp, const 
 */
 HAPI HRTextureNodeRef hrTexture2DUpdateFromMemory(HRTextureNodeRef currentRef, int w, int h, int bpp, const void* a_data);
 
-/**
-\brief create 1D float array
-\param pScnData - scene data object ptr.
-\param data     - pointer to float data
-\param a_size   - array size
-
-*/
-HAPI HRTextureNodeRef  hrArray1DCreateFromMemory(const float* data, int a_size);
 
 /**
 \brief create procedural 2D texture with callback.
@@ -360,8 +366,8 @@ HAPI HRTextureNodeRef  hrArray1DCreateFromMemory(const float* data, int a_size);
  If you don't know desired resolution please set "-1" for both width and height!
  
 */
-HAPI HRTextureNodeRef  hrTexture2DCreateFromProcHDR(HR_TEXTURE2D_PROC_HDR_CALLBACK a_proc,
-                                                    void* a_customData, int customDataSize, int w = -1, int h = -1);
+HAPI HRTextureNodeRef  hrTexture2DCreateBakedHDR(HR_TEXTURE2D_PROC_HDR_CALLBACK a_proc,
+                                                 void *a_customData, int customDataSize, int w = -1, int h = -1);
 
 /**
 \brief create procedural 2D texture with callback.
@@ -375,8 +381,8 @@ See description of HR_TEXTURE2D_PROC_LDR_CALLBACK for more details.
 If you don't know desired resolution please set "-1" for both width and height!
 
 */
-HAPI HRTextureNodeRef  hrTexture2DCreateFromProcLDR(HR_TEXTURE2D_PROC_LDR_CALLBACK a_proc,
-                                                    void* a_customData, int customDataSize, int w = -1, int h = -1);
+HAPI HRTextureNodeRef  hrTexture2DCreateBakedLDR(HR_TEXTURE2D_PROC_LDR_CALLBACK a_proc,
+                                                 void *a_customData, int customDataSize, int w = -1, int h = -1);
 
 /**
 \brief Update 2D texture from callback
@@ -387,8 +393,8 @@ HAPI HRTextureNodeRef  hrTexture2DCreateFromProcLDR(HR_TEXTURE2D_PROC_LDR_CALLBA
 \param h - texture height; optional. should be set as a hint for renderer if you know desired texture resolution.
 
 */
-HAPI HRTextureNodeRef  hrTexture2DUpdateFromProcHDR(HRTextureNodeRef currentRef, HR_TEXTURE2D_PROC_HDR_CALLBACK a_proc,
-                                                    void* a_customData, int customDataSize, int w, int h);
+HAPI HRTextureNodeRef  hrTexture2DUpdateBakedHDR(HRTextureNodeRef currentRef, HR_TEXTURE2D_PROC_HDR_CALLBACK a_proc,
+                                                 void *a_customData, int customDataSize, int w, int h);
 
 /**
 \brief Update 2D texture from callback
@@ -399,8 +405,8 @@ HAPI HRTextureNodeRef  hrTexture2DUpdateFromProcHDR(HRTextureNodeRef currentRef,
 \param h - texture height; optional. should be set as a hint for renderer if you know desired texture resolution.
 
 */
-HAPI HRTextureNodeRef  hrTexture2DUpdateFromProcLDR(HRTextureNodeRef currentRef, HR_TEXTURE2D_PROC_LDR_CALLBACK a_proc,
-                                                    void* a_customData, int customDataSize, int w, int h);
+HAPI HRTextureNodeRef  hrTexture2DUpdateBakedLDR(HRTextureNodeRef currentRef, HR_TEXTURE2D_PROC_LDR_CALLBACK a_proc,
+                                                 void *a_customData, int customDataSize, int w, int h);
 
 
 /**
@@ -479,7 +485,7 @@ HAPI void              hrTextureNodeClose(HRTextureNodeRef a_pResource);
 \return resulting texture node
 
 */
-HAPI pugi::xml_node hrTextureBind(HRTextureNodeRef a_pTexNode, pugi::xml_node a_node);
+HAPI pugi::xml_node hrTextureBind(HRTextureNodeRef a_pTexNode, pugi::xml_node a_node, const wchar_t* nameChild = L"texture");
 
 
 /**
@@ -672,10 +678,19 @@ HAPI HRMeshRef hrMeshCreate(const wchar_t* a_objectName);
 /**
 \brief create mesh from internal vsgf format with delayed load.
 \param a_pScn     - pointer to scene library
-\param a_fileName - file name of the mesh.
+\param a_fileName - file name of the mesh
+\param a_copyToLocalFolder - indicates if we need to copy input '.vsgf' file to local folder
 
 */
-HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName);
+HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName, bool a_copyToLocalFolder = false);
+
+/**
+\brief create mesh from obj, obj+mtl or internal vsgf format.
+\param a_fileName - file name of the mesh
+\param a_modelInfo - structure, describing how to import the model
+
+*/
+HAPI HRMeshRef hrMeshCreateFromFile(const wchar_t* a_fileName, HRModelLoadInfo a_modelInfo = HRModelLoadInfo());
 
 /**
 \brief open mesh
@@ -688,10 +703,11 @@ HAPI void              hrMeshOpen(HRMeshRef a_pMesh, HR_PRIM_TYPE a_type, HR_OPE
 
 /**
 \brief close mesh
-\param a_pMesh      - pointer to mesh
-
+\param a_pMesh         - pointer to mesh
+\param a_compress      - compress mesh when save it to file
+\param a_placeToOrigin - force place mesh bbox center at the (0,0,0); works ONLY if 'a_compress' is enabled!
 */
-HAPI void              hrMeshClose(HRMeshRef a_pMesh);
+HAPI void              hrMeshClose(HRMeshRef a_pMesh, bool a_compress = false, bool a_placeToOrigin = false);
 
 
 /**
@@ -781,6 +797,14 @@ HAPI void*             hrMeshGetAttribPointer(HRMeshRef a_mesh, const wchar_t* a
 
 
 /**
+\brief get direct vertex attribute pointer to the data inside virtual buffer. The mesh must be closed! Else the function will return nullptr;
+\param a_pMesh       - pointer to mesh
+\param attributeName - attribute name (currently checks only for "pos", "norm" and "uv")
+
+*/
+HAPI const void*       hrMeshGetAttribConstPointer(HRMeshRef a_mesh, const wchar_t* attributeName);
+
+/**
 \brief get primitive attribute pointer. The mesh must be opened! Else the function will return nullptr;
 \param a_pMesh - pointer to mesh
 \param attributeName - attribute name (currently checks only for "mind", only)
@@ -788,32 +812,69 @@ HAPI void*             hrMeshGetAttribPointer(HRMeshRef a_mesh, const wchar_t* a
 */
 HAPI void*             hrMeshGetPrimitiveAttribPointer(HRMeshRef a_mesh, const wchar_t* attributeName);
 
+/** \brief Batch is a sequence of triangles with the same material id.
+*
+*/
+struct HRBatchInfo
+{
+  int32_t matId;    ///< material id
+  int32_t triBegin; ///< begin of triangle sequence that have same material id "matId"
+  int32_t triEnd;   ///< end of triangle sequence that have same material id "matId"
+};
+
 /**
 \brief Information about opened mesh. // You can't call this function if mesh is not open
 
 */
-struct HROpenedMeshInfo
+struct HRMeshInfo
 {
-  HROpenedMeshInfo() : vertNum(0), indicesNum(0) {}
+  HRMeshInfo() : vertNum(0), indicesNum(0),
+                 batchesList(nullptr), batchesListSize(0),
+                 matNamesList(nullptr), matNamesListSize(0){}
 
   int32_t vertNum;
   int32_t indicesNum;
+  float   boxMin[3] ; ///< mesh bounding box min (x,y,z)
+  float   boxMax[3] ; ///< mesh bounding box max (x,y,z)
+  
+  const HRBatchInfo* batchesList;
+  int32_t            batchesListSize;
+  
+  const wchar_t** matNamesList;
+  int32_t         matNamesListSize;
 };
 
 /**
-\brief get mesh info. You can't call this function if mesh is not open.
-\param a_pMesh - pointer to mesh
-\return  Information about opened mesh. 
+\brief get mesh info.
+\param a_meshRef - mesh reference.
+\return  Information about mesh.
 
 */
-HAPI HROpenedMeshInfo  hrMeshGetInfo(HRMeshRef a_mesh);
+HAPI HRMeshInfo hrMeshGetInfo(HRMeshRef a_mesh);
+
 
 /**
 \brief get params node for mesh
-\param a_pMesh - pointer to mesh
+\param a_meshRef - mesh reference
 
 */
 HAPI pugi::xml_node    hrMeshParamNode(HRMeshRef a_meshRef);
+
+/**
+\brief immediately save current mesh to '.vsgf' file to specified path.
+\param a_meshRef  - mesh reference
+\param a_fileName - out file name; must end with '.vsgf'
+
+*/
+HAPI void              hrMeshSaveVSGF(HRMeshRef a_meshRef, const wchar_t* a_fileName);
+
+/**
+\brief immediately save current mesh to '.vsgfc' file (compressed vsgf)
+\param a_meshRef  - mesh reference
+\param a_fileName - out file name; must end with '.vsgfc'
+
+*/
+HAPI void              hrMeshSaveVSGFCompressed(HRMeshRef a_meshRef, const wchar_t* a_fileName);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -912,6 +973,19 @@ HAPI bool hrRenderGetFrameBufferHDR4f(HRRenderRef pRender, int w, int h, float* 
 \brief get framebuffer content to imgData, only color
 */
 HAPI bool hrRenderGetFrameBufferLDR1i(HRRenderRef pRender, int w, int h, int32_t* imgData);  // w*h*sizeof(int) --> RGBA
+
+
+/**
+\brief You must use this function _before_ call hrRenderGetFrameBufferLineHDR4f/hrRenderGetFrameBufferLineLDR1i
+       If use hrRenderGetFrameBufferHDR4f/hrRenderGetFrameBufferLDR1i, you don't have to call this
+*/
+HAPI bool hrRenderLockFrameBufferUpdate(HRRenderRef pRender);
+
+/**
+\brief You must use this function _after_ call hrRenderGetFrameBufferLineHDR4f/hrRenderGetFrameBufferLineLDR1i
+       If use hrRenderGetFrameBufferHDR4f/hrRenderGetFrameBufferLDR1i, you don't have to call this
+*/
+HAPI void hrRenderUnlockFrameBufferUpdate(HRRenderRef pRender);
 
 /**
 \brief get framebuffer line to imgData. 
@@ -1045,14 +1119,6 @@ HAPI void hrFlush(HRSceneInstRef a_pScn = HRSceneInstRef(),
 
 typedef int32_t HR_IDType;
 
-constexpr int64_t VIRTUAL_BUFFER_SIZE = int64_t(2048)*int64_t(1024 * 1024);
-
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
 \brief An extension helper for groups of lights
@@ -1089,11 +1155,40 @@ HAPI void  hrLightGroupInstanceExt(HRSceneInstRef pScn, HRLightGroupExt pLight, 
 
 namespace HRUtils
 {
+  struct MergeInfo
+  {
+    int32_t meshRange    [2]; ///<! stores [first, last)
+    int32_t texturesRange[2];
+    int32_t materialRange[2];
+    int32_t lightsRange  [2];
+  };
+
+  HRSceneInstRef MergeLibraryIntoLibrary(const wchar_t* a_libPath, bool mergeLights = false, bool copyScene = false,
+                                         const wchar_t* a_stateFileName = L"", MergeInfo* pInfo = nullptr);
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+  HRMaterialRef MergeOneMaterialIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_matName, int a_matId = -1);
+
+  HRMeshRef MergeOneMeshIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_meshName);
+
+  HRLightRef MergeOneLightIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_lightName);
+
+  HRTextureNodeRef MergeOneTextureIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_texName, int a_texId = -1);
+
+  bool hrRenderSaveDepthRaw(HRRenderRef a_pRender, const wchar_t* a_outFileName);
+
+  // Parses the .obj file, consisting of 1+ shapes
+  MergeInfo LoadMultipleShapesFromObj(const wchar_t* a_fileName, bool a_copyToLocalFolder = false);
+
+
   /**
-  \brief Convert LDR cube map to LDR spheremap
+  \brief
 
   */
-
   struct BBox
   {
       float x_min;
@@ -1110,21 +1205,17 @@ namespace HRUtils
               z_min(std::numeric_limits<float>::max()), z_max(std::numeric_limits<float>::lowest()) {}
   };
 
+  BBox GetMeshBBox(HRMeshRef);
+
+  BBox transformBBox(const BBox &a_bbox, const float m[16]);
+
+  void getRandomPointsOnMesh(HRMeshRef mesh_ref, float *points, uint32_t n_points, bool tri_area_weighted, uint32_t seed = 0u);
 
   HRTextureNodeRef Cube2SphereLDR(HRTextureNodeRef a_cube[6]);
 
   BBox InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_scnTo, float a_mat[16], bool origin = true,
                               const int32_t* remapListOverride = nullptr, int32_t remapListSize = 0);
 
-  HRSceneInstRef MergeLibraryIntoLibrary(const wchar_t* a_libPath, bool mergeLights = false, bool copyScene = false);
-
-  HRMaterialRef MergeOneMaterialIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_matName, int a_matId = -1);
-
-  HRMeshRef MergeOneMeshIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_meshName);
-
-  HRLightRef MergeOneLightIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_lightName);
-
-  HRTextureNodeRef MergeOneTextureIntoLibrary(const wchar_t* a_libPath, const wchar_t* a_texName, int a_texId = -1);
 };
 
 namespace HRExtensions
@@ -1178,3 +1269,113 @@ If camera with name = a_cameraName does not exist, HRCameraRef with id = -1 is r
 
 */
 HAPI HRRenderRef hrFindRenderByTypeName(const wchar_t *a_renderTypeName);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////// UTILITY FUNCTIONS ///////////////////////////////////////////////////////
+
+namespace hr_prng
+{
+  struct uint2
+  {
+    unsigned int x;
+    unsigned int y;
+  };
+
+  typedef struct RandomGenT
+  {
+    uint2 state;
+
+  } RandomGen;
+
+  RandomGen RandomGenInit(const int a_seed);
+
+  /**
+   \brief get next pseudo random float value in range [0,1].
+   \param gen - pointer to current generator state
+   */
+  float rndFloat(RandomGen *gen);
+
+  /**
+   \brief get next pseudo random float value in range [s,e].
+   \param gen - reference to current generator state
+   \param s   - low  boundary of generated random number
+   \param e   - high boundary of generated random number
+   */
+  float rndFloatUniform(RandomGen& gen, float s, float e);
+
+  /**
+   \brief get next pseudo random integer value in range [s,e].
+   \param gen - reference to current generator state
+   \param s   - low  boundary of generated random number
+   \param e   - high boundary of generated random number
+   */
+  int rndIntUniform(RandomGen& gen, int a, int b);
+};
+
+namespace hr_qmc
+{
+  constexpr static int   QRNG_DIMENSIONS = 11;
+  constexpr static int   QRNG_RESOLUTION = 31;
+  constexpr static float INT_SCALE       = (1.0f / (float)0x80000001U);
+
+  void init(unsigned int table[hr_qmc::QRNG_DIMENSIONS][hr_qmc::QRNG_RESOLUTION]);
+
+  /**
+  \brief get arbitrary 'Sobol/Niederreiter' quasi random float value in range [0,1]
+  \param pos     - id of value in sequence (i.e. first, second, ... )
+  \param dim     - dimention/coordinate id (i.e. x,y,z,w, ... )
+  \param c_Table - some table previously initialised with hr_qmc::init function
+
+  */
+  float rndFloat(unsigned int pos, int dim, unsigned int *c_Table); ///< return
+
+  /**
+  \brief get arbitrary 'Sobol/Niederreiter' quasi random float value in range [s,e].
+  \param gen - pointer to current generator state
+  \param s   - low  boundary of generated random number
+  \param e   - high boundary of generated random number
+  */
+  float rndFloatUniform(unsigned int pos, int dim, unsigned int *c_Table, float s, float e);
+
+  /**
+  \brief get arbitrary 'Sobol/Niederreiter' quasi random integer value in range [s,e].
+  \param gen     - pointer to current generator state
+  \param s   - low  boundary of generated random number
+  \param e   - high boundary of generated random number
+  */
+  int rndIntUniform(unsigned int pos, int dim, unsigned int *c_Table, int a, int b);
+};
+
+
+namespace hr_fs
+{
+  std::wstring s2ws(const std::string& str);
+  std::string  ws2s(const std::wstring& wstr);
+  
+  int mkdir(const char* a_folder);
+  int mkdir(const wchar_t* a_folder);
+  
+  int cleardir(const char* a_folder);
+  int cleardir(const wchar_t* a_folder);
+  
+  void deletefile(const char* a_file);
+  void deletefile(const wchar_t* a_file);
+  
+  void copyfile(const char* a_file1,    const char* a_file2);
+  void copyfile(const wchar_t* a_file1, const wchar_t* a_file2);
+  
+  std::vector<std::string>  listfiles(const char* a_folder,    bool excludeFolders = true);
+  std::vector<std::wstring> listfiles(const wchar_t* a_folder, bool excludeFolders = true);
+  
+};
+
+/**
+  \brief these parameters are not related to hr_qmc namespace, they are for 'HydraModern' presets
+ */
+#define HYDRA_QMC_DOF_FLAG 1
+#define HYDRA_QMC_MTL_FLAG 2
+#define HYDRA_QMC_LGT_FLAG 4

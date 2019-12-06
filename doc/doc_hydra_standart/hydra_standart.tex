@@ -22,7 +22,7 @@
 
 
 \renewcommand{\baselinestretch}{1.25}
-
+\newcommand\boldblue[1]{\textcolor{darkblue}{\textbf{#1}}}
 
 \usepackage{xcolor} % for setting colors
 \definecolor{gray}{rgb}{0.4,0.4,0.4}
@@ -128,7 +128,13 @@ I(\phi_{in}, \theta_{in}) = \int\limits_{\phi_{out}}\int\limits_{\theta_{out}}  
 \end{eqnarray}
 
 
-Note that all BRDF and BTDF should be implemented without $cos(\theta_{out})$ term. For mirrors cosine shouldn't be applied, thus you should pre-divide $cos(\theta_{out})$ instead (so that the cosines cancel each other). Also note that we do not include color in BRDF/BTDF equations. The color should be multiplied with the BRDF value.
+\boldblue{(!) Implementation:} All BRDF and BTDF should be implemented without $cos(\theta_{out})$ term. For mirrors cosine shouldn't be applied, thus you should pre-divide $cos(\theta_{out})$ instead (so that the cosines cancel each other). Also note that we do not include color in BRDF/BTDF equations. The color should be multiplied with the BRDF value.
+
+\boldblue{(!) Implementation:} Note that texture color (that comes from PNG, JPG, BMP and othe LDR formats) should be transformed to linear space with gamma transform: $ C_{linear} = C_{srgb}^{2.2} $. Unlike textures values that are \textbf{specified explicitly} in XML (or other) assummed to be \textbf{already in linear space}.
+
+\boldblue{(!) Implementation:} Note that final color of the image should be first clamped and then transformed from HDR to LDR space with gamma correction: $ C_{srgb} = C_{linear}^{(1.0/2.2)} $. Clamping should be simple (i.e. losing color). For example color (1.5, 2.0, 10.0) should be clamped to (1,1,1) but not to (0.15, 0.2, 1.0) for example.
+
+\newpage
 
 \addtocounter{section}{-2}
 
@@ -136,10 +142,12 @@ Note that all BRDF and BTDF should be implemented without $cos(\theta_{out})$ te
 
 Basic support for Lambertian reflections. The BRDF function \textbf{must} be implemented according to equation \ref{brdf_lambert}. See fig \ref{fig:test_101_image} and listing \ref{lambertxml} for image and XML example respectively.
 
+\boldblue{Implementation:}
 \begin{equation}\label{brdf_lambert}
 BRDF_{lambert} = \frac{1}{\pi}
 \end{equation}
 
+\boldblue{Test:} 101\_diffuse\_lambert. MSE should be less than 5.0 for 512x512 LDR image.
 \begin{figure}[htb]
 	\centering
 	\includegraphics[width=0.25\linewidth]{images/test_101/w_ref.png}           
@@ -149,6 +157,8 @@ BRDF_{lambert} = \frac{1}{\pi}
 
 \FloatBarrier
 
+
+\boldblue{Storage:}
 \lstset{language=XML}
 \begin{lstlisting}[caption=Lambert material definition in Hydra XML standart, label=lambertxml, captionpos=b]
 <material id="0" name="mysimplemat" type="hydra_material">
@@ -160,7 +170,36 @@ BRDF_{lambert} = \frac{1}{\pi}
 
 \reqirenment{phong}
 
-Basic support for reflections via Phong mode. Note that mixing of phong and lambertian reflections is not needed at this level of standard. Renderer may suppose mutually exclusive phong or lambert. 
+Basic support for reflections via Modified Phong model \cite{fixedPhongpaper}. Note that mixing of phong and lambertian reflections is not needed at this level of standard. Renderer may suppose mutually exclusive phong or lambert. 
+
+\boldblue{Implementation:}
+Assume both reflection vector and generated direction (x,y,z) \textbf{are given in local basis} and thus ideal reflection vector equals to (0,1,0). Then, further model can be used for sampling and BRDF evaluation:
+
+\begin{eqnarray*} \label{eq:fixedPhong}
+	h           = \sqrt{1-\xi_1^{\frac{2}{n+1}}} \\
+	(x,y,z )    = (h*cos(2\pi\xi_2), h*sin(2\pi\xi_2), \xi_1^{\frac{1}{n+1}} )\\
+	cos(\alpha) = dot((0,1,0), (x,y,z)) = y \\
+	brdf = \frac{n+2}{2\pi}cos(\alpha)^{n} \\
+	pdf = \frac{n+1}{2\pi}cos(\alpha)^{n} \\
+\end{eqnarray*}
+
+\boldblue{Test:} 104\_reflect\_phong. MSE should be less than 20.0 for 512x512 LDR image.
+
+
+\begin{figure}[h]
+	\begin{minipage}[h]{0.33\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{images/test_104/w_ref.png} \\ cosPower = 12}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[h]{0.325\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{images/test_104/w_ref2.png} \\ cosPower = 32}
+	\end{minipage}
+	\begin{minipage}[h]{0.33\linewidth}
+		\center{\includegraphics[width=1.0\linewidth]{images/test_104/w_ref3.png} \\ cosPower = 82}
+	\end{minipage}
+	\caption{Phong for different cosine power and color (0.5, 0.5, 0.5).}
+\end{figure}
+
 
 \reqirenment{mirror}
 
@@ -168,7 +207,7 @@ Pure specular reflection. Note that mixing of mirror and lambertian reflections 
 
 \reqirenment{emission}
 
-Basic support for emissive material. On this level of standart emissive materials don't combined with others. Renderer may suppose mutually exclusive: (emissive or 'some other'). Please note that emissve materials have not be considered as lights (i.e. they don't have to be sampled with any sampling strategy, however, of cource, they could), but they must cast GI.
+Basic support for emissive material. On this level of standart emissive materials don't combined with others. Renderer may suppose mutually exclusive: (emissive or 'some other'). Please note that emissive materials have not be considered as lights (i.e. they don't have to be sampled with any explicit sampling strategy, however, of cource, they could), but they must cast GI.
 
 \reqirenment{lambert\_texture\_color}
 
@@ -272,5 +311,19 @@ Note that all mixtures could be (and in general recommended to be) implemented v
 Функции не имеющие побочных состояний называются чистыми. Чистые функции, написанные на C99 и используемые в ядре \textbf{должны} использовать соглашение \textit{lowerCamelCase} (листинг \ref{examplebasiccore}).
 
 
+\begin{thebibliography}{1}
+\small{    
+		
+\bibitem{fixedPhongpaper} Eric P. Lafortune and Yves D. Willems. \textit{Using the Modified Phong Reflectance Model for Physically Based Rendering}. 1994. 
+		
+		
+		
+}
+\end{thebibliography}
+
 
 \end{document}
+
+
+
+

@@ -50,3 +50,11 @@ main/x64/
 PostProcessDLL/x64/
 PostProcessDLLExample/x64/
 mikktspace/x64/
+utils/clew/x64/Debug/clew.log
+utils/clew/x64/Debug/clew.pdb
+utils/clew/x64/Debug/clew.tlog/clew.lastbuildstate
+utils/corto/x64/
+utils/clew/x64/
+utils/ies_parser/x64/
+utils/mikktspace/x64/
+main/demos/demo_02/

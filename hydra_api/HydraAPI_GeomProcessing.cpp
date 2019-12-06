@@ -17,6 +17,13 @@
 #include <set>
 #include <algorithm>
 
+#include <cmath>
+#include <cassert>
+#include <random>
+
+using std::isnan;
+using std::isinf;
+
 #include "LiteMath.h"
 using namespace HydraLiteMath;
 
@@ -25,12 +32,96 @@ using namespace HydraLiteMath;
 #include "HydraXMLHelpers.h"
 #include "HydraTextureUtils.h"
 
-#include "../mikktspace/mikktspace.h"
+#include "../utils/mikktspace/mikktspace.h"
+
+#ifdef WIN32
+#undef min
+#undef max
+#endif
 
 extern std::wstring      g_lastError;
 extern std::wstring      g_lastErrorCallerPlace;
-extern HR_ERROR_CALLBACK g_pErrorCallback;
 extern HRObjectManager   g_objManager;
+
+#ifdef WIN32
+#undef min
+#undef max
+#endif
+
+
+void HR_ComputeTangentSpaceSimple(const int     vertexCount, const int     triangleCount, const uint32_t* triIndices,
+                                  const float4* verticesPos, const float4* verticesNorm, const float2* vertTexCoord,
+                                  float4* verticesTang)
+{
+  
+  float4 *tan1 = new float4[vertexCount * 2];
+  float4 *tan2 = tan1 + vertexCount;
+  memset(tan1, 0, vertexCount * sizeof(float4) * 2);
+  
+  const float epsDiv = 1.0e25f;
+  
+  for (auto a = 0; a < triangleCount; a++)
+  {
+    auto i1 = triIndices[3 * a + 0];
+    auto i2 = triIndices[3 * a + 1];
+    auto i3 = triIndices[3 * a + 2];
+    
+    const float4& v1 = verticesPos[i1];
+    const float4& v2 = verticesPos[i2];
+    const float4& v3 = verticesPos[i3];
+    
+    const float2& w1 = vertTexCoord[i1];
+    const float2& w2 = vertTexCoord[i2];
+    const float2& w3 = vertTexCoord[i3];
+    
+    const float x1 = v2.x - v1.x;
+    const float x2 = v3.x - v1.x;
+    const float y1 = v2.y - v1.y;
+    const float y2 = v3.y - v1.y;
+    const float z1 = v2.z - v1.z;
+    const float z2 = v3.z - v1.z;
+    
+    const float s1 = w2.x - w1.x;
+    const float s2 = w3.x - w1.x;
+    const float t1 = w2.y - w1.y;
+    const float t2 = w3.y - w1.y;
+    
+    const float denom = (s1 * t2 - s2 * t1);
+    const float r     = (fabs(denom) > 1e-35f) ? (1.0f / denom) : 0.0f;
+    
+    const float4 sdir((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r, 1);
+    const float4 tdir((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r, 1);
+    
+    tan1[i1] += sdir;
+    tan1[i2] += sdir;
+    tan1[i3] += sdir;
+    
+    tan2[i1] += tdir;
+    tan2[i2] += tdir;
+    tan2[i3] += tdir;
+  }
+  
+  for (long a = 0; a < vertexCount; a++)
+  {
+    const float4& n = verticesNorm[a];
+    const float4& t = tan1[a];
+    
+    const float3 n1 = to_float3(n);
+    const float3 t1 = to_float3(t);
+    
+    // Gram-Schmidt orthogonalization
+    verticesTang[a] = to_float4(normalize(t1 - n1 * dot(n1, t1)), 0.0f); // #NOTE: overlow here is ok!
+    
+    verticesTang[a].x = isnan(verticesTang[a].x) || isinf(verticesTang[a].x) ? 0 : verticesTang[a].x;
+    verticesTang[a].y = isnan(verticesTang[a].y) || isinf(verticesTang[a].y) ? 0 : verticesTang[a].y;
+    verticesTang[a].z = isnan(verticesTang[a].z) || isinf(verticesTang[a].z) ? 0 : verticesTang[a].z;
+    
+    // Calculate handedness
+    verticesTang[a].w = (dot(cross(n1, t1), to_float3(tan2[a])) < 0.0f) ? -1.0f : 1.0f;
+  }
+  
+  delete [] tan1;
+}
 
 
 
@@ -73,7 +164,7 @@ bool meshHasDisplacementMat(HRMeshRef a_mesh, pugi::xml_node &displaceXMLNode)
       auto mat = g_objManager.PtrById(tmpRef);
       if (mat != nullptr)
       {
-        auto d_node = mat->xml_node_next(HR_OPEN_EXISTING).child(L"displacement");
+        auto d_node = mat->xml_node().child(L"displacement");
 
         if (d_node.attribute(L"type").as_string() == std::wstring(L"true_displacement"))
         {
@@ -112,7 +203,7 @@ bool instanceHasDisplacementMat(HRMeshRef a_meshRef, const std::unordered_map<ui
       auto mat = g_objManager.PtrById(matRef);
       if (mat != nullptr)
       {
-        auto d_node = mat->xml_node_next(HR_OPEN_EXISTING).child(L"displacement");
+        auto d_node = mat->xml_node().child(L"displacement");
 
         if (d_node.attribute(L"type").as_string() == std::wstring(L"true_displacement"))
         {
@@ -160,7 +251,7 @@ void hrMeshDisplace(HRMeshRef a_mesh, const std::unordered_map<uint32_t, uint32_
       auto mat = g_objManager.PtrById(tmpRef);
       if(mat != nullptr)
       {
-        auto d_node = mat->xml_node_next(HR_OPEN_EXISTING).child(L"displacement");
+        auto d_node = mat->xml_node().child(L"displacement");
 
         if (d_node != nullptr &&
             std::wstring(d_node.attribute(L"type").as_string()) == std::wstring(L"true_displacement"))
@@ -200,7 +291,7 @@ void hrMeshDisplace(HRMeshRef a_mesh, const std::unordered_map<uint32_t, uint32_
   }
 
 
-  hrMeshComputeNormals(a_mesh, mesh.triIndices.size(), false);
+  hrMeshComputeNormals(a_mesh, int(mesh.triIndices.size()), false);
 }
 
 float smoothing_coeff(uint32_t valence)
@@ -290,8 +381,8 @@ void update_vertex_attrib_by_index_f2(float2 new_val, uint32_t vertex_index, std
 void smooth_common_vertex_attributes(uint32_t vertex_index, const HRMesh::InputTriMesh& mesh, float4 &pos, float4 &normal,
                                      float4 &tangent, float2 &uv)
 {
-  auto neighbours = find_vertex_neighbours(vertex_index, mesh);
-  uint32_t valence = neighbours.size();
+  auto neighbours  = find_vertex_neighbours(vertex_index, mesh);
+  uint32_t valence = uint32_t(neighbours.size());
 
   pos      = vertex_attrib_by_index_f4("pos", vertex_index, mesh);
   normal   = vertex_attrib_by_index_f4("normal", vertex_index, mesh);
@@ -412,7 +503,7 @@ void hrMeshSubdivideSqrt3(HRMeshRef a_mesh, int a_iterations)
       float4 PTan = (ATan + BTan + CTan) / 3.0f;
       float2 Puv = (Auv + Buv + Cuv) / 3.0f;
 
-      uint32_t indP = mesh.verticesPos.size() / 4;
+      uint32_t indP = uint32_t(mesh.verticesPos.size() / 4);
       mesh.verticesPos.push_back(P.x);
       mesh.verticesPos.push_back(P.y);
       mesh.verticesPos.push_back(P.z);
@@ -550,7 +641,7 @@ void hrMeshSubdivide(HRMeshRef a_mesh, int a_iterations)
     float4 PTan = (ATan + BTan + CTan) / 3.0f;
     float2 Puv = (Auv + Buv + Cuv) / 3.0f;
 
-    uint32_t indP = mesh.verticesPos.size() / 4;
+    uint32_t indP = uint32_t(mesh.verticesPos.size() / 4);
     mesh.verticesPos.push_back(P.x);
     mesh.verticesPos.push_back(P.y);
     mesh.verticesPos.push_back(P.z);
@@ -1128,48 +1219,51 @@ void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::v
 
 
 
-void InsertFixedMeshesInfoIntoXML(pugi::xml_document &stateToProcess, std::unordered_map<uint32_t, uint32_t> &meshTofixedMesh)
-{
-  auto texNode = stateToProcess.child(L"geometry_lib");
-
-  if (texNode != nullptr)
-  {
-    for (auto& meshMap : meshTofixedMesh)
-    {
-      auto geoLib = g_objManager.scnData.m_geometryLibChanges;
-
-      auto mesh_node = geoLib.find_child_by_attribute(L"id", std::to_wstring(meshMap.second).c_str());
-      texNode.append_copy(mesh_node);
-
-      auto sceneNode = stateToProcess.child(L"scenes").child(L"scene");
-      if (sceneNode != nullptr)
-      {
-        for (auto node = sceneNode.child(L"instance"); node != nullptr; node = node.next_sibling())
-        {
-          if(node.attribute(L"mesh_id") != nullptr && node.attribute(L"mesh_id").as_int() == meshMap.first)
-            node.attribute(L"mesh_id").set_value(meshMap.second);
-        }
-      }
-    }
-  }
-}
+// void InsertFixedMeshesInfoIntoXML(pugi::xml_document &stateToProcess, std::unordered_map<uint32_t, uint32_t> &meshTofixedMesh)
+// {
+//   auto texNode = stateToProcess.child(L"geometry_lib");
+//
+//   if (texNode != nullptr)
+//   {
+//     for (auto& meshMap : meshTofixedMesh)
+//     {
+//       auto geoLib = g_objManager.scnData.m_geometryLibChanges;
+//
+//       auto mesh_node = geoLib.find_child_by_attribute(L"id", std::to_wstring(meshMap.second).c_str());
+//       texNode.append_copy(mesh_node);
+//
+//       auto sceneNode = stateToProcess.child(L"scenes").child(L"scene");
+//       if (sceneNode != nullptr)
+//       {
+//         for (auto node = sceneNode.child(L"instance"); node != nullptr; node = node.next_sibling())
+//         {
+//           if(node.attribute(L"mesh_id") != nullptr && node.attribute(L"mesh_id").as_int() == meshMap.first)
+//             node.attribute(L"mesh_id").set_value(meshMap.second);
+//         }
+//       }
+//     }
+//   }
+// }
+//
 
 void InsertFixedMeshesAndInstancesXML(pugi::xml_document &stateToProcess,
                                       std::unordered_map<uint32_t, int32_t> &instToFixedMesh, int32_t sceneId)
 {
   auto geolib = stateToProcess.child(L"geometry_lib");
   std::vector <std::pair<int, pugi::xml_node> > tmp_nodes;
-
   if (geolib != nullptr)
   {
     for (auto& meshMap : instToFixedMesh)
     {
-      auto geoLib_ch = g_objManager.scnData.m_geometryLibChanges;
-
-      auto mesh_node = geoLib_ch.find_child_by_attribute(L"id", std::to_wstring(meshMap.second).c_str());
+      //auto geoLib_ch = g_objManager.scnData.m_geometryLibChanges;
+      //auto mesh_node = geoLib_ch.find_child_by_attribute(L"id", std::to_wstring(meshMap.second).c_str());
+      if(meshMap.second < 0 || meshMap.second >= g_objManager.scnData.meshes.size())
+        continue;
+      
+      auto mesh_node = g_objManager.scnData.meshes[meshMap.second].xml_node();
+      
       std::pair<int, pugi::xml_node> p(meshMap.second, mesh_node);
       tmp_nodes.push_back(p);
-
       auto sceneNode = stateToProcess.child(L"scenes").find_child_by_attribute(L"scene", L"id", std::to_wstring(sceneId).c_str());
       if (sceneNode != nullptr)
       {
@@ -1181,11 +1275,9 @@ void InsertFixedMeshesAndInstancesXML(pugi::xml_document &stateToProcess,
       }
     }
   }
-
-
   std::sort(tmp_nodes.begin(), tmp_nodes.end(),
-          [&](auto a, auto b) { return a.first < b.first; });
-
+            [&](auto a, auto b) { return a.first < b.first; });
+  
   for (auto& node : tmp_nodes)
     geolib.append_copy(node.second);
 }
@@ -1414,6 +1506,7 @@ std::wstring HR_PreprocessMeshes(const wchar_t *state_path)
         hrMeshClose(mesh_ref);
       }
     }
+
     if(anyChanges)
     {
       InsertFixedMeshesAndInstancesXML(stateToProcess, instToFixedMesh, g_objManager.m_currSceneId);
@@ -1504,7 +1597,7 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
       normals_new.at(index * 4 + 0) = A_normal.x;
       normals_new.at(index * 4 + 1) = A_normal.y;
       normals_new.at(index * 4 + 2) = A_normal.z;
-      normals_new.at(index * 4 + 3) = 1.0f;
+      normals_new.at(index * 4 + 3) = 0.0f;
 
       uv_new.at(index * 2 + 0) = A_uv.x;
       uv_new.at(index * 2 + 1) = A_uv.y;
@@ -1549,7 +1642,7 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
       normals_new.at(index * 4 + 0) = B_normal.x;
       normals_new.at(index * 4 + 1) = B_normal.y;
       normals_new.at(index * 4 + 2) = B_normal.z;
-      normals_new.at(index * 4 + 3) = 1.0f;
+      normals_new.at(index * 4 + 3) = 0.0f;
 
       uv_new.at(index * 2 + 0) = B_uv.x;
       uv_new.at(index * 2 + 1) = B_uv.y;
@@ -1595,7 +1688,7 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
       normals_new.at(index * 4 + 0) = C_normal.x;
       normals_new.at(index * 4 + 1) = C_normal.y;
       normals_new.at(index * 4 + 2) = C_normal.z;
-      normals_new.at(index * 4 + 3) = 1.0f;
+      normals_new.at(index * 4 + 3) = 0.0f;
 
       uv_new.at(index * 2 + 0) = C_uv.x;
       uv_new.at(index * 2 + 1) = C_uv.y;
@@ -1644,7 +1737,7 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
   mesh.matIndices.resize(mid_new.size());
   std::copy(mid_new.begin(), mid_new.end(), mesh.matIndices.begin());
 
-  indexNum = indices_new.size();
+  indexNum = int(indices_new.size());
 }
 
 
@@ -1653,9 +1746,9 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
 // Return number of primitives in the geometry.
 int getNumFaces(const SMikkTSpaceContext *context)
 {
-  HRMesh *pMesh = static_cast <HRMesh *> (context->m_pUserData);
+  auto *pInput = static_cast <HRMesh::InputTriMesh*> (context->m_pUserData);
 
-  return pMesh->m_input.triIndices.size()/3;
+  return int(pInput->triIndices.size()/3);
 }
 
 // Return number of vertices in the primitive given by index.
@@ -1667,33 +1760,33 @@ int getNumVerticesOfFace(const SMikkTSpaceContext *context, const int primnum)
 // Write 3-float position of the vertex's point.
 void getPosition(const SMikkTSpaceContext *context, float outpos[], const int primnum, const int vtxnum)
 {
-  HRMesh *pMesh = static_cast <HRMesh *> (context->m_pUserData);
-  auto index = pMesh->m_input.triIndices.at(primnum * 3 + vtxnum);
+  auto *pInput = static_cast <HRMesh::InputTriMesh*> (context->m_pUserData);
+  auto index   = pInput->triIndices.at(primnum * 3 + vtxnum);
 
-  outpos[0] = pMesh->m_input.verticesPos.at(index * 4 + 0);
-  outpos[1] = pMesh->m_input.verticesPos.at(index * 4 + 1);
-  outpos[2] = pMesh->m_input.verticesPos.at(index * 4 + 2);
+  outpos[0] = pInput->verticesPos.at(index * 4 + 0);
+  outpos[1] = pInput->verticesPos.at(index * 4 + 1);
+  outpos[2] = pInput->verticesPos.at(index * 4 + 2);
 }
 
 // Write 3-float vertex normal.
 void getNormal(const SMikkTSpaceContext *context, float outnormal[], const int primnum, const int vtxnum)
 {
-  HRMesh *pMesh = static_cast <HRMesh *> (context->m_pUserData);
-  auto index = pMesh->m_input.triIndices.at(primnum * 3 + vtxnum);
+  auto *pInput = static_cast <HRMesh::InputTriMesh*> (context->m_pUserData);
+  auto index   = pInput->triIndices.at(primnum * 3 + vtxnum);
 
-  outnormal[0] = pMesh->m_input.verticesNorm.at(index * 4 + 0);
-  outnormal[1] = pMesh->m_input.verticesNorm.at(index * 4 + 1);
-  outnormal[2] = pMesh->m_input.verticesNorm.at(index * 4 + 2);
+  outnormal[0] = pInput->verticesNorm.at(index * 4 + 0);
+  outnormal[1] = pInput->verticesNorm.at(index * 4 + 1);
+  outnormal[2] = pInput->verticesNorm.at(index * 4 + 2);
 }
 
 // Write 2-float vertex uv.
 void getTexCoord(const SMikkTSpaceContext *context, float outuv[], const int primnum, const int vtxnum)
 {
-  HRMesh *pMesh = static_cast <HRMesh *> (context->m_pUserData);
-  auto index = pMesh->m_input.triIndices.at(primnum * 3 + vtxnum);
+  auto *pInput = static_cast <HRMesh::InputTriMesh*> (context->m_pUserData);
+  auto index   = pInput->triIndices.at(primnum * 3 + vtxnum);
 
-  outuv[0] = pMesh->m_input.verticesNorm.at(index * 2 + 0);
-  outuv[1] = pMesh->m_input.verticesNorm.at(index * 2 + 1);
+  outuv[0] = pInput->verticesTexCoord.at(index * 2 + 0);
+  outuv[1] = pInput->verticesTexCoord.at(index * 2 + 1);
 }
 
 // Compute and set attributes on the geometry vertex. Basic version.
@@ -1703,22 +1796,13 @@ void setTSpaceBasic(const SMikkTSpaceContext *context,
                     const int primnum,
                     const int vtxnum)
 {
-  HRMesh *pMesh = static_cast <HRMesh *> (context->m_pUserData);
-  auto index = pMesh->m_input.triIndices.at(primnum * 3 + vtxnum);
+  auto *pInput = static_cast <HRMesh::InputTriMesh*> (context->m_pUserData);
+  auto index   = pInput->triIndices.at(primnum * 3 + vtxnum);
 
-//  if(sign < 0.0f)
-//  {
-//    pMesh->m_input.verticesTangent[index * 4 + 0] = -1.0f * tangentu[0];
-//    pMesh->m_input.verticesTangent[index * 4 + 1] = -1.0f * tangentu[1];
-//    pMesh->m_input.verticesTangent[index * 4 + 2] = -1.0f * tangentu[2];
-//  }
-//  else
-  {
-    pMesh->m_input.verticesTangent.at(index * 4 + 0) = tangentu[0];
-    pMesh->m_input.verticesTangent.at(index * 4 + 1) = tangentu[1];
-    pMesh->m_input.verticesTangent.at(index * 4 + 2) = tangentu[2];
-  }
-  pMesh->m_input.verticesTangent.at(index * 4 + 3) = sign;
+  pInput->verticesTangent.at(index * 4 + 0) = tangentu[0];
+  pInput->verticesTangent.at(index * 4 + 1) = tangentu[1];
+  pInput->verticesTangent.at(index * 4 + 2) = tangentu[2];
+  pInput->verticesTangent.at(index * 4 + 3) = sign;
 }
 
 void setTSpace(const SMikkTSpaceContext *context,
@@ -1730,37 +1814,148 @@ void setTSpace(const SMikkTSpaceContext *context,
                const int primnum,
                const int vtxnum)
 {
-  HRMesh *pMesh = static_cast <HRMesh *> (context->m_pUserData);
-  auto index = pMesh->m_input.triIndices[primnum * 3 + vtxnum];
+  auto *pInput = static_cast <HRMesh::InputTriMesh*> (context->m_pUserData);
+  auto index   = pInput->triIndices[primnum * 3 + vtxnum];
 
-  pMesh->m_input.verticesTangent[index * 4 + 0] = tangentv[0];
-  pMesh->m_input.verticesTangent[index * 4 + 1] = tangentv[1];
-  pMesh->m_input.verticesTangent[index * 4 + 2] = tangentv[2];
-  pMesh->m_input.verticesTangent[index * 4 + 3] = 1.0f;
+  pInput->verticesTangent[index * 4 + 0] = tangentu[0];
+  pInput->verticesTangent[index * 4 + 1] = tangentu[1];
+  pInput->verticesTangent[index * 4 + 2] = tangentu[2];
+  pInput->verticesTangent[index * 4 + 3] = 1.0f;
 }
 
-void runTSpaceCalc(HRMeshRef mesh_ref, bool basic)
-{
-  HRMesh* pMesh = g_objManager.PtrById(mesh_ref);
-  if (pMesh == nullptr)
-  {
-    HrError(L"runTSpaceCalc: nullptr input");
-    return;
-  }
+void MikeyTSpaceCalc(HRMesh::InputTriMesh* pInput, bool basic)
+{ 
+  assert(pInput != nullptr);
 
   SMikkTSpaceInterface iface;
-  iface.m_getNumFaces = getNumFaces;
+  iface.m_getNumFaces          = getNumFaces;
   iface.m_getNumVerticesOfFace = getNumVerticesOfFace;
-  iface.m_getPosition = getPosition;
-  iface.m_getNormal = getNormal;
-  iface.m_getTexCoord = getTexCoord;
-  iface.m_setTSpaceBasic = basic ? setTSpaceBasic : nullptr;
-  iface.m_setTSpace = basic ? nullptr : setTSpace;
+  iface.m_getPosition          = getPosition;
+  iface.m_getNormal            = getNormal;
+  iface.m_getTexCoord          = getTexCoord;
+  iface.m_setTSpaceBasic       = basic ? setTSpaceBasic : nullptr;
+  iface.m_setTSpace            = basic ? nullptr : setTSpace;
 
   SMikkTSpaceContext context;
   context.m_pInterface = &iface;
-  context.m_pUserData = pMesh;
-  pMesh->m_input.verticesTangent.resize(pMesh->m_input.verticesPos.size());
+  context.m_pUserData  = pInput;
 
   genTangSpaceDefault(&context);
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//// Mesh sampling
+
+void HRUtils::getRandomPointsOnMesh(HRMeshRef mesh_ref, float *points, uint32_t n_points, bool tri_area_weighted, uint32_t seed)
+{
+  HRMesh *pMesh = g_objManager.PtrById(mesh_ref);
+
+  if (pMesh == nullptr)
+  {
+    HrError(L"HRUtils::getRandomPointsOnMesh: nullptr input");
+    return;
+  }
+
+  if(points == nullptr)
+  {
+    HrError(L"HRUtils::getRandomPointsOnMesh: points is nullptr");
+    return;
+  }
+
+  if (!pMesh->opened)
+  {
+    hrMeshOpen(mesh_ref, HR_TRIANGLE_IND3, HR_OPEN_EXISTING);
+  }
+
+  HRMesh::InputTriMesh &mesh = pMesh->m_input;
+
+  uint32_t vert_num = mesh.verticesPos.size();
+  uint32_t tri_num = mesh.triIndices.size() / 3;
+
+  //std::mt19937 rng(seed);
+  hr_prng::RandomGen rgen = hr_prng::RandomGenInit(seed);
+  std::uniform_real_distribution<float> select(0.0f, 1.0f);
+
+  std::vector<uint32_t> triangle_indices;
+  if(tri_area_weighted)
+  {
+    float min_area = std::numeric_limits<float>::max();
+    std::vector<float> triangle_areas(tri_num, 0.0f);
+    for(uint32_t i = 0; i < tri_num; ++i )
+    {
+      uint32_t idx_A = mesh.triIndices.at(i * 3 + 0);
+      uint32_t idx_B = mesh.triIndices.at(i * 3 + 1);
+      uint32_t idx_C = mesh.triIndices.at(i * 3 + 2);
+      float3 A = make_float3(mesh.verticesPos.at(idx_A * 4 + 0), mesh.verticesPos.at(idx_A * 4 + 1), mesh.verticesPos.at(idx_A * 4 + 2));
+      float3 B = make_float3(mesh.verticesPos.at(idx_B * 4 + 0), mesh.verticesPos.at(idx_B * 4 + 1), mesh.verticesPos.at(idx_B * 4 + 2));
+      float3 C = make_float3(mesh.verticesPos.at(idx_C * 4 + 0), mesh.verticesPos.at(idx_C * 4 + 1), mesh.verticesPos.at(idx_C * 4 + 2));
+
+      float3 edge1A = normalize(B - A);
+      float3 edge2A = normalize(C - A);
+
+      float face_area = 0.5f * sqrtf(powf(edge1A.y * edge2A.z - edge1A.z * edge2A.y, 2) +
+                                     powf(edge1A.z * edge2A.x - edge1A.x * edge2A.z, 2) +
+                                     powf(edge1A.x * edge2A.y - edge1A.y * edge2A.x, 2));
+
+//      float cos_theta = dot(edge1A, edge2A);
+//      float sin_theta = sqrtf(1.0f - cos_theta * cos_theta);
+//      float face_area = 0.5f * dot(edge1A, edge1A) * dot(edge2A, edge2A) * sin_theta;
+
+      if(face_area < min_area)
+        min_area = face_area;
+
+      triangle_areas[i] = face_area;
+    }
+
+    //std::vector<uint32_t> tmp_vec(triangle_areas.size(), 0u);
+    for(uint32_t i = 0; i < triangle_areas.size(); ++i)
+    {
+      auto tmp = static_cast<uint32_t >(std::ceil(triangle_areas[i] / min_area));
+
+      for(int j = 0; j <= tmp; ++j)
+        triangle_indices.push_back(i);
+    }
+  }
+
+
+  for(uint32_t i = 0; i < n_points; ++i)
+  {
+    uint32_t triangle = 0u;
+    if(tri_area_weighted)
+      triangle = triangle_indices[uint32_t(triangle_indices.size() * hr_prng::rndFloatUniform(rgen, 0.0f, 1.0f))];
+    else
+      triangle = uint32_t(tri_num * hr_prng::rndFloatUniform(rgen, 0.0f, 1.0f));
+
+    uint32_t idx_A = mesh.triIndices.at(triangle * 3 + 0);
+    uint32_t idx_B = mesh.triIndices.at(triangle * 3 + 1);
+    uint32_t idx_C = mesh.triIndices.at(triangle * 3 + 2);
+
+    float3 A = make_float3(mesh.verticesPos.at(idx_A * 4 + 0), mesh.verticesPos.at(idx_A * 4 + 1), mesh.verticesPos.at(idx_A * 4 + 2));
+    float3 B = make_float3(mesh.verticesPos.at(idx_B * 4 + 0), mesh.verticesPos.at(idx_B * 4 + 1), mesh.verticesPos.at(idx_B * 4 + 2));
+    float3 C = make_float3(mesh.verticesPos.at(idx_C * 4 + 0), mesh.verticesPos.at(idx_C * 4 + 1), mesh.verticesPos.at(idx_C * 4 + 2));
+
+    float u = hr_prng::rndFloatUniform(rgen, 0.0f, 1.0f);
+    float v = hr_prng::rndFloatUniform(rgen, 0.0f, 1.0f);
+    if( u + v > 1.0f)
+    {
+      u = 1.0f - u;
+      v = 1.0f - v;
+    }
+
+    float3 pt = u * A + v * B + (1 - (u + v)) * C;
+
+    points[i * 3 + 0] = pt.x;
+    points[i * 3 + 1] = pt.y;
+    points[i * 3 + 2] = pt.z;
+  }
+}
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+

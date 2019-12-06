@@ -28,20 +28,12 @@ struct HRObject
 {
   HRObject() : name(L""), id(0), opened(false), openMode(HR_WRITE_DISCARD), inMemory(true), changeId(0), wasChanged(false) {}
 
- /* HRObject(const HRObject& other) : name(other.name), id(other.id), opened(other.opened), openMode(other.openMode),
-                                    inMemory(other.inMemory), changeId(other.changeId), wasChanged(other.wasChanged)
-  {
-    m_xmlNode = other.m_xmlNode;
-    m_xmlNodeNext = other.m_xmlNodeNext;
-  }*/
-
   //////////////////////////////////////////////////
 
-  std::wstring name;     ///< object name that user usually have to specify
-  int32_t       id;       ///< object id, unique for each object type; no-overwrite policy is used; deleted objects never became valid again;
+  std::wstring name;       ///< object name that user usually have to specify
+  int32_t       id;        ///< object id, unique for each object type; no-overwrite policy is used; deleted objects never became valid again;
 
-
-  HR_OPEN_MODE openMode;   ///< HR_WRITE_DISCARD or HR_OPEN_EXINTING or HR_OPEN_READ_ONLY
+  HR_OPEN_MODE openMode;   ///< [HR_WRITE_DISCARD, HR_OPEN_EXISTING, HR_OPEN_READ_ONLY]
   bool         opened;     ///< if opened now
   bool         inMemory;   ///< if loaded in CPU memory, or swaped to disk
   bool         wasChanged; ///< was changed but not passed to render driver yet;
@@ -49,63 +41,12 @@ struct HRObject
 
   /////////////////////////////////////////////////////////////////////////////////// xml nodes
 
-  virtual void update_next(pugi::xml_node a_newNode)
-  {
-    m_xmlNodeNext = a_newNode;
-  }
-
-  virtual void update_this(pugi::xml_node a_newNode)
-  {
-    m_xmlNode = a_newNode;
-  }
-
-  virtual pugi::xml_node xml_node_immediate()
-  {
-    if (m_xmlNodeNext != nullptr)
-      return m_xmlNodeNext;
-    else
-      return m_xmlNode;
-  }
-
-  virtual pugi::xml_node xml_node_next(HR_OPEN_MODE a_openMode)
-  { 
-    if (m_xmlNodeNext == nullptr)
-    {
-      if (a_openMode == HR_OPEN_EXISTING)
-        m_xmlNodeNext = copy_node(m_xmlNode, false);
-      else if (a_openMode == HR_WRITE_DISCARD)
-        m_xmlNodeNext = copy_node(m_xmlNode, true);
-      else if (a_openMode == HR_OPEN_READ_ONLY)
-        m_xmlNodeNext = copy_node_trash(m_xmlNode);
-    }
-    
-    return m_xmlNodeNext;
-  }
-
-  virtual void commit()
-  {
-    if (m_xmlNodeNext == nullptr)
-      return;
-
-    m_xmlNode     = copy_node_back(m_xmlNodeNext);
-    m_xmlNodeNext = pugi::xml_node();
-  }
-
-  /////////////////////////////////////////////////////////////////////////////////// xml nodes
-
-  virtual pugi::xml_node copy_node(pugi::xml_node a_node, bool a_lite) = 0;
-  virtual pugi::xml_node copy_node_back(pugi::xml_node a_node)         = 0;
-
-  virtual pugi::xml_node copy_node_trash(pugi::xml_node a_node) ///< copy node to temporaray trash node that will be cleared further
-  {
-    pugi::xml_node nodeToCopy = get_global_trash_node();
-    return nodeToCopy.append_copy(a_node);
-  }
-
+  virtual void update(pugi::xml_node a_newNode) { m_xmlNode = a_newNode; }
+  virtual pugi::xml_node xml_node()             { return m_xmlNode; }
+  
 protected:
 
   pugi::xml_node m_xmlNode;
-  pugi::xml_node m_xmlNodeNext;
 
 };
 
@@ -119,18 +60,15 @@ void clear_node_childs(pugi::xml_node a_xmlNode);
 
 struct HRMesh : public HRObject<IHRMesh>
 {
-  HRMesh() : pImpl(nullptr), m_allMeshMatId(-1)  {}
+  HRMesh() : pImpl(nullptr), m_allMeshMatId(-1), m_empty(true)  {}
 
   std::shared_ptr<IHRMesh> pImpl;
-
-  pugi::xml_node copy_node(pugi::xml_node a_node, bool a_lite) override;
-  pugi::xml_node copy_node_back(pugi::xml_node a_node) override;
 
 //protected:
 
   struct InputTriMesh
   {
-    InputTriMesh() = default;
+    InputTriMesh() : m_saveCompressed(false), m_placeToOrigin(false) { }
 
     void clear()
     {
@@ -156,9 +94,9 @@ struct HRMesh : public HRObject<IHRMesh>
 
     void reserve(size_t vNum, size_t indNum)
     {
-      verticesPos.reserve(vNum * 4 + 10);
-      verticesNorm.reserve(vNum * 4 + 10);
-      verticesTangent.reserve(vNum * 4 + 10);
+      verticesPos.reserve     (vNum * 4 + 10);
+      verticesNorm.reserve    (vNum * 4 + 10);
+      verticesTangent.reserve (vNum * 4 + 10);
       verticesTexCoord.reserve(vNum * 2 + 10);
       
       if(triIndices.capacity() < indNum + 10)
@@ -171,6 +109,23 @@ struct HRMesh : public HRObject<IHRMesh>
       {
         arr.idata.reserve(1*vNum);
         arr.fdata.reserve(4*vNum);
+      }
+    }
+  
+    void resize(size_t vNum, size_t indNum)
+    {
+      verticesPos.resize     (vNum * 4);
+      verticesNorm.resize    (vNum * 4);
+      verticesTangent.resize (vNum * 4);
+      verticesTexCoord.resize(vNum * 2);
+      
+      triIndices.resize      (indNum);
+      matIndices.resize      (indNum / 3);
+    
+      for (auto& arr : customArrays)
+      {
+        arr.idata.resize(1*vNum);
+        arr.fdata.resize(4*vNum);
       }
     }
 
@@ -191,6 +146,8 @@ struct HRMesh : public HRObject<IHRMesh>
     };
 
     std::vector<CustArray> customArrays;
+    bool m_saveCompressed;
+    bool m_placeToOrigin;
   };
 
   struct InputTriMeshPointers
@@ -241,34 +198,32 @@ struct HRMesh : public HRObject<IHRMesh>
   InputTriMesh         m_input;
   InputTriMeshPointers m_inputPointers;
   int                  m_allMeshMatId;
+  bool                 m_empty;
+
+  struct MeshGetInfoGlobalData
+  {
+    std::vector<const wchar_t*> mptrs;
+    std::wstring                mlist;
+    std::vector<HRBatchInfo>    batches;
+  } mig_data;
 };
 
 struct HRLight : public HRObject<IHRLight>
 {
   HRLight() = default;
-
-  pugi::xml_node copy_node(pugi::xml_node a_node, bool a_lite) override;
-  pugi::xml_node copy_node_back(pugi::xml_node a_node) override;
 };
 
 struct HRMaterial : public HRObject<IHRMat>
 {
   HRMaterial() = default;
-
   std::shared_ptr<IHRMat> pImpl;
-
-  pugi::xml_node copy_node(pugi::xml_node a_node, bool a_lite) override;
-  pugi::xml_node copy_node_back(pugi::xml_node a_node) override;
 };
 
 struct HRCamera : public HRObject<IHRCam>
 {
   HRCamera() = default;
-
   std::shared_ptr<IHRCam> pImpl;
 
-  pugi::xml_node copy_node(pugi::xml_node a_node, bool a_lite) override;
-  pugi::xml_node copy_node_back(pugi::xml_node a_node) override;
 };
 
 /**
@@ -300,14 +255,17 @@ struct HRTextureNode : public HRObject<IHRTextureNode>
                                               displaceCallback(other.displaceCallback), customDataSize(other.customDataSize),
                                               pImpl(other.pImpl)
   {
+    if(customDataSize == 0)
+      customData = nullptr;
+    else
+    {
       customData = malloc(customDataSize);
-      memcpy(customData, other.customData, customDataSize);
+      if(other.customData != nullptr)
+        memcpy(customData, other.customData, customDataSize);
+    }
   }
 
   std::shared_ptr<IHRTextureNode> pImpl;
-
-  pugi::xml_node copy_node(pugi::xml_node a_node, bool a_lite) override;
-  pugi::xml_node copy_node_back(pugi::xml_node a_node) override;
 
   bool m_loadedFromFile;
 
@@ -319,6 +277,114 @@ struct HRTextureNode : public HRObject<IHRTextureNode>
   HRExtensions::HR_TEXTURE_DISPLACEMENT_CALLBACK displaceCallback;
 };
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+static inline std::unordered_set<int32_t> _intersect_them(const std::unordered_set<int32_t>& set1, const std::unordered_set<int32_t>& set2)
+{
+  std::unordered_set<int32_t> res;
+  for(int32_t elemA : set1)
+  {
+    if(set2.find(elemA) != set2.end())
+      res.insert(elemA);
+  }
+  return res;
+}
+
+static inline std::unordered_set<int32_t> _union_them(const std::unordered_set<int32_t> &in1, const std::unordered_set<int32_t> &in2)
+{
+  std::unordered_set<int32_t> out = in1;
+  out.insert(in2.begin(), in2.end());
+  return out;
+}
+
+struct ChangeList
+{
+  ChangeList() {}
+  ChangeList(const ChangeList& a_list) : drawSeq(a_list.drawSeq),
+                                   meshUsed(a_list.meshUsed), matUsed(a_list.matUsed),
+                                   lightUsed(a_list.lightUsed), texturesUsed(a_list.texturesUsed) { }
+
+  ChangeList(ChangeList&& a_list) : drawSeq(std::move(a_list.drawSeq)),
+                                    meshUsed(std::move(a_list.meshUsed)), matUsed(std::move(a_list.matUsed)),
+                                    lightUsed(std::move(a_list.lightUsed)), texturesUsed(std::move(a_list.texturesUsed)) { }
+
+  ChangeList& operator=(ChangeList& a_list)
+  {
+    meshUsed         = a_list.meshUsed;
+    matUsed          = a_list.matUsed;
+    lightUsed        = a_list.lightUsed;
+    texturesUsed     = a_list.texturesUsed;
+    drawSeq          = a_list.drawSeq;
+    return *this;
+  }
+
+  ChangeList& operator=(ChangeList&& a_list)
+  {
+    meshUsed         = std::move(a_list.meshUsed);
+    matUsed          = std::move(a_list.matUsed);
+    lightUsed        = std::move(a_list.lightUsed);
+    texturesUsed     = std::move(a_list.texturesUsed);
+    drawSeq          = std::move(a_list.drawSeq);
+    return *this;
+  }
+
+  std::unordered_set<int32_t> meshUsed;
+  std::unordered_set<int32_t> matUsed;
+  std::unordered_set<int32_t> lightUsed;
+  std::unordered_set<int32_t> texturesUsed;
+
+  struct InstancesInfo
+  {
+    std::vector<float>    matrices;
+    std::vector<int32_t>  linstid;
+    std::vector<int32_t>  remapid;
+    std::vector<int32_t>  instIdReal;
+  };
+
+  std::unordered_map<int32_t, InstancesInfo> drawSeq;
+
+  void clear()
+  {
+    meshUsed.clear();
+    matUsed.clear();
+    lightUsed.clear();
+    texturesUsed.clear();
+    drawSeq.clear();
+  }
+
+  void reserve(size_t a_n)
+  {
+    texturesUsed.reserve(a_n);
+    matUsed.reserve(a_n*4);
+    meshUsed.reserve(a_n*4);
+    lightUsed.reserve(a_n/4);
+    drawSeq.reserve(a_n*4);
+  }
+  
+  ChangeList intersect_with(const ChangeList& a_rhs)
+  {
+    ChangeList res;
+    res.meshUsed     = _intersect_them(meshUsed,     a_rhs.meshUsed);
+    res.matUsed      = _intersect_them(matUsed,      a_rhs.matUsed);
+    res.lightUsed    = _intersect_them(lightUsed,    a_rhs.lightUsed);
+    res.texturesUsed = _intersect_them(texturesUsed, a_rhs.texturesUsed);
+    return res;
+  }
+  
+  ChangeList union_with(const ChangeList& a_rhs)
+  {
+    ChangeList res;
+    res.meshUsed     = _union_them(meshUsed,     a_rhs.meshUsed);
+    res.matUsed      = _union_them(matUsed,      a_rhs.matUsed);
+    res.lightUsed    = _union_them(lightUsed,    a_rhs.lightUsed);
+    res.texturesUsed = _union_them(texturesUsed, a_rhs.texturesUsed);
+    res.drawSeq      = drawSeq;
+    return res;
+  }
+  
+  
+};
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -336,9 +402,6 @@ struct HRSceneData : public HRObject<IHRSceneData>
 
   std::shared_ptr<IHRSceneData> pImpl;
 
-  pugi::xml_node copy_node(pugi::xml_node a_node, bool a_lite) override;
-  pugi::xml_node copy_node_back(pugi::xml_node a_node) override;
-
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
   std::vector<HRMesh>        meshes;
   std::vector<HRLight>       lights;
@@ -355,38 +418,29 @@ struct HRSceneData : public HRObject<IHRSceneData>
   pugi::xml_node             m_geometryLib;
   pugi::xml_node             m_sceneNode;
   pugi::xml_node             m_settingsNode;
-  pugi::xml_node             m_trashNode;
-
-  pugi::xml_document         m_xmlDocChanges;
-  pugi::xml_node             m_texturesLibChanges;
-  pugi::xml_node             m_materialsLibChanges;
-  pugi::xml_node             m_lightsLibChanges;
-  pugi::xml_node             m_cameraLibChanges;
-  pugi::xml_node             m_geometryLibChanges;
-  pugi::xml_node             m_sceneNodeChanges;
-  pugi::xml_node             m_settingsNodeChanges;
 
   std::unordered_map<std::wstring, int32_t>      m_textureCache;
   std::unordered_map<std::wstring, std::wstring> m_iesCache;
 
   // dependency data
   //
-  std::unordered_multimap<int32_t, int32_t> m_materialToMeshDependency;
-  std::unordered_set<int32_t>               m_shadowCatchers;
+  std::unordered_set<int32_t>                    m_shadowCatchers;
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
   
-  void init(bool a_emptyvb, HRSystemMutex* a_pVBSysMutexLock);
-  void init_existing(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock);
+  void init(bool a_emptyvb, HRSystemMutex* a_pVBSysMutexLock, size_t a_size);
+  void init_existing(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock, size_t a_size);
   void clear();
-  void clear_changes();
 
   int32_t m_commitId;
   std::wstring m_path;
   std::wstring m_pathState;
   std::wstring m_fileState;
+
+  ChangeList m_changeList;
+
 protected:
-  void init_virtual_buffer(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock);
+  void init_virtual_buffer(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock, size_t a_size);
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -399,37 +453,11 @@ struct HRSceneInst : public HRObject<IHRSceneInst>
 
   void update(pugi::xml_node a_newNode)
   {
-    m_xmlNodeNext = a_newNode;
-  }
-
-  void commit() override
-  {
-    if (m_xmlNodeNext == nullptr)
-      return;
-
-    const wchar_t* discard = m_xmlNodeNext.attribute(L"discard").value();
-    if (std::wstring(discard) == L"1")
-      m_xmlNode = copy_node_back(m_xmlNodeNext);
-    else
-      m_xmlNode = append_instances_back(m_xmlNodeNext);
-
-    m_xmlNodeNext = pugi::xml_node();
-  }
-
-  pugi::xml_node xml_node_next(HR_OPEN_MODE a_openMode) override
-  {
-     if (m_xmlNodeNext == nullptr)
-       m_xmlNodeNext = copy_node(m_xmlNode, true); // don't copy all scene instances ! :) 
-    return m_xmlNodeNext;
+    m_xmlNode = a_newNode;
   }
 
   void clear()
   {
-    meshUsedByDrv.clear();
-    matUsedByDrv.clear();
-    lightUsedByDrv.clear();
-    texturesUsedByDrv.clear();
-
     drawList.clear();
     drawListLights.clear();
     pImpl = nullptr;
@@ -444,8 +472,6 @@ struct HRSceneInst : public HRObject<IHRSceneInst>
 
   std::shared_ptr<IHRSceneInst> pImpl;
 
-  pugi::xml_node copy_node(pugi::xml_node a_node, bool a_lite) override;
-  pugi::xml_node copy_node_back(pugi::xml_node a_node) override;
   pugi::xml_node append_instances_back(pugi::xml_node a_node);
 
   struct Instance
@@ -477,11 +503,6 @@ struct HRSceneInst : public HRObject<IHRSceneInst>
   std::vector<std::wstring> drawLightsCustom;
   size_t                    drawBeginLight;
 
-  std::unordered_set<int32_t> meshUsedByDrv;
-  std::unordered_set<int32_t> matUsedByDrv;
-  std::unordered_set<int32_t> lightUsedByDrv;
-  std::unordered_set<int32_t> texturesUsedByDrv;
-
   std::vector< std::vector<int32_t> >   m_remapList;
   std::unordered_map<uint64_t, int32_t> m_remapCache;
 
@@ -498,9 +519,6 @@ struct HRRender : public HRObject<IHRRender>
 
   std::shared_ptr<IHRRenderDriver> m_pDriver;
 
-  pugi::xml_node copy_node(pugi::xml_node a_node, bool a_lite) override;
-  pugi::xml_node copy_node_back(pugi::xml_node a_node) override;
-
   int maxRaysPerPixel;
 
   void clear()
@@ -509,7 +527,12 @@ struct HRRender : public HRObject<IHRRender>
       m_pDriver->ClearAll();
     m_pDriver = nullptr;
     maxRaysPerPixel = 0;
+
+    m_updated.clear();
+    m_updated.reserve(1024);
   }
+
+  ChangeList m_updated;
 };
 
 
@@ -527,7 +550,7 @@ struct HRObjectManager
  
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 
-  HRSceneData              scnData; /// In our first impl sceneData can be only one and it is directly related to HRObjectManager 
+  HRSceneData              scnData; /// In our first impl sceneData can be only one and it is directly related to HRObjectManager
   std::vector<HRSceneInst> scnInst;
   std::vector<HRRender>    renderSettings;
   int32_t m_currSceneId;
@@ -535,10 +558,11 @@ struct HRObjectManager
   int32_t m_currCamId;
   
   HRSystemMutex*           m_pVBSysMutex;
+  HRInitInfo               m_lastInitInfo;
   
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 
-  void init(const wchar_t* a_className);
+  void init(HRInitInfo a_initInfo);
   void destroy();
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
@@ -558,7 +582,6 @@ struct HRObjectManager
   std::wstring     m_tempPathToChangeFile;
   std::vector<int> EmptyBuffer() { return std::vector<int>(); }
 
-  void CommitChanges(pugi::xml_document& a_from, pugi::xml_document& a_to);
   IHydraFactory* m_pFactory; // actual Factory
 
   std::shared_ptr<IHRRenderDriver>     m_pDriver;
@@ -567,16 +590,16 @@ struct HRObjectManager
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 
-  inline pugi::xml_node textures_lib_append_child()  { return scnData.m_texturesLibChanges.append_child(L"texture"); }
-  inline pugi::xml_node materials_lib_append_child() { return scnData.m_materialsLibChanges.append_child(L"material"); }
-  inline pugi::xml_node lights_lib_append_child()    { return scnData.m_lightsLibChanges.append_child(L"light"); }
-  inline pugi::xml_node camera_lib_append_child()    { return scnData.m_cameraLibChanges.append_child(L"camera"); }
+  inline pugi::xml_node textures_lib_append_child()  { return scnData.m_texturesLib.append_child(L"texture"); }
+  inline pugi::xml_node materials_lib_append_child() { return scnData.m_materialsLib.append_child(L"material"); }
+  inline pugi::xml_node lights_lib_append_child()    { return scnData.m_lightsLib.append_child(L"light"); }
+  inline pugi::xml_node camera_lib_append_child()    { return scnData.m_cameraLib.append_child(L"camera"); }
 
-  inline pugi::xml_node geom_lib_append_child()      { return scnData.m_geometryLibChanges.append_child(L"mesh"); }
-  inline pugi::xml_node scenes_node_append_child()   { return scnData.m_sceneNodeChanges.append_child(L"scene"); }
-  inline pugi::xml_node settings_lib_append_child()  { return scnData.m_settingsNodeChanges.append_child(L"render_settings"); }
+  inline pugi::xml_node geom_lib_append_child()      { return scnData.m_geometryLib.append_child(L"mesh"); }
+  inline pugi::xml_node scenes_node_append_child()   { return scnData.m_sceneNode.append_child(L"scene"); }
+  inline pugi::xml_node settings_lib_append_child()  { return scnData.m_settingsNode.append_child(L"render_settings"); }
 
-  inline pugi::xml_node trash_node()                 { return scnData.m_trashNode; }
+  //inline pugi::xml_node trash_node()                 { return scnData.m_trashNode; }
 
   void BadMaterialId(int32_t a_id) { if (m_badMaterialId.size() < 10) m_badMaterialId.push_back(a_id); }
   std::vector<int32_t> m_badMaterialId;
@@ -588,42 +611,7 @@ struct HRObjectManager
   bool m_computeBBoxes;
 };
 
-void HrError(std::wstring a_str);
-void _HrPrint(HR_SEVERITY_LEVEL a_level, const wchar_t* a_str);
 
-template <typename HEAD>
-void _HrPrint(std::wstringstream& out, HEAD head)
-{
-  out << head << std::endl;
-}
-
-template <typename HEAD, typename... TAIL>
-void _HrPrint(std::wstringstream& out, HEAD head, TAIL... tail)
-{
-  out << head;
-  _HrPrint(out, tail...);
-}
-
-template <typename ... Args>
-static void HrPrint(HR_SEVERITY_LEVEL a_level, Args ... a_args)
-{
-  std::wstringstream out;
-  _HrPrint(out, a_args...);
-
-  std::wstring strOut = out.str();
-  _HrPrint(a_level, strOut.c_str());
-}
-
-HR_ERROR_CALLBACK getErrorCallback();
-HR_INFO_CALLBACK  getPrintCallback();
-std::wstring&     getErrWstrObject();
-std::wstring&     getErrCallerWstrObject();
-
-template<typename X>
-static void HrError(std::wstring a_str, X value)
-{
-  HrPrint(HR_SEVERITY_ERROR, a_str, value);
-}
 
 std::wstring ToWString(uint64_t i);
 std::wstring ToWString(int64_t i);
@@ -631,3 +619,5 @@ std::wstring ToWString(int i);
 std::wstring ToWString(float i);
 std::wstring ToWString(unsigned int i);
 
+void ComputeVertexTangents(HRMesh::InputTriMesh& mesh, int indexNum);
+void ComputeVertexNormals(HRMesh::InputTriMesh& mesh, const int indexNum, bool useFaceNormals);

@@ -5,7 +5,8 @@
 #include <iomanip>
 
 #include "HydraRenderDriverAPI.h"
-#include "HydraInternal.h" // #TODO: this is only for hr_mkdir and hr_cleardir. Remove this further
+#include "HydraInternal.h"
+#include "HydraVSGFExport.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -15,6 +16,8 @@
 struct RD_DebugPrint : public IHRRenderDriver
 {
   RD_DebugPrint() = default;
+
+  void GetRenderDriverName(std::wstring &name) override { name = std::wstring(L"DebugPrint");};
 
   void              ClearAll() override;
   HRDriverAllocInfo AllocAll(HRDriverAllocInfo a_info) override;
@@ -47,7 +50,7 @@ struct RD_DebugPrint : public IHRRenderDriver
 
   void GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_lineData, int32_t a_startX, int32_t a_endX, const std::unordered_set<int32_t>& a_shadowCatchers) override {}
 
-  HRDriverInfo Info() override;
+//  HRDriverInfo Info() override;
   const HRRenderDeviceInfoListElem* DeviceList() const override { return nullptr; } //#TODO: implement quering GPU info bu glGetString(GL_VENDOR) and e.t.c.
   bool EnableDevice(int32_t id, bool a_enable) override { return true; }
 
@@ -80,7 +83,82 @@ HRDriverAllocInfo RD_DebugPrint::AllocAll(HRDriverAllocInfo a_info)
   return a_info;
 }
 
-void _hrDebugPrintMesh(const HRMeshDriverInput& a_input, const wchar_t* a_fileName);
+void _hrDebugPrintMesh(const HRMeshDriverInput& a_input, const wchar_t* a_fileName)
+{
+  std::ofstream fout;
+  hr_ofstream_open(fout, a_fileName);
+
+  fout << "vertNum = " << a_input.vertNum << std::endl;
+  fout << "triNum  = " << a_input.triNum << std::endl;
+
+  fout << "vpos  = [ " << std::endl;
+
+  for (int i = 0; i < a_input.vertNum; i++)
+    fout << "  " << a_input.pos4f[i * 4 + 0] << ", " << a_input.pos4f[i * 4 + 1] << ", " << a_input.pos4f[i * 4 + 2] << ", " << a_input.pos4f[i * 4 + 3] << std::endl;
+
+  fout << "]" << std::endl << std::endl;
+
+
+  fout << "vnorm  = [ " << std::endl;
+
+  for (int i = 0; i < a_input.vertNum; i++)
+    fout << "  " << a_input.norm4f[i * 4 + 0] << ", " << a_input.norm4f[i * 4 + 1] << ", " << a_input.norm4f[i * 4 + 2] << ", " << a_input.norm4f[i * 4 + 3] << std::endl;
+
+  fout << "]" << std::endl << std::endl;
+
+  fout << "vtang  = [ " << std::endl;
+
+  for (int i = 0; i < a_input.vertNum; i++)
+    fout << "  " << a_input.tan4f[i * 4 + 0] << ", " << a_input.tan4f[i * 4 + 1] << ", " << a_input.tan4f[i * 4 + 2] << ", " << a_input.tan4f[i * 4 + 3] << std::endl;
+
+  fout << "]" << std::endl << std::endl;
+
+
+  fout << "vtxcoord  = [ " << std::endl;
+
+  for (int i = 0; i < a_input.vertNum; i++)
+    fout << "  " << a_input.texcoord2f[i * 2 + 0] << ", " << a_input.texcoord2f[i * 2 + 1] << std::endl;
+
+  fout << "]" << std::endl << std::endl;
+
+
+  fout << "indices  = [ " << std::endl;
+
+  for (int i = 0; i < a_input.triNum; i++)
+    fout << "  " << a_input.indices[i * 3 + 0] << ", " << a_input.indices[i * 3 + 1] << ", " << a_input.indices[i * 3 + 2] << std::endl;
+
+  fout << "]" << std::endl << std::endl;
+
+  fout << "mindices  = [ " << std::endl;
+
+  for (int i = 0; i < a_input.triNum; i++)
+    fout << "  " << a_input.triMatIndices[i] << std::endl;
+
+  fout << "]" << std::endl << std::endl;
+
+  fout.close();
+}
+
+
+void _hrDebugPrintVSGF(const wchar_t* a_fileNameIn, const wchar_t* a_fileNameOut)
+{
+  HydraGeomData data;
+  data.read(a_fileNameIn);
+
+  HRMeshDriverInput mi;
+
+  mi.triNum = data.getIndicesNumber() / 3;
+  mi.vertNum = data.getVerticesNumber();
+  mi.indices = (int*)data.getTriangleVertexIndicesArray();
+  mi.triMatIndices = (int*)data.getTriangleMaterialIndicesArray();
+
+  mi.pos4f = (float*)data.getVertexPositionsFloat4Array();
+  mi.norm4f = (float*)data.getVertexNormalsFloat4Array();
+  mi.tan4f = (float*)data.getVertexTangentsFloat4Array();
+  mi.texcoord2f = (float*)data.getVertexTexcoordFloat2Array();
+
+  _hrDebugPrintMesh(mi, a_fileNameOut);
+}
 
 bool RD_DebugPrint::UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode, const HRMeshDriverInput& a_input, const HRBatchInfo* a_batchList, int32_t listSize)
 {
@@ -103,19 +181,8 @@ HRRenderUpdateInfo RD_DebugPrint::HaveUpdateNow(int a_maxRaysPerPixel)
   return res;
 }
 
-HRDriverInfo RD_DebugPrint::Info()
-{
-  HRDriverInfo info;
-  info.createsLightGeometryItself = false;
-  info.memTotal = 8* int64_t(1024*1024*1024);
-  info.supportHDRFrameBuffer = false;
-  info.supportHDRTextures = false;
-  info.supportImageLoadFromExternalFormat = false;
-  info.supportImageLoadFromInternalFormat = false;
-  info.supportLighting = false;
-  info.supportMeshLoadFromInternalFormat = false;
-  info.supportMultiMaterialInstance = false;
-  return info;
-}
 
-IHRRenderDriver* CreateDebugPrint_RenderDriver() { return new RD_DebugPrint; }
+IHRRenderDriver* CreateDebugPrint_RenderDriver()
+{
+  return new RD_DebugPrint;
+}

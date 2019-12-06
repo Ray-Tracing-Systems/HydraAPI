@@ -80,9 +80,9 @@ static int HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* file
 
 static bool HRUtils_GetImageDataFromFreeImageObject(FIBITMAP* converted, char* data)
 {
-  auto bits = FreeImage_GetBits(converted);
-  auto width = FreeImage_GetWidth(converted);
-  auto height = FreeImage_GetHeight(converted);
+  auto bits         = FreeImage_GetBits(converted);
+  auto width        = FreeImage_GetWidth(converted);
+  auto height       = FreeImage_GetHeight(converted);
   auto bitsPerPixel = FreeImage_GetBPP(converted);
 
   if (bits == nullptr || width == 0 || height == 0)
@@ -147,48 +147,6 @@ static void FreeImageErrorHandlerHydraInternal(FREE_IMAGE_FORMAT fif, const char
 
 static inline float clamp(float u, float a, float b) { float r = fmax(a, u); return fmin(r, b); }
 
-bool HR_SaveHDRImageToFileHDR_WithFreeImage(const wchar_t* a_fileName, int w, int h, const float* a_data, const float a_scale = 1.0f)
-{
-  struct float3 { float x, y, z; };
-  struct float4 { float x, y, z, w; };
-
-  const float4* data = (const float4*)a_data;
-
-  std::vector<float3> tempData(w*h);
-  for (int i = 0; i < w*h; i++)
-  {
-    float4 src = data[i];
-    float3 dst = {src.x*a_scale,
-                  src.y*a_scale,
-                  src.z*a_scale};
-    tempData[i] = dst;
-  }
-
-  FIBITMAP* dib = FreeImage_AllocateT(FIT_RGBF, w, h);
-
-  BYTE* bits = FreeImage_GetBits(dib);
-
-  memcpy(bits, &tempData[0], sizeof(float3)*w*h);
-
-  FreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);
-
-  #if defined WIN32
-  if (!FreeImage_SaveU(FIF_HDR, dib, a_fileName))
-  #else
-  char filename_s[256];
-  wcstombs(filename_s, a_fileName, sizeof(filename_s));
-  if (!FreeImage_Save(FIF_HDR, dib, filename_s))
-  #endif
-  {
-    FreeImage_Unload(dib);
-    HrError(L"SaveImageToFile(): FreeImage_Save error: ", a_fileName);
-    return false;
-  }
-
-  FreeImage_Unload(dib);
-
-  return true;
-}
 
 void HR_MyDebugSaveBMP(const wchar_t* fname, const int* pixels, int w, int h)
 {
@@ -283,6 +241,21 @@ std::wstring CutFileExt(const std::wstring& fileName)
   return fileName.substr(pos, fileName.size());
 }
 
+std::wstring CutFileName(const std::wstring& fileName)
+{
+  auto pos = fileName.find_last_of(L"/");
+
+  if (pos == std::wstring::npos)
+    pos = fileName.find_last_of(L"\\");
+
+  if (pos == std::wstring::npos)
+  {
+    HrPrint(HR_SEVERITY_ERROR, "CutFileExt, can not guess file extension");
+    return L"";
+  }
+  return fileName.substr(pos+1, fileName.size());
+}
+
 bool InternalImageTool::LoadImageFromFile(const wchar_t* a_fileName,
                                           int& w, int& h, int& bpp, std::vector<int>& a_data)
 {
@@ -296,7 +269,10 @@ bool InternalImageTool::LoadImageFromFile(const wchar_t* a_fileName,
 #endif
 
   if (!fin.is_open())
+  {
+    HrPrint(HR_SEVERITY_ERROR, "LoadImageFromFile, can not open file");
     return false;
+  }
 
   int wh[2] = { 0,0 };
   fin.read((char*)wh, sizeof(int) * 2);
@@ -506,6 +482,101 @@ namespace HydraRender
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  /**
+  \brief load LDR image from file
+  */
+  bool LoadLDRImageFromFile(const char* a_fileName,
+                            int* pW, int* pH, std::vector<int32_t>& a_data)
+  {
+    FreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);
+
+    FREE_IMAGE_FORMAT fif = FIF_PNG; // image format
+
+    fif = FreeImage_GetFileType(a_fileName, 0);
+
+    if (fif == FIF_UNKNOWN)
+      fif = FreeImage_GetFIFFromFilename(a_fileName);
+
+    FIBITMAP* dib = nullptr;
+    if (FreeImage_FIFSupportsReading(fif))
+      dib = FreeImage_Load(fif, a_fileName);
+    else
+    {
+      std::cout << "LoadLDRImageFromFile() : FreeImage_FIFSupportsReading/FreeImage_Load failed!" << std::endl;
+      return false;
+    }
+
+    FIBITMAP* converted = FreeImage_ConvertTo32Bits(dib);
+    BYTE* bits          = FreeImage_GetBits(converted);
+    auto width          = FreeImage_GetWidth(converted);
+    auto height         = FreeImage_GetHeight(converted);
+    auto bitsPerPixel   = FreeImage_GetBPP(converted);
+
+
+    if (width == 0 || height == 0)
+    {
+      std::cerr << "Seems that 'FreeImage_ConvertTo32Bits' has failed " << std::endl;
+      return false;
+    }
+
+    a_data.resize(width*height);
+    BYTE* data = (BYTE*)a_data.data();
+
+
+    for (unsigned int y = 0; y<height; y++)
+    {
+      int lineOffset1 = y*width;
+      int lineOffset2 = y*width;
+
+      for (unsigned int x = 0; x<width; x++)
+      {
+        int offset1 = lineOffset1 + x;
+        int offset2 = lineOffset2 + x;
+
+        data[4 * offset1 + 0] = bits[4 * offset2 + 2];
+        data[4 * offset1 + 1] = bits[4 * offset2 + 1];
+        data[4 * offset1 + 2] = bits[4 * offset2 + 0];
+        data[4 * offset1 + 3] = bits[4 * offset2 + 3];
+      }
+    }
+
+    FreeImage_Unload(dib);
+    FreeImage_Unload(converted);
+
+    (*pW) = width;
+    (*pH) = height;
+    return true;
+  }
+
+  float MSE_RGB_LDR(const std::vector<int32_t>& image1, const std::vector<int32_t>& image2)
+  {
+    if(image1.size() != image2.size())
+      return 0.0f;
+
+    double accum = 0.0;
+
+    for(int i=0;i<image1.size();i++)
+    {
+      const int pxData1 = image1[i];
+      const int pxData2 = image2[i];
+      const int r1 = (pxData1 & 0x00FF0000) >> 16;
+      const int g1 = (pxData1 & 0x0000FF00) >> 8;
+      const int b1 = (pxData1 & 0x000000FF);
+
+      const int r2 = (pxData2 & 0x00FF0000) >> 16;
+      const int g2 = (pxData2 & 0x0000FF00) >> 8;
+      const int b2 = (pxData2 & 0x000000FF);
+
+      accum += double( (r1-r2)*(r1-r2) + (b1-b2)*(b1-b2) + (g1-g2)*(g1-g2) );
+    }
+
+    return float(accum/double(image1.size()));
+  }
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
   class FreeImageTool : public IHRImageTool
   {
@@ -521,6 +592,8 @@ namespace HydraRender
 
     void SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, const float* a_data) override;
     void SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, const int*   a_data) override;
+
+    void Save16BitMonoImageTo16BitPNG(const wchar_t* a_fileName, int w, int h, const unsigned short* a_data) override;
 
   private:
 
@@ -619,7 +692,7 @@ namespace HydraRender
     wcstombs(filename_s, filename, sizeof(filename_s));
     fif = FreeImage_GetFileType(filename_s, 0);
     #endif
-    
+
     if (fif == FIF_UNKNOWN)
     {
     #if defined WIN32
@@ -628,7 +701,7 @@ namespace HydraRender
       fif = FreeImage_GetFIFFromFilename(filename_s);
     #endif
     }
-    
+
     if (fif == FIF_UNKNOWN)
     {
       std::cerr << "FreeImage failed to guess file image format: " << filename << std::endl;
@@ -693,11 +766,10 @@ namespace HydraRender
       m_pInternal->SaveHDRImageToFileHDR(a_fileName, w, h, a_data);
     else
     {
+    #ifdef WIN32 // old 3ds max FreeImage version
       struct float3 { float x, y, z; };
       struct float4 { float x, y, z, w; };
-
       const float4* data = (const float4*)a_data;
-
       std::vector<float3> tempData(w*h);
       for (int i = 0; i < w*h; i++)
       {
@@ -708,20 +780,27 @@ namespace HydraRender
         dst.z = src.z;
         tempData[i] = dst;
       }
-
       FIBITMAP* dib = FreeImage_AllocateT(FIT_RGBF, w, h);
       BYTE* bits    = FreeImage_GetBits(dib);
-
       memcpy(bits, &tempData[0], sizeof(float3)*w*h);
+    #else
+      FIBITMAP *dib = FreeImage_ConvertFromRawBitsEx(FALSE, (BYTE*)a_data, FIT_RGBAF, w, h, 4*4*w, 4*32, FI_RGBA_BLUE_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_RED_MASK, FALSE);
+    #endif
 
       FreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);
 
+      auto imageType = FIF_HDR;
+      if(fileExt == L".exr" || fileExt == L".EXR")
+        imageType = FIF_EXR;
+      else if (fileExt == L".tiff" || fileExt == L".TIFF")
+        imageType = FIF_TIFF;
+
       #if defined WIN32
-      if (!FreeImage_SaveU(FIF_HDR, dib, a_fileName))
+      if (!FreeImage_SaveU(imageType, dib, a_fileName))
       #else
-      char filename_s[256];
+      char filename_s[512];
       wcstombs(filename_s, a_fileName, sizeof(filename_s));
-      if (!FreeImage_Save(FIF_HDR, dib, filename_s))
+      if (!FreeImage_Save(imageType, dib, filename_s))
       #endif
       {
         FreeImage_Unload(dib);
@@ -740,6 +819,11 @@ namespace HydraRender
       m_pInternal->SaveLDRImageToFileLDR(a_fileName, w, h, a_data);
     else
     {
+      //BYTE* bits = (BYTE*)a_data;
+      //for (int i = 0; i<w*h; i++)
+      //  bits[4 * i + 3] = 255;
+      // FIBITMAP *dib = FreeImage_ConvertFromRawBits((BYTE*)a_data, w, h, 4 * w, 32, FI_RGBA_BLUE_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_RED_MASK, FALSE);
+
       FIBITMAP* dib = FreeImage_Allocate(w, h, 32);
       BYTE* bits    = FreeImage_GetBits(dib);
       //memcpy(bits, data, w*h*sizeof(int32_t));
@@ -767,7 +851,7 @@ namespace HydraRender
       #if defined WIN32
       if (!FreeImage_SaveU(imageFileFormat, dib, a_fileName))
       #else
-      char filename_s[256];
+      char filename_s[512];
       wcstombs(filename_s, a_fileName, sizeof(filename_s));
       if (!FreeImage_Save(imageFileFormat, dib, filename_s))
       #endif
@@ -781,6 +865,30 @@ namespace HydraRender
     } // else 
 
   } // end function
+
+
+  void FreeImageTool::Save16BitMonoImageTo16BitPNG(const wchar_t* a_fileName, int w, int h, const unsigned short* a_data)
+  {
+    FIBITMAP* image = FreeImage_AllocateT(FIT_UINT16, w, h);
+    auto bits       = FreeImage_GetBits(image);
+
+    memcpy(bits, a_data, w*h*sizeof(unsigned short));
+
+    #if defined WIN32
+    if (!FreeImage_SaveU(FIF_PNG, image, a_fileName))
+    #else
+    char filename_s[512];
+    wcstombs(filename_s, a_fileName, sizeof(filename_s));
+    if (!FreeImage_Save(FIF_PNG, image, filename_s))
+    #endif
+    {
+      FreeImage_Unload(image);
+      HrError(L"SaveImageToFile(): FreeImage_Save error on ", a_fileName);
+      return;
+    }
+
+    FreeImage_Unload(image);
+  }
 
 };
 

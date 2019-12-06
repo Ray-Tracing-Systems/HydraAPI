@@ -3,12 +3,6 @@
 #include <vector>
 #include <string>
 
-#ifdef WIN32
-#include <intrin.h>
-#else
-#include <xmmintrin.h>
-#endif
-
 #include <cstring>
 #include "alloc16.h"
 
@@ -52,15 +46,14 @@ namespace HydraRender
     void loadFromImage4f(const std::string& a_fileName);
     void saveToImage4f(const std::string& a_fileName);
 
-    void   sample(float x, float y, float* out_vec4f) const;
-    __m128 sample(float x, float y) const;
-
+    void sample(float x, float y, float* out_vec4f) const;
     void resampleTo(HDRImage4f& a_outImage);
 
     void convertToLDR(float a_gamma, std::vector<unsigned int>& outData);
     void convertFromLDR(float a_gamma, const unsigned int* inData, int a_size);
 
-    void medianFilterInPlace(float a_thresholdValue, float avgB);
+    void medianFilterInPlace(float a_thresholdValue);  // #NOTE: median filter works better when it is in place!!!
+    void medianFilterInPlace(float a_thresholdValue, int a_windowSize, int a_pixelsNum);
     void gaussBlur(int BLUR_RADIUS2, float a_sigma);
 
   private:
@@ -153,6 +146,12 @@ struct IHRImageTool
 
   virtual void SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, const float* a_data) = 0;
   virtual void SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, const int*   a_data) = 0;
+
+  /**
+  \brief this function is optional. It is needed for saving depth buffer in 16 bit png.
+
+ */
+  virtual void Save16BitMonoImageTo16BitPNG(const wchar_t* a_fileName, int w, int h, const unsigned short* a_data) {}
 
 private:
   IHRImageTool(const IHRImageTool& a_rhs)            = default;

@@ -30,6 +30,12 @@ int hr_mkdir(const char* a_folder)
   return mkdir(a_folder, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 }
 
+int hr_mkdir(const wchar_t * a_folder)
+{
+  const std::string data = ws2s(std::wstring(a_folder));
+  return mkdir(data.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+}
+
 int unlink_cb(const char *fpath, const struct stat *sb, int typeflag, struct FTW *ftwbuf)
 {
   int rv;
@@ -45,15 +51,74 @@ int unlink_cb(const char *fpath, const struct stat *sb, int typeflag, struct FTW
   return rv;
 }
 
+
+
 int hr_cleardir(const char* a_folder)
 {
   return nftw(a_folder, unlink_cb, 64, FTW_DEPTH | FTW_PHYS);
 }
 
+int  hr_cleardir(const wchar_t* a_folder)
+{
+  const std::string data = ws2s(std::wstring(a_folder));
+  return hr_cleardir(data.c_str());
+}
 
-std::vector<std::string> hr_listfiles(const std::string &a_folder)
+void hr_deletefile(const wchar_t* a_file)
+{
+  const std::string file = ws2s(a_file);
+  remove(file.c_str());
+}
+
+void hr_deletefile(const char* a_file)
+{
+  remove(a_file);
+}
+
+
+std::vector<std::string> hr_listfiles(const char* a_folder, bool excludeFolders)
 {
   std::vector<std::string> result;
+  class dirent *ent = nullptr;
+  class stat st;
+  
+  DIR* dir = opendir(a_folder);
+  if(dir == nullptr)
+  {
+    // std::cout << "[debug]: hr_listfiles, can't open DIR " << a_folder.c_str() << std::endl;
+    // std::cout << "[debug]: errno = " << strerror(errno) << std::endl;
+    return result;
+  }
+  
+  while ((ent = readdir(dir)) != nullptr)
+  {
+    const std::string file_name      = ent->d_name;
+    const std::string full_file_name = std::string(a_folder) + "/" + file_name;
+    
+    if (file_name[0] == '.')
+      continue;
+
+    if (stat(full_file_name.c_str(), &st) == -1)
+      continue;
+    
+    const bool is_directory = (st.st_mode & S_IFDIR) != 0 && excludeFolders;
+    
+    if (is_directory)
+      continue;
+    
+    result.push_back(full_file_name);
+  }
+  closedir(dir);
+
+  return result;
+}
+
+std::vector<std::wstring> hr_listfiles(const wchar_t* a_folder2, bool excludeFolders)
+{
+  
+  const std::string a_folder = ws2s(a_folder2);
+  
+  std::vector<std::wstring> result;
   class dirent *ent = nullptr;
   class stat st;
   
@@ -72,36 +137,41 @@ std::vector<std::string> hr_listfiles(const std::string &a_folder)
     
     if (file_name[0] == '.')
       continue;
-
+    
     if (stat(full_file_name.c_str(), &st) == -1)
       continue;
     
-    const bool is_directory = (st.st_mode & S_IFDIR) != 0;
+    const bool is_directory = (st.st_mode & S_IFDIR) != 0 && excludeFolders;
     
     if (is_directory)
       continue;
     
-    result.push_back(full_file_name);
+    result.push_back(s2ws(full_file_name));
   }
   closedir(dir);
-
+  
   return result;
+}
+
+
+void hr_copy_file(const char* a_file1, const char* a_file2)
+{
+  std_fs::copy_file(a_file1, a_file2, std_fs::copy_options::overwrite_existing);
 }
 
 void hr_copy_file(const wchar_t* a_file1, const wchar_t* a_file2)
 {
-/*  int source = open(a_file1, O_RDONLY, 0);
-  int dest = open(a_file2, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-
-  struct stat stat_source;
-  fstat(source, &stat_source);
-
-  sendfile(dest, source, 0, stat_source.st_size);
-
-  close(source);
-  close(dest);*/
-
   std_fs::copy_file(a_file1, a_file2, std_fs::copy_options::overwrite_existing);
+}
+
+void hr_delete_file(const wchar_t* a_file)
+{
+  std_fs::remove(a_file);
+}
+
+void hr_delete_file(const char* a_file)
+{
+  std_fs::remove(a_file);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -163,4 +233,20 @@ bool hr_lock_system_mutex(HRSystemMutex* a_mutex, int a_msToWait)
 void hr_unlock_system_mutex(HRSystemMutex* a_mutex)
 {
   sem_post(a_mutex->mutex);
+}
+
+#include <fstream>
+
+void hr_ifstream_open(std::ifstream& a_stream, const wchar_t* a_fileName)
+{
+  std::wstring s1(a_fileName);
+  std::string  s2(s1.begin(), s1.end());
+  a_stream.open(s2.c_str(), std::ios::binary);
+}
+
+void hr_ofstream_open(std::ofstream& a_stream, const wchar_t* a_fileName)
+{
+  std::wstring s1(a_fileName);
+  std::string  s2(s1.begin(), s1.end());
+  a_stream.open(s2.c_str(), std::ios::binary);
 }

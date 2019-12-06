@@ -13,16 +13,18 @@
 
 #include "HR_HDRImage.h"
 #include "HydraInternal.h"
+#include "HydraObjectManager.h"
 
 #include <mutex>
 #include <future>
 #include <thread>
 
 #include "ssemath.h"
+#include "vfloat4_x64.h"
 
 
 #ifdef WIN32
-#include "../clew/clew.h"
+#include "../utils/clew/clew.h"
 #else
 #include <CL/cl.h>
 #endif
@@ -35,26 +37,14 @@ using HydraRender::HDRImage4f;
 
 struct RD_HydraConnection : public IHRRenderDriver
 {
-  RD_HydraConnection() : m_pConnection(nullptr), m_pSharedImage(nullptr), m_progressVal(0.0f), m_firstUpdate(true), m_width(0), m_height(0),
-                         m_avgBrightness(0.0f), m_avgBCounter(0), m_enableMedianFilter(false), m_medianthreshold(0.4f), m_stopThreadImmediately(false),
-                         haveUpdateFromMT(false), m_threadIsRun(false), m_threadFinished(false), hadFinalUpdate(false), m_clewInitRes(-1), m_instancesNum(0)
-  {
-    InitBothDeviceList();
+  RD_HydraConnection();
 
-    m_oldCounter = 0;
-    m_oldSPP     = 0.0f;
-    m_dontRun    = false;
-    //#TODO: init m_presets
-
-    HydraSSE::exp2_init();
-    HydraSSE::log2_init();
-  }
-
-  ~RD_HydraConnection()
+  ~RD_HydraConnection() override
   {
     ClearAll();
   }
 
+  void GetRenderDriverName(std::wstring &name) override { name = std::wstring(L"HydraModern");};
   void              ClearAll() override;
   HRDriverAllocInfo AllocAll(HRDriverAllocInfo a_info) override;
 
@@ -88,10 +78,12 @@ struct RD_HydraConnection : public IHRRenderDriver
   void GetFrameBufferLineLDR(int32_t a_xBegin, int32_t a_xEnd, int32_t y, int32_t* a_out)                           override;
 
   void GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_lineData, int32_t a_startX, int32_t a_endX, const std::unordered_set<int32_t>& a_shadowCatchers) override;
-
+  
+  void    LockFrameBufferUpdate()   override;
+  void    UnlockFrameBufferUpdate() override;
+  
   // info and devices
   //
-  HRDriverInfo Info() override;
   const HRRenderDeviceInfoListElem* DeviceList() const override;
   bool EnableDevice(int32_t id, bool a_enable) override;
 
@@ -145,7 +137,11 @@ protected:
     int  maxrays;
     bool allocImageB;
     bool allocImageBOnGPU;
-    int  mmltThreads;
+    int   mmltThreads;
+    float mmltMultBrightness;
+    
+    float mlt_med_threshold;
+    bool  mlt_med_enable;
   } m_presets;
 
   bool m_firstUpdate;
@@ -167,10 +163,11 @@ protected:
 
   // MLT/MMLT asynchronous frame buffer update
   //
-  std::vector<float, aligned16<float> > m_colorMLTFinal;
-  std::future<int>                      m_mltFrameBufferUpdateThread;
-  bool                                  m_mltFrameBufferUpdate_ExitNow;
-  int                                   m_lastMaxRaysPerPixel;
+  HydraRender::HDRImage4f m_colorMLTFinalImage;
+  std::future<int>        m_mltFrameBufferUpdateThread;
+  bool                    m_mltFrameBufferUpdate_ExitNow;
+  int                     m_lastMaxRaysPerPixel;
+  std::atomic<bool>       m_colorImageIsLocked;
 
   int MLT_FrameBufferUpdateLoop();
 
@@ -181,8 +178,12 @@ static inline float contribFunc(float colorX, float colorY, float colorZ)
   return fmax(0.33334f*(colorX + colorY + colorZ), 0.0f);
 }
 
+using namespace cvex;
+
 int RD_HydraConnection::MLT_FrameBufferUpdateLoop()
 {
+  m_colorImageIsLocked = false;
+  
   size_t iter = 0;
 
   const float* indirect = m_pSharedImage->ImageData(0);
@@ -201,22 +202,48 @@ int RD_HydraConnection::MLT_FrameBufferUpdateLoop()
     double summ[3];
     std::tie(summ[0], summ[1], summ[2]) = HydraRender::ColorSummImage4f(indirect, m_width, m_height);
     double avgDiv       = 1.0/double(m_width*m_height);
-    float avgBrightness = contribFunc(avgDiv*summ[0], avgDiv*summ[1], avgDiv*summ[2]);
-    const float normC   = m_pSharedImage->Header()->avgImageB / fmax(avgBrightness, 1e-30f);
+	float avgBrightness = contribFunc(float(avgDiv*summ[0]), float(avgDiv*summ[1]), float(avgDiv*summ[2]));
+    
+    // calc normalisation constant
+    //
+    const float normC   = m_pSharedImage->Header()->avgImageB / fmax(avgBrightness, 1e-30f) * m_presets.mmltMultBrightness;
     const float normDL  = 1.0f/float(m_pSharedImage->Header()->spp);
-
-    for(size_t i=0;i<m_colorMLTFinal.size(); i+=4)
+  
+    const cvex::vfloat4 normDL4 = {normDL, normDL, normDL, 0.0f};
+    const cvex::vfloat4 normC4  = {normC,  normC,  normC,  0.0f};
+  
+    const size_t imagesize = m_colorMLTFinalImage.width()*m_colorMLTFinalImage.height()*4;
+    float* dataOut = m_colorMLTFinalImage.data();
+  
+    while(m_colorImageIsLocked); // wait for use to free framebuffer
+    m_colorImageIsLocked = true;
+    
+    if(m_presets.mlt_med_enable)
     {
-      const float R = direct[i+0]*normDL + indirect[i+0]*normC;
-      const float G = direct[i+1]*normDL + indirect[i+1]*normC;
-      const float B = direct[i+2]*normDL + indirect[i+2]*normC;
-
-      m_colorMLTFinal[i + 0] = R;
-      m_colorMLTFinal[i + 1] = G;
-      m_colorMLTFinal[i + 2] = B;
-      m_colorMLTFinal[i + 3] = 0.0f;
+      for(size_t i=0; i<imagesize; i+=4)
+      {
+        const cvex::vfloat4 RGB0 = cvex::load_u(indirect + i)*normC4;
+        cvex::store(dataOut + i, RGB0);
+      }
+      
+      m_colorMLTFinalImage.medianFilterInPlace(m_presets.mlt_med_threshold);
+      
+      for(size_t i=0; i<imagesize; i+=4)
+      {
+        const cvex::vfloat4 RGB0 = cvex::load(dataOut+i) + cvex::load_u(direct+i)*normDL4;
+        cvex::store(dataOut + i, RGB0);
+      }
     }
-
+    else
+    {
+      for(size_t i=0; i<imagesize; i+=4)
+      {
+        const cvex::vfloat4 RGB0 = cvex::load_u(direct+i)*normDL4 + cvex::load_u(indirect+i)*normC4;
+        cvex::store(dataOut + i, RGB0);
+      }
+    }
+    m_colorImageIsLocked = false;
+    
     iter++;
   }
 
@@ -339,6 +366,28 @@ void RD_HydraConnection::InitBothDeviceList()
   }
 }
 
+IHRRenderDriver* CreateHydraConnection_RenderDriver()
+{
+  return new RD_HydraConnection;
+}
+
+
+RD_HydraConnection::RD_HydraConnection() : m_pConnection(nullptr), m_pSharedImage(nullptr), m_progressVal(0.0f), m_firstUpdate(true), m_width(0), m_height(0),
+                       m_avgBrightness(0.0f), m_avgBCounter(0), m_enableMedianFilter(false), m_medianthreshold(0.4f), m_stopThreadImmediately(false),
+                       haveUpdateFromMT(false), m_threadIsRun(false), m_threadFinished(false), hadFinalUpdate(false), m_clewInitRes(-1), m_instancesNum(0),
+                       m_colorImageIsLocked(false)
+{
+  InitBothDeviceList();
+
+  m_oldCounter = 0;
+  m_oldSPP     = 0.0f;
+  m_dontRun    = false;
+  //#TODO: init m_presets
+
+  HydraSSE::exp2_init();
+  HydraSSE::log2_init();
+}
+
 void RD_HydraConnection::ClearAll()
 {
   delete m_pConnection;
@@ -391,29 +440,6 @@ bool RD_HydraConnection::EnableDevice(int32_t id, bool a_enable)
     m_devList2[id].isEnabled = a_enable;
 
   return true;
-}
-
-HRDriverInfo RD_HydraConnection::Info()
-{
-  HRDriverInfo info;
-
-  info.supportHDRFrameBuffer              = true;
-  info.supportHDRTextures                 = true;
-  info.supportMultiMaterialInstance       = false;
-
-  info.supportImageLoadFromInternalFormat = false;
-  info.supportMeshLoadFromInternalFormat  = false;
-
-  info.supportImageLoadFromExternalFormat = true;
-  info.supportLighting                    = true;
-  info.createsLightGeometryItself         = false;
-  info.supportGetFrameBufferLine          = true;
-  info.supportUtilityPrepass              = true;
-  info.supportDisplacement                = true;
-
-  info.memTotal                           = int64_t(8) * int64_t(1024 * 1024 * 1024); // #TODO: wth i have to do with that ???
-
-  return info;
 }
 
 
@@ -489,12 +515,9 @@ bool RD_HydraConnection::UpdateSettings(pugi::xml_node a_settingsNode)
 
   m_presets.allocImageBOnGPU = (std::wstring(a_settingsNode.child(L"forceGPUFrameBuffer").text().as_string()) == L"1");
 
-  std::wstring tmp  = std::wstring(a_settingsNode.child(L"render_executable").text().as_string());
+  std::wstring tmp  = std::wstring(a_settingsNode.child(L"render_exe_dir").text().as_string());
   if(!tmp.empty())
-  {
     m_params.customExePath = std::string(tmp.begin(), tmp.end());
-    m_params.customExePath += "/";
-  }
 
   if(a_settingsNode.child(L"dont_run").text().as_int() == 1)
     m_dontRun = true;
@@ -513,6 +536,24 @@ bool RD_HydraConnection::UpdateSettings(pugi::xml_node a_settingsNode)
     m_presets.mmltThreads = a_settingsNode.child(L"mmlt_threads").text().as_int();
   else
     m_presets.mmltThreads = 0;
+
+  if (a_settingsNode.child(L"mmlt_multBrightness") != nullptr)
+    m_presets.mmltMultBrightness = a_settingsNode.child(L"mmlt_multBrightness").text().as_float();
+  else
+    m_presets.mmltMultBrightness = 1.0f;
+  
+  // mlt median filter
+  //
+  if (a_settingsNode.child(L"mlt_med_threshold") != nullptr)
+    m_presets.mlt_med_threshold = a_settingsNode.child(L"mlt_med_threshold").text().as_float();
+  else
+    m_presets.mlt_med_threshold = 0.4f;
+  
+  if (a_settingsNode.child(L"mlt_med_enable") != nullptr)
+    m_presets.mlt_med_enable = a_settingsNode.child(L"mlt_med_enable").text().as_bool();
+  else
+    m_presets.mlt_med_enable = false;
+  
   return true;
 }
 
@@ -611,9 +652,6 @@ void RD_HydraConnection::CreateAndClearSharedImage()
 {
   ////////////////////////////////////////////////////////////////////////////////////////////
 
-  const int width  = m_width;
-  const int height = m_height;
-
   const std::string hydraImageName = NewSharedImageName();
   const std::vector<int> devList   = GetCurrDeviceList();
 
@@ -634,7 +672,9 @@ void RD_HydraConnection::CreateAndClearSharedImage()
   }
 
   char err[256];
-  bool shmemImageIsOk = m_pSharedImage->Create(width, height, layersNum, hydraImageName.c_str(), err); // #TODO: change this and pass via cmd line
+  
+  const bool shmemImageIsOk = m_pSharedImage->Create(m_width, m_height, layersNum, hydraImageName.c_str(), err); // #TODO: change this and pass via cmd line
+  
   if (!shmemImageIsOk)
   {
     //#TODO: call error callback or do some thing like that
@@ -655,7 +695,7 @@ void RD_HydraConnection::CreateAndClearSharedImage()
   m_lastSharedImageName = hydraImageName;
 
   delete m_pConnection;
-  m_pConnection = CreateHydraServerConnection(width, height, false);
+  m_pConnection = CreateHydraServerConnection(m_width, m_height, false);
 }
 
 RenderProcessRunParams RD_HydraConnection::GetCurrRunProcessParams()
@@ -765,13 +805,17 @@ void RD_HydraConnection::EndFlush()
   //
   if(m_enableMLT)
   {
-    m_colorMLTFinal.resize(m_width*m_height*4);
-    for(size_t i=0;i<m_colorMLTFinal.size();i+=4)
+    
+    m_colorMLTFinalImage.resize(m_width, m_height);
+    const size_t imagesize = m_colorMLTFinalImage.width()*m_colorMLTFinalImage.height()*4;
+    float* colorMLTFinal   = m_colorMLTFinalImage.data();
+    
+    for(size_t i=0;i<imagesize;i+=4)
     {
-      m_colorMLTFinal[i+0] = 1.0f;
-      m_colorMLTFinal[i+1] = 0.0f;
-      m_colorMLTFinal[i+2] = 0.0f;
-      m_colorMLTFinal[i+3] = 0.0f;
+      colorMLTFinal[i+0] = 0.1f;
+      colorMLTFinal[i+1] = 0.0f;
+      colorMLTFinal[i+2] = 0.1f;
+      colorMLTFinal[i+3] = 0.0f;
     }
     
     m_mltFrameBufferUpdateThread   = std::async(std::launch::async, &RD_HydraConnection::MLT_FrameBufferUpdateLoop, this);
@@ -810,12 +854,13 @@ HRRenderUpdateInfo RD_HydraConnection::HaveUpdateNow(int a_maxRaysPerPixel)
   result.haveUpdateFB  = false;
   result.haveUpdateMSG = false;
 
-  if (m_instancesNum == 0) // #TODO: Put error message here!
+  if (m_instancesNum == 0)
   {
     result.finalUpdate   = true;
     result.progress      = 100.0f;
     result.haveUpdateFB  = true;
-    result.haveUpdateMSG = false;  
+    result.haveUpdateMSG = false;
+    HrPrint(HR_SEVERITY_ERROR, L"RD_HydraConnection::HaveUpdateNow: no instances in scene!!");
     return result;
   }
 
@@ -852,6 +897,14 @@ HRRenderUpdateInfo RD_HydraConnection::HaveUpdateNow(int a_maxRaysPerPixel)
     m_mltFrameBufferUpdate_ExitNow = true;
     this->ExecuteCommand(L"exitnow", nullptr);
   }
+
+  // check if processes are still running
+  //
+  if (m_pConnection != nullptr && !m_pConnection->hasConnection())
+  { 
+    result.finalUpdate = true;
+	this->ExecuteCommand(L"exitnow", nullptr);
+  }  
 
   return result;
 }
@@ -953,7 +1006,9 @@ void RD_HydraConnection::GetFrameBufferLineHDR(int32_t a_xBegin, int32_t a_xEnd,
 
   const float* data = m_pSharedImage->ImageData(0); // index depends on a_layerName
   if(m_enableMLT)
-    data = m_colorMLTFinal.data();
+  {
+    data = m_colorMLTFinalImage.data();
+  }
   if (data == nullptr)
     return;
 
@@ -963,27 +1018,25 @@ void RD_HydraConnection::GetFrameBufferLineHDR(int32_t a_xBegin, int32_t a_xEnd,
   data = data + y*m_width*4;
 
   const float invSpp = m_enableMLT ? 1.0f : 1.0f / m_pSharedImage->Header()->spp;
-  const __m128 mult  = _mm_set_ps1(invSpp);
+  const cvex::vfloat4 mult = cvex::splat(invSpp);
   auto intptr        = reinterpret_cast<std::uintptr_t>(data);
-
-  // if final update lock image
-
+  
   if (intptr % 16 == 0)
   {
     for (int i = a_xBegin*4; i < a_xEnd*4; i += 4)
     {
-      const __m128 color1 = _mm_load_ps(data + i);
-      const __m128 color2 = _mm_mul_ps(mult, color1);
-      _mm_store_ps(a_out + i - a_xBegin*4, color2);
+      const cvex::vfloat4 color1 = cvex::load(data + i);
+      const cvex::vfloat4 color2 = mult*color1;
+      cvex::store(a_out + i - a_xBegin*4, color2);
     }
   }
   else
   {
     for (int i = a_xBegin * 4; i < a_xEnd * 4; i += 4)
     {
-      const __m128 color1 = _mm_load_ps(data + i);
-      const __m128 color2 = _mm_mul_ps(mult, color1);
-      _mm_storeu_ps(a_out + i - a_xBegin*4, color2);
+      const cvex::vfloat4 color1 = cvex::load(data + i);
+      const cvex::vfloat4 color2 = mult*color1;
+      cvex::store_u(a_out + i - a_xBegin*4, color2);
     }
   }
 
@@ -1017,7 +1070,7 @@ void RD_HydraConnection::GetFrameBufferLineLDR(int32_t a_xBegin, int32_t a_xEnd,
 
   const float* data = m_pSharedImage->ImageData(0); // index depends on a_layerName
   if(m_enableMLT)
-    data = m_colorMLTFinal.data();
+    data = m_colorMLTFinalImage.data();
   if (data == nullptr)
     return;
 
@@ -1061,6 +1114,17 @@ void RD_HydraConnection::GetFrameBufferLineLDR(int32_t a_xBegin, int32_t a_xEnd,
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+void RD_HydraConnection::LockFrameBufferUpdate()
+{
+  while(m_colorImageIsLocked); // wait for some fb update thread to set 'm_colorImageIsLocked' to false
+  m_colorImageIsLocked = true;
+}
+
+void RD_HydraConnection::UnlockFrameBufferUpdate()
+{
+  m_colorImageIsLocked = false;
+}
+
 void RD_HydraConnection::GetFrameBufferHDR(int32_t w, int32_t h, float* a_out, const wchar_t* a_layerName)
 {
   #pragma omp parallel for
@@ -1082,6 +1146,9 @@ void RD_HydraConnection::GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_
   float* data0 = nullptr;
   float* data1 = nullptr;
   float* data2 = nullptr;
+  if (m_pSharedImage == nullptr)
+    return;
+  
   data0 = m_pSharedImage->ImageData(0);
   if (m_pSharedImage->Header()->depth == 4) // some other process already have computed gbuffer
   {
@@ -1283,8 +1350,10 @@ void RD_HydraConnection::ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out)
   }
   
   if(needToStopProcess && m_pConnection != nullptr)
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(250));
     m_pConnection->stopAllRenderProcesses();
-  
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1292,10 +1361,7 @@ void RD_HydraConnection::ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-IHRRenderDriver* CreateHydraConnection_RenderDriver()
-{
-  return new RD_HydraConnection;
-}
+
 
 
 
