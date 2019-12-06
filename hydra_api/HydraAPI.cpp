@@ -173,8 +173,10 @@ HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMod
 #elif defined WIN32
     std::wstring dataPath = std::wstring(a_libPath) + L"/data";
 
+    hr_cleardir(a_libPath);
     hr_mkdir(a_libPath);
     hr_mkdir(dataPath.c_str());
+
 #endif
 
   }
@@ -207,11 +209,15 @@ HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMod
   {
     if (a_libPath != nullptr && !std::wstring(a_libPath).empty())
     {
+      std::wstring dataPath = std::wstring(a_libPath) + L"/data";
+     
     #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
       hr_cleardir(libPath.c_str());
-      hr_mkdir(dataPath.c_str());
+      std::string dataPath2 = ws2s(a_libPath) + "/data";
+      hr_mkdir(dataPath2.c_str());
     #elif defined WIN32
       hr_cleardir(a_libPath);
+      hr_cleardir(dataPath.c_str());
     #endif
     }
     int32_t whileImage[4] = { int32_t(0xFFFFFFFF), int32_t(0xFFFFFFFF),
@@ -1036,16 +1042,10 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
   HRSceneInst* pScn   = g_objManager.PtrById(a_pScn);
 
   if (pSettings == nullptr)
-  {
-    HrPrint(HR_SEVERITY_ERROR, L"hrCommit, nullptr render");
-    return;
-  }
+    HrPrint(HR_SEVERITY_WARNING, L"hrCommit, nullptr render");
 
   if (pScn == nullptr)
-  {
-    HrPrint(HR_SEVERITY_ERROR, L"hrCommit, nullptr scene");
-    return;
-  }
+    HrPrint(HR_SEVERITY_WARNING, L"hrCommit, nullptr scene");
 
   if (a_pRender.id != -1)
   {
@@ -1079,7 +1079,8 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
     HR_DriverDraw  (g_objManager.scnInst[g_objManager.m_currSceneId], pSettings);
   }
   
-  _hrSaveCurrentChanges(g_objManager.scnData); // save change if needed
+  if(g_objManager.m_lastInitInfo.saveChanges)
+    _hrSaveCurrentChanges(g_objManager.scnData); // save change if needed
 
   g_objManager.scnData.m_changeList.clear();
 

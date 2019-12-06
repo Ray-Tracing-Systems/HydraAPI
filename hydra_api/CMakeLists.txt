@@ -63,7 +63,7 @@ set(HR_EXTENSIONS HRExtensions.cpp)
 set(GL_DEPENDENT
         glad.c
         OpenGLCoreProfileUtils.h OpenGLCoreProfileUtils.cpp
-        RenderDriverOpenGL3_Utility.h RenderDriverOpenGL3_Utility.cpp)
+        RenderDriverOpenGL3_Utility.h RenderDriverOpenGL3_Utility.cpp HydraFsUtils.cpp)
 
 
 

@@ -33,7 +33,8 @@ using resolution_dict = std::unordered_map<uint32_t, std::pair<uint32_t, uint32_
 
 void ScanXmlNodeRecursiveAndAppendTexture(pugi::xml_node a_node, std::unordered_set<int32_t>& a_outSet)
 {
-  if (std::wstring(a_node.name()) == L"texture")
+  std::wstring nodeName(a_node.name());
+  if (nodeName == L"texture" || nodeName.find(L"texture_") != std::wstring::npos)
   {
     int32_t id = a_node.attribute(L"id").as_int();
     a_outSet.insert(id);

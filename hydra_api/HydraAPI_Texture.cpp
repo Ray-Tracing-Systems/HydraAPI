@@ -544,12 +544,12 @@ HAPI void hrTextureNodeClose(HRTextureNodeRef a_pNode)
 
 
 
-HAPI pugi::xml_node hrTextureBind(HRTextureNodeRef a_pTexNode, pugi::xml_node a_node)
+HAPI pugi::xml_node hrTextureBind(HRTextureNodeRef a_pTexNode, pugi::xml_node a_node, const wchar_t* nameChild)
 {
   HRTextureNode* pData = g_objManager.PtrById(a_pTexNode);
   if (pData == nullptr)
   {
-    pugi::xml_node texNode = a_node.child(L"texture"); // delete texture
+    pugi::xml_node texNode = a_node.child(nameChild); // delete texture
     texNode.parent().remove_child(texNode);
     HrPrint(HR_SEVERITY_WARNING, L"hrTextureBind: invalid texture id: ", a_pTexNode.id);
     return pugi::xml_node();
@@ -557,9 +557,9 @@ HAPI pugi::xml_node hrTextureBind(HRTextureNodeRef a_pTexNode, pugi::xml_node a_
 
   // add a_pTexNode to special list of material ... ? -> can do this later when close function works !!!
 	//
-  pugi::xml_node texNode = a_node.child(L"texture");
+  pugi::xml_node texNode = a_node.child(nameChild);
   if (texNode == nullptr)
-    texNode = a_node.append_child(L"texture");
+    texNode = a_node.append_child(nameChild);
 
   pugi::xml_node texNodeOrigin = pData->xml_node();
 

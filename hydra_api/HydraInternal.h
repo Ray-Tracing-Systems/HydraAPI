@@ -65,7 +65,6 @@ std::vector< HydraLiteMath::float4> getVerticesFromBBox(const BBox &a_bbox);
 std::wstring HR_PreprocessMeshes(const wchar_t *state_path);
 void hrMeshComputeNormals(HRMeshRef a_mesh, int indexNum, bool useFaceNormals = false);
 void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum);
-void runTSpaceCalc(HRMeshRef mesh_ref, bool basic);
 
 void registerBuiltInRenderDrivers();
 
@@ -344,19 +343,24 @@ std::wstring ChunkName(const ChunkPointer& a_chunk);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
   int  hr_mkdir(const char* a_folder);
+  int  hr_mkdir(const wchar_t * a_folder);
+
   int  hr_cleardir(const char* a_folder);
-#elif defined WIN32
-  int  hr_mkdir(const wchar_t* a_folder);
-  void hr_cleardir(const wchar_t* a_folder);
-#endif
-  
+  int  hr_cleardir(const wchar_t* a_folder);
+
+  void hr_deletefile(const wchar_t* a_file);
+  void hr_deletefile(const char* a_file);
+
+  void hr_copy_file(const char* a_file1, const char* a_file2);
   void hr_copy_file(const wchar_t* a_file1, const wchar_t* a_file2); //#TODO: implement this on Linux!!!
   
   void hr_ifstream_open(std::ifstream& a_stream, const wchar_t* a_fileName);
-  void hr_ofstream_open( std::ofstream& a_stream, const wchar_t* a_fileName);
+  void hr_ofstream_open(std::ofstream& a_stream, const wchar_t* a_fileName);
 
+  std::vector<std::string>  hr_listfiles(const char* a_folder, bool excludeFolders = true);
+  std::vector<std::wstring> hr_listfiles(const wchar_t* a_folder2, bool excludeFolders = true);
+  
   struct HRSystemMutex;
   HRSystemMutex* hr_create_system_mutex(const char* a_mutexName);
   void hr_free_system_mutex(HRSystemMutex*& a_mutex);

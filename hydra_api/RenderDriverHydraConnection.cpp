@@ -898,6 +898,14 @@ HRRenderUpdateInfo RD_HydraConnection::HaveUpdateNow(int a_maxRaysPerPixel)
     this->ExecuteCommand(L"exitnow", nullptr);
   }
 
+  // check if processes are still running
+  //
+  if (m_pConnection != nullptr && !m_pConnection->hasConnection())
+  { 
+    result.finalUpdate = true;
+	this->ExecuteCommand(L"exitnow", nullptr);
+  }  
+
   return result;
 }
 
@@ -1138,6 +1146,9 @@ void RD_HydraConnection::GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_
   float* data0 = nullptr;
   float* data1 = nullptr;
   float* data2 = nullptr;
+  if (m_pSharedImage == nullptr)
+    return;
+  
   data0 = m_pSharedImage->ImageData(0);
   if (m_pSharedImage->Header()->depth == 4) // some other process already have computed gbuffer
   {
