@@ -1042,16 +1042,10 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
   HRSceneInst* pScn   = g_objManager.PtrById(a_pScn);
 
   if (pSettings == nullptr)
-  {
-    HrPrint(HR_SEVERITY_ERROR, L"hrCommit, nullptr render");
-    return;
-  }
+    HrPrint(HR_SEVERITY_WARNING, L"hrCommit, nullptr render");
 
   if (pScn == nullptr)
-  {
-    HrPrint(HR_SEVERITY_ERROR, L"hrCommit, nullptr scene");
-    return;
-  }
+    HrPrint(HR_SEVERITY_WARNING, L"hrCommit, nullptr scene");
 
   if (a_pRender.id != -1)
   {
@@ -1085,7 +1079,8 @@ HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_p
     HR_DriverDraw  (g_objManager.scnInst[g_objManager.m_currSceneId], pSettings);
   }
   
-  _hrSaveCurrentChanges(g_objManager.scnData); // save change if needed
+  if(g_objManager.m_lastInitInfo.saveChanges)
+    _hrSaveCurrentChanges(g_objManager.scnData); // save change if needed
 
   g_objManager.scnData.m_changeList.clear();
 

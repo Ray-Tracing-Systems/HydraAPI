@@ -180,13 +180,14 @@ typedef void(*HR_TEXTURE2D_PROC_LDR_CALLBACK)(unsigned char* a_buffer, int w, in
 
 struct HRInitInfo
 {
-  HRInitInfo() : copyTexturesToLocalFolder(false), localDataPath(true), sortMaterialIndices(true), computeMeshBBoxes(true),
+  HRInitInfo() : copyTexturesToLocalFolder(false), localDataPath(true), sortMaterialIndices(true), computeMeshBBoxes(true), saveChanges(true),
                  vbSize(int64_t(2048)*int64_t(1024*1024)) {}
 
   bool    copyTexturesToLocalFolder; ///<!
   bool    localDataPath            ; ///<!
   bool    sortMaterialIndices      ; ///<!
   bool    computeMeshBBoxes        ; ///<!
+  bool    saveChanges              ; ///<!    
   int64_t vbSize                   ; ///<! virtual buffer size in bytes
 };
 
