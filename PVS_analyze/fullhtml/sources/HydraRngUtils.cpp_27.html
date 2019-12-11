@@ -1,0 +1,324 @@
+
+<html>
+<head>
+
+  <meta http-equiv="Content-Type" content="text/html; charset=US-ASCII" />
+  <title>HydraRngUtils.cpp</title>
+
+  <link rel="stylesheet" href="../style.css"/>
+  <script src="../jquery-3.2.1.min.js"></script>
+</head>
+<body>
+
+<pre><code class = "cpp">
+<a name="ln1">//</a>
+<a name="ln2">// Created by frol on 25.06.19.</a>
+<a name="ln3">//</a>
+<a name="ln4"> </a>
+<a name="ln5">#include &quot;HydraAPI.h&quot;</a>
+<a name="ln6">#include &lt;cmath&gt;</a>
+<a name="ln7"> </a>
+<a name="ln8">namespace hr_prng</a>
+<a name="ln9">{</a>
+<a name="ln10">  static inline unsigned int NextState(RandomGen *gen)</a>
+<a name="ln11">  {</a>
+<a name="ln12">    const unsigned int x = (gen-&gt;state).x * 17 + (gen-&gt;state).y * 13123;</a>
+<a name="ln13">    (gen-&gt;state).x       = (x &lt;&lt; 13) ^ x;</a>
+<a name="ln14">    (gen-&gt;state).y      ^= (x &lt;&lt; 7);</a>
+<a name="ln15">    return x;</a>
+<a name="ln16">  }</a>
+<a name="ln17"> </a>
+<a name="ln18">  static inline int mapRndFloatToInt(float a_val, int a, int b)</a>
+<a name="ln19">  {</a>
+<a name="ln20">    const float fa = (float) (a + 0);</a>
+<a name="ln21">    const float fb = (float) (b + 1);</a>
+<a name="ln22">    const float fR = fa + a_val * (fb - fa);</a>
+<a name="ln23"> </a>
+<a name="ln24">    const int res = (int) (fR);</a>
+<a name="ln25"> </a>
+<a name="ln26">    if (res &gt; b)</a>
+<a name="ln27">      return b;</a>
+<a name="ln28">    else</a>
+<a name="ln29">      return res;</a>
+<a name="ln30">  }</a>
+<a name="ln31">};</a>
+<a name="ln32"> </a>
+<a name="ln33">//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln34">//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln35">//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln36">//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln37"> </a>
+<a name="ln38">float hr_prng::rndFloat(RandomGen *gen)</a>
+<a name="ln39">{</a>
+<a name="ln40">  const unsigned int x   = NextState(gen);</a>
+<a name="ln41">  const unsigned int tmp = (x * (x * x * 15731 + 74323) + 871483);</a>
+<a name="ln42">  const float scale      = (1.0f / 4294967296.0f);</a>
+<a name="ln43">  return ((float) (tmp)) * scale;</a>
+<a name="ln44">}</a>
+<a name="ln45"> </a>
+<a name="ln46">hr_prng::RandomGen hr_prng::RandomGenInit(const int a_seed)</a>
+<a name="ln47">{</a>
+<a name="ln48">  RandomGen gen;</a>
+<a name="ln49">  gen.state.x = (a_seed * (a_seed * a_seed * 15731 + 74323) + 871483);</a>
+<a name="ln50">  gen.state.y = (a_seed * (a_seed * a_seed * 13734 + 37828) + 234234);</a>
+<a name="ln51"> </a>
+<a name="ln52">  for (int i = 0; i &lt; (a_seed % 7); i++)</a>
+<a name="ln53">    NextState(&amp;gen);</a>
+<a name="ln54"> </a>
+<a name="ln55">  return gen;</a>
+<a name="ln56">}</a>
+<a name="ln57"> </a>
+<a name="ln58">int hr_prng::rndIntUniform(RandomGen&amp; gen, int a, int b)</a>
+<a name="ln59">{</a>
+<a name="ln60">  return mapRndFloatToInt(rndFloat(&amp;gen), a, b);</a>
+<a name="ln61">}</a>
+<a name="ln62"> </a>
+<a name="ln63">float hr_prng::rndFloatUniform(RandomGen &amp;gen, float s, float e)</a>
+<a name="ln64">{</a>
+<a name="ln65">  const float t = rndFloat(&amp;gen);</a>
+<a name="ln66">  return s + t * (e - s);</a>
+<a name="ln67">}</a>
+<a name="ln68"> </a>
+<a name="ln69">//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln70">//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln71">//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln72">//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln73"> </a>
+<a name="ln74">typedef long long int INT64;</a>
+<a name="ln75"> </a>
+<a name="ln76">using hr_qmc::QRNG_DIMENSIONS;</a>
+<a name="ln77">using hr_qmc::QRNG_RESOLUTION;</a>
+<a name="ln78"> </a>
+<a name="ln79">////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln80">// Table generation functions</a>
+<a name="ln81">////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln82">// Internal 64(63)-bit table</a>
+<a name="ln83">static INT64 cjn[63][QRNG_DIMENSIONS];</a>
+<a name="ln84"> </a>
+<a name="ln85">static int GeneratePolynomials(int buffer[QRNG_DIMENSIONS], bool primitive)</a>
+<a name="ln86">{</a>
+<a name="ln87">    int i, j, n, p1, p2, l;</a>
+<a name="ln88">    int e_p1, e_p2, e_b;</a>
+<a name="ln89"> </a>
+<a name="ln90">    //generate all polynomials to buffer</a>
+<a name="ln91">    for(n = 1, buffer[0] = 0x2, p2 = 0, l = 0; n &lt; QRNG_DIMENSIONS; ++n){</a>
+<a name="ln92">        //search for the next irreducable polynomial</a>
+<a name="ln93">        for(p1 = buffer[n - 1] + 1; ; ++p1){</a>
+<a name="ln94">            //find degree of polynomial p1</a>
+<a name="ln95">            for(e_p1 = 30; (p1 &amp; (1 &lt;&lt; e_p1)) == 0; --e_p1) {}</a>
+<a name="ln96"> </a>
+<a name="ln97">            // try to divide p1 by all polynomials in buffer</a>
+<a name="ln98">            for(i = 0; i &lt; n; ++i){</a>
+<a name="ln99">                // find the degree of buffer[i]</a>
+<a name="ln100">                for(e_b = e_p1; (buffer[i] &amp; (1 &lt;&lt; e_b)) == 0; --e_b) {}</a>
+<a name="ln101"> </a>
+<a name="ln102">                // divide p2 by buffer[i] until the end</a>
+<a name="ln103">                for(p2 = (buffer[i] &lt;&lt; ((e_p2 = e_p1) - e_b)) ^ p1; p2 &gt;= buffer[i]; p2 = (buffer[i] &lt;&lt; (e_p2 - e_b)) ^ p2){</a>
+<a name="ln104">                    for( ; (p2 &amp; (1 &lt;&lt; e_p2)) == 0; --e_p2) {}</a>
+<a name="ln105">                }// compute new degree of p2</a>
+<a name="ln106"> </a>
+<a name="ln107">                // division without remainder!!! p1 is not irreducable</a>
+<a name="ln108">                if(p2 == 0){</a>
+<a name="ln109">                    break;</a>
+<a name="ln110">                }</a>
+<a name="ln111">            }</a>
+<a name="ln112"> </a>
+<a name="ln113">            //all divisions were with remainder - p1 is irreducable</a>
+<a name="ln114">            if(p2 != 0){</a>
+<a name="ln115">                e_p2 = 0;</a>
+<a name="ln116">                if(primitive){</a>
+<a name="ln117">                    //check that p1 has only one cycle (i.e. is monic, or primitive)</a>
+<a name="ln118">                    j = ~(0xffffffff &lt;&lt; (e_p1 + 1));</a>
+<a name="ln119">                    e_b = (1 &lt;&lt; e_p1) | 0x1;</a>
+<a name="ln120">                    for(p2 = e_b, e_p2 = (1 &lt;&lt; e_p1) - 2; e_p2 &gt; 0; --e_p2){</a>
+<a name="ln121">                        p2 &lt;&lt;= 1;</a>
+<a name="ln122">                        i = p2 &amp; p1;</a>
+<a name="ln123">                        i = (i &amp; 0x55555555) + ((i &gt;&gt; 1) &amp; 0x55555555);</a>
+<a name="ln124">                        i = (i &amp; 0x33333333) + ((i &gt;&gt; 2) &amp; 0x33333333);</a>
+<a name="ln125">                        i = (i &amp; 0x07070707) + ((i &gt;&gt; 4) &amp; 0x07070707);</a>
+<a name="ln126">                        p2 |= (i % 255) &amp; 1;</a>
+<a name="ln127">                        if ((p2 &amp; j) == e_b) break;</a>
+<a name="ln128">                    }</a>
+<a name="ln129">                }</a>
+<a name="ln130">                //it is monic - add it to the list of polynomials</a>
+<a name="ln131">                if(e_p2 == 0){</a>
+<a name="ln132">                    buffer[n] = p1;</a>
+<a name="ln133">                    l += e_p1;</a>
+<a name="ln134">                    break;</a>
+<a name="ln135">                }</a>
+<a name="ln136">            }</a>
+<a name="ln137">        }</a>
+<a name="ln138">    }</a>
+<a name="ln139">    return l + 1;</a>
+<a name="ln140">}</a>
+<a name="ln141"> </a>
+<a name="ln142"> </a>
+<a name="ln143">////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln144">//  @misc{Bratley92:LDS,</a>
+<a name="ln145">//    author = &quot;B. Fox and P. Bratley and H. Niederreiter&quot;,</a>
+<a name="ln146">//    title = &quot;Implementation and test of low discrepancy sequences&quot;,</a>
+<a name="ln147">//    text = &quot;B. L. Fox, P. Bratley, and H. Niederreiter. Implementation and test of</a>
+<a name="ln148">//      low discrepancy sequences. ACM Trans. Model. Comput. Simul., 2(3):195--213,</a>
+<a name="ln149">//      July 1992.&quot;,</a>
+<a name="ln150">//    year = &quot;1992&quot; }</a>
+<a name="ln151">////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln152">static void GenerateCJ(){</a>
+<a name="ln153">    int buffer[QRNG_DIMENSIONS];</a>
+<a name="ln154">    int *polynomials;</a>
+<a name="ln155">    int n, p1, l, e_p1;</a>
+<a name="ln156"> </a>
+<a name="ln157">    // Niederreiter (in contrast to Sobol) allows to use not primitive, but just irreducable polynomials</a>
+<a name="ln158">    l = GeneratePolynomials(buffer, false);</a>
+<a name="ln159"> </a>
+<a name="ln160">    // convert all polynomials from buffer to polynomials table</a>
+<a name="ln161">    polynomials = new int[l + 2 * QRNG_DIMENSIONS + 1];</a>
+<a name="ln162">    for(n = 0, l = 0; n &lt; QRNG_DIMENSIONS; ++n){</a>
+<a name="ln163">        //find degree of polynomial p1</a>
+<a name="ln164">        for(p1 = buffer[n], e_p1 = 30; (p1 &amp; (1 &lt;&lt; e_p1)) == 0; --e_p1) {}</a>
+<a name="ln165"> </a>
+<a name="ln166">        //fill polynomials table with values for this polynomial</a>
+<a name="ln167">        polynomials[l++] = 1;</a>
+<a name="ln168">        for(--e_p1; e_p1 &gt;= 0; --e_p1){</a>
+<a name="ln169">            polynomials[l++] = (p1 &gt;&gt; e_p1) &amp; 1;</a>
+<a name="ln170">        }</a>
+<a name="ln171">        polynomials[l++] = -1;</a>
+<a name="ln172">    }</a>
+<a name="ln173">    polynomials[l] = -1;</a>
+<a name="ln174"> </a>
+<a name="ln175">    // irreducable polynomial p</a>
+<a name="ln176">    int *p = polynomials, e, d;</a>
+<a name="ln177">    // polynomial b</a>
+<a name="ln178">    int b_arr[1024], *b, m;</a>
+<a name="ln179">    // v array</a>
+<a name="ln180">    int v_arr[1024], *v;</a>
+<a name="ln181">    // temporary polynomial, required to do multiplication of p and b</a>
+<a name="ln182">    int t_arr[1024], *t;</a>
+<a name="ln183">    // subsidiary variables</a>
+<a name="ln184">    int i, j, u, m1, ip, it;</a>
+<a name="ln185"> </a>
+<a name="ln186">    // cycle over monic irreducible polynomials</a>
+<a name="ln187">    for(d = 0; p[0] != -1; p += e + 2){</a>
+<a name="ln188">        // allocate memory for cj array for dimention (ip + 1)</a>
+<a name="ln189">        for(i = 0; i &lt; 63; ++i){</a>
+<a name="ln190">            cjn[i][d] = 0;</a>
+<a name="ln191">        }</a>
+<a name="ln192"> </a>
+<a name="ln193">        // determine the power of irreducable polynomial</a>
+<a name="ln194">        for(e = 0; p[e + 1] != -1; ++e) {}</a>
+<a name="ln195">        // polynomial b in the beginning is just '1'</a>
+<a name="ln196">        (b = b_arr + 1023)[m = 0] = 1;</a>
+<a name="ln197">        // v array needs only (63 + e - 2) length</a>
+<a name="ln198">        v = v_arr + 1023 - (63 + e - 2);</a>
+<a name="ln199"> </a>
+<a name="ln200">        // cycle over all coefficients</a>
+<a name="ln201">        for(j = 63 - 1, u = e; j &gt;= 0; --j, ++u){</a>
+<a name="ln202">            if(u == e){</a>
+<a name="ln203">                u = 0;</a>
+<a name="ln204">                // multiply b by p (polynomials multiplication)</a>
+<a name="ln205">                for(i = 0, t = t_arr + 1023 - (m1 = m); i &lt;= m; ++i){</a>
+<a name="ln206">                    t[i] = b[i];</a>
+<a name="ln207">                }</a>
+<a name="ln208">                b = b_arr + 1023 - (m += e);</a>
+<a name="ln209"> </a>
+<a name="ln210">                for(i = 0; i &lt;= m; ++i){</a>
+<a name="ln211">                    b[i] = 0;</a>
+<a name="ln212">                    for(ip = e - (m - i), it = m1; ip &lt;= e &amp;&amp; it &gt;= 0; ++ip, --it){</a>
+<a name="ln213">                        if(ip &gt;= 0){</a>
+<a name="ln214">                            b[i] ^= p[ip] &amp; t[it];</a>
+<a name="ln215">                        }</a>
+<a name="ln216">                    }</a>
+<a name="ln217">                }</a>
+<a name="ln218">                // multiplication of polynomials finished</a>
+<a name="ln219"> </a>
+<a name="ln220">                // calculate v</a>
+<a name="ln221">                for(i = 0; i &lt; m1; ++i){</a>
+<a name="ln222">                    v[i] = 0;</a>
+<a name="ln223">                }</a>
+<a name="ln224">                for(; i &lt; m; ++i){</a>
+<a name="ln225">                    v[i] = 1;</a>
+<a name="ln226">                }</a>
+<a name="ln227">                for(; i &lt;= 63 + e - 2; ++i){</a>
+<a name="ln228">                    v[i] = 0;</a>
+<a name="ln229">                    for (it = 1; it &lt;= m; ++it){</a>
+<a name="ln230">                        v[i] ^= v[i - it] &amp; b[it];</a>
+<a name="ln231">                    }</a>
+<a name="ln232">                }</a>
+<a name="ln233">            }</a>
+<a name="ln234"> </a>
+<a name="ln235">            // copy calculated v to cj</a>
+<a name="ln236">            for(i = 0; i &lt; 63; i++){</a>
+<a name="ln237">                cjn[i][d] |= (INT64)v[i + u] &lt;&lt; j;</a>
+<a name="ln238">            }</a>
+<a name="ln239">        }</a>
+<a name="ln240">        ++d;</a>
+<a name="ln241">    }</a>
+<a name="ln242"> </a>
+<a name="ln243">    delete []polynomials;</a>
+<a name="ln244">}</a>
+<a name="ln245"> </a>
+<a name="ln246"> </a>
+<a name="ln247">////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln248">// Initialization (table setup)</a>
+<a name="ln249">////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln250">void hr_qmc::init(unsigned int table[QRNG_DIMENSIONS][QRNG_RESOLUTION])</a>
+<a name="ln251">{</a>
+<a name="ln252">  GenerateCJ();</a>
+<a name="ln253"> </a>
+<a name="ln254">  for(int dim = 0; dim &lt; QRNG_DIMENSIONS; dim++)</a>
+<a name="ln255">    for(int bit = 0; bit &lt; QRNG_RESOLUTION; bit++)</a>
+<a name="ln256">      table[dim][bit] = (int)((cjn[bit][dim] &gt;&gt; 32) &amp; 0x7FFFFFFF);</a>
+<a name="ln257">}</a>
+<a name="ln258"> </a>
+<a name="ln259"> </a>
+<a name="ln260">float hr_qmc::rndFloat(unsigned int pos, int dim, unsigned int *c_Table)</a>
+<a name="ln261">{</a>
+<a name="ln262">  unsigned int result = 0;</a>
+<a name="ln263">  unsigned int data   = pos;</a>
+<a name="ln264">  for (int bit = 0; bit &lt; QRNG_RESOLUTION; bit++, data &gt;&gt;= 1)</a>
+<a name="ln265">    if (data &amp; 1) result ^= c_Table[bit + dim*QRNG_RESOLUTION];</a>
+<a name="ln266">  return (float)(result + 1) * INT_SCALE;</a>
+<a name="ln267">}</a>
+<a name="ln268"> </a>
+<a name="ln269">float hr_qmc::rndFloatUniform(unsigned int pos, int dim, unsigned int *c_Table, float s, float e)</a>
+<a name="ln270">{</a>
+<a name="ln271">  const float t = rndFloat(pos,dim, c_Table);</a>
+<a name="ln272">  return s + t * (e - s);</a>
+<a name="ln273">}</a>
+<a name="ln274"> </a>
+<a name="ln275">int hr_qmc::rndIntUniform(unsigned int pos, int dim, unsigned int *c_Table, int a, int b)</a>
+<a name="ln276">{</a>
+<a name="ln277">  return hr_prng::mapRndFloatToInt(rndFloat(pos, dim, c_Table), a, b);</a>
+<a name="ln278">}</a>
+
+</code></pre>
+<div class="balloon" rel="74"><p><span style="font-size:18px">&uarr;</span> <a href="https://www.viva64.com/en/w/v677/" target="_blank">V677</a> Custom declaration of a standard 'INT64' type. The system header file should be used: #include <BaseTsd.h>.</p></div>
+
+<link rel="stylesheet" href="highlight.css">
+<script src="highlight.pack.js"></script>
+<script src="highlightjs-line-numbers.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script>hljs.initLineNumbersOnLoad();</script>
+<script>
+  $(document).ready(function() {
+      $('.balloon').each(function () {
+          var bl = $(this);
+          var line = bl.attr('rel');
+          var text = $('a[name="ln'+line+'"]').text();
+
+          var space_count = 0;
+          for(var i = 0; i<text.length; i++){
+              var char = text[i];
+              if((char !== ' ')&&(char !== '\t'))break;
+              if(char === '\t')space_count++;
+              space_count++;
+          }
+
+          bl.css('margin-left', space_count*8);
+          $('a[name="ln'+line+'"]').after(bl);
+      });
+
+      window.location = window.location;
+  });
+</script>
+</body>
+</html>

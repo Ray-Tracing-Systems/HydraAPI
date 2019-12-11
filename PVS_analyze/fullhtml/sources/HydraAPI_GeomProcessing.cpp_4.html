@@ -1,0 +1,2010 @@
+
+<html>
+<head>
+
+  <meta http-equiv="Content-Type" content="text/html; charset=US-ASCII" />
+  <title>HydraAPI_GeomProcessing.cpp</title>
+
+  <link rel="stylesheet" href="../style.css"/>
+  <script src="../jquery-3.2.1.min.js"></script>
+</head>
+<body>
+
+<pre><code class = "cpp">
+<a name="ln1">//</a>
+<a name="ln2">// Created by vsan on 23.05.18.</a>
+<a name="ln3">//</a>
+<a name="ln4">#include &quot;HydraAPI.h&quot;</a>
+<a name="ln5">#include &quot;HydraInternal.h&quot;</a>
+<a name="ln6"> </a>
+<a name="ln7">#include &lt;memory&gt;</a>
+<a name="ln8">#include &lt;vector&gt;</a>
+<a name="ln9">#include &lt;array&gt;</a>
+<a name="ln10">#include &lt;string&gt;</a>
+<a name="ln11">#include &lt;map&gt;</a>
+<a name="ln12"> </a>
+<a name="ln13">#include &lt;fstream&gt;</a>
+<a name="ln14">#include &lt;sstream&gt;</a>
+<a name="ln15">#include &lt;iomanip&gt;</a>
+<a name="ln16">#include &lt;complex&gt;</a>
+<a name="ln17">#include &lt;set&gt;</a>
+<a name="ln18">#include &lt;algorithm&gt;</a>
+<a name="ln19"> </a>
+<a name="ln20">#include &lt;cmath&gt;</a>
+<a name="ln21">#include &lt;cassert&gt;</a>
+<a name="ln22">#include &lt;random&gt;</a>
+<a name="ln23"> </a>
+<a name="ln24">using std::isnan;</a>
+<a name="ln25">using std::isinf;</a>
+<a name="ln26"> </a>
+<a name="ln27">#include &quot;LiteMath.h&quot;</a>
+<a name="ln28">using namespace HydraLiteMath;</a>
+<a name="ln29"> </a>
+<a name="ln30">#include &quot;HydraObjectManager.h&quot;</a>
+<a name="ln31">#include &quot;HydraVSGFExport.h&quot;</a>
+<a name="ln32">#include &quot;HydraXMLHelpers.h&quot;</a>
+<a name="ln33">#include &quot;HydraTextureUtils.h&quot;</a>
+<a name="ln34"> </a>
+<a name="ln35">#include &quot;../utils/mikktspace/mikktspace.h&quot;</a>
+<a name="ln36"> </a>
+<a name="ln37">#ifdef WIN32</a>
+<a name="ln38">#undef min</a>
+<a name="ln39">#undef max</a>
+<a name="ln40">#endif</a>
+<a name="ln41"> </a>
+<a name="ln42">extern std::wstring      g_lastError;</a>
+<a name="ln43">extern std::wstring      g_lastErrorCallerPlace;</a>
+<a name="ln44">extern HRObjectManager   g_objManager;</a>
+<a name="ln45"> </a>
+<a name="ln46">#ifdef WIN32</a>
+<a name="ln47">#undef min</a>
+<a name="ln48">#undef max</a>
+<a name="ln49">#endif</a>
+<a name="ln50"> </a>
+<a name="ln51"> </a>
+<a name="ln52">void HR_ComputeTangentSpaceSimple(const int     vertexCount, const int     triangleCount, const uint32_t* triIndices,</a>
+<a name="ln53">                                  const float4* verticesPos, const float4* verticesNorm, const float2* vertTexCoord,</a>
+<a name="ln54">                                  float4* verticesTang)</a>
+<a name="ln55">{</a>
+<a name="ln56">  </a>
+<a name="ln57">  float4 *tan1 = new float4[vertexCount * 2];</a>
+<a name="ln58">  float4 *tan2 = tan1 + vertexCount;</a>
+<a name="ln59">  memset(tan1, 0, vertexCount * sizeof(float4) * 2);</a>
+<a name="ln60">  </a>
+<a name="ln61">  const float epsDiv = 1.0e25f;</a>
+<a name="ln62">  </a>
+<a name="ln63">  for (auto a = 0; a &lt; triangleCount; a++)</a>
+<a name="ln64">  {</a>
+<a name="ln65">    auto i1 = triIndices[3 * a + 0];</a>
+<a name="ln66">    auto i2 = triIndices[3 * a + 1];</a>
+<a name="ln67">    auto i3 = triIndices[3 * a + 2];</a>
+<a name="ln68">    </a>
+<a name="ln69">    const float4&amp; v1 = verticesPos[i1];</a>
+<a name="ln70">    const float4&amp; v2 = verticesPos[i2];</a>
+<a name="ln71">    const float4&amp; v3 = verticesPos[i3];</a>
+<a name="ln72">    </a>
+<a name="ln73">    const float2&amp; w1 = vertTexCoord[i1];</a>
+<a name="ln74">    const float2&amp; w2 = vertTexCoord[i2];</a>
+<a name="ln75">    const float2&amp; w3 = vertTexCoord[i3];</a>
+<a name="ln76">    </a>
+<a name="ln77">    const float x1 = v2.x - v1.x;</a>
+<a name="ln78">    const float x2 = v3.x - v1.x;</a>
+<a name="ln79">    const float y1 = v2.y - v1.y;</a>
+<a name="ln80">    const float y2 = v3.y - v1.y;</a>
+<a name="ln81">    const float z1 = v2.z - v1.z;</a>
+<a name="ln82">    const float z2 = v3.z - v1.z;</a>
+<a name="ln83">    </a>
+<a name="ln84">    const float s1 = w2.x - w1.x;</a>
+<a name="ln85">    const float s2 = w3.x - w1.x;</a>
+<a name="ln86">    const float t1 = w2.y - w1.y;</a>
+<a name="ln87">    const float t2 = w3.y - w1.y;</a>
+<a name="ln88">    </a>
+<a name="ln89">    const float denom = (s1 * t2 - s2 * t1);</a>
+<a name="ln90">    const float r     = (fabs(denom) &gt; 1e-35f) ? (1.0f / denom) : 0.0f;</a>
+<a name="ln91">    </a>
+<a name="ln92">    const float4 sdir((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r, 1);</a>
+<a name="ln93">    const float4 tdir((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r, 1);</a>
+<a name="ln94">    </a>
+<a name="ln95">    tan1[i1] += sdir;</a>
+<a name="ln96">    tan1[i2] += sdir;</a>
+<a name="ln97">    tan1[i3] += sdir;</a>
+<a name="ln98">    </a>
+<a name="ln99">    tan2[i1] += tdir;</a>
+<a name="ln100">    tan2[i2] += tdir;</a>
+<a name="ln101">    tan2[i3] += tdir;</a>
+<a name="ln102">  }</a>
+<a name="ln103">  </a>
+<a name="ln104">  for (long a = 0; a &lt; vertexCount; a++)</a>
+<a name="ln105">  {</a>
+<a name="ln106">    const float4&amp; n = verticesNorm[a];</a>
+<a name="ln107">    const float4&amp; t = tan1[a];</a>
+<a name="ln108">    </a>
+<a name="ln109">    const float3 n1 = to_float3(n);</a>
+<a name="ln110">    const float3 t1 = to_float3(t);</a>
+<a name="ln111">    </a>
+<a name="ln112">    // Gram-Schmidt orthogonalization</a>
+<a name="ln113">    verticesTang[a] = to_float4(normalize(t1 - n1 * dot(n1, t1)), 0.0f); // #NOTE: overlow here is ok!</a>
+<a name="ln114">    </a>
+<a name="ln115">    verticesTang[a].x = isnan(verticesTang[a].x) || isinf(verticesTang[a].x) ? 0 : verticesTang[a].x;</a>
+<a name="ln116">    verticesTang[a].y = isnan(verticesTang[a].y) || isinf(verticesTang[a].y) ? 0 : verticesTang[a].y;</a>
+<a name="ln117">    verticesTang[a].z = isnan(verticesTang[a].z) || isinf(verticesTang[a].z) ? 0 : verticesTang[a].z;</a>
+<a name="ln118">    </a>
+<a name="ln119">    // Calculate handedness</a>
+<a name="ln120">    verticesTang[a].w = (dot(cross(n1, t1), to_float3(tan2[a])) &lt; 0.0f) ? -1.0f : 1.0f;</a>
+<a name="ln121">  }</a>
+<a name="ln122">  </a>
+<a name="ln123">  delete [] tan1;</a>
+<a name="ln124">}</a>
+<a name="ln125"> </a>
+<a name="ln126"> </a>
+<a name="ln127"> </a>
+<a name="ln128">struct vertex_cache_eq</a>
+<a name="ln129">{</a>
+<a name="ln130">    bool operator()(const vertex_cache &amp; u, const vertex_cache &amp; v) const</a>
+<a name="ln131">    {</a>
+<a name="ln132">      return (fabsf(u.pos.x - v.pos.x) &lt; 1e-6) &amp;&amp; (fabsf(u.pos.y - v.pos.y) &lt; 1e-6) &amp;&amp; (fabsf(u.pos.z - v.pos.z) &lt; 1e-6) &amp;&amp; //pos</a>
+<a name="ln133">             (fabsf(u.normal.x - v.normal.x) &lt; 1e-3) &amp;&amp; (fabsf(u.normal.y - v.normal.y) &lt; 1e-3) &amp;&amp; (fabsf(u.normal.z - v.normal.z) &lt; 1e-3) &amp;&amp; //norm</a>
+<a name="ln134">             (fabsf(u.uv.x - v.uv.x) &lt; 1e-5) &amp;&amp; (fabsf(u.uv.y - v.uv.y) &lt; 1e-5) &amp;&amp;</a>
+<a name="ln135">             (fabsf(u.tangent.x - v.tangent.x) &lt; 1e-3) &amp;&amp; (fabsf(u.tangent.y - v.tangent.y) &lt; 1e-3) &amp;&amp; (fabsf(u.tangent.z - v.tangent.z) &lt; 1e-3) &amp;&amp;</a>
+<a name="ln136">             (fabsf(u.tangent.w - v.tangent.w) &lt; 1e-1); //tangents</a>
+<a name="ln137">    }</a>
+<a name="ln138">};</a>
+<a name="ln139"> </a>
+<a name="ln140"> </a>
+<a name="ln141">void doDisplacement(HRMesh *pMesh, const pugi::xml_node &amp;displaceXMLNode, std::vector&lt;uint3&gt; &amp;triangleList,</a>
+<a name="ln142">                    const HRUtils::BBox &amp;bbox);</a>
+<a name="ln143"> </a>
+<a name="ln144"> </a>
+<a name="ln145">bool meshHasDisplacementMat(HRMeshRef a_mesh, pugi::xml_node &amp;displaceXMLNode)</a>
+<a name="ln146">{</a>
+<a name="ln147">  HRMesh *pMesh = g_objManager.PtrById(a_mesh);</a>
+<a name="ln148">  if (pMesh == nullptr)</a>
+<a name="ln149">  {</a>
+<a name="ln150">    HrError(L&quot;meshHasDisplacementMat: nullptr input&quot;);</a>
+<a name="ln151">    return false;</a>
+<a name="ln152">  }</a>
+<a name="ln153"> </a>
+<a name="ln154">  HRMesh::InputTriMesh &amp;mesh = pMesh-&gt;m_input;</a>
+<a name="ln155"> </a>
+<a name="ln156">  std::set&lt;int32_t&gt; uniqueMatIndices;</a>
+<a name="ln157">  for(auto mI : mesh.matIndices)</a>
+<a name="ln158">  {</a>
+<a name="ln159">    auto ins = uniqueMatIndices.insert(mI);</a>
+<a name="ln160">    if (ins.second)</a>
+<a name="ln161">    {</a>
+<a name="ln162">      HRMaterialRef tmpRef;</a>
+<a name="ln163">      tmpRef.id = mI;</a>
+<a name="ln164">      auto mat = g_objManager.PtrById(tmpRef);</a>
+<a name="ln165">      if (mat != nullptr)</a>
+<a name="ln166">      {</a>
+<a name="ln167">        auto d_node = mat-&gt;xml_node().child(L&quot;displacement&quot;);</a>
+<a name="ln168"> </a>
+<a name="ln169">        if (d_node.attribute(L&quot;type&quot;).as_string() == std::wstring(L&quot;true_displacement&quot;))</a>
+<a name="ln170">        {</a>
+<a name="ln171">          displaceXMLNode = d_node;</a>
+<a name="ln172">          return true;</a>
+<a name="ln173">        }</a>
+<a name="ln174">      }</a>
+<a name="ln175">    }</a>
+<a name="ln176">  }</a>
+<a name="ln177"> </a>
+<a name="ln178">  return false;</a>
+<a name="ln179">}</a>
+<a name="ln180"> </a>
+<a name="ln181">bool instanceHasDisplacementMat(HRMeshRef a_meshRef, const std::unordered_map&lt;uint32_t, uint32_t&gt; &amp;remapList,</a>
+<a name="ln182">                                pugi::xml_node &amp;displaceXMLNode, HRMaterialRef &amp;matRef)</a>
+<a name="ln183">{</a>
+<a name="ln184">  HRMesh *pMesh = g_objManager.PtrById(a_meshRef);</a>
+<a name="ln185">  if (pMesh == nullptr)</a>
+<a name="ln186">  {</a>
+<a name="ln187">    HrError(L&quot;meshHasDisplacementMat: nullptr input&quot;);</a>
+<a name="ln188">    return false;</a>
+<a name="ln189">  }</a>
+<a name="ln190"> </a>
+<a name="ln191">  HRMesh::InputTriMesh &amp;mesh = pMesh-&gt;m_input;</a>
+<a name="ln192"> </a>
+<a name="ln193">  std::set&lt;int32_t&gt; uniqueMatIndices;</a>
+<a name="ln194">  for(auto mI : mesh.matIndices)</a>
+<a name="ln195">  {</a>
+<a name="ln196">    if(remapList.find(mI) != remapList.end())</a>
+<a name="ln197">      mI = remapList.at(mI);</a>
+<a name="ln198">    auto ins = uniqueMatIndices.insert(mI);</a>
+<a name="ln199">    if (ins.second)</a>
+<a name="ln200">    {</a>
+<a name="ln201">      //HRMaterialRef tmpRef;</a>
+<a name="ln202">      matRef.id = mI;</a>
+<a name="ln203">      auto mat = g_objManager.PtrById(matRef);</a>
+<a name="ln204">      if (mat != nullptr)</a>
+<a name="ln205">      {</a>
+<a name="ln206">        auto d_node = mat-&gt;xml_node().child(L&quot;displacement&quot;);</a>
+<a name="ln207"> </a>
+<a name="ln208">        if (d_node.attribute(L&quot;type&quot;).as_string() == std::wstring(L&quot;true_displacement&quot;))</a>
+<a name="ln209">        {</a>
+<a name="ln210">          displaceXMLNode = d_node;</a>
+<a name="ln211">          return true;</a>
+<a name="ln212">        }</a>
+<a name="ln213">      }</a>
+<a name="ln214">    }</a>
+<a name="ln215">  }</a>
+<a name="ln216"> </a>
+<a name="ln217">  return false;</a>
+<a name="ln218">}</a>
+<a name="ln219"> </a>
+<a name="ln220">void hrMeshDisplace(HRMeshRef a_mesh, const std::unordered_map&lt;uint32_t, uint32_t&gt; &amp;remapList,</a>
+<a name="ln221">                    pugi::xml_document &amp;stateToProcess, const HRUtils::BBox &amp;bbox)</a>
+<a name="ln222">{</a>
+<a name="ln223">  HRMesh *pMesh = g_objManager.PtrById(a_mesh);</a>
+<a name="ln224">  if (pMesh == nullptr)</a>
+<a name="ln225">  {</a>
+<a name="ln226">    HrError(L&quot;hrMeshDisplace: nullptr input&quot;);</a>
+<a name="ln227">    return;</a>
+<a name="ln228">  }</a>
+<a name="ln229"> </a>
+<a name="ln230">  HRMesh::InputTriMesh &amp;mesh = pMesh-&gt;m_input;</a>
+<a name="ln231"> </a>
+<a name="ln232">  const auto vertexCount = int(mesh.verticesPos.size() / 4);</a>
+<a name="ln233">  const auto triangleCount = int(mesh.triIndices.size() / 3);</a>
+<a name="ln234"> </a>
+<a name="ln235">  std::set&lt;int32_t&gt; uniqueMatIndices;</a>
+<a name="ln236">  std::unordered_map&lt;int32_t, pugi::xml_node&gt; matsWithDisplacement;</a>
+<a name="ln237">  std::unordered_map&lt;int, std::pair&lt;pugi::xml_node, std::vector&lt;uint3&gt; &gt; &gt; dMatToTriangles;</a>
+<a name="ln238"> </a>
+<a name="ln239">  for(unsigned int i = 0; i &lt; mesh.matIndices.size(); ++i)</a>
+<a name="ln240">  {</a>
+<a name="ln241">    int mI = mesh.matIndices.at(i);</a>
+<a name="ln242">    if(remapList.find(mI) != remapList.end())</a>
+<a name="ln243">      mI = remapList.at(mI);</a>
+<a name="ln244"> </a>
+<a name="ln245">    auto ins = uniqueMatIndices.insert(mI);</a>
+<a name="ln246">    if(ins.second)</a>
+<a name="ln247">    {</a>
+<a name="ln248"> </a>
+<a name="ln249">      HRMaterialRef tmpRef;</a>
+<a name="ln250">      tmpRef.id = mI;</a>
+<a name="ln251">      auto mat = g_objManager.PtrById(tmpRef);</a>
+<a name="ln252">      if(mat != nullptr)</a>
+<a name="ln253">      {</a>
+<a name="ln254">        auto d_node = mat-&gt;xml_node().child(L&quot;displacement&quot;);</a>
+<a name="ln255"> </a>
+<a name="ln256">        if (d_node != nullptr &amp;&amp;</a>
+<a name="ln257">            std::wstring(d_node.attribute(L&quot;type&quot;).as_string()) == std::wstring(L&quot;true_displacement&quot;))</a>
+<a name="ln258">        {</a>
+<a name="ln259">          matsWithDisplacement[mI] = d_node;</a>
+<a name="ln260">        }</a>
+<a name="ln261">      }</a>
+<a name="ln262">    }</a>
+<a name="ln263">    auto mat = matsWithDisplacement.find(mI);</a>
+<a name="ln264">    if(mat != matsWithDisplacement.end())</a>
+<a name="ln265">    {</a>
+<a name="ln266">      uint3 triangle = uint3(mesh.triIndices.at(i * 3 + 0),</a>
+<a name="ln267">                             mesh.triIndices.at(i * 3 + 1),</a>
+<a name="ln268">                             mesh.triIndices.at(i * 3 + 2));</a>
+<a name="ln269"> </a>
+<a name="ln270">      if (dMatToTriangles.find(mI) == dMatToTriangles.end())</a>
+<a name="ln271">      {</a>
+<a name="ln272">        std::vector&lt;uint3&gt; tmp;</a>
+<a name="ln273">        tmp.push_back(triangle);</a>
+<a name="ln274">        dMatToTriangles[mI] = std::pair&lt;pugi::xml_node, std::vector&lt;uint3&gt; &gt;(mat-&gt;second, tmp);</a>
+<a name="ln275">      }</a>
+<a name="ln276">      else</a>
+<a name="ln277">      {</a>
+<a name="ln278">        dMatToTriangles[mI].second.push_back(triangle);</a>
+<a name="ln279">      }</a>
+<a name="ln280">    }</a>
+<a name="ln281">  }</a>
+<a name="ln282"> </a>
+<a name="ln283">  /*for(auto&amp; dTris : dMatToTriangles)</a>
+<a name="ln284">  {</a>
+<a name="ln285">    std::cout &lt;&lt; &quot;id : &quot; &lt;&lt; dTris.first &lt;&lt; &quot; triangles : &quot; &lt;&lt; dTris.second.second.size() &lt;&lt;std::endl;</a>
+<a name="ln286">  }*/</a>
+<a name="ln287"> </a>
+<a name="ln288">  for(auto&amp; dTris : dMatToTriangles)</a>
+<a name="ln289">  {</a>
+<a name="ln290">    doDisplacement(pMesh, dTris.second.first, dTris.second.second, bbox);</a>
+<a name="ln291">  }</a>
+<a name="ln292"> </a>
+<a name="ln293"> </a>
+<a name="ln294">  hrMeshComputeNormals(a_mesh, int(mesh.triIndices.size()), false);</a>
+<a name="ln295">}</a>
+<a name="ln296"> </a>
+<a name="ln297">float smoothing_coeff(uint32_t valence)</a>
+<a name="ln298">{</a>
+<a name="ln299">  return (4.0f - 2.0f * cosf((2.0f * 3.14159265358979323846f) / valence )) / 9.0f;</a>
+<a name="ln300">}</a>
+<a name="ln301"> </a>
+<a name="ln302">std::vector&lt;uint32_t&gt; find_vertex_neighbours(int vertex_index, const HRMesh::InputTriMesh&amp; mesh)</a>
+<a name="ln303">{</a>
+<a name="ln304">  std::set&lt;uint32_t&gt; neighbours;</a>
+<a name="ln305">  for(int i = 0; i &lt; mesh.triIndices.size(); i += 3)</a>
+<a name="ln306">  {</a>
+<a name="ln307">    uint32_t indA = mesh.triIndices[i + 0];</a>
+<a name="ln308">    uint32_t indB = mesh.triIndices[i + 1];</a>
+<a name="ln309">    uint32_t indC = mesh.triIndices[i + 2];</a>
+<a name="ln310"> </a>
+<a name="ln311">    if(vertex_index == indA)</a>
+<a name="ln312">    {</a>
+<a name="ln313">      neighbours.insert(indB);</a>
+<a name="ln314">      neighbours.insert(indB);</a>
+<a name="ln315">      neighbours.insert(indC);</a>
+<a name="ln316">    }</a>
+<a name="ln317">    else if(vertex_index == indB)</a>
+<a name="ln318">    {</a>
+<a name="ln319">      neighbours.insert(indA);</a>
+<a name="ln320">      neighbours.insert(indC);</a>
+<a name="ln321">    }</a>
+<a name="ln322">    else if(vertex_index == indC)</a>
+<a name="ln323">    {</a>
+<a name="ln324">      neighbours.insert(indA);</a>
+<a name="ln325">      neighbours.insert(indB);</a>
+<a name="ln326">    }</a>
+<a name="ln327">  }</a>
+<a name="ln328">  std::vector&lt;uint32_t&gt; res;</a>
+<a name="ln329">  res.assign(neighbours.begin(), neighbours.end());</a>
+<a name="ln330"> </a>
+<a name="ln331">  return res;</a>
+<a name="ln332">}</a>
+<a name="ln333"> </a>
+<a name="ln334">float4 vertex_attrib_by_index_f4(const std::string &amp;attrib_name, uint32_t vertex_index, const HRMesh::InputTriMesh&amp; mesh)</a>
+<a name="ln335">{</a>
+<a name="ln336">  float4 res;</a>
+<a name="ln337">  if(attrib_name == &quot;pos&quot;)</a>
+<a name="ln338">  {</a>
+<a name="ln339">    res = float4(mesh.verticesPos.at(vertex_index * 4 + 0), mesh.verticesPos.at(vertex_index * 4 + 1),</a>
+<a name="ln340">                 mesh.verticesPos.at(vertex_index * 4 + 2), mesh.verticesPos.at(vertex_index * 4 + 3));</a>
+<a name="ln341">  }</a>
+<a name="ln342">  else if(attrib_name == &quot;normal&quot;)</a>
+<a name="ln343">  {</a>
+<a name="ln344">    res = float4(mesh.verticesNorm.at(vertex_index * 4 + 0), mesh.verticesNorm.at(vertex_index * 4 + 1),</a>
+<a name="ln345">                 mesh.verticesNorm.at(vertex_index * 4 + 2), mesh.verticesNorm.at(vertex_index * 4 + 3));</a>
+<a name="ln346">  }</a>
+<a name="ln347">  else if(attrib_name == &quot;tangent&quot;)</a>
+<a name="ln348">  {</a>
+<a name="ln349">    res = float4(mesh.verticesTangent.at(vertex_index * 4 + 0), mesh.verticesTangent.at(vertex_index * 4 + 1),</a>
+<a name="ln350">                 mesh.verticesTangent.at(vertex_index * 4 + 2), mesh.verticesTangent.at(vertex_index * 4 + 3));</a>
+<a name="ln351">  }</a>
+<a name="ln352"> </a>
+<a name="ln353">  return res;</a>
+<a name="ln354">}</a>
+<a name="ln355"> </a>
+<a name="ln356">void update_vertex_attrib_by_index_f4(float4 new_val, uint32_t vertex_index, std::vector &lt;float&gt; &amp;attrib_vec)</a>
+<a name="ln357">{</a>
+<a name="ln358">  attrib_vec.at(vertex_index * 4 + 0) = new_val.x;</a>
+<a name="ln359">  attrib_vec.at(vertex_index * 4 + 1) = new_val.y;</a>
+<a name="ln360">  attrib_vec.at(vertex_index * 4 + 2) = new_val.z;</a>
+<a name="ln361">  attrib_vec.at(vertex_index * 4 + 3) = new_val.w;</a>
+<a name="ln362">}</a>
+<a name="ln363"> </a>
+<a name="ln364">float2 vertex_attrib_by_index_f2(const std::string &amp;attrib_name, uint32_t vertex_index, const HRMesh::InputTriMesh&amp; mesh)</a>
+<a name="ln365">{</a>
+<a name="ln366">  float2 res;</a>
+<a name="ln367">  if(attrib_name == &quot;uv&quot;)</a>
+<a name="ln368">  {</a>
+<a name="ln369">    res = float2(mesh.verticesTexCoord.at(vertex_index * 2 + 0), mesh.verticesTexCoord.at(vertex_index * 2 + 1));</a>
+<a name="ln370">  }</a>
+<a name="ln371"> </a>
+<a name="ln372">  return res;</a>
+<a name="ln373">}</a>
+<a name="ln374"> </a>
+<a name="ln375">void update_vertex_attrib_by_index_f2(float2 new_val, uint32_t vertex_index, std::vector &lt;float&gt; &amp;attrib_vec)</a>
+<a name="ln376">{</a>
+<a name="ln377">  attrib_vec.at(vertex_index * 2 + 0) = new_val.x;</a>
+<a name="ln378">  attrib_vec.at(vertex_index * 2 + 1) = new_val.y;</a>
+<a name="ln379">}</a>
+<a name="ln380"> </a>
+<a name="ln381">void smooth_common_vertex_attributes(uint32_t vertex_index, const HRMesh::InputTriMesh&amp; mesh, float4 &amp;pos, float4 &amp;normal,</a>
+<a name="ln382">                                     float4 &amp;tangent, float2 &amp;uv)</a>
+<a name="ln383">{</a>
+<a name="ln384">  auto neighbours  = find_vertex_neighbours(vertex_index, mesh);</a>
+<a name="ln385">  uint32_t valence = uint32_t(neighbours.size());</a>
+<a name="ln386"> </a>
+<a name="ln387">  pos      = vertex_attrib_by_index_f4(&quot;pos&quot;, vertex_index, mesh);</a>
+<a name="ln388">  normal   = vertex_attrib_by_index_f4(&quot;normal&quot;, vertex_index, mesh);</a>
+<a name="ln389">  tangent  = vertex_attrib_by_index_f4(&quot;tangent&quot;, vertex_index, mesh);</a>
+<a name="ln390">  uv       = vertex_attrib_by_index_f2(&quot;uv&quot;, vertex_index, mesh);</a>
+<a name="ln391"> </a>
+<a name="ln392">  //only handle ordinary vertices for now</a>
+<a name="ln393">  if(valence == 6)</a>
+<a name="ln394">  {</a>
+<a name="ln395">    float4 pos_;</a>
+<a name="ln396">    float4 norm_;</a>
+<a name="ln397">    float4 tangent_;</a>
+<a name="ln398">    float2 uv_;</a>
+<a name="ln399"> </a>
+<a name="ln400">    for (const auto &amp;n : neighbours)</a>
+<a name="ln401">    {</a>
+<a name="ln402">      float4 pos_n = vertex_attrib_by_index_f4(&quot;pos&quot;, n, mesh);</a>
+<a name="ln403">      float4 norm_n = vertex_attrib_by_index_f4(&quot;normal&quot;, n, mesh);</a>
+<a name="ln404">      float4 tan_n = vertex_attrib_by_index_f4(&quot;tangent&quot;, n, mesh);</a>
+<a name="ln405">      float2 uv_n = vertex_attrib_by_index_f2(&quot;uv&quot;, n, mesh);</a>
+<a name="ln406"> </a>
+<a name="ln407">      pos_ += pos_n;</a>
+<a name="ln408">      norm_ += norm_n;</a>
+<a name="ln409">      tangent_ += tan_n;</a>
+<a name="ln410">      uv_ += uv_n;</a>
+<a name="ln411">    }</a>
+<a name="ln412"> </a>
+<a name="ln413">    float alpha = smoothing_coeff(valence);</a>
+<a name="ln414"> </a>
+<a name="ln415">    pos = (1.0f - alpha) * pos + (alpha / valence) * pos_;</a>
+<a name="ln416">    normal = (1.0f - alpha) * normal + (alpha / valence) * norm_;</a>
+<a name="ln417">    tangent = (1.0f - alpha) * tangent + (alpha / valence) * tangent_;</a>
+<a name="ln418">    uv = (1.0f - alpha) * uv + (alpha / valence) * uv_;</a>
+<a name="ln419">  }</a>
+<a name="ln420">}</a>
+<a name="ln421"> </a>
+<a name="ln422"> </a>
+<a name="ln423">void addEdge(uint32_t indA, uint32_t indB, uint32_t faceInd, std::unordered_map&lt;uint2, std::vector&lt;uint32_t&gt;, uint2_hash&gt; &amp;edgeToTris)</a>
+<a name="ln424">{</a>
+<a name="ln425">  uint2 edge1(indA, indB);</a>
+<a name="ln426">  uint2 edge2(indB, indA);</a>
+<a name="ln427"> </a>
+<a name="ln428">  if(edgeToTris.find(edge1) != edgeToTris.end())</a>
+<a name="ln429">  {</a>
+<a name="ln430">    edgeToTris[edge1].push_back(faceInd);</a>
+<a name="ln431">  }</a>
+<a name="ln432">  else if(edgeToTris.find(edge2) != edgeToTris.end())</a>
+<a name="ln433">  {</a>
+<a name="ln434">    edgeToTris[edge2].push_back(faceInd);</a>
+<a name="ln435">  }</a>
+<a name="ln436">  else</a>
+<a name="ln437">  {</a>
+<a name="ln438">    std::vector&lt;uint32_t&gt; tmp = {faceInd};</a>
+<a name="ln439">    edgeToTris[edge1] = tmp;</a>
+<a name="ln440">  }</a>
+<a name="ln441">}</a>
+<a name="ln442"> </a>
+<a name="ln443">//simplified sqrt3 uniform subdivision</a>
+<a name="ln444">void hrMeshSubdivideSqrt3(HRMeshRef a_mesh, int a_iterations)</a>
+<a name="ln445">{</a>
+<a name="ln446">  HRMesh *pMesh = g_objManager.PtrById(a_mesh);</a>
+<a name="ln447">  if (pMesh == nullptr)</a>
+<a name="ln448">  {</a>
+<a name="ln449">    HrError(L&quot;hrMeshSubdivideSqrt3: nullptr input&quot;);</a>
+<a name="ln450">    return;</a>
+<a name="ln451">  }</a>
+<a name="ln452"> </a>
+<a name="ln453">  HRMesh::InputTriMesh &amp;mesh = pMesh-&gt;m_input;</a>
+<a name="ln454"> </a>
+<a name="ln455">  for(int i = 0; i &lt; a_iterations; ++i)</a>
+<a name="ln456">  {</a>
+<a name="ln457"> </a>
+<a name="ln458">    const auto old_vertex_count = uint32_t(mesh.verticesPos.size() / 4);</a>
+<a name="ln459">    const auto old_tri_count = uint32_t(mesh.triIndices.size() / 3);</a>
+<a name="ln460"> </a>
+<a name="ln461">    std::vector&lt;uint32_t&gt; indices;</a>
+<a name="ln462">    indices.reserve(mesh.triIndices.size() * 3);</a>
+<a name="ln463">    std::vector&lt;uint32_t&gt; mat_indices;</a>
+<a name="ln464">    mat_indices.reserve(mesh.triIndices.size() * 3 / 3);</a>
+<a name="ln465"> </a>
+<a name="ln466">    std::unordered_map&lt;uint2, std::vector&lt;uint32_t&gt;, uint2_hash&gt; edgeToTris;</a>
+<a name="ln467"> </a>
+<a name="ln468">    uint32_t face_num = 0;</a>
+<a name="ln469">    //insert middle point</a>
+<a name="ln470">    for (int j = 0; j &lt; mesh.triIndices.size(); j += 3)</a>
+<a name="ln471">    {</a>
+<a name="ln472">      uint32_t indA = mesh.triIndices[j + 0];</a>
+<a name="ln473">      uint32_t indB = mesh.triIndices[j + 1];</a>
+<a name="ln474">      uint32_t indC = mesh.triIndices[j + 2];</a>
+<a name="ln475"> </a>
+<a name="ln476">      addEdge(indA, indB, face_num, edgeToTris);</a>
+<a name="ln477">      addEdge(indB, indC, face_num, edgeToTris);</a>
+<a name="ln478">      addEdge(indC, indA, face_num, edgeToTris);</a>
+<a name="ln479"> </a>
+<a name="ln480"> </a>
+<a name="ln481">      float4 A = vertex_attrib_by_index_f4(&quot;pos&quot;, indA, mesh);</a>
+<a name="ln482">      float4 B = vertex_attrib_by_index_f4(&quot;pos&quot;, indB, mesh);</a>
+<a name="ln483">      float4 C = vertex_attrib_by_index_f4(&quot;pos&quot;, indC, mesh);</a>
+<a name="ln484"> </a>
+<a name="ln485">      float4 ANorm = vertex_attrib_by_index_f4(&quot;normal&quot;, indA, mesh);</a>
+<a name="ln486">      float4 BNorm = vertex_attrib_by_index_f4(&quot;normal&quot;, indB, mesh);</a>
+<a name="ln487">      float4 CNorm = vertex_attrib_by_index_f4(&quot;normal&quot;, indC, mesh);</a>
+<a name="ln488"> </a>
+<a name="ln489">      float4 ATan = vertex_attrib_by_index_f4(&quot;tangent&quot;, indA, mesh);</a>
+<a name="ln490">      float4 BTan = vertex_attrib_by_index_f4(&quot;tangent&quot;, indB, mesh);</a>
+<a name="ln491">      float4 CTan = vertex_attrib_by_index_f4(&quot;tangent&quot;, indC, mesh);</a>
+<a name="ln492"> </a>
+<a name="ln493">      float2 Auv = vertex_attrib_by_index_f2(&quot;uv&quot;, indA, mesh);</a>
+<a name="ln494">      float2 Buv = vertex_attrib_by_index_f2(&quot;uv&quot;, indB, mesh);</a>
+<a name="ln495">      float2 Cuv = vertex_attrib_by_index_f2(&quot;uv&quot;, indC, mesh);</a>
+<a name="ln496"> </a>
+<a name="ln497">      float4 P = (A + B + C) / 3.0f;</a>
+<a name="ln498">      float4 PNorm = (ANorm + BNorm + CNorm) / 3.0f;</a>
+<a name="ln499">      float3 PNorm3 = normalize(make_float3(PNorm.x, PNorm.y, PNorm.z));</a>
+<a name="ln500">      PNorm.x = PNorm3.x;</a>
+<a name="ln501">      PNorm.y = PNorm3.y;</a>
+<a name="ln502">      PNorm.z = PNorm.z;</a>
+<a name="ln503">      float4 PTan = (ATan + BTan + CTan) / 3.0f;</a>
+<a name="ln504">      float2 Puv = (Auv + Buv + Cuv) / 3.0f;</a>
+<a name="ln505"> </a>
+<a name="ln506">      uint32_t indP = uint32_t(mesh.verticesPos.size() / 4);</a>
+<a name="ln507">      mesh.verticesPos.push_back(P.x);</a>
+<a name="ln508">      mesh.verticesPos.push_back(P.y);</a>
+<a name="ln509">      mesh.verticesPos.push_back(P.z);</a>
+<a name="ln510">      mesh.verticesPos.push_back(P.w);</a>
+<a name="ln511"> </a>
+<a name="ln512">      mesh.verticesNorm.push_back(PNorm.x);</a>
+<a name="ln513">      mesh.verticesNorm.push_back(PNorm.y);</a>
+<a name="ln514">      mesh.verticesNorm.push_back(PNorm.z);</a>
+<a name="ln515">      mesh.verticesNorm.push_back(PNorm.w);</a>
+<a name="ln516"> </a>
+<a name="ln517">      mesh.verticesTangent.push_back(PTan.x);</a>
+<a name="ln518">      mesh.verticesTangent.push_back(PTan.y);</a>
+<a name="ln519">      mesh.verticesTangent.push_back(PTan.z);</a>
+<a name="ln520">      mesh.verticesTangent.push_back(PTan.w);</a>
+<a name="ln521"> </a>
+<a name="ln522">      mesh.verticesTexCoord.push_back(Puv.x);</a>
+<a name="ln523">      mesh.verticesTexCoord.push_back(Puv.y);</a>
+<a name="ln524"> </a>
+<a name="ln525">      face_num++;</a>
+<a name="ln526">    }</a>
+<a name="ln527"> </a>
+<a name="ln528">    //flip edges</a>
+<a name="ln529">    for (const auto &amp;edge : edgeToTris)</a>
+<a name="ln530">    {</a>
+<a name="ln531">      if (edge.second.size() == 2)</a>
+<a name="ln532">      {</a>
+<a name="ln533">        uint32_t center1 = (old_vertex_count + edge.second[0]);</a>
+<a name="ln534">        uint32_t center2 = (old_vertex_count + edge.second[1]);</a>
+<a name="ln535">        uint32_t A = edge.first.x;</a>
+<a name="ln536">        uint32_t B = edge.first.y;</a>
+<a name="ln537"> </a>
+<a name="ln538">        indices.push_back(center1);</a>
+<a name="ln539">        indices.push_back(center2);</a>
+<a name="ln540">        indices.push_back(B);</a>
+<a name="ln541">        mat_indices.push_back(mesh.matIndices[edge.second[0]]);</a>
+<a name="ln542"> </a>
+<a name="ln543">        indices.push_back(center2);</a>
+<a name="ln544">        indices.push_back(center1);</a>
+<a name="ln545">        indices.push_back(A);</a>
+<a name="ln546">        mat_indices.push_back(mesh.matIndices[edge.second[1]]);</a>
+<a name="ln547">      } else if (edge.second.size() == 1)</a>
+<a name="ln548">      {</a>
+<a name="ln549">        uint32_t center = (old_vertex_count + edge.second[0]);</a>
+<a name="ln550">        uint32_t A = edge.first.x;</a>
+<a name="ln551">        uint32_t B = edge.first.y;</a>
+<a name="ln552"> </a>
+<a name="ln553">        indices.push_back(center);</a>
+<a name="ln554">        indices.push_back(A);</a>
+<a name="ln555">        indices.push_back(B);</a>
+<a name="ln556">        mat_indices.push_back(mesh.matIndices[edge.second[0]]);</a>
+<a name="ln557">      }</a>
+<a name="ln558">    }</a>
+<a name="ln559"> </a>
+<a name="ln560">    std::vector&lt;float&gt; pos_new(old_vertex_count * 4, 0.0f);</a>
+<a name="ln561">    std::vector&lt;float&gt; normal_new(old_vertex_count * 4, 0.0f);</a>
+<a name="ln562">    std::vector&lt;float&gt; tangent_new(old_vertex_count * 4, 0.0f);</a>
+<a name="ln563">    std::vector&lt;float&gt; uv_new(old_vertex_count * 2, 0.0f);</a>
+<a name="ln564"> </a>
+<a name="ln565">    for (uint32_t k = 0; k &lt; old_vertex_count; ++k)</a>
+<a name="ln566">    {</a>
+<a name="ln567">      float4 pos;</a>
+<a name="ln568">      float4 normal;</a>
+<a name="ln569">      float4 tangent;</a>
+<a name="ln570">      float2 uv;</a>
+<a name="ln571"> </a>
+<a name="ln572">      smooth_common_vertex_attributes(k, mesh, pos, normal, tangent, uv);</a>
+<a name="ln573"> </a>
+<a name="ln574">      update_vertex_attrib_by_index_f4(pos, k, pos_new);</a>
+<a name="ln575">      update_vertex_attrib_by_index_f4(normal, k, normal_new);</a>
+<a name="ln576">      update_vertex_attrib_by_index_f4(tangent, k, tangent_new);</a>
+<a name="ln577">      update_vertex_attrib_by_index_f2(uv, k, uv_new);</a>
+<a name="ln578">    }</a>
+<a name="ln579"> </a>
+<a name="ln580">    for (uint32_t ii = 0; ii &lt; pos_new.size(); ++ii)</a>
+<a name="ln581">    {</a>
+<a name="ln582">      mesh.verticesPos.at(ii)     = pos_new.at(ii);</a>
+<a name="ln583">      mesh.verticesNorm.at(ii)    = normal_new.at(ii);</a>
+<a name="ln584">      mesh.verticesTangent.at(ii) = tangent_new.at(ii);</a>
+<a name="ln585"> </a>
+<a name="ln586">      if (ii &lt; pos_new.size() / 2)</a>
+<a name="ln587">        mesh.verticesTexCoord.at(ii) = uv_new.at(ii);</a>
+<a name="ln588">    }</a>
+<a name="ln589"> </a>
+<a name="ln590">    mesh.triIndices = indices;</a>
+<a name="ln591">    mesh.matIndices = mat_indices;</a>
+<a name="ln592">  }</a>
+<a name="ln593">}</a>
+<a name="ln594"> </a>
+<a name="ln595">void hrMeshSubdivide(HRMeshRef a_mesh, int a_iterations)</a>
+<a name="ln596">{</a>
+<a name="ln597">  HRMesh *pMesh = g_objManager.PtrById(a_mesh);</a>
+<a name="ln598">  if (pMesh == nullptr)</a>
+<a name="ln599">  {</a>
+<a name="ln600">    HrError(L&quot;hrMeshSubdivide: nullptr input&quot;);</a>
+<a name="ln601">    return;</a>
+<a name="ln602">  }</a>
+<a name="ln603"> </a>
+<a name="ln604">  HRMesh::InputTriMesh &amp;mesh = pMesh-&gt;m_input;</a>
+<a name="ln605"> </a>
+<a name="ln606">//  const auto vertexCount = int(mesh.verticesPos.size() / 4);</a>
+<a name="ln607">//  const auto triangleCount = int(mesh.triIndices.size() / 3);</a>
+<a name="ln608"> </a>
+<a name="ln609">  std::vector&lt;uint32_t&gt; indices;</a>
+<a name="ln610">  indices.reserve(mesh.triIndices.size() * 3);</a>
+<a name="ln611">  std::vector&lt;uint32_t&gt; mat_indices;</a>
+<a name="ln612">  mat_indices.reserve(mesh.triIndices.size() * 3 / 3);</a>
+<a name="ln613"> </a>
+<a name="ln614">  int face_num = 0;</a>
+<a name="ln615">  for(int i = 0; i &lt; mesh.triIndices.size(); i += 3)</a>
+<a name="ln616">  {</a>
+<a name="ln617">    uint32_t indA = mesh.triIndices[i + 0];</a>
+<a name="ln618">    uint32_t indB = mesh.triIndices[i + 1];</a>
+<a name="ln619">    uint32_t indC = mesh.triIndices[i + 2];</a>
+<a name="ln620"> </a>
+<a name="ln621">    float4 A = vertex_attrib_by_index_f4(&quot;pos&quot;, indA, mesh);</a>
+<a name="ln622">    float4 B = vertex_attrib_by_index_f4(&quot;pos&quot;, indB, mesh);</a>
+<a name="ln623">    float4 C = vertex_attrib_by_index_f4(&quot;pos&quot;, indC, mesh);</a>
+<a name="ln624"> </a>
+<a name="ln625">    float4 ANorm = vertex_attrib_by_index_f4(&quot;normal&quot;, indA, mesh);</a>
+<a name="ln626">    float4 BNorm = vertex_attrib_by_index_f4(&quot;normal&quot;, indB, mesh);</a>
+<a name="ln627">    float4 CNorm = vertex_attrib_by_index_f4(&quot;normal&quot;, indC, mesh);</a>
+<a name="ln628"> </a>
+<a name="ln629">    float4 ATan = vertex_attrib_by_index_f4(&quot;tangent&quot;, indA, mesh);</a>
+<a name="ln630">    float4 BTan = vertex_attrib_by_index_f4(&quot;tangent&quot;, indB, mesh);</a>
+<a name="ln631">    float4 CTan = vertex_attrib_by_index_f4(&quot;tangent&quot;, indC, mesh);</a>
+<a name="ln632"> </a>
+<a name="ln633">    float2 Auv = vertex_attrib_by_index_f2(&quot;uv&quot;, indA, mesh);</a>
+<a name="ln634">    float2 Buv = vertex_attrib_by_index_f2(&quot;uv&quot;, indB, mesh);</a>
+<a name="ln635">    float2 Cuv = vertex_attrib_by_index_f2(&quot;uv&quot;, indC, mesh);</a>
+<a name="ln636"> </a>
+<a name="ln637">    float4 P = (A + B + C) / 3.0f;</a>
+<a name="ln638">    float4 PNorm = (ANorm + BNorm + CNorm) / 3.0f;</a>
+<a name="ln639">    float3 PNorm3 = normalize(make_float3(PNorm.x, PNorm.y, PNorm.z));</a>
+<a name="ln640">    PNorm.x = PNorm3.x; PNorm.y = PNorm3.y; PNorm.z = PNorm.z;</a>
+<a name="ln641">    float4 PTan = (ATan + BTan + CTan) / 3.0f;</a>
+<a name="ln642">    float2 Puv = (Auv + Buv + Cuv) / 3.0f;</a>
+<a name="ln643"> </a>
+<a name="ln644">    uint32_t indP = uint32_t(mesh.verticesPos.size() / 4);</a>
+<a name="ln645">    mesh.verticesPos.push_back(P.x);</a>
+<a name="ln646">    mesh.verticesPos.push_back(P.y);</a>
+<a name="ln647">    mesh.verticesPos.push_back(P.z);</a>
+<a name="ln648">    mesh.verticesPos.push_back(P.w);</a>
+<a name="ln649"> </a>
+<a name="ln650">    mesh.verticesNorm.push_back(PNorm.x);</a>
+<a name="ln651">    mesh.verticesNorm.push_back(PNorm.y);</a>
+<a name="ln652">    mesh.verticesNorm.push_back(PNorm.z);</a>
+<a name="ln653">    mesh.verticesNorm.push_back(PNorm.w);</a>
+<a name="ln654"> </a>
+<a name="ln655">    mesh.verticesTangent.push_back(PTan.x);</a>
+<a name="ln656">    mesh.verticesTangent.push_back(PTan.y);</a>
+<a name="ln657">    mesh.verticesTangent.push_back(PTan.z);</a>
+<a name="ln658">    mesh.verticesTangent.push_back(PTan.w);</a>
+<a name="ln659"> </a>
+<a name="ln660">    mesh.verticesTexCoord.push_back(Puv.x);</a>
+<a name="ln661">    mesh.verticesTexCoord.push_back(Puv.y);</a>
+<a name="ln662"> </a>
+<a name="ln663">    indices.push_back(indA); indices.push_back(indB); indices.push_back(indP);</a>
+<a name="ln664">    mat_indices.push_back(mesh.matIndices[face_num]);</a>
+<a name="ln665">    indices.push_back(indB); indices.push_back(indC); indices.push_back(indP);</a>
+<a name="ln666">    mat_indices.push_back(mesh.matIndices[face_num]);</a>
+<a name="ln667">    indices.push_back(indC); indices.push_back(indA); indices.push_back(indP);</a>
+<a name="ln668">    mat_indices.push_back(mesh.matIndices[face_num]);</a>
+<a name="ln669"> </a>
+<a name="ln670">    face_num++;</a>
+<a name="ln671">  }</a>
+<a name="ln672"> </a>
+<a name="ln673">  mesh.triIndices = indices;</a>
+<a name="ln674">  mesh.matIndices = mat_indices;</a>
+<a name="ln675">}</a>
+<a name="ln676"> </a>
+<a name="ln677">void displaceByNoise(HRMesh *pMesh, const pugi::xml_node &amp;noiseXMLNode, std::vector&lt;uint3&gt; &amp;triangleList)</a>
+<a name="ln678">{</a>
+<a name="ln679">  HRMesh::InputTriMesh &amp;mesh = pMesh-&gt;m_input;</a>
+<a name="ln680"> </a>
+<a name="ln681">  float mult = noiseXMLNode.attribute(L&quot;amount&quot;).as_float();</a>
+<a name="ln682">  float noise_scale = noiseXMLNode.attribute(L&quot;scale&quot;).as_float();</a>
+<a name="ln683"> </a>
+<a name="ln684">  std::set&lt;uint32_t &gt; displaced_indices;</a>
+<a name="ln685"> </a>
+<a name="ln686">  float4x4 scale_pos = scale4x4(make_float3(noise_scale, noise_scale, noise_scale));</a>
+<a name="ln687"> </a>
+<a name="ln688"> </a>
+<a name="ln689">  for(int i = 0; i &lt; triangleList.size(); i++)</a>
+<a name="ln690">  {</a>
+<a name="ln691">    const auto&amp; tri = triangleList[i];</a>
+<a name="ln692"> </a>
+<a name="ln693">    float3 attrib1 = mul3x3(scale_pos, make_float3(vertex_attrib_by_index_f4(&quot;pos&quot;, tri.x, mesh)));</a>
+<a name="ln694">    float3 attrib2 = mul3x3(scale_pos, make_float3(vertex_attrib_by_index_f4(&quot;pos&quot;, tri.y, mesh)));</a>
+<a name="ln695">    float3 attrib3 = mul3x3(scale_pos, make_float3(vertex_attrib_by_index_f4(&quot;pos&quot;, tri.z, mesh)));</a>
+<a name="ln696"> </a>
+<a name="ln697">    float3 offset = float3(10.0f, 10.0f, 10.0f);</a>
+<a name="ln698">    </a>
+<a name="ln699">    float3 texHeight(0.0f, 0.0f, 0.0f);</a>
+<a name="ln700">    auto ins = displaced_indices.insert(tri.x);</a>
+<a name="ln701">    if(ins.second)</a>
+<a name="ln702">    {</a>
+<a name="ln703">      texHeight.x = HRTextureUtils::sampleNoise(noiseXMLNode, attrib1 + offset);</a>
+<a name="ln704">      if (texHeight.x &lt; 0.5) texHeight.x = 0.0f;</a>
+<a name="ln705">    }</a>
+<a name="ln706"> </a>
+<a name="ln707">    ins = displaced_indices.insert(tri.y);</a>
+<a name="ln708">    if(ins.second)</a>
+<a name="ln709">    {</a>
+<a name="ln710">      texHeight.y = HRTextureUtils::sampleNoise(noiseXMLNode, attrib2 + offset);</a>
+<a name="ln711">      if (texHeight.y &lt; 0.5) texHeight.y = 0.0f;</a>
+<a name="ln712">    }</a>
+<a name="ln713"> </a>
+<a name="ln714">    ins = displaced_indices.insert(tri.z);</a>
+<a name="ln715">    if(ins.second)</a>
+<a name="ln716">    {</a>
+<a name="ln717">      texHeight.z = HRTextureUtils::sampleNoise(noiseXMLNode, attrib3 + offset);</a>
+<a name="ln718">      if (texHeight.z &lt; 0.5) texHeight.z = 0.0f;</a>
+<a name="ln719">    }</a>
+<a name="ln720"> </a>
+<a name="ln721">    auto normalX = vertex_attrib_by_index_f4(&quot;normal&quot;, tri.x, mesh);</a>
+<a name="ln722">    mesh.verticesPos.at(tri.x * 4 + 0) += normalX.x * mult * texHeight.x;</a>
+<a name="ln723">    mesh.verticesPos.at(tri.x * 4 + 1) += normalX.y * mult * texHeight.x;</a>
+<a name="ln724">    mesh.verticesPos.at(tri.x * 4 + 2) += normalX.z * mult * texHeight.x;</a>
+<a name="ln725"> </a>
+<a name="ln726">    auto normalY = vertex_attrib_by_index_f4(&quot;normal&quot;, tri.y, mesh);</a>
+<a name="ln727">    mesh.verticesPos.at(tri.y * 4 + 0) += normalY.x * mult * texHeight.y;</a>
+<a name="ln728">    mesh.verticesPos.at(tri.y * 4 + 1) += normalY.y * mult * texHeight.y;</a>
+<a name="ln729">    mesh.verticesPos.at(tri.y * 4 + 2) += normalY.z * mult * texHeight.y;</a>
+<a name="ln730"> </a>
+<a name="ln731">    auto normalZ = vertex_attrib_by_index_f4(&quot;normal&quot;, tri.z, mesh);</a>
+<a name="ln732">    mesh.verticesPos.at(tri.z * 4 + 0) += normalZ.x * mult * texHeight.z;</a>
+<a name="ln733">    mesh.verticesPos.at(tri.z * 4 + 1) += normalZ.y * mult * texHeight.z;</a>
+<a name="ln734">    mesh.verticesPos.at(tri.z * 4 + 2) += normalZ.z * mult * texHeight.z;</a>
+<a name="ln735"> </a>
+<a name="ln736">  }</a>
+<a name="ln737">}</a>
+<a name="ln738"> </a>
+<a name="ln739">void displaceCustom(HRMesh *pMesh, const pugi::xml_node &amp;customNode, std::vector&lt;uint3&gt; &amp;triangleList, const HRUtils::BBox &amp;bbox)</a>
+<a name="ln740">{</a>
+<a name="ln741">  HRMesh::InputTriMesh &amp;mesh = pMesh-&gt;m_input;</a>
+<a name="ln742"> </a>
+<a name="ln743">  auto texNode = customNode.child(L&quot;texture&quot;);</a>
+<a name="ln744">  pugi::xml_node texLibNode;</a>
+<a name="ln745">  HRTextureNode *texture;</a>
+<a name="ln746">  if(texNode != nullptr)</a>
+<a name="ln747">  {</a>
+<a name="ln748">    auto id = texNode.attribute(L&quot;id&quot;).as_int();</a>
+<a name="ln749">    texture = &amp;g_objManager.scnData.textures[id];</a>
+<a name="ln750">  }</a>
+<a name="ln751"> </a>
+<a name="ln752">  std::set&lt;uint32_t &gt; displaced_indices;</a>
+<a name="ln753">  for(int i = 0; i &lt; triangleList.size(); i++)</a>
+<a name="ln754">  {</a>
+<a name="ln755">    const auto&amp; tri = triangleList[i];</a>
+<a name="ln756"> </a>
+<a name="ln757">    float3 pos = make_float3(vertex_attrib_by_index_f4(&quot;pos&quot;, tri.x, mesh));</a>
+<a name="ln758">    float3 norm = make_float3(vertex_attrib_by_index_f4(&quot;normal&quot;, tri.x, mesh));</a>
+<a name="ln759">    float displace_vec[3] = {0.0f, 0.0f, 0.0f};</a>
+<a name="ln760"> </a>
+<a name="ln761">    auto ins = displaced_indices.insert(tri.x);</a>
+<a name="ln762">    if(ins.second)</a>
+<a name="ln763">    {</a>
+<a name="ln764">      texture-&gt;displaceCallback((const float*)&amp;pos, (const float*)&amp;norm, bbox, displace_vec, texture-&gt;customData,</a>
+<a name="ln765">                               texture-&gt;customDataSize);</a>
+<a name="ln766">      mesh.verticesPos.at(tri.x * 4 + 0) += displace_vec[0];</a>
+<a name="ln767">      mesh.verticesPos.at(tri.x * 4 + 1) += displace_vec[1];</a>
+<a name="ln768">      mesh.verticesPos.at(tri.x * 4 + 2) += displace_vec[2];</a>
+<a name="ln769">    }</a>
+<a name="ln770"> </a>
+<a name="ln771">    pos = make_float3(vertex_attrib_by_index_f4(&quot;pos&quot;, tri.y, mesh));</a>
+<a name="ln772">    norm = make_float3(vertex_attrib_by_index_f4(&quot;normal&quot;, tri.y, mesh));</a>
+<a name="ln773">    displace_vec[0] = 0.0f, displace_vec[1] = 0.0f, displace_vec[2] = 0.0f;</a>
+<a name="ln774">    ins = displaced_indices.insert(tri.y);</a>
+<a name="ln775">    if(ins.second)</a>
+<a name="ln776">    {</a>
+<a name="ln777">      texture-&gt;displaceCallback((const float *) &amp;pos, (const float *) &amp;norm, bbox, displace_vec, texture-&gt;customData,</a>
+<a name="ln778">                               texture-&gt;customDataSize);</a>
+<a name="ln779">      mesh.verticesPos.at(tri.y * 4 + 0) += displace_vec[0];</a>
+<a name="ln780">      mesh.verticesPos.at(tri.y * 4 + 1) += displace_vec[1];</a>
+<a name="ln781">      mesh.verticesPos.at(tri.y * 4 + 2) += displace_vec[2];</a>
+<a name="ln782">    }</a>
+<a name="ln783"> </a>
+<a name="ln784">    pos = make_float3(vertex_attrib_by_index_f4(&quot;pos&quot;, tri.z, mesh));</a>
+<a name="ln785">    norm = make_float3(vertex_attrib_by_index_f4(&quot;normal&quot;, tri.z, mesh));</a>
+<a name="ln786">    displace_vec[0] = 0.0f, displace_vec[1] = 0.0f, displace_vec[2] = 0.0f;</a>
+<a name="ln787">    ins = displaced_indices.insert(tri.z);</a>
+<a name="ln788">    if(ins.second)</a>
+<a name="ln789">    {</a>
+<a name="ln790">      texture-&gt;displaceCallback((const float *) &amp;pos, (const float *) &amp;norm, bbox, displace_vec, texture-&gt;customData,</a>
+<a name="ln791">                               texture-&gt;customDataSize);</a>
+<a name="ln792">      mesh.verticesPos.at(tri.z * 4 + 0) += displace_vec[0];</a>
+<a name="ln793">      mesh.verticesPos.at(tri.z * 4 + 1) += displace_vec[1];</a>
+<a name="ln794">      mesh.verticesPos.at(tri.z * 4 + 2) += displace_vec[2];</a>
+<a name="ln795">    }</a>
+<a name="ln796">  }</a>
+<a name="ln797"> </a>
+<a name="ln798"> </a>
+<a name="ln799">}</a>
+<a name="ln800"> </a>
+<a name="ln801">void displaceByHeightMap(HRMesh *pMesh, const pugi::xml_node &amp;heightXMLNode, std::vector&lt;uint3&gt; &amp;triangleList)</a>
+<a name="ln802">{</a>
+<a name="ln803">  HRMesh::InputTriMesh &amp;mesh = pMesh-&gt;m_input;</a>
+<a name="ln804"> </a>
+<a name="ln805">  float mult = heightXMLNode.attribute(L&quot;amount&quot;).as_float();</a>
+<a name="ln806"> </a>
+<a name="ln807">  auto texNode = heightXMLNode.child(L&quot;texture&quot;);</a>
+<a name="ln808">  pugi::xml_node texLibNode;</a>
+<a name="ln809">  if(texNode != nullptr)</a>
+<a name="ln810">  {</a>
+<a name="ln811">    auto id = texNode.attribute(L&quot;id&quot;).as_string();</a>
+<a name="ln812">    texLibNode = g_objManager.scnData.m_texturesLib.find_child_by_attribute(L&quot;id&quot;, id);</a>
+<a name="ln813">  }</a>
+<a name="ln814"> </a>
+<a name="ln815">  int w = 0;</a>
+<a name="ln816">  int h = 0;</a>
+<a name="ln817">  bool sampleTexture = false;</a>
+<a name="ln818">  bool isLDR = false;</a>
+<a name="ln819">  bool isHDR = false;</a>
+<a name="ln820"> </a>
+<a name="ln821">  std::vector&lt;int&gt; imageDataLDR;</a>
+<a name="ln822">  std::vector&lt;float&gt; imageDataHDR;</a>
+<a name="ln823">  auto location = std::wstring(texLibNode.attribute(L&quot;loc&quot;).as_string());</a>
+<a name="ln824">  float3 texHeight(1.0f, 1.0f, 1.0f);</a>
+<a name="ln825">  float4x4 matrix;</a>
+<a name="ln826">  if(!location.empty())</a>
+<a name="ln827">  {</a>
+<a name="ln828">    int bpp = 0;</a>
+<a name="ln829"> </a>
+<a name="ln830">    HRTextureNodeRef texRef;</a>
+<a name="ln831">    texRef.id = texNode.attribute(L&quot;id&quot;).as_int();</a>
+<a name="ln832"> </a>
+<a name="ln833">    hrTexture2DGetSize(texRef, &amp;w, &amp;h, &amp;bpp);</a>
+<a name="ln834">    if(bpp &gt; 4)</a>
+<a name="ln835">    {</a>
+<a name="ln836">      isHDR = true;</a>
+<a name="ln837">      imageDataHDR.resize(w * h * 4);</a>
+<a name="ln838">      hrTextureNodeOpen(texRef, HR_OPEN_READ_ONLY);</a>
+<a name="ln839">      {</a>
+<a name="ln840">        hrTexture2DGetDataHDR(texRef, &amp;w, &amp;h, &amp;imageDataHDR[0]);</a>
+<a name="ln841">      }</a>
+<a name="ln842">      hrTextureNodeClose(texRef);</a>
+<a name="ln843">    }</a>
+<a name="ln844">    else</a>
+<a name="ln845">    {</a>
+<a name="ln846">      isLDR = true;</a>
+<a name="ln847">      imageDataLDR.resize(w * h);</a>
+<a name="ln848"> </a>
+<a name="ln849">      hrTextureNodeOpen(texRef, HR_OPEN_READ_ONLY);</a>
+<a name="ln850">      {</a>
+<a name="ln851">        hrTexture2DGetDataLDR(texRef, &amp;w, &amp;h, &amp;imageDataLDR[0]);</a>
+<a name="ln852">      }</a>
+<a name="ln853">      hrTextureNodeClose(texRef);</a>
+<a name="ln854">    }</a>
+<a name="ln855"> </a>
+<a name="ln856">    float mat[16];</a>
+<a name="ln857">    HydraXMLHelpers::ReadMatrix4x4(texNode, L&quot;matrix&quot;, mat);</a>
+<a name="ln858"> </a>
+<a name="ln859">    matrix = float4x4(mat);</a>
+<a name="ln860"> </a>
+<a name="ln861">    sampleTexture = true;</a>
+<a name="ln862">    texHeight = float3(0.0f, 0.0f, 0.0f);</a>
+<a name="ln863">  }</a>
+<a name="ln864"> </a>
+<a name="ln865"> </a>
+<a name="ln866">  std::set&lt;uint32_t &gt; displaced_indices;</a>
+<a name="ln867">  for(int i=0;i&lt;triangleList.size();i++)</a>
+<a name="ln868">  {</a>
+<a name="ln869">    const auto&amp; tri = triangleList[i];</a>
+<a name="ln870"> </a>
+<a name="ln871">    float2 uv1 = vertex_attrib_by_index_f2(&quot;uv&quot;, tri.x, mesh);</a>
+<a name="ln872">    float2 uv2 = vertex_attrib_by_index_f2(&quot;uv&quot;, tri.y, mesh);</a>
+<a name="ln873">    float2 uv3 = vertex_attrib_by_index_f2(&quot;uv&quot;, tri.z, mesh);</a>
+<a name="ln874"> </a>
+<a name="ln875">    if(sampleTexture)</a>
+<a name="ln876">    {</a>
+<a name="ln877">      auto ins = displaced_indices.insert(tri.x);</a>
+<a name="ln878">      if(ins.second)</a>
+<a name="ln879">      {</a>
+<a name="ln880">        if(isLDR)</a>
+<a name="ln881">          texHeight.x = HRTextureUtils::sampleHeightMapLDR(imageDataLDR, w, h, uv1, matrix);</a>
+<a name="ln882">        if(isHDR)</a>
+<a name="ln883">          texHeight.x = HRTextureUtils::sampleHeightMapHDR(imageDataHDR, w, h, uv1, matrix);</a>
+<a name="ln884">      }</a>
+<a name="ln885"> </a>
+<a name="ln886">      ins = displaced_indices.insert(tri.y);</a>
+<a name="ln887">      if(ins.second)</a>
+<a name="ln888">      {</a>
+<a name="ln889">        if(isLDR)</a>
+<a name="ln890">          texHeight.y = HRTextureUtils::sampleHeightMapLDR(imageDataLDR, w, h, uv2, matrix);</a>
+<a name="ln891">        if(isHDR)</a>
+<a name="ln892">          texHeight.y = HRTextureUtils::sampleHeightMapHDR(imageDataHDR, w, h, uv2, matrix);</a>
+<a name="ln893">      }</a>
+<a name="ln894"> </a>
+<a name="ln895">      ins = displaced_indices.insert(tri.z);</a>
+<a name="ln896">      if(ins.second)</a>
+<a name="ln897">      {</a>
+<a name="ln898">        if(isLDR)</a>
+<a name="ln899">          texHeight.z = HRTextureUtils::sampleHeightMapLDR(imageDataLDR, w, h, uv3, matrix);</a>
+<a name="ln900">        if(isHDR)</a>
+<a name="ln901">          texHeight.z = HRTextureUtils::sampleHeightMapHDR(imageDataHDR, w, h, uv3, matrix);</a>
+<a name="ln902">      }</a>
+<a name="ln903">    }</a>
+<a name="ln904"> </a>
+<a name="ln905">    mesh.verticesPos.at(tri.x * 4 + 0) += mesh.verticesNorm.at(tri.x * 4 + 0) * mult * texHeight.x;</a>
+<a name="ln906">    mesh.verticesPos.at(tri.x * 4 + 1) += mesh.verticesNorm.at(tri.x * 4 + 1) * mult * texHeight.x;</a>
+<a name="ln907">    mesh.verticesPos.at(tri.x * 4 + 2) += mesh.verticesNorm.at(tri.x * 4 + 2) * mult * texHeight.x;</a>
+<a name="ln908"> </a>
+<a name="ln909">    mesh.verticesPos.at(tri.y * 4 + 0) += mesh.verticesNorm.at(tri.y * 4 + 0) * mult * texHeight.y;</a>
+<a name="ln910">    mesh.verticesPos.at(tri.y * 4 + 1) += mesh.verticesNorm.at(tri.y * 4 + 1) * mult * texHeight.y;</a>
+<a name="ln911">    mesh.verticesPos.at(tri.y * 4 + 2) += mesh.verticesNorm.at(tri.y * 4 + 2) * mult * texHeight.y;</a>
+<a name="ln912"> </a>
+<a name="ln913">    mesh.verticesPos.at(tri.z * 4 + 0) += mesh.verticesNorm.at(tri.z * 4 + 0) * mult * texHeight.z;</a>
+<a name="ln914">    mesh.verticesPos.at(tri.z * 4 + 1) += mesh.verticesNorm.at(tri.z * 4 + 1) * mult * texHeight.z;</a>
+<a name="ln915">    mesh.verticesPos.at(tri.z * 4 + 2) += mesh.verticesNorm.at(tri.z * 4 + 2) * mult * texHeight.z;</a>
+<a name="ln916"> </a>
+<a name="ln917">    texHeight = float3(0.0f, 0.0f, 0.0f);</a>
+<a name="ln918">  }</a>
+<a name="ln919">}</a>
+<a name="ln920"> </a>
+<a name="ln921">void displaceByHeightMapTriPlanar(HRMesh *pMesh, const pugi::xml_node &amp;heightXMLNode, std::vector&lt;uint3&gt; &amp;triangleList)</a>
+<a name="ln922">{</a>
+<a name="ln923">  HRMesh::InputTriMesh &amp;mesh = pMesh-&gt;m_input;</a>
+<a name="ln924"> </a>
+<a name="ln925">  float mult = heightXMLNode.attribute(L&quot;amount&quot;).as_float();</a>
+<a name="ln926"> </a>
+<a name="ln927">  auto texNode = heightXMLNode.child(L&quot;textures_hexaplanar&quot;);</a>
+<a name="ln928">  pugi::xml_node texLibNodes[6];</a>
+<a name="ln929">  int texIds[6];</a>
+<a name="ln930">  if(texNode != nullptr)</a>
+<a name="ln931">  {</a>
+<a name="ln932">    auto id = texNode.attribute(L&quot;texX&quot;).as_string();</a>
+<a name="ln933">    texIds[0] = texNode.attribute(L&quot;texX&quot;).as_int();</a>
+<a name="ln934">    texLibNodes[0] = g_objManager.scnData.m_texturesLib.find_child_by_attribute(L&quot;id&quot;, id);</a>
+<a name="ln935"> </a>
+<a name="ln936">    id = texNode.attribute(L&quot;texX2&quot;).as_string();</a>
+<a name="ln937">    texIds[1] = texNode.attribute(L&quot;texX2&quot;).as_int();</a>
+<a name="ln938">    texLibNodes[1] = g_objManager.scnData.m_texturesLib.find_child_by_attribute(L&quot;id&quot;, id);</a>
+<a name="ln939"> </a>
+<a name="ln940">    id = texNode.attribute(L&quot;texY&quot;).as_string();</a>
+<a name="ln941">    texIds[2] = texNode.attribute(L&quot;texY&quot;).as_int();</a>
+<a name="ln942">    texLibNodes[2] = g_objManager.scnData.m_texturesLib.find_child_by_attribute(L&quot;id&quot;, id);</a>
+<a name="ln943"> </a>
+<a name="ln944">    id = texNode.attribute(L&quot;texY2&quot;).as_string();</a>
+<a name="ln945">    texIds[3] = texNode.attribute(L&quot;texY2&quot;).as_int();</a>
+<a name="ln946">    texLibNodes[3] = g_objManager.scnData.m_texturesLib.find_child_by_attribute(L&quot;id&quot;, id);</a>
+<a name="ln947"> </a>
+<a name="ln948">    id = texNode.attribute(L&quot;texZ&quot;).as_string();</a>
+<a name="ln949">    texIds[4] = texNode.attribute(L&quot;texZ&quot;).as_int();</a>
+<a name="ln950">    texLibNodes[4] = g_objManager.scnData.m_texturesLib.find_child_by_attribute(L&quot;id&quot;, id);</a>
+<a name="ln951"> </a>
+<a name="ln952">    id = texNode.attribute(L&quot;texZ2&quot;).as_string();</a>
+<a name="ln953">    texIds[5] = texNode.attribute(L&quot;texZ2&quot;).as_int();</a>
+<a name="ln954">    texLibNodes[5] = g_objManager.scnData.m_texturesLib.find_child_by_attribute(L&quot;id&quot;, id);</a>
+<a name="ln955">  }</a>
+<a name="ln956"> </a>
+<a name="ln957">  bool sampleTexture = false;</a>
+<a name="ln958">  bool isLDR = false;</a>
+<a name="ln959">  bool isHDR = false;</a>
+<a name="ln960"> </a>
+<a name="ln961">  std::vector&lt;std::vector&lt;int&gt; &gt; imageDataLDR(6, std::vector&lt;int&gt;());</a>
+<a name="ln962">  std::vector&lt;std::vector&lt;float&gt; &gt; imageDataHDR(6, std::vector&lt;float&gt;());</a>
+<a name="ln963">  std::wstring locations[6] = {std::wstring(texLibNodes[0].attribute(L&quot;loc&quot;).as_string()),</a>
+<a name="ln964">                               std::wstring(texLibNodes[1].attribute(L&quot;loc&quot;).as_string()),</a>
+<a name="ln965">                               std::wstring(texLibNodes[2].attribute(L&quot;loc&quot;).as_string()),</a>
+<a name="ln966">                               std::wstring(texLibNodes[3].attribute(L&quot;loc&quot;).as_string()),</a>
+<a name="ln967">                               std::wstring(texLibNodes[4].attribute(L&quot;loc&quot;).as_string()),</a>
+<a name="ln968">                               std::wstring(texLibNodes[5].attribute(L&quot;loc&quot;).as_string())};</a>
+<a name="ln969">  float3 texHeight(1.0f, 1.0f, 1.0f);</a>
+<a name="ln970">  float4x4 matrix;</a>
+<a name="ln971">  int2 texSizes[6];</a>
+<a name="ln972">  for(int i = 0; i &lt; 6; ++i)</a>
+<a name="ln973">  {</a>
+<a name="ln974">    auto location = locations[i];</a>
+<a name="ln975">    if (!location.empty())</a>
+<a name="ln976">    {</a>
+<a name="ln977">      int bpp = 0;</a>
+<a name="ln978"> </a>
+<a name="ln979">      HRTextureNodeRef texRef;</a>
+<a name="ln980">      texRef.id = texIds[i];</a>
+<a name="ln981">      int w = 0;</a>
+<a name="ln982">      int h = 0;</a>
+<a name="ln983">      hrTexture2DGetSize(texRef, &amp;w, &amp;h, &amp;bpp);</a>
+<a name="ln984">      texSizes[i].x = w;</a>
+<a name="ln985">      texSizes[i].y = h;</a>
+<a name="ln986">      if (bpp &gt; 4)</a>
+<a name="ln987">      {</a>
+<a name="ln988">        isHDR = true;</a>
+<a name="ln989">        imageDataHDR.at(i).resize(w * h * 4);</a>
+<a name="ln990">        hrTextureNodeOpen(texRef, HR_OPEN_READ_ONLY);</a>
+<a name="ln991">        {</a>
+<a name="ln992">          hrTexture2DGetDataHDR(texRef, &amp;w, &amp;h, &amp;imageDataHDR.at(i)[0]);</a>
+<a name="ln993">        }</a>
+<a name="ln994">        hrTextureNodeClose(texRef);</a>
+<a name="ln995">      }</a>
+<a name="ln996">      else</a>
+<a name="ln997">      {</a>
+<a name="ln998">        isLDR = true;</a>
+<a name="ln999">        imageDataLDR.at(i).resize(w * h);</a>
+<a name="ln1000"> </a>
+<a name="ln1001">        hrTextureNodeOpen(texRef, HR_OPEN_READ_ONLY);</a>
+<a name="ln1002">        {</a>
+<a name="ln1003">          hrTexture2DGetDataLDR(texRef, &amp;w, &amp;h, &amp;imageDataLDR.at(i)[0]);</a>
+<a name="ln1004">        }</a>
+<a name="ln1005">        hrTextureNodeClose(texRef);</a>
+<a name="ln1006">      }</a>
+<a name="ln1007"> </a>
+<a name="ln1008">      float mat[16];</a>
+<a name="ln1009">      HydraXMLHelpers::ReadMatrix4x4(texNode, L&quot;matrix&quot;, mat);</a>
+<a name="ln1010"> </a>
+<a name="ln1011">      matrix = float4x4(mat);</a>
+<a name="ln1012"> </a>
+<a name="ln1013">      sampleTexture = true;</a>
+<a name="ln1014">      texHeight = float3(0.0f, 0.0f, 0.0f);</a>
+<a name="ln1015">    }</a>
+<a name="ln1016">  }</a>
+<a name="ln1017"> </a>
+<a name="ln1018">  std::set&lt;uint32_t &gt; displaced_indices;</a>
+<a name="ln1019">  for(int i = 0; i &lt; triangleList.size(); ++i)</a>
+<a name="ln1020">  {</a>
+<a name="ln1021">    const auto&amp; tri = triangleList[i];</a>
+<a name="ln1022"> </a>
+<a name="ln1023">    float4 norm1 = vertex_attrib_by_index_f4(&quot;normal&quot;, tri.x, mesh);</a>
+<a name="ln1024">    float4 norm2 = vertex_attrib_by_index_f4(&quot;normal&quot;, tri.y, mesh);</a>
+<a name="ln1025">    float4 norm3 = vertex_attrib_by_index_f4(&quot;normal&quot;, tri.z, mesh);</a>
+<a name="ln1026"> </a>
+<a name="ln1027">    float4 pos1 = vertex_attrib_by_index_f4(&quot;pos&quot;, tri.x, mesh);</a>
+<a name="ln1028">    float4 pos2 = vertex_attrib_by_index_f4(&quot;pos&quot;, tri.y, mesh);</a>
+<a name="ln1029">    float4 pos3 = vertex_attrib_by_index_f4(&quot;pos&quot;, tri.z, mesh);</a>
+<a name="ln1030">    float sharpness = 10.0f;</a>
+<a name="ln1031"> </a>
+<a name="ln1032">    int2 sampledTexSizes_v1[3];</a>
+<a name="ln1033">    int2 sampledTexSizes_v2[3];</a>
+<a name="ln1034">    int2 sampledTexSizes_v3[3];</a>
+<a name="ln1035"> </a>
+<a name="ln1036">    auto&amp; texX_v1_ldr = norm1.x &lt; 0 ? imageDataLDR[0] : imageDataLDR[1];</a>
+<a name="ln1037">    auto&amp; texY_v1_ldr = norm1.y &lt; 0 ? imageDataLDR[2] : imageDataLDR[3];</a>
+<a name="ln1038">    auto&amp; texZ_v1_ldr = norm1.z &lt; 0 ? imageDataLDR[4] : imageDataLDR[5];</a>
+<a name="ln1039"> </a>
+<a name="ln1040">    auto&amp; texX_v2_ldr = norm2.x &lt; 0 ? imageDataLDR[0] : imageDataLDR[1];</a>
+<a name="ln1041">    auto&amp; texY_v2_ldr = norm2.y &lt; 0 ? imageDataLDR[2] : imageDataLDR[3];</a>
+<a name="ln1042">    auto&amp; texZ_v2_ldr = norm2.z &lt; 0 ? imageDataLDR[4] : imageDataLDR[5];</a>
+<a name="ln1043"> </a>
+<a name="ln1044">    auto&amp; texX_v3_ldr = norm3.x &lt; 0 ? imageDataLDR[0] : imageDataLDR[1];</a>
+<a name="ln1045">    auto&amp; texY_v3_ldr = norm3.y &lt; 0 ? imageDataLDR[2] : imageDataLDR[3];</a>
+<a name="ln1046">    auto&amp; texZ_v3_ldr = norm3.z &lt; 0 ? imageDataLDR[4] : imageDataLDR[5];</a>
+<a name="ln1047"> </a>
+<a name="ln1048">    auto&amp; texX_v1_hdr = norm1.x &lt; 0 ? imageDataHDR[0] : imageDataHDR[1];</a>
+<a name="ln1049">    auto&amp; texY_v1_hdr = norm1.y &lt; 0 ? imageDataHDR[2] : imageDataHDR[3];</a>
+<a name="ln1050">    auto&amp; texZ_v1_hdr = norm1.z &lt; 0 ? imageDataHDR[4] : imageDataHDR[5];</a>
+<a name="ln1051"> </a>
+<a name="ln1052">    auto&amp; texX_v2_hdr = norm2.x &lt; 0 ? imageDataHDR[0] : imageDataHDR[1];</a>
+<a name="ln1053">    auto&amp; texY_v2_hdr = norm2.y &lt; 0 ? imageDataHDR[2] : imageDataHDR[3];</a>
+<a name="ln1054">    auto&amp; texZ_v2_hdr = norm2.z &lt; 0 ? imageDataHDR[4] : imageDataHDR[5];</a>
+<a name="ln1055"> </a>
+<a name="ln1056">    auto&amp; texX_v3_hdr = norm3.x &lt; 0 ? imageDataHDR[0] : imageDataHDR[1];</a>
+<a name="ln1057">    auto&amp; texY_v3_hdr = norm3.y &lt; 0 ? imageDataHDR[2] : imageDataHDR[3];</a>
+<a name="ln1058">    auto&amp; texZ_v3_hdr = norm3.z &lt; 0 ? imageDataHDR[4] : imageDataHDR[5];</a>
+<a name="ln1059"> </a>
+<a name="ln1060"> </a>
+<a name="ln1061">    sampledTexSizes_v1[0] = norm1.x &lt; 0 ? texSizes[0] : texSizes[1];</a>
+<a name="ln1062">    sampledTexSizes_v1[1] = norm1.y &lt; 0 ? texSizes[2] : texSizes[3];</a>
+<a name="ln1063">    sampledTexSizes_v1[2] = norm1.z &lt; 0 ? texSizes[4] : texSizes[5];</a>
+<a name="ln1064"> </a>
+<a name="ln1065">    sampledTexSizes_v2[0] = norm2.x &lt; 0 ? texSizes[0] : texSizes[1];</a>
+<a name="ln1066">    sampledTexSizes_v2[1] = norm2.y &lt; 0 ? texSizes[2] : texSizes[3];</a>
+<a name="ln1067">    sampledTexSizes_v2[2] = norm2.z &lt; 0 ? texSizes[4] : texSizes[5];</a>
+<a name="ln1068"> </a>
+<a name="ln1069">    sampledTexSizes_v3[0] = norm3.x &lt; 0 ? texSizes[0] : texSizes[1];</a>
+<a name="ln1070">    sampledTexSizes_v3[1] = norm3.y &lt; 0 ? texSizes[2] : texSizes[3];</a>
+<a name="ln1071">    sampledTexSizes_v3[2] = norm3.z &lt; 0 ? texSizes[4] : texSizes[5];</a>
+<a name="ln1072"> </a>
+<a name="ln1073"> </a>
+<a name="ln1074">    float3 w_v1 = abs_f3(norm1);</a>
+<a name="ln1075">    float3 w_v2 = abs_f3(norm2);</a>
+<a name="ln1076">    float3 w_v3 = abs_f3(norm3);</a>
+<a name="ln1077"> </a>
+<a name="ln1078">    w_v1 = pow_f3(w_v1, sharpness);</a>
+<a name="ln1079">    w_v2 = pow_f3(w_v2, sharpness);</a>
+<a name="ln1080">    w_v3 = pow_f3(w_v3, sharpness);</a>
+<a name="ln1081"> </a>
+<a name="ln1082">    w_v1 = max_f3_scalar(w_v1, 0.00001f) / dot(w_v1, w_v1);</a>
+<a name="ln1083">    w_v2 = max_f3_scalar(w_v2, 0.00001f) / dot(w_v2, w_v2);</a>
+<a name="ln1084">    w_v3 = max_f3_scalar(w_v3, 0.00001f) / dot(w_v3, w_v3);</a>
+<a name="ln1085"> </a>
+<a name="ln1086">    float b_v1 = (w_v1.x + w_v1.y + w_v1.z);</a>
+<a name="ln1087">    float b_v2 = (w_v2.x + w_v2.y + w_v2.z);</a>
+<a name="ln1088">    float b_v3 = (w_v3.x + w_v3.y + w_v3.z);</a>
+<a name="ln1089">    w_v1 = w_v1 / b_v1;</a>
+<a name="ln1090">    w_v2 = w_v2 / b_v2;</a>
+<a name="ln1091">    w_v3 = w_v3 / b_v3;</a>
+<a name="ln1092"> </a>
+<a name="ln1093">    float tex_scale = 1.0f;</a>
+<a name="ln1094"> </a>
+<a name="ln1095">    float2 y_uv_v1 = make_float2(pos1.x * tex_scale, pos1.z * tex_scale);</a>
+<a name="ln1096">    float2 x_uv_v1 = make_float2(pos1.z * tex_scale, pos1.y * tex_scale);</a>
+<a name="ln1097">    float2 z_uv_v1 = make_float2(pos1.x * tex_scale, pos1.y * tex_scale);</a>
+<a name="ln1098"> </a>
+<a name="ln1099">    float2 y_uv_v2 = make_float2(pos2.x * tex_scale, pos2.z * tex_scale);</a>
+<a name="ln1100">    float2 x_uv_v2 = make_float2(pos2.z * tex_scale, pos2.y * tex_scale);</a>
+<a name="ln1101">    float2 z_uv_v2 = make_float2(pos2.x * tex_scale, pos2.y * tex_scale);</a>
+<a name="ln1102"> </a>
+<a name="ln1103">    float2 y_uv_v3 = make_float2(pos3.x * tex_scale, pos3.z * tex_scale);</a>
+<a name="ln1104">    float2 x_uv_v3 = make_float2(pos3.z * tex_scale, pos3.y * tex_scale);</a>
+<a name="ln1105">    float2 z_uv_v3 = make_float2(pos3.x * tex_scale, pos3.y * tex_scale);</a>
+<a name="ln1106"> </a>
+<a name="ln1107">    if(sampleTexture)</a>
+<a name="ln1108">    {</a>
+<a name="ln1109">      auto ins = displaced_indices.insert(tri.x);</a>
+<a name="ln1110">      if(ins.second)</a>
+<a name="ln1111">      {</a>
+<a name="ln1112">        if(isLDR)</a>
+<a name="ln1113">        {</a>
+<a name="ln1114">          float texColX = HRTextureUtils::sampleHeightMapLDR(texX_v1_ldr, sampledTexSizes_v1[0].x, sampledTexSizes_v1[0].y, x_uv_v1, matrix);</a>
+<a name="ln1115">          float texColY = HRTextureUtils::sampleHeightMapLDR(texY_v1_ldr, sampledTexSizes_v1[1].x, sampledTexSizes_v1[1].y, y_uv_v1, matrix);</a>
+<a name="ln1116">          float texColZ = HRTextureUtils::sampleHeightMapLDR(texZ_v1_ldr, sampledTexSizes_v1[2].x, sampledTexSizes_v1[2].y, z_uv_v1, matrix);</a>
+<a name="ln1117"> </a>
+<a name="ln1118">          texHeight.x = texColX * w_v1.x + texColY * w_v1.y + texColZ * w_v1.z;</a>
+<a name="ln1119">        }</a>
+<a name="ln1120">        if(isHDR)</a>
+<a name="ln1121">        {</a>
+<a name="ln1122">          float texColX = HRTextureUtils::sampleHeightMapHDR(texX_v1_hdr, sampledTexSizes_v1[0].x, sampledTexSizes_v1[0].y, x_uv_v1, matrix);</a>
+<a name="ln1123">          float texColY = HRTextureUtils::sampleHeightMapHDR(texY_v1_hdr, sampledTexSizes_v1[1].x, sampledTexSizes_v1[1].y, y_uv_v1, matrix);</a>
+<a name="ln1124">          float texColZ = HRTextureUtils::sampleHeightMapHDR(texZ_v1_hdr, sampledTexSizes_v1[2].x, sampledTexSizes_v1[2].y, z_uv_v1, matrix);</a>
+<a name="ln1125"> </a>
+<a name="ln1126">          texHeight.x = texColX * w_v1.x + texColY * w_v1.y + texColZ * w_v1.z;</a>
+<a name="ln1127">        }</a>
+<a name="ln1128">      }</a>
+<a name="ln1129"> </a>
+<a name="ln1130">      ins = displaced_indices.insert(tri.y);</a>
+<a name="ln1131">      if(ins.second)</a>
+<a name="ln1132">      {</a>
+<a name="ln1133">        if(isLDR)</a>
+<a name="ln1134">        {</a>
+<a name="ln1135">          float texColX = HRTextureUtils::sampleHeightMapLDR(texX_v2_ldr, sampledTexSizes_v2[0].x, sampledTexSizes_v2[0].y, x_uv_v2, matrix);</a>
+<a name="ln1136">          float texColY = HRTextureUtils::sampleHeightMapLDR(texY_v2_ldr, sampledTexSizes_v2[1].x, sampledTexSizes_v2[1].y, y_uv_v2, matrix);</a>
+<a name="ln1137">          float texColZ = HRTextureUtils::sampleHeightMapLDR(texZ_v2_ldr, sampledTexSizes_v2[2].x, sampledTexSizes_v2[2].y, z_uv_v2, matrix);</a>
+<a name="ln1138"> </a>
+<a name="ln1139">          texHeight.y = texColX * w_v2.x + texColY * w_v2.y + texColZ * w_v2.z;</a>
+<a name="ln1140">        }</a>
+<a name="ln1141">        if(isHDR)</a>
+<a name="ln1142">        {</a>
+<a name="ln1143">          float texColX = HRTextureUtils::sampleHeightMapHDR(texX_v2_hdr, sampledTexSizes_v2[0].x, sampledTexSizes_v2[0].y, x_uv_v2, matrix);</a>
+<a name="ln1144">          float texColY = HRTextureUtils::sampleHeightMapHDR(texY_v2_hdr, sampledTexSizes_v2[1].x, sampledTexSizes_v2[1].y, y_uv_v2, matrix);</a>
+<a name="ln1145">          float texColZ = HRTextureUtils::sampleHeightMapHDR(texZ_v2_hdr, sampledTexSizes_v2[2].x, sampledTexSizes_v2[2].y, z_uv_v2, matrix);</a>
+<a name="ln1146"> </a>
+<a name="ln1147">          texHeight.y = texColX * w_v2.x + texColY * w_v2.y + texColZ * w_v2.z;</a>
+<a name="ln1148">        }</a>
+<a name="ln1149">      }</a>
+<a name="ln1150"> </a>
+<a name="ln1151">      ins = displaced_indices.insert(tri.z);</a>
+<a name="ln1152">      if(ins.second)</a>
+<a name="ln1153">      {</a>
+<a name="ln1154">        if(isLDR)</a>
+<a name="ln1155">        {</a>
+<a name="ln1156">          float texColX = HRTextureUtils::sampleHeightMapLDR(texX_v3_ldr, sampledTexSizes_v3[0].x, sampledTexSizes_v3[0].y, x_uv_v3, matrix);</a>
+<a name="ln1157">          float texColY = HRTextureUtils::sampleHeightMapLDR(texY_v3_ldr, sampledTexSizes_v3[1].x, sampledTexSizes_v3[1].y, y_uv_v3, matrix);</a>
+<a name="ln1158">          float texColZ = HRTextureUtils::sampleHeightMapLDR(texZ_v3_ldr, sampledTexSizes_v3[2].x, sampledTexSizes_v3[2].y, z_uv_v3, matrix);</a>
+<a name="ln1159"> </a>
+<a name="ln1160">          texHeight.z = texColX * w_v3.x + texColY * w_v3.y + texColZ * w_v3.z;</a>
+<a name="ln1161">        }</a>
+<a name="ln1162">        if(isHDR)</a>
+<a name="ln1163">        {</a>
+<a name="ln1164">          float texColX = HRTextureUtils::sampleHeightMapHDR(texX_v3_hdr, sampledTexSizes_v3[0].x, sampledTexSizes_v3[0].y, x_uv_v3, matrix);</a>
+<a name="ln1165">          float texColY = HRTextureUtils::sampleHeightMapHDR(texY_v3_hdr, sampledTexSizes_v3[1].x, sampledTexSizes_v3[1].y, y_uv_v3, matrix);</a>
+<a name="ln1166">          float texColZ = HRTextureUtils::sampleHeightMapHDR(texZ_v3_hdr, sampledTexSizes_v3[2].x, sampledTexSizes_v3[2].y, z_uv_v3, matrix);</a>
+<a name="ln1167"> </a>
+<a name="ln1168">          texHeight.z = texColX * w_v3.x + texColY * w_v3.y + texColZ * w_v3.z;</a>
+<a name="ln1169">        }</a>
+<a name="ln1170">      }</a>
+<a name="ln1171">    }</a>
+<a name="ln1172"> </a>
+<a name="ln1173">    mesh.verticesPos.at(tri.x * 4 + 0) += mesh.verticesNorm.at(tri.x * 4 + 0) * mult * texHeight.x;</a>
+<a name="ln1174">    mesh.verticesPos.at(tri.x * 4 + 1) += mesh.verticesNorm.at(tri.x * 4 + 1) * mult * texHeight.x;</a>
+<a name="ln1175">    mesh.verticesPos.at(tri.x * 4 + 2) += mesh.verticesNorm.at(tri.x * 4 + 2) * mult * texHeight.x;</a>
+<a name="ln1176"> </a>
+<a name="ln1177">    mesh.verticesPos.at(tri.y * 4 + 0) += mesh.verticesNorm.at(tri.y * 4 + 0) * mult * texHeight.y;</a>
+<a name="ln1178">    mesh.verticesPos.at(tri.y * 4 + 1) += mesh.verticesNorm.at(tri.y * 4 + 1) * mult * texHeight.y;</a>
+<a name="ln1179">    mesh.verticesPos.at(tri.y * 4 + 2) += mesh.verticesNorm.at(tri.y * 4 + 2) * mult * texHeight.y;</a>
+<a name="ln1180"> </a>
+<a name="ln1181">    mesh.verticesPos.at(tri.z * 4 + 0) += mesh.verticesNorm.at(tri.z * 4 + 0) * mult * texHeight.z;</a>
+<a name="ln1182">    mesh.verticesPos.at(tri.z * 4 + 1) += mesh.verticesNorm.at(tri.z * 4 + 1) * mult * texHeight.z;</a>
+<a name="ln1183">    mesh.verticesPos.at(tri.z * 4 + 2) += mesh.verticesNorm.at(tri.z * 4 + 2) * mult * texHeight.z;</a>
+<a name="ln1184"> </a>
+<a name="ln1185">    texHeight = float3(0.0f, 0.0f, 0.0f);</a>
+<a name="ln1186">  }</a>
+<a name="ln1187">}</a>
+<a name="ln1188"> </a>
+<a name="ln1189">void doDisplacement(HRMesh *pMesh, const pugi::xml_node &amp;displaceXMLNode, std::vector&lt;uint3&gt; &amp;triangleList,</a>
+<a name="ln1190">                    const HRUtils::BBox &amp;bbox)</a>
+<a name="ln1191">{</a>
+<a name="ln1192">  HRMesh::InputTriMesh &amp;mesh = pMesh-&gt;m_input;</a>
+<a name="ln1193"> </a>
+<a name="ln1194">  auto heightNode = displaceXMLNode.child(L&quot;height_map&quot;);</a>
+<a name="ln1195"> </a>
+<a name="ln1196">  auto noiseNode = displaceXMLNode.child(L&quot;noise&quot;);</a>
+<a name="ln1197"> </a>
+<a name="ln1198">  auto customNode = displaceXMLNode.child(L&quot;custom&quot;);</a>
+<a name="ln1199"> </a>
+<a name="ln1200">  auto heightNodeTri = displaceXMLNode.child(L&quot;height_map_triplanar&quot;);</a>
+<a name="ln1201"> </a>
+<a name="ln1202">  if(heightNode != nullptr)</a>
+<a name="ln1203">  {</a>
+<a name="ln1204">    displaceByHeightMap(pMesh, heightNode, triangleList);</a>
+<a name="ln1205">  }</a>
+<a name="ln1206">  else if(heightNodeTri != nullptr)</a>
+<a name="ln1207">  {</a>
+<a name="ln1208">    displaceByHeightMapTriPlanar(pMesh, heightNodeTri, triangleList);</a>
+<a name="ln1209">  }</a>
+<a name="ln1210">  else if(noiseNode != nullptr)</a>
+<a name="ln1211">  {</a>
+<a name="ln1212">    displaceByNoise(pMesh, noiseNode, triangleList);</a>
+<a name="ln1213">  }</a>
+<a name="ln1214">  else if(customNode != nullptr)</a>
+<a name="ln1215">  {</a>
+<a name="ln1216">    displaceCustom(pMesh, customNode, triangleList, bbox);</a>
+<a name="ln1217">  }</a>
+<a name="ln1218">}</a>
+<a name="ln1219"> </a>
+<a name="ln1220"> </a>
+<a name="ln1221"> </a>
+<a name="ln1222">// void InsertFixedMeshesInfoIntoXML(pugi::xml_document &amp;stateToProcess, std::unordered_map&lt;uint32_t, uint32_t&gt; &amp;meshTofixedMesh)</a>
+<a name="ln1223">// {</a>
+<a name="ln1224">//   auto texNode = stateToProcess.child(L&quot;geometry_lib&quot;);</a>
+<a name="ln1225">//</a>
+<a name="ln1226">//   if (texNode != nullptr)</a>
+<a name="ln1227">//   {</a>
+<a name="ln1228">//     for (auto&amp; meshMap : meshTofixedMesh)</a>
+<a name="ln1229">//     {</a>
+<a name="ln1230">//       auto geoLib = g_objManager.scnData.m_geometryLibChanges;</a>
+<a name="ln1231">//</a>
+<a name="ln1232">//       auto mesh_node = geoLib.find_child_by_attribute(L&quot;id&quot;, std::to_wstring(meshMap.second).c_str());</a>
+<a name="ln1233">//       texNode.append_copy(mesh_node);</a>
+<a name="ln1234">//</a>
+<a name="ln1235">//       auto sceneNode = stateToProcess.child(L&quot;scenes&quot;).child(L&quot;scene&quot;);</a>
+<a name="ln1236">//       if (sceneNode != nullptr)</a>
+<a name="ln1237">//       {</a>
+<a name="ln1238">//         for (auto node = sceneNode.child(L&quot;instance&quot;); node != nullptr; node = node.next_sibling())</a>
+<a name="ln1239">//         {</a>
+<a name="ln1240">//           if(node.attribute(L&quot;mesh_id&quot;) != nullptr &amp;&amp; node.attribute(L&quot;mesh_id&quot;).as_int() == meshMap.first)</a>
+<a name="ln1241">//             node.attribute(L&quot;mesh_id&quot;).set_value(meshMap.second);</a>
+<a name="ln1242">//         }</a>
+<a name="ln1243">//       }</a>
+<a name="ln1244">//     }</a>
+<a name="ln1245">//   }</a>
+<a name="ln1246">// }</a>
+<a name="ln1247">//</a>
+<a name="ln1248"> </a>
+<a name="ln1249">void InsertFixedMeshesAndInstancesXML(pugi::xml_document &amp;stateToProcess,</a>
+<a name="ln1250">                                      std::unordered_map&lt;uint32_t, int32_t&gt; &amp;instToFixedMesh, int32_t sceneId)</a>
+<a name="ln1251">{</a>
+<a name="ln1252">  auto geolib = stateToProcess.child(L&quot;geometry_lib&quot;);</a>
+<a name="ln1253">  std::vector &lt;std::pair&lt;int, pugi::xml_node&gt; &gt; tmp_nodes;</a>
+<a name="ln1254">  if (geolib != nullptr)</a>
+<a name="ln1255">  {</a>
+<a name="ln1256">    for (auto&amp; meshMap : instToFixedMesh)</a>
+<a name="ln1257">    {</a>
+<a name="ln1258">      //auto geoLib_ch = g_objManager.scnData.m_geometryLibChanges;</a>
+<a name="ln1259">      //auto mesh_node = geoLib_ch.find_child_by_attribute(L&quot;id&quot;, std::to_wstring(meshMap.second).c_str());</a>
+<a name="ln1260">      if(meshMap.second &lt; 0 || meshMap.second &gt;= g_objManager.scnData.meshes.size())</a>
+<a name="ln1261">        continue;</a>
+<a name="ln1262">      </a>
+<a name="ln1263">      auto mesh_node = g_objManager.scnData.meshes[meshMap.second].xml_node();</a>
+<a name="ln1264">      </a>
+<a name="ln1265">      std::pair&lt;int, pugi::xml_node&gt; p(meshMap.second, mesh_node);</a>
+<a name="ln1266">      tmp_nodes.push_back(p);</a>
+<a name="ln1267">      auto sceneNode = stateToProcess.child(L&quot;scenes&quot;).find_child_by_attribute(L&quot;scene&quot;, L&quot;id&quot;, std::to_wstring(sceneId).c_str());</a>
+<a name="ln1268">      if (sceneNode != nullptr)</a>
+<a name="ln1269">      {</a>
+<a name="ln1270">        auto node = sceneNode.find_child_by_attribute(L&quot;instance&quot;, L&quot;id&quot;, std::to_wstring(meshMap.first).c_str());</a>
+<a name="ln1271">        if(node != nullptr)</a>
+<a name="ln1272">        {</a>
+<a name="ln1273">          node.attribute(L&quot;mesh_id&quot;).set_value(meshMap.second);</a>
+<a name="ln1274">        }</a>
+<a name="ln1275">      }</a>
+<a name="ln1276">    }</a>
+<a name="ln1277">  }</a>
+<a name="ln1278">  std::sort(tmp_nodes.begin(), tmp_nodes.end(),</a>
+<a name="ln1279">            [&amp;](auto a, auto b) { return a.first &lt; b.first; });</a>
+<a name="ln1280">  </a>
+<a name="ln1281">  for (auto&amp; node : tmp_nodes)</a>
+<a name="ln1282">    geolib.append_copy(node.second);</a>
+<a name="ln1283">}</a>
+<a name="ln1284"> </a>
+<a name="ln1285"> </a>
+<a name="ln1286">/*</a>
+<a name="ln1287">std::wstring HR_PreprocessMeshes_old(const wchar_t *state_path)</a>
+<a name="ln1288">{</a>
+<a name="ln1289">  std::wstring new_state_path;</a>
+<a name="ln1290"> </a>
+<a name="ln1291">  if (state_path == std::wstring(L&quot;&quot;) || state_path == nullptr)</a>
+<a name="ln1292">  {</a>
+<a name="ln1293">    HrError(L&quot;No state for HR_PreprocessMeshes at location: &quot;, state_path);</a>
+<a name="ln1294">    return new_state_path;</a>
+<a name="ln1295">  }</a>
+<a name="ln1296"> </a>
+<a name="ln1297">  pugi::xml_document stateToProcess;</a>
+<a name="ln1298"> </a>
+<a name="ln1299">  auto loadResult = stateToProcess.load_file(state_path);</a>
+<a name="ln1300"> </a>
+<a name="ln1301">  if (!loadResult)</a>
+<a name="ln1302">  {</a>
+<a name="ln1303">    HrError(L&quot;HR_PreprocessMeshes, pugixml load: &quot;, loadResult.description());</a>
+<a name="ln1304">    return new_state_path;</a>
+<a name="ln1305">  }</a>
+<a name="ln1306">  bool anyChanges = false;</a>
+<a name="ln1307"> </a>
+<a name="ln1308">  if (g_objManager.m_currSceneId &lt; g_objManager.scnInst.size())</a>
+<a name="ln1309">  {</a>
+<a name="ln1310">    auto scn = g_objManager.scnInst[g_objManager.m_currSceneId];</a>
+<a name="ln1311">    std::unordered_map&lt;uint32_t, uint32_t&gt; meshTofixedMesh;</a>
+<a name="ln1312">    for (auto p : scn.meshUsedByDrv)</a>
+<a name="ln1313">    {</a>
+<a name="ln1314">      HRMeshRef mesh_ref;</a>
+<a name="ln1315">      mesh_ref.id = p;</a>
+<a name="ln1316"> </a>
+<a name="ln1317">      pugi::xml_node displaceXMLNode;</a>
+<a name="ln1318"> </a>
+<a name="ln1319">      //instanceHasDisplacementMat(mesh_ref, remapList, displaceXMLNode);</a>
+<a name="ln1320"> </a>
+<a name="ln1321">      hrMeshOpen(mesh_ref, HR_TRIANGLE_IND3, HR_OPEN_READ_ONLY);</a>
+<a name="ln1322">      if (meshHasDisplacementMat(mesh_ref, displaceXMLNode))</a>
+<a name="ln1323">      {</a>
+<a name="ln1324">        HRMesh&amp; mesh = g_objManager.scnData.meshes[p];</a>
+<a name="ln1325">        std::vector&lt;float&gt; verticesPos(mesh.m_input.verticesPos);       ///&lt; float4</a>
+<a name="ln1326">        std::vector&lt;float&gt; verticesNorm(mesh.m_input.verticesNorm);      ///&lt; float4</a>
+<a name="ln1327">        std::vector&lt;float&gt; verticesTexCoord(mesh.m_input.verticesTexCoord);  ///&lt; float2</a>
+<a name="ln1328">        std::vector&lt;float&gt; verticesTangent(mesh.m_input.verticesTangent);   ///&lt; float4</a>
+<a name="ln1329">        std::vector&lt;uint32_t&gt; triIndices(mesh.m_input.triIndices);        ///&lt; size of 3*triNum</a>
+<a name="ln1330">        std::vector&lt;uint32_t&gt; matIndices(mesh.m_input.matIndices);        ///&lt; size of 1*triNum</a>
+<a name="ln1331">        auto mesh_name = mesh.name;</a>
+<a name="ln1332">        hrMeshClose(mesh_ref);</a>
+<a name="ln1333"> </a>
+<a name="ln1334">        HRMeshRef mesh_ref_new = hrMeshCreate(std::wstring(mesh_name + L&quot;_fixed&quot;).c_str());</a>
+<a name="ln1335">        hrMeshOpen(mesh_ref_new, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);</a>
+<a name="ln1336">        hrMeshVertexAttribPointer4f(mesh_ref_new, L&quot;pos&quot;, &amp;verticesPos[0]);</a>
+<a name="ln1337">        hrMeshVertexAttribPointer4f(mesh_ref_new, L&quot;norm&quot;, &amp;verticesNorm[0]);</a>
+<a name="ln1338">        hrMeshVertexAttribPointer2f(mesh_ref_new, L&quot;texcoord&quot;, &amp;verticesTexCoord[0]);</a>
+<a name="ln1339">        hrMeshPrimitiveAttribPointer1i(mesh_ref_new, L&quot;mind&quot;, (int *) (&amp;matIndices[0]));</a>
+<a name="ln1340">        hrMeshAppendTriangles3(mesh_ref_new, int(triIndices.size()), (int *) (&amp;triIndices[0]), false);</a>
+<a name="ln1341"> </a>
+<a name="ln1342">        int subdivs = displaceXMLNode.attribute(L&quot;subdivs&quot;).as_int();</a>
+<a name="ln1343"> </a>
+<a name="ln1344">        //std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();</a>
+<a name="ln1345">        hrMeshSubdivideSqrt3(mesh_ref_new, max(subdivs, 1));</a>
+<a name="ln1346">        //std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();</a>
+<a name="ln1347">        //std::cout &lt;&lt; &quot;Subdivision time = &quot; &lt;&lt; std::chrono::duration_cast&lt;std::chrono::milliseconds&gt;(end - begin).count() &lt;&lt; &quot; ms&quot; &lt;&lt;std::endl;</a>
+<a name="ln1348"> </a>
+<a name="ln1349">        //begin = std::chrono::steady_clock::now();</a>
+<a name="ln1350">        hrMeshDisplace(mesh_ref_new, stateToProcess);</a>
+<a name="ln1351">        //end = std::chrono::steady_clock::now();</a>
+<a name="ln1352">        //std::cout &lt;&lt; &quot;Displacement time = &quot; &lt;&lt; std::chrono::duration_cast&lt;std::chrono::milliseconds&gt;(end - begin).count() &lt;&lt; &quot; ms&quot; &lt;&lt;std::endl;</a>
+<a name="ln1353"> </a>
+<a name="ln1354">        hrMeshClose(mesh_ref_new);</a>
+<a name="ln1355"> </a>
+<a name="ln1356">        HRMesh *pMesh = g_objManager.PtrById(mesh_ref_new);</a>
+<a name="ln1357"> </a>
+<a name="ln1358">        meshTofixedMesh[p] = mesh_ref_new.id;</a>
+<a name="ln1359">        anyChanges = true;</a>
+<a name="ln1360">      }</a>
+<a name="ln1361">      else</a>
+<a name="ln1362">      {</a>
+<a name="ln1363">        hrMeshClose(mesh_ref);</a>
+<a name="ln1364">      }</a>
+<a name="ln1365">    }</a>
+<a name="ln1366">    if(anyChanges)</a>
+<a name="ln1367">      InsertFixedMeshesInfoIntoXML(stateToProcess, meshTofixedMesh);</a>
+<a name="ln1368">  }</a>
+<a name="ln1369"> </a>
+<a name="ln1370">  if(anyChanges)</a>
+<a name="ln1371">    return SaveFixedStateXML(stateToProcess, state_path, L&quot;_meshes&quot;);</a>
+<a name="ln1372">  else</a>
+<a name="ln1373">    return state_path;</a>
+<a name="ln1374">}</a>
+<a name="ln1375"> </a>
+<a name="ln1376">*/</a>
+<a name="ln1377"> </a>
+<a name="ln1378">void removeDisplacementFromMaterials(const pugi::xml_document &amp;stateToProcess, std::set&lt;int32_t &gt; &amp;materialIDs)</a>
+<a name="ln1379">{</a>
+<a name="ln1380">  auto matlib = stateToProcess.child(L&quot;materials_lib&quot;);</a>
+<a name="ln1381">  for (auto &amp;mat_id :materialIDs)</a>
+<a name="ln1382">  {</a>
+<a name="ln1383">    auto mat_node = matlib.find_child_by_attribute(L&quot;material&quot;, L&quot;id&quot;, (std::to_wstring(mat_id)).c_str());</a>
+<a name="ln1384">    if (mat_node != nullptr)</a>
+<a name="ln1385">    {</a>
+<a name="ln1386">      mat_node.remove_child(L&quot;displacement&quot;);</a>
+<a name="ln1387">    }</a>
+<a name="ln1388">  }</a>
+<a name="ln1389">}</a>
+<a name="ln1390"> </a>
+<a name="ln1391">std::wstring HR_PreprocessMeshes(const wchar_t *state_path)</a>
+<a name="ln1392">{</a>
+<a name="ln1393">  std::wstring new_state_path;</a>
+<a name="ln1394"> </a>
+<a name="ln1395">  if (state_path == std::wstring(L&quot;&quot;) || state_path == nullptr)</a>
+<a name="ln1396">  {</a>
+<a name="ln1397">    HrError(L&quot;No state for HR_PreprocessMeshes at location: &quot;, state_path);</a>
+<a name="ln1398">    return new_state_path;</a>
+<a name="ln1399">  }</a>
+<a name="ln1400"> </a>
+<a name="ln1401">  pugi::xml_document stateToProcess;</a>
+<a name="ln1402"> </a>
+<a name="ln1403">  auto loadResult = stateToProcess.load_file(state_path);</a>
+<a name="ln1404"> </a>
+<a name="ln1405">  if (!loadResult)</a>
+<a name="ln1406">  {</a>
+<a name="ln1407">    HrError(L&quot;HR_PreprocessMeshes, pugixml load: &quot;, loadResult.description());</a>
+<a name="ln1408">    return new_state_path;</a>
+<a name="ln1409">  }</a>
+<a name="ln1410"> </a>
+<a name="ln1411">  bool anyChanges = false;</a>
+<a name="ln1412">  if (g_objManager.m_currSceneId &lt; g_objManager.scnInst.size())</a>
+<a name="ln1413">  {</a>
+<a name="ln1414">    auto scn = g_objManager.scnInst[g_objManager.m_currSceneId];</a>
+<a name="ln1415"> </a>
+<a name="ln1416">    std::vector&lt;std::unordered_map&lt;uint32_t, uint32_t&gt; &gt; remapLists;</a>
+<a name="ln1417">    std::unordered_map&lt;uint32_t, int32_t&gt; instToFixedMesh;</a>
+<a name="ln1418">    auto sceneNode = stateToProcess.child(L&quot;scenes&quot;).find_child_by_attribute(L&quot;scene&quot;, L&quot;id&quot;, std::to_wstring(g_objManager.m_currSceneId).c_str());</a>
+<a name="ln1419">    if (sceneNode != nullptr &amp;&amp; sceneNode.child(L&quot;remap_lists&quot;) != nullptr)</a>
+<a name="ln1420">    {</a>
+<a name="ln1421">      for(auto listNode = sceneNode.child(L&quot;remap_lists&quot;).first_child(); listNode != nullptr; listNode = listNode.next_sibling())</a>
+<a name="ln1422">      {</a>
+<a name="ln1423">        int listSize = listNode.attribute(L&quot;size&quot;).as_int();</a>
+<a name="ln1424"> </a>
+<a name="ln1425">        std::unordered_map&lt;uint32_t, uint32_t&gt; remapList;</a>
+<a name="ln1426">        const wchar_t* listStr = listNode.attribute(L&quot;val&quot;).as_string();</a>
+<a name="ln1427">        if(listStr != nullptr)</a>
+<a name="ln1428">        {</a>
+<a name="ln1429">          std::wstringstream inputStream(listStr);</a>
+<a name="ln1430">          for(int i = 0; i &lt; listSize; i += 2)</a>
+<a name="ln1431">          {</a>
+<a name="ln1432">            uint32_t a = 0;</a>
+<a name="ln1433">            uint32_t b = 0;</a>
+<a name="ln1434"> </a>
+<a name="ln1435">            inputStream &gt;&gt; a;</a>
+<a name="ln1436">            inputStream &gt;&gt; b;</a>
+<a name="ln1437"> </a>
+<a name="ln1438">            remapList[a] = b;</a>
+<a name="ln1439">          }</a>
+<a name="ln1440">        }</a>
+<a name="ln1441">        remapLists.emplace_back(remapList);</a>
+<a name="ln1442">      }</a>
+<a name="ln1443">    }</a>
+<a name="ln1444"> </a>
+<a name="ln1445">    std::set&lt;int32_t &gt; displacementMatIDs;</a>
+<a name="ln1446">    for(int i = 0; i &lt; scn.drawList.size(); ++i)</a>
+<a name="ln1447">    {</a>
+<a name="ln1448">      auto inst = scn.drawList.at(i);</a>
+<a name="ln1449">      HRMeshRef mesh_ref;</a>
+<a name="ln1450">      mesh_ref.id = inst.meshId;</a>
+<a name="ln1451"> </a>
+<a name="ln1452">      auto inst_id = i;</a>
+<a name="ln1453">      auto inst_id_str = std::to_wstring(inst_id);</a>
+<a name="ln1454"> </a>
+<a name="ln1455">      std::unordered_map&lt;uint32_t, uint32_t&gt; remap_list;</a>
+<a name="ln1456">      if(inst.remapListId &gt;= 0)</a>
+<a name="ln1457">        remap_list = remapLists[inst.remapListId];</a>
+<a name="ln1458"> </a>
+<a name="ln1459">      pugi::xml_node displaceXMLNode;</a>
+<a name="ln1460">      HRMaterialRef matRef;</a>
+<a name="ln1461"> </a>
+<a name="ln1462">      hrMeshOpen(mesh_ref, HR_TRIANGLE_IND3, HR_OPEN_READ_ONLY);</a>
+<a name="ln1463">      if(instanceHasDisplacementMat(mesh_ref, remap_list, displaceXMLNode, matRef))</a>
+<a name="ln1464">      {</a>
+<a name="ln1465">        //displacementMats.</a>
+<a name="ln1466">        displacementMatIDs.insert(matRef.id);</a>
+<a name="ln1467">        HRMesh&amp; mesh = g_objManager.scnData.meshes[inst.meshId];</a>
+<a name="ln1468">        HRUtils::BBox bbox_old = mesh.pImpl-&gt;getBBox();</a>
+<a name="ln1469">        std::vector&lt;float&gt; verticesPos(mesh.m_input.verticesPos);       ///&lt; float4</a>
+<a name="ln1470">        std::vector&lt;float&gt; verticesNorm(mesh.m_input.verticesNorm);      ///&lt; float4</a>
+<a name="ln1471">        std::vector&lt;float&gt; verticesTexCoord(mesh.m_input.verticesTexCoord);  ///&lt; float2</a>
+<a name="ln1472">        std::vector&lt;float&gt; verticesTangent(mesh.m_input.verticesTangent);   ///&lt; float4</a>
+<a name="ln1473">        std::vector&lt;uint32_t&gt; triIndices(mesh.m_input.triIndices);        ///&lt; size of 3*triNum</a>
+<a name="ln1474">        std::vector&lt;uint32_t&gt; matIndices(mesh.m_input.matIndices);        ///&lt; size of 1*triNum</a>
+<a name="ln1475">        auto mesh_name = mesh.name;</a>
+<a name="ln1476">        hrMeshClose(mesh_ref);</a>
+<a name="ln1477"> </a>
+<a name="ln1478">        std::wstring new_mesh_name = mesh_name.append(L&quot;_fixed_&quot;).append(inst_id_str);</a>
+<a name="ln1479">        HRMeshRef mesh_ref_new = hrMeshCreate(new_mesh_name.c_str());</a>
+<a name="ln1480">        hrMeshOpen(mesh_ref_new, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);</a>
+<a name="ln1481">        hrMeshVertexAttribPointer4f(mesh_ref_new, L&quot;pos&quot;, &amp;verticesPos[0]);</a>
+<a name="ln1482">        hrMeshVertexAttribPointer4f(mesh_ref_new, L&quot;norm&quot;, &amp;verticesNorm[0]);</a>
+<a name="ln1483">        hrMeshVertexAttribPointer2f(mesh_ref_new, L&quot;texcoord&quot;, &amp;verticesTexCoord[0]);</a>
+<a name="ln1484">        hrMeshPrimitiveAttribPointer1i(mesh_ref_new, L&quot;mind&quot;, (int *) (&amp;matIndices[0]));</a>
+<a name="ln1485">        hrMeshAppendTriangles3(mesh_ref_new, int(triIndices.size()), (int *) (&amp;triIndices[0]), false);</a>
+<a name="ln1486"> </a>
+<a name="ln1487">        int subdivs = displaceXMLNode.attribute(L&quot;subdivs&quot;).as_int();</a>
+<a name="ln1488"> </a>
+<a name="ln1489">        //std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();</a>
+<a name="ln1490">        hrMeshSubdivideSqrt3(mesh_ref_new, max(subdivs, 0));</a>
+<a name="ln1491">        //std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();</a>
+<a name="ln1492">        //std::cout &lt;&lt; &quot;Subdivision time = &quot; &lt;&lt; std::chrono::duration_cast&lt;std::chrono::milliseconds&gt;(end - begin).count() &lt;&lt; &quot; ms&quot; &lt;&lt;std::endl;</a>
+<a name="ln1493"> </a>
+<a name="ln1494">        //begin = std::chrono::steady_clock::now();</a>
+<a name="ln1495">        hrMeshDisplace(mesh_ref_new, remap_list, stateToProcess, bbox_old);</a>
+<a name="ln1496">        //end = std::chrono::steady_clock::now();</a>
+<a name="ln1497">        //std::cout &lt;&lt; &quot;Displacement time = &quot; &lt;&lt; std::chrono::duration_cast&lt;std::chrono::milliseconds&gt;(end - begin).count() &lt;&lt; &quot; ms&quot; &lt;&lt;std::endl;</a>
+<a name="ln1498"> </a>
+<a name="ln1499">        hrMeshClose(mesh_ref_new);</a>
+<a name="ln1500"> </a>
+<a name="ln1501">        instToFixedMesh[inst_id] = mesh_ref_new.id;</a>
+<a name="ln1502">        anyChanges = true;</a>
+<a name="ln1503">      }</a>
+<a name="ln1504">      else</a>
+<a name="ln1505">      {</a>
+<a name="ln1506">        hrMeshClose(mesh_ref);</a>
+<a name="ln1507">      }</a>
+<a name="ln1508">    }</a>
+<a name="ln1509"> </a>
+<a name="ln1510">    if(anyChanges)</a>
+<a name="ln1511">    {</a>
+<a name="ln1512">      InsertFixedMeshesAndInstancesXML(stateToProcess, instToFixedMesh, g_objManager.m_currSceneId);</a>
+<a name="ln1513">      removeDisplacementFromMaterials(stateToProcess, displacementMatIDs);</a>
+<a name="ln1514">    }</a>
+<a name="ln1515">  }</a>
+<a name="ln1516"> </a>
+<a name="ln1517">  if(anyChanges)</a>
+<a name="ln1518">    return SaveFixedStateXML(stateToProcess, state_path, L&quot;_meshes&quot;);</a>
+<a name="ln1519">  else</a>
+<a name="ln1520">    return state_path;</a>
+<a name="ln1521">}</a>
+<a name="ln1522"> </a>
+<a name="ln1523"> </a>
+<a name="ln1524">void hrMeshWeldVertices(HRMeshRef a_mesh, int &amp;indexNum)</a>
+<a name="ln1525">{</a>
+<a name="ln1526">  HRMesh *pMesh = g_objManager.PtrById(a_mesh);</a>
+<a name="ln1527"> </a>
+<a name="ln1528">  if (pMesh == nullptr)</a>
+<a name="ln1529">  {</a>
+<a name="ln1530">    HrError(L&quot;hrMeshWeldVertices: nullptr input&quot;);</a>
+<a name="ln1531">    return;</a>
+<a name="ln1532">  }</a>
+<a name="ln1533"> </a>
+<a name="ln1534">  if (!pMesh-&gt;opened)</a>
+<a name="ln1535">  {</a>
+<a name="ln1536">    HrError(L&quot;hrMeshWeldVertices: mesh is not opened, id = &quot;, a_mesh.id);</a>
+<a name="ln1537">    return;</a>
+<a name="ln1538">  }</a>
+<a name="ln1539"> </a>
+<a name="ln1540">  HRMesh::InputTriMesh &amp;mesh = pMesh-&gt;m_input;</a>
+<a name="ln1541">  //const bool hasNormals  = (pMesh-&gt;m_inputPointers.normals != nullptr);</a>
+<a name="ln1542"> </a>
+<a name="ln1543">  std::vector&lt;uint32_t&gt; indices_new;</a>
+<a name="ln1544">  //std::unordered_map&lt;float3, uint32_t, float3_hash, pos_eq&gt; vertex_hash;</a>
+<a name="ln1545">  std::unordered_map&lt;vertex_cache, uint32_t, vertex_cache_hash, vertex_cache_eq&gt; vertex_hash;</a>
+<a name="ln1546"> </a>
+<a name="ln1547">  std::vector&lt;float&gt; vertices_new(mesh.verticesPos.size()*2, 0.0f);</a>
+<a name="ln1548">  std::vector&lt;float&gt; normals_new(mesh.verticesNorm.size()*2, 0.0f);</a>
+<a name="ln1549">  std::vector&lt;float&gt; uv_new(mesh.verticesTexCoord.size()*2, 0.0f);</a>
+<a name="ln1550">  std::vector&lt;float&gt; tangents_new(mesh.verticesTangent.size()*2, 0.0f);</a>
+<a name="ln1551">  std::vector&lt;int32_t&gt; mid_new;</a>
+<a name="ln1552">  mid_new.reserve(mesh.matIndices.size());</a>
+<a name="ln1553"> </a>
+<a name="ln1554">  uint32_t index = 0;</a>
+<a name="ln1555">  for (auto i = 0u; i &lt; mesh.triIndices.size(); i += 3)</a>
+<a name="ln1556">  {</a>
+<a name="ln1557">    uint32_t indA = mesh.triIndices[i + 0];</a>
+<a name="ln1558">    uint32_t indB = mesh.triIndices[i + 1];</a>
+<a name="ln1559">    uint32_t indC = mesh.triIndices[i + 2];</a>
+<a name="ln1560"> </a>
+<a name="ln1561">    if (indA == indB || indA == indC || indB == indC)</a>
+<a name="ln1562">      continue;</a>
+<a name="ln1563"> </a>
+<a name="ln1564">    auto old_mid = mesh.matIndices.at(i / 3);</a>
+<a name="ln1565">    mid_new.push_back(old_mid);</a>
+<a name="ln1566"> </a>
+<a name="ln1567">    float4 tmp = vertex_attrib_by_index_f4(&quot;pos&quot;, indA, mesh);</a>
+<a name="ln1568">    float3 A(tmp.x, tmp.y, tmp.z);</a>
+<a name="ln1569">    tmp = vertex_attrib_by_index_f4(&quot;normal&quot;, indA, mesh);</a>
+<a name="ln1570">    float3 A_normal(tmp.x, tmp.y, tmp.z);</a>
+<a name="ln1571">    float2 tmp2 = vertex_attrib_by_index_f2(&quot;uv&quot;, indA, mesh);</a>
+<a name="ln1572">    float2 A_uv(tmp2.x, tmp2.y);</a>
+<a name="ln1573">    float4 A_tan = vertex_attrib_by_index_f4(&quot;tangent&quot;, indA, mesh);</a>
+<a name="ln1574"> </a>
+<a name="ln1575">    vertex_cache A_cache;</a>
+<a name="ln1576">    A_cache.pos = A;</a>
+<a name="ln1577">    A_cache.normal = A_normal;</a>
+<a name="ln1578">    A_cache.uv = A_uv;</a>
+<a name="ln1579">    A_cache.tangent = A_tan;</a>
+<a name="ln1580"> </a>
+<a name="ln1581">    auto it = vertex_hash.find(A_cache);</a>
+<a name="ln1582"> </a>
+<a name="ln1583">    if(it != vertex_hash.end())</a>
+<a name="ln1584">    {</a>
+<a name="ln1585">      indices_new.push_back(it-&gt;second);</a>
+<a name="ln1586">    }</a>
+<a name="ln1587">    else</a>
+<a name="ln1588">    {</a>
+<a name="ln1589">      vertex_hash[A_cache] = index;</a>
+<a name="ln1590">      indices_new.push_back(index);</a>
+<a name="ln1591"> </a>
+<a name="ln1592">      vertices_new.at(index * 4 + 0) = A.x;</a>
+<a name="ln1593">      vertices_new.at(index * 4 + 1) = A.y;</a>
+<a name="ln1594">      vertices_new.at(index * 4 + 2) = A.z;</a>
+<a name="ln1595">      vertices_new.at(index * 4 + 3) = 1.0f;</a>
+<a name="ln1596"> </a>
+<a name="ln1597">      normals_new.at(index * 4 + 0) = A_normal.x;</a>
+<a name="ln1598">      normals_new.at(index * 4 + 1) = A_normal.y;</a>
+<a name="ln1599">      normals_new.at(index * 4 + 2) = A_normal.z;</a>
+<a name="ln1600">      normals_new.at(index * 4 + 3) = 0.0f;</a>
+<a name="ln1601"> </a>
+<a name="ln1602">      uv_new.at(index * 2 + 0) = A_uv.x;</a>
+<a name="ln1603">      uv_new.at(index * 2 + 1) = A_uv.y;</a>
+<a name="ln1604"> </a>
+<a name="ln1605">      tangents_new.at(index * 4 + 0) = A_tan.x;</a>
+<a name="ln1606">      tangents_new.at(index * 4 + 1) = A_tan.y;</a>
+<a name="ln1607">      tangents_new.at(index * 4 + 2) = A_tan.z;</a>
+<a name="ln1608">      tangents_new.at(index * 4 + 3) = A_tan.w;</a>
+<a name="ln1609"> </a>
+<a name="ln1610">      index++;</a>
+<a name="ln1611">    }</a>
+<a name="ln1612"> </a>
+<a name="ln1613">    tmp = vertex_attrib_by_index_f4(&quot;pos&quot;, indB, mesh);</a>
+<a name="ln1614">    float3 B(tmp.x, tmp.y, tmp.z);</a>
+<a name="ln1615">    tmp = vertex_attrib_by_index_f4(&quot;normal&quot;, indB, mesh);</a>
+<a name="ln1616">    float3 B_normal(tmp.x, tmp.y, tmp.z);</a>
+<a name="ln1617">    tmp2 = vertex_attrib_by_index_f2(&quot;uv&quot;, indB, mesh);</a>
+<a name="ln1618">    float2 B_uv(tmp2.x, tmp2.y);</a>
+<a name="ln1619">    float4 B_tan = vertex_attrib_by_index_f4(&quot;tangent&quot;, indB, mesh);</a>
+<a name="ln1620"> </a>
+<a name="ln1621">    vertex_cache B_cache;</a>
+<a name="ln1622">    B_cache.pos = B;</a>
+<a name="ln1623">    B_cache.normal = B_normal;</a>
+<a name="ln1624">    B_cache.uv = B_uv;</a>
+<a name="ln1625">    B_cache.tangent = B_tan;</a>
+<a name="ln1626"> </a>
+<a name="ln1627">    it = vertex_hash.find(B_cache);</a>
+<a name="ln1628">    if(it != vertex_hash.end())</a>
+<a name="ln1629">    {</a>
+<a name="ln1630">      indices_new.push_back(it-&gt;second);</a>
+<a name="ln1631">    }</a>
+<a name="ln1632">    else</a>
+<a name="ln1633">    {</a>
+<a name="ln1634">      vertex_hash[B_cache] = index;</a>
+<a name="ln1635">      indices_new.push_back(index);</a>
+<a name="ln1636"> </a>
+<a name="ln1637">      vertices_new.at(index * 4 + 0) = B.x;</a>
+<a name="ln1638">      vertices_new.at(index * 4 + 1) = B.y;</a>
+<a name="ln1639">      vertices_new.at(index * 4 + 2) = B.z;</a>
+<a name="ln1640">      vertices_new.at(index * 4 + 3) = 1.0f;</a>
+<a name="ln1641"> </a>
+<a name="ln1642">      normals_new.at(index * 4 + 0) = B_normal.x;</a>
+<a name="ln1643">      normals_new.at(index * 4 + 1) = B_normal.y;</a>
+<a name="ln1644">      normals_new.at(index * 4 + 2) = B_normal.z;</a>
+<a name="ln1645">      normals_new.at(index * 4 + 3) = 0.0f;</a>
+<a name="ln1646"> </a>
+<a name="ln1647">      uv_new.at(index * 2 + 0) = B_uv.x;</a>
+<a name="ln1648">      uv_new.at(index * 2 + 1) = B_uv.y;</a>
+<a name="ln1649"> </a>
+<a name="ln1650">      tangents_new.at(index * 4 + 0) = B_tan.x;</a>
+<a name="ln1651">      tangents_new.at(index * 4 + 1) = B_tan.y;</a>
+<a name="ln1652">      tangents_new.at(index * 4 + 2) = B_tan.z;</a>
+<a name="ln1653">      tangents_new.at(index * 4 + 3) = B_tan.w;</a>
+<a name="ln1654"> </a>
+<a name="ln1655">      index++;</a>
+<a name="ln1656">    }</a>
+<a name="ln1657"> </a>
+<a name="ln1658">    tmp = vertex_attrib_by_index_f4(&quot;pos&quot;, indC, mesh);</a>
+<a name="ln1659">    float3 C(tmp.x, tmp.y, tmp.z);</a>
+<a name="ln1660">    tmp = vertex_attrib_by_index_f4(&quot;normal&quot;, indC, mesh);</a>
+<a name="ln1661">    float3 C_normal(tmp.x, tmp.y, tmp.z);</a>
+<a name="ln1662">    tmp2 = vertex_attrib_by_index_f2(&quot;uv&quot;, indC, mesh);</a>
+<a name="ln1663">    float2 C_uv(tmp2.x, tmp2.y);</a>
+<a name="ln1664">    float4 C_tan = vertex_attrib_by_index_f4(&quot;tangent&quot;, indC, mesh);</a>
+<a name="ln1665"> </a>
+<a name="ln1666">    vertex_cache C_cache;</a>
+<a name="ln1667">    C_cache.pos = C;</a>
+<a name="ln1668">    C_cache.normal = C_normal;</a>
+<a name="ln1669">    C_cache.uv = C_uv;</a>
+<a name="ln1670">    C_cache.tangent = C_tan;</a>
+<a name="ln1671"> </a>
+<a name="ln1672"> </a>
+<a name="ln1673">    it = vertex_hash.find(C_cache);</a>
+<a name="ln1674">    if(it != vertex_hash.end())</a>
+<a name="ln1675">    {</a>
+<a name="ln1676">      indices_new.push_back(it-&gt;second);</a>
+<a name="ln1677">    }</a>
+<a name="ln1678">    else</a>
+<a name="ln1679">    {</a>
+<a name="ln1680">      vertex_hash[C_cache] = index;</a>
+<a name="ln1681">      indices_new.push_back(index);</a>
+<a name="ln1682"> </a>
+<a name="ln1683">      vertices_new.at(index * 4 + 0) = C.x;</a>
+<a name="ln1684">      vertices_new.at(index * 4 + 1) = C.y;</a>
+<a name="ln1685">      vertices_new.at(index * 4 + 2) = C.z;</a>
+<a name="ln1686">      vertices_new.at(index * 4 + 3) = 1.0f;</a>
+<a name="ln1687"> </a>
+<a name="ln1688">      normals_new.at(index * 4 + 0) = C_normal.x;</a>
+<a name="ln1689">      normals_new.at(index * 4 + 1) = C_normal.y;</a>
+<a name="ln1690">      normals_new.at(index * 4 + 2) = C_normal.z;</a>
+<a name="ln1691">      normals_new.at(index * 4 + 3) = 0.0f;</a>
+<a name="ln1692"> </a>
+<a name="ln1693">      uv_new.at(index * 2 + 0) = C_uv.x;</a>
+<a name="ln1694">      uv_new.at(index * 2 + 1) = C_uv.y;</a>
+<a name="ln1695"> </a>
+<a name="ln1696">      tangents_new.at(index * 4 + 0) = C_tan.x;</a>
+<a name="ln1697">      tangents_new.at(index * 4 + 1) = C_tan.y;</a>
+<a name="ln1698">      tangents_new.at(index * 4 + 2) = C_tan.z;</a>
+<a name="ln1699">      tangents_new.at(index * 4 + 3) = C_tan.w;</a>
+<a name="ln1700"> </a>
+<a name="ln1701">      index++;</a>
+<a name="ln1702">    }</a>
+<a name="ln1703"> </a>
+<a name="ln1704">  }</a>
+<a name="ln1705"> </a>
+<a name="ln1706">  vertices_new.resize(index * 4);</a>
+<a name="ln1707">  normals_new.resize(index * 4);</a>
+<a name="ln1708">  uv_new.resize(index * 2);</a>
+<a name="ln1709">  tangents_new.resize(index * 4);</a>
+<a name="ln1710"> </a>
+<a name="ln1711">  //std::cout &lt;&lt; &quot;vert old : &quot; &lt;&lt; mesh.verticesPos.size() &lt;&lt; &quot;  vert new :&quot; &lt;&lt; vertices_new.size() &lt;&lt; std::endl;</a>
+<a name="ln1712"> </a>
+<a name="ln1713">  pMesh-&gt;m_inputPointers.normals = nullptr;</a>
+<a name="ln1714">  pMesh-&gt;m_inputPointers.tangents = nullptr;</a>
+<a name="ln1715"> </a>
+<a name="ln1716">  mesh.verticesPos.clear();</a>
+<a name="ln1717">  mesh.verticesPos.resize(vertices_new.size());</a>
+<a name="ln1718">  std::copy(vertices_new.begin(), vertices_new.end(), mesh.verticesPos.begin());</a>
+<a name="ln1719"> </a>
+<a name="ln1720">  mesh.verticesNorm.clear();</a>
+<a name="ln1721">  mesh.verticesNorm.resize(normals_new.size());</a>
+<a name="ln1722">  std::copy(normals_new.begin(), normals_new.end(), mesh.verticesNorm.begin());</a>
+<a name="ln1723"> </a>
+<a name="ln1724">  mesh.verticesTexCoord.clear();</a>
+<a name="ln1725">  mesh.verticesTexCoord.resize(uv_new.size());</a>
+<a name="ln1726">  std::copy(uv_new.begin(), uv_new.end(), mesh.verticesTexCoord.begin());</a>
+<a name="ln1727"> </a>
+<a name="ln1728">  mesh.verticesTangent.clear();</a>
+<a name="ln1729">  mesh.verticesTangent.resize(tangents_new.size());</a>
+<a name="ln1730">  std::copy(tangents_new.begin(), tangents_new.end(), mesh.verticesTangent.begin());</a>
+<a name="ln1731"> </a>
+<a name="ln1732">  mesh.triIndices.clear();</a>
+<a name="ln1733">  mesh.triIndices.resize(indices_new.size());</a>
+<a name="ln1734">  std::copy(indices_new.begin(), indices_new.end(), mesh.triIndices.begin());</a>
+<a name="ln1735"> </a>
+<a name="ln1736">  mesh.matIndices.clear();</a>
+<a name="ln1737">  mesh.matIndices.resize(mid_new.size());</a>
+<a name="ln1738">  std::copy(mid_new.begin(), mid_new.end(), mesh.matIndices.begin());</a>
+<a name="ln1739"> </a>
+<a name="ln1740">  indexNum = int(indices_new.size());</a>
+<a name="ln1741">}</a>
+<a name="ln1742"> </a>
+<a name="ln1743"> </a>
+<a name="ln1744">//***Tangent Space calc******************************************************************</a>
+<a name="ln1745"> </a>
+<a name="ln1746">// Return number of primitives in the geometry.</a>
+<a name="ln1747">int getNumFaces(const SMikkTSpaceContext *context)</a>
+<a name="ln1748">{</a>
+<a name="ln1749">  auto *pInput = static_cast &lt;HRMesh::InputTriMesh*&gt; (context-&gt;m_pUserData);</a>
+<a name="ln1750"> </a>
+<a name="ln1751">  return int(pInput-&gt;triIndices.size()/3);</a>
+<a name="ln1752">}</a>
+<a name="ln1753"> </a>
+<a name="ln1754">// Return number of vertices in the primitive given by index.</a>
+<a name="ln1755">int getNumVerticesOfFace(const SMikkTSpaceContext *context, const int primnum)</a>
+<a name="ln1756">{</a>
+<a name="ln1757">  return 3;</a>
+<a name="ln1758">}</a>
+<a name="ln1759"> </a>
+<a name="ln1760">// Write 3-float position of the vertex's point.</a>
+<a name="ln1761">void getPosition(const SMikkTSpaceContext *context, float outpos[], const int primnum, const int vtxnum)</a>
+<a name="ln1762">{</a>
+<a name="ln1763">  auto *pInput = static_cast &lt;HRMesh::InputTriMesh*&gt; (context-&gt;m_pUserData);</a>
+<a name="ln1764">  auto index   = pInput-&gt;triIndices.at(primnum * 3 + vtxnum);</a>
+<a name="ln1765"> </a>
+<a name="ln1766">  outpos[0] = pInput-&gt;verticesPos.at(index * 4 + 0);</a>
+<a name="ln1767">  outpos[1] = pInput-&gt;verticesPos.at(index * 4 + 1);</a>
+<a name="ln1768">  outpos[2] = pInput-&gt;verticesPos.at(index * 4 + 2);</a>
+<a name="ln1769">}</a>
+<a name="ln1770"> </a>
+<a name="ln1771">// Write 3-float vertex normal.</a>
+<a name="ln1772">void getNormal(const SMikkTSpaceContext *context, float outnormal[], const int primnum, const int vtxnum)</a>
+<a name="ln1773">{</a>
+<a name="ln1774">  auto *pInput = static_cast &lt;HRMesh::InputTriMesh*&gt; (context-&gt;m_pUserData);</a>
+<a name="ln1775">  auto index   = pInput-&gt;triIndices.at(primnum * 3 + vtxnum);</a>
+<a name="ln1776"> </a>
+<a name="ln1777">  outnormal[0] = pInput-&gt;verticesNorm.at(index * 4 + 0);</a>
+<a name="ln1778">  outnormal[1] = pInput-&gt;verticesNorm.at(index * 4 + 1);</a>
+<a name="ln1779">  outnormal[2] = pInput-&gt;verticesNorm.at(index * 4 + 2);</a>
+<a name="ln1780">}</a>
+<a name="ln1781"> </a>
+<a name="ln1782">// Write 2-float vertex uv.</a>
+<a name="ln1783">void getTexCoord(const SMikkTSpaceContext *context, float outuv[], const int primnum, const int vtxnum)</a>
+<a name="ln1784">{</a>
+<a name="ln1785">  auto *pInput = static_cast &lt;HRMesh::InputTriMesh*&gt; (context-&gt;m_pUserData);</a>
+<a name="ln1786">  auto index   = pInput-&gt;triIndices.at(primnum * 3 + vtxnum);</a>
+<a name="ln1787"> </a>
+<a name="ln1788">  outuv[0] = pInput-&gt;verticesTexCoord.at(index * 2 + 0);</a>
+<a name="ln1789">  outuv[1] = pInput-&gt;verticesTexCoord.at(index * 2 + 1);</a>
+<a name="ln1790">}</a>
+<a name="ln1791"> </a>
+<a name="ln1792">// Compute and set attributes on the geometry vertex. Basic version.</a>
+<a name="ln1793">void setTSpaceBasic(const SMikkTSpaceContext *context,</a>
+<a name="ln1794">                    const float tangentu[],</a>
+<a name="ln1795">                    const float sign,</a>
+<a name="ln1796">                    const int primnum,</a>
+<a name="ln1797">                    const int vtxnum)</a>
+<a name="ln1798">{</a>
+<a name="ln1799">  auto *pInput = static_cast &lt;HRMesh::InputTriMesh*&gt; (context-&gt;m_pUserData);</a>
+<a name="ln1800">  auto index   = pInput-&gt;triIndices.at(primnum * 3 + vtxnum);</a>
+<a name="ln1801"> </a>
+<a name="ln1802">  pInput-&gt;verticesTangent.at(index * 4 + 0) = tangentu[0];</a>
+<a name="ln1803">  pInput-&gt;verticesTangent.at(index * 4 + 1) = tangentu[1];</a>
+<a name="ln1804">  pInput-&gt;verticesTangent.at(index * 4 + 2) = tangentu[2];</a>
+<a name="ln1805">  pInput-&gt;verticesTangent.at(index * 4 + 3) = sign;</a>
+<a name="ln1806">}</a>
+<a name="ln1807"> </a>
+<a name="ln1808">void setTSpace(const SMikkTSpaceContext *context,</a>
+<a name="ln1809">               const float tangentu[],</a>
+<a name="ln1810">               const float tangentv[],</a>
+<a name="ln1811">               const float magu,</a>
+<a name="ln1812">               const float magv,</a>
+<a name="ln1813">               const tbool keep,</a>
+<a name="ln1814">               const int primnum,</a>
+<a name="ln1815">               const int vtxnum)</a>
+<a name="ln1816">{</a>
+<a name="ln1817">  auto *pInput = static_cast &lt;HRMesh::InputTriMesh*&gt; (context-&gt;m_pUserData);</a>
+<a name="ln1818">  auto index   = pInput-&gt;triIndices[primnum * 3 + vtxnum];</a>
+<a name="ln1819"> </a>
+<a name="ln1820">  pInput-&gt;verticesTangent[index * 4 + 0] = tangentu[0];</a>
+<a name="ln1821">  pInput-&gt;verticesTangent[index * 4 + 1] = tangentu[1];</a>
+<a name="ln1822">  pInput-&gt;verticesTangent[index * 4 + 2] = tangentu[2];</a>
+<a name="ln1823">  pInput-&gt;verticesTangent[index * 4 + 3] = 1.0f;</a>
+<a name="ln1824">}</a>
+<a name="ln1825"> </a>
+<a name="ln1826">void MikeyTSpaceCalc(HRMesh::InputTriMesh* pInput, bool basic)</a>
+<a name="ln1827">{ </a>
+<a name="ln1828">  assert(pInput != nullptr);</a>
+<a name="ln1829"> </a>
+<a name="ln1830">  SMikkTSpaceInterface iface;</a>
+<a name="ln1831">  iface.m_getNumFaces          = getNumFaces;</a>
+<a name="ln1832">  iface.m_getNumVerticesOfFace = getNumVerticesOfFace;</a>
+<a name="ln1833">  iface.m_getPosition          = getPosition;</a>
+<a name="ln1834">  iface.m_getNormal            = getNormal;</a>
+<a name="ln1835">  iface.m_getTexCoord          = getTexCoord;</a>
+<a name="ln1836">  iface.m_setTSpaceBasic       = basic ? setTSpaceBasic : nullptr;</a>
+<a name="ln1837">  iface.m_setTSpace            = basic ? nullptr : setTSpace;</a>
+<a name="ln1838"> </a>
+<a name="ln1839">  SMikkTSpaceContext context;</a>
+<a name="ln1840">  context.m_pInterface = &amp;iface;</a>
+<a name="ln1841">  context.m_pUserData  = pInput;</a>
+<a name="ln1842"> </a>
+<a name="ln1843">  genTangSpaceDefault(&amp;context);</a>
+<a name="ln1844">}</a>
+<a name="ln1845"> </a>
+<a name="ln1846">//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln1847">//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln1848">//// Mesh sampling</a>
+<a name="ln1849"> </a>
+<a name="ln1850">void HRUtils::getRandomPointsOnMesh(HRMeshRef mesh_ref, float *points, uint32_t n_points, bool tri_area_weighted, uint32_t seed)</a>
+<a name="ln1851">{</a>
+<a name="ln1852">  HRMesh *pMesh = g_objManager.PtrById(mesh_ref);</a>
+<a name="ln1853"> </a>
+<a name="ln1854">  if (pMesh == nullptr)</a>
+<a name="ln1855">  {</a>
+<a name="ln1856">    HrError(L&quot;HRUtils::getRandomPointsOnMesh: nullptr input&quot;);</a>
+<a name="ln1857">    return;</a>
+<a name="ln1858">  }</a>
+<a name="ln1859"> </a>
+<a name="ln1860">  if(points == nullptr)</a>
+<a name="ln1861">  {</a>
+<a name="ln1862">    HrError(L&quot;HRUtils::getRandomPointsOnMesh: points is nullptr&quot;);</a>
+<a name="ln1863">    return;</a>
+<a name="ln1864">  }</a>
+<a name="ln1865"> </a>
+<a name="ln1866">  if (!pMesh-&gt;opened)</a>
+<a name="ln1867">  {</a>
+<a name="ln1868">    hrMeshOpen(mesh_ref, HR_TRIANGLE_IND3, HR_OPEN_EXISTING);</a>
+<a name="ln1869">  }</a>
+<a name="ln1870"> </a>
+<a name="ln1871">  HRMesh::InputTriMesh &amp;mesh = pMesh-&gt;m_input;</a>
+<a name="ln1872"> </a>
+<a name="ln1873">  uint32_t vert_num = mesh.verticesPos.size();</a>
+<a name="ln1874">  uint32_t tri_num = mesh.triIndices.size() / 3;</a>
+<a name="ln1875"> </a>
+<a name="ln1876">  //std::mt19937 rng(seed);</a>
+<a name="ln1877">  hr_prng::RandomGen rgen = hr_prng::RandomGenInit(seed);</a>
+<a name="ln1878">  std::uniform_real_distribution&lt;float&gt; select(0.0f, 1.0f);</a>
+<a name="ln1879"> </a>
+<a name="ln1880">  std::vector&lt;uint32_t&gt; triangle_indices;</a>
+<a name="ln1881">  if(tri_area_weighted)</a>
+<a name="ln1882">  {</a>
+<a name="ln1883">    float min_area = std::numeric_limits&lt;float&gt;::max();</a>
+<a name="ln1884">    std::vector&lt;float&gt; triangle_areas(tri_num, 0.0f);</a>
+<a name="ln1885">    for(uint32_t i = 0; i &lt; tri_num; ++i )</a>
+<a name="ln1886">    {</a>
+<a name="ln1887">      uint32_t idx_A = mesh.triIndices.at(i * 3 + 0);</a>
+<a name="ln1888">      uint32_t idx_B = mesh.triIndices.at(i * 3 + 1);</a>
+<a name="ln1889">      uint32_t idx_C = mesh.triIndices.at(i * 3 + 2);</a>
+<a name="ln1890">      float3 A = make_float3(mesh.verticesPos.at(idx_A * 4 + 0), mesh.verticesPos.at(idx_A * 4 + 1), mesh.verticesPos.at(idx_A * 4 + 2));</a>
+<a name="ln1891">      float3 B = make_float3(mesh.verticesPos.at(idx_B * 4 + 0), mesh.verticesPos.at(idx_B * 4 + 1), mesh.verticesPos.at(idx_B * 4 + 2));</a>
+<a name="ln1892">      float3 C = make_float3(mesh.verticesPos.at(idx_C * 4 + 0), mesh.verticesPos.at(idx_C * 4 + 1), mesh.verticesPos.at(idx_C * 4 + 2));</a>
+<a name="ln1893"> </a>
+<a name="ln1894">      float3 edge1A = normalize(B - A);</a>
+<a name="ln1895">      float3 edge2A = normalize(C - A);</a>
+<a name="ln1896"> </a>
+<a name="ln1897">      float face_area = 0.5f * sqrtf(powf(edge1A.y * edge2A.z - edge1A.z * edge2A.y, 2) +</a>
+<a name="ln1898">                                     powf(edge1A.z * edge2A.x - edge1A.x * edge2A.z, 2) +</a>
+<a name="ln1899">                                     powf(edge1A.x * edge2A.y - edge1A.y * edge2A.x, 2));</a>
+<a name="ln1900"> </a>
+<a name="ln1901">//      float cos_theta = dot(edge1A, edge2A);</a>
+<a name="ln1902">//      float sin_theta = sqrtf(1.0f - cos_theta * cos_theta);</a>
+<a name="ln1903">//      float face_area = 0.5f * dot(edge1A, edge1A) * dot(edge2A, edge2A) * sin_theta;</a>
+<a name="ln1904"> </a>
+<a name="ln1905">      if(face_area &lt; min_area)</a>
+<a name="ln1906">        min_area = face_area;</a>
+<a name="ln1907"> </a>
+<a name="ln1908">      triangle_areas[i] = face_area;</a>
+<a name="ln1909">    }</a>
+<a name="ln1910"> </a>
+<a name="ln1911">    //std::vector&lt;uint32_t&gt; tmp_vec(triangle_areas.size(), 0u);</a>
+<a name="ln1912">    for(uint32_t i = 0; i &lt; triangle_areas.size(); ++i)</a>
+<a name="ln1913">    {</a>
+<a name="ln1914">      auto tmp = static_cast&lt;uint32_t &gt;(std::ceil(triangle_areas[i] / min_area));</a>
+<a name="ln1915"> </a>
+<a name="ln1916">      for(int j = 0; j &lt;= tmp; ++j)</a>
+<a name="ln1917">        triangle_indices.push_back(i);</a>
+<a name="ln1918">    }</a>
+<a name="ln1919">  }</a>
+<a name="ln1920"> </a>
+<a name="ln1921"> </a>
+<a name="ln1922">  for(uint32_t i = 0; i &lt; n_points; ++i)</a>
+<a name="ln1923">  {</a>
+<a name="ln1924">    uint32_t triangle = 0u;</a>
+<a name="ln1925">    if(tri_area_weighted)</a>
+<a name="ln1926">      triangle = triangle_indices[uint32_t(triangle_indices.size() * hr_prng::rndFloatUniform(rgen, 0.0f, 1.0f))];</a>
+<a name="ln1927">    else</a>
+<a name="ln1928">      triangle = uint32_t(tri_num * hr_prng::rndFloatUniform(rgen, 0.0f, 1.0f));</a>
+<a name="ln1929"> </a>
+<a name="ln1930">    uint32_t idx_A = mesh.triIndices.at(triangle * 3 + 0);</a>
+<a name="ln1931">    uint32_t idx_B = mesh.triIndices.at(triangle * 3 + 1);</a>
+<a name="ln1932">    uint32_t idx_C = mesh.triIndices.at(triangle * 3 + 2);</a>
+<a name="ln1933"> </a>
+<a name="ln1934">    float3 A = make_float3(mesh.verticesPos.at(idx_A * 4 + 0), mesh.verticesPos.at(idx_A * 4 + 1), mesh.verticesPos.at(idx_A * 4 + 2));</a>
+<a name="ln1935">    float3 B = make_float3(mesh.verticesPos.at(idx_B * 4 + 0), mesh.verticesPos.at(idx_B * 4 + 1), mesh.verticesPos.at(idx_B * 4 + 2));</a>
+<a name="ln1936">    float3 C = make_float3(mesh.verticesPos.at(idx_C * 4 + 0), mesh.verticesPos.at(idx_C * 4 + 1), mesh.verticesPos.at(idx_C * 4 + 2));</a>
+<a name="ln1937"> </a>
+<a name="ln1938">    float u = hr_prng::rndFloatUniform(rgen, 0.0f, 1.0f);</a>
+<a name="ln1939">    float v = hr_prng::rndFloatUniform(rgen, 0.0f, 1.0f);</a>
+<a name="ln1940">    if( u + v &gt; 1.0f)</a>
+<a name="ln1941">    {</a>
+<a name="ln1942">      u = 1.0f - u;</a>
+<a name="ln1943">      v = 1.0f - v;</a>
+<a name="ln1944">    }</a>
+<a name="ln1945"> </a>
+<a name="ln1946">    float3 pt = u * A + v * B + (1 - (u + v)) * C;</a>
+<a name="ln1947"> </a>
+<a name="ln1948">    points[i * 3 + 0] = pt.x;</a>
+<a name="ln1949">    points[i * 3 + 1] = pt.y;</a>
+<a name="ln1950">    points[i * 3 + 2] = pt.z;</a>
+<a name="ln1951">  }</a>
+<a name="ln1952">}</a>
+<a name="ln1953"> </a>
+<a name="ln1954"> </a>
+<a name="ln1955"> </a>
+<a name="ln1956"> </a>
+<a name="ln1957">//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln1958">//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln1959"> </a>
+<a name="ln1960"> </a>
+<a name="ln1961"> </a>
+
+</code></pre>
+<div class="balloon" rel="502"><p><span style="font-size:18px">&uarr;</span> <a href="https://www.viva64.com/en/w/v570/" target="_blank">V570</a> The 'PNorm.z' variable is assigned to itself.</p></div>
+<div class="balloon" rel="640"><p><span style="font-size:18px">&uarr;</span> <a href="https://www.viva64.com/en/w/v570/" target="_blank">V570</a> The 'PNorm.z' variable is assigned to itself.</p></div>
+<div class="balloon" rel="764"><p><span style="font-size:18px">&uarr;</span> <a href="https://www.viva64.com/en/w/v614/" target="_blank">V614</a> Potentially uninitialized pointer 'texture' used.</p></div>
+<div class="balloon" rel="980"><p><span style="font-size:18px">&uarr;</span> <a href="https://www.viva64.com/en/w/v614/" target="_blank">V614</a> Potentially uninitialized variable 'texIds[i]' used.</p></div>
+
+<link rel="stylesheet" href="highlight.css">
+<script src="highlight.pack.js"></script>
+<script src="highlightjs-line-numbers.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script>hljs.initLineNumbersOnLoad();</script>
+<script>
+  $(document).ready(function() {
+      $('.balloon').each(function () {
+          var bl = $(this);
+          var line = bl.attr('rel');
+          var text = $('a[name="ln'+line+'"]').text();
+
+          var space_count = 0;
+          for(var i = 0; i<text.length; i++){
+              var char = text[i];
+              if((char !== ' ')&&(char !== '\t'))break;
+              if(char === '\t')space_count++;
+              space_count++;
+          }
+
+          bl.css('margin-left', space_count*8);
+          $('a[name="ln'+line+'"]').after(bl);
+      });
+
+      window.location = window.location;
+  });
+</script>
+</body>
+</html>

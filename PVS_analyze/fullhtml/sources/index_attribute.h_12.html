@@ -1,0 +1,153 @@
+
+<html>
+<head>
+
+  <meta http-equiv="Content-Type" content="text/html; charset=US-ASCII" />
+  <title>index_attribute.h</title>
+
+  <link rel="stylesheet" href="../style.css"/>
+  <script src="../jquery-3.2.1.min.js"></script>
+</head>
+<body>
+
+<pre><code class = "cpp">
+<a name="ln1">/*</a>
+<a name="ln2">Corto</a>
+<a name="ln3"> </a>
+<a name="ln4">Copyright(C) 2017 - Federico Ponchio</a>
+<a name="ln5">ISTI - Italian National Research Council - Visual Computing Lab</a>
+<a name="ln6"> </a>
+<a name="ln7">This program is free software; you can redistribute it and/or modify</a>
+<a name="ln8">it under the terms of the GNU Lesser General Public License as published by</a>
+<a name="ln9">the Free Software Foundation; either version 3 of the License, or</a>
+<a name="ln10">(at your option) any later version.</a>
+<a name="ln11"> </a>
+<a name="ln12">This program is distributed in the hope that it will be useful,</a>
+<a name="ln13">but WITHOUT ANY WARRANTY; without even the implied warranty of</a>
+<a name="ln14">MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  You should have received </a>
+<a name="ln15">a copy of the GNU General Public License along with Corto.</a>
+<a name="ln16">If not, see &lt;http://www.gnu.org/licenses/&gt;.</a>
+<a name="ln17">*/</a>
+<a name="ln18"> </a>
+<a name="ln19">#ifndef CRT_INDEX_ATTRIBUTE_H</a>
+<a name="ln20">#define CRT_INDEX_ATTRIBUTE_H</a>
+<a name="ln21"> </a>
+<a name="ln22">#include &quot;cstream.h&quot;</a>
+<a name="ln23"> </a>
+<a name="ln24">namespace crt {</a>
+<a name="ln25"> </a>
+<a name="ln26">enum Clers { VERTEX = 0, LEFT = 1, RIGHT = 2, END = 3, BOUNDARY = 4, DELAY = 5, SPLIT = 6};</a>
+<a name="ln27"> </a>
+<a name="ln28">struct Quad {</a>
+<a name="ln29">	uint32_t t, a, b, c;</a>
+<a name="ln30">	Quad() {}</a>
+<a name="ln31">	Quad(uint32_t _t, uint32_t v0, uint32_t v1, uint32_t v2): t(_t), a(v0), b(v1), c(v2) {}</a>
+<a name="ln32">};</a>
+<a name="ln33"> </a>
+<a name="ln34">struct Face {</a>
+<a name="ln35">	uint32_t a, b, c;</a>
+<a name="ln36">	Face() {}</a>
+<a name="ln37">	Face(uint32_t v0, uint32_t v1, uint32_t v2): a(v0), b(v1), c(v2) {}</a>
+<a name="ln38">};</a>
+<a name="ln39"> </a>
+<a name="ln40">struct Group {</a>
+<a name="ln41">	uint32_t end; //1+ last face</a>
+<a name="ln42">	std::map&lt;std::string, std::string&gt; properties;</a>
+<a name="ln43"> </a>
+<a name="ln44">	Group() {}</a>
+<a name="ln45">	Group(uint32_t e): end(e) {}</a>
+<a name="ln46">};</a>
+<a name="ln47"> </a>
+<a name="ln48">class IndexAttribute {</a>
+<a name="ln49">public:</a>
+<a name="ln50">	uint32_t *faces32;</a>
+<a name="ln51">	uint16_t *faces16;</a>
+<a name="ln52">	std::vector&lt;uint32_t&gt; faces;</a>
+<a name="ln53">	std::vector&lt;Face&gt; prediction;</a>
+<a name="ln54"> </a>
+<a name="ln55">	std::vector&lt;Group&gt; groups;</a>
+<a name="ln56">	std::vector&lt;uchar&gt; clers;</a>
+<a name="ln57">	BitStream bitstream;</a>
+<a name="ln58">	uint32_t max_front; //max size reached by front.</a>
+<a name="ln59">	uint32_t size;</a>
+<a name="ln60"> </a>
+<a name="ln61">	IndexAttribute(): faces32(nullptr), faces16(nullptr), max_front(0) {}</a>
+<a name="ln62">	void encode(OutStream &amp;stream) {</a>
+<a name="ln63">		stream.write&lt;uint32_t&gt;(max_front);</a>
+<a name="ln64"> </a>
+<a name="ln65">		stream.restart();</a>
+<a name="ln66">		stream.compress((int)clers.size(), clers.data());</a>
+<a name="ln67">		stream.write(bitstream);</a>
+<a name="ln68">		size = (uint32_t)stream.elapsed();</a>
+<a name="ln69">	}</a>
+<a name="ln70"> </a>
+<a name="ln71">	void encodeGroups(OutStream &amp;stream) {</a>
+<a name="ln72">		stream.write&lt;uint32_t&gt;((uint32_t)groups.size());</a>
+<a name="ln73">		for(Group &amp;g: groups) {</a>
+<a name="ln74">			stream.write&lt;uint32_t&gt;(g.end);</a>
+<a name="ln75">			stream.write&lt;uchar&gt;((uchar)g.properties.size());</a>
+<a name="ln76">			for(auto it: g.properties) {</a>
+<a name="ln77">				stream.writeString(it.first.c_str());</a>
+<a name="ln78">				stream.writeString(it.second.c_str());</a>
+<a name="ln79">			}</a>
+<a name="ln80">		}</a>
+<a name="ln81">	}</a>
+<a name="ln82"> </a>
+<a name="ln83">	void decode(InStream &amp;stream) {</a>
+<a name="ln84">		max_front = stream.readUint32();</a>
+<a name="ln85">		stream.decompress(clers);</a>
+<a name="ln86">		stream.read(bitstream);</a>
+<a name="ln87">	}</a>
+<a name="ln88"> </a>
+<a name="ln89">	void decodeGroups(InStream &amp;stream) {</a>
+<a name="ln90">		groups.resize(stream.readUint32());</a>
+<a name="ln91">		for(Group &amp;g: groups) {</a>
+<a name="ln92">			g.end = stream.readUint32();</a>
+<a name="ln93">			uchar size = stream.readUint8();</a>
+<a name="ln94">			for(uint32_t i = 0; i &lt; size; i++) {</a>
+<a name="ln95">				const char *key = stream.readString();</a>
+<a name="ln96">				g.properties[key] = stream.readString();</a>
+<a name="ln97">			}</a>
+<a name="ln98">		}</a>
+<a name="ln99">	}</a>
+<a name="ln100">};</a>
+<a name="ln101"> </a>
+<a name="ln102">} //namespace</a>
+<a name="ln103"> </a>
+<a name="ln104">#endif // CRT_INDEX_ATTRIBUTE_H</a>
+
+</code></pre>
+<div class="balloon" rel="61"><p><span style="font-size:18px">&uarr;</span> <a href="https://www.viva64.com/en/w/v730/" target="_blank">V730</a> Not all members of a class are initialized inside the constructor. Consider inspecting: size.</p></div>
+<div class="balloon" rel="36"><p><span style="font-size:18px">&uarr;</span> <a href="https://www.viva64.com/en/w/v730/" target="_blank">V730</a> Not all members of a class are initialized inside the constructor. Consider inspecting: a, b, c.</p></div>
+<div class="balloon" rel="44"><p><span style="font-size:18px">&uarr;</span> <a href="https://www.viva64.com/en/w/v730/" target="_blank">V730</a> Not all members of a class are initialized inside the constructor. Consider inspecting: end.</p></div>
+<div class="balloon" rel="30"><p><span style="font-size:18px">&uarr;</span> <a href="https://www.viva64.com/en/w/v730/" target="_blank">V730</a> Not all members of a class are initialized inside the constructor. Consider inspecting: t, a, b, c.</p></div>
+
+<link rel="stylesheet" href="highlight.css">
+<script src="highlight.pack.js"></script>
+<script src="highlightjs-line-numbers.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script>hljs.initLineNumbersOnLoad();</script>
+<script>
+  $(document).ready(function() {
+      $('.balloon').each(function () {
+          var bl = $(this);
+          var line = bl.attr('rel');
+          var text = $('a[name="ln'+line+'"]').text();
+
+          var space_count = 0;
+          for(var i = 0; i<text.length; i++){
+              var char = text[i];
+              if((char !== ' ')&&(char !== '\t'))break;
+              if(char === '\t')space_count++;
+              space_count++;
+          }
+
+          bl.css('margin-left', space_count*8);
+          $('a[name="ln'+line+'"]').after(bl);
+      });
+
+      window.location = window.location;
+  });
+</script>
+</body>
+</html>

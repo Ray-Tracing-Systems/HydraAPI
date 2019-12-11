@@ -1,0 +1,213 @@
+
+<html>
+<head>
+
+  <meta http-equiv="Content-Type" content="text/html; charset=US-ASCII" />
+  <title>tunstall.h</title>
+
+  <link rel="stylesheet" href="../style.css"/>
+  <script src="../jquery-3.2.1.min.js"></script>
+</head>
+<body>
+
+<pre><code class = "cpp">
+<a name="ln1">/*</a>
+<a name="ln2">Corto</a>
+<a name="ln3"> </a>
+<a name="ln4">Copyright(C) 2017 - Federico Ponchio</a>
+<a name="ln5">ISTI - Italian National Research Council - Visual Computing Lab</a>
+<a name="ln6"> </a>
+<a name="ln7">This program is free software; you can redistribute it and/or modify</a>
+<a name="ln8">it under the terms of the GNU Lesser General Public License as published by</a>
+<a name="ln9">the Free Software Foundation; either version 3 of the License, or</a>
+<a name="ln10">(at your option) any later version.</a>
+<a name="ln11"> </a>
+<a name="ln12">This program is distributed in the hope that it will be useful,</a>
+<a name="ln13">but WITHOUT ANY WARRANTY; without even the implied warranty of</a>
+<a name="ln14">MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  You should have received </a>
+<a name="ln15">a copy of the GNU General Public License along with Corto.</a>
+<a name="ln16">If not, see &lt;http://www.gnu.org/licenses/&gt;.</a>
+<a name="ln17">*/</a>
+<a name="ln18"> </a>
+<a name="ln19">#ifndef CRT_TUNSTALL_H</a>
+<a name="ln20">#define CRT_TUNSTALL_H</a>
+<a name="ln21"> </a>
+<a name="ln22">#include &lt;vector&gt;</a>
+<a name="ln23"> </a>
+<a name="ln24"> </a>
+<a name="ln25">namespace crt {</a>
+<a name="ln26"> </a>
+<a name="ln27">/* SIMPLEST TUNSTALL encoding:</a>
+<a name="ln28">   1) build dictionary:</a>
+<a name="ln29">	  split root, keep track of highest probability, keep splitting until all words are assigned.</a>
+<a name="ln30">	  the final structure for decompression is 2 tables:</a>
+<a name="ln31">		1) index table block -&gt; start in the second table (length is derived from next word start)</a>
+<a name="ln32">		2) words: all the words one after the other</a>
+<a name="ln33">	  structure for compression is 1 table:</a>
+<a name="ln34">	  256 entries (8bit) mapping</a>
+<a name="ln35">		if(lenght &lt; 8bit) maps beginning of the word to length (6 bit e.g.) and code</a>
+<a name="ln36">		else maps to second 8bit table with same approach. each entry longer than 8 bits gets another table.</a>
+<a name="ln37">	  all tables are just concatenated.</a>
+<a name="ln38">*/</a>
+<a name="ln39"> </a>
+<a name="ln40">class Tunstall {</a>
+<a name="ln41">public:</a>
+<a name="ln42"> </a>
+<a name="ln43">	const int rle_limit = 255;</a>
+<a name="ln44">	//word size 8 means use 8 bit blocks.</a>
+<a name="ln45">	Tunstall(int _wordsize = 8, int _lookup = 2): wordsize(_wordsize), lookup_size(_lookup) {}</a>
+<a name="ln46"> </a>
+<a name="ln47">//	static int compress(Stream &amp;stream, unsigned char *data, int size); //return compressed size</a>
+<a name="ln48">//	static void decompress(Stream &amp;stream, std::vector&lt;unsigned char&gt; &amp;output); //allocate and decompress</a>
+<a name="ln49"> </a>
+<a name="ln50">	//computes symbol probabilities from the stream</a>
+<a name="ln51">	void getProbabilities(unsigned char *data, int size);</a>
+<a name="ln52"> </a>
+<a name="ln53">	//set probabilities explicitly</a>
+<a name="ln54">	void setProbabilities(float *probabilities, int n_symbols);</a>
+<a name="ln55"> </a>
+<a name="ln56">	//create accelerated structures (need probabilities);</a>
+<a name="ln57">	void createDecodingTables();</a>
+<a name="ln58">	void createDecodingTables2();</a>
+<a name="ln59">	void createEncodingTables();</a>
+<a name="ln60"> </a>
+<a name="ln61">	//data 1 symbol 1 char, if using binary input convert them, the output is in bits though.</a>
+<a name="ln62">	//set probabilities and create tables before this.</a>
+<a name="ln63">	//output is padded, careful!</a>
+<a name="ln64">	unsigned char *compress(unsigned char *data, int input_size, int &amp;output_size);</a>
+<a name="ln65"> </a>
+<a name="ln66">	//output_size is the NUMBER of symbols created (and the output is 1 symbol 1 char)</a>
+<a name="ln67">	//we need it because of the padding!</a>
+<a name="ln68">	void decompress(unsigned char *data, int input_size, unsigned char *output, int output_size);</a>
+<a name="ln69">	//we can do without the input size.</a>
+<a name="ln70">	int decompress(unsigned char *data, unsigned char *output, int output_size);</a>
+<a name="ln71"> </a>
+<a name="ln72">	//return entropy of the dictionary</a>
+<a name="ln73">	float entropy();</a>
+<a name="ln74"> </a>
+<a name="ln75">	static uint32_t toUint(int i) {</a>
+<a name="ln76">		i *= 2;</a>
+<a name="ln77">		if(i &lt; 0) i = -i -1;</a>
+<a name="ln78">		return (uint32_t)i;</a>
+<a name="ln79">	}</a>
+<a name="ln80">	static int toInt(uint32_t i) {</a>
+<a name="ln81">		int k = i;</a>
+<a name="ln82">		if(k&amp;0x1)</a>
+<a name="ln83">			k = (-k-1)/2;</a>
+<a name="ln84">		else</a>
+<a name="ln85">			k /= 2;</a>
+<a name="ln86">		return k;</a>
+<a name="ln87">	}</a>
+<a name="ln88"> </a>
+<a name="ln89">	//protected:</a>
+<a name="ln90">	struct Symbol {</a>
+<a name="ln91">		Symbol() {}</a>
+<a name="ln92">		Symbol(unsigned char s, unsigned char p): symbol(s), probability(p) {}</a>
+<a name="ln93">		unsigned char symbol;</a>
+<a name="ln94">		unsigned char probability;</a>
+<a name="ln95">		bool operator&lt;(const Symbol &amp;s) const {</a>
+<a name="ln96">			return probability &gt; s.probability;</a>
+<a name="ln97">			//TODO check if reversgin order is faster</a>
+<a name="ln98">		}</a>
+<a name="ln99">	};</a>
+<a name="ln100"> </a>
+<a name="ln101">	int wordsize;</a>
+<a name="ln102">	int dictionarysize;</a>
+<a name="ln103">	std::vector&lt;Symbol&gt; probabilities; //sorted</a>
+<a name="ln104"> </a>
+<a name="ln105">	//decoding structure</a>
+<a name="ln106">	std::vector&lt;int&gt; index;</a>
+<a name="ln107">	std::vector&lt;int&gt; lengths;</a>
+<a name="ln108">	std::vector&lt;unsigned char&gt; table;</a>
+<a name="ln109"> </a>
+<a name="ln110">	//encoding structure</a>
+<a name="ln111">	int lookup_size;</a>
+<a name="ln112">	std::vector&lt;int&gt; offsets;</a>
+<a name="ln113">	std::vector&lt;unsigned char&gt; remap;  //remaps symbols to probabilities</a>
+<a name="ln114"> </a>
+<a name="ln115">	//user for encoding structure: returns interval in offset table used by word</a>
+<a name="ln116">	void wordCode(unsigned char *w, int length, int &amp;low, int &amp;high) {</a>
+<a name="ln117">		int n_symbols = (int)probabilities.size();</a>
+<a name="ln118"> </a>
+<a name="ln119">		//counting in base n_symbols</a>
+<a name="ln120">		int c = 0;</a>
+<a name="ln121">		for(int i = 0; i &lt; length &amp;&amp; i &lt; lookup_size; i++) {</a>
+<a name="ln122">			c *= n_symbols;</a>
+<a name="ln123">			c += remap[w[i]];</a>
+<a name="ln124">		}</a>
+<a name="ln125">		low = high = c;</a>
+<a name="ln126">		high++;</a>
+<a name="ln127">		for(int i = length; i &lt; lookup_size; i++) {</a>
+<a name="ln128">			low *= n_symbols;</a>
+<a name="ln129">			high *= n_symbols;</a>
+<a name="ln130">		}</a>
+<a name="ln131">	}</a>
+<a name="ln132"> </a>
+<a name="ln133"> </a>
+<a name="ln134"> </a>
+<a name="ln135">	static   int roundUp(int v) {</a>
+<a name="ln136">		v--;</a>
+<a name="ln137">		v |= v &gt;&gt; 1;</a>
+<a name="ln138">		v |= v &gt;&gt; 2;</a>
+<a name="ln139">		v |= v &gt;&gt; 4;</a>
+<a name="ln140">		v |= v &gt;&gt; 8;</a>
+<a name="ln141">		v |= v &gt;&gt; 16;</a>
+<a name="ln142">		v++;</a>
+<a name="ln143">		return v;</a>
+<a name="ln144">	}</a>
+<a name="ln145"> </a>
+<a name="ln146">	static void decompose(std::vector&lt;int&gt; &amp;input, std::vector&lt;unsigned char&gt; &amp;output, int threshold);</a>
+<a name="ln147">	static void recompose(std::vector&lt;unsigned char&gt; &amp;input, std::vector&lt;int&gt; &amp;output, int threshold);</a>
+<a name="ln148"> </a>
+<a name="ln149">};</a>
+<a name="ln150"> </a>
+<a name="ln151"> </a>
+<a name="ln152">//reserve 1 symbol (255) to switch state for very low probability symbols</a>
+<a name="ln153">/*class BiTunstall: public Tunstall {</a>
+<a name="ln154"> public:</a>
+<a name="ln155">  vector&lt;char&gt; outliers; //255 entries. points 1 outlier, 0 inlier</a>
+<a name="ln156">  int special;</a>
+<a name="ln157"> </a>
+<a name="ln158">  void createDecodingTables();</a>
+<a name="ln159">  unsigned char *compress(unsigned char *data, int input_size, int &amp;output_size);</a>
+<a name="ln160">  void decompress(unsigned char *data, int input_size, unsigned char *output, int output_size);</a>
+<a name="ln161">  int decompress(unsigned char *data, unsigned char *output, int output_size);</a>
+<a name="ln162"> </a>
+<a name="ln163">};*/</a>
+<a name="ln164"> </a>
+<a name="ln165">}//namespace</a>
+<a name="ln166">#endif // CRT_TUNSTALL_H</a>
+
+</code></pre>
+<div class="balloon" rel="45"><p><span style="font-size:18px">&uarr;</span> <a href="https://www.viva64.com/en/w/v730/" target="_blank">V730</a> Not all members of a class are initialized inside the constructor. Consider inspecting: dictionarysize.</p></div>
+<div class="balloon" rel="91"><p><span style="font-size:18px">&uarr;</span> <a href="https://www.viva64.com/en/w/v730/" target="_blank">V730</a> Not all members of a class are initialized inside the constructor. Consider inspecting: symbol, probability.</p></div>
+
+<link rel="stylesheet" href="highlight.css">
+<script src="highlight.pack.js"></script>
+<script src="highlightjs-line-numbers.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script>hljs.initLineNumbersOnLoad();</script>
+<script>
+  $(document).ready(function() {
+      $('.balloon').each(function () {
+          var bl = $(this);
+          var line = bl.attr('rel');
+          var text = $('a[name="ln'+line+'"]').text();
+
+          var space_count = 0;
+          for(var i = 0; i<text.length; i++){
+              var char = text[i];
+              if((char !== ' ')&&(char !== '\t'))break;
+              if(char === '\t')space_count++;
+              space_count++;
+          }
+
+          bl.css('margin-left', space_count*8);
+          $('a[name="ln'+line+'"]').after(bl);
+      });
+
+      window.location = window.location;
+  });
+</script>
+</body>
+</html>

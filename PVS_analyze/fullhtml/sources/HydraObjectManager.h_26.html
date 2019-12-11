@@ -1,0 +1,670 @@
+
+<html>
+<head>
+
+  <meta http-equiv="Content-Type" content="text/html; charset=US-ASCII" />
+  <title>HydraObjectManager.h</title>
+
+  <link rel="stylesheet" href="../style.css"/>
+  <script src="../jquery-3.2.1.min.js"></script>
+</head>
+<body>
+
+<pre><code class = "cpp">
+<a name="ln1">#pragma once</a>
+<a name="ln2"> </a>
+<a name="ln3">#include &quot;HydraAPI.h&quot;</a>
+<a name="ln4">#include &quot;HydraInternal.h&quot;</a>
+<a name="ln5">#include &quot;HydraRenderDriverAPI.h&quot;</a>
+<a name="ln6">#include &quot;HR_HDRImage.h&quot;</a>
+<a name="ln7"> </a>
+<a name="ln8">using HydraRender::HDRImage4f;</a>
+<a name="ln9">using HydraRender::LDRImage1i;</a>
+<a name="ln10"> </a>
+<a name="ln11"> </a>
+<a name="ln12">#include &lt;memory&gt;</a>
+<a name="ln13">#include &lt;vector&gt;</a>
+<a name="ln14">#include &lt;string&gt;</a>
+<a name="ln15">#include &lt;sstream&gt;</a>
+<a name="ln16">#include &lt;unordered_set&gt;</a>
+<a name="ln17">#include &lt;unordered_map&gt;</a>
+<a name="ln18"> </a>
+<a name="ln19">/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln20">/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln21"> </a>
+<a name="ln22">pugi::xml_node get_global_trash_node();</a>
+<a name="ln23"> </a>
+<a name="ln24">static const size_t BAD_ID = -1;</a>
+<a name="ln25"> </a>
+<a name="ln26">template&lt;typename IMPL_T&gt;</a>
+<a name="ln27">struct HRObject</a>
+<a name="ln28">{</a>
+<a name="ln29">  HRObject() : name(L&quot;&quot;), id(0), opened(false), openMode(HR_WRITE_DISCARD), inMemory(true), changeId(0), wasChanged(false) {}</a>
+<a name="ln30"> </a>
+<a name="ln31">  //////////////////////////////////////////////////</a>
+<a name="ln32"> </a>
+<a name="ln33">  std::wstring name;       ///&lt; object name that user usually have to specify</a>
+<a name="ln34">  int32_t       id;        ///&lt; object id, unique for each object type; no-overwrite policy is used; deleted objects never became valid again;</a>
+<a name="ln35"> </a>
+<a name="ln36">  HR_OPEN_MODE openMode;   ///&lt; [HR_WRITE_DISCARD, HR_OPEN_EXISTING, HR_OPEN_READ_ONLY]</a>
+<a name="ln37">  bool         opened;     ///&lt; if opened now</a>
+<a name="ln38">  bool         inMemory;   ///&lt; if loaded in CPU memory, or swaped to disk</a>
+<a name="ln39">  bool         wasChanged; ///&lt; was changed but not passed to render driver yet;</a>
+<a name="ln40">  int          changeId;   ///&lt; the identifier of change;</a>
+<a name="ln41"> </a>
+<a name="ln42">  /////////////////////////////////////////////////////////////////////////////////// xml nodes</a>
+<a name="ln43"> </a>
+<a name="ln44">  virtual void update(pugi::xml_node a_newNode) { m_xmlNode = a_newNode; }</a>
+<a name="ln45">  virtual pugi::xml_node xml_node()             { return m_xmlNode; }</a>
+<a name="ln46">  </a>
+<a name="ln47">protected:</a>
+<a name="ln48"> </a>
+<a name="ln49">  pugi::xml_node m_xmlNode;</a>
+<a name="ln50"> </a>
+<a name="ln51">};</a>
+<a name="ln52"> </a>
+<a name="ln53">void clear_node(pugi::xml_node a_xmlNode);</a>
+<a name="ln54">void clear_node_childs(pugi::xml_node a_xmlNode);</a>
+<a name="ln55"> </a>
+<a name="ln56">/**</a>
+<a name="ln57">\brief Mesh object type.</a>
+<a name="ln58"> </a>
+<a name="ln59">*/</a>
+<a name="ln60"> </a>
+<a name="ln61">struct HRMesh : public HRObject&lt;IHRMesh&gt;</a>
+<a name="ln62">{</a>
+<a name="ln63">  HRMesh() : pImpl(nullptr), m_allMeshMatId(-1), m_empty(true)  {}</a>
+<a name="ln64"> </a>
+<a name="ln65">  std::shared_ptr&lt;IHRMesh&gt; pImpl;</a>
+<a name="ln66"> </a>
+<a name="ln67">//protected:</a>
+<a name="ln68"> </a>
+<a name="ln69">  struct InputTriMesh</a>
+<a name="ln70">  {</a>
+<a name="ln71">    InputTriMesh() : m_saveCompressed(false), m_placeToOrigin(false) { }</a>
+<a name="ln72"> </a>
+<a name="ln73">    void clear()</a>
+<a name="ln74">    {</a>
+<a name="ln75">      verticesPos.clear();</a>
+<a name="ln76">      verticesNorm.clear();</a>
+<a name="ln77">      verticesTexCoord.clear();</a>
+<a name="ln78">      verticesTangent.clear();</a>
+<a name="ln79">      triIndices.clear();</a>
+<a name="ln80">      matIndices.clear();</a>
+<a name="ln81">      customArrays.clear();</a>
+<a name="ln82">    }</a>
+<a name="ln83"> </a>
+<a name="ln84">    void freeMem()</a>
+<a name="ln85">    {</a>
+<a name="ln86">      verticesPos      = std::vector&lt;float&gt;();</a>
+<a name="ln87">      verticesNorm     = std::vector&lt;float&gt;();</a>
+<a name="ln88">      verticesTexCoord = std::vector&lt;float&gt;();</a>
+<a name="ln89">      verticesTangent  = std::vector&lt;float&gt;();</a>
+<a name="ln90">      triIndices       = std::vector&lt;uint32_t&gt;();</a>
+<a name="ln91">      matIndices       = std::vector&lt;uint32_t&gt;();</a>
+<a name="ln92">      customArrays.clear();                       /// its a vector of vectors</a>
+<a name="ln93">    }</a>
+<a name="ln94"> </a>
+<a name="ln95">    void reserve(size_t vNum, size_t indNum)</a>
+<a name="ln96">    {</a>
+<a name="ln97">      verticesPos.reserve     (vNum * 4 + 10);</a>
+<a name="ln98">      verticesNorm.reserve    (vNum * 4 + 10);</a>
+<a name="ln99">      verticesTangent.reserve (vNum * 4 + 10);</a>
+<a name="ln100">      verticesTexCoord.reserve(vNum * 2 + 10);</a>
+<a name="ln101">      </a>
+<a name="ln102">      if(triIndices.capacity() &lt; indNum + 10)</a>
+<a name="ln103">        triIndices.reserve(indNum + 10);</a>
+<a name="ln104">      </a>
+<a name="ln105">      if(matIndices.capacity() &lt; indNum / 3 + 10)</a>
+<a name="ln106">        matIndices.reserve(indNum / 3 + 10);</a>
+<a name="ln107">      </a>
+<a name="ln108">      for (auto&amp; arr : customArrays)</a>
+<a name="ln109">      {</a>
+<a name="ln110">        arr.idata.reserve(1*vNum);</a>
+<a name="ln111">        arr.fdata.reserve(4*vNum);</a>
+<a name="ln112">      }</a>
+<a name="ln113">    }</a>
+<a name="ln114">  </a>
+<a name="ln115">    void resize(size_t vNum, size_t indNum)</a>
+<a name="ln116">    {</a>
+<a name="ln117">      verticesPos.resize     (vNum * 4);</a>
+<a name="ln118">      verticesNorm.resize    (vNum * 4);</a>
+<a name="ln119">      verticesTangent.resize (vNum * 4);</a>
+<a name="ln120">      verticesTexCoord.resize(vNum * 2);</a>
+<a name="ln121">      </a>
+<a name="ln122">      triIndices.resize      (indNum);</a>
+<a name="ln123">      matIndices.resize      (indNum / 3);</a>
+<a name="ln124">    </a>
+<a name="ln125">      for (auto&amp; arr : customArrays)</a>
+<a name="ln126">      {</a>
+<a name="ln127">        arr.idata.resize(1*vNum);</a>
+<a name="ln128">        arr.fdata.resize(4*vNum);</a>
+<a name="ln129">      }</a>
+<a name="ln130">    }</a>
+<a name="ln131"> </a>
+<a name="ln132">    std::vector&lt;float&gt;    verticesPos;       ///&lt; float4</a>
+<a name="ln133">    std::vector&lt;float&gt;    verticesNorm;      ///&lt; float4</a>
+<a name="ln134">    std::vector&lt;float&gt;    verticesTexCoord;  ///&lt; float2</a>
+<a name="ln135">    std::vector&lt;float&gt;    verticesTangent;   ///&lt; float4</a>
+<a name="ln136">    std::vector&lt;uint32_t&gt; triIndices;        ///&lt; size of 3*triNum</a>
+<a name="ln137">    std::vector&lt;uint32_t&gt; matIndices;        ///&lt; size of 1*triNum</a>
+<a name="ln138"> </a>
+<a name="ln139">    struct CustArray</a>
+<a name="ln140">    {</a>
+<a name="ln141">      std::vector&lt;int&gt;   idata;</a>
+<a name="ln142">      std::vector&lt;float&gt; fdata;</a>
+<a name="ln143">      std::wstring       name;</a>
+<a name="ln144">      int depth;</a>
+<a name="ln145">      int apply;</a>
+<a name="ln146">    };</a>
+<a name="ln147"> </a>
+<a name="ln148">    std::vector&lt;CustArray&gt; customArrays;</a>
+<a name="ln149">    bool m_saveCompressed;</a>
+<a name="ln150">    bool m_placeToOrigin;</a>
+<a name="ln151">  };</a>
+<a name="ln152"> </a>
+<a name="ln153">  struct InputTriMeshPointers</a>
+<a name="ln154">  {</a>
+<a name="ln155">    InputTriMeshPointers() : pos(nullptr), normals(nullptr), texCoords(nullptr), tangents(nullptr), mindices(nullptr), </a>
+<a name="ln156">                             posStride(4), normStride(4), tangStride(4) {}</a>
+<a name="ln157"> </a>
+<a name="ln158">    void clear()</a>
+<a name="ln159">    {</a>
+<a name="ln160">      pos       = nullptr;</a>
+<a name="ln161">      normals   = nullptr;</a>
+<a name="ln162">      texCoords = nullptr;</a>
+<a name="ln163">      tangents  = nullptr;</a>
+<a name="ln164">      mindices  = nullptr;</a>
+<a name="ln165"> </a>
+<a name="ln166">      customVertPointers.clear();</a>
+<a name="ln167">      customPrimPointers.clear();</a>
+<a name="ln168">    }</a>
+<a name="ln169"> </a>
+<a name="ln170">    const float* pos;</a>
+<a name="ln171">    const float* normals;</a>
+<a name="ln172">    const float* texCoords;</a>
+<a name="ln173">    const float* tangents;</a>
+<a name="ln174">    int posStride;</a>
+<a name="ln175">    int normStride;</a>
+<a name="ln176">    int tangStride;</a>
+<a name="ln177"> </a>
+<a name="ln178">    enum POINTER_TYPES {CUST_POINTER_FLOAT = 1, CUST_POINTER_INT = 2};</a>
+<a name="ln179"> </a>
+<a name="ln180">    struct CustPointer</a>
+<a name="ln181">    {</a>
+<a name="ln182">      union </a>
+<a name="ln183">      {</a>
+<a name="ln184">        const int*   idata;</a>
+<a name="ln185">        const float* fdata;</a>
+<a name="ln186">      };</a>
+<a name="ln187">      int           stride;</a>
+<a name="ln188">      POINTER_TYPES ptype;</a>
+<a name="ln189">      std::wstring  name;</a>
+<a name="ln190">    };</a>
+<a name="ln191"> </a>
+<a name="ln192">    std::vector&lt;CustPointer&gt; customVertPointers;</a>
+<a name="ln193">    std::vector&lt;CustPointer&gt; customPrimPointers;</a>
+<a name="ln194"> </a>
+<a name="ln195">    const int* mindices;</a>
+<a name="ln196">  };</a>
+<a name="ln197"> </a>
+<a name="ln198">  InputTriMesh         m_input;</a>
+<a name="ln199">  InputTriMeshPointers m_inputPointers;</a>
+<a name="ln200">  int                  m_allMeshMatId;</a>
+<a name="ln201">  bool                 m_empty;</a>
+<a name="ln202"> </a>
+<a name="ln203">  struct MeshGetInfoGlobalData</a>
+<a name="ln204">  {</a>
+<a name="ln205">    std::vector&lt;const wchar_t*&gt; mptrs;</a>
+<a name="ln206">    std::wstring                mlist;</a>
+<a name="ln207">    std::vector&lt;HRBatchInfo&gt;    batches;</a>
+<a name="ln208">  } mig_data;</a>
+<a name="ln209">};</a>
+<a name="ln210"> </a>
+<a name="ln211">struct HRLight : public HRObject&lt;IHRLight&gt;</a>
+<a name="ln212">{</a>
+<a name="ln213">  HRLight() = default;</a>
+<a name="ln214">};</a>
+<a name="ln215"> </a>
+<a name="ln216">struct HRMaterial : public HRObject&lt;IHRMat&gt;</a>
+<a name="ln217">{</a>
+<a name="ln218">  HRMaterial() = default;</a>
+<a name="ln219">  std::shared_ptr&lt;IHRMat&gt; pImpl;</a>
+<a name="ln220">};</a>
+<a name="ln221"> </a>
+<a name="ln222">struct HRCamera : public HRObject&lt;IHRCam&gt;</a>
+<a name="ln223">{</a>
+<a name="ln224">  HRCamera() = default;</a>
+<a name="ln225">  std::shared_ptr&lt;IHRCam&gt; pImpl;</a>
+<a name="ln226"> </a>
+<a name="ln227">};</a>
+<a name="ln228"> </a>
+<a name="ln229">/**</a>
+<a name="ln230">\brief Nodes are render textures, pretty much like any other nodes used in 3D modeling software.</a>
+<a name="ln231"> </a>
+<a name="ln232">A common 3D modeling software, like 3ds Max, Blender and especially Houdini uses concept called Nodes.</a>
+<a name="ln233"> </a>
+<a name="ln234">Nodes are fixed function or programmable units, like a functions - take some from input and put some other to output.</a>
+<a name="ln235">Nodes usually can be bind to some material slots (or light slots). Users will build a trees from nodes to do some complex stuff.</a>
+<a name="ln236"> </a>
+<a name="ln237">The simplest node is a Bitmap, created with hrTexture2D. Bitmaps are simple 2D images. Just a 2D array of values.</a>
+<a name="ln238">Their input is a texture coordinates, output - texture color. Texture can be bound to material slot.</a>
+<a name="ln239"> </a>
+<a name="ln240">The more complex example is 'Falloff' node - a blend for 2 textures based of angle between view vector and surface normal.</a>
+<a name="ln241">Falloff is a fixed function node with predefined parameters.</a>
+<a name="ln242"> </a>
+<a name="ln243">Any parameters (for fixed function or programmable nodes) can be set via sequence of HRTextureNodeOpen(node), hrParameter(node,...), HRTextureNodeClose(node);</a>
+<a name="ln244"> </a>
+<a name="ln245">*/</a>
+<a name="ln246">struct HRTextureNode : public HRObject&lt;IHRTextureNode&gt;</a>
+<a name="ln247">{</a>
+<a name="ln248">  HRTextureNode() : pImpl(nullptr), m_loadedFromFile(false), customData(nullptr), customDataSize(0),</a>
+<a name="ln249">                    ldrCallback(nullptr), hdrCallback(nullptr), displaceCallback(nullptr) {}</a>
+<a name="ln250"> </a>
+<a name="ln251">  ~HRTextureNode() {free(customData);}</a>
+<a name="ln252"> </a>
+<a name="ln253">  HRTextureNode(const HRTextureNode&amp; other) : HRObject(other), m_loadedFromFile(other.m_loadedFromFile),</a>
+<a name="ln254">                                              ldrCallback(other.ldrCallback), hdrCallback(other.hdrCallback),</a>
+<a name="ln255">                                              displaceCallback(other.displaceCallback), customDataSize(other.customDataSize),</a>
+<a name="ln256">                                              pImpl(other.pImpl)</a>
+<a name="ln257">  {</a>
+<a name="ln258">    if(customDataSize == 0)</a>
+<a name="ln259">      customData = nullptr;</a>
+<a name="ln260">    else</a>
+<a name="ln261">    {</a>
+<a name="ln262">      customData = malloc(customDataSize);</a>
+<a name="ln263">      if(other.customData != nullptr)</a>
+<a name="ln264">        memcpy(customData, other.customData, customDataSize);</a>
+<a name="ln265">    }</a>
+<a name="ln266">  }</a>
+<a name="ln267"> </a>
+<a name="ln268">  std::shared_ptr&lt;IHRTextureNode&gt; pImpl;</a>
+<a name="ln269"> </a>
+<a name="ln270">  bool m_loadedFromFile;</a>
+<a name="ln271"> </a>
+<a name="ln272">  void *customData;</a>
+<a name="ln273">  uint32_t customDataSize;</a>
+<a name="ln274"> </a>
+<a name="ln275">  HR_TEXTURE2D_PROC_LDR_CALLBACK ldrCallback;</a>
+<a name="ln276">  HR_TEXTURE2D_PROC_HDR_CALLBACK hdrCallback;</a>
+<a name="ln277">  HRExtensions::HR_TEXTURE_DISPLACEMENT_CALLBACK displaceCallback;</a>
+<a name="ln278">};</a>
+<a name="ln279"> </a>
+<a name="ln280">/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln281">/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln282"> </a>
+<a name="ln283">static inline std::unordered_set&lt;int32_t&gt; _intersect_them(const std::unordered_set&lt;int32_t&gt;&amp; set1, const std::unordered_set&lt;int32_t&gt;&amp; set2)</a>
+<a name="ln284">{</a>
+<a name="ln285">  std::unordered_set&lt;int32_t&gt; res;</a>
+<a name="ln286">  for(int32_t elemA : set1)</a>
+<a name="ln287">  {</a>
+<a name="ln288">    if(set2.find(elemA) != set2.end())</a>
+<a name="ln289">      res.insert(elemA);</a>
+<a name="ln290">  }</a>
+<a name="ln291">  return res;</a>
+<a name="ln292">}</a>
+<a name="ln293"> </a>
+<a name="ln294">static inline std::unordered_set&lt;int32_t&gt; _union_them(const std::unordered_set&lt;int32_t&gt; &amp;in1, const std::unordered_set&lt;int32_t&gt; &amp;in2)</a>
+<a name="ln295">{</a>
+<a name="ln296">  std::unordered_set&lt;int32_t&gt; out = in1;</a>
+<a name="ln297">  out.insert(in2.begin(), in2.end());</a>
+<a name="ln298">  return out;</a>
+<a name="ln299">}</a>
+<a name="ln300"> </a>
+<a name="ln301">struct ChangeList</a>
+<a name="ln302">{</a>
+<a name="ln303">  ChangeList() {}</a>
+<a name="ln304">  ChangeList(const ChangeList&amp; a_list) : drawSeq(a_list.drawSeq),</a>
+<a name="ln305">                                   meshUsed(a_list.meshUsed), matUsed(a_list.matUsed),</a>
+<a name="ln306">                                   lightUsed(a_list.lightUsed), texturesUsed(a_list.texturesUsed) { }</a>
+<a name="ln307"> </a>
+<a name="ln308">  ChangeList(ChangeList&amp;&amp; a_list) : drawSeq(std::move(a_list.drawSeq)),</a>
+<a name="ln309">                                    meshUsed(std::move(a_list.meshUsed)), matUsed(std::move(a_list.matUsed)),</a>
+<a name="ln310">                                    lightUsed(std::move(a_list.lightUsed)), texturesUsed(std::move(a_list.texturesUsed)) { }</a>
+<a name="ln311"> </a>
+<a name="ln312">  ChangeList&amp; operator=(ChangeList&amp; a_list)</a>
+<a name="ln313">  {</a>
+<a name="ln314">    meshUsed         = a_list.meshUsed;</a>
+<a name="ln315">    matUsed          = a_list.matUsed;</a>
+<a name="ln316">    lightUsed        = a_list.lightUsed;</a>
+<a name="ln317">    texturesUsed     = a_list.texturesUsed;</a>
+<a name="ln318">    drawSeq          = a_list.drawSeq;</a>
+<a name="ln319">    return *this;</a>
+<a name="ln320">  }</a>
+<a name="ln321"> </a>
+<a name="ln322">  ChangeList&amp; operator=(ChangeList&amp;&amp; a_list)</a>
+<a name="ln323">  {</a>
+<a name="ln324">    meshUsed         = std::move(a_list.meshUsed);</a>
+<a name="ln325">    matUsed          = std::move(a_list.matUsed);</a>
+<a name="ln326">    lightUsed        = std::move(a_list.lightUsed);</a>
+<a name="ln327">    texturesUsed     = std::move(a_list.texturesUsed);</a>
+<a name="ln328">    drawSeq          = std::move(a_list.drawSeq);</a>
+<a name="ln329">    return *this;</a>
+<a name="ln330">  }</a>
+<a name="ln331"> </a>
+<a name="ln332">  std::unordered_set&lt;int32_t&gt; meshUsed;</a>
+<a name="ln333">  std::unordered_set&lt;int32_t&gt; matUsed;</a>
+<a name="ln334">  std::unordered_set&lt;int32_t&gt; lightUsed;</a>
+<a name="ln335">  std::unordered_set&lt;int32_t&gt; texturesUsed;</a>
+<a name="ln336"> </a>
+<a name="ln337">  struct InstancesInfo</a>
+<a name="ln338">  {</a>
+<a name="ln339">    std::vector&lt;float&gt;    matrices;</a>
+<a name="ln340">    std::vector&lt;int32_t&gt;  linstid;</a>
+<a name="ln341">    std::vector&lt;int32_t&gt;  remapid;</a>
+<a name="ln342">    std::vector&lt;int32_t&gt;  instIdReal;</a>
+<a name="ln343">  };</a>
+<a name="ln344"> </a>
+<a name="ln345">  std::unordered_map&lt;int32_t, InstancesInfo&gt; drawSeq;</a>
+<a name="ln346"> </a>
+<a name="ln347">  void clear()</a>
+<a name="ln348">  {</a>
+<a name="ln349">    meshUsed.clear();</a>
+<a name="ln350">    matUsed.clear();</a>
+<a name="ln351">    lightUsed.clear();</a>
+<a name="ln352">    texturesUsed.clear();</a>
+<a name="ln353">    drawSeq.clear();</a>
+<a name="ln354">  }</a>
+<a name="ln355"> </a>
+<a name="ln356">  void reserve(size_t a_n)</a>
+<a name="ln357">  {</a>
+<a name="ln358">    texturesUsed.reserve(a_n);</a>
+<a name="ln359">    matUsed.reserve(a_n*4);</a>
+<a name="ln360">    meshUsed.reserve(a_n*4);</a>
+<a name="ln361">    lightUsed.reserve(a_n/4);</a>
+<a name="ln362">    drawSeq.reserve(a_n*4);</a>
+<a name="ln363">  }</a>
+<a name="ln364">  </a>
+<a name="ln365">  ChangeList intersect_with(const ChangeList&amp; a_rhs)</a>
+<a name="ln366">  {</a>
+<a name="ln367">    ChangeList res;</a>
+<a name="ln368">    res.meshUsed     = _intersect_them(meshUsed,     a_rhs.meshUsed);</a>
+<a name="ln369">    res.matUsed      = _intersect_them(matUsed,      a_rhs.matUsed);</a>
+<a name="ln370">    res.lightUsed    = _intersect_them(lightUsed,    a_rhs.lightUsed);</a>
+<a name="ln371">    res.texturesUsed = _intersect_them(texturesUsed, a_rhs.texturesUsed);</a>
+<a name="ln372">    return res;</a>
+<a name="ln373">  }</a>
+<a name="ln374">  </a>
+<a name="ln375">  ChangeList union_with(const ChangeList&amp; a_rhs)</a>
+<a name="ln376">  {</a>
+<a name="ln377">    ChangeList res;</a>
+<a name="ln378">    res.meshUsed     = _union_them(meshUsed,     a_rhs.meshUsed);</a>
+<a name="ln379">    res.matUsed      = _union_them(matUsed,      a_rhs.matUsed);</a>
+<a name="ln380">    res.lightUsed    = _union_them(lightUsed,    a_rhs.lightUsed);</a>
+<a name="ln381">    res.texturesUsed = _union_them(texturesUsed, a_rhs.texturesUsed);</a>
+<a name="ln382">    res.drawSeq      = drawSeq;</a>
+<a name="ln383">    return res;</a>
+<a name="ln384">  }</a>
+<a name="ln385">  </a>
+<a name="ln386">  </a>
+<a name="ln387">};</a>
+<a name="ln388"> </a>
+<a name="ln389">/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln390">/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln391"> </a>
+<a name="ln392">struct HRSceneData : public HRObject&lt;IHRSceneData&gt;</a>
+<a name="ln393">{</a>
+<a name="ln394"> </a>
+<a name="ln395">  static const int TEXTURES_RESERVE = 1000;</a>
+<a name="ln396">  static const int MATERIAL_RESERVE = 1000;</a>
+<a name="ln397">  static const int LIGHTS_RESERVE   = 1000;</a>
+<a name="ln398">  static const int CAMERAS_RESERVE  = 100;</a>
+<a name="ln399">  static const int MESHES_RESERVE   = 10000;</a>
+<a name="ln400"> </a>
+<a name="ln401">  HRSceneData() : pImpl(nullptr), m_commitId(0) {}</a>
+<a name="ln402"> </a>
+<a name="ln403">  std::shared_ptr&lt;IHRSceneData&gt; pImpl;</a>
+<a name="ln404"> </a>
+<a name="ln405">  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// </a>
+<a name="ln406">  std::vector&lt;HRMesh&gt;        meshes;</a>
+<a name="ln407">  std::vector&lt;HRLight&gt;       lights;</a>
+<a name="ln408">  std::vector&lt;HRMaterial&gt;    materials;</a>
+<a name="ln409">  std::vector&lt;HRCamera&gt;      cameras;</a>
+<a name="ln410">  std::vector&lt;HRTextureNode&gt; textures;</a>
+<a name="ln411">  VirtualBuffer              m_vbCache;</a>
+<a name="ln412"> </a>
+<a name="ln413">  pugi::xml_document         m_xmlDoc;</a>
+<a name="ln414">  pugi::xml_node             m_texturesLib;</a>
+<a name="ln415">  pugi::xml_node             m_materialsLib;</a>
+<a name="ln416">  pugi::xml_node             m_lightsLib;</a>
+<a name="ln417">  pugi::xml_node             m_cameraLib;</a>
+<a name="ln418">  pugi::xml_node             m_geometryLib;</a>
+<a name="ln419">  pugi::xml_node             m_sceneNode;</a>
+<a name="ln420">  pugi::xml_node             m_settingsNode;</a>
+<a name="ln421"> </a>
+<a name="ln422">  std::unordered_map&lt;std::wstring, int32_t&gt;      m_textureCache;</a>
+<a name="ln423">  std::unordered_map&lt;std::wstring, std::wstring&gt; m_iesCache;</a>
+<a name="ln424"> </a>
+<a name="ln425">  // dependency data</a>
+<a name="ln426">  //</a>
+<a name="ln427">  std::unordered_set&lt;int32_t&gt;                    m_shadowCatchers;</a>
+<a name="ln428"> </a>
+<a name="ln429">  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// </a>
+<a name="ln430">  </a>
+<a name="ln431">  void init(bool a_emptyvb, HRSystemMutex* a_pVBSysMutexLock, size_t a_size);</a>
+<a name="ln432">  void init_existing(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock, size_t a_size);</a>
+<a name="ln433">  void clear();</a>
+<a name="ln434"> </a>
+<a name="ln435">  int32_t m_commitId;</a>
+<a name="ln436">  std::wstring m_path;</a>
+<a name="ln437">  std::wstring m_pathState;</a>
+<a name="ln438">  std::wstring m_fileState;</a>
+<a name="ln439"> </a>
+<a name="ln440">  ChangeList m_changeList;</a>
+<a name="ln441"> </a>
+<a name="ln442">protected:</a>
+<a name="ln443">  void init_virtual_buffer(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock, size_t a_size);</a>
+<a name="ln444">};</a>
+<a name="ln445"> </a>
+<a name="ln446">/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln447">/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln448">/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln449"> </a>
+<a name="ln450">struct HRSceneInst : public HRObject&lt;IHRSceneInst&gt;</a>
+<a name="ln451">{</a>
+<a name="ln452">  HRSceneInst() : pImpl(nullptr), drawBegin(0), drawBeginLight(0), driverDirtyFlag(true), lightGroupCounter(0), instancedScenesCounter(0) {}</a>
+<a name="ln453"> </a>
+<a name="ln454">  void update(pugi::xml_node a_newNode)</a>
+<a name="ln455">  {</a>
+<a name="ln456">    m_xmlNode = a_newNode;</a>
+<a name="ln457">  }</a>
+<a name="ln458"> </a>
+<a name="ln459">  void clear()</a>
+<a name="ln460">  {</a>
+<a name="ln461">    drawList.clear();</a>
+<a name="ln462">    drawListLights.clear();</a>
+<a name="ln463">    pImpl = nullptr;</a>
+<a name="ln464"> </a>
+<a name="ln465">    drawBeginLight = 0;</a>
+<a name="ln466">    drawBegin      = 0;</a>
+<a name="ln467">    driverDirtyFlag = true;</a>
+<a name="ln468">    lightGroupCounter = 0;</a>
+<a name="ln469">    instancedScenesCounter = 0;</a>
+<a name="ln470">    m_bbox = BBox();</a>
+<a name="ln471">  }</a>
+<a name="ln472"> </a>
+<a name="ln473">  std::shared_ptr&lt;IHRSceneInst&gt; pImpl;</a>
+<a name="ln474"> </a>
+<a name="ln475">  pugi::xml_node append_instances_back(pugi::xml_node a_node);</a>
+<a name="ln476"> </a>
+<a name="ln477">  struct Instance</a>
+<a name="ln478">  {</a>
+<a name="ln479">    Instance() : lightInstId(-1), lightId(-1), meshId(-1), remapListId(-1), lightGroupInstId(-1), scene_id(-1),</a>
+<a name="ln480">                 scene_sid(0)</a>
+<a name="ln481">    {</a>
+<a name="ln482">      m[0] = 1; m[1] = 0; m[2] = 0; m[3] = 0;</a>
+<a name="ln483">      m[4] = 0; m[5] = 1; m[6] = 0; m[7] = 0;</a>
+<a name="ln484">      m[8] = 0; m[9] = 0; m[10]= 1; m[11]= 0;</a>
+<a name="ln485">      m[12]= 0; m[13]= 0; m[14]= 0; m[15]= 1;</a>
+<a name="ln486">    }</a>
+<a name="ln487"> </a>
+<a name="ln488">    float    m[16];</a>
+<a name="ln489">    int32_t  lightInstId;</a>
+<a name="ln490">    int32_t  lightId;</a>
+<a name="ln491">    int32_t  meshId;</a>
+<a name="ln492">    int32_t  remapListId;</a>
+<a name="ln493">    int32_t  lightGroupInstId;</a>
+<a name="ln494">    int32_t  scene_id;</a>
+<a name="ln495">    int32_t  scene_sid;</a>
+<a name="ln496">    pugi::xml_node node;</a>
+<a name="ln497">  };</a>
+<a name="ln498"> </a>
+<a name="ln499">  std::vector&lt;Instance&gt; drawList;</a>
+<a name="ln500">  size_t                drawBegin;</a>
+<a name="ln501"> </a>
+<a name="ln502">  std::vector&lt;Instance&gt;     drawListLights;</a>
+<a name="ln503">  std::vector&lt;std::wstring&gt; drawLightsCustom;</a>
+<a name="ln504">  size_t                    drawBeginLight;</a>
+<a name="ln505"> </a>
+<a name="ln506">  std::vector&lt; std::vector&lt;int32_t&gt; &gt;   m_remapList;</a>
+<a name="ln507">  std::unordered_map&lt;uint64_t, int32_t&gt; m_remapCache;</a>
+<a name="ln508"> </a>
+<a name="ln509">  BBox m_bbox;</a>
+<a name="ln510"> </a>
+<a name="ln511">  bool driverDirtyFlag;  // if true, driver need to Update this scene.</a>
+<a name="ln512">  int32_t lightGroupCounter;</a>
+<a name="ln513">  int32_t instancedScenesCounter;</a>
+<a name="ln514">};</a>
+<a name="ln515"> </a>
+<a name="ln516">struct HRRender : public HRObject&lt;IHRRender&gt;</a>
+<a name="ln517">{</a>
+<a name="ln518">  HRRender() : m_pDriver(nullptr), maxRaysPerPixel(0) {}</a>
+<a name="ln519"> </a>
+<a name="ln520">  std::shared_ptr&lt;IHRRenderDriver&gt; m_pDriver;</a>
+<a name="ln521"> </a>
+<a name="ln522">  int maxRaysPerPixel;</a>
+<a name="ln523"> </a>
+<a name="ln524">  void clear()</a>
+<a name="ln525">  {</a>
+<a name="ln526">    if (m_pDriver != nullptr)</a>
+<a name="ln527">      m_pDriver-&gt;ClearAll();</a>
+<a name="ln528">    m_pDriver = nullptr;</a>
+<a name="ln529">    maxRaysPerPixel = 0;</a>
+<a name="ln530"> </a>
+<a name="ln531">    m_updated.clear();</a>
+<a name="ln532">    m_updated.reserve(1024);</a>
+<a name="ln533">  }</a>
+<a name="ln534"> </a>
+<a name="ln535">  ChangeList m_updated;</a>
+<a name="ln536">};</a>
+<a name="ln537"> </a>
+<a name="ln538"> </a>
+<a name="ln539">/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln540">/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln541">/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln542">/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln543"> </a>
+<a name="ln544">#define TEMP_BUFFER_MAX_SIZE_DONT_FREE 104857600</a>
+<a name="ln545"> </a>
+<a name="ln546">struct HRObjectManager</a>
+<a name="ln547">{</a>
+<a name="ln548">  HRObjectManager() : m_pFactory(nullptr), m_pDriver(nullptr), m_pImgTool(nullptr), m_currSceneId(0), m_currRenderId(0), m_currCamId(0), m_pVBSysMutex(nullptr),</a>
+<a name="ln549">                      m_copyTexFilesToLocalStorage(false), m_useLocalPath(true), m_attachMode(false), m_sortTriIndices(false), m_computeBBoxes(false) {}</a>
+<a name="ln550"> </a>
+<a name="ln551">  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// </a>
+<a name="ln552"> </a>
+<a name="ln553">  HRSceneData              scnData; /// In our first impl sceneData can be only one and it is directly related to HRObjectManager</a>
+<a name="ln554">  std::vector&lt;HRSceneInst&gt; scnInst;</a>
+<a name="ln555">  std::vector&lt;HRRender&gt;    renderSettings;</a>
+<a name="ln556">  int32_t m_currSceneId;</a>
+<a name="ln557">  int32_t m_currRenderId;</a>
+<a name="ln558">  int32_t m_currCamId;</a>
+<a name="ln559">  </a>
+<a name="ln560">  HRSystemMutex*           m_pVBSysMutex;</a>
+<a name="ln561">  HRInitInfo               m_lastInitInfo;</a>
+<a name="ln562">  </a>
+<a name="ln563">  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// </a>
+<a name="ln564"> </a>
+<a name="ln565">  void init(HRInitInfo a_initInfo);</a>
+<a name="ln566">  void destroy();</a>
+<a name="ln567"> </a>
+<a name="ln568">  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// </a>
+<a name="ln569"> </a>
+<a name="ln570">  HRMesh*        PtrById(HRMeshRef a_ref);</a>
+<a name="ln571">  HRLight*       PtrById(HRLightRef a_ref);</a>
+<a name="ln572">  HRMaterial*    PtrById(HRMaterialRef a_ref);</a>
+<a name="ln573">  HRCamera*      PtrById(HRCameraRef a_ref);</a>
+<a name="ln574">  HRTextureNode* PtrById(HRTextureNodeRef a_ref);</a>
+<a name="ln575">  HRSceneInst*   PtrById(HRSceneInstRef a_ref);</a>
+<a name="ln576">  HRRender*      PtrById(HRRenderRef a_ref);</a>
+<a name="ln577"> </a>
+<a name="ln578">  const std::wstring GetLoc(pugi::xml_node a_node) const;</a>
+<a name="ln579">  void SetLoc(pugi::xml_node a_node, const std::wstring&amp; a_loc);</a>
+<a name="ln580"> </a>
+<a name="ln581">  std::vector&lt;int&gt; m_tempBuffer;</a>
+<a name="ln582">  std::wstring     m_tempPathToChangeFile;</a>
+<a name="ln583">  std::vector&lt;int&gt; EmptyBuffer() { return std::vector&lt;int&gt;(); }</a>
+<a name="ln584"> </a>
+<a name="ln585">  IHydraFactory* m_pFactory; // actual Factory</a>
+<a name="ln586"> </a>
+<a name="ln587">  std::shared_ptr&lt;IHRRenderDriver&gt;     m_pDriver;</a>
+<a name="ln588">  std::unordered_set&lt;IHRRenderDriver*&gt; driverAllocated;</a>
+<a name="ln589">  std::shared_ptr&lt;IHRImageTool&gt;        m_pImgTool;</a>
+<a name="ln590"> </a>
+<a name="ln591">  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// </a>
+<a name="ln592"> </a>
+<a name="ln593">  inline pugi::xml_node textures_lib_append_child()  { return scnData.m_texturesLib.append_child(L&quot;texture&quot;); }</a>
+<a name="ln594">  inline pugi::xml_node materials_lib_append_child() { return scnData.m_materialsLib.append_child(L&quot;material&quot;); }</a>
+<a name="ln595">  inline pugi::xml_node lights_lib_append_child()    { return scnData.m_lightsLib.append_child(L&quot;light&quot;); }</a>
+<a name="ln596">  inline pugi::xml_node camera_lib_append_child()    { return scnData.m_cameraLib.append_child(L&quot;camera&quot;); }</a>
+<a name="ln597"> </a>
+<a name="ln598">  inline pugi::xml_node geom_lib_append_child()      { return scnData.m_geometryLib.append_child(L&quot;mesh&quot;); }</a>
+<a name="ln599">  inline pugi::xml_node scenes_node_append_child()   { return scnData.m_sceneNode.append_child(L&quot;scene&quot;); }</a>
+<a name="ln600">  inline pugi::xml_node settings_lib_append_child()  { return scnData.m_settingsNode.append_child(L&quot;render_settings&quot;); }</a>
+<a name="ln601"> </a>
+<a name="ln602">  //inline pugi::xml_node trash_node()                 { return scnData.m_trashNode; }</a>
+<a name="ln603"> </a>
+<a name="ln604">  void BadMaterialId(int32_t a_id) { if (m_badMaterialId.size() &lt; 10) m_badMaterialId.push_back(a_id); }</a>
+<a name="ln605">  std::vector&lt;int32_t&gt; m_badMaterialId;</a>
+<a name="ln606"> </a>
+<a name="ln607">  bool m_copyTexFilesToLocalStorage;</a>
+<a name="ln608">  bool m_useLocalPath;</a>
+<a name="ln609">  bool m_sortTriIndices;</a>
+<a name="ln610">  bool m_attachMode;</a>
+<a name="ln611">  bool m_computeBBoxes;</a>
+<a name="ln612">};</a>
+<a name="ln613"> </a>
+<a name="ln614"> </a>
+<a name="ln615"> </a>
+<a name="ln616">std::wstring ToWString(uint64_t i);</a>
+<a name="ln617">std::wstring ToWString(int64_t i);</a>
+<a name="ln618">std::wstring ToWString(int i);</a>
+<a name="ln619">std::wstring ToWString(float i);</a>
+<a name="ln620">std::wstring ToWString(unsigned int i);</a>
+<a name="ln621"> </a>
+<a name="ln622">void ComputeVertexTangents(HRMesh::InputTriMesh&amp; mesh, int indexNum);</a>
+<a name="ln623">void ComputeVertexNormals(HRMesh::InputTriMesh&amp; mesh, const int indexNum, bool useFaceNormals);</a>
+
+</code></pre>
+<div class="balloon" rel="264"><p><span style="font-size:18px">&uarr;</span> <a href="https://www.viva64.com/en/w/v575/" target="_blank">V575</a> The potential null pointer is passed into 'memcpy' function. Inspect the first argument. Check lines: 264, 262.</p></div>
+<div class="balloon" rel="246"><p><span style="font-size:18px">&uarr;</span> <a href="https://www.viva64.com/en/w/v690/" target="_blank">V690</a> The 'HRTextureNode' class implements a copy constructor, but lacks the '=' operator. It is dangerous to use such a class.</p></div>
+
+<link rel="stylesheet" href="highlight.css">
+<script src="highlight.pack.js"></script>
+<script src="highlightjs-line-numbers.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script>hljs.initLineNumbersOnLoad();</script>
+<script>
+  $(document).ready(function() {
+      $('.balloon').each(function () {
+          var bl = $(this);
+          var line = bl.attr('rel');
+          var text = $('a[name="ln'+line+'"]').text();
+
+          var space_count = 0;
+          for(var i = 0; i<text.length; i++){
+              var char = text[i];
+              if((char !== ' ')&&(char !== '\t'))break;
+              if(char === '\t')space_count++;
+              space_count++;
+          }
+
+          bl.css('margin-left', space_count*8);
+          $('a[name="ln'+line+'"]').after(bl);
+      });
+
+      window.location = window.location;
+  });
+</script>
+</body>
+</html>

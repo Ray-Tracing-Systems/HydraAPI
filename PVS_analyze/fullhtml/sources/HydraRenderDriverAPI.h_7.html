@@ -1,0 +1,522 @@
+
+<html>
+<head>
+
+  <meta http-equiv="Content-Type" content="text/html; charset=US-ASCII" />
+  <title>HydraRenderDriverAPI.h</title>
+
+  <link rel="stylesheet" href="../style.css"/>
+  <script src="../jquery-3.2.1.min.js"></script>
+</head>
+<body>
+
+<pre><code class = "cpp">
+<a name="ln1">#pragma once</a>
+<a name="ln2"> </a>
+<a name="ln3">/**</a>
+<a name="ln4">\file</a>
+<a name="ln5">\brief Render Driver abstract interface</a>
+<a name="ln6"> </a>
+<a name="ln7">*/</a>
+<a name="ln8"> </a>
+<a name="ln9">#include &lt;cstdint&gt;</a>
+<a name="ln10">#include &lt;memory&gt;</a>
+<a name="ln11">#include &lt;unordered_set&gt;</a>
+<a name="ln12">#include &lt;unordered_map&gt;</a>
+<a name="ln13">#include &lt;iostream&gt;</a>
+<a name="ln14"> </a>
+<a name="ln15">#include &quot;pugixml.hpp&quot;</a>
+<a name="ln16">#include &quot;HydraAPI.h&quot;</a>
+<a name="ln17"> </a>
+<a name="ln18">#include &quot;HR_HDRImage.h&quot;</a>
+<a name="ln19">#include &quot;HydraLegacyUtils.h&quot;</a>
+<a name="ln20"> </a>
+<a name="ln21">///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln22">///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln23"> </a>
+<a name="ln24">void HrError(std::wstring a_str);</a>
+<a name="ln25">void _HrPrint(HR_SEVERITY_LEVEL a_level, const wchar_t* a_str);</a>
+<a name="ln26"> </a>
+<a name="ln27">template &lt;typename HEAD&gt;</a>
+<a name="ln28">void _HrPrint(std::wstringstream&amp; out, HEAD head)</a>
+<a name="ln29">{</a>
+<a name="ln30">  out &lt;&lt; head &lt;&lt; std::endl;</a>
+<a name="ln31">}</a>
+<a name="ln32"> </a>
+<a name="ln33">template &lt;typename HEAD, typename... TAIL&gt;</a>
+<a name="ln34">void _HrPrint(std::wstringstream&amp; out, HEAD head, TAIL... tail)</a>
+<a name="ln35">{</a>
+<a name="ln36">  out &lt;&lt; head;</a>
+<a name="ln37">  _HrPrint(out, tail...);</a>
+<a name="ln38">}</a>
+<a name="ln39"> </a>
+<a name="ln40">template &lt;typename ... Args&gt;</a>
+<a name="ln41">static void HrPrint(HR_SEVERITY_LEVEL a_level, Args ... a_args)</a>
+<a name="ln42">{</a>
+<a name="ln43">  std::wstringstream out;</a>
+<a name="ln44">  _HrPrint(out, a_args...);</a>
+<a name="ln45">  </a>
+<a name="ln46">  std::wstring strOut = out.str();</a>
+<a name="ln47">  _HrPrint(a_level, strOut.c_str());</a>
+<a name="ln48">}</a>
+<a name="ln49"> </a>
+<a name="ln50">HR_INFO_CALLBACK  getPrintCallback();</a>
+<a name="ln51">std::wstring&amp;     getErrWstrObject();</a>
+<a name="ln52">std::wstring&amp;     getErrCallerWstrObject();</a>
+<a name="ln53"> </a>
+<a name="ln54">template&lt;typename X&gt;</a>
+<a name="ln55">static void HrError(std::wstring a_str, X value)</a>
+<a name="ln56">{</a>
+<a name="ln57">  HrPrint(HR_SEVERITY_ERROR, a_str, value);</a>
+<a name="ln58">}</a>
+<a name="ln59">///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln60">///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln61"> </a>
+<a name="ln62"> </a>
+<a name="ln63">/** \brief Internal structure to help driver allocate less memory.</a>
+<a name="ln64">*</a>
+<a name="ln65">*/</a>
+<a name="ln66">struct HRTexResInfo</a>
+<a name="ln67">{</a>
+<a name="ln68">  HRTexResInfo() : id(0), w(0), h(0), rw(0), rh(0), aw(0), ah(0), bpp(4), usedAsBump(false) {}</a>
+<a name="ln69">  int id;           ///&lt; texture id</a>
+<a name="ln70">  int w;            ///&lt; texture width</a>
+<a name="ln71">  int h;            ///&lt; texture height</a>
+<a name="ln72">  int rw;           ///&lt; recommended texture width</a>
+<a name="ln73">  int rh;           ///&lt; recommended texture height</a>
+<a name="ln74">  int aw;           ///&lt; actual texture width</a>
+<a name="ln75">  int ah;           ///&lt; actual texture height</a>
+<a name="ln76">  int bpp;          ///&lt; texture bytes per pixel</a>
+<a name="ln77">  bool usedAsBump;  ///&lt; if texture used as bump it actually may consume double memory due to it's copy in separate 'normalmap' memory storage </a>
+<a name="ln78">};</a>
+<a name="ln79"> </a>
+<a name="ln80"> </a>
+<a name="ln81">/** \brief This structure tell render driver very particular information how much memory and objects it have to allocate</a>
+<a name="ln82">*</a>
+<a name="ln83">* fff</a>
+<a name="ln84">*/</a>
+<a name="ln85">struct HRDriverAllocInfo</a>
+<a name="ln86">{</a>
+<a name="ln87">  HRDriverAllocInfo() : libraryPath(nullptr), resourcesPath(nullptr), stateFileName(nullptr) {}</a>
+<a name="ln88">  </a>
+<a name="ln89">  int32_t imgNum;</a>
+<a name="ln90">  int32_t matNum;</a>
+<a name="ln91">  int32_t geomNum;</a>
+<a name="ln92">  int32_t lightNum;</a>
+<a name="ln93"> </a>
+<a name="ln94">  int32_t lightsWithIESNum;</a>
+<a name="ln95">  int32_t envLightTexSize;</a>
+<a name="ln96">  bool    envIsHDR;</a>
+<a name="ln97"> </a>
+<a name="ln98">  int64_t imgMem;</a>
+<a name="ln99">  int64_t imgMemAux;</a>
+<a name="ln100">  int64_t geomMem;</a>
+<a name="ln101"> </a>
+<a name="ln102">  const wchar_t* libraryPath;</a>
+<a name="ln103">  const wchar_t* resourcesPath;</a>
+<a name="ln104">  const wchar_t* stateFileName;</a>
+<a name="ln105"> </a>
+<a name="ln106">  const HRTexResInfo* imgResInfoArray;</a>
+<a name="ln107">};</a>
+<a name="ln108"> </a>
+<a name="ln109"> </a>
+<a name="ln110">/** \brief This structure tell render HydraAPI what features are supported by driver.</a>
+<a name="ln111">*</a>
+<a name="ln112">*/</a>
+<a name="ln113">struct IHRRenderDriver;</a>
+<a name="ln114">struct HRDriverInfo</a>
+<a name="ln115">{</a>
+<a name="ln116">  HRDriverInfo() : supportMultiMaterialInstance(false), supportHDRFrameBuffer(false), supportHDRTextures(false),</a>
+<a name="ln117">                   supportImageLoadFromInternalFormat(false), supportImageLoadFromExternalFormat(false),</a>
+<a name="ln118">                   supportMeshLoadFromInternalFormat(false), supportLighting(false), createsLightGeometryItself(false),</a>
+<a name="ln119">                   memTotal(0), supportGetFrameBufferLine(false), supportUtilityPrepass(false), supportDisplacement(false) {}</a>
+<a name="ln120"> </a>
+<a name="ln121"> </a>
+<a name="ln122">  bool supportMultiMaterialInstance;</a>
+<a name="ln123">  bool supportHDRFrameBuffer;</a>
+<a name="ln124">  bool supportHDRTextures;</a>
+<a name="ln125">  bool supportImageLoadFromInternalFormat;</a>
+<a name="ln126">  bool supportImageLoadFromExternalFormat;</a>
+<a name="ln127">  bool supportMeshLoadFromInternalFormat;</a>
+<a name="ln128">  bool supportLighting;</a>
+<a name="ln129">  bool createsLightGeometryItself;</a>
+<a name="ln130">  bool supportGetFrameBufferLine;</a>
+<a name="ln131">  bool supportUtilityPrepass;</a>
+<a name="ln132">  bool supportDisplacement;</a>
+<a name="ln133">  int64_t memTotal = 0l;</a>
+<a name="ln134"> </a>
+<a name="ln135">  std::wstring driverName = L&quot;&quot;;</a>
+<a name="ln136"> </a>
+<a name="ln137">  using TCreateFunction = IHRRenderDriver*(*)();</a>
+<a name="ln138">  TCreateFunction createFunction = nullptr;</a>
+<a name="ln139">};</a>
+<a name="ln140"> </a>
+<a name="ln141">/** \brief This structure show which objects we have to Update if we change some of other objects</a>
+<a name="ln142">*</a>
+<a name="ln143">* It's like back propagation. If you have, for example meshDependsOfMaterial equal true, than if you change material,</a>
+<a name="ln144">* API will have to Update not material only, but all associated with this material meshes also.</a>
+<a name="ln145">*/</a>
+<a name="ln146">struct HRDriverDependencyInfo</a>
+<a name="ln147">{</a>
+<a name="ln148">  HRDriverDependencyInfo() : materialDependsOfTexture(false), meshDependsOfMaterial(true), lightDependsOfMesh(true), </a>
+<a name="ln149">                             sceneDependsOfMesh(true), sceneDependsOfLight(true),</a>
+<a name="ln150">                             needRedrawWhenCameraChanges(true), allowInstanceReorder(true) {}</a>
+<a name="ln151"> </a>
+<a name="ln152">  bool materialDependsOfTexture;</a>
+<a name="ln153">  bool meshDependsOfMaterial;</a>
+<a name="ln154">  bool lightDependsOfMesh;</a>
+<a name="ln155">  bool sceneDependsOfMesh;</a>
+<a name="ln156">  bool sceneDependsOfLight;</a>
+<a name="ln157">  </a>
+<a name="ln158">  bool needRedrawWhenCameraChanges; ///&lt; OpenGL renderers 'redraw' scene each frame, tracers don't need to 'redraw' scene, just change camera</a>
+<a name="ln159">  bool allowInstanceReorder;</a>
+<a name="ln160"> </a>
+<a name="ln161">};</a>
+<a name="ln162"> </a>
+<a name="ln163">/** \brief Input Mesh pointers</a>
+<a name="ln164">*</a>
+<a name="ln165">*  This driver will _always_ recieve mesh in this format. Never mind how it was set from application.</a>
+<a name="ln166">*</a>
+<a name="ln167">*/</a>
+<a name="ln168">struct HRMeshDriverInput</a>
+<a name="ln169">{</a>
+<a name="ln170">  HRMeshDriverInput() : vertNum(0), triNum(0), pos4f(nullptr), norm4f(nullptr), texcoord2f(nullptr), tan4f(nullptr), indices(nullptr), triMatIndices(nullptr) {}</a>
+<a name="ln171"> </a>
+<a name="ln172">  int    vertNum;</a>
+<a name="ln173">  int    triNum;</a>
+<a name="ln174">  const float* pos4f;</a>
+<a name="ln175">  const float* norm4f;</a>
+<a name="ln176">  const float* texcoord2f;</a>
+<a name="ln177">  const float* tan4f;</a>
+<a name="ln178">  const int*   indices;</a>
+<a name="ln179">  const int*   triMatIndices;</a>
+<a name="ln180"> </a>
+<a name="ln181">  const char*  allData;</a>
+<a name="ln182">};</a>
+<a name="ln183"> </a>
+<a name="ln184"> </a>
+<a name="ln185">/** \brief Basic Render Driver.</a>
+<a name="ln186">*</a>
+<a name="ln187">*  This driver should not alloc or realloc anything in dynamic. It supposed to alloc all needed memory by call 'AllocAll'  </a>
+<a name="ln188">*</a>
+<a name="ln189">*/</a>
+<a name="ln190">struct IHRRenderDriver</a>
+<a name="ln191">{</a>
+<a name="ln192">  IHRRenderDriver()          = default;</a>
+<a name="ln193">  virtual ~IHRRenderDriver() = default;</a>
+<a name="ln194">  IHRRenderDriver(const IHRRenderDriver&amp; a_val)            = delete;</a>
+<a name="ln195">  IHRRenderDriver&amp; operator=(const IHRRenderDriver&amp; a_val) = delete;</a>
+<a name="ln196"> </a>
+<a name="ln197">  virtual void              ClearAll()                         = 0; ///&lt; clear everethyng insidide render engine (render driver)</a>
+<a name="ln198">  virtual HRDriverAllocInfo AllocAll(HRDriverAllocInfo a_info) = 0; ///&lt; actual destructor, COM-like (!!!)</a>
+<a name="ln199"> </a>
+<a name="ln200">  /**</a>
+<a name="ln201">  \brief update image inside render engine (render driver)  </a>
+<a name="ln202">  \param a_texId    - image id</a>
+<a name="ln203">  \param w          - image width</a>
+<a name="ln204">  \param h          - image height</a>
+<a name="ln205">  \param bpp        - bytes per pixel</a>
+<a name="ln206">  \param a_data     - pointer to image pixels data. The actual format depends on the bpp value. if (bpp == 4) =&gt; each pixel is int32_t RGBA,  if (bpp == 16) each pixel is float4</a>
+<a name="ln207">  \param a_texNode  - XML node of texture object to pass custom parameters to render engine</a>
+<a name="ln208">  \return true if update was sucess, false otherwise</a>
+<a name="ln209"> </a>
+<a name="ln210">  */</a>
+<a name="ln211">  virtual bool    UpdateImage(int32_t a_texId, int32_t w, int32_t h, int32_t bpp, const void* a_data, pugi::xml_node a_texNode) = 0; </a>
+<a name="ln212"> </a>
+<a name="ln213">  /**</a>
+<a name="ln214">  \brief update material inside render engine (render driver)</a>
+<a name="ln215">  \param a_matId         - material id</a>
+<a name="ln216">  \param a_materialNode  - XML node of material object to pass custom parameters to render engine</a>
+<a name="ln217">  \return true if update was sucess, false otherwise</a>
+<a name="ln218"> </a>
+<a name="ln219">  */</a>
+<a name="ln220">  virtual bool    UpdateMaterial(int32_t a_matId, pugi::xml_node a_materialNode) = 0; </a>
+<a name="ln221"> </a>
+<a name="ln222">  /**</a>
+<a name="ln223">  \brief update light inside render engine (render driver)</a>
+<a name="ln224">  \param a_lightId   - light id</a>
+<a name="ln225">  \param a_lightNode - XML node of light object to pass custom parameters to render engine</a>
+<a name="ln226">  \return true if update was sucess, false otherwise</a>
+<a name="ln227"> </a>
+<a name="ln228">  */</a>
+<a name="ln229">  virtual bool    UpdateLight(int32_t a_lightId, pugi::xml_node a_lightNode)   = 0;</a>
+<a name="ln230"> </a>
+<a name="ln231">  /**</a>
+<a name="ln232">  \brief update light inside render engine (render driver)</a>
+<a name="ln233">  \param a_meshId    - mesh id</a>
+<a name="ln234">  \param a_meshNode  - XML node of mesh object to pass custom parameters to render engine</a>
+<a name="ln235">  \param a_input     - actual geom data</a>
+<a name="ln236">  \param a_batchList - an auxilarry array of &quot;batches&quot;. Each batch is a sequence of triangles with the same material.</a>
+<a name="ln237">  \param listSize    - a_batchList array size</a>
+<a name="ln238">  \return true if update was sucess, false otherwise</a>
+<a name="ln239"> </a>
+<a name="ln240">  If you pass L&quot;-sort_indices 1&quot; to hrInit() call, the API will sort all mesh triangles by their materials and guarantee that each material will be met only once in a_batchList.</a>
+<a name="ln241">  Otherwise same material id could met several times in a_batchList.</a>
+<a name="ln242"> </a>
+<a name="ln243">  */</a>
+<a name="ln244">  virtual bool    UpdateMesh(int32_t a_meshId, pugi::xml_node a_meshNode, const HRMeshDriverInput&amp; a_input, const HRBatchInfo* a_batchList, int32_t listSize) = 0;</a>
+<a name="ln245"> </a>
+<a name="ln246">  /**</a>
+<a name="ln247">  \brief update image from file </a>
+<a name="ln248">  \param a_texId     - image id</a>
+<a name="ln249">  \param a_fileName  - file name from where image should be loaded </a>
+<a name="ln250">  \param a_texNode   - XML node of image object to pass custom parameters to render engine</a>
+<a name="ln251">  \return true if update was sucess, false otherwise</a>
+<a name="ln252"> </a>
+<a name="ln253">    You can just return false if your render-driver don't support that</a>
+<a name="ln254"> </a>
+<a name="ln255">  */</a>
+<a name="ln256">  virtual bool    UpdateImageFromFile(int32_t a_texId, const wchar_t* a_fileName, pugi::xml_node a_texNode) = 0;</a>
+<a name="ln257"> </a>
+<a name="ln258"> </a>
+<a name="ln259">  /**</a>
+<a name="ln260">  \brief update mesh from &quot;.vsgf&quot; file</a>
+<a name="ln261">  \param a_meshId   - mesh object id</a>
+<a name="ln262">  \param a_meshNode - XML node of mesh object to pass custom parameters to render engine</a>
+<a name="ln263">  \param a_fileName - &quot;.vsgf&quot; file name from where mesh should be loaded</a>
+<a name="ln264">  \return true if update was sucess, false otherwise</a>
+<a name="ln265"> </a>
+<a name="ln266">  You can just return false if your render-driver don't support that</a>
+<a name="ln267"> </a>
+<a name="ln268">  */</a>
+<a name="ln269">  virtual bool    UpdateMeshFromFile (int32_t a_meshId, pugi::xml_node a_meshNode, const wchar_t* a_fileName) = 0;</a>
+<a name="ln270"> </a>
+<a name="ln271">  /**</a>
+<a name="ln272">  \brief Camera settings are separeted from others, because they are not the part of &quot;scene library&quot;.</a>
+<a name="ln273">         They set every time from scratch before begin rendering. I.e. Each frame.</a>
+<a name="ln274"> </a>
+<a name="ln275">  */</a>
+<a name="ln276">  virtual bool    UpdateCamera(pugi::xml_node a_camNode)        = 0;</a>
+<a name="ln277"> </a>
+<a name="ln278">  /**</a>
+<a name="ln279">  \brief Render settings are separeted from others, because they are not the part of &quot;scene library&quot;.</a>
+<a name="ln280">         They set every time from scratch before begin rendering. I.e. Each frame.</a>
+<a name="ln281"> </a>
+<a name="ln282">  */</a>
+<a name="ln283">  virtual bool    UpdateSettings(pugi::xml_node a_settingsNode) = 0;</a>
+<a name="ln284"> </a>
+<a name="ln285">  //// Scene Instance and render methods (i.e. actually render some thing ... )</a>
+<a name="ln286">  //</a>
+<a name="ln287">  virtual void    BeginScene(pugi::xml_node a_sceneNode) = 0;  ///&lt; this method is called before instences wiil be created (i.e. beforer all calls of InstanceMeshes/InstanceLights)</a>
+<a name="ln288">  virtual void    EndScene()   = 0;                            ///&lt; this method is called after instences wiil be created (i.e. beforer all calls of InstanceMeshes/InstanceLights)</a>
+<a name="ln289"> </a>
+<a name="ln290">  /**</a>
+<a name="ln291">  \brief draw all instances of target mesh</a>
+<a name="ln292">  \param a_mesh_id     - mesh id</a>
+<a name="ln293">  \param a_matrix      - transformation matrices array. one matrix for one instance. each matrix is float[16]. So, the total a_matrix array size is a_instNum*16 </a>
+<a name="ln294">  \param a_instNum     - instances number for mesh with id == a_mesh_id.</a>
+<a name="ln295">  \param a_lightInstId - points to light instance if if this is a light mesh or -1 otherwise.</a>
+<a name="ln296">  /param a_remapId     - points array of (remapId || -1)</a>
+<a name="ln297"> </a>
+<a name="ln298">  */</a>
+<a name="ln299">  virtual void    InstanceMeshes(int32_t a_mesh_id, const float* a_matrix, int32_t a_instNum, const int* a_lightInstId, const int* a_remapId, const int* a_realInstId)  = 0;</a>
+<a name="ln300"> </a>
+<a name="ln301">  /**</a>
+<a name="ln302">  \brief add (and draw) all light instances of target light</a>
+<a name="ln303">  \param a_light_id      - light id</a>
+<a name="ln304">  \param a_matrix        - transformation matrices array. one matrix for one light instance. each matrix is float[16]. So, the total a_matrix array size is a_instNum*16</a>
+<a name="ln305">  \param a_custAttrArray - array of xml_nodes that stores custom attributes for light instance.</a>
+<a name="ln306">  \param a_instNum       - instances number for light with id == a_light_id.</a>
+<a name="ln307">  \param a_lightGroupId  - light group id if this light is bounded to some light group.</a>
+<a name="ln308"> </a>
+<a name="ln309">  */</a>
+<a name="ln310">  virtual void    InstanceLights(int32_t a_light_id, const float* a_matrix, pugi::xml_node* a_custAttrArray, int32_t a_instNum, int32_t a_lightGroupId) = 0;</a>
+<a name="ln311"> </a>
+<a name="ln312">  virtual void    Draw() = 0; ///&lt; perform draw pass</a>
+<a name="ln313"> </a>
+<a name="ln314">  // frame buffer and gbuffer functions</a>
+<a name="ln315">  //</a>
+<a name="ln316">  virtual HRRenderUpdateInfo HaveUpdateNow(int a_maxRaysPerPixel) = 0; ///&lt; signal if off-line render have an update. Could be called during async rendering of the frame. real-time renders should just return true with 100.0f progress</a>
+<a name="ln317"> </a>
+<a name="ln318">  /**</a>
+<a name="ln319">  \brief get frame buffer content to HDR (float4) a_out. </a>
+<a name="ln320">  \param w     - target output width (supposed to be equal to internal framebuffer width. You may return false if this condition was broken).</a>
+<a name="ln321">  \param h     - target output height (supposed to be equal to internal framebuffer height. You may return false if this condition was broken).</a>
+<a name="ln322">  \param a_out - output in float4 format. i.e - w*h*(sizeof(float)*4)</a>
+<a name="ln323">  \param a_layerName - image name. - &quot;color&quot;, &quot;gbuffer1&quot;, &quot;gbuffer2&quot;, &quot;gbuffer3&quot;. </a>
+<a name="ln324"> </a>
+<a name="ln325">    Note that you don't have to implement &quot;gbuffer1&quot;, &quot;gbuffer2&quot;, &quot;gbuffer3&quot;. It's optional. Just return false if you don't support that. </a>
+<a name="ln326">    These gbuffer layes are not some-thing general. They are compressed layers of gbuffer that is stricly related to Hydra realistic renderer driver and their format is a bit 'proprietary'.</a>
+<a name="ln327"> </a>
+<a name="ln328">  */</a>
+<a name="ln329">  virtual void    GetFrameBufferHDR(int32_t w, int32_t h, float*   a_out, const wchar_t* a_layerName) = 0; </a>
+<a name="ln330">  virtual void    GetFrameBufferLDR(int32_t w, int32_t h, int32_t* a_out)                             = 0; ///&lt; get frame buffer content to LDR (int32_t) a_out. </a>
+<a name="ln331"> </a>
+<a name="ln332">  /**</a>
+<a name="ln333">  \brief more compact way of getting frame buffer. </a>
+<a name="ln334">         </a>
+<a name="ln335">    Note that your custom render driver don't have to support them. </a>
+<a name="ln336">    The API should call GetFrameBufferHDR/GetFrameBufferLDR to cache data in some internal location if you don't support these functions.</a>
+<a name="ln337">    But if you support them, the copying of frame buffer data can be optimised (i.e. you don't have to allocate full screen image). </a>
+<a name="ln338">    #TODO: implement what i wrote here :)</a>
+<a name="ln339"> </a>
+<a name="ln340">    If you sopport these functions set 'supportGetFrameBufferLine' flag when rerurn from Info()</a>
+<a name="ln341">  */</a>
+<a name="ln342">  virtual void    GetFrameBufferLineHDR(int32_t a_xBegin, int32_t a_xEnd, int32_t y, float* a_out, const wchar_t* a_layerName) {}</a>
+<a name="ln343">  virtual void    GetFrameBufferLineLDR(int32_t a_xBegin, int32_t a_xEnd, int32_t y, int32_t* a_out)                           {}</a>
+<a name="ln344">  </a>
+<a name="ln345">  /**</a>
+<a name="ln346">  \brief These functions is needed to offline multithreaded frame buffer update implementation.</a>
+<a name="ln347">         I.e. you after Commit operation, computation are just start and they are detached.  #TODO: describe this</a>
+<a name="ln348">         ...</a>
+<a name="ln349">  */</a>
+<a name="ln350">  virtual void    LockFrameBufferUpdate() {}</a>
+<a name="ln351">  virtual void    UnlockFrameBufferUpdate() {}</a>
+<a name="ln352">  </a>
+<a name="ln353">  </a>
+<a name="ln354">  </a>
+<a name="ln355">  virtual void    EvalGBuffer() { } ///&lt; run gbuffer evaluation (which can be async in general).</a>
+<a name="ln356"> </a>
+<a name="ln357">  virtual void    GetGBufferLine(int32_t a_lineNumber, HRGBufferPixel* a_lineData, int32_t a_startX, int32_t a_endX, const std::unordered_set&lt;int32_t&gt;&amp; a_shadowCatchers) = 0; ///&lt; get single gbuffer line (because the whole gbuffer is quite big!)</a>
+<a name="ln358"> </a>
+<a name="ln359">  // info and devices</a>
+<a name="ln360">  //</a>
+<a name="ln361">  virtual void GetRenderDriverName(std::wstring &amp;name) {}; ///&lt; get name by which the render driver is registered</a>
+<a name="ln362">  //HRDriverInfo Info() { return driverInfo; };                                            ///&lt; return render driver info</a>
+<a name="ln363">  virtual HRDriverDependencyInfo DependencyInfo() { return HRDriverDependencyInfo(); }  ///&lt; return render dependency info (look at OpenGL1 implementation with display lists to understand this. You have to update mesh when you update material because old mesh display list contains old material color).</a>
+<a name="ln364"> </a>
+<a name="ln365">  virtual const HRRenderDeviceInfoListElem* DeviceList() const = 0; ///&lt; this method is for multi-GPU render. return device list or nullptr</a>
+<a name="ln366">  virtual bool  EnableDevice(int32_t id, bool a_enable)        = 0; ///&lt;  this method is for multi-GPU render; enable target device or disable it; if fail, return false;</a>
+<a name="ln367"> </a>
+<a name="ln368">  virtual void  SetInfoCallBack(HR_INFO_CALLBACK a_cllBack) { m_pInfoCallBack = a_cllBack; }</a>
+<a name="ln369"> </a>
+<a name="ln370">  // specific signals for create correct relations between blend leafs and e.t.c</a>
+<a name="ln371">  // for most of renderers these functions do nothing</a>
+<a name="ln372">  //</a>
+<a name="ln373">  virtual void BeginMaterialUpdate() {} ///&lt; called at the beginning of materials update phase</a>
+<a name="ln374">  virtual void EndMaterialUpdate() {}   ///&lt; called at the end of materials update phase</a>
+<a name="ln375"> </a>
+<a name="ln376">  virtual void BeginTexturesUpdate() {} ///&lt; called at the beginning of textures update phase</a>
+<a name="ln377">  virtual void EndTexturesUpdate() {}   ///&lt; called at the end of textures update phase</a>
+<a name="ln378"> </a>
+<a name="ln379">  virtual void BeginLightsUpdate() {}   ///&lt; called at the beginning of lights update phase</a>
+<a name="ln380">  virtual void EndLightsUpdate() {}     ///&lt; called at the end       of lights update phase</a>
+<a name="ln381"> </a>
+<a name="ln382">  virtual void BeginGeomUpdate() {}     ///&lt; called at the beginning of geom update phase</a>
+<a name="ln383">  virtual void EndGeomUpdate() {}       ///&lt; called at the end       of geom update phase</a>
+<a name="ln384"> </a>
+<a name="ln385">  virtual void BeginFlush() {}          ///&lt; called at the beginning of flush phase</a>
+<a name="ln386">  virtual void EndFlush() {}            ///&lt; called at the end of flush phase</a>
+<a name="ln387"> </a>
+<a name="ln388">  virtual void ExecuteCommand(const wchar_t* a_cmd, wchar_t* a_out) {} ///&lt; exec custom command</a>
+<a name="ln389">  virtual void SetLogDir(const wchar_t* a_logDir, bool a_hideCmd) {}   ///&lt; hide render process if have such and redirect comand line output to the log file</a>
+<a name="ln390"> </a>
+<a name="ln391">  virtual std::shared_ptr&lt;HydraRender::HDRImage4f&gt; GetFrameBufferImage(const wchar_t* a_imageName) { return nullptr; } ///&lt; get smart pointer to frame buffer storage. needed for post-process connection to render</a>
+<a name="ln392"> </a>
+<a name="ln393">protected:</a>
+<a name="ln394"> </a>
+<a name="ln395">  HR_INFO_CALLBACK m_pInfoCallBack = nullptr;</a>
+<a name="ln396">  HRDriverInfo driverInfo;</a>
+<a name="ln397">};</a>
+<a name="ln398"> </a>
+<a name="ln399"> </a>
+<a name="ln400">struct RenderDriverFactory</a>
+<a name="ln401">{</a>
+<a name="ln402">private:</a>
+<a name="ln403">  static std::unordered_map&lt;std::wstring, HRDriverInfo&gt; create_methods;</a>
+<a name="ln404"> </a>
+<a name="ln405">public:</a>
+<a name="ln406">  RenderDriverFactory() = delete;</a>
+<a name="ln407"> </a>
+<a name="ln408">  static bool Register(const std::wstring &amp;renderdriver_name, HRDriverInfo &amp;renderdriver_info)</a>
+<a name="ln409">  {</a>
+<a name="ln410">    auto it = create_methods.find(renderdriver_name);</a>
+<a name="ln411">    if (it == create_methods.end())</a>
+<a name="ln412">    {</a>
+<a name="ln413">      create_methods[renderdriver_name] = renderdriver_info;</a>
+<a name="ln414">      auto tmp = ws2s(renderdriver_name);</a>
+<a name="ln415">      std::cout &lt;&lt; &quot;Registered render driver with name : &quot; &lt;&lt; tmp.c_str() &lt;&lt; std::endl;</a>
+<a name="ln416">      return true;</a>
+<a name="ln417">    }</a>
+<a name="ln418">    return false;</a>
+<a name="ln419">  }</a>
+<a name="ln420"> </a>
+<a name="ln421">  static IHRRenderDriver* Create(const std::wstring&amp; renderdriver_name)</a>
+<a name="ln422">  {</a>
+<a name="ln423">    auto it = create_methods.find(renderdriver_name);</a>
+<a name="ln424">    if (it != create_methods.end())</a>
+<a name="ln425">      return it-&gt;second.createFunction();</a>
+<a name="ln426"> </a>
+<a name="ln427">    std::wstring core_drv_name = L&quot;HydraCore&quot;;</a>
+<a name="ln428">    if(renderdriver_name == core_drv_name)</a>
+<a name="ln429">      return nullptr;</a>
+<a name="ln430"> </a>
+<a name="ln431">    auto driver_name_str =  ws2s(renderdriver_name);</a>
+<a name="ln432">    //std::cerr &lt;&lt; &quot;Render driver &quot; &lt;&lt; driver_name_str.c_str() &lt;&lt; &quot; is not registered!&quot; &lt;&lt; std::endl;</a>
+<a name="ln433">    HrPrint(HR_SEVERITY_WARNING, L&quot;Render driver &quot;, driver_name_str.c_str(), L&quot; is not registered!&quot;);</a>
+<a name="ln434">    return nullptr;</a>
+<a name="ln435">  }</a>
+<a name="ln436"> </a>
+<a name="ln437">  static HRDriverInfo GetDriverInfo(const std::wstring&amp; renderdriver_name)</a>
+<a name="ln438">  {</a>
+<a name="ln439">    auto it = create_methods.find(renderdriver_name);</a>
+<a name="ln440">    if (it != create_methods.end())</a>
+<a name="ln441">      return it-&gt;second;</a>
+<a name="ln442"> </a>
+<a name="ln443">    std::wstring core_drv_name = L&quot;HydraCore&quot;;</a>
+<a name="ln444">    if(renderdriver_name == core_drv_name)</a>
+<a name="ln445">      return HRDriverInfo();</a>
+<a name="ln446"> </a>
+<a name="ln447">    auto driver_name_str =  ws2s(renderdriver_name);</a>
+<a name="ln448">    //std::cerr &lt;&lt; &quot;Render driver &quot; &lt;&lt; driver_name_str.c_str() &lt;&lt; &quot; is not registered!&quot; &lt;&lt; std::endl;</a>
+<a name="ln449">    HrPrint(HR_SEVERITY_WARNING, L&quot;Render driver &quot;, driver_name_str.c_str(), L&quot; is not registered!&quot;);</a>
+<a name="ln450">    return HRDriverInfo();</a>
+<a name="ln451">  }</a>
+<a name="ln452"> </a>
+<a name="ln453">  static std::vector&lt;std::wstring&gt; GetListOfRegisteredDrivers()</a>
+<a name="ln454">  {</a>
+<a name="ln455">    std::vector&lt;std::wstring&gt; res(create_methods.size());</a>
+<a name="ln456">    for(const auto &amp;it : create_methods)</a>
+<a name="ln457">    {</a>
+<a name="ln458">      res.push_back(it.second.driverName);</a>
+<a name="ln459">    }</a>
+<a name="ln460">    return res;</a>
+<a name="ln461">  }</a>
+<a name="ln462">};</a>
+<a name="ln463"> </a>
+<a name="ln464">IHRRenderDriver* CreateHydraConnection_RenderDriver();</a>
+<a name="ln465">IHRRenderDriver* CreateDebugPrint_RenderDriver();</a>
+<a name="ln466"> </a>
+<a name="ln467"> </a>
+<a name="ln468">static constexpr uint32_t MAX_TEXTURE_RESOLUTION = 16384;</a>
+<a name="ln469"> </a>
+<a name="ln470">/**</a>
+<a name="ln471">\brief use this function to create your own render drivers.</a>
+<a name="ln472">\param a_className - just a render name</a>
+<a name="ln473">\param a_pDriver   - a pointer to your specific implemetation of render driver</a>
+<a name="ln474"> </a>
+<a name="ln475">*/</a>
+<a name="ln476">HAPI HRRenderRef hrRenderCreateFromExistingDriver(const wchar_t* a_className, std::shared_ptr&lt;IHRRenderDriver&gt; a_pDriver);</a>
+
+</code></pre>
+<div class="balloon" rel="170"><p><span style="font-size:18px">&uarr;</span> <a href="https://www.viva64.com/en/w/v730/" target="_blank">V730</a> Not all members of a class are initialized inside the constructor. Consider inspecting: allData.</p></div>
+
+<link rel="stylesheet" href="highlight.css">
+<script src="highlight.pack.js"></script>
+<script src="highlightjs-line-numbers.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script>hljs.initLineNumbersOnLoad();</script>
+<script>
+  $(document).ready(function() {
+      $('.balloon').each(function () {
+          var bl = $(this);
+          var line = bl.attr('rel');
+          var text = $('a[name="ln'+line+'"]').text();
+
+          var space_count = 0;
+          for(var i = 0; i<text.length; i++){
+              var char = text[i];
+              if((char !== ' ')&&(char !== '\t'))break;
+              if(char === '\t')space_count++;
+              space_count++;
+          }
+
+          bl.css('margin-left', space_count*8);
+          $('a[name="ln'+line+'"]').after(bl);
+      });
+
+      window.location = window.location;
+  });
+</script>
+</body>
+</html>

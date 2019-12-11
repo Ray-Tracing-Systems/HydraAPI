@@ -1,0 +1,942 @@
+
+<html>
+<head>
+
+  <meta http-equiv="Content-Type" content="text/html; charset=US-ASCII" />
+  <title>HR_HDRImageTool.cpp</title>
+
+  <link rel="stylesheet" href="../style.css"/>
+  <script src="../jquery-3.2.1.min.js"></script>
+</head>
+<body>
+
+<pre><code class = "cpp">
+<a name="ln1">#include &lt;iostream&gt;</a>
+<a name="ln2">#if defined WIN32</a>
+<a name="ln3">#include &lt;windows.h&gt;</a>
+<a name="ln4">#endif</a>
+<a name="ln5">#include &lt;cstring&gt;</a>
+<a name="ln6">#include &lt;fstream&gt;</a>
+<a name="ln7">#include &lt;math.h&gt;</a>
+<a name="ln8"> </a>
+<a name="ln9">#include &quot;HR_HDRImage.h&quot;</a>
+<a name="ln10">#include &quot;HR_HDRImageTool.h&quot;</a>
+<a name="ln11">#include &quot;HydraObjectManager.h&quot;</a>
+<a name="ln12"> </a>
+<a name="ln13">#include &quot;FreeImage.h&quot;</a>
+<a name="ln14">#pragma comment(lib, &quot;FreeImage.lib&quot;)</a>
+<a name="ln15"> </a>
+<a name="ln16">extern HRObjectManager g_objManager;</a>
+<a name="ln17"> </a>
+<a name="ln18">std::string  ws2s(const std::wstring&amp; s);</a>
+<a name="ln19">std::wstring s2ws(const std::string&amp; s);</a>
+<a name="ln20"> </a>
+<a name="ln21">void HR_MyDebugSaveBMP(const wchar_t* fname, const int* pixels, int w, int h);</a>
+<a name="ln22"> </a>
+<a name="ln23">static int HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* filename, FIBITMAP*&amp; dib, FIBITMAP*&amp; converted, FREE_IMAGE_FORMAT* pFif)</a>
+<a name="ln24">{</a>
+<a name="ln25">  FREE_IMAGE_FORMAT&amp; fif = (*pFif); // image format</a>
+<a name="ln26"> </a>
+<a name="ln27">                                    //check the file signature and deduce its format</a>
+<a name="ln28">                                    //if still unknown, try to guess the file format from the file extension</a>
+<a name="ln29">                                    //</a>
+<a name="ln30"> </a>
+<a name="ln31">#if defined WIN32</a>
+<a name="ln32">  fif = FreeImage_GetFileTypeU(filename, 0);</a>
+<a name="ln33">#else</a>
+<a name="ln34">  char filename_s[256];</a>
+<a name="ln35">  wcstombs(filename_s, filename, sizeof(filename_s));</a>
+<a name="ln36">  fif = FreeImage_GetFileType(filename_s, 0);</a>
+<a name="ln37">#endif</a>
+<a name="ln38"> </a>
+<a name="ln39">  if (fif == FIF_UNKNOWN)</a>
+<a name="ln40">#if defined WIN32</a>
+<a name="ln41">    fif = FreeImage_GetFIFFromFilenameU(filename);</a>
+<a name="ln42">#else</a>
+<a name="ln43">    fif = FreeImage_GetFIFFromFilename(filename_s);</a>
+<a name="ln44">#endif</a>
+<a name="ln45">  if (fif == FIF_UNKNOWN)</a>
+<a name="ln46">    return 0;</a>
+<a name="ln47"> </a>
+<a name="ln48">  //check that the plugin has reading capabilities and load the file</a>
+<a name="ln49">  //</a>
+<a name="ln50">  if (FreeImage_FIFSupportsReading(fif))</a>
+<a name="ln51">#if defined WIN32</a>
+<a name="ln52">    dib = FreeImage_LoadU(fif, filename);</a>
+<a name="ln53">#else</a>
+<a name="ln54">    dib = FreeImage_Load(fif, filename_s);</a>
+<a name="ln55">#endif</a>
+<a name="ln56">  else</a>
+<a name="ln57">    return 0;</a>
+<a name="ln58"> </a>
+<a name="ln59">  bool invertY = false; //(fif != FIF_BMP);</a>
+<a name="ln60"> </a>
+<a name="ln61">  if (!dib)</a>
+<a name="ln62">    return 0;</a>
+<a name="ln63"> </a>
+<a name="ln64">  int bitsPerPixel = FreeImage_GetBPP(dib);</a>
+<a name="ln65"> </a>
+<a name="ln66">  int bytesPerPixel = 4;</a>
+<a name="ln67">  if (bitsPerPixel &lt;= 32) // bits per pixel</a>
+<a name="ln68">  {</a>
+<a name="ln69">    converted = FreeImage_ConvertTo32Bits(dib);</a>
+<a name="ln70">    bytesPerPixel = 4;</a>
+<a name="ln71">  }</a>
+<a name="ln72">  else</a>
+<a name="ln73">  {</a>
+<a name="ln74">    converted = FreeImage_ConvertToRGBF(dib);</a>
+<a name="ln75">    bytesPerPixel = 16;</a>
+<a name="ln76">  }</a>
+<a name="ln77"> </a>
+<a name="ln78">  return bytesPerPixel;</a>
+<a name="ln79">}</a>
+<a name="ln80"> </a>
+<a name="ln81">static bool HRUtils_GetImageDataFromFreeImageObject(FIBITMAP* converted, char* data)</a>
+<a name="ln82">{</a>
+<a name="ln83">  auto bits         = FreeImage_GetBits(converted);</a>
+<a name="ln84">  auto width        = FreeImage_GetWidth(converted);</a>
+<a name="ln85">  auto height       = FreeImage_GetHeight(converted);</a>
+<a name="ln86">  auto bitsPerPixel = FreeImage_GetBPP(converted);</a>
+<a name="ln87"> </a>
+<a name="ln88">  if (bits == nullptr || width == 0 || height == 0)</a>
+<a name="ln89">    return false;</a>
+<a name="ln90"> </a>
+<a name="ln91">  if (bitsPerPixel &lt;= 32)</a>
+<a name="ln92">  {</a>
+<a name="ln93">    // (2.1) if ldr -&gt; create bitmap2DLDR</a>
+<a name="ln94">    //</a>
+<a name="ln95">    for (unsigned int y = 0; y&lt;height; y++)</a>
+<a name="ln96">    {</a>
+<a name="ln97">      int lineOffset1 = y*width;</a>
+<a name="ln98">      int lineOffset2 = y*width;</a>
+<a name="ln99">      //if (invertY)</a>
+<a name="ln100">      //lineOffset2 = (height - y - 1)*width;</a>
+<a name="ln101"> </a>
+<a name="ln102">      for (unsigned int x = 0; x&lt;width; x++)</a>
+<a name="ln103">      {</a>
+<a name="ln104">        int offset1 = lineOffset1 + x;</a>
+<a name="ln105">        int offset2 = lineOffset2 + x;</a>
+<a name="ln106"> </a>
+<a name="ln107">        data[4 * offset1 + 0] = bits[4 * offset2 + 2];</a>
+<a name="ln108">        data[4 * offset1 + 1] = bits[4 * offset2 + 1];</a>
+<a name="ln109">        data[4 * offset1 + 2] = bits[4 * offset2 + 0];</a>
+<a name="ln110">        data[4 * offset1 + 3] = bits[4 * offset2 + 3];</a>
+<a name="ln111">      }</a>
+<a name="ln112">    }</a>
+<a name="ln113"> </a>
+<a name="ln114">  }</a>
+<a name="ln115">  else</a>
+<a name="ln116">  {</a>
+<a name="ln117">    // (2.2) if hdr -&gt; create bitmap2DHDR</a>
+<a name="ln118">    //</a>
+<a name="ln119">    float* fbits = (float*)bits;</a>
+<a name="ln120">    float* fdata = (float*)data;</a>
+<a name="ln121"> </a>
+<a name="ln122">    for (unsigned int i = 0; i &lt; width*height; i++)</a>
+<a name="ln123">    {</a>
+<a name="ln124">      fdata[4 * i + 0] = fbits[3 * i + 0];</a>
+<a name="ln125">      fdata[4 * i + 1] = fbits[3 * i + 1];</a>
+<a name="ln126">      fdata[4 * i + 2] = fbits[3 * i + 2];</a>
+<a name="ln127">      fdata[4 * i + 3] = 0.0f;</a>
+<a name="ln128">    }</a>
+<a name="ln129"> </a>
+<a name="ln130">  }</a>
+<a name="ln131"> </a>
+<a name="ln132">  return true;</a>
+<a name="ln133">}</a>
+<a name="ln134"> </a>
+<a name="ln135">/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln136">/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln137">/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln138"> </a>
+<a name="ln139">static void FreeImageErrorHandlerHydraInternal(FREE_IMAGE_FORMAT fif, const char *message)</a>
+<a name="ln140">{</a>
+<a name="ln141">  std::wstringstream strOut;</a>
+<a name="ln142">  strOut &lt;&lt; L&quot;(FIF = &quot; &lt;&lt; fif &lt;&lt; L&quot;)&quot;;</a>
+<a name="ln143">  const std::wstring wstr = std::wstring(L&quot;[FreeImage &quot;) + strOut.str() + std::wstring(L&quot;]: &quot;) + s2ws(message);</a>
+<a name="ln144">  HrError(wstr);</a>
+<a name="ln145">}</a>
+<a name="ln146"> </a>
+<a name="ln147"> </a>
+<a name="ln148">static inline float clamp(float u, float a, float b) { float r = fmax(a, u); return fmin(r, b); }</a>
+<a name="ln149"> </a>
+<a name="ln150"> </a>
+<a name="ln151">void HR_MyDebugSaveBMP(const wchar_t* fname, const int* pixels, int w, int h)</a>
+<a name="ln152">{</a>
+<a name="ln153">  unsigned char file[14] = {</a>
+<a name="ln154">    'B','M',      // magic</a>
+<a name="ln155">    0,0,0,0,      // size in bytes</a>
+<a name="ln156">    0,0,          // app data</a>
+<a name="ln157">    0,0,          // app data</a>
+<a name="ln158">    40 + 14,0,0,0 // start of data offset</a>
+<a name="ln159">  };</a>
+<a name="ln160">  unsigned char info[40] = {</a>
+<a name="ln161">    40,0,0,0,      // info hd size</a>
+<a name="ln162">    0,0,0,0,       // width</a>
+<a name="ln163">    0,0,0,0,       // heigth</a>
+<a name="ln164">    1,0,           // number color planes</a>
+<a name="ln165">    24,0,          // bits per pixel</a>
+<a name="ln166">    0,0,0,0,       // compression is none</a>
+<a name="ln167">    0,0,0,0,       // image bits size</a>
+<a name="ln168">    0x13,0x0B,0,0, // horz resoluition in pixel / m</a>
+<a name="ln169">    0x13,0x0B,0,0, // vert resolutions (0x03C3 = 96 dpi, 0x0B13 = 72 dpi)</a>
+<a name="ln170">    0,0,0,0,       // #colors in pallete</a>
+<a name="ln171">    0,0,0,0,       // #important colors</a>
+<a name="ln172">  };</a>
+<a name="ln173"> </a>
+<a name="ln174">  int padSize = (4 - (w * 3) % 4) % 4;</a>
+<a name="ln175">  int sizeData = w * h * 3 + h * padSize;</a>
+<a name="ln176">  int sizeAll = sizeData + sizeof(file) + sizeof(info);</a>
+<a name="ln177"> </a>
+<a name="ln178">  file[2] = (unsigned char)(sizeAll);</a>
+<a name="ln179">  file[3] = (unsigned char)(sizeAll &gt;&gt; 8);</a>
+<a name="ln180">  file[4] = (unsigned char)(sizeAll &gt;&gt; 16);</a>
+<a name="ln181">  file[5] = (unsigned char)(sizeAll &gt;&gt; 24);</a>
+<a name="ln182"> </a>
+<a name="ln183">  info[4] = (unsigned char)(w);</a>
+<a name="ln184">  info[5] = (unsigned char)(w &gt;&gt; 8);</a>
+<a name="ln185">  info[6] = (unsigned char)(w &gt;&gt; 16);</a>
+<a name="ln186">  info[7] = (unsigned char)(w &gt;&gt; 24);</a>
+<a name="ln187"> </a>
+<a name="ln188">  info[8] = (unsigned char)(h);</a>
+<a name="ln189">  info[9] = (unsigned char)(h &gt;&gt; 8);</a>
+<a name="ln190">  info[10] = (unsigned char)(h &gt;&gt; 16);</a>
+<a name="ln191">  info[11] = (unsigned char)(h &gt;&gt; 24);</a>
+<a name="ln192"> </a>
+<a name="ln193">  info[20] = (unsigned char)(sizeData);</a>
+<a name="ln194">  info[21] = (unsigned char)(sizeData &gt;&gt; 8);</a>
+<a name="ln195">  info[22] = (unsigned char)(sizeData &gt;&gt; 16);</a>
+<a name="ln196">  info[23] = (unsigned char)(sizeData &gt;&gt; 24);</a>
+<a name="ln197"> </a>
+<a name="ln198">  #ifdef WIN32</a>
+<a name="ln199">  std::ofstream stream(fname, std::ios::out | std::ios::binary);</a>
+<a name="ln200">  #else</a>
+<a name="ln201">  std::wstring fnameW(fname);</a>
+<a name="ln202">  std::string  fnameA(fnameW.begin(), fnameW.end());</a>
+<a name="ln203">  std::ofstream stream(fnameA.c_str(), std::ios::out | std::ios::binary);</a>
+<a name="ln204">  #endif</a>
+<a name="ln205"> </a>
+<a name="ln206">  stream.write((char*)file, sizeof(file));</a>
+<a name="ln207">  stream.write((char*)info, sizeof(info));</a>
+<a name="ln208"> </a>
+<a name="ln209">  unsigned char pad[3] = { 0,0,0 };</a>
+<a name="ln210"> </a>
+<a name="ln211">  std::vector&lt;unsigned char&gt; line(3 * w);</a>
+<a name="ln212"> </a>
+<a name="ln213">  for (int y = 0; y&lt;h; y++)</a>
+<a name="ln214">  {</a>
+<a name="ln215">    for (int x = 0; x&lt;w; x++)</a>
+<a name="ln216">    {</a>
+<a name="ln217">      const int pxData = pixels[y*w + x];</a>
+<a name="ln218"> </a>
+<a name="ln219">      line[x * 3 + 0] = (pxData &amp; 0x00FF0000) &gt;&gt; 16;</a>
+<a name="ln220">      line[x * 3 + 1] = (pxData &amp; 0x0000FF00) &gt;&gt; 8;</a>
+<a name="ln221">      line[x * 3 + 2] = (pxData &amp; 0x000000FF);</a>
+<a name="ln222">    }</a>
+<a name="ln223"> </a>
+<a name="ln224">    stream.write((char*)&amp;line[0], line.size());</a>
+<a name="ln225">    stream.write((char*)pad, padSize);</a>
+<a name="ln226">  }</a>
+<a name="ln227">}</a>
+<a name="ln228"> </a>
+<a name="ln229">/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln230">/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln231">/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln232"> </a>
+<a name="ln233">std::wstring CutFileExt(const std::wstring&amp; fileName)</a>
+<a name="ln234">{</a>
+<a name="ln235">  auto pos = fileName.find_last_of(L&quot;.&quot;);</a>
+<a name="ln236">  if (pos == std::wstring::npos)</a>
+<a name="ln237">  {</a>
+<a name="ln238">    HrPrint(HR_SEVERITY_ERROR, &quot;CutFileExt, can not guess file extension&quot;);</a>
+<a name="ln239">    return L&quot;&quot;;</a>
+<a name="ln240">  }</a>
+<a name="ln241">  return fileName.substr(pos, fileName.size());</a>
+<a name="ln242">}</a>
+<a name="ln243"> </a>
+<a name="ln244">std::wstring CutFileName(const std::wstring&amp; fileName)</a>
+<a name="ln245">{</a>
+<a name="ln246">  auto pos = fileName.find_last_of(L&quot;/&quot;);</a>
+<a name="ln247"> </a>
+<a name="ln248">  if (pos == std::wstring::npos)</a>
+<a name="ln249">    pos = fileName.find_last_of(L&quot;\\&quot;);</a>
+<a name="ln250"> </a>
+<a name="ln251">  if (pos == std::wstring::npos)</a>
+<a name="ln252">  {</a>
+<a name="ln253">    HrPrint(HR_SEVERITY_ERROR, &quot;CutFileExt, can not guess file extension&quot;);</a>
+<a name="ln254">    return L&quot;&quot;;</a>
+<a name="ln255">  }</a>
+<a name="ln256">  return fileName.substr(pos+1, fileName.size());</a>
+<a name="ln257">}</a>
+<a name="ln258"> </a>
+<a name="ln259">bool InternalImageTool::LoadImageFromFile(const wchar_t* a_fileName,</a>
+<a name="ln260">                                          int&amp; w, int&amp; h, int&amp; bpp, std::vector&lt;int&gt;&amp; a_data)</a>
+<a name="ln261">{</a>
+<a name="ln262">  const std::wstring fileExt = CutFileExt(a_fileName);</a>
+<a name="ln263"> </a>
+<a name="ln264">#ifdef WIN32</a>
+<a name="ln265">  std::ifstream fin(a_fileName, std::ios::binary);</a>
+<a name="ln266">#else</a>
+<a name="ln267">  std::string   s2 = ws2s(a_fileName);</a>
+<a name="ln268">  std::ifstream fin(s2.c_str(), std::ios::binary);</a>
+<a name="ln269">#endif</a>
+<a name="ln270"> </a>
+<a name="ln271">  if (!fin.is_open())</a>
+<a name="ln272">  {</a>
+<a name="ln273">    HrPrint(HR_SEVERITY_ERROR, &quot;LoadImageFromFile, can not open file&quot;);</a>
+<a name="ln274">    return false;</a>
+<a name="ln275">  }</a>
+<a name="ln276"> </a>
+<a name="ln277">  int wh[2] = { 0,0 };</a>
+<a name="ln278">  fin.read((char*)wh, sizeof(int) * 2);</a>
+<a name="ln279">  w = wh[0];</a>
+<a name="ln280">  h = wh[1];</a>
+<a name="ln281"> </a>
+<a name="ln282">  if (fileExt == L&quot;.image4f&quot;)</a>
+<a name="ln283">  {</a>
+<a name="ln284">    bpp = 16;</a>
+<a name="ln285">    a_data.resize(w*h * 4);</a>
+<a name="ln286">    fin.read((char*)a_data.data(), a_data.size() * sizeof(int));</a>
+<a name="ln287">    fin.close();</a>
+<a name="ln288">    return true;</a>
+<a name="ln289">  }</a>
+<a name="ln290">  else if (fileExt == L&quot;.image1i&quot; || fileExt == L&quot;.image1ui&quot; || fileExt == L&quot;.image4b&quot; || fileExt == L&quot;.image4ub&quot;)</a>
+<a name="ln291">  {</a>
+<a name="ln292">    bpp = 4;</a>
+<a name="ln293">    a_data.resize(w*h);</a>
+<a name="ln294">    fin.read((char*)a_data.data(), a_data.size() * sizeof(int));</a>
+<a name="ln295">    fin.close();</a>
+<a name="ln296">    return true;</a>
+<a name="ln297">  }</a>
+<a name="ln298"> </a>
+<a name="ln299">  //#TODO: add ppm and bmp loaders here ... </a>
+<a name="ln300"> </a>
+<a name="ln301">  HrPrint(HR_SEVERITY_ERROR, L&quot;InternalImageTool::LoadImageFromFile, unsupported file extension &quot;, fileExt.c_str());</a>
+<a name="ln302">  return false;</a>
+<a name="ln303">}</a>
+<a name="ln304"> </a>
+<a name="ln305">bool InternalImageTool::LoadImageFromFile(const wchar_t* a_fileName,</a>
+<a name="ln306">                                          int&amp; w, int&amp; h, std::vector&lt;float&gt;&amp; a_data) //#TODO: the implementation works only for &quot;.image4f&quot; ... this is not strictly correct. </a>
+<a name="ln307">{</a>
+<a name="ln308">  std::vector&lt;int&gt; tempData;</a>
+<a name="ln309">  int bpp = 0;</a>
+<a name="ln310">  LoadImageFromFile(a_fileName,</a>
+<a name="ln311">                    w, h, bpp, tempData);</a>
+<a name="ln312"> </a>
+<a name="ln313">  a_data.resize(tempData.size());</a>
+<a name="ln314">  memcpy(a_data.data(), tempData.data(), tempData.size() * sizeof(int));</a>
+<a name="ln315">  return true;</a>
+<a name="ln316">}</a>
+<a name="ln317"> </a>
+<a name="ln318">void InternalImageTool::SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, const float* a_data)</a>
+<a name="ln319">{</a>
+<a name="ln320">#ifdef WIN32</a>
+<a name="ln321">  std::ofstream fout(a_fileName, std::ios::binary);</a>
+<a name="ln322">#else</a>
+<a name="ln323">  std::string   s2 = ws2s(a_fileName);</a>
+<a name="ln324">  std::ofstream fout(s2.c_str(), std::ios::binary);</a>
+<a name="ln325">#endif</a>
+<a name="ln326">  int wh[2] = { w,h };</a>
+<a name="ln327">  fout.write((const char*)wh, sizeof(int) * 2);</a>
+<a name="ln328">  fout.write((const char*)a_data, sizeof(float) * size_t(4 * w*h));</a>
+<a name="ln329">  fout.close();</a>
+<a name="ln330">}</a>
+<a name="ln331"> </a>
+<a name="ln332">void InternalImageTool::SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, const int* a_data)</a>
+<a name="ln333">{</a>
+<a name="ln334">  const std::wstring fileExt = CutFileExt(a_fileName);</a>
+<a name="ln335"> </a>
+<a name="ln336">  if (fileExt == L&quot;.bmp&quot; || fileExt == L&quot;.BMP&quot;)</a>
+<a name="ln337">  {</a>
+<a name="ln338">    HR_MyDebugSaveBMP(a_fileName, a_data, w, h);</a>
+<a name="ln339">    return;</a>
+<a name="ln340">  }</a>
+<a name="ln341"> </a>
+<a name="ln342">  //#TODO: implement ppm writer here ... </a>
+<a name="ln343"> </a>
+<a name="ln344">#ifdef WIN32</a>
+<a name="ln345">  std::ofstream fout(a_fileName, std::ios::binary);</a>
+<a name="ln346">#else</a>
+<a name="ln347">  std::string   s2 = ws2s(a_fileName);</a>
+<a name="ln348">  std::ofstream fout(s2.c_str(), std::ios::binary);</a>
+<a name="ln349">#endif</a>
+<a name="ln350">  int wh[2] = { w,h };</a>
+<a name="ln351">  fout.write((const char*)wh, sizeof(int) * 2);</a>
+<a name="ln352">  fout.write((const char*)a_data, sizeof(float) * size_t(w*h));</a>
+<a name="ln353">  fout.close();</a>
+<a name="ln354">}</a>
+<a name="ln355"> </a>
+<a name="ln356">/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln357">/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln358">/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln359"> </a>
+<a name="ln360">namespace HydraRender</a>
+<a name="ln361">{</a>
+<a name="ln362">  static inline float clamp(float u, float a, float b) { return fminf(fmaxf(a, u), b); }</a>
+<a name="ln363">  static inline uint32_t RealColorToUint32(float x, float y, float z, float w)</a>
+<a name="ln364">  {</a>
+<a name="ln365">    float  r = clamp(x*255.0f, 0.0f, 255.0f);</a>
+<a name="ln366">    float  g = clamp(y*255.0f, 0.0f, 255.0f);</a>
+<a name="ln367">    float  b = clamp(z*255.0f, 0.0f, 255.0f);</a>
+<a name="ln368">    float  a = clamp(w*255.0f, 0.0f, 255.0f);</a>
+<a name="ln369"> </a>
+<a name="ln370">    unsigned char red   = (unsigned char)r;</a>
+<a name="ln371">    unsigned char green = (unsigned char)g;</a>
+<a name="ln372">    unsigned char blue  = (unsigned char)b;</a>
+<a name="ln373">    unsigned char alpha = (unsigned char)a;</a>
+<a name="ln374"> </a>
+<a name="ln375">    return red | (green &lt;&lt; 8) | (blue &lt;&lt; 16) | (alpha &lt;&lt; 24);</a>
+<a name="ln376">  }</a>
+<a name="ln377"> </a>
+<a name="ln378">  void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char *message)</a>
+<a name="ln379">  {</a>
+<a name="ln380">    std::cout &lt;&lt; &quot;\n***\n&quot;;</a>
+<a name="ln381">    std::cout &lt;&lt; message;</a>
+<a name="ln382">    std::cout &lt;&lt; &quot;\n***\n&quot;;</a>
+<a name="ln383">  }</a>
+<a name="ln384"> </a>
+<a name="ln385">  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln386">  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln387">  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln388"> </a>
+<a name="ln389">  void SaveHDRImageToFileHDR(const std::string&amp; a_fileName, int w, int h, const float* a_data)</a>
+<a name="ln390">  {</a>
+<a name="ln391">    const std::wstring fileNameW = s2ws(a_fileName);</a>
+<a name="ln392">    g_objManager.m_pImgTool-&gt;SaveHDRImageToFileHDR(fileNameW.c_str(), w, h, a_data);</a>
+<a name="ln393">  }</a>
+<a name="ln394"> </a>
+<a name="ln395">  void SaveHDRImageToFileHDR(const std::wstring&amp; a_fileName, int w, int h, const float* a_data)</a>
+<a name="ln396">  {</a>
+<a name="ln397">    g_objManager.m_pImgTool-&gt;SaveHDRImageToFileHDR(a_fileName.c_str(), w, h, a_data);</a>
+<a name="ln398">  }</a>
+<a name="ln399"> </a>
+<a name="ln400">  void SaveImageToFile(const std::string&amp; a_fileName, int w, int h, unsigned int* data)</a>
+<a name="ln401">  {</a>
+<a name="ln402">    const std::wstring fileNameW = s2ws(a_fileName);</a>
+<a name="ln403">    g_objManager.m_pImgTool-&gt;SaveLDRImageToFileLDR(fileNameW.c_str(), w, h, (const int*)data);</a>
+<a name="ln404">  }</a>
+<a name="ln405"> </a>
+<a name="ln406">  void SaveImageToFile(const std::wstring&amp; a_fileName, int w, int h, const unsigned int* data)</a>
+<a name="ln407">  {</a>
+<a name="ln408">    g_objManager.m_pImgTool-&gt;SaveLDRImageToFileLDR(a_fileName.c_str(), w, h, (const int*)data);</a>
+<a name="ln409">  }</a>
+<a name="ln410"> </a>
+<a name="ln411">  void SaveImageToFile(const std::wstring&amp; a_fileName, const HDRImage4f&amp; image, float a_gamma)</a>
+<a name="ln412">  {</a>
+<a name="ln413">    std::vector&lt;unsigned int&gt; ldrImageData(image.width()*image.height());</a>
+<a name="ln414"> </a>
+<a name="ln415">    struct float4 { float x, y, z, w; };</a>
+<a name="ln416">    const float4* in_buff = (const float4*)image.data();</a>
+<a name="ln417"> </a>
+<a name="ln418">    const float invGamma = 1.0f / a_gamma;</a>
+<a name="ln419"> </a>
+<a name="ln420">    for (int i = 0; i &lt; image.width()*image.height(); i++)</a>
+<a name="ln421">    {</a>
+<a name="ln422">      float4 data = in_buff[i];</a>
+<a name="ln423">      data.x      = powf(data.x, invGamma);</a>
+<a name="ln424">      data.y      = powf(data.y, invGamma);</a>
+<a name="ln425">      data.z      = powf(data.z, invGamma);</a>
+<a name="ln426">      data.w      = 1.0f;</a>
+<a name="ln427">      ldrImageData[i] = RealColorToUint32(data.x, data.y, data.z, data.w);</a>
+<a name="ln428">    }</a>
+<a name="ln429"> </a>
+<a name="ln430">    SaveImageToFile(a_fileName, image.width(), image.height(), &amp;ldrImageData[0]);</a>
+<a name="ln431">  }</a>
+<a name="ln432"> </a>
+<a name="ln433">  void SaveImageToFile(const std::string&amp; a_fileName, const HDRImage4f&amp; image, float a_gamma)</a>
+<a name="ln434">  {</a>
+<a name="ln435">    const std::wstring fileNameW = s2ws(a_fileName);</a>
+<a name="ln436">    SaveImageToFile(fileNameW, image, a_gamma);</a>
+<a name="ln437">  }</a>
+<a name="ln438"> </a>
+<a name="ln439">  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln440">  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln441">  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln442">  /**</a>
+<a name="ln443">  \brief force convert loaded image to HDR (i.e. float4, 16 bytes per pixel)</a>
+<a name="ln444">  */</a>
+<a name="ln445">  void LoadImageFromFile(const std::wstring&amp; a_fileName, std::vector&lt;float&gt;&amp; data, int&amp; w, int&amp; h) // loads both LDR and HDR images(!) </a>
+<a name="ln446">  {</a>
+<a name="ln447">    g_objManager.m_pImgTool-&gt;LoadImageFromFile(a_fileName.c_str(), </a>
+<a name="ln448">                                               w, h, data);</a>
+<a name="ln449">  }</a>
+<a name="ln450"> </a>
+<a name="ln451">  /**</a>
+<a name="ln452">  \brief force convert loaded image to HDR (i.e. float4, 16 bytes per pixel)</a>
+<a name="ln453">  */</a>
+<a name="ln454">  void LoadImageFromFile(const std::string&amp; a_fileName, std::vector&lt;float&gt;&amp; data, int&amp; w, int&amp; h) // loads both LDR and HDR images(!)</a>
+<a name="ln455">  {</a>
+<a name="ln456">    const std::wstring fileNameW = s2ws(a_fileName);</a>
+<a name="ln457">    LoadImageFromFile(fileNameW.c_str(), data, w, h);</a>
+<a name="ln458">  }</a>
+<a name="ln459"> </a>
+<a name="ln460">  /**</a>
+<a name="ln461">  \brief force convert loaded image to HDR (i.e. float4, 16 bytes per pixel)</a>
+<a name="ln462">  */</a>
+<a name="ln463">  void LoadImageFromFile(const std::wstring&amp; a_fileName, HDRImage4f&amp; image)</a>
+<a name="ln464">  {</a>
+<a name="ln465">    std::vector&lt;float&gt; data;</a>
+<a name="ln466">    int w = 0, h = 0;</a>
+<a name="ln467">    LoadImageFromFile(a_fileName, data, w, h);</a>
+<a name="ln468">    image = HDRImage4f(w, h, &amp;data[0]);</a>
+<a name="ln469">  }</a>
+<a name="ln470"> </a>
+<a name="ln471">  /**</a>
+<a name="ln472">  \brief force convert loaded image to HDR (i.e. float4, 16 bytes per pixel)</a>
+<a name="ln473">  */</a>
+<a name="ln474">  void LoadImageFromFile(const std::string&amp; a_fileName, HDRImage4f&amp; image)</a>
+<a name="ln475">  {</a>
+<a name="ln476">    std::vector&lt;float&gt; data;</a>
+<a name="ln477">    int w = 0, h = 0;</a>
+<a name="ln478">    LoadImageFromFile(a_fileName, data, w, h);</a>
+<a name="ln479">    image = HDRImage4f(w, h, &amp;data[0]);</a>
+<a name="ln480">  }</a>
+<a name="ln481"> </a>
+<a name="ln482">  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln483">  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln484">  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln485"> </a>
+<a name="ln486">  /**</a>
+<a name="ln487">  \brief load LDR image from file</a>
+<a name="ln488">  */</a>
+<a name="ln489">  bool LoadLDRImageFromFile(const char* a_fileName,</a>
+<a name="ln490">                            int* pW, int* pH, std::vector&lt;int32_t&gt;&amp; a_data)</a>
+<a name="ln491">  {</a>
+<a name="ln492">    FreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);</a>
+<a name="ln493"> </a>
+<a name="ln494">    FREE_IMAGE_FORMAT fif = FIF_PNG; // image format</a>
+<a name="ln495"> </a>
+<a name="ln496">    fif = FreeImage_GetFileType(a_fileName, 0);</a>
+<a name="ln497"> </a>
+<a name="ln498">    if (fif == FIF_UNKNOWN)</a>
+<a name="ln499">      fif = FreeImage_GetFIFFromFilename(a_fileName);</a>
+<a name="ln500"> </a>
+<a name="ln501">    FIBITMAP* dib = nullptr;</a>
+<a name="ln502">    if (FreeImage_FIFSupportsReading(fif))</a>
+<a name="ln503">      dib = FreeImage_Load(fif, a_fileName);</a>
+<a name="ln504">    else</a>
+<a name="ln505">    {</a>
+<a name="ln506">      std::cout &lt;&lt; &quot;LoadLDRImageFromFile() : FreeImage_FIFSupportsReading/FreeImage_Load failed!&quot; &lt;&lt; std::endl;</a>
+<a name="ln507">      return false;</a>
+<a name="ln508">    }</a>
+<a name="ln509"> </a>
+<a name="ln510">    FIBITMAP* converted = FreeImage_ConvertTo32Bits(dib);</a>
+<a name="ln511">    BYTE* bits          = FreeImage_GetBits(converted);</a>
+<a name="ln512">    auto width          = FreeImage_GetWidth(converted);</a>
+<a name="ln513">    auto height         = FreeImage_GetHeight(converted);</a>
+<a name="ln514">    auto bitsPerPixel   = FreeImage_GetBPP(converted);</a>
+<a name="ln515"> </a>
+<a name="ln516"> </a>
+<a name="ln517">    if (width == 0 || height == 0)</a>
+<a name="ln518">    {</a>
+<a name="ln519">      std::cerr &lt;&lt; &quot;Seems that 'FreeImage_ConvertTo32Bits' has failed &quot; &lt;&lt; std::endl;</a>
+<a name="ln520">      return false;</a>
+<a name="ln521">    }</a>
+<a name="ln522"> </a>
+<a name="ln523">    a_data.resize(width*height);</a>
+<a name="ln524">    BYTE* data = (BYTE*)a_data.data();</a>
+<a name="ln525"> </a>
+<a name="ln526"> </a>
+<a name="ln527">    for (unsigned int y = 0; y&lt;height; y++)</a>
+<a name="ln528">    {</a>
+<a name="ln529">      int lineOffset1 = y*width;</a>
+<a name="ln530">      int lineOffset2 = y*width;</a>
+<a name="ln531"> </a>
+<a name="ln532">      for (unsigned int x = 0; x&lt;width; x++)</a>
+<a name="ln533">      {</a>
+<a name="ln534">        int offset1 = lineOffset1 + x;</a>
+<a name="ln535">        int offset2 = lineOffset2 + x;</a>
+<a name="ln536"> </a>
+<a name="ln537">        data[4 * offset1 + 0] = bits[4 * offset2 + 2];</a>
+<a name="ln538">        data[4 * offset1 + 1] = bits[4 * offset2 + 1];</a>
+<a name="ln539">        data[4 * offset1 + 2] = bits[4 * offset2 + 0];</a>
+<a name="ln540">        data[4 * offset1 + 3] = bits[4 * offset2 + 3];</a>
+<a name="ln541">      }</a>
+<a name="ln542">    }</a>
+<a name="ln543"> </a>
+<a name="ln544">    FreeImage_Unload(dib);</a>
+<a name="ln545">    FreeImage_Unload(converted);</a>
+<a name="ln546"> </a>
+<a name="ln547">    (*pW) = width;</a>
+<a name="ln548">    (*pH) = height;</a>
+<a name="ln549">    return true;</a>
+<a name="ln550">  }</a>
+<a name="ln551"> </a>
+<a name="ln552">  float MSE_RGB_LDR(const std::vector&lt;int32_t&gt;&amp; image1, const std::vector&lt;int32_t&gt;&amp; image2)</a>
+<a name="ln553">  {</a>
+<a name="ln554">    if(image1.size() != image2.size())</a>
+<a name="ln555">      return 0.0f;</a>
+<a name="ln556"> </a>
+<a name="ln557">    double accum = 0.0;</a>
+<a name="ln558"> </a>
+<a name="ln559">    for(int i=0;i&lt;image1.size();i++)</a>
+<a name="ln560">    {</a>
+<a name="ln561">      const int pxData1 = image1[i];</a>
+<a name="ln562">      const int pxData2 = image2[i];</a>
+<a name="ln563">      const int r1 = (pxData1 &amp; 0x00FF0000) &gt;&gt; 16;</a>
+<a name="ln564">      const int g1 = (pxData1 &amp; 0x0000FF00) &gt;&gt; 8;</a>
+<a name="ln565">      const int b1 = (pxData1 &amp; 0x000000FF);</a>
+<a name="ln566"> </a>
+<a name="ln567">      const int r2 = (pxData2 &amp; 0x00FF0000) &gt;&gt; 16;</a>
+<a name="ln568">      const int g2 = (pxData2 &amp; 0x0000FF00) &gt;&gt; 8;</a>
+<a name="ln569">      const int b2 = (pxData2 &amp; 0x000000FF);</a>
+<a name="ln570"> </a>
+<a name="ln571">      accum += double( (r1-r2)*(r1-r2) + (b1-b2)*(b1-b2) + (g1-g2)*(g1-g2) );</a>
+<a name="ln572">    }</a>
+<a name="ln573"> </a>
+<a name="ln574">    return float(accum/double(image1.size()));</a>
+<a name="ln575">  }</a>
+<a name="ln576"> </a>
+<a name="ln577">  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln578">  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln579">  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln580">  </a>
+<a name="ln581">  class FreeImageTool : public IHRImageTool</a>
+<a name="ln582">  {</a>
+<a name="ln583">  public:</a>
+<a name="ln584"> </a>
+<a name="ln585">    FreeImageTool() : m_pInternal(std::make_unique&lt;InternalImageTool&gt;()) {}</a>
+<a name="ln586"> </a>
+<a name="ln587">    bool LoadImageFromFile(const wchar_t* a_fileName, </a>
+<a name="ln588">                           int&amp; w, int&amp; h, int&amp; bpp, std::vector&lt;int&gt;&amp; a_data) override; </a>
+<a name="ln589">    </a>
+<a name="ln590">    bool LoadImageFromFile(const wchar_t* a_fileName, </a>
+<a name="ln591">                           int&amp; w, int&amp; h, std::vector&lt;float&gt;&amp; a_data) override;</a>
+<a name="ln592"> </a>
+<a name="ln593">    void SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, const float* a_data) override;</a>
+<a name="ln594">    void SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, const int*   a_data) override;</a>
+<a name="ln595"> </a>
+<a name="ln596">    void Save16BitMonoImageTo16BitPNG(const wchar_t* a_fileName, int w, int h, const unsigned short* a_data) override;</a>
+<a name="ln597"> </a>
+<a name="ln598">  private:</a>
+<a name="ln599"> </a>
+<a name="ln600">    std::unique_ptr&lt;InternalImageTool&gt; m_pInternal;</a>
+<a name="ln601"> </a>
+<a name="ln602">  };</a>
+<a name="ln603">  </a>
+<a name="ln604">  class GentooFix_SaveBMP : public FreeImageTool</a>
+<a name="ln605">  {</a>
+<a name="ln606">  public:</a>
+<a name="ln607">    void SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, const int*   a_data) override</a>
+<a name="ln608">    {</a>
+<a name="ln609">      auto fileExt = CutFileExt(a_fileName);</a>
+<a name="ln610">      if(fileExt == L&quot;.bmp&quot; || fileExt == L&quot;.BMP&quot;)</a>
+<a name="ln611">        HR_MyDebugSaveBMP(a_fileName, a_data, w, h);</a>
+<a name="ln612">      else</a>
+<a name="ln613">        FreeImageTool::SaveLDRImageToFileLDR(a_fileName, w, h, a_data);</a>
+<a name="ln614">    }</a>
+<a name="ln615">  };</a>
+<a name="ln616">  </a>
+<a name="ln617">  std::unique_ptr&lt;IHRImageTool&gt; CreateImageTool()</a>
+<a name="ln618">  {</a>
+<a name="ln619">  #ifdef GENTOO_FIX_SAVE_BMP</a>
+<a name="ln620">    return std::move(std::make_unique&lt;GentooFix_SaveBMP&gt;());</a>
+<a name="ln621">  #else</a>
+<a name="ln622">    return std::move(std::make_unique&lt;FreeImageTool&gt;()); // C++ equals shit, std::unique_ptr equals shit</a>
+<a name="ln623">  #endif</a>
+<a name="ln624">  }</a>
+<a name="ln625"> </a>
+<a name="ln626"> </a>
+<a name="ln627"> </a>
+<a name="ln628">  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln629">  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln630">  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln631"> </a>
+<a name="ln632">  bool FreeImageTool::LoadImageFromFile(const wchar_t* a_fileName, </a>
+<a name="ln633">                                        int&amp; w, int&amp; h, int&amp; bpp, std::vector&lt;int&gt;&amp; a_data)</a>
+<a name="ln634">  {</a>
+<a name="ln635">    const std::wstring fileExt = CutFileExt(a_fileName);</a>
+<a name="ln636"> </a>
+<a name="ln637">    if (fileExt == L&quot;.image4f&quot; || fileExt == L&quot;.image1i&quot; || fileExt == L&quot;.image1ui&quot; || fileExt == L&quot;.image4b&quot; || fileExt == L&quot;.image4ub&quot;)</a>
+<a name="ln638">    {</a>
+<a name="ln639">      return m_pInternal-&gt;LoadImageFromFile(a_fileName, </a>
+<a name="ln640">                                            w, h, bpp, a_data);</a>
+<a name="ln641">    }</a>
+<a name="ln642"> </a>
+<a name="ln643">    FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;</a>
+<a name="ln644">    FIBITMAP *dib(NULL), *converted(NULL);</a>
+<a name="ln645">    </a>
+<a name="ln646">    int bytesPerPixel = HRUtils_LoadImageFromFileToPairOfFreeImageObjects(a_fileName, dib, converted, &amp;fif);</a>
+<a name="ln647">    if (bytesPerPixel == 0)</a>
+<a name="ln648">    {</a>
+<a name="ln649">      HrError(L&quot;FreeImage failed to load image: &quot;, a_fileName);</a>
+<a name="ln650">      return false;</a>
+<a name="ln651">    }</a>
+<a name="ln652"> </a>
+<a name="ln653">    w   = FreeImage_GetWidth(converted);</a>
+<a name="ln654">    h   = FreeImage_GetHeight(converted);</a>
+<a name="ln655">    bpp = bytesPerPixel;</a>
+<a name="ln656">    </a>
+<a name="ln657">    if (w == 0 || h == 0)</a>
+<a name="ln658">    {</a>
+<a name="ln659">      HrError(L&quot;FreeImage failed for undefined reason, file : &quot;, a_fileName);</a>
+<a name="ln660">      FreeImage_Unload(converted);</a>
+<a name="ln661">      FreeImage_Unload(dib);</a>
+<a name="ln662">      return false;</a>
+<a name="ln663">    }</a>
+<a name="ln664">   </a>
+<a name="ln665">    a_data.resize(w*h*bpp/sizeof(int));</a>
+<a name="ln666">   </a>
+<a name="ln667">    HRUtils_GetImageDataFromFreeImageObject(converted, (char*)a_data.data());</a>
+<a name="ln668">    </a>
+<a name="ln669">    FreeImage_Unload(converted);</a>
+<a name="ln670">    FreeImage_Unload(dib);</a>
+<a name="ln671"> </a>
+<a name="ln672">    return true;</a>
+<a name="ln673">  }</a>
+<a name="ln674"> </a>
+<a name="ln675">  bool FreeImageTool::LoadImageFromFile(const wchar_t* a_fileName,</a>
+<a name="ln676">                                        int&amp; w, int&amp; h, std::vector&lt;float&gt;&amp; a_data)</a>
+<a name="ln677">  {</a>
+<a name="ln678">    const wchar_t* filename = a_fileName;</a>
+<a name="ln679"> </a>
+<a name="ln680">    FREE_IMAGE_FORMAT fif = FIF_UNKNOWN; // image format</a>
+<a name="ln681">    FIBITMAP *dib(NULL), *converted(NULL);</a>
+<a name="ln682">    BYTE* bits(NULL);                    // pointer to the image data</a>
+<a name="ln683">    unsigned int width(0), height(0);    //image width and height</a>
+<a name="ln684"> </a>
+<a name="ln685">    //check the file signature and deduce its format</a>
+<a name="ln686">    //if still unknown, try to guess the file format from the file extension</a>
+<a name="ln687">    //</a>
+<a name="ln688">    #if defined WIN32</a>
+<a name="ln689">    fif = FreeImage_GetFileTypeU(filename, 0);</a>
+<a name="ln690">    #else</a>
+<a name="ln691">    char filename_s[256];</a>
+<a name="ln692">    wcstombs(filename_s, filename, sizeof(filename_s));</a>
+<a name="ln693">    fif = FreeImage_GetFileType(filename_s, 0);</a>
+<a name="ln694">    #endif</a>
+<a name="ln695"> </a>
+<a name="ln696">    if (fif == FIF_UNKNOWN)</a>
+<a name="ln697">    {</a>
+<a name="ln698">    #if defined WIN32</a>
+<a name="ln699">      fif = FreeImage_GetFIFFromFilenameU(filename);</a>
+<a name="ln700">    #else</a>
+<a name="ln701">      fif = FreeImage_GetFIFFromFilename(filename_s);</a>
+<a name="ln702">    #endif</a>
+<a name="ln703">    }</a>
+<a name="ln704"> </a>
+<a name="ln705">    if (fif == FIF_UNKNOWN)</a>
+<a name="ln706">    {</a>
+<a name="ln707">      std::cerr &lt;&lt; &quot;FreeImage failed to guess file image format: &quot; &lt;&lt; filename &lt;&lt; std::endl;</a>
+<a name="ln708">      return false;</a>
+<a name="ln709">    }</a>
+<a name="ln710"> </a>
+<a name="ln711">    //check that the plugin has reading capabilities and load the file</a>
+<a name="ln712">    //</a>
+<a name="ln713">    if (FreeImage_FIFSupportsReading(fif))</a>
+<a name="ln714">    {</a>
+<a name="ln715">    #if defined WIN32</a>
+<a name="ln716">      dib = FreeImage_LoadU(fif, filename);</a>
+<a name="ln717">    #else</a>
+<a name="ln718">      dib = FreeImage_Load(fif, filename_s);</a>
+<a name="ln719">    #endif</a>
+<a name="ln720">    }</a>
+<a name="ln721">    else</a>
+<a name="ln722">    {</a>
+<a name="ln723">      std::cerr &lt;&lt; &quot;FreeImage does not support file image format: &quot; &lt;&lt; filename &lt;&lt; std::endl;</a>
+<a name="ln724">      return false;</a>
+<a name="ln725">    }</a>
+<a name="ln726"> </a>
+<a name="ln727">    bool invertY = false; //(fif != FIF_BMP);</a>
+<a name="ln728"> </a>
+<a name="ln729">    if (!dib)</a>
+<a name="ln730">    {</a>
+<a name="ln731">      std::cerr &lt;&lt; &quot;FreeImage failed to load image: &quot; &lt;&lt; filename &lt;&lt; std::endl;</a>
+<a name="ln732">      return false;</a>
+<a name="ln733">    }</a>
+<a name="ln734"> </a>
+<a name="ln735">    converted = FreeImage_ConvertToRGBF(dib);</a>
+<a name="ln736"> </a>
+<a name="ln737"> </a>
+<a name="ln738">    bits   = FreeImage_GetBits(converted);</a>
+<a name="ln739">    width  = FreeImage_GetWidth(converted);</a>
+<a name="ln740">    height = FreeImage_GetHeight(converted);</a>
+<a name="ln741"> </a>
+<a name="ln742">    const float* fbits = (const float*)bits;</a>
+<a name="ln743">    a_data.resize(width*height * 4);</a>
+<a name="ln744"> </a>
+<a name="ln745">    for (unsigned int i = 0; i &lt; width*height; i++)</a>
+<a name="ln746">    {</a>
+<a name="ln747">      a_data[4 * i + 0] = fbits[3 * i + 0];</a>
+<a name="ln748">      a_data[4 * i + 1] = fbits[3 * i + 1];</a>
+<a name="ln749">      a_data[4 * i + 2] = fbits[3 * i + 2];</a>
+<a name="ln750">      a_data[4 * i + 3] = 0.0f;</a>
+<a name="ln751">    }</a>
+<a name="ln752"> </a>
+<a name="ln753">    w = width;</a>
+<a name="ln754">    h = height;</a>
+<a name="ln755"> </a>
+<a name="ln756">    FreeImage_Unload(dib);</a>
+<a name="ln757">    FreeImage_Unload(converted);</a>
+<a name="ln758">    return true;</a>
+<a name="ln759">  }</a>
+<a name="ln760"> </a>
+<a name="ln761">  void FreeImageTool::SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, const float* a_data)</a>
+<a name="ln762">  {</a>
+<a name="ln763">    const std::wstring fileExt = CutFileExt(a_fileName);</a>
+<a name="ln764"> </a>
+<a name="ln765">    if (fileExt == L&quot;.image4f&quot;)</a>
+<a name="ln766">      m_pInternal-&gt;SaveHDRImageToFileHDR(a_fileName, w, h, a_data);</a>
+<a name="ln767">    else</a>
+<a name="ln768">    {</a>
+<a name="ln769">    #ifdef WIN32 // old 3ds max FreeImage version</a>
+<a name="ln770">      struct float3 { float x, y, z; };</a>
+<a name="ln771">      struct float4 { float x, y, z, w; };</a>
+<a name="ln772">      const float4* data = (const float4*)a_data;</a>
+<a name="ln773">      std::vector&lt;float3&gt; tempData(w*h);</a>
+<a name="ln774">      for (int i = 0; i &lt; w*h; i++)</a>
+<a name="ln775">      {</a>
+<a name="ln776">        float4 src = data[i];</a>
+<a name="ln777">        float3 dst;</a>
+<a name="ln778">        dst.x = src.x;</a>
+<a name="ln779">        dst.y = src.y;</a>
+<a name="ln780">        dst.z = src.z;</a>
+<a name="ln781">        tempData[i] = dst;</a>
+<a name="ln782">      }</a>
+<a name="ln783">      FIBITMAP* dib = FreeImage_AllocateT(FIT_RGBF, w, h);</a>
+<a name="ln784">      BYTE* bits    = FreeImage_GetBits(dib);</a>
+<a name="ln785">      memcpy(bits, &amp;tempData[0], sizeof(float3)*w*h);</a>
+<a name="ln786">    #else</a>
+<a name="ln787">      FIBITMAP *dib = FreeImage_ConvertFromRawBitsEx(FALSE, (BYTE*)a_data, FIT_RGBAF, w, h, 4*4*w, 4*32, FI_RGBA_BLUE_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_RED_MASK, FALSE);</a>
+<a name="ln788">    #endif</a>
+<a name="ln789"> </a>
+<a name="ln790">      FreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);</a>
+<a name="ln791"> </a>
+<a name="ln792">      auto imageType = FIF_HDR;</a>
+<a name="ln793">      if(fileExt == L&quot;.exr&quot; || fileExt == L&quot;.EXR&quot;)</a>
+<a name="ln794">        imageType = FIF_EXR;</a>
+<a name="ln795">      else if (fileExt == L&quot;.tiff&quot; || fileExt == L&quot;.TIFF&quot;)</a>
+<a name="ln796">        imageType = FIF_TIFF;</a>
+<a name="ln797"> </a>
+<a name="ln798">      #if defined WIN32</a>
+<a name="ln799">      if (!FreeImage_SaveU(imageType, dib, a_fileName))</a>
+<a name="ln800">      #else</a>
+<a name="ln801">      char filename_s[512];</a>
+<a name="ln802">      wcstombs(filename_s, a_fileName, sizeof(filename_s));</a>
+<a name="ln803">      if (!FreeImage_Save(imageType, dib, filename_s))</a>
+<a name="ln804">      #endif</a>
+<a name="ln805">      {</a>
+<a name="ln806">        FreeImage_Unload(dib);</a>
+<a name="ln807">        HrError(L&quot;SaveImageToFile(): FreeImage_Save error: &quot;, a_fileName);</a>
+<a name="ln808">        return;</a>
+<a name="ln809">      }</a>
+<a name="ln810"> </a>
+<a name="ln811">      FreeImage_Unload(dib);</a>
+<a name="ln812">    }</a>
+<a name="ln813">  }</a>
+<a name="ln814"> </a>
+<a name="ln815">  void FreeImageTool::SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, const int* a_data)</a>
+<a name="ln816">  {</a>
+<a name="ln817">    const std::wstring fileExt = CutFileExt(a_fileName);</a>
+<a name="ln818">    if (fileExt == L&quot;.image1i&quot; || fileExt == L&quot;.image1ui&quot; || fileExt == L&quot;.image4b&quot; || fileExt == L&quot;.image4ub&quot;)</a>
+<a name="ln819">      m_pInternal-&gt;SaveLDRImageToFileLDR(a_fileName, w, h, a_data);</a>
+<a name="ln820">    else</a>
+<a name="ln821">    {</a>
+<a name="ln822">      //BYTE* bits = (BYTE*)a_data;</a>
+<a name="ln823">      //for (int i = 0; i&lt;w*h; i++)</a>
+<a name="ln824">      //  bits[4 * i + 3] = 255;</a>
+<a name="ln825">      // FIBITMAP *dib = FreeImage_ConvertFromRawBits((BYTE*)a_data, w, h, 4 * w, 32, FI_RGBA_BLUE_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_RED_MASK, FALSE);</a>
+<a name="ln826"> </a>
+<a name="ln827">      FIBITMAP* dib = FreeImage_Allocate(w, h, 32);</a>
+<a name="ln828">      BYTE* bits    = FreeImage_GetBits(dib);</a>
+<a name="ln829">      //memcpy(bits, data, w*h*sizeof(int32_t));</a>
+<a name="ln830">      const BYTE* data2 = (const BYTE*)a_data;</a>
+<a name="ln831">      for (int i = 0; i&lt;w*h; i++)</a>
+<a name="ln832">      {</a>
+<a name="ln833">        bits[4 * i + 0] = data2[4 * i + 2];</a>
+<a name="ln834">        bits[4 * i + 1] = data2[4 * i + 1];</a>
+<a name="ln835">        bits[4 * i + 2] = data2[4 * i + 0];</a>
+<a name="ln836">        bits[4 * i + 3] = 255; // data2[4 * i + 3]; // 255 to kill alpha channel</a>
+<a name="ln837">      }</a>
+<a name="ln838"> </a>
+<a name="ln839">      FreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);</a>
+<a name="ln840"> </a>
+<a name="ln841">      auto imageFileFormat = FIF_PNG;</a>
+<a name="ln842"> </a>
+<a name="ln843">      std::wstring fileName(a_fileName);</a>
+<a name="ln844">      if (fileName.size() &gt; 4)</a>
+<a name="ln845">      {</a>
+<a name="ln846">        std::wstring resolution = fileName.substr(fileName.size() - 4, 4);</a>
+<a name="ln847"> </a>
+<a name="ln848">        if (resolution.find(L&quot;.bmp&quot;) != std::wstring::npos || resolution.find(L&quot;.BMP&quot;) != std::wstring::npos)</a>
+<a name="ln849">          imageFileFormat = FIF_BMP;</a>
+<a name="ln850">      }</a>
+<a name="ln851">      #if defined WIN32</a>
+<a name="ln852">      if (!FreeImage_SaveU(imageFileFormat, dib, a_fileName))</a>
+<a name="ln853">      #else</a>
+<a name="ln854">      char filename_s[512];</a>
+<a name="ln855">      wcstombs(filename_s, a_fileName, sizeof(filename_s));</a>
+<a name="ln856">      if (!FreeImage_Save(imageFileFormat, dib, filename_s))</a>
+<a name="ln857">      #endif</a>
+<a name="ln858">      {</a>
+<a name="ln859">        FreeImage_Unload(dib);</a>
+<a name="ln860">        HrError(L&quot;SaveImageToFile(): FreeImage_Save error on &quot;, a_fileName);</a>
+<a name="ln861">        return;</a>
+<a name="ln862">      }</a>
+<a name="ln863"> </a>
+<a name="ln864">      FreeImage_Unload(dib);</a>
+<a name="ln865">    } // else </a>
+<a name="ln866"> </a>
+<a name="ln867">  } // end function</a>
+<a name="ln868"> </a>
+<a name="ln869"> </a>
+<a name="ln870">  void FreeImageTool::Save16BitMonoImageTo16BitPNG(const wchar_t* a_fileName, int w, int h, const unsigned short* a_data)</a>
+<a name="ln871">  {</a>
+<a name="ln872">    FIBITMAP* image = FreeImage_AllocateT(FIT_UINT16, w, h);</a>
+<a name="ln873">    auto bits       = FreeImage_GetBits(image);</a>
+<a name="ln874"> </a>
+<a name="ln875">    memcpy(bits, a_data, w*h*sizeof(unsigned short));</a>
+<a name="ln876"> </a>
+<a name="ln877">    #if defined WIN32</a>
+<a name="ln878">    if (!FreeImage_SaveU(FIF_PNG, image, a_fileName))</a>
+<a name="ln879">    #else</a>
+<a name="ln880">    char filename_s[512];</a>
+<a name="ln881">    wcstombs(filename_s, a_fileName, sizeof(filename_s));</a>
+<a name="ln882">    if (!FreeImage_Save(FIF_PNG, image, filename_s))</a>
+<a name="ln883">    #endif</a>
+<a name="ln884">    {</a>
+<a name="ln885">      FreeImage_Unload(image);</a>
+<a name="ln886">      HrError(L&quot;SaveImageToFile(): FreeImage_Save error on &quot;, a_fileName);</a>
+<a name="ln887">      return;</a>
+<a name="ln888">    }</a>
+<a name="ln889"> </a>
+<a name="ln890">    FreeImage_Unload(image);</a>
+<a name="ln891">  }</a>
+<a name="ln892"> </a>
+<a name="ln893">};</a>
+<a name="ln894"> </a>
+<a name="ln895"> </a>
+
+</code></pre>
+<div class="balloon" rel="328"><p><span style="font-size:18px">&uarr;</span> <a href="https://www.viva64.com/en/w/v1028/" target="_blank">V1028</a> Possible overflow. Consider casting operands of the '4 * w * h' operator to the 'size_t' type, not the result.</p></div>
+<div class="balloon" rel="352"><p><span style="font-size:18px">&uarr;</span> <a href="https://www.viva64.com/en/w/v1028/" target="_blank">V1028</a> Possible overflow. Consider casting operands of the 'w * h' operator to the 'size_t' type, not the result.</p></div>
+
+<link rel="stylesheet" href="highlight.css">
+<script src="highlight.pack.js"></script>
+<script src="highlightjs-line-numbers.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script>hljs.initLineNumbersOnLoad();</script>
+<script>
+  $(document).ready(function() {
+      $('.balloon').each(function () {
+          var bl = $(this);
+          var line = bl.attr('rel');
+          var text = $('a[name="ln'+line+'"]').text();
+
+          var space_count = 0;
+          for(var i = 0; i<text.length; i++){
+              var char = text[i];
+              if((char !== ' ')&&(char !== '\t'))break;
+              if(char === '\t')space_count++;
+              space_count++;
+          }
+
+          bl.css('margin-left', space_count*8);
+          $('a[name="ln'+line+'"]').after(bl);
+      });
+
+      window.location = window.location;
+  });
+</script>
+</body>
+</html>
