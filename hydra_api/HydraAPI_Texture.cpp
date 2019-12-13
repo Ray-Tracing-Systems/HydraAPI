@@ -610,7 +610,7 @@ HAPI HRTextureNodeRef  hrTexture2DCreateBakedLDR(HR_TEXTURE2D_PROC_LDR_CALLBACK 
     texRes.name = outStr.str();
     texRes.id   = int32_t(g_objManager.scnData.textures.size());
     texRes.customData = malloc(customDataSize);
-    memcpy(texRes.customData, a_customData, size_t(customDataSize));
+    memcpy(texRes.customData, a_customData, size_t(customDataSize));  ///
     texRes.ldrCallback    = a_proc;
     texRes.customDataSize = customDataSize;
     texRes.wasChanged     = true;

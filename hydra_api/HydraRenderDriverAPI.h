@@ -167,7 +167,8 @@ struct HRDriverDependencyInfo
 */
 struct HRMeshDriverInput
 {
-  HRMeshDriverInput() : vertNum(0), triNum(0), pos4f(nullptr), norm4f(nullptr), texcoord2f(nullptr), tan4f(nullptr), indices(nullptr), triMatIndices(nullptr) {}
+  HRMeshDriverInput() : vertNum(0), triNum(0), pos4f(nullptr), norm4f(nullptr), texcoord2f(nullptr), 
+	                    tan4f(nullptr), indices(nullptr), triMatIndices(nullptr), allData(nullptr) {}
 
   int    vertNum;
   int    triNum;

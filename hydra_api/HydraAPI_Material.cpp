@@ -221,8 +221,8 @@ void VerifyTex(int a_matId, pugi::xml_node a_currNode)
     HRTextureNode* pTex = g_objManager.PtrById(tex);
     if(pTex == nullptr)
       HrPrint(HR_SEVERITY_WARNING, L"hrMaterialClose(",a_matId,")->VerifyTex: invalid texture id: ", texId);
-  
-    ArgCheck(a_matId, pTex->xml_node().child(L"code").child(L"generated"), a_currNode);
+	else
+      ArgCheck(a_matId, pTex->xml_node().child(L"code").child(L"generated"), a_currNode);
   }
   
   for(auto child : a_currNode.children())

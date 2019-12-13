@@ -499,9 +499,9 @@ void hrMeshSubdivideSqrt3(HRMeshRef a_mesh, int a_iterations)
       float3 PNorm3 = normalize(make_float3(PNorm.x, PNorm.y, PNorm.z));
       PNorm.x = PNorm3.x;
       PNorm.y = PNorm3.y;
-      PNorm.z = PNorm.z;
+      PNorm.z = PNorm3.z; // ?
       float4 PTan = (ATan + BTan + CTan) / 3.0f;
-      float2 Puv = (Auv + Buv + Cuv) / 3.0f;
+      float2 Puv  = (Auv + Buv + Cuv) / 3.0f;
 
       uint32_t indP = uint32_t(mesh.verticesPos.size() / 4);
       mesh.verticesPos.push_back(P.x);
@@ -637,7 +637,7 @@ void hrMeshSubdivide(HRMeshRef a_mesh, int a_iterations)
     float4 P = (A + B + C) / 3.0f;
     float4 PNorm = (ANorm + BNorm + CNorm) / 3.0f;
     float3 PNorm3 = normalize(make_float3(PNorm.x, PNorm.y, PNorm.z));
-    PNorm.x = PNorm3.x; PNorm.y = PNorm3.y; PNorm.z = PNorm.z;
+    PNorm.x = PNorm3.x; PNorm.y = PNorm3.y; PNorm.z = PNorm3.z;         // ?
     float4 PTan = (ATan + BTan + CTan) / 3.0f;
     float2 Puv = (Auv + Buv + Cuv) / 3.0f;
 
@@ -742,7 +742,7 @@ void displaceCustom(HRMesh *pMesh, const pugi::xml_node &customNode, std::vector
 
   auto texNode = customNode.child(L"texture");
   pugi::xml_node texLibNode;
-  HRTextureNode *texture;
+  HRTextureNode *texture = nullptr;
   if(texNode != nullptr)
   {
     auto id = texNode.attribute(L"id").as_int();
@@ -761,6 +761,7 @@ void displaceCustom(HRMesh *pMesh, const pugi::xml_node &customNode, std::vector
     auto ins = displaced_indices.insert(tri.x);
     if(ins.second)
     {
+	  assert(texture != nullptr);
       texture->displaceCallback((const float*)&pos, (const float*)&norm, bbox, displace_vec, texture->customData,
                                texture->customDataSize);
       mesh.verticesPos.at(tri.x * 4 + 0) += displace_vec[0];
@@ -968,7 +969,9 @@ void displaceByHeightMapTriPlanar(HRMesh *pMesh, const pugi::xml_node &heightXML
                                std::wstring(texLibNodes[5].attribute(L"loc").as_string())};
   float3 texHeight(1.0f, 1.0f, 1.0f);
   float4x4 matrix;
-  int2 texSizes[6];
+  int2 texSizes[6] = { int2(0,0), int2(0,0), int2(0,0), 
+	                   int2(0,0), int2(0,0), int2(0,0) };
+
   for(int i = 0; i < 6; ++i)
   {
     auto location = locations[i];
