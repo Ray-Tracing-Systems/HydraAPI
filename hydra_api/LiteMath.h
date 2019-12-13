@@ -772,6 +772,75 @@ namespace HydraLiteMath
      return res;
    }
 
+    static inline float4x4 lookAt(float3 eye, float3 center, float3 up)
+    {
+      float3 x, y, z; // basis; will make a rotation matrix
+
+      z.x = eye.x - center.x;
+      z.y = eye.y - center.y;
+      z.z = eye.z - center.z;
+      z = normalize(z);
+
+      y.x = up.x;
+      y.y = up.y;
+      y.z = up.z;
+
+      x = cross(y, z); // X vector = Y cross Z
+      y = cross(z, x); // Recompute Y = Z cross X
+
+      // cross product gives area of parallelogram, which is < 1.0 for
+      // non-perpendicular unit-length vectors; so normalize x, y here
+      x = normalize(x);
+      y = normalize(y);
+
+      float4x4 M;
+      M.M(0,0) = x.x; M.M(1,0) = x.y; M.M(2,0) = x.z; M.M(3,0) = -x.x * eye.x - x.y * eye.y - x.z*eye.z;
+      M.M(0,1) = y.x; M.M(1,1) = y.y; M.M(2,1) = y.z; M.M(3,1) = -y.x * eye.x - y.y * eye.y - y.z*eye.z;
+      M.M(0,2) = z.x; M.M(1,2) = z.y; M.M(2,2) = z.z; M.M(3,2) = -z.x * eye.x - z.y * eye.y - z.z*eye.z;
+      M.M(0,3) = 0.0; M.M(1,3) = 0.0; M.M(2,3) = 0.0; M.M(3,3) = 1.0;
+      return M;
+    }
+
+  static inline float4x4 projectionMatrix(float fovy, float aspect, float zNear, float zFar)
+  {
+    float4x4 res;
+    const float ymax = zNear * tanf(fovy * 3.14159265358979323846f / 360.0f);
+    const float xmax = ymax * aspect;
+
+    const float left   = -xmax;
+    const float right  = +xmax;
+    const float bottom = -ymax;
+    const float top    = +ymax;
+
+    const float temp = 2.0f * zNear;
+    const float temp2 = right - left;
+    const float temp3 = top - bottom;
+    const float temp4 = zFar - zNear;
+
+    res.M(0,0) = temp / temp2;
+    res.M(0,1) = 0.0;
+    res.M(0,2) = 0.0;
+    res.M(0,3) = 0.0;
+
+    res.M(1,0) = 0.0;
+    res.M(1,1) = temp / temp3;
+    res.M(1,2) = 0.0;
+    res.M(1,3) = 0.0;
+
+    res.M(2, 0) = (right + left) / temp2;
+    res.M(2, 1) = (top + bottom) / temp3;
+    res.M(2, 2) = (-zFar - zNear) / temp4;
+    res.M(2, 3) = -1.0;
+
+    res.M(3, 0) = 0.0;
+    res.M(3, 1) = 0.0;
+    res.M(3, 2) = (-temp * zFar) / temp4;
+    res.M(3, 3) = 0.0;
+
+    return res;
+  }
+
+
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

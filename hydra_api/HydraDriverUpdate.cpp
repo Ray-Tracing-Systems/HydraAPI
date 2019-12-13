@@ -91,6 +91,16 @@ void AddUsedMaterialChildrenRecursive(ChangeList& objects, int32_t matId)
     AddUsedMaterialChildrenRecursive(objects, subMatId1);
     AddUsedMaterialChildrenRecursive(objects, subMatId2);
   }
+  else if (matType == L"layer_material")
+  {
+    auto layers = matNode.child(L"layers");
+    for (auto node = layers.first_child(); node != nullptr; node = node.next_sibling())
+    {
+      uint32_t mat_idx   = node.attribute(L"material_id").as_uint();
+      objects.matUsed.insert(mat_idx);
+      AddUsedMaterialChildrenRecursive(objects, mat_idx);
+    }
+  }
 }
 
 void AddInstanceToDrawSequence(const HRSceneInst::Instance &instance,

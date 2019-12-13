@@ -1,0 +1,1309 @@
+
+<html>
+<head>
+
+  <meta http-equiv="Content-Type" content="text/html; charset=US-ASCII" />
+  <title>HydraAPI.cpp</title>
+
+  <link rel="stylesheet" href="../style.css"/>
+  <script src="../jquery-3.2.1.min.js"></script>
+</head>
+<body>
+
+<pre><code class = "cpp">
+<a name="ln1">#include &quot;HydraAPI.h&quot;</a>
+<a name="ln2">#include &quot;HydraInternal.h&quot;</a>
+<a name="ln3">#include &quot;HydraRenderDriverAPI.h&quot;</a>
+<a name="ln4"> </a>
+<a name="ln5">#include &lt;memory&gt;</a>
+<a name="ln6">#include &lt;vector&gt;</a>
+<a name="ln7">#include &lt;string&gt;</a>
+<a name="ln8">#include &lt;map&gt;</a>
+<a name="ln9"> </a>
+<a name="ln10">#include &lt;sstream&gt;</a>
+<a name="ln11">#include &lt;fstream&gt;</a>
+<a name="ln12">#include &lt;iomanip&gt;</a>
+<a name="ln13">#include &lt;algorithm&gt;</a>
+<a name="ln14"> </a>
+<a name="ln15">#include &quot;HydraObjectManager.h&quot;</a>
+<a name="ln16"> </a>
+<a name="ln17">#include &quot;xxhash.h&quot;</a>
+<a name="ln18">#include &lt;clocale&gt;</a>
+<a name="ln19">#include &quot;LiteMath.h&quot;</a>
+<a name="ln20">#include &quot;HydraXMLHelpers.h&quot;</a>
+<a name="ln21"> </a>
+<a name="ln22">#include &quot;FreeImage.h&quot;</a>
+<a name="ln23"> </a>
+<a name="ln24">#pragma warning(disable:4996) // Visual Studio &quot; 'wcsncpy': This function or variable may be unsafe. Consider using wcsncpy_s instead.&quot;</a>
+<a name="ln25"> </a>
+<a name="ln26">/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln27">/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln28"> </a>
+<a name="ln29">extern std::wstring      g_lastError;</a>
+<a name="ln30">extern std::wstring      g_lastErrorCallerPlace;</a>
+<a name="ln31">extern HR_INFO_CALLBACK  g_pInfoCallback;</a>
+<a name="ln32">extern HRObjectManager   g_objManager;</a>
+<a name="ln33"> </a>
+<a name="ln34"> </a>
+<a name="ln35">/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln36">/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln37"> </a>
+<a name="ln38">std::wstring ToWString(uint64_t i)</a>
+<a name="ln39">{</a>
+<a name="ln40">  std::wstringstream out;</a>
+<a name="ln41">  out &lt;&lt; i;</a>
+<a name="ln42">  return out.str();</a>
+<a name="ln43">}</a>
+<a name="ln44"> </a>
+<a name="ln45">std::wstring ToWString(int64_t i)</a>
+<a name="ln46">{</a>
+<a name="ln47">  std::wstringstream out;</a>
+<a name="ln48">  out &lt;&lt; i;</a>
+<a name="ln49">  return out.str();</a>
+<a name="ln50">}</a>
+<a name="ln51"> </a>
+<a name="ln52">std::wstring ToWString(int i)</a>
+<a name="ln53">{</a>
+<a name="ln54">  std::wstringstream out;</a>
+<a name="ln55">  out &lt;&lt; i;</a>
+<a name="ln56">  return out.str();</a>
+<a name="ln57">}</a>
+<a name="ln58"> </a>
+<a name="ln59">std::wstring ToWString(float i)</a>
+<a name="ln60">{</a>
+<a name="ln61">  std::wstringstream out;</a>
+<a name="ln62">  out &lt;&lt; i;</a>
+<a name="ln63">  return out.str();</a>
+<a name="ln64">}</a>
+<a name="ln65"> </a>
+<a name="ln66">std::wstring ToWString(unsigned int i)</a>
+<a name="ln67">{</a>
+<a name="ln68">  std::wstringstream out;</a>
+<a name="ln69">  out &lt;&lt; i;</a>
+<a name="ln70">  return out.str();</a>
+<a name="ln71">}</a>
+<a name="ln72"> </a>
+<a name="ln73">/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln74">/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln75"> </a>
+<a name="ln76">HAPI void _hrInit(HRInitInfo a_initInfo)</a>
+<a name="ln77">{</a>
+<a name="ln78">  FreeImage_Initialise(true);</a>
+<a name="ln79">  g_objManager.destroy();</a>
+<a name="ln80">  g_objManager.init(a_initInfo);</a>
+<a name="ln81">  setlocale(LC_ALL, &quot;C&quot;);</a>
+<a name="ln82">  registerBuiltInRenderDrivers();</a>
+<a name="ln83">}</a>
+<a name="ln84"> </a>
+<a name="ln85">HAPI void hrSceneLibraryClose()</a>
+<a name="ln86">{</a>
+<a name="ln87">  for (size_t i = 0; i &lt; g_objManager.renderSettings.size(); i++)</a>
+<a name="ln88">  {</a>
+<a name="ln89">    HRRenderRef render;</a>
+<a name="ln90">    render.id = int32_t(i);</a>
+<a name="ln91">    hrRenderCommand(render, L&quot;exitnow&quot;);</a>
+<a name="ln92">  }</a>
+<a name="ln93"> </a>
+<a name="ln94">  g_objManager.destroy();</a>
+<a name="ln95">}</a>
+<a name="ln96"> </a>
+<a name="ln97">HAPI const wchar_t* hrGetLastError() // if null else see msg</a>
+<a name="ln98">{</a>
+<a name="ln99">  if (g_lastError == L&quot;&quot;)</a>
+<a name="ln100">    return nullptr;</a>
+<a name="ln101">  else</a>
+<a name="ln102">    return g_lastError.c_str();</a>
+<a name="ln103">}</a>
+<a name="ln104"> </a>
+<a name="ln105">HAPI void hrInfoCallback(HR_INFO_CALLBACK pCallback)</a>
+<a name="ln106">{</a>
+<a name="ln107">  g_pInfoCallback = pCallback;</a>
+<a name="ln108">  if (g_objManager.m_pDriver != nullptr)</a>
+<a name="ln109">    g_objManager.m_pDriver-&gt;SetInfoCallBack(pCallback);</a>
+<a name="ln110">}</a>
+<a name="ln111"> </a>
+<a name="ln112"> </a>
+<a name="ln113">HAPI void hrErrorCallerPlace(const wchar_t* a_placeName, int a_line)</a>
+<a name="ln114">{</a>
+<a name="ln115">  if (a_placeName == nullptr)</a>
+<a name="ln116">    g_lastErrorCallerPlace = L&quot;&quot;;</a>
+<a name="ln117">  else</a>
+<a name="ln118">  {</a>
+<a name="ln119">    std::wstringstream strOut;</a>
+<a name="ln120">    if (a_line != 0)</a>
+<a name="ln121">      strOut &lt;&lt; L&quot;, line &quot; &lt;&lt; a_line;</a>
+<a name="ln122">    g_lastErrorCallerPlace = a_placeName + strOut.str();</a>
+<a name="ln123">  }</a>
+<a name="ln124">}</a>
+<a name="ln125"> </a>
+<a name="ln126">int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::wstring&amp; a_stateFileName);</a>
+<a name="ln127"> </a>
+<a name="ln128">HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMode, HRInitInfo a_initInfo)</a>
+<a name="ln129">{</a>
+<a name="ln130">  //hrSceneLibraryClose() ?</a>
+<a name="ln131">  _hrInit(a_initInfo);</a>
+<a name="ln132"> </a>
+<a name="ln133">  std::wstring input(a_libPath);</a>
+<a name="ln134">  </a>
+<a name="ln135">  int libStateId   = -1;</a>
+<a name="ln136">  std::wstring libFile, libFolder;</a>
+<a name="ln137">  if(input.substr(input.size() - 4) == L&quot;.xml&quot;)</a>
+<a name="ln138">  {</a>
+<a name="ln139">    // split path to file to (path to folder, file name)</a>
+<a name="ln140">    auto pos  = input.find_last_of(L&quot;/&quot;);</a>
+<a name="ln141">    libFolder = input.substr(0, pos);</a>
+<a name="ln142">    libFile   = input.substr(pos+1, input.size());</a>
+<a name="ln143">    </a>
+<a name="ln144">    auto posOfNumber = libFile.find(L&quot;_&quot;);</a>
+<a name="ln145">    auto numberStr   = libFile.substr(posOfNumber+1,5); //#TODO: implement more smart number parsing</a>
+<a name="ln146">    std::wstringstream strIn(numberStr);</a>
+<a name="ln147">    strIn &gt;&gt; libStateId;</a>
+<a name="ln148">    </a>
+<a name="ln149">    g_objManager.scnData.m_pathState = input;</a>
+<a name="ln150">    g_objManager.scnData.m_fileState = libFile;</a>
+<a name="ln151">    input = libFolder;</a>
+<a name="ln152">  }</a>
+<a name="ln153">  </a>
+<a name="ln154">  a_libPath = input.c_str();</a>
+<a name="ln155">  </a>
+<a name="ln156">  g_objManager.scnData.opened   = true;</a>
+<a name="ln157">  g_objManager.scnData.openMode = a_openMode;</a>
+<a name="ln158">  if (a_libPath != nullptr)</a>
+<a name="ln159">    g_objManager.scnData.m_path = a_libPath;</a>
+<a name="ln160"> </a>
+<a name="ln161">#if (_POSIX_C_SOURCE &gt;= 200112L || _XOPEN_SOURCE &gt;= 600)</a>
+<a name="ln162">  std::wstring s1(a_libPath);</a>
+<a name="ln163">  std::string libPath(s1.begin(), s1.end());</a>
+<a name="ln164">  std::string dataPath = libPath + &quot;/data&quot;;</a>
+<a name="ln165">#endif</a>
+<a name="ln166"> </a>
+<a name="ln167">  if (a_libPath != nullptr &amp;&amp; std::wstring(a_libPath) != L&quot;&quot; &amp;&amp; a_openMode == HR_WRITE_DISCARD)</a>
+<a name="ln168">  {</a>
+<a name="ln169"> </a>
+<a name="ln170">#if (_POSIX_C_SOURCE &gt;= 200112L || _XOPEN_SOURCE &gt;= 600)</a>
+<a name="ln171">    hr_mkdir(libPath.c_str());</a>
+<a name="ln172">    hr_mkdir(dataPath.c_str());</a>
+<a name="ln173">#elif defined WIN32</a>
+<a name="ln174">    std::wstring dataPath = std::wstring(a_libPath) + L&quot;/data&quot;;</a>
+<a name="ln175"> </a>
+<a name="ln176">    hr_cleardir(a_libPath);</a>
+<a name="ln177">    hr_mkdir(a_libPath);</a>
+<a name="ln178">    hr_mkdir(dataPath.c_str());</a>
+<a name="ln179"> </a>
+<a name="ln180">#endif</a>
+<a name="ln181"> </a>
+<a name="ln182">  }</a>
+<a name="ln183"> </a>
+<a name="ln184">  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln185"> </a>
+<a name="ln186">  for (size_t i = 0; i &lt; g_objManager.scnInst.size(); i++) // #TODO: do we have to clear them manually?</a>
+<a name="ln187">    g_objManager.scnInst[i].clear();</a>
+<a name="ln188">  g_objManager.scnInst.clear();</a>
+<a name="ln189"> </a>
+<a name="ln190">  for (size_t i = 0; i &lt; g_objManager.renderSettings.size(); i++)</a>
+<a name="ln191">    g_objManager.renderSettings[i].clear();</a>
+<a name="ln192">  g_objManager.renderSettings.clear();</a>
+<a name="ln193"> </a>
+<a name="ln194">  g_objManager.scnData.clear();</a>
+<a name="ln195">  g_objManager.m_tempBuffer = std::vector&lt;int&gt;();</a>
+<a name="ln196"> </a>
+<a name="ln197">  if (g_objManager.m_pDriver != nullptr)</a>
+<a name="ln198">  {</a>
+<a name="ln199">    g_objManager.m_pDriver-&gt;ClearAll();</a>
+<a name="ln200">    g_objManager.m_pDriver = nullptr;</a>
+<a name="ln201">  }</a>
+<a name="ln202">  g_objManager.m_currSceneId = 0;</a>
+<a name="ln203"> </a>
+<a name="ln204">  g_objManager.driverAllocated.clear();</a>
+<a name="ln205"> </a>
+<a name="ln206">  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln207"> </a>
+<a name="ln208">  if (a_openMode == HR_WRITE_DISCARD) // total clear of all objects</a>
+<a name="ln209">  {</a>
+<a name="ln210">    if (a_libPath != nullptr &amp;&amp; !std::wstring(a_libPath).empty())</a>
+<a name="ln211">    {</a>
+<a name="ln212">      std::wstring dataPath = std::wstring(a_libPath) + L&quot;/data&quot;;</a>
+<a name="ln213">     </a>
+<a name="ln214">    #if (_POSIX_C_SOURCE &gt;= 200112L || _XOPEN_SOURCE &gt;= 600)</a>
+<a name="ln215">      hr_cleardir(libPath.c_str());</a>
+<a name="ln216">      std::string dataPath2 = ws2s(a_libPath) + &quot;/data&quot;;</a>
+<a name="ln217">      hr_mkdir(dataPath2.c_str());</a>
+<a name="ln218">    #elif defined WIN32</a>
+<a name="ln219">      hr_cleardir(a_libPath);</a>
+<a name="ln220">      hr_cleardir(dataPath.c_str());</a>
+<a name="ln221">    #endif</a>
+<a name="ln222">    }</a>
+<a name="ln223">    int32_t whileImage[4] = { int32_t(0xFFFFFFFF), int32_t(0xFFFFFFFF),</a>
+<a name="ln224">                              int32_t(0xFFFFFFFF), int32_t(0xFFFFFFFF) };</a>
+<a name="ln225"> </a>
+<a name="ln226">    hrTexture2DCreateFromMemory(2, 2, 4, whileImage); // dummy white texture</a>
+<a name="ln227"> </a>
+<a name="ln228">  }</a>
+<a name="ln229">  else if (a_openMode == HR_OPEN_EXISTING || a_openMode == HR_OPEN_READ_ONLY)</a>
+<a name="ln230">  {</a>
+<a name="ln231">    return _hrSceneLibraryLoad(a_libPath, libStateId, libFile);</a>
+<a name="ln232">  }</a>
+<a name="ln233">  else</a>
+<a name="ln234">  {</a>
+<a name="ln235">    HrError(L&quot;[hrSceneLibraryOpen]: bad a_openMode = &quot;, a_openMode);</a>
+<a name="ln236">    return 0;</a>
+<a name="ln237">  }</a>
+<a name="ln238"> </a>
+<a name="ln239">  HrPrint(HR_SEVERITY_DEBUG, L&quot;[hrSceneLibraryOpen]: success&quot;);</a>
+<a name="ln240">  return 1;</a>
+<a name="ln241">}</a>
+<a name="ln242"> </a>
+<a name="ln243"> </a>
+<a name="ln244">HAPI HRSceneLibraryInfo hrSceneLibraryInfo()</a>
+<a name="ln245">{</a>
+<a name="ln246">  HRSceneLibraryInfo result;</a>
+<a name="ln247"> </a>
+<a name="ln248">  result.texturesNum      = int32_t(g_objManager.scnData.textures.size());</a>
+<a name="ln249">  result.materialsNum     = int32_t(g_objManager.scnData.materials.size());</a>
+<a name="ln250">  result.meshesNum        = int32_t(g_objManager.scnData.meshes.size());</a>
+<a name="ln251">                          </a>
+<a name="ln252">  result.camerasNum       = int32_t(g_objManager.scnData.cameras.size());</a>
+<a name="ln253">  result.scenesNum        = int32_t(g_objManager.scnInst.size());</a>
+<a name="ln254">  result.renderDriversNum = int32_t(g_objManager.renderSettings.size());</a>
+<a name="ln255"> </a>
+<a name="ln256">  return result;</a>
+<a name="ln257">}</a>
+<a name="ln258"> </a>
+<a name="ln259">void _hrFindTargetOrLastState(const wchar_t* a_libPath, int32_t a_stateId,</a>
+<a name="ln260">                              std::wstring&amp; fileName, int&amp; stateId);</a>
+<a name="ln261">std::wstring s2ws(const std::string&amp; s);</a>
+<a name="ln262"> </a>
+<a name="ln263">HAPI HRSceneLibraryFileInfo hrSceneLibraryExists(const wchar_t* a_libPath, wchar_t a_quickResponce[256])</a>
+<a name="ln264">{</a>
+<a name="ln265">  HRSceneLibraryFileInfo info;</a>
+<a name="ln266"> </a>
+<a name="ln267">  std::wstring fileName = L&quot;&quot;;</a>
+<a name="ln268">  int stateId = 0;</a>
+<a name="ln269"> </a>
+<a name="ln270">  _hrFindTargetOrLastState(a_libPath, -1,</a>
+<a name="ln271">                           fileName, stateId);</a>
+<a name="ln272"> </a>
+<a name="ln273">  if (fileName == L&quot;&quot;)</a>
+<a name="ln274">  {</a>
+<a name="ln275">    info.empty  = true;</a>
+<a name="ln276">    info.valid  = false;</a>
+<a name="ln277">    info.exists = false;</a>
+<a name="ln278">    return info;</a>
+<a name="ln279">  }</a>
+<a name="ln280"> </a>
+<a name="ln281">  pugi::xml_document xmlDoc;</a>
+<a name="ln282"> </a>
+<a name="ln283">  auto loadResult = xmlDoc.load_file(fileName.c_str());</a>
+<a name="ln284">  if (!loadResult)</a>
+<a name="ln285">  {</a>
+<a name="ln286">    std::string  str(loadResult.description());</a>
+<a name="ln287">    std::wstring errorMsg (str.begin(), str.end());</a>
+<a name="ln288">    info.empty  = true;</a>
+<a name="ln289">    info.valid  = false;</a>
+<a name="ln290">    info.exists = true;</a>
+<a name="ln291">    if(a_quickResponce != nullptr)</a>
+<a name="ln292">      wcsncpy(a_quickResponce, errorMsg.c_str(), 256);</a>
+<a name="ln293">    return info;</a>
+<a name="ln294">  }</a>
+<a name="ln295"> </a>
+<a name="ln296">  auto texturesLib  = xmlDoc.child(L&quot;textures_lib&quot;);</a>
+<a name="ln297">  auto materialsLib = xmlDoc.child(L&quot;materials_lib&quot;);</a>
+<a name="ln298">  auto geometryLib  = xmlDoc.child(L&quot;geometry_lib&quot;);</a>
+<a name="ln299">  auto lightsLib    = xmlDoc.child(L&quot;lights_lib&quot;);</a>
+<a name="ln300">  </a>
+<a name="ln301">  auto cameraLib    = xmlDoc.child(L&quot;cam_lib&quot;);</a>
+<a name="ln302">  auto settingsNode = xmlDoc.child(L&quot;render_lib&quot;);</a>
+<a name="ln303">  auto sceneNode    = xmlDoc.child(L&quot;scenes&quot;);</a>
+<a name="ln304"> </a>
+<a name="ln305">  info.empty  = false;</a>
+<a name="ln306">  info.valid  = true;</a>
+<a name="ln307">  info.exists = true;</a>
+<a name="ln308">  if (a_quickResponce != nullptr)</a>
+<a name="ln309">    wcsncpy(a_quickResponce, L&quot;&quot;, 256);</a>
+<a name="ln310"> </a>
+<a name="ln311">  if (texturesLib == nullptr || materialsLib == nullptr || lightsLib == nullptr || cameraLib == nullptr || geometryLib == nullptr || settingsNode == nullptr || sceneNode == nullptr)</a>
+<a name="ln312">  {</a>
+<a name="ln313">    wcsncpy(a_quickResponce, L&quot;nodn't have one of (textures_lib, materials_lib, lights_lib, cam_lib, geometry_lib, render_lib, scenes)&quot;, 256);</a>
+<a name="ln314">    info.valid = false;</a>
+<a name="ln315">  }</a>
+<a name="ln316"> </a>
+<a name="ln317">  if(stateId == 0)</a>
+<a name="ln318">    info.empty = true;</a>
+<a name="ln319"> </a>
+<a name="ln320">  if(sceneNode.first_child() == nullptr || geometryLib.first_child() == nullptr || materialsLib.first_child() == nullptr)</a>
+<a name="ln321">    info.empty = true;</a>
+<a name="ln322"> </a>
+<a name="ln323">  if(info.empty)</a>
+<a name="ln324">    wcsncpy(a_quickResponce, L&quot;empty library&quot;, 256);</a>
+<a name="ln325"> </a>
+<a name="ln326">  info.lastStateId = stateId;</a>
+<a name="ln327"> </a>
+<a name="ln328">  return info;</a>
+<a name="ln329">}</a>
+<a name="ln330"> </a>
+<a name="ln331">///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln332">///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln333">///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln334">///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln335"> </a>
+<a name="ln336"> </a>
+<a name="ln337">// Final Scene </a>
+<a name="ln338">//</a>
+<a name="ln339">HAPI HRSceneInstRef hrSceneCreate(const wchar_t* a_objectName) </a>
+<a name="ln340">{ </a>
+<a name="ln341">  g_objManager.scnInst.push_back(HRSceneInst());</a>
+<a name="ln342">  HRSceneInstRef ref;</a>
+<a name="ln343">  ref.id = HR_IDType(g_objManager.scnInst.size() - 1);</a>
+<a name="ln344"> </a>
+<a name="ln345">  pugi::xml_node nodeXml = g_objManager.scenes_node_append_child();</a>
+<a name="ln346">  std::wstring idStr     = ToWString(ref.id);</a>
+<a name="ln347">  </a>
+<a name="ln348">	nodeXml.append_attribute(L&quot;id&quot;).set_value(idStr.c_str());</a>
+<a name="ln349">  nodeXml.append_attribute(L&quot;name&quot;).set_value(a_objectName);</a>
+<a name="ln350">  nodeXml.append_attribute(L&quot;discard&quot;).set_value(L&quot;1&quot;);</a>
+<a name="ln351">  </a>
+<a name="ln352">  g_objManager.scnInst[ref.id].update(nodeXml);</a>
+<a name="ln353">  g_objManager.scnInst[ref.id].id = ref.id;</a>
+<a name="ln354"> </a>
+<a name="ln355">  return ref; </a>
+<a name="ln356">}</a>
+<a name="ln357"> </a>
+<a name="ln358">HAPI void hrSceneOpen(HRSceneInstRef a_pScn, HR_OPEN_MODE a_mode)</a>
+<a name="ln359">{</a>
+<a name="ln360">  HRSceneInst* pScn = g_objManager.PtrById(a_pScn);</a>
+<a name="ln361">  </a>
+<a name="ln362">  if (pScn == nullptr)</a>
+<a name="ln363">  {</a>
+<a name="ln364">    HrError(L&quot;hrSceneOpen: nullptr input&quot;);</a>
+<a name="ln365">    return;</a>
+<a name="ln366">  }</a>
+<a name="ln367"> </a>
+<a name="ln368">  if (pScn-&gt;opened)</a>
+<a name="ln369">  {</a>
+<a name="ln370">    HrError(L&quot;hrSceneOpen: scene is opened twice&quot;);</a>
+<a name="ln371">    return;</a>
+<a name="ln372">  }</a>
+<a name="ln373"> </a>
+<a name="ln374">  pugi::xml_node sceneNode = pScn-&gt;xml_node();</a>
+<a name="ln375"> </a>
+<a name="ln376">  if (a_mode == HR_WRITE_DISCARD)</a>
+<a name="ln377">  {</a>
+<a name="ln378">    pScn-&gt;drawBeginLight    = 0;</a>
+<a name="ln379">    pScn-&gt;drawBegin         = 0;</a>
+<a name="ln380">    pScn-&gt;lightGroupCounter = 0;</a>
+<a name="ln381">    pScn-&gt;instancedScenesCounter = 0;</a>
+<a name="ln382"> </a>
+<a name="ln383">    pScn-&gt;drawList.clear();</a>
+<a name="ln384">    pScn-&gt;drawListLights.clear();</a>
+<a name="ln385">    pScn-&gt;drawLightsCustom.clear();</a>
+<a name="ln386"> </a>
+<a name="ln387">    sceneNode.attribute(L&quot;discard&quot;).set_value(L&quot;1&quot;);</a>
+<a name="ln388">    clear_node_childs(sceneNode);                       // #NOTE: strange bug in 3ds max plugin; for some reason this node is not empty</a>
+<a name="ln389"> </a>
+<a name="ln390">    pScn-&gt;m_remapList.clear();</a>
+<a name="ln391">    pScn-&gt;m_remapCache.clear();</a>
+<a name="ln392">  }</a>
+<a name="ln393">  else if (a_mode == HR_OPEN_EXISTING)</a>
+<a name="ln394">  {</a>
+<a name="ln395">    sceneNode.attribute(L&quot;discard&quot;).set_value(L&quot;0&quot;);</a>
+<a name="ln396">  }</a>
+<a name="ln397"> </a>
+<a name="ln398">  pScn-&gt;drawBegin = pScn-&gt;drawList.size();</a>
+<a name="ln399">  pScn-&gt;opened    = true;</a>
+<a name="ln400">  pScn-&gt;openMode  = a_mode;</a>
+<a name="ln401">}</a>
+<a name="ln402"> </a>
+<a name="ln403">HAPI pugi::xml_node hrSceneParamNode(HRSceneInstRef a_pScn)</a>
+<a name="ln404">{</a>
+<a name="ln405">  HRSceneInst* pScn = g_objManager.PtrById(a_pScn);</a>
+<a name="ln406">  if (pScn == nullptr)</a>
+<a name="ln407">  {</a>
+<a name="ln408">    HrError(L&quot;hrSceneParamNode: nullptr input&quot;);</a>
+<a name="ln409">    return pugi::xml_node();</a>
+<a name="ln410">  }</a>
+<a name="ln411"> </a>
+<a name="ln412">  if (!pScn-&gt;opened)</a>
+<a name="ln413">  {</a>
+<a name="ln414">    HrError(L&quot;hrSceneParamNode: scene is not opened yet!&quot;);</a>
+<a name="ln415">    return pugi::xml_node();</a>
+<a name="ln416">  }</a>
+<a name="ln417"> </a>
+<a name="ln418">  return pScn-&gt;xml_node(); // pScn-&gt;_xml_node_curr();  //</a>
+<a name="ln419">}</a>
+<a name="ln420"> </a>
+<a name="ln421">HAPI void hrSceneClose(HRSceneInstRef a_pScn)</a>
+<a name="ln422">{</a>
+<a name="ln423">  HRSceneInst* pScn = g_objManager.PtrById(a_pScn);</a>
+<a name="ln424">  if (pScn == nullptr)</a>
+<a name="ln425">  {</a>
+<a name="ln426">    HrError(L&quot;hrSceneClose: nullptr input&quot;);</a>
+<a name="ln427">    return;</a>
+<a name="ln428">  }</a>
+<a name="ln429"> </a>
+<a name="ln430">  if (!pScn-&gt;opened)</a>
+<a name="ln431">  {</a>
+<a name="ln432">    HrError(L&quot;hrSceneClose: scene is not opened yet!&quot;);</a>
+<a name="ln433">    return;</a>
+<a name="ln434">  }</a>
+<a name="ln435"> </a>
+<a name="ln436">  pugi::xml_node sceneNode = pScn-&gt;xml_node();</a>
+<a name="ln437"> </a>
+<a name="ln438">  HydraXMLHelpers::WriteBBox(sceneNode, pScn-&gt;m_bbox);</a>
+<a name="ln439"> </a>
+<a name="ln440">  //// add remap list</a>
+<a name="ln441">  //</a>
+<a name="ln442">  if (!pScn-&gt;m_remapCache.empty())</a>
+<a name="ln443">  {</a>
+<a name="ln444"> </a>
+<a name="ln445">    pugi::xml_node allLists = sceneNode.force_child(L&quot;remap_lists&quot;);</a>
+<a name="ln446">    clear_node_childs(allLists);</a>
+<a name="ln447">    for (int id = 0; id &lt; pScn-&gt;m_remapList.size(); id++)</a>
+<a name="ln448">    {</a>
+<a name="ln449">      const auto&amp; remapList = pScn-&gt;m_remapList[id];</a>
+<a name="ln450"> </a>
+<a name="ln451">      std::wstringstream strOut;</a>
+<a name="ln452">      for (size_t i = 0; i &lt; remapList.size(); i++)</a>
+<a name="ln453">        strOut &lt;&lt; remapList[i] &lt;&lt; &quot; &quot;;</a>
+<a name="ln454">      const std::wstring finalStr = strOut.str();</a>
+<a name="ln455"> </a>
+<a name="ln456">      pugi::xml_node rlist = allLists.append_child(L&quot;remap_list&quot;);</a>
+<a name="ln457"> </a>
+<a name="ln458">      rlist.append_attribute(L&quot;id&quot;)   = id;</a>
+<a name="ln459">      rlist.append_attribute(L&quot;size&quot;) = int32_t(remapList.size());</a>
+<a name="ln460">      rlist.append_attribute(L&quot;val&quot;)  = finalStr.c_str();</a>
+<a name="ln461">    }</a>
+<a name="ln462">  }</a>
+<a name="ln463"> </a>
+<a name="ln464">  //// add all instances to xml</a>
+<a name="ln465">  //</a>
+<a name="ln466">  for (size_t i = pScn-&gt;drawBegin; i &lt; pScn-&gt;drawList.size(); i++)</a>
+<a name="ln467">  {</a>
+<a name="ln468">    pugi::xml_node nodeXML = sceneNode.append_child(L&quot;instance&quot;);</a>
+<a name="ln469">    </a>
+<a name="ln470">    auto&amp; elem = pScn-&gt;drawList[i];</a>
+<a name="ln471"> </a>
+<a name="ln472">    std::wstring id      = ToWString(i);</a>
+<a name="ln473">    std::wstring mod_id  = ToWString(elem.meshId);</a>
+<a name="ln474">    std::wstring mat_id  = ToWString(elem.remapListId);</a>
+<a name="ln475">    std::wstring scn_id  = ToWString(elem.scene_id);</a>
+<a name="ln476">    std::wstring scn_sid = ToWString(elem.scene_sid);</a>
+<a name="ln477"> </a>
+<a name="ln478">    std::wstringstream outMat;</a>
+<a name="ln479">    for (int j = 0; j &lt; 16;j++)</a>
+<a name="ln480">      outMat &lt;&lt; elem.m[j] &lt;&lt; L&quot; &quot;;</a>
+<a name="ln481"> </a>
+<a name="ln482">    std::wstring mstr = outMat.str();</a>
+<a name="ln483"> </a>
+<a name="ln484">    nodeXML.append_attribute(L&quot;id&quot;).set_value(id.c_str());</a>
+<a name="ln485">    nodeXML.append_attribute(L&quot;mesh_id&quot;).set_value(mod_id.c_str());</a>
+<a name="ln486">    nodeXML.append_attribute(L&quot;rmap_id&quot;).set_value(mat_id.c_str());</a>
+<a name="ln487">    nodeXML.append_attribute(L&quot;scn_id&quot;).set_value(scn_id.c_str());</a>
+<a name="ln488">    nodeXML.append_attribute(L&quot;scn_sid&quot;).set_value(scn_sid.c_str());</a>
+<a name="ln489">    nodeXML.append_attribute(L&quot;matrix&quot;).set_value(mstr.c_str());</a>
+<a name="ln490">  }</a>
+<a name="ln491"> </a>
+<a name="ln492">  // lights</a>
+<a name="ln493">  //</a>
+<a name="ln494">  for (size_t i = pScn-&gt;drawBeginLight; i &lt; pScn-&gt;drawListLights.size(); i++)</a>
+<a name="ln495">  {</a>
+<a name="ln496">    pugi::xml_node nodeXML = sceneNode.append_child(L&quot;instance_light&quot;);</a>
+<a name="ln497">    </a>
+<a name="ln498">    auto&amp; elem = pScn-&gt;drawListLights[i];</a>
+<a name="ln499"> </a>
+<a name="ln500">    std::wstring id     = ToWString(i);</a>
+<a name="ln501">    std::wstring mod_id = ToWString(elem.lightId);</a>
+<a name="ln502">    std::wstring lgi_id = ToWString(elem.lightGroupInstId);</a>
+<a name="ln503"> </a>
+<a name="ln504">    std::wstringstream outMat;</a>
+<a name="ln505">    for (int j = 0; j &lt; 16;j++)</a>
+<a name="ln506">      outMat &lt;&lt; elem.m[j] &lt;&lt; L&quot; &quot;;</a>
+<a name="ln507"> </a>
+<a name="ln508">    std::wstring mstr = outMat.str();</a>
+<a name="ln509"> </a>
+<a name="ln510">    nodeXML.append_attribute(L&quot;id&quot;).set_value(id.c_str());</a>
+<a name="ln511">    nodeXML.append_attribute(L&quot;light_id&quot;).set_value(mod_id.c_str());</a>
+<a name="ln512">    nodeXML.append_attribute(L&quot;matrix&quot;).set_value(mstr.c_str());</a>
+<a name="ln513">    nodeXML.append_attribute(L&quot;lgroup_id&quot;).set_value(lgi_id.c_str());</a>
+<a name="ln514">    </a>
+<a name="ln515">    if (i &lt; pScn-&gt;drawLightsCustom.size())</a>
+<a name="ln516">    {</a>
+<a name="ln517">      const std::wstring&amp; customAttribs = pScn-&gt;drawLightsCustom[i];</a>
+<a name="ln518">      </a>
+<a name="ln519">      if (customAttribs != L&quot;&quot; &amp;&amp; !HydraXMLHelpers::StringHasBadSymbols(customAttribs))</a>
+<a name="ln520">      {</a>
+<a name="ln521">        const std::wstring tempNodeStr = L&quot;&lt;temp &quot; + customAttribs + L&quot;&gt;&quot;;</a>
+<a name="ln522">        pugi::xml_document doc;</a>
+<a name="ln523">        doc.load_string(tempNodeStr.c_str());</a>
+<a name="ln524">        pugi::xml_node tempNode = doc.first_child();</a>
+<a name="ln525"> </a>
+<a name="ln526">        for (auto attrib : tempNode.attributes())</a>
+<a name="ln527">          nodeXML.append_attribute(attrib.name()) = attrib.value();</a>
+<a name="ln528">      }</a>
+<a name="ln529">      else if (customAttribs != L&quot;&quot;)</a>
+<a name="ln530">        HrError(L&quot;hrSceneClose: bad custom attribute string for light instance with id = &quot;, id);</a>
+<a name="ln531">    }</a>
+<a name="ln532"> </a>
+<a name="ln533">    pScn-&gt;drawListLights[i].node = nodeXML; // store reference to instance xml node.</a>
+<a name="ln534">  }</a>
+<a name="ln535"> </a>
+<a name="ln536">  pScn-&gt;drawBegin       = pScn-&gt;drawList.size();</a>
+<a name="ln537">  pScn-&gt;drawBeginLight  = pScn-&gt;drawListLights.size();</a>
+<a name="ln538">  pScn-&gt;opened          = false;</a>
+<a name="ln539">  pScn-&gt;driverDirtyFlag = true;</a>
+<a name="ln540">}</a>
+<a name="ln541"> </a>
+<a name="ln542">HAPI int hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh, </a>
+<a name="ln543">                         float a_mat[16], const int32_t* a_mmListm, int32_t a_mmListSize)</a>
+<a name="ln544">{</a>
+<a name="ln545">  HRSceneInst* pScn = g_objManager.PtrById(a_pScn);</a>
+<a name="ln546">  HRMesh*     pMesh = g_objManager.PtrById(a_pMesh);</a>
+<a name="ln547"> </a>
+<a name="ln548">  if (pScn == nullptr)</a>
+<a name="ln549">  {</a>
+<a name="ln550">    HrError(L&quot;hrMeshInstance: nullptr input&quot;);</a>
+<a name="ln551">    return 0;</a>
+<a name="ln552">  }</a>
+<a name="ln553"> </a>
+<a name="ln554">  if (!pScn-&gt;opened)</a>
+<a name="ln555">  {</a>
+<a name="ln556">    HrError(L&quot;hrMeshInstance: scene is not opened&quot;);</a>
+<a name="ln557">    return 0;</a>
+<a name="ln558">  }</a>
+<a name="ln559"> </a>
+<a name="ln560">  if (a_pMesh.id == -1 || pMesh == nullptr)</a>
+<a name="ln561">  {</a>
+<a name="ln562">    HrError(L&quot;hrMeshInstance: mesh with id == -1&quot;);</a>
+<a name="ln563">    return -1;</a>
+<a name="ln564">  }</a>
+<a name="ln565"> </a>
+<a name="ln566">  if(pMesh-&gt;m_empty)</a>
+<a name="ln567">  {</a>
+<a name="ln568">    HrPrint(HR_SEVERITY_WARNING, L&quot;hrMeshInstance: empty mesh with id = &quot;, a_pMesh.id);</a>
+<a name="ln569">    return -1;</a>
+<a name="ln570">  }</a>
+<a name="ln571"> </a>
+<a name="ln572"> </a>
+<a name="ln573">  int32_t mmId = -1;</a>
+<a name="ln574"> </a>
+<a name="ln575">  if (a_mmListm != nullptr &amp;&amp; a_mmListSize &gt; 0 &amp;&amp; a_mmListSize%2 == 0) // create new material remap list</a>
+<a name="ln576">  {</a>
+<a name="ln577"> </a>
+<a name="ln578">    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// sort remap list by</a>
+<a name="ln579">    struct Int2</a>
+<a name="ln580">    {</a>
+<a name="ln581">      int32_t from;</a>
+<a name="ln582">      int32_t to;</a>
+<a name="ln583">    };</a>
+<a name="ln584"> </a>
+<a name="ln585">    std::vector&lt;Int2&gt; rempListSorted(a_mmListSize/2);</a>
+<a name="ln586">    memcpy(&amp;rempListSorted[0], a_mmListm, a_mmListSize * sizeof(int));</a>
+<a name="ln587"> </a>
+<a name="ln588">    std::sort(rempListSorted.begin(), rempListSorted.end(), [](Int2 a, Int2 b) -&gt; bool { return a.from &lt; b.from; });</a>
+<a name="ln589">    a_mmListm = (const int32_t*)&amp;rempListSorted[0];</a>
+<a name="ln590">    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// sort remap list by</a>
+<a name="ln591"> </a>
+<a name="ln592">    uint64_t hash = XXH64(a_mmListm, a_mmListSize*sizeof(int32_t), 459662034736); // compute xx hash of material list</a>
+<a name="ln593">    </a>
+<a name="ln594">    auto p = pScn-&gt;m_remapCache.find(hash);</a>
+<a name="ln595">    if (p == pScn-&gt;m_remapCache.end())</a>
+<a name="ln596">    {</a>
+<a name="ln597">      std::vector&lt;int32_t&gt; data(a_mmListm, a_mmListm + a_mmListSize);</a>
+<a name="ln598">      pScn-&gt;m_remapList.push_back(data);</a>
+<a name="ln599"> </a>
+<a name="ln600">      mmId = int32_t(pScn-&gt;m_remapList.size()) - 1;</a>
+<a name="ln601">      pScn-&gt;m_remapCache[hash] = mmId;</a>
+<a name="ln602">    }</a>
+<a name="ln603">    else</a>
+<a name="ln604">      mmId = p-&gt;second;</a>
+<a name="ln605">  }</a>
+<a name="ln606"> </a>
+<a name="ln607">  HRSceneInst::Instance model;</a>
+<a name="ln608">  model.meshId      = a_pMesh.id;</a>
+<a name="ln609">  model.remapListId = mmId;                </a>
+<a name="ln610">  memcpy(model.m, a_mat, 16 * sizeof(float));</a>
+<a name="ln611">  model.scene_id = a_pScn.id;</a>
+<a name="ln612">  model.scene_sid = pScn-&gt;instancedScenesCounter;</a>
+<a name="ln613">  pScn-&gt;drawList.push_back(model);</a>
+<a name="ln614"> </a>
+<a name="ln615">  if(g_objManager.m_computeBBoxes &amp;&amp; pMesh-&gt;pImpl != nullptr)</a>
+<a name="ln616">  {</a>
+<a name="ln617">    auto bbox = pMesh-&gt;pImpl-&gt;getBBox();</a>
+<a name="ln618">    auto mat = HydraLiteMath::float4x4(a_mat);</a>
+<a name="ln619">    auto inst_bbox = transformBBox(bbox, mat);</a>
+<a name="ln620">    pScn-&gt;m_bbox = mergeBBoxes(pScn-&gt;m_bbox, inst_bbox);</a>
+<a name="ln621">  }</a>
+<a name="ln622"> </a>
+<a name="ln623">  return int(pScn-&gt;drawList.size() - 1); // number current instance</a>
+<a name="ln624">}</a>
+<a name="ln625"> </a>
+<a name="ln626">static void _hrLightInstance(HRSceneInstRef a_pScn, HRLightRef a_pLight, float a_mat[16], int32_t a_lightGroupInstanceId, const wchar_t* a_customAttribs)</a>
+<a name="ln627">{</a>
+<a name="ln628">  HRSceneInst* pScn = g_objManager.PtrById(a_pScn);</a>
+<a name="ln629">  if (pScn == nullptr)</a>
+<a name="ln630">  {</a>
+<a name="ln631">    HrError(L&quot;hrLightInstance: nullptr input&quot;);</a>
+<a name="ln632">    return;</a>
+<a name="ln633">  }</a>
+<a name="ln634"> </a>
+<a name="ln635">  if (!pScn-&gt;opened)</a>
+<a name="ln636">  {</a>
+<a name="ln637">    HrError(L&quot;hrLightInstance: scene is not opened&quot;);</a>
+<a name="ln638">    return;</a>
+<a name="ln639">  }</a>
+<a name="ln640"> </a>
+<a name="ln641">  HRSceneInst::Instance model;</a>
+<a name="ln642">  model.lightId          = a_pLight.id;</a>
+<a name="ln643">  model.lightGroupInstId = a_lightGroupInstanceId;</a>
+<a name="ln644">  model.meshId           = -1;</a>
+<a name="ln645">  model.remapListId  = -1;</a>
+<a name="ln646">  memcpy(model.m, a_mat, 16 * sizeof(float));</a>
+<a name="ln647">  pScn-&gt;drawListLights.push_back(model);</a>
+<a name="ln648">  if (a_customAttribs == nullptr)</a>
+<a name="ln649">    pScn-&gt;drawLightsCustom.push_back(L&quot;&quot;);</a>
+<a name="ln650">  else</a>
+<a name="ln651">    pScn-&gt;drawLightsCustom.push_back(a_customAttribs);</a>
+<a name="ln652">}</a>
+<a name="ln653"> </a>
+<a name="ln654">HAPI void hrLightInstance(HRSceneInstRef a_pScn, HRLightRef a_pLight, float a_mat[16], const wchar_t* a_customAttribs)</a>
+<a name="ln655">{</a>
+<a name="ln656">  _hrLightInstance(a_pScn, a_pLight, a_mat, -1, a_customAttribs);</a>
+<a name="ln657">}</a>
+<a name="ln658"> </a>
+<a name="ln659">HAPI void hrLightGroupInstanceExt(HRSceneInstRef a_pScn, HRLightGroupExt lightGroup, float m[16], const wchar_t** a_customAttribsArray)</a>
+<a name="ln660">{</a>
+<a name="ln661">  if (lightGroup.lightsNum &lt;= 0)</a>
+<a name="ln662">    return;</a>
+<a name="ln663">   </a>
+<a name="ln664">  HRSceneInst* pScn = g_objManager.PtrById(a_pScn);</a>
+<a name="ln665">  if (pScn == nullptr)</a>
+<a name="ln666">  {</a>
+<a name="ln667">    HrError(L&quot;hrLightGroupInstanceExt: nullptr input scene ref&quot;);</a>
+<a name="ln668">    return;</a>
+<a name="ln669">  }</a>
+<a name="ln670"> </a>
+<a name="ln671">  for (int i = 0; i &lt; lightGroup.lightsNum; i++)</a>
+<a name="ln672">  {</a>
+<a name="ln673">    const wchar_t* custPtr = (a_customAttribsArray == nullptr) ? nullptr : a_customAttribsArray[i];</a>
+<a name="ln674">    HydraLiteMath::float4x4 mFinal = mul(HydraLiteMath::float4x4(m), HydraLiteMath::float4x4(lightGroup.matrix[i]));</a>
+<a name="ln675">    _hrLightInstance(a_pScn, lightGroup.lights[i], mFinal.L(), pScn-&gt;lightGroupCounter, custPtr);</a>
+<a name="ln676">  }</a>
+<a name="ln677"> </a>
+<a name="ln678">  pScn-&gt;lightGroupCounter++;</a>
+<a name="ln679">}</a>
+<a name="ln680"> </a>
+<a name="ln681">///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln682">///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln683"> </a>
+<a name="ln684"> </a>
+<a name="ln685">//IHRRenderDriver* CreateOpenGL1DrawBVH_RenderDriver();   // debug drivers</a>
+<a name="ln686">//IHRRenderDriver* CreateOpenGL1TestSplit_RenderDriver();</a>
+<a name="ln687">//IHRRenderDriver* CreateDebugPrint_RenderDriver();</a>
+<a name="ln688">//IHRRenderDriver* CreateOpenGL1DrawRays_RenderDriver();</a>
+<a name="ln689">//IHRRenderDriver* CreateOpenGL1Debug_TestCustomAttributes();</a>
+<a name="ln690"> </a>
+<a name="ln691">//std::unique_ptr&lt;IHRRenderDriver&gt; CreateRenderFromString(const wchar_t *a_className, const wchar_t *a_options)</a>
+<a name="ln692">//{</a>
+<a name="ln693">//  if (!wcscmp(a_className, L&quot;opengl1&quot;))</a>
+<a name="ln694">//    return std::unique_ptr&lt;IHRRenderDriver&gt;(CreateOpenGL1_RenderDriver());</a>
+<a name="ln695">//  else if (!wcscmp(a_className, L&quot;opengl1Debug&quot;))</a>
+<a name="ln696">//    return std::unique_ptr&lt;IHRRenderDriver&gt;(CreateOpenGL1Debug_RenderDriver());</a>
+<a name="ln697">//  else if (!wcscmp(a_className, L&quot;opengl1TestSplit&quot;))</a>
+<a name="ln698">//    return std::unique_ptr&lt;IHRRenderDriver&gt;(CreateOpenGL1TestSplit_RenderDriver());</a>
+<a name="ln699">//  else if (!wcscmp(a_className, L&quot;opengl1DelayedLoad&quot;))</a>
+<a name="ln700">//    return std::unique_ptr&lt;IHRRenderDriver&gt;(CreateOpenGL1_DelayedLoad_RenderDriver(false));</a>
+<a name="ln701">//  else if (!wcscmp(a_className, L&quot;opengl1DelayedLoad2&quot;))</a>
+<a name="ln702">//    return std::unique_ptr&lt;IHRRenderDriver&gt;(CreateOpenGL1_DelayedLoad_RenderDriver(true));</a>
+<a name="ln703">//  else if (!wcscmp(a_className, L&quot;opengl1TestCustomAttributes&quot;))</a>
+<a name="ln704">//    return std::unique_ptr&lt;IHRRenderDriver&gt;(CreateOpenGL1Debug_TestCustomAttributes());</a>
+<a name="ln705">//  else if (!wcscmp(a_className, L&quot;opengl1DrawBvh&quot;))</a>
+<a name="ln706">//    return std::unique_ptr&lt;IHRRenderDriver&gt;(CreateOpenGL1DrawBVH_RenderDriver());</a>
+<a name="ln707">//  else if (!wcscmp(a_className, L&quot;opengl1DrawRays&quot;))</a>
+<a name="ln708">//    return std::unique_ptr&lt;IHRRenderDriver&gt;(CreateOpenGL1DrawRays_RenderDriver());</a>
+<a name="ln709">//  else if (!wcscmp(a_className, L&quot;DebugPrint&quot;))</a>
+<a name="ln710">//    return std::unique_ptr&lt;IHRRenderDriver&gt;(CreateDebugPrint_RenderDriver());</a>
+<a name="ln711">//  else if (!wcscmp(a_className, L&quot;opengl32Forward&quot;))</a>
+<a name="ln712">//    return std::unique_ptr&lt;IHRRenderDriver&gt;(CreateOpenGL32Forward_RenderDriver());</a>
+<a name="ln713">//  else if (!wcscmp(a_className, L&quot;opengl32Deferred&quot;))</a>
+<a name="ln714">//    return std::unique_ptr&lt;IHRRenderDriver&gt;(CreateOpenGL32Deferred_RenderDriver());</a>
+<a name="ln715">//  if (!wcscmp(a_className, L&quot;opengl3Utility&quot;))</a>
+<a name="ln716">//    return std::unique_ptr&lt;IHRRenderDriver&gt;(CreateOpenGL3_Utilty_RenderDriver());</a>
+<a name="ln717">//  else if (!wcscmp(a_className, L&quot;vulkan&quot;))</a>
+<a name="ln718">//  {</a>
+<a name="ln719">//    HrPrint(HR_SEVERITY_ERROR, L&quot;Define CreateVulkan_RenderDriver() and uncomment its call in CreateRenderFromString&quot;, a_className);</a>
+<a name="ln720">////    return std::unique_ptr&lt;IHRRenderDriver&gt;(CreateVulkan_RenderDriver());</a>
+<a name="ln721">//  }</a>
+<a name="ln722">//  else if (!wcscmp(a_className, L&quot;HydraModern&quot;))</a>
+<a name="ln723">//    return std::unique_ptr&lt;IHRRenderDriver&gt;(CreateHydraConnection_RenderDriver());</a>
+<a name="ln724">//  else</a>
+<a name="ln725">//  {</a>
+<a name="ln726">//    HrPrint(HR_SEVERITY_ERROR, L&quot;CreateRenderFromString, unknown render driver name &quot;, a_className);</a>
+<a name="ln727">//    return nullptr;</a>
+<a name="ln728">//  }</a>
+<a name="ln729">//}</a>
+<a name="ln730"> </a>
+<a name="ln731">HAPI HRRenderRef hrRenderCreate(const wchar_t* a_className, const wchar_t* a_flags)</a>
+<a name="ln732">{ </a>
+<a name="ln733">  HRRenderRef ref;</a>
+<a name="ln734">  ref.id = HR_IDType(g_objManager.renderSettings.size());</a>
+<a name="ln735">   </a>
+<a name="ln736">  HRRender settingsTmp;</a>
+<a name="ln737">  settingsTmp.name = a_className;</a>
+<a name="ln738">  g_objManager.renderSettings.push_back(settingsTmp);</a>
+<a name="ln739"> </a>
+<a name="ln740">  HRRender&amp; settings = g_objManager.renderSettings[ref.id];</a>
+<a name="ln741"> </a>
+<a name="ln742">  pugi::xml_node nodeXml = g_objManager.settings_lib_append_child();</a>
+<a name="ln743">  </a>
+<a name="ln744">  nodeXml.append_attribute(L&quot;type&quot;).set_value(a_className);</a>
+<a name="ln745">  nodeXml.append_attribute(L&quot;id&quot;).set_value(ref.id);</a>
+<a name="ln746">  </a>
+<a name="ln747">  g_objManager.renderSettings[ref.id].update(nodeXml); // ???</a>
+<a name="ln748">  g_objManager.renderSettings[ref.id].id = ref.id;</a>
+<a name="ln749">	</a>
+<a name="ln750">  settings.m_pDriver = std::shared_ptr&lt;IHRRenderDriver&gt;(RenderDriverFactory::Create(a_className));</a>
+<a name="ln751"> </a>
+<a name="ln752">  settings.m_pDriver-&gt;SetInfoCallBack(g_pInfoCallback);</a>
+<a name="ln753"> </a>
+<a name="ln754">  return ref; </a>
+<a name="ln755">}</a>
+<a name="ln756"> </a>
+<a name="ln757">HAPI HRRenderRef hrRenderCreateFromExistingDriver(const wchar_t* a_className, std::shared_ptr&lt;IHRRenderDriver&gt; a_pDriver)</a>
+<a name="ln758">{</a>
+<a name="ln759">  HRRenderRef ref;</a>
+<a name="ln760">  ref.id = HR_IDType(g_objManager.renderSettings.size());</a>
+<a name="ln761"> </a>
+<a name="ln762">  HRRender settingsTmp;</a>
+<a name="ln763">  settingsTmp.name = a_className;</a>
+<a name="ln764">  g_objManager.renderSettings.push_back(settingsTmp);</a>
+<a name="ln765"> </a>
+<a name="ln766">  HRRender&amp; settings = g_objManager.renderSettings[ref.id];</a>
+<a name="ln767"> </a>
+<a name="ln768">  pugi::xml_node nodeXml = g_objManager.settings_lib_append_child();</a>
+<a name="ln769"> </a>
+<a name="ln770">  nodeXml.append_attribute(L&quot;type&quot;).set_value(a_className);</a>
+<a name="ln771">  nodeXml.append_attribute(L&quot;id&quot;).set_value(ref.id);</a>
+<a name="ln772"> </a>
+<a name="ln773">  g_objManager.renderSettings[ref.id].update(nodeXml); // ???</a>
+<a name="ln774">  g_objManager.renderSettings[ref.id].id = ref.id;</a>
+<a name="ln775"> </a>
+<a name="ln776">  settings.m_pDriver = a_pDriver;</a>
+<a name="ln777">  settings.m_pDriver-&gt;SetInfoCallBack(g_pInfoCallback);</a>
+<a name="ln778"> </a>
+<a name="ln779">  return ref;</a>
+<a name="ln780">}</a>
+<a name="ln781"> </a>
+<a name="ln782"> </a>
+<a name="ln783">HAPI void hrRenderOpen(HRRenderRef a_pRender, HR_OPEN_MODE a_mode) </a>
+<a name="ln784">{</a>
+<a name="ln785">  HRRender* pSettings = g_objManager.PtrById(a_pRender);</a>
+<a name="ln786"> </a>
+<a name="ln787">  if (pSettings == nullptr)</a>
+<a name="ln788">  {</a>
+<a name="ln789">    HrError(L&quot;hrRenderOpen: nullptr input&quot;);</a>
+<a name="ln790">    return;</a>
+<a name="ln791">  }</a>
+<a name="ln792"> </a>
+<a name="ln793">  if (pSettings-&gt;opened)</a>
+<a name="ln794">  {</a>
+<a name="ln795">    HrError(L&quot;hrRenderOpen, double open settings, with id = &quot;, pSettings-&gt;id);</a>
+<a name="ln796">    return;</a>
+<a name="ln797">  }</a>
+<a name="ln798">  </a>
+<a name="ln799">  pSettings-&gt;opened   = true;</a>
+<a name="ln800">  pSettings-&gt;openMode = a_mode;</a>
+<a name="ln801">}</a>
+<a name="ln802"> </a>
+<a name="ln803">HAPI void hrRenderClose(HRRenderRef a_pRender)</a>
+<a name="ln804">{</a>
+<a name="ln805">  HRRender* pSettings = g_objManager.PtrById(a_pRender);</a>
+<a name="ln806"> </a>
+<a name="ln807">  if (pSettings == nullptr)</a>
+<a name="ln808">  {</a>
+<a name="ln809">    HrError(L&quot;hrRenderClose: nullptr input&quot;);</a>
+<a name="ln810">    return;</a>
+<a name="ln811">  }</a>
+<a name="ln812"> </a>
+<a name="ln813">  if (!pSettings-&gt;opened)</a>
+<a name="ln814">  {</a>
+<a name="ln815">    HrError(L&quot;hrRenderClose, double close settings, with id = &quot;, pSettings-&gt;id);</a>
+<a name="ln816">    return;</a>
+<a name="ln817">  }</a>
+<a name="ln818"> </a>
+<a name="ln819">  pugi::xml_node node = pSettings-&gt;xml_node();</a>
+<a name="ln820">  pugi::xml_node tool = node.child(L&quot;maxRaysPerPixel&quot;);</a>
+<a name="ln821"> </a>
+<a name="ln822">  if (tool != nullptr)</a>
+<a name="ln823">    pSettings-&gt;maxRaysPerPixel = tool.text().as_int();</a>
+<a name="ln824">  else</a>
+<a name="ln825">    pSettings-&gt;maxRaysPerPixel = 1024;</a>
+<a name="ln826"> </a>
+<a name="ln827">  pSettings-&gt;opened = false;</a>
+<a name="ln828">}</a>
+<a name="ln829"> </a>
+<a name="ln830">HAPI pugi::xml_node hrRenderParamNode(HRRenderRef a_pRender)</a>
+<a name="ln831">{</a>
+<a name="ln832">  HRRender* pSettings = g_objManager.PtrById(a_pRender);</a>
+<a name="ln833"> </a>
+<a name="ln834">  if (pSettings == nullptr)</a>
+<a name="ln835">  {</a>
+<a name="ln836">    HrError(L&quot;hrRenderParamNode: nullptr input&quot;);</a>
+<a name="ln837">    return pugi::xml_node();</a>
+<a name="ln838">  }</a>
+<a name="ln839"> </a>
+<a name="ln840">  if (!pSettings-&gt;opened)</a>
+<a name="ln841">  {</a>
+<a name="ln842">    HrError(L&quot;hrRenderParamNode, is not opened with id = &quot;, pSettings-&gt;id);</a>
+<a name="ln843">    return pugi::xml_node();</a>
+<a name="ln844">  }</a>
+<a name="ln845"> </a>
+<a name="ln846">  return pSettings-&gt;xml_node();</a>
+<a name="ln847">}</a>
+<a name="ln848"> </a>
+<a name="ln849">//const int MAX_DEVICES_NUM = 256;</a>
+<a name="ln850">//HRRenderDeviceInfoListElem g_deviceList[MAX_DEVICES_NUM];</a>
+<a name="ln851"> </a>
+<a name="ln852">HAPI const HRRenderDeviceInfoListElem* hrRenderGetDeviceList(HRRenderRef a_pRender)</a>
+<a name="ln853">{</a>
+<a name="ln854">  HRRender* pRender = g_objManager.PtrById(a_pRender);</a>
+<a name="ln855"> </a>
+<a name="ln856">  if (pRender == nullptr)</a>
+<a name="ln857">  {</a>
+<a name="ln858">    HrError(L&quot;hrRenderGetDeviceList: nullptr input&quot;);</a>
+<a name="ln859">    return nullptr;</a>
+<a name="ln860">  }</a>
+<a name="ln861"> </a>
+<a name="ln862">  auto pDriver = pRender-&gt;m_pDriver;</a>
+<a name="ln863">  if (pDriver == nullptr)</a>
+<a name="ln864">    return nullptr;</a>
+<a name="ln865"> </a>
+<a name="ln866">  return pDriver-&gt;DeviceList();</a>
+<a name="ln867">}</a>
+<a name="ln868"> </a>
+<a name="ln869">HAPI void hrRenderEnableDevice(HRRenderRef a_pRender, int32_t a_deviceId, bool a_enable)</a>
+<a name="ln870">{</a>
+<a name="ln871">  HRRender* pRender = g_objManager.PtrById(a_pRender);</a>
+<a name="ln872"> </a>
+<a name="ln873">  if (pRender == nullptr)</a>
+<a name="ln874">  {</a>
+<a name="ln875">    HrError(L&quot;hrRenderEnableDevice: nullptr input&quot;);</a>
+<a name="ln876">    return ;</a>
+<a name="ln877">  }</a>
+<a name="ln878"> </a>
+<a name="ln879">  auto pDriver = pRender-&gt;m_pDriver;</a>
+<a name="ln880">  if (pDriver == nullptr)</a>
+<a name="ln881">    return;</a>
+<a name="ln882"> </a>
+<a name="ln883">  if (!pDriver-&gt;EnableDevice(a_deviceId, a_enable))</a>
+<a name="ln884">  {</a>
+<a name="ln885">    std::wstringstream strOut;</a>
+<a name="ln886">    strOut &lt;&lt; L&quot;hrRenderEnableDevice, bad device id&quot; &lt;&lt; a_deviceId;</a>
+<a name="ln887">    std::wstring temp = strOut.str();</a>
+<a name="ln888">    HrError(temp);</a>
+<a name="ln889">  }</a>
+<a name="ln890">}</a>
+<a name="ln891"> </a>
+<a name="ln892">HAPI HRRenderUpdateInfo hrRenderHaveUpdate(HRRenderRef a_pRender)</a>
+<a name="ln893">{</a>
+<a name="ln894">  HRRender* pRender = g_objManager.PtrById(a_pRender);</a>
+<a name="ln895"> </a>
+<a name="ln896">  HRRenderUpdateInfo result;</a>
+<a name="ln897">  if (pRender == nullptr)</a>
+<a name="ln898">    return result;</a>
+<a name="ln899"> </a>
+<a name="ln900">  auto pDriver = pRender-&gt;m_pDriver;</a>
+<a name="ln901">  if (pDriver == nullptr)</a>
+<a name="ln902">    return result;</a>
+<a name="ln903"> </a>
+<a name="ln904">  result = pDriver-&gt;HaveUpdateNow(pRender-&gt;maxRaysPerPixel);</a>
+<a name="ln905">  return result;</a>
+<a name="ln906">}</a>
+<a name="ln907"> </a>
+<a name="ln908"> </a>
+<a name="ln909"> </a>
+<a name="ln910">static pugi::xml_attribute force_attrib(pugi::xml_node a_parent, const wchar_t* a_name) ///&lt; helper function</a>
+<a name="ln911">{</a>
+<a name="ln912">  pugi::xml_attribute attr = a_parent.attribute(a_name);</a>
+<a name="ln913">  if (attr != nullptr)</a>
+<a name="ln914">    return attr;</a>
+<a name="ln915">  else</a>
+<a name="ln916">    return a_parent.append_attribute(a_name);</a>
+<a name="ln917">}</a>
+<a name="ln918"> </a>
+<a name="ln919">///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln920">///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln921"> </a>
+<a name="ln922">void HR_UpdateLightsGeometryAndMaterial(pugi::xml_node a_lightLib, pugi::xml_node a_sceneInstances);</a>
+<a name="ln923"> </a>
+<a name="ln924">HAPI void hrDrawPassOnly(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pCam)</a>
+<a name="ln925">{</a>
+<a name="ln926">  HRRender* pSettings = g_objManager.PtrById(a_pRender);</a>
+<a name="ln927">  //HRSceneInst* pScn   = g_objManager.PtrById(a_pScn);</a>
+<a name="ln928">  //HRCamera*    pCam   = g_objManager.PtrById(a_pCam);</a>
+<a name="ln929"> </a>
+<a name="ln930">  if (a_pRender.id != -1)</a>
+<a name="ln931">  {</a>
+<a name="ln932">    g_objManager.m_currRenderId = a_pRender.id;</a>
+<a name="ln933">    g_objManager.m_pDriver      = pSettings-&gt;m_pDriver;</a>
+<a name="ln934">  }</a>
+<a name="ln935"> </a>
+<a name="ln936">  if (a_pScn.id != -1)</a>
+<a name="ln937">    g_objManager.m_currSceneId = a_pScn.id;</a>
+<a name="ln938"> </a>
+<a name="ln939">  if (a_pCam.id != -1)</a>
+<a name="ln940">    g_objManager.m_currCamId = a_pCam.id;</a>
+<a name="ln941"> </a>
+<a name="ln942">  if (g_objManager.scnInst.size() &lt;= g_objManager.m_currSceneId)</a>
+<a name="ln943">  {</a>
+<a name="ln944">    HrError(L&quot;hrDrawPassOnly(no scene instances were loaded), g_objManager.scnInst.size() = &quot;, g_objManager.scnInst.size());</a>
+<a name="ln945">    return;</a>
+<a name="ln946">  }</a>
+<a name="ln947"> </a>
+<a name="ln948">  HR_DriverDraw(g_objManager.scnInst[g_objManager.m_currSceneId], pSettings);</a>
+<a name="ln949">}</a>
+<a name="ln950"> </a>
+<a name="ln951">HAPI void hrRenderEvalGbuffer(HRRenderRef a_pRender)</a>
+<a name="ln952">{</a>
+<a name="ln953">  HRRender* pSettings = g_objManager.PtrById(a_pRender);</a>
+<a name="ln954"> </a>
+<a name="ln955">  if (a_pRender.id != -1 &amp;&amp; pSettings != nullptr)</a>
+<a name="ln956">  {</a>
+<a name="ln957">    g_objManager.m_currRenderId = a_pRender.id;</a>
+<a name="ln958">    g_objManager.m_pDriver      = pSettings-&gt;m_pDriver;</a>
+<a name="ln959">  }</a>
+<a name="ln960"> </a>
+<a name="ln961">  if(g_objManager.m_pDriver != nullptr)</a>
+<a name="ln962">    g_objManager.m_pDriver-&gt;EvalGBuffer();</a>
+<a name="ln963">}</a>
+<a name="ln964"> </a>
+<a name="ln965"> </a>
+<a name="ln966">HAPI IHRRenderDriver* hrRenderDriverPointer(HRRenderRef a_pRender)</a>
+<a name="ln967">{</a>
+<a name="ln968">  HRRender* pSettings = g_objManager.PtrById(a_pRender);</a>
+<a name="ln969">  return pSettings-&gt;m_pDriver.get();</a>
+<a name="ln970">}</a>
+<a name="ln971"> </a>
+<a name="ln972"> </a>
+<a name="ln973">void _hrSaveCurrentChanges(HRSceneData&amp; a_scnData)</a>
+<a name="ln974">{</a>
+<a name="ln975">  const std::wstring&amp; fileName = g_objManager.m_tempPathToChangeFile;</a>
+<a name="ln976">  </a>
+<a name="ln977">  pugi::xml_document  xmlDoc;</a>
+<a name="ln978">  auto texturesLib  = xmlDoc.append_child(L&quot;textures_lib&quot;);</a>
+<a name="ln979">  auto materialsLib = xmlDoc.append_child(L&quot;materials_lib&quot;);</a>
+<a name="ln980">  auto geometryLib  = xmlDoc.append_child(L&quot;geometry_lib&quot;);</a>
+<a name="ln981">  auto lightsLib    = xmlDoc.append_child(L&quot;lights_lib&quot;);</a>
+<a name="ln982">  auto cameraLib    = xmlDoc.append_child(L&quot;cam_lib&quot;);</a>
+<a name="ln983">  auto settingsNode = xmlDoc.append_child(L&quot;render_lib&quot;);</a>
+<a name="ln984">  auto sceneNode    = xmlDoc.append_child(L&quot;scenes&quot;);</a>
+<a name="ln985">  </a>
+<a name="ln986">  for(auto&amp; texture : a_scnData.textures)</a>
+<a name="ln987">  {</a>
+<a name="ln988">    if(texture.wasChanged)</a>
+<a name="ln989">    {</a>
+<a name="ln990">      texturesLib.append_copy(texture.xml_node());</a>
+<a name="ln991">      texture.wasChanged = false;</a>
+<a name="ln992">    }</a>
+<a name="ln993">  }</a>
+<a name="ln994">  </a>
+<a name="ln995">  for(auto&amp; material : a_scnData.materials)</a>
+<a name="ln996">  {</a>
+<a name="ln997">    if(material.wasChanged)</a>
+<a name="ln998">    {</a>
+<a name="ln999">      materialsLib.append_copy(material.xml_node());</a>
+<a name="ln1000">      material.wasChanged = false;</a>
+<a name="ln1001">    }</a>
+<a name="ln1002">  }</a>
+<a name="ln1003">  </a>
+<a name="ln1004">  for(auto&amp; mesh : a_scnData.meshes)</a>
+<a name="ln1005">  {</a>
+<a name="ln1006">    if(mesh.wasChanged)</a>
+<a name="ln1007">    {</a>
+<a name="ln1008">      geometryLib.append_copy(mesh.xml_node());</a>
+<a name="ln1009">      mesh.wasChanged = false;</a>
+<a name="ln1010">    }</a>
+<a name="ln1011">  }</a>
+<a name="ln1012">  </a>
+<a name="ln1013">  for(auto&amp; light : a_scnData.lights)</a>
+<a name="ln1014">  {</a>
+<a name="ln1015">    if(light.wasChanged)</a>
+<a name="ln1016">    {</a>
+<a name="ln1017">      lightsLib.append_copy(light.xml_node());</a>
+<a name="ln1018">      light.wasChanged = false;</a>
+<a name="ln1019">    }</a>
+<a name="ln1020">  }</a>
+<a name="ln1021">  </a>
+<a name="ln1022">  for(auto&amp; cam : a_scnData.cameras)</a>
+<a name="ln1023">  {</a>
+<a name="ln1024">    if(cam.wasChanged)</a>
+<a name="ln1025">    {</a>
+<a name="ln1026">      cameraLib.append_copy(cam.xml_node());</a>
+<a name="ln1027">      cam.wasChanged = false;</a>
+<a name="ln1028">    }</a>
+<a name="ln1029">  }</a>
+<a name="ln1030">  </a>
+<a name="ln1031">  for(auto&amp; scene : g_objManager.scnInst)</a>
+<a name="ln1032">    sceneNode.append_copy(scene.xml_node());</a>
+<a name="ln1033">  </a>
+<a name="ln1034">  //#TODO: add renderer settings ...</a>
+<a name="ln1035">  </a>
+<a name="ln1036">  xmlDoc.save_file(fileName.c_str(), L&quot;  &quot;);</a>
+<a name="ln1037">}</a>
+<a name="ln1038"> </a>
+<a name="ln1039">HAPI void hrCommit(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pCam) ///&lt; non blocking commit, send commands to renderer and return immediately </a>
+<a name="ln1040">{</a>
+<a name="ln1041">  HRRender* pSettings = g_objManager.PtrById(a_pRender);</a>
+<a name="ln1042">  HRSceneInst* pScn   = g_objManager.PtrById(a_pScn);</a>
+<a name="ln1043"> </a>
+<a name="ln1044">  if (pSettings == nullptr)</a>
+<a name="ln1045">    HrPrint(HR_SEVERITY_WARNING, L&quot;hrCommit, nullptr render&quot;);</a>
+<a name="ln1046"> </a>
+<a name="ln1047">  if (pScn == nullptr)</a>
+<a name="ln1048">    HrPrint(HR_SEVERITY_WARNING, L&quot;hrCommit, nullptr scene&quot;);</a>
+<a name="ln1049"> </a>
+<a name="ln1050">  if (a_pRender.id != -1)</a>
+<a name="ln1051">  {</a>
+<a name="ln1052">    g_objManager.m_currRenderId = a_pRender.id;</a>
+<a name="ln1053">    g_objManager.m_pDriver      = pSettings-&gt;m_pDriver;</a>
+<a name="ln1054">  }</a>
+<a name="ln1055"> </a>
+<a name="ln1056">  if (a_pScn.id != -1)</a>
+<a name="ln1057">    g_objManager.m_currSceneId = a_pScn.id;</a>
+<a name="ln1058"> </a>
+<a name="ln1059">  if (a_pCam.id != -1)</a>
+<a name="ln1060">    g_objManager.m_currCamId = a_pCam.id;</a>
+<a name="ln1061"> </a>
+<a name="ln1062">  // Add/Update light as geometry if Render Driver can't do it itself</a>
+<a name="ln1063">  //</a>
+<a name="ln1064">  std::wstring driver_name = L&quot;&quot;;</a>
+<a name="ln1065">  if(g_objManager.m_pDriver != nullptr)</a>
+<a name="ln1066">    g_objManager.m_pDriver-&gt;GetRenderDriverName(driver_name);</a>
+<a name="ln1067">  auto driver_info = RenderDriverFactory::GetDriverInfo(driver_name.c_str());</a>
+<a name="ln1068"> </a>
+<a name="ln1069">  bool needToAddLightsAsGeometry = (g_objManager.m_pDriver == nullptr) || !driver_info.createsLightGeometryItself;</a>
+<a name="ln1070">  if (needToAddLightsAsGeometry &amp;&amp; pScn != nullptr)</a>
+<a name="ln1071">    HR_UpdateLightsGeometryAndMaterial(g_objManager.scnData.m_lightsLib, pScn-&gt;xml_node());</a>
+<a name="ln1072">  </a>
+<a name="ln1073">  // we must loop through all scene element to define what mesh, material and light we need to Update on the render driver side</a>
+<a name="ln1074">  //</a>
+<a name="ln1075">  if (g_objManager.m_pDriver != nullptr &amp;&amp; g_objManager.m_currSceneId &lt; g_objManager.scnInst.size())</a>
+<a name="ln1076">  {</a>
+<a name="ln1077">    g_objManager.m_pDriver-&gt;SetInfoCallBack(g_pInfoCallback);</a>
+<a name="ln1078">    HR_DriverUpdate(g_objManager.scnInst[g_objManager.m_currSceneId], pSettings);</a>
+<a name="ln1079">    HR_DriverDraw  (g_objManager.scnInst[g_objManager.m_currSceneId], pSettings);</a>
+<a name="ln1080">  }</a>
+<a name="ln1081">  </a>
+<a name="ln1082">  if(g_objManager.m_lastInitInfo.saveChanges)</a>
+<a name="ln1083">    _hrSaveCurrentChanges(g_objManager.scnData); // save change if needed</a>
+<a name="ln1084"> </a>
+<a name="ln1085">  g_objManager.scnData.m_changeList.clear();</a>
+<a name="ln1086"> </a>
+<a name="ln1087">  size_t chunks = g_objManager.scnData.m_vbCache.size();</a>
+<a name="ln1088">  force_attrib(g_objManager.scnData.m_geometryLib, L&quot;total_chunks&quot;).set_value(chunks);</a>
+<a name="ln1089">  force_attrib(g_objManager.scnData.m_texturesLib, L&quot;total_chunks&quot;).set_value(chunks);</a>
+<a name="ln1090">  </a>
+<a name="ln1091">  // put chunks addresses in chunk table.</a>
+<a name="ln1092">  // note that you don't have to lock mutex due to all data is appended to the end of virtual buffer.</a>
+<a name="ln1093">  // due to this new object should not damadge previouse and only garbage collector operation must lock mutex</a>
+<a name="ln1094">  //</a>
+<a name="ln1095">  int64_t* chunkTable = g_objManager.scnData.m_vbCache.ChunksTablePtr();</a>
+<a name="ln1096">  if(chunkTable != nullptr &amp;&amp; !g_objManager.m_attachMode)</a>
+<a name="ln1097">  {</a>
+<a name="ln1098">    const size_t chunksNum = g_objManager.scnData.m_vbCache.size();</a>
+<a name="ln1099">    for(size_t i=0;i&lt;chunksNum;i++)</a>
+<a name="ln1100">    {</a>
+<a name="ln1101">      const auto&amp; chunk = g_objManager.scnData.m_vbCache.chunk_at(i);</a>
+<a name="ln1102">      if(chunk.InMemory())</a>
+<a name="ln1103">        chunkTable[i] = int64_t(chunk.localAddress);</a>
+<a name="ln1104">      else</a>
+<a name="ln1105">        chunkTable[i] = int64_t(-1);</a>
+<a name="ln1106">    }</a>
+<a name="ln1107">  }</a>
+<a name="ln1108">  </a>
+<a name="ln1109">  if(g_objManager.m_tempBuffer.size() &gt; TEMP_BUFFER_MAX_SIZE_DONT_FREE)</a>
+<a name="ln1110">    g_objManager.m_tempBuffer = g_objManager.EmptyBuffer();</a>
+<a name="ln1111">}</a>
+<a name="ln1112"> </a>
+<a name="ln1113">HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pCam)  ///&lt; blocking commit, waiting for all current commands to be executed</a>
+<a name="ln1114">{</a>
+<a name="ln1115">  std::wstringstream outStr1, outStr2, outStr3;</a>
+<a name="ln1116"> </a>
+<a name="ln1117">  outStr1 &lt;&lt; g_objManager.scnData.m_path.c_str() &lt;&lt; L&quot;/statex_&quot; &lt;&lt; std::setfill(L&quot;0&quot;[0]) &lt;&lt; std::setw(5) &lt;&lt; g_objManager.scnData.m_commitId     &lt;&lt; L&quot;.xml&quot;;</a>
+<a name="ln1118">  outStr2 &lt;&lt; g_objManager.scnData.m_path.c_str() &lt;&lt; L&quot;/change_&quot; &lt;&lt; std::setfill(L&quot;0&quot;[0]) &lt;&lt; std::setw(5) &lt;&lt; g_objManager.scnData.m_commitId     &lt;&lt; L&quot;.xml&quot;;</a>
+<a name="ln1119">  outStr3 &lt;&lt; g_objManager.scnData.m_path.c_str() &lt;&lt; L&quot;/statex_&quot; &lt;&lt; std::setfill(L&quot;0&quot;[0]) &lt;&lt; std::setw(5) &lt;&lt; g_objManager.scnData.m_commitId + 1 &lt;&lt; L&quot;.xml&quot;;</a>
+<a name="ln1120">  </a>
+<a name="ln1121">  std::wstring oldPath = outStr1.str();</a>
+<a name="ln1122">  std::wstring cngPath = outStr2.str();</a>
+<a name="ln1123">  std::wstring newPath = outStr3.str();</a>
+<a name="ln1124"> </a>
+<a name="ln1125">  //g_objManager.scnData.m_xmlDoc.save_file(oldPath.c_str(), L&quot;  &quot;);</a>
+<a name="ln1126">  g_objManager.m_tempPathToChangeFile = cngPath; // postpone g_objManager.scnData.m_xmlDocChanges.save_file(cngPath.c_str(), L&quot;  &quot;);</a>
+<a name="ln1127"> </a>
+<a name="ln1128">  hrCommit(a_pScn, a_pRender, a_pCam);</a>
+<a name="ln1129">  </a>
+<a name="ln1130">  g_objManager.scnData.m_commitId++;</a>
+<a name="ln1131">  g_objManager.scnData.m_xmlDoc.save_file(newPath.c_str(), L&quot;  &quot;);</a>
+<a name="ln1132">  </a>
+<a name="ln1133">  HRRender* pSettings = g_objManager.PtrById(a_pRender);</a>
+<a name="ln1134">  </a>
+<a name="ln1135">  //////////////</a>
+<a name="ln1136">  ////////////// Call utility render driver here</a>
+<a name="ln1137">  if(g_objManager.m_pDriver != nullptr)</a>
+<a name="ln1138">  {</a>
+<a name="ln1139">    auto settings = g_objManager.renderSettings[a_pRender.id].xml_node();</a>
+<a name="ln1140">    bool doPrepass      = false;</a>
+<a name="ln1141">    bool doDisplacement = false;</a>
+<a name="ln1142">    if (settings.child(L&quot;scenePrepass&quot;) != nullptr)</a>
+<a name="ln1143">      doPrepass = settings.child(L&quot;scenePrepass&quot;).text().as_bool();</a>
+<a name="ln1144">  </a>
+<a name="ln1145">    if (settings.child(L&quot;doDisplacement&quot;) != nullptr)</a>
+<a name="ln1146">      doDisplacement = settings.child(L&quot;doDisplacement&quot;).text().as_bool();</a>
+<a name="ln1147"> </a>
+<a name="ln1148">    //std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();</a>
+<a name="ln1149">    std::wstring fixed_state = newPath;</a>
+<a name="ln1150">    std::wstring driver_name;</a>
+<a name="ln1151">    g_objManager.m_pDriver-&gt;GetRenderDriverName(driver_name);</a>
+<a name="ln1152">    auto driver_info = RenderDriverFactory::GetDriverInfo(driver_name.c_str());</a>
+<a name="ln1153"> </a>
+<a name="ln1154">    if (driver_info.supportUtilityPrepass &amp;&amp; doPrepass)</a>
+<a name="ln1155">    {</a>
+<a name="ln1156">      std::cout &lt;&lt; &quot;Starting scene prepass...&quot; &lt;&lt; std::endl;</a>
+<a name="ln1157">      fixed_state = HR_UtilityDriverStart(newPath.c_str(), pSettings);</a>
+<a name="ln1158">    }</a>
+<a name="ln1159">    //std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();</a>
+<a name="ln1160">    //std::cout &lt;&lt; &quot;Resolution fix elapsed time = &quot; &lt;&lt; std::chrono::duration_cast&lt;std::chrono::milliseconds&gt;(end - begin).count() &lt;&lt; &quot; ms&quot; &lt;&lt;std::endl;</a>
+<a name="ln1161"> </a>
+<a name="ln1162">//#ifdef IN_DEBUG</a>
+<a name="ln1163">    if (driver_info.supportDisplacement &amp;&amp; doDisplacement)</a>
+<a name="ln1164">      fixed_state = HR_PreprocessMeshes(fixed_state.c_str());</a>
+<a name="ln1165">//#endif</a>
+<a name="ln1166">  }</a>
+<a name="ln1167"> </a>
+<a name="ln1168">  //////////////</a>
+<a name="ln1169"> </a>
+<a name="ln1170">  g_objManager.scnData.m_vbCache.FlushToDisc();</a>
+<a name="ln1171"> </a>
+<a name="ln1172">  if (pSettings != nullptr &amp;&amp; pSettings-&gt;m_pDriver != nullptr)</a>
+<a name="ln1173">    pSettings-&gt;m_pDriver-&gt;EndFlush();</a>
+<a name="ln1174">  </a>
+<a name="ln1175">} </a>
+<a name="ln1176"> </a>
+<a name="ln1177">//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln1178">//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln1179">//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</a>
+<a name="ln1180"> </a>
+<a name="ln1181">HRLightGroupExt::HRLightGroupExt(int a_lightNum)</a>
+<a name="ln1182">{</a>
+<a name="ln1183">  lights     = new HRLightRef[a_lightNum];</a>
+<a name="ln1184">  matrix     = new float16[a_lightNum];</a>
+<a name="ln1185">  customAttr = new wchar_t*[a_lightNum];</a>
+<a name="ln1186">  lightsNum  = a_lightNum;</a>
+<a name="ln1187"> </a>
+<a name="ln1188">  memset(customAttr, 0, lightsNum * sizeof(wchar_t*));</a>
+<a name="ln1189">  for (int i = 0; i &lt; a_lightNum; i++)</a>
+<a name="ln1190">  {</a>
+<a name="ln1191">    lights[i] = HRLightRef();</a>
+<a name="ln1192"> </a>
+<a name="ln1193">    float matrix2[16] = {1,0,0,0,</a>
+<a name="ln1194">                         0,1,0,0,</a>
+<a name="ln1195">                         0,0,1,0,</a>
+<a name="ln1196">                         0,0,0,1};</a>
+<a name="ln1197"> </a>
+<a name="ln1198">    memcpy(matrix[i], matrix2, sizeof(float16));</a>
+<a name="ln1199">  }</a>
+<a name="ln1200">}</a>
+<a name="ln1201"> </a>
+<a name="ln1202">HRLightGroupExt::~HRLightGroupExt()</a>
+<a name="ln1203">{</a>
+<a name="ln1204">  delete[] lights;     lights     = nullptr;</a>
+<a name="ln1205">  delete[] matrix;     matrix     = nullptr;</a>
+<a name="ln1206">  delete[] customAttr; customAttr = nullptr;</a>
+<a name="ln1207">  lightsNum = 0;</a>
+<a name="ln1208">}</a>
+<a name="ln1209"> </a>
+<a name="ln1210">HRLightGroupExt::HRLightGroupExt(const HRLightGroupExt&amp; a_in)</a>
+<a name="ln1211">{</a>
+<a name="ln1212">  lights     = new HRLightRef[a_in.lightsNum];</a>
+<a name="ln1213">  matrix     = new float16   [a_in.lightsNum];</a>
+<a name="ln1214">  customAttr = new wchar_t*  [a_in.lightsNum];</a>
+<a name="ln1215">  lightsNum  = a_in.lightsNum;</a>
+<a name="ln1216"> </a>
+<a name="ln1217">  memcpy(lights, a_in.lights, a_in.lightsNum * sizeof(HRLightRef));</a>
+<a name="ln1218">  memcpy(matrix, a_in.matrix, a_in.lightsNum * sizeof(float16));</a>
+<a name="ln1219">  memcpy(customAttr, a_in.customAttr, a_in.lightsNum * sizeof(wchar_t*));</a>
+<a name="ln1220">}</a>
+<a name="ln1221"> </a>
+<a name="ln1222">HRLightGroupExt&amp; HRLightGroupExt::operator=(const HRLightGroupExt&amp; a_in)</a>
+<a name="ln1223">{</a>
+<a name="ln1224">  lights     = new HRLightRef[a_in.lightsNum];</a>
+<a name="ln1225">  matrix     = new float16   [a_in.lightsNum];</a>
+<a name="ln1226">  customAttr = new wchar_t*[a_in.lightsNum];</a>
+<a name="ln1227">  lightsNum  = a_in.lightsNum;</a>
+<a name="ln1228"> </a>
+<a name="ln1229">  memcpy(lights, a_in.lights, a_in.lightsNum * sizeof(HRLightRef));</a>
+<a name="ln1230">  memcpy(matrix, a_in.matrix, a_in.lightsNum * sizeof(float16));</a>
+<a name="ln1231">  memcpy(customAttr, a_in.customAttr, a_in.lightsNum * sizeof(wchar_t*));</a>
+<a name="ln1232">  return *this;</a>
+<a name="ln1233">}</a>
+<a name="ln1234"> </a>
+<a name="ln1235">HRLightGroupExt::HRLightGroupExt(HRLightGroupExt&amp;&amp; a_in)</a>
+<a name="ln1236">{</a>
+<a name="ln1237">  this-&gt;lightsNum  = a_in.lightsNum;</a>
+<a name="ln1238">  this-&gt;lights     = a_in.lights; </a>
+<a name="ln1239">  this-&gt;matrix     = a_in.matrix;</a>
+<a name="ln1240">  this-&gt;customAttr = a_in.customAttr;</a>
+<a name="ln1241"> </a>
+<a name="ln1242">  a_in.lightsNum  = 0;</a>
+<a name="ln1243">  a_in.lights     = nullptr;</a>
+<a name="ln1244">  a_in.matrix     = nullptr;</a>
+<a name="ln1245">}</a>
+<a name="ln1246"> </a>
+<a name="ln1247">HRLightGroupExt&amp; HRLightGroupExt::operator=(HRLightGroupExt&amp;&amp; a_in)</a>
+<a name="ln1248">{</a>
+<a name="ln1249">  this-&gt;lightsNum  = a_in.lightsNum;</a>
+<a name="ln1250">  this-&gt;lights     = a_in.lights;</a>
+<a name="ln1251">  this-&gt;matrix     = a_in.matrix;</a>
+<a name="ln1252">  this-&gt;customAttr = a_in.customAttr;</a>
+<a name="ln1253"> </a>
+<a name="ln1254">  a_in.lightsNum  = 0;</a>
+<a name="ln1255">  a_in.lights     = nullptr;</a>
+<a name="ln1256">  a_in.matrix     = nullptr;</a>
+<a name="ln1257"> </a>
+<a name="ln1258">  return *this;</a>
+<a name="ln1259">}</a>
+<a name="ln1260"> </a>
+<a name="ln1261"> </a>
+
+</code></pre>
+<div class="balloon" rel="158"><p><span style="font-size:18px">&uarr;</span> <a href="https://www.viva64.com/en/w/v547/" target="_blank">V547</a> Expression 'a_libPath != nullptr' is always true.</p></div>
+<div class="balloon" rel="210"><p><span style="font-size:18px">&uarr;</span> <a href="https://www.viva64.com/en/w/v560/" target="_blank">V560</a> A part of conditional expression is always true: a_libPath != nullptr.</p></div>
+<div class="balloon" rel="1223"><p><span style="font-size:18px">&uarr;</span> <a href="https://www.viva64.com/en/w/v794/" target="_blank">V794</a> The assignment operator should be protected from the case of 'this == &a_in'.</p></div>
+
+<link rel="stylesheet" href="highlight.css">
+<script src="highlight.pack.js"></script>
+<script src="highlightjs-line-numbers.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script>hljs.initLineNumbersOnLoad();</script>
+<script>
+  $(document).ready(function() {
+      $('.balloon').each(function () {
+          var bl = $(this);
+          var line = bl.attr('rel');
+          var text = $('a[name="ln'+line+'"]').text();
+
+          var space_count = 0;
+          for(var i = 0; i<text.length; i++){
+              var char = text[i];
+              if((char !== ' ')&&(char !== '\t'))break;
+              if(char === '\t')space_count++;
+              space_count++;
+          }
+
+          bl.css('margin-left', space_count*8);
+          $('a[name="ln'+line+'"]').after(bl);
+      });
+
+      window.location = window.location;
+  });
+</script>
+</body>
+</html>

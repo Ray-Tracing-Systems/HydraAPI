@@ -155,8 +155,7 @@ HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMod
   
   g_objManager.scnData.opened   = true;
   g_objManager.scnData.openMode = a_openMode;
-  if (a_libPath != nullptr)
-    g_objManager.scnData.m_path = a_libPath;
+  g_objManager.scnData.m_path   = a_libPath;
 
 #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
   std::wstring s1(a_libPath);
@@ -164,7 +163,7 @@ HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMod
   std::string dataPath = libPath + "/data";
 #endif
 
-  if (a_libPath != nullptr && std::wstring(a_libPath) != L"" && a_openMode == HR_WRITE_DISCARD)
+  if (std::wstring(a_libPath) != L"" && a_openMode == HR_WRITE_DISCARD)
   {
 
 #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
@@ -172,11 +171,9 @@ HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMod
     hr_mkdir(dataPath.c_str());
 #elif defined WIN32
     std::wstring dataPath = std::wstring(a_libPath) + L"/data";
-
     hr_cleardir(a_libPath);
     hr_mkdir(a_libPath);
     hr_mkdir(dataPath.c_str());
-
 #endif
 
   }

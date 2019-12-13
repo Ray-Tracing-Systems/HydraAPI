@@ -1,0 +1,285 @@
+
+<html>
+<head>
+
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>OpenGLCoreProfileUtils.h</title>
+
+  <link rel="stylesheet" href="../style.css"/>
+  <script src="../jquery-3.2.1.min.js"></script>
+</head>
+<body>
+
+<pre><code class = "cpp">
+<a name="ln1">//</a>
+<a name="ln2">// Created by hikawa on 18.08.17.</a>
+<a name="ln3">//</a>
+<a name="ln4"> </a>
+<a name="ln5">#ifndef HYDRAAPI_COREPROFILEUTILS_H</a>
+<a name="ln6">#define HYDRAAPI_COREPROFILEUTILS_H</a>
+<a name="ln7"> </a>
+<a name="ln8">#include &lt;iostream&gt;</a>
+<a name="ln9">#include &lt;unordered_map&gt;</a>
+<a name="ln10">#include &lt;fstream&gt;</a>
+<a name="ln11">#include &lt;sstream&gt;</a>
+<a name="ln12"> </a>
+<a name="ln13">#include &quot;glad/glad.h&quot;</a>
+<a name="ln14">#include &quot;GLFW/glfw3.h&quot;</a>
+<a name="ln15"> </a>
+<a name="ln16"> </a>
+<a name="ln17">#include &quot;LiteMath.h&quot;</a>
+<a name="ln18">#include &quot;pugixml.hpp&quot;</a>
+<a name="ln19">#include &quot;HydraRenderDriverAPI.h&quot;</a>
+<a name="ln20"> </a>
+<a name="ln21"> </a>
+<a name="ln22"> </a>
+<a name="ln23">using namespace HydraLiteMath;</a>
+<a name="ln24"> </a>
+<a name="ln25">#define GL_CHECK_ERRORS ThrowExceptionOnGLError(__LINE__,__FILE__);</a>
+<a name="ln26"> </a>
+<a name="ln27">static void ThrowExceptionOnGLError(int line, const char *file)</a>
+<a name="ln28">{</a>
+<a name="ln29"> </a>
+<a name="ln30">  static char errMsg[512];</a>
+<a name="ln31"> </a>
+<a name="ln32">  //вызывается функция glGetError, проверяющая не произошла ли ошибка</a>
+<a name="ln33">  //в каком-то вызове opengl и если произошла, то какой код у ошибки</a>
+<a name="ln34">  GLenum gl_error = glGetError();</a>
+<a name="ln35"> </a>
+<a name="ln36">  if (gl_error == GL_NO_ERROR)</a>
+<a name="ln37">    return;</a>
+<a name="ln38"> </a>
+<a name="ln39">  switch (gl_error)</a>
+<a name="ln40">  {</a>
+<a name="ln41">    case GL_INVALID_ENUM:</a>
+<a name="ln42">      std::cerr &lt;&lt; &quot;GL_INVALID_ENUM file &quot; &lt;&lt; file &lt;&lt; &quot; line &quot; &lt;&lt; line &lt;&lt; std::endl;</a>
+<a name="ln43">      break;</a>
+<a name="ln44"> </a>
+<a name="ln45">    case GL_INVALID_VALUE:</a>
+<a name="ln46">      std::cerr &lt;&lt; &quot;GL_INVALID_VALUE file &quot; &lt;&lt; file &lt;&lt; &quot; line &quot; &lt;&lt; line &lt;&lt; std::endl;</a>
+<a name="ln47">      break;</a>
+<a name="ln48"> </a>
+<a name="ln49">    case GL_INVALID_OPERATION:</a>
+<a name="ln50">      std::cerr &lt;&lt; &quot;GL_INVALID_OPERATION file &quot; &lt;&lt; file &lt;&lt; &quot; line &quot; &lt;&lt; line &lt;&lt; std::endl;</a>
+<a name="ln51">      break;</a>
+<a name="ln52"> </a>
+<a name="ln53">    case GL_STACK_OVERFLOW:</a>
+<a name="ln54">      std::cerr &lt;&lt; &quot;GL_STACK_OVERFLOW file &quot; &lt;&lt; file &lt;&lt; &quot; line &quot; &lt;&lt; line &lt;&lt; std::endl;</a>
+<a name="ln55">      break;</a>
+<a name="ln56"> </a>
+<a name="ln57">    case GL_STACK_UNDERFLOW:</a>
+<a name="ln58">      std::cerr &lt;&lt; &quot;GL_STACK_UNDERFLOW file &quot; &lt;&lt; file &lt;&lt; &quot; line &quot; &lt;&lt; line &lt;&lt; std::endl;</a>
+<a name="ln59">      break;</a>
+<a name="ln60"> </a>
+<a name="ln61">    case GL_OUT_OF_MEMORY:</a>
+<a name="ln62">      std::cerr &lt;&lt; &quot;GL_OUT_OF_MEMORY file &quot; &lt;&lt; file &lt;&lt; &quot; line &quot; &lt;&lt; line &lt;&lt; std::endl;</a>
+<a name="ln63">      break;</a>
+<a name="ln64"> </a>
+<a name="ln65">    default:</a>
+<a name="ln66">      std::cerr &lt;&lt; &quot;Unknown error @ file &quot; &lt;&lt; file &lt;&lt; &quot; line &quot; &lt;&lt; line &lt;&lt; std::endl;</a>
+<a name="ln67">      break;</a>
+<a name="ln68">  }</a>
+<a name="ln69"> </a>
+<a name="ln70">  throw std::runtime_error(errMsg);</a>
+<a name="ln71">}</a>
+<a name="ln72"> </a>
+<a name="ln73">std::string getexepath();</a>
+<a name="ln74"> </a>
+<a name="ln75">namespace GL_RENDER_DRIVER_UTILS {</a>
+<a name="ln76"> </a>
+<a name="ln77">  inline static int find_interval(float x)</a>
+<a name="ln78">  {</a>
+<a name="ln79">    if (fabs(x - 1.0f) &lt; 1e-5f)</a>
+<a name="ln80">      return 10;</a>
+<a name="ln81">    else</a>
+<a name="ln82">      return (int) (x * 10);</a>
+<a name="ln83">  }</a>
+<a name="ln84"> </a>
+<a name="ln85">  inline void mat4x4_transpose(float M[16], const float N[16])</a>
+<a name="ln86">  {</a>
+<a name="ln87">    for (int j = 0; j &lt; 4; j++) {</a>
+<a name="ln88">      for (int i = 0; i &lt; 4; i++)</a>
+<a name="ln89">        M[i * 4 + j] = N[j * 4 + i];</a>
+<a name="ln90">    }</a>
+<a name="ln91">  }</a>
+<a name="ln92"> </a>
+<a name="ln93">  class ShaderProgram</a>
+<a name="ln94">  {</a>
+<a name="ln95">  public:</a>
+<a name="ln96"> </a>
+<a name="ln97">      ShaderProgram() {};</a>
+<a name="ln98"> </a>
+<a name="ln99">      ShaderProgram(const std::unordered_map&lt;GLenum, std::string&gt; &amp;inputShaders, bool a_fromStrings = false);</a>
+<a name="ln100"> </a>
+<a name="ln101">      virtual ~ShaderProgram() {};</a>
+<a name="ln102"> </a>
+<a name="ln103">      void Release(); //actual destructor</a>
+<a name="ln104"> </a>
+<a name="ln105">      virtual void StartUseShader() const;</a>
+<a name="ln106"> </a>
+<a name="ln107">      virtual void StopUseShader() const;</a>
+<a name="ln108"> </a>
+<a name="ln109">      GLuint GetProgram() const { return shaderProgram; }</a>
+<a name="ln110"> </a>
+<a name="ln111"> </a>
+<a name="ln112">      bool reLink();</a>
+<a name="ln113"> </a>
+<a name="ln114">      void SetUniform(const std::string &amp;location, const float4x4 &amp;value) const;</a>
+<a name="ln115"> </a>
+<a name="ln116">      void SetUniform(const std::string &amp;location, float value) const;</a>
+<a name="ln117"> </a>
+<a name="ln118">      void SetUniform(const std::string &amp;location, double value) const;</a>
+<a name="ln119"> </a>
+<a name="ln120">      void SetUniform(const std::string &amp;location, int value) const;</a>
+<a name="ln121"> </a>
+<a name="ln122">      void SetUniform(const std::string &amp;location, unsigned int value) const;</a>
+<a name="ln123"> </a>
+<a name="ln124">      void SetUniform(const std::string &amp;location, const float4 &amp;value) const;</a>
+<a name="ln125"> </a>
+<a name="ln126">      void SetUniform(const std::string &amp;location, const float3 &amp;value) const;</a>
+<a name="ln127"> </a>
+<a name="ln128">      void SetUniform(const std::string &amp;location, const float2 &amp;value) const;</a>
+<a name="ln129"> </a>
+<a name="ln130">      void SetUniform(const std::string &amp;location, const int2 &amp;value) const;</a>
+<a name="ln131"> </a>
+<a name="ln132">  private:</a>
+<a name="ln133">      static GLuint LoadShaderObject(GLenum type, const std::string &amp;filename, bool a_fromStrings = false);</a>
+<a name="ln134"> </a>
+<a name="ln135">      GLuint shaderProgram;</a>
+<a name="ln136">      std::unordered_map&lt;GLenum, GLuint&gt; shaderObjects;</a>
+<a name="ln137">  };</a>
+<a name="ln138"> </a>
+<a name="ln139">  struct RenderTexture2D</a>
+<a name="ln140">  {</a>
+<a name="ln141">      enum RENDER_TEXTURE_TYPE</a>
+<a name="ln142">      {</a>
+<a name="ln143">          RTEX_COLOR,</a>
+<a name="ln144">          RTEX_NUM_TEXTURES</a>
+<a name="ln145">      };</a>
+<a name="ln146"> </a>
+<a name="ln147">      RenderTexture2D();</a>
+<a name="ln148"> </a>
+<a name="ln149">      RenderTexture2D(GLenum format, GLenum internal_format, GLsizei width, GLsizei height);</a>
+<a name="ln150"> </a>
+<a name="ln151">      ~RenderTexture2D();</a>
+<a name="ln152"> </a>
+<a name="ln153">      void StartRendering();</a>
+<a name="ln154"> </a>
+<a name="ln155">      void EndRendering();</a>
+<a name="ln156"> </a>
+<a name="ln157">      void ResizeAttachments(GLsizei width, GLsizei height);</a>
+<a name="ln158"> </a>
+<a name="ln159">      GLuint GetTextureId(RENDER_TEXTURE_TYPE type) { return renderTextures[type]; }</a>
+<a name="ln160"> </a>
+<a name="ln161">  protected:</a>
+<a name="ln162">      GLenum m_format;</a>
+<a name="ln163">      GLenum m_internal_format;</a>
+<a name="ln164">      GLsizei width;</a>
+<a name="ln165">      GLsizei height;</a>
+<a name="ln166">      GLuint depthTex;</a>
+<a name="ln167">      GLuint renderTextures[RTEX_NUM_TEXTURES];</a>
+<a name="ln168">      GLuint frameBufferObject;</a>
+<a name="ln169">  };</a>
+<a name="ln170"> </a>
+<a name="ln171"> </a>
+<a name="ln172">  struct LODBuffer</a>
+<a name="ln173">  {</a>
+<a name="ln174">      enum LODBUF_TEXTURE_TYPE</a>
+<a name="ln175">      {</a>
+<a name="ln176">          LODBUF_TEX_1, //emission, diffuse, reflection, reflection glossiness</a>
+<a name="ln177">          LODBUF_TEX_2, //transparency, opacity, translucence, bump</a>
+<a name="ln178">          LODBUF_TEX_3, //tesselation factor v1, v2, meshID, 0</a>
+<a name="ln179">          LODBUF_NUM_TEXTURES</a>
+<a name="ln180">      };</a>
+<a name="ln181"> </a>
+<a name="ln182">      virtual ~LODBuffer();</a>
+<a name="ln183"> </a>
+<a name="ln184">      LODBuffer(GLsizei width, GLsizei height);</a>
+<a name="ln185"> </a>
+<a name="ln186">      GLuint GetTextureId(LODBUF_TEXTURE_TYPE type);</a>
+<a name="ln187"> </a>
+<a name="ln188">      GLuint GetFrameBuffer() { return frameBufferObject; }</a>
+<a name="ln189"> </a>
+<a name="ln190">      void StartRendering();</a>
+<a name="ln191"> </a>
+<a name="ln192">      void EndRendering();</a>
+<a name="ln193"> </a>
+<a name="ln194">      void ResizeAttachments(GLsizei width, GLsizei height);</a>
+<a name="ln195"> </a>
+<a name="ln196">  protected:</a>
+<a name="ln197">      GLsizei width;</a>
+<a name="ln198">      GLsizei height;</a>
+<a name="ln199">      GLuint renderTextures[LODBUF_NUM_TEXTURES];</a>
+<a name="ln200">      GLuint depthTex;</a>
+<a name="ln201">      GLuint frameBufferObject;</a>
+<a name="ln202">  };</a>
+<a name="ln203"> </a>
+<a name="ln204"> </a>
+<a name="ln205">  struct FullScreenQuad</a>
+<a name="ln206">  {</a>
+<a name="ln207">      FullScreenQuad();</a>
+<a name="ln208"> </a>
+<a name="ln209">      virtual ~FullScreenQuad();</a>
+<a name="ln210"> </a>
+<a name="ln211">      void Draw();</a>
+<a name="ln212"> </a>
+<a name="ln213">      GLuint GetVBO() { return vertexPosBufferObject; }</a>
+<a name="ln214"> </a>
+<a name="ln215">  protected:</a>
+<a name="ln216"> </a>
+<a name="ln217">      FullScreenQuad(const FullScreenQuad &amp;rhs) {}</a>
+<a name="ln218"> </a>
+<a name="ln219">      FullScreenQuad &amp;operator=(const FullScreenQuad &amp;rhs) { return *this; }</a>
+<a name="ln220"> </a>
+<a name="ln221">      GLuint vertexPosBufferObject;</a>
+<a name="ln222">      GLuint vertexPosLocation;</a>
+<a name="ln223">      GLuint vertexArrayObject;</a>
+<a name="ln224">  };</a>
+<a name="ln225"> </a>
+<a name="ln226">  GLuint CreateEmptyTex(GLenum internalFormat, GLenum format, GLsizei width, GLsizei height, GLenum type = GL_FLOAT);</a>
+<a name="ln227"> </a>
+<a name="ln228">  void bindTexture(const ShaderProgram &amp;program, int unit, const std::string &amp;name, RenderTexture2D &amp;texture);</a>
+<a name="ln229"> </a>
+<a name="ln230">  void bindTexture(const ShaderProgram &amp;program, int unit, const std::string &amp;name, GLuint textureId);</a>
+<a name="ln231"> </a>
+<a name="ln232">  void bindTextureBuffer(const ShaderProgram &amp;program, int unit, const std::string &amp;name, GLuint tbo, GLuint textureId, GLenum format = GL_R32F);</a>
+<a name="ln233"> </a>
+<a name="ln234">  void CreatePlaceholderWhiteTexture(GLuint &amp;a_whiteTex);</a>
+<a name="ln235"> </a>
+<a name="ln236">}</a>
+<a name="ln237"> </a>
+<a name="ln238">#endif</a>
+
+</code></pre>
+<div class="balloon" rel="97"><p><span style="font-size:18px">&uarr;</span> <a href="https://www.viva64.com/en/w/v730/" target="_blank">V730</a> Not all members of a class are initialized inside the constructor. Consider inspecting: shaderProgram.</p></div>
+<div class="balloon" rel="217"><p><span style="font-size:18px">&uarr;</span> <a href="https://www.viva64.com/en/w/v730/" target="_blank">V730</a> Not all members of a class are initialized inside the constructor. Consider inspecting: vertexPosBufferObject, vertexPosLocation, vertexArrayObject.</p></div>
+
+<link rel="stylesheet" href="highlight.css">
+<script src="highlight.pack.js"></script>
+<script src="highlightjs-line-numbers.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script>hljs.initLineNumbersOnLoad();</script>
+<script>
+  $(document).ready(function() {
+      $('.balloon').each(function () {
+          var bl = $(this);
+          var line = bl.attr('rel');
+          var text = $('a[name="ln'+line+'"]').text();
+
+          var space_count = 0;
+          for(var i = 0; i<text.length; i++){
+              var char = text[i];
+              if((char !== ' ')&&(char !== '\t'))break;
+              if(char === '\t')space_count++;
+              space_count++;
+          }
+
+          bl.css('margin-left', space_count*8);
+          $('a[name="ln'+line+'"]').after(bl);
+      });
+
+      window.location = window.location;
+  });
+</script>
+</body>
+</html>

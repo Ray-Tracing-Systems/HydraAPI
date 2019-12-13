@@ -265,6 +265,26 @@ struct HRTextureNode : public HRObject<IHRTextureNode>
     }
   }
 
+  HRTextureNode& operator=(const HRTextureNode& other)
+  {
+	  HRObject::operator=(other);
+	  m_loadedFromFile = other.m_loadedFromFile;
+	  ldrCallback      = other.ldrCallback;
+	  hdrCallback      = other.hdrCallback;
+	  displaceCallback = other.displaceCallback;
+	  customDataSize   = other.customDataSize;
+	  pImpl            = other.pImpl;
+
+	  if (customDataSize == 0)
+		  customData = nullptr;
+	  else
+	  {
+		  customData = malloc(customDataSize);
+		  if (other.customData != nullptr)
+			  memcpy(customData, other.customData, customDataSize);
+	  }
+  }
+
   std::shared_ptr<IHRTextureNode> pImpl;
 
   bool m_loadedFromFile;
