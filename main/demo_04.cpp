@@ -17,7 +17,7 @@
 using pugi::xml_node;
 
 #include "../hydra_api/LiteMath.h"
-namespace hlm = HydraLiteMath;
+namespace hlm = LiteMath;
 
 ///////////////////////////////////////////////////////////////////////// window and opegl
 #if defined(WIN32)
@@ -296,12 +296,15 @@ void demo_04_instancing()
       //
       auto mscale     = hlm::scale4x4(hlm::float3(teapotScale, teapotScale, teapotScale));
       auto mtranslate = hlm::translate4x4(hlm::float3(teapotPosX, teapotPosY, teapotPosZ)); // -2.5
-      auto mrot       = hlm::rotate_Y_4x4(teapotRotX * DEG_TO_RAD);
-      auto mrot3      = hlm::rotate_X_4x4(teapotRotY * DEG_TO_RAD);
-      auto mres       = hlm::mul(mtranslate, hlm::mul(hlm::mul(mrot3, mrot), mscale));
+      auto mrot       = hlm::rotate4x4Y(teapotRotX * DEG_TO_RAD);
+      auto mrot3      = hlm::rotate4x4X(teapotRotY * DEG_TO_RAD);
+      auto mres       = mtranslate*mrot3*mrot*mscale;
 
-      int32_t remapList[6] = {0, teapotMatId, 1, teapotMatId, 2, teapotMatId};                      // #NOTE: remaplist of size 1 here: [0 --> mat4.id]
-      hrMeshInstance(scnRef, teapotRef, mres.L(), remapList, sizeof(remapList) / sizeof(int32_t));  //
+      float rowMajorData[16];
+      mres.StoreRowMajor(rowMajorData);
+
+      int32_t remapList[6] = {0, teapotMatId, 1, teapotMatId, 2, teapotMatId};                          // #NOTE: remaplist of size 1 here: [0 --> mat4.id]
+      hrMeshInstance(scnRef, teapotRef, rowMajorData, remapList, sizeof(remapList) / sizeof(int32_t));  //
     }
 
     for(int i=0;i<400;i++)
@@ -316,22 +319,31 @@ void demo_04_instancing()
 
       if(bunnyMatId >= matsNum)   bunnyMatId = matsNum-1;
 
-      auto mscale     = hlm::scale4x4(hlm::float3(bynnuScale, bynnuScale, bynnuScale));
+      auto mscale     = hlm::scale4x4    (hlm::float3(bynnuScale, bynnuScale, bynnuScale));
       auto mtranslate = hlm::translate4x4(hlm::float3(bynnuPosX, -4.0, bynnuPosZ));
-      auto mrot       = hlm::rotate_Y_4x4(bunnyRotY * DEG_TO_RAD);
-      auto mres       = hlm::mul(mtranslate, hlm::mul(mrot, mscale));
+      auto mrot       = hlm::rotate4x4Y  (bunnyRotY * DEG_TO_RAD);
+      auto mres       = mtranslate*mrot*mscale;
 
-      int32_t remapList2[2] = {0, bunnyMatId};                                                       // #NOTE: remaplist of size 1 here: [0 --> mat4.id]
-      hrMeshInstance(scnRef, bunnyRef, mres.L(), remapList2, sizeof(remapList2) / sizeof(int32_t));  //
+      float rowMajorData[16];
+      mres.StoreRowMajor(rowMajorData);
+
+      int32_t remapList2[2] = {0, bunnyMatId};                                                           // #NOTE: remaplist of size 1 here: [0 --> mat4.id]
+      hrMeshInstance(scnRef, bunnyRef, rowMajorData, remapList2, sizeof(remapList2) / sizeof(int32_t));  //
     }
 
     auto mtranslate = hlm::translate4x4(hlm::float3(0, -4, 0));
-    hrMeshInstance(scnRef, planeRef, mtranslate.L());  //
+    
+    float rowMajorData[16];
+    mtranslate.StoreRowMajor(rowMajorData);
+
+    hrMeshInstance(scnRef, planeRef, rowMajorData);  //
 
     //// instance light (!!!)
     //
     mtranslate = hlm::float4x4();                  // can use identity matrix for sky light
-    hrLightInstance(scnRef, sky, mtranslate.L());
+    mtranslate.StoreRowMajor(rowMajorData);
+
+    hrLightInstance(scnRef, sky, rowMajorData);
   }
   hrSceneClose(scnRef);
 

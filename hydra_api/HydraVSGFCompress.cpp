@@ -60,8 +60,8 @@ size_t WriteCompressed(const HydraGeomData& a_data, std::ostream& a_out, const s
   return encoder.stream.size();
 }
 
-using HydraLiteMath::float4;
-using HydraLiteMath::float2;
+using LiteMath::float4;
+using LiteMath::float2;
 
 void HR_ComputeTangentSpaceSimple(const int     vertexCount, const int     triangleCount, const uint32_t* triIndices,
                                   const float4* verticesPos, const float4* verticesNorm, const float2* vertTexCoord,
@@ -124,7 +124,6 @@ void ReadCompressed(HydraGeomData& a_data, std::istream& a_input, size_t a_compr
 
 
 #include "HydraObjectManager.h"   // #TODO: remove this
-#include "vfloat4_x64.h"
 
 BBox CalcBoundingBox4f(const float* in_array, const uint32_t a_vertexNumber)
 {

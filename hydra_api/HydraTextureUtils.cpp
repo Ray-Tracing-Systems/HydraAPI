@@ -6,8 +6,18 @@
 #include "HydraTextureUtils.h"
 #include "HydraAPI.h"
 
+#include "LiteMath.h"
+
+
 namespace HRTextureUtils
 {
+  using LiteMath::float4;
+  using LiteMath::float3;
+  using LiteMath::float2;
+  using LiteMath::make_float4;
+  using LiteMath::make_float3;
+  using LiteMath::make_float2;
+
     float fitRange(float x, float src_a, float src_b, float dest_a, float dest_b)
     {
       x = x > src_b ? src_b : x;
@@ -327,7 +337,7 @@ namespace HRTextureUtils
         for (int j = 0; j <= 1; j += 1)
         {
           float4 uv_ = float4(uv.x, uv.y, 0.0f, 1.0f);
-          uv_ = mul(matrix, uv_);
+          uv_ = matrix*uv_;
 
           uv_.x = uv_.x - floorf(uv_.x);
           uv_.y = uv_.y - floorf(uv_.y);
@@ -374,7 +384,7 @@ namespace HRTextureUtils
         for (int j = 0; j <= 1; j += 1)
         {
           float4 uv_ = float4(uv.x, uv.y, 0.0f, 1.0f);
-          uv_ = mul(matrix, uv_);
+          uv_ = matrix*uv_;
 
           uv_.x = uv_.x - floorf(uv_.x);
           uv_.y = uv_.y - floorf(uv_.y);

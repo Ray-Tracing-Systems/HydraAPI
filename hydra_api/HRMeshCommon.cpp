@@ -21,24 +21,24 @@ extern HRObjectManager g_objManager;
 
 
 
-std::vector< HydraLiteMath::float4> getVerticesFromBBox(const BBox &a_bbox)
+std::vector< LiteMath::float4> getVerticesFromBBox(const BBox &a_bbox)
 {
-  std::vector< HydraLiteMath::float4> verts;
+  std::vector< LiteMath::float4> verts;
 
-  verts.emplace_back(HydraLiteMath::float4(a_bbox.x_min, a_bbox.y_min, a_bbox.z_min, 1.0f));
-  verts.emplace_back(HydraLiteMath::float4(a_bbox.x_min, a_bbox.y_min, a_bbox.z_max, 1.0f));
-  verts.emplace_back(HydraLiteMath::float4(a_bbox.x_min, a_bbox.y_max, a_bbox.z_max, 1.0f));
-  verts.emplace_back(HydraLiteMath::float4(a_bbox.x_min, a_bbox.y_max, a_bbox.z_min, 1.0f));
+  verts.emplace_back(LiteMath::float4(a_bbox.x_min, a_bbox.y_min, a_bbox.z_min, 1.0f));
+  verts.emplace_back(LiteMath::float4(a_bbox.x_min, a_bbox.y_min, a_bbox.z_max, 1.0f));
+  verts.emplace_back(LiteMath::float4(a_bbox.x_min, a_bbox.y_max, a_bbox.z_max, 1.0f));
+  verts.emplace_back(LiteMath::float4(a_bbox.x_min, a_bbox.y_max, a_bbox.z_min, 1.0f));
 
-  verts.emplace_back(HydraLiteMath::float4(a_bbox.x_max, a_bbox.y_min, a_bbox.z_min, 1.0f));
-  verts.emplace_back(HydraLiteMath::float4(a_bbox.x_max, a_bbox.y_min, a_bbox.z_max, 1.0f));
-  verts.emplace_back(HydraLiteMath::float4(a_bbox.x_max, a_bbox.y_max, a_bbox.z_max, 1.0f));
-  verts.emplace_back(HydraLiteMath::float4(a_bbox.x_max, a_bbox.y_max, a_bbox.z_min, 1.0f));
+  verts.emplace_back(LiteMath::float4(a_bbox.x_max, a_bbox.y_min, a_bbox.z_min, 1.0f));
+  verts.emplace_back(LiteMath::float4(a_bbox.x_max, a_bbox.y_min, a_bbox.z_max, 1.0f));
+  verts.emplace_back(LiteMath::float4(a_bbox.x_max, a_bbox.y_max, a_bbox.z_max, 1.0f));
+  verts.emplace_back(LiteMath::float4(a_bbox.x_max, a_bbox.y_max, a_bbox.z_min, 1.0f));
 
   return verts;
 }
 
-BBox createBBoxFromFloat4V(const std::vector<HydraLiteMath::float4> &a_verts)
+BBox createBBoxFromFloat4V(const std::vector<LiteMath::float4> &a_verts)
 {
   BBox box;
 
@@ -100,18 +100,17 @@ BBox createBBoxFromFloatV(const std::vector<float> &a_verts, int stride)
 
 BBox HRUtils::transformBBox(const BBox &a_bbox, const float m[16])
 {
-  HydraLiteMath::float4x4 mat(m);
+  LiteMath::float4x4 mat(m);
 
   return ::transformBBox(a_bbox, mat);
 }
 
-BBox transformBBox(const BBox &a_bbox, const HydraLiteMath::float4x4 &m)
+BBox transformBBox(const BBox &a_bbox, const LiteMath::float4x4 &m)
 {
   auto verts = getVerticesFromBBox(a_bbox);
 
   for(auto& v : verts)
-    v = HydraLiteMath::mul(m, v);
-
+    v = m*v;
 
   return createBBoxFromFloat4V(verts);
 }

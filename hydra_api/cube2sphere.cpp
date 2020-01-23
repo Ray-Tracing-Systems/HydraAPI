@@ -30,9 +30,9 @@ namespace HydraRender // for test purpose only
 
 namespace HRUtils
 {
-  using HydraLiteMath::float4;
-  using HydraLiteMath::float3;
-  using HydraLiteMath::float2;
+  using LiteMath::float4;
+  using LiteMath::float3;
+  using LiteMath::float2;
 
   static inline float myclamp(float u, float a, float b) { float r = fmax(a, u); return fmin(r, b); }
 

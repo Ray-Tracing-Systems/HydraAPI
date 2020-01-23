@@ -13,14 +13,11 @@
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 
-
 #include "LiteMath.h"
+using namespace LiteMath;
+
 #include "pugixml.hpp"
 #include "HydraRenderDriverAPI.h"
-
-
-
-using namespace HydraLiteMath;
 
 #define GL_CHECK_ERRORS ThrowExceptionOnGLError(__LINE__,__FILE__);
 

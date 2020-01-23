@@ -13,7 +13,7 @@
 using pugi::xml_node;
 
 #include "../hydra_api/LiteMath.h"
-namespace hlm = HydraLiteMath;
+namespace hlm = LiteMath;
 
 ///////////////////////////////////////////////////////////////////////// window and opegl
 #if defined(WIN32)
@@ -230,18 +230,25 @@ void demo_02_load_obj()
     //
     auto mscale     = hlm::scale4x4(hlm::float3(3,3,3));
     auto mtranslate = hlm::translate4x4(hlm::float3(1, -4.2, 0));
-    auto mres       = hlm::mul(mtranslate,mscale);
+    auto mres       = mtranslate*mscale;
     
-    int32_t remapList[2] = {0, mat4.id};                                                       // #NOTE: remaplist of size 1 here: [0 --> mat4.id]
-    hrMeshInstance(scnRef, bunnyRef, mres.L(), remapList, sizeof(remapList)/sizeof(int32_t));  //
+    float rowMajorData[16];
+    mres.StoreRowMajor(rowMajorData);
+
+    int32_t remapList[2] = {0, mat4.id};                                                          // #NOTE: remaplist of size 1 here: [0 --> mat4.id]
+    hrMeshInstance(scnRef, bunnyRef, rowMajorData, remapList, sizeof(remapList)/sizeof(int32_t)); //
     
-    auto mrot = hlm::rotate_Y_4x4(180.0f*DEG_TO_RAD);
-    hrMeshInstance(scnRef, cubeOpenRef, mrot.L());
+    auto mrot = hlm::rotate4x4Y(180.0f*DEG_TO_RAD);
+    mrot.StoreRowMajor(rowMajorData);
+
+    hrMeshInstance(scnRef, cubeOpenRef, rowMajorData);
     
     //// instance light (!!!)
     //
     mtranslate = hlm::translate4x4(hlm::float3(0, 3.85f, 0));
-    hrLightInstance(scnRef, rectLight, mtranslate.L());
+    mtranslate.StoreRowMajor(rowMajorData);
+
+    hrLightInstance(scnRef, rectLight, rowMajorData);
   }
   hrSceneClose(scnRef);
   

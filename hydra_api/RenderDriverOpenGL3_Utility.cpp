@@ -304,8 +304,8 @@ HRDriverAllocInfo RD_OGL32_Utility::AllocAll(HRDriverAllocInfo a_info)
 
   m_texNum = (unsigned int)a_info.imgNum;
 
-  m_materials_pt1.resize((unsigned long)(a_info.matNum), int4(-1, -1, -1, -1));
-  m_materials_pt2.resize((unsigned long)(a_info.matNum), int4(-1, -1, -1, -1));
+  m_materials_pt1.resize((unsigned long)(a_info.matNum), int4{-1, -1, -1, -1} );
+  m_materials_pt2.resize((unsigned long)(a_info.matNum), int4{-1, -1, -1, -1} );
   m_materials_matrix.resize((unsigned long)(a_info.matNum * 8), float4(1.0f, 0.0f, 0.0f, 1.0f));
 
   m_meshNum = 0u;
@@ -426,8 +426,8 @@ bool RD_OGL32_Utility::UpdateMaterial(int32_t a_matId, pugi::xml_node a_material
   }
 
 
-  int4 mat_pt1 = int4(emissionTexId, diffuseTexId, reflectTexId, reflectGlossTexId);
-  int4 mat_pt2 = int4(transparencyTexId, opacityTexId, translucencyTexId, bumpTexId);
+  int4 mat_pt1 = int4{emissionTexId, diffuseTexId, reflectTexId, reflectGlossTexId};
+  int4 mat_pt2 = int4{transparencyTexId, opacityTexId, translucencyTexId, bumpTexId};
 
 //  int4 mat_pt1 = int4(3, 4, 5, 6);
 //  int4 mat_pt2 = int4(7, 8, 9, 10);
@@ -627,12 +627,12 @@ void RD_OGL32_Utility::BeginScene(pugi::xml_node a_sceneNode)
   glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
   const float aspect = float(m_width) / float(m_height);
-  projection = projectionMatrixTransposed(camFov, aspect, camNearPlane, camFarPlane);
+  projection = transpose(LiteMath::perspectiveMatrix(camFov, aspect, camNearPlane, camFarPlane));
 
   float3 eye(camPos[0], camPos[1], camPos[2]);
   float3 center(camLookAt[0], camLookAt[1], camLookAt[2]);
   float3 up(camUp[0], camUp[1], camUp[2]);
-  lookAt = lookAtTransposed(eye, center, up);
+  lookAt = transpose(LiteMath::lookAt(eye, center, up));
 
   std::vector<float4x4> matrices{lookAt , projection };
 

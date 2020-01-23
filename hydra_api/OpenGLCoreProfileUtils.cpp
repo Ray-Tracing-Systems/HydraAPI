@@ -274,7 +274,10 @@ namespace GL_RENDER_DRIVER_UTILS
       return;
     }
 
-    glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, value.L());
+    float data[16];
+    value.StoreRowMajor(data);
+
+    glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, data);
   }
 
   void ShaderProgram::SetUniform(const std::string &location, int value) const

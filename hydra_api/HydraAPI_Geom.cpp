@@ -14,7 +14,7 @@
 #include <algorithm>
 
 #include "LiteMath.h"
-using namespace HydraLiteMath;
+using namespace LiteMath;
 
 #include "HydraObjectManager.h"
 #include "HydraVSGFExport.h"

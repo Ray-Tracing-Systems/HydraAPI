@@ -13,7 +13,7 @@
 using pugi::xml_node;
 
 #include "../hydra_api/LiteMath.h"
-namespace hlm = HydraLiteMath;
+namespace hlm = LiteMath;
 
 ///////////////////////////////////////////////////////////////////////// window and opegl
 #if defined(WIN32)
@@ -283,28 +283,36 @@ void demo_03_caustics()
     //
     auto mscale     = hlm::scale4x4(hlm::float3(4,4,4));
     auto mtranslate = hlm::translate4x4(hlm::float3(-1.0f, 0.0f, 0.0f)); // -2.5
-    auto mrot       = hlm::rotate_Y_4x4(-30.0f*DEG_TO_RAD);
-    auto mrot3      = hlm::rotate_X_4x4(+30.0f*DEG_TO_RAD);
-    auto mres       = hlm::mul(mtranslate, hlm::mul(hlm::mul(mrot3,mrot), mscale));
+    auto mrot       = hlm::rotate4x4Y(-30.0f*DEG_TO_RAD);
+    auto mrot3      = hlm::rotate4x4X(+30.0f*DEG_TO_RAD);
+    auto mres       = mtranslate*(mrot3*(mrot*mscale));
     
+    float rowMajorData[16];
+    mres.StoreRowMajor(rowMajorData);
+
     int32_t remapList[6] = {0, mat4.id, 1, mat4.id, 2, mat4.id};                                // #NOTE: remaplist of size 1 here: [0 --> mat4.id]
-    hrMeshInstance(scnRef, teapotRef, mres.L(), remapList, sizeof(remapList)/sizeof(int32_t));  //
+    hrMeshInstance(scnRef, teapotRef, rowMajorData, remapList, sizeof(remapList)/sizeof(int32_t));  //
   
     mscale     = hlm::scale4x4(hlm::float3(2,2,2));
     mtranslate = hlm::translate4x4(hlm::float3(2.5f, -4.0, 2.0f));
-    mrot       = hlm::rotate_Y_4x4(+40.0f*DEG_TO_RAD);
-    mres       = hlm::mul(mtranslate, hlm::mul(mrot,mscale));
+    mrot       = hlm::rotate4x4Y(+40.0f*DEG_TO_RAD);
+    mres       = mtranslate*(mrot*mscale);
+    mres.StoreRowMajor(rowMajorData);
     
     int32_t remapList2[2] = {0, matGlass.id};                                                    // #NOTE: remaplist of size 1 here: [0 --> mat4.id]
-    hrMeshInstance(scnRef, bunnyRef, mres.L(), remapList2, sizeof(remapList2)/sizeof(int32_t));  //
+    hrMeshInstance(scnRef, bunnyRef, rowMajorData, remapList2, sizeof(remapList2)/sizeof(int32_t));  //
     
-    auto mrot2 = hlm::rotate_Y_4x4(180.0f*DEG_TO_RAD);
-    hrMeshInstance(scnRef, cubeOpenRef, mrot2.L());
+    auto mrot2 = hlm::rotate4x4Y(180.0f*DEG_TO_RAD);
+    mrot2.StoreRowMajor(rowMajorData);
+
+    hrMeshInstance(scnRef, cubeOpenRef, rowMajorData);
     
     //// instance light (!!!)
     //
     mtranslate = hlm::translate4x4(hlm::float3(0, 3.85f, 0));
-    hrLightInstance(scnRef, rectLight, mtranslate.L());
+    mtranslate.StoreRowMajor(rowMajorData);
+
+    hrLightInstance(scnRef, rectLight, rowMajorData);
   }
   hrSceneClose(scnRef);
   

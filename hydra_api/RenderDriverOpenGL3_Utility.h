@@ -10,7 +10,7 @@
 #include "OpenGLCoreProfileUtils.h"
 
 
-using namespace HydraLiteMath;
+using namespace LiteMath;
 using namespace GL_RENDER_DRIVER_UTILS;
 
 struct RD_OGL32_Utility : IHRRenderDriver

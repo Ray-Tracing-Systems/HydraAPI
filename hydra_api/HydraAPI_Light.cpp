@@ -16,9 +16,9 @@ extern std::wstring      g_lastError;
 extern std::wstring      g_lastErrorCallerPlace;
 extern HRObjectManager   g_objManager;
 
-using HydraLiteMath::float2;
-using HydraLiteMath::float3;
-using HydraLiteMath::float4;
+using LiteMath::float2;
+using LiteMath::float3;
+using LiteMath::float4;
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

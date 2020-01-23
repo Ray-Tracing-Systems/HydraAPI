@@ -8,7 +8,9 @@
 #include "LiteMath.h"
 #include "pugixml.hpp"
 
-using namespace HydraLiteMath;
+#include <vector>
+
+using namespace LiteMath;
 
 namespace HRTextureUtils
 {
