@@ -1,8 +1,21 @@
-#include "HydraVSGFExport.h"
+#include "cmesh_vsgf.h"
 
+#include <iostream>
 #include <fstream>
 #include <sstream>
 #include <cassert>
+
+using namespace cmesh;
+
+struct VSGFOffsets
+{
+  uint64_t offsetPos ;
+  uint64_t offsetNorm;
+  uint64_t offsetTang;
+  uint64_t offsetTexc;
+  uint64_t offsetInd ;
+  uint64_t offsetMind;
+};
 
 HydraGeomData::HydraGeomData()
 {
@@ -190,7 +203,7 @@ inline const uint64_t readInt64(const unsigned char* ptr) // THIS IS CORRECT BOT
   return  (uint64_t(b7) << 56) | (uint64_t(b6) << 48) | (uint64_t(b5) << 40) | (uint64_t(b4) << 32) | (uint64_t(b3) << 24) | (uint64_t(b2) << 16) | (uint64_t(b1) << 8) | uint64_t(b0);
 }
 
-static void convertLittleBigEndian(unsigned int* a_buffer, int a_size)
+void convertLittleBigEndian(unsigned int* a_buffer, int a_size)
 {
   unsigned char* bbuffer = (unsigned char*)a_buffer;
 
@@ -279,7 +292,7 @@ void HydraGeomData::read(const std::wstring& a_fileName)
   fin.close();
 }
 
-VSGFOffsets CalcOffsets(int numVert, int numInd, bool a_haveTangents, bool a_haveNormals)
+static VSGFOffsets CalcOffsets(int numVert, int numInd, bool a_haveTangents, bool a_haveNormals)
 {
   VSGFOffsets res;
 
@@ -314,8 +327,90 @@ VSGFOffsets CalcOffsets(int numVert, int numInd, bool a_haveTangents, bool a_hav
   return res;
 }
 
-size_t CalcVSGFSize(int numVert, int numInd)
+struct HRMeshDriverInput
 {
-  VSGFOffsets offsets = CalcOffsets(numVert, numInd, true, true);
-  return offsets.offsetMind + (numInd/3)*sizeof(int);
+  HRMeshDriverInput() : vertNum(0), triNum(0), pos4f(nullptr), norm4f(nullptr), texcoord2f(nullptr), tan4f(nullptr), indices(nullptr), triMatIndices(nullptr) {}
+
+  int    vertNum;
+  int    triNum;
+  const float* pos4f;
+  const float* norm4f;
+  const float* texcoord2f;
+  const float* tan4f;
+  const int*   indices;
+  const int*   triMatIndices;
+  const char*  allData;
+};
+
+
+void _hrDebugPrintMesh(const HRMeshDriverInput& a_input, const char* a_fileName)
+{
+  std::ofstream fout(a_fileName);
+
+  fout << "vertNum = " << a_input.vertNum << std::endl;
+  fout << "triNum  = " << a_input.triNum << std::endl;
+  fout << "vpos  = [ " << std::endl;
+
+  for (int i = 0; i < a_input.vertNum; i++)
+    fout << "  " << a_input.pos4f[i * 4 + 0] << ", " << a_input.pos4f[i * 4 + 1] << ", " << a_input.pos4f[i * 4 + 2] << ", " << a_input.pos4f[i * 4 + 3] << std::endl;
+
+  fout << "]" << std::endl << std::endl;
+  fout << "vnorm  = [ " << std::endl;
+
+  for (int i = 0; i < a_input.vertNum; i++)
+    fout << "  " << a_input.norm4f[i * 4 + 0] << ", " << a_input.norm4f[i * 4 + 1] << ", " << a_input.norm4f[i * 4 + 2] << ", " << a_input.norm4f[i * 4 + 3] << std::endl;
+
+  fout << "]" << std::endl << std::endl;
+  fout << "vtang  = [ " << std::endl;
+
+  for (int i = 0; i < a_input.vertNum; i++)
+    fout << "  " << a_input.tan4f[i * 4 + 0] << ", " << a_input.tan4f[i * 4 + 1] << ", " << a_input.tan4f[i * 4 + 2] << ", " << a_input.tan4f[i * 4 + 3] << std::endl;
+
+  fout << "]" << std::endl << std::endl;
+  fout << "vtxcoord  = [ " << std::endl;
+
+  for (int i = 0; i < a_input.vertNum; i++)
+    fout << "  " << a_input.texcoord2f[i * 2 + 0] << ", " << a_input.texcoord2f[i * 2 + 1] << std::endl;
+
+  fout << "]" << std::endl << std::endl;
+  fout << "indices  = [ " << std::endl;
+
+  for (int i = 0; i < a_input.triNum; i++)
+    fout << "  " << a_input.indices[i * 3 + 0] << ", " << a_input.indices[i * 3 + 1] << ", " << a_input.indices[i * 3 + 2] << std::endl;
+
+  fout << "]" << std::endl << std::endl;
+  fout << "mindices  = [ " << std::endl;
+
+  for (int i = 0; i < a_input.triNum; i++)
+    fout << "  " << a_input.triMatIndices[i] << std::endl;
+
+  fout << "]" << std::endl << std::endl;
+  fout.close();
+}
+
+
+void DebugPrintVSGF(const char* a_fileNameIn, const char* a_fileNameOut)
+{
+  HydraGeomData data;
+  data.read(a_fileNameIn);
+
+  if(data.getIndicesNumber() == 0)
+  {
+    std::cout << "[cmesh::DebugPrintVSGF]: cant open file " << a_fileNameIn << std::endl;
+    return;
+  }
+
+  HRMeshDriverInput mi;
+
+  mi.triNum        = data.getIndicesNumber() / 3;
+  mi.vertNum       = data.getVerticesNumber();
+  mi.indices       = (int*)data.getTriangleVertexIndicesArray();
+  mi.triMatIndices = (int*)data.getTriangleMaterialIndicesArray();
+
+  mi.pos4f      = (float*)data.getVertexPositionsFloat4Array();
+  mi.norm4f     = (float*)data.getVertexNormalsFloat4Array();
+  mi.tan4f      = (float*)data.getVertexTangentsFloat4Array();
+  mi.texcoord2f = (float*)data.getVertexTexcoordFloat2Array();
+
+  _hrDebugPrintMesh(mi, a_fileNameOut);
 }

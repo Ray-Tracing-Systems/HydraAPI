@@ -63,9 +63,7 @@ size_t WriteCompressed(const HydraGeomData& a_data, std::ostream& a_out, const s
 using LiteMath::float4;
 using LiteMath::float2;
 
-void HR_ComputeTangentSpaceSimple(const int     vertexCount, const int     triangleCount, const uint32_t* triIndices,
-                                  const float4* verticesPos, const float4* verticesNorm, const float2* vertTexCoord,
-                                  float4* verticesTang);
+
 
 void ReadCompressed(HydraGeomData& a_data, std::istream& a_input, size_t a_compressedSize)
 {
@@ -116,10 +114,7 @@ void ReadCompressed(HydraGeomData& a_data, std::istream& a_input, size_t a_compr
     normals[i*4+2]   = normals3[i*3+2];
     normals[i*4+3]   = 0.0f;
   }
-
-  HR_ComputeTangentSpaceSimple(a_data.getVerticesNumber(), a_data.getIndicesNumber()/3, a_data.getTriangleVertexIndicesArray(),
-                               (float4*)positions, (float4*)normals, (float2*)a_data.getVertexTexcoordFloat2Array(),
-                               (float4*)tangents);
+  
 }
 
 

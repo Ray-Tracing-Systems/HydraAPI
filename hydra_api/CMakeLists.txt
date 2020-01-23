@@ -45,7 +45,12 @@ set(SOURCE_FILES
         HydraAPI_GeomProcessing.cpp
         vfloat4_x64.h
         HydraRngUtils.cpp
-        HydraVSGFCompress.h HydraVSGFCompress.cpp)
+        HydraVSGFCompress.h HydraVSGFCompress.cpp
+        cmesh.cpp
+        cmesh_mikey_connect.cpp
+        cmesh_processing_weld.cpp
+        cmesh_processing.cpp
+        cmesh_vsgf.cpp)
 
 
 if (WIN32)
