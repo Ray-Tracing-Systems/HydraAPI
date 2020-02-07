@@ -224,7 +224,7 @@ namespace LiteMath
       m_col[3] = float4{ 0.0f, 0.0f, 0.0f, 1.0f };
     }
 
-    inline float4x4 operator*(const float4x4& rhs)
+    inline float4x4 operator*(const float4x4& rhs) const
     {
       // transpose will change multiplication order (due to in fact we use column major)
       //
@@ -270,9 +270,48 @@ namespace LiteMath
       store_u(A + 12, m_col[3]);
     }
 
+    inline const float* L() const // #WARNING: THIS IS LEGACY FUNCTION, PLEASE DO NOT USE IT!!!
+    {
+      static constexpr int TEMPDATASIZE = 16;
+      static float4x4 g_tempLinearData[TEMPDATASIZE];
+      static int tempCounter = 0;
+
+      const float* resAddr = (const float*)(g_tempLinearData + tempCounter);
+
+      cvex::transpose4((const cvex::vfloat4*)this, (cvex::vfloat4*)resAddr);
+        
+      tempCounter++;
+      if(tempCounter >= TEMPDATASIZE)
+        tempCounter = 0;
+
+      return resAddr;
+    }
+
+    inline float* L() // #WARNING: THIS IS LEGACY FUNCTION, PLEASE DO NOT USE IT!!!
+    {
+      static constexpr int TEMPDATASIZE = 16;
+      static float4x4 g_tempLinearData[TEMPDATASIZE];
+      static int tempCounter = 0;
+
+      float* resAddr = (float*)(g_tempLinearData + tempCounter);
+
+      cvex::transpose4((const cvex::vfloat4*)this, (cvex::vfloat4*)resAddr);
+        
+      tempCounter++;
+      if(tempCounter >= TEMPDATASIZE)
+        tempCounter = 0;
+
+      return resAddr;
+    }
+
   private:
     float4 m_col[4];
   };
+
+  static inline float4x4 mul(const float4x4& m1, const float4x4& m2)
+  {
+   return m1*m2;
+  }
 
   static inline float4 operator*(const float4x4& m, const float4& v)
   {
