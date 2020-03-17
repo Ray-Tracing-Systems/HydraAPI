@@ -58,3 +58,17 @@ utils/clew/x64/
 utils/ies_parser/x64/
 utils/mikktspace/x64/
 main/demos/demo_02/
+hydra_api/Debug/
+hydra_api/Release/HydraAPI.Build.CppClean.log
+hydra_api/Release/
+main/Debug/
+main/Release/
+utils/clew/Debug/
+utils/clew/Release/
+utils/corto/Debug/
+utils/corto/Release/
+utils/ies_parser/Debug/
+utils/ies_parser/Release/
+utils/mikktspace/Debug/
+utils/mikktspace/Release/
+main/demos/demo_01/

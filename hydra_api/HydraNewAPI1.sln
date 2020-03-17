@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27703.2000
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29709.97
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HydraAPI", "HydraNewAPI1.vcxproj", "{C05FF9EA-3D61-48B7-ABEA-4353253691DC}"
 EndProject
@@ -36,13 +36,15 @@ Global
 		{C05FF9EA-3D61-48B7-ABEA-4353253691DC}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
 		{C05FF9EA-3D61-48B7-ABEA-4353253691DC}.Debug|Mixed Platforms.Build.0 = Debug|x64
 		{C05FF9EA-3D61-48B7-ABEA-4353253691DC}.Debug|Mixed Platforms.Deploy.0 = Debug|x64
-		{C05FF9EA-3D61-48B7-ABEA-4353253691DC}.Debug|Win32.ActiveCfg = Debug|x64
+		{C05FF9EA-3D61-48B7-ABEA-4353253691DC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C05FF9EA-3D61-48B7-ABEA-4353253691DC}.Debug|Win32.Build.0 = Debug|Win32
 		{C05FF9EA-3D61-48B7-ABEA-4353253691DC}.Debug|x64.ActiveCfg = Debug|x64
 		{C05FF9EA-3D61-48B7-ABEA-4353253691DC}.Debug|x64.Build.0 = Debug|x64
 		{C05FF9EA-3D61-48B7-ABEA-4353253691DC}.Release|Mixed Platforms.ActiveCfg = Release|x64
 		{C05FF9EA-3D61-48B7-ABEA-4353253691DC}.Release|Mixed Platforms.Build.0 = Release|x64
 		{C05FF9EA-3D61-48B7-ABEA-4353253691DC}.Release|Mixed Platforms.Deploy.0 = Release|x64
-		{C05FF9EA-3D61-48B7-ABEA-4353253691DC}.Release|Win32.ActiveCfg = Release|x64
+		{C05FF9EA-3D61-48B7-ABEA-4353253691DC}.Release|Win32.ActiveCfg = Release|Win32
+		{C05FF9EA-3D61-48B7-ABEA-4353253691DC}.Release|Win32.Build.0 = Release|Win32
 		{C05FF9EA-3D61-48B7-ABEA-4353253691DC}.Release|x64.ActiveCfg = Release|x64
 		{C05FF9EA-3D61-48B7-ABEA-4353253691DC}.Release|x64.Build.0 = Release|x64
 		{5F13E40F-C0F1-4EF4-A775-AB8BC703DE88}.2020Release|Mixed Platforms.ActiveCfg = 2020Release|Win32

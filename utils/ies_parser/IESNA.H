@@ -228,11 +228,17 @@ typedef struct IE_Calc          /* Calculated photometric data          */
 }
 IE_CALC;
 
-extern const char *IE_CIE_Type[5];
-extern "C" BOOL IE_ReadFile(char *, IE_DATA *);
-extern "C" BOOL IE_CalcData( IE_DATA *, IE_CALC * );
-extern "C" void IE_Flush( IE_DATA * );
-
+#ifdef __cplusplus
+  extern const char *IE_CIE_Type[5];  
+  extern "C" BOOL IE_ReadFile(char *, IE_DATA *);
+  extern "C" BOOL IE_CalcData( IE_DATA *, IE_CALC * );
+  extern "C" void IE_Flush( IE_DATA * );
+#else
+  extern const char* IE_CIE_Type[5];
+  BOOL IE_ReadFile(char*, IE_DATA*);
+  BOOL IE_CalcData(IE_DATA*, IE_CALC*);
+  void IE_Flush(IE_DATA*);
+#endif
 
 
 #endif
