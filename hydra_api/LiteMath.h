@@ -23,7 +23,9 @@
 namespace LiteMath
 { 
   const float EPSILON    = 1e-6f;
+  #ifndef DEG_TO_RAD
   const float DEG_TO_RAD = float(3.14159265358979323846f) / 180.0f;
+  #endif
   
   typedef unsigned int uint;
 
