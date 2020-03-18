@@ -337,16 +337,16 @@ namespace HydraRender
 
         int numFailed = 0;
 
-        if (cvex::cmpgt_any(diff0sq, threshold))
+        if (cvex::any_of(diff0sq > threshold))
           numFailed++;
 
-        if (cvex::cmpgt_any(diff1sq, threshold))
+        if (cvex::any_of(diff1sq > threshold))
           numFailed++;
 
-        if (cvex::cmpgt_any(diff2sq, threshold))
+        if (cvex::any_of(diff2sq > threshold))
           numFailed++;
 
-        if (cvex::cmpgt_any(diff3sq, threshold))
+        if (cvex::any_of(diff3sq > threshold))
           numFailed++;
 
         if (numFailed >= 3)
@@ -476,16 +476,16 @@ namespace HydraRender
 
         int numFailed = 0;
 
-        if (cvex::cmpgt_any(diff0sq, threshold))
+        if (cvex::any_of(diff0sq > threshold))
           numFailed++;
 
-        if (cvex::cmpgt_any(diff1sq, threshold))
+        if (cvex::any_of(diff1sq > threshold))
           numFailed++;
 
-        if (cvex::cmpgt_any(diff2sq, threshold))
+        if (cvex::any_of(diff2sq > threshold))
           numFailed++;
 
-        if (cvex::cmpgt_any(diff3sq, threshold))
+        if (cvex::any_of(diff3sq > threshold))
           numFailed++;
 
         if (numFailed < 3)
@@ -718,7 +718,7 @@ namespace HydraRender
 
   static inline vfloat4 unpackColor(unsigned int rgba, const vfloat4& a_mulInv)
   {
-    const vint4 intData = cvex::make_vint(rgba & 0x000000FF, (rgba & 0x0000FF00) >> 8, (rgba & 0x00FF0000) >> 16, (rgba & 0xFF000000) >> 24);
+    const vint4 intData = vint4{rgba & 0x000000FF, (rgba & 0x0000FF00) >> 8, (rgba & 0x00FF0000) >> 16, (rgba & 0xFF000000) >> 24};
 
     return cvex::to_float32(intData)*a_mulInv;
   }

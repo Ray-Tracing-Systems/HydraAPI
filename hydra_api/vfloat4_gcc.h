@@ -47,6 +47,8 @@ namespace cvex
   static inline void store_u(_uint32_t* p, vuint4  a_val)   { *((_vuint4u*)(p))  = a_val; }
   static inline void store_u(float* p,     vfloat4 a_val)   { *((_vfloat4u*)(p)) = a_val; }
 
+  static inline void store_s(float* data, vfloat4 a_val)    { (*data) = a_val[0]; }
+
   static inline void store(int* p,       vint4   a_val)   { *((vint4*)(p))   = a_val; }
   static inline void store(_uint32_t* p, vuint4  a_val)   { *((vuint4*)(p))  = a_val; }
   static inline void store(float* p,     vfloat4 a_val)   { *((vfloat4*)(p)) = a_val; }

@@ -4,11 +4,7 @@
 #ifdef WIN32
   #include "vfloat4_x64.h"
 #else
-  #ifdef __arm__
-    #include "vfloat4_arm.h"
-  #else
-    #include "vfloat4_gcc.h"
-  #endif  
+  #include "vfloat4_gcc.h"
 #endif 
 
 // This is just and example. 

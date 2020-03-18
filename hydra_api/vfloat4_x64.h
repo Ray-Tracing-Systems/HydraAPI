@@ -84,6 +84,8 @@ namespace cvex
   static inline void store_u(int*   data,  vint4 a_val)     { _mm_storeu_ps((float*)data, _mm_castsi128_ps(a_val)); }
   static inline void store_u(_uint32_t* data, vuint4 a_val) { _mm_storeu_ps((float*)data, _mm_castsi128_ps(a_val)); }
 
+  static inline void store_s(float* data, vfloat4 a_val)    { _mm_store_ss(data, a_val); }
+
   static inline vfloat4 load(const float *data)     { return _mm_load_ps(data);  }
   static inline vint4   load(const int *data)       { return _mm_castps_si128(_mm_load_ps((float*)data)); }
   static inline vuint4  load(const _uint32_t *data) { return _mm_castps_si128(_mm_load_ps((float*)data)); }
