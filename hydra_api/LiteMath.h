@@ -453,7 +453,6 @@ namespace LiteMath
       return resAddr;
     }
 
-  private:
     float4 m_col[4];
   };
 
