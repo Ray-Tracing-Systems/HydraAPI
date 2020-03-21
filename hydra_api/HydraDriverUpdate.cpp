@@ -1286,7 +1286,7 @@ void HR_DriverUpdate(HRSceneInst& scn, HRRender* a_pRender)
                             &allocInfo.envLightTexSize);
 
     HR_DriverUpdateSettings(scn, a_pDriver);
-
+    
     allocInfo = a_pDriver->AllocAll(allocInfo);
 
     if (allocInfo.geomMem < neededMemG)

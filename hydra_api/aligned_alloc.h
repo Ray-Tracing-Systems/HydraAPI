@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <vector>
 
 #ifndef WIN32
   #include <stdlib.h>
@@ -58,5 +59,7 @@ public:
   inline bool operator==(const aligned&) { return true; }
   inline bool operator!=(const aligned& rhs) { return !operator==(rhs); }
 };
+
+template<class T> using vector = std::vector<T, aligned<T, 16> >;
 
 }
