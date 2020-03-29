@@ -93,8 +93,8 @@ namespace LiteMath
   static inline uint4 operator|(const uint4 a, const uint4 b) { return uint4(a.v | b.v); }
   static inline uint4 operator~(const uint4 a)                { return uint4(~a.v); }
 
-  static inline uint4 operator>>(const uint4 a, const uint b) { return uint4(a.v >> b); }
-  static inline uint4 operator<<(const uint4 a, const uint b) { return uint4(a.v << b); }
+ //static inline uint4 operator>>(const uint4 a, const uint b) { return uint4(a.v >> b); }
+ //static inline uint4 operator<<(const uint4 a, const uint b) { return uint4(a.v << b); }
 
   static inline uint4 min  (const uint4& a,   const uint4& b) { return cvex::min(a.v, b.v); }
   static inline uint4 max  (const uint4& a,   const uint4& b) { return cvex::max(a.v, b.v); }

@@ -90,9 +90,10 @@ namespace cvex
   static inline vint4   load(const int *data)       { return _mm_castps_si128(_mm_load_ps((float*)data)); }
   static inline vuint4  load(const _uint32_t *data) { return _mm_castps_si128(_mm_load_ps((float*)data)); }
 
-  static inline vfloat4 load_u(const float *data)   { return _mm_loadu_ps(data); }
-  static inline vint4   load_u(const int *data)     { return _mm_castps_si128(_mm_loadu_ps((float*)data)); }
-  static inline vfloat4 load_s(const float *data)   { return _mm_load_ss(data);  }
+  static inline vfloat4 load_u(const float *data)     { return _mm_loadu_ps(data); }
+  static inline vint4   load_u(const int *data)       { return _mm_castps_si128(_mm_loadu_ps((float*)data)); }
+  static inline vuint4  load_u(const _uint32_t* data) { return _mm_castps_si128(_mm_loadu_ps((float*)data)); }
+  static inline vfloat4 load_s(const float *data)     { return _mm_load_ss(data);  }
 
   //static inline void stream(void *data, vint4 a_val) { _mm_stream_si128((vint4 *) data, a_val); }
 
