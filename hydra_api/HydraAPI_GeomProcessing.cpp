@@ -423,8 +423,8 @@ void hrMeshSubdivideSqrt3(HRMeshRef a_mesh, int a_iterations)
     {
       if (edge.second.size() == 2)
       {
-        uint32_t center1 = (old_vertex_count + edge.second[0]);
-        uint32_t center2 = (old_vertex_count + edge.second[1]);
+        uint32_t center1 = uint32_t(old_vertex_count + edge.second[0]);
+        uint32_t center2 = uint32_t(old_vertex_count + edge.second[1]);
         uint32_t A = edge.first.x;
         uint32_t B = edge.first.y;
 
@@ -439,7 +439,7 @@ void hrMeshSubdivideSqrt3(HRMeshRef a_mesh, int a_iterations)
         mat_indices.push_back(mesh.matIndices[edge.second[1]]);
       } else if (edge.second.size() == 1)
       {
-        uint32_t center = (old_vertex_count + edge.second[0]);
+        uint32_t center = uint32_t(old_vertex_count + edge.second[0]);
         uint32_t A = edge.first.x;
         uint32_t B = edge.first.y;
 
@@ -1443,7 +1443,7 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
     return;
   }
 
-  WeldVertices(pMesh->m_input, pMesh->m_input.IndicesNum());
+  WeldVertices(pMesh->m_input, uint32_t(pMesh->m_input.IndicesNum()));
 }
 
 
@@ -1474,8 +1474,8 @@ void HRUtils::getRandomPointsOnMesh(HRMeshRef mesh_ref, float *points, uint32_t 
 
   auto& mesh = pMesh->m_input;
 
-  uint32_t vert_num = mesh.VerticesNum();
-  uint32_t tri_num  = mesh.IndicesNum();
+  uint32_t vert_num = uint32_t(mesh.VerticesNum());
+  uint32_t tri_num  = uint32_t(mesh.TrianglesNum());
 
   //std::mt19937 rng(seed);
   hr_prng::RandomGen rgen = hr_prng::RandomGenInit(777777);
@@ -1488,15 +1488,16 @@ void HRUtils::getRandomPointsOnMesh(HRMeshRef mesh_ref, float *points, uint32_t 
     std::vector<float> triangle_areas(tri_num, 0.0f);
     for(uint32_t i = 0; i < tri_num; ++i )
     {
-      uint32_t idx_A = mesh.indices.at(i * 3 + 0);
-      uint32_t idx_B = mesh.indices.at(i * 3 + 1);
-      uint32_t idx_C = mesh.indices.at(i * 3 + 2);
-      float3 A       = float3(mesh.vPos4f.at(idx_A * 4 + 0), mesh.vPos4f.at(idx_A * 4 + 1), mesh.vPos4f.at(idx_A * 4 + 2));
-      float3 B       = float3(mesh.vPos4f.at(idx_B * 4 + 0), mesh.vPos4f.at(idx_B * 4 + 1), mesh.vPos4f.at(idx_B * 4 + 2));
-      float3 C       = float3(mesh.vPos4f.at(idx_C * 4 + 0), mesh.vPos4f.at(idx_C * 4 + 1), mesh.vPos4f.at(idx_C * 4 + 2));
+      const uint32_t idx_A = mesh.indices[i * 3 + 0];
+      const uint32_t idx_B = mesh.indices[i * 3 + 1];
+      const uint32_t idx_C = mesh.indices[i * 3 + 2];
 
-      float3 edge1A = normalize(B - A);
-      float3 edge2A = normalize(C - A);
+      const float3 A       = float3(mesh.vPos4f[idx_A * 4 + 0], mesh.vPos4f[idx_A * 4 + 1], mesh.vPos4f[idx_A * 4 + 2]);
+      const float3 B       = float3(mesh.vPos4f[idx_B * 4 + 0], mesh.vPos4f[idx_B * 4 + 1], mesh.vPos4f[idx_B * 4 + 2]);
+      const float3 C       = float3(mesh.vPos4f[idx_C * 4 + 0], mesh.vPos4f[idx_C * 4 + 1], mesh.vPos4f[idx_C * 4 + 2]);
+ 
+      const float3 edge1A = normalize(B - A);
+      const float3 edge2A = normalize(C - A);
 
       float face_area = 0.5f * sqrtf(powf(edge1A.y * edge2A.z - edge1A.z * edge2A.y, 2) +
                                      powf(edge1A.z * edge2A.x - edge1A.x * edge2A.z, 2) +
@@ -1517,7 +1518,7 @@ void HRUtils::getRandomPointsOnMesh(HRMeshRef mesh_ref, float *points, uint32_t 
     {
       auto tmp = static_cast<uint32_t >(std::ceil(triangle_areas[i] / min_area));
 
-      for(int j = 0; j <= tmp; ++j)
+      for(uint32_t j = 0; j <= tmp; ++j)
         triangle_indices.push_back(i);
     }
   }
