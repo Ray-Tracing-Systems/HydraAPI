@@ -25,7 +25,7 @@ using std::isnan;
 using std::isinf;
 
 #include "LiteMath.h"
-using namespace HydraLiteMath;
+using namespace LiteMath;
 
 #include "HydraObjectManager.h"
 #include "HydraVSGFExport.h"
@@ -122,20 +122,6 @@ void HR_ComputeTangentSpaceSimple(const int     vertexCount, const int     trian
   
   delete [] tan1;
 }
-
-
-
-struct vertex_cache_eq
-{
-    bool operator()(const vertex_cache & u, const vertex_cache & v) const
-    {
-      return (fabsf(u.pos.x - v.pos.x) < 1e-6) && (fabsf(u.pos.y - v.pos.y) < 1e-6) && (fabsf(u.pos.z - v.pos.z) < 1e-6) && //pos
-             (fabsf(u.normal.x - v.normal.x) < 1e-3) && (fabsf(u.normal.y - v.normal.y) < 1e-3) && (fabsf(u.normal.z - v.normal.z) < 1e-3) && //norm
-             (fabsf(u.uv.x - v.uv.x) < 1e-5) && (fabsf(u.uv.y - v.uv.y) < 1e-5) &&
-             (fabsf(u.tangent.x - v.tangent.x) < 1e-3) && (fabsf(u.tangent.y - v.tangent.y) < 1e-3) && (fabsf(u.tangent.z - v.tangent.z) < 1e-3) &&
-             (fabsf(u.tangent.w - v.tangent.w) < 1e-1); //tangents
-    }
-};
 
 
 void doDisplacement(HRMesh *pMesh, const pugi::xml_node &displaceXMLNode, std::vector<uint3> &triangleList,
@@ -419,6 +405,16 @@ void smooth_common_vertex_attributes(uint32_t vertex_index, const HRMesh::InputT
   }
 }
 
+struct uint2_hash
+{
+    std::size_t operator()(const uint2& k) const
+    {
+      using std::size_t;
+      using std::hash;
+      return ((hash<unsigned int>()(k.x) ^ (hash<unsigned int>()(k.y) << 1u)) >> 1u);
+    }
+};
+
 
 void addEdge(uint32_t indA, uint32_t indB, uint32_t faceInd, std::unordered_map<uint2, std::vector<uint32_t>, uint2_hash> &edgeToTris)
 {
@@ -674,8 +670,10 @@ void hrMeshSubdivide(HRMeshRef a_mesh, int a_iterations)
   mesh.matIndices = mat_indices;
 }
 
+
 void displaceByNoise(HRMesh *pMesh, const pugi::xml_node &noiseXMLNode, std::vector<uint3> &triangleList)
 {
+  /*
   HRMesh::InputTriMesh &mesh = pMesh->m_input;
 
   float mult = noiseXMLNode.attribute(L"amount").as_float();
@@ -734,10 +732,12 @@ void displaceByNoise(HRMesh *pMesh, const pugi::xml_node &noiseXMLNode, std::vec
     mesh.verticesPos.at(tri.z * 4 + 2) += normalZ.z * mult * texHeight.z;
 
   }
+  */
 }
 
 void displaceCustom(HRMesh *pMesh, const pugi::xml_node &customNode, std::vector<uint3> &triangleList, const HRUtils::BBox &bbox)
 {
+  /*
   HRMesh::InputTriMesh &mesh = pMesh->m_input;
 
   auto texNode = customNode.child(L"texture");
@@ -795,8 +795,7 @@ void displaceCustom(HRMesh *pMesh, const pugi::xml_node &customNode, std::vector
       mesh.verticesPos.at(tri.z * 4 + 2) += displace_vec[2];
     }
   }
-
-
+  */
 }
 
 void displaceByHeightMap(HRMesh *pMesh, const pugi::xml_node &heightXMLNode, std::vector<uint3> &triangleList)
@@ -919,6 +918,14 @@ void displaceByHeightMap(HRMesh *pMesh, const pugi::xml_node &heightXMLNode, std
   }
 }
 
+static inline float3 abs_f3(const float3 &u) { return make_float3(fabsf(u.x), fabsf(u.y), fabsf(u.z)); }
+static inline float3 abs_f3(const float4 &u) { return make_float3(fabsf(u.x), fabsf(u.y), fabsf(u.z)); }
+
+static inline float3 pow_f3(const float3 &u, const float &exp){return make_float3(powf(u.x, exp), powf(u.y, exp), powf(u.z, exp));}
+static inline float3 pow_f3(const float4 &u, const float &exp){return make_float3(powf(u.x, exp), powf(u.y, exp), powf(u.z, exp));}
+
+static inline float3 max_f3_scalar(const float3 &u, const float &v){ return make_float3(fmaxf(u.x, v), fmaxf(u.y, v), fmaxf(u.z, v));}
+
 void displaceByHeightMapTriPlanar(HRMesh *pMesh, const pugi::xml_node &heightXMLNode, std::vector<uint3> &triangleList)
 {
   HRMesh::InputTriMesh &mesh = pMesh->m_input;
@@ -1017,6 +1024,7 @@ void displaceByHeightMapTriPlanar(HRMesh *pMesh, const pugi::xml_node &heightXML
       texHeight = float3(0.0f, 0.0f, 0.0f);
     }
   }
+
 
   std::set<uint32_t > displaced_indices;
   for(int i = 0; i < triangleList.size(); ++i)
@@ -1541,206 +1549,7 @@ void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum)
   }
 
   HRMesh::InputTriMesh &mesh = pMesh->m_input;
-  //const bool hasNormals  = (pMesh->m_inputPointers.normals != nullptr);
-
-  std::vector<uint32_t> indices_new;
-  //std::unordered_map<float3, uint32_t, float3_hash, pos_eq> vertex_hash;
-  std::unordered_map<vertex_cache, uint32_t, vertex_cache_hash, vertex_cache_eq> vertex_hash;
-
-  std::vector<float> vertices_new(mesh.verticesPos.size()*2, 0.0f);
-  std::vector<float> normals_new(mesh.verticesNorm.size()*2, 0.0f);
-  std::vector<float> uv_new(mesh.verticesTexCoord.size()*2, 0.0f);
-  std::vector<float> tangents_new(mesh.verticesTangent.size()*2, 0.0f);
-  std::vector<int32_t> mid_new;
-  mid_new.reserve(mesh.matIndices.size());
-
-  uint32_t index = 0;
-  for (auto i = 0u; i < mesh.triIndices.size(); i += 3)
-  {
-    uint32_t indA = mesh.triIndices[i + 0];
-    uint32_t indB = mesh.triIndices[i + 1];
-    uint32_t indC = mesh.triIndices[i + 2];
-
-    if (indA == indB || indA == indC || indB == indC)
-      continue;
-
-    auto old_mid = mesh.matIndices.at(i / 3);
-    mid_new.push_back(old_mid);
-
-    float4 tmp = vertex_attrib_by_index_f4("pos", indA, mesh);
-    float3 A(tmp.x, tmp.y, tmp.z);
-    tmp = vertex_attrib_by_index_f4("normal", indA, mesh);
-    float3 A_normal(tmp.x, tmp.y, tmp.z);
-    float2 tmp2 = vertex_attrib_by_index_f2("uv", indA, mesh);
-    float2 A_uv(tmp2.x, tmp2.y);
-    float4 A_tan = vertex_attrib_by_index_f4("tangent", indA, mesh);
-
-    vertex_cache A_cache;
-    A_cache.pos = A;
-    A_cache.normal = A_normal;
-    A_cache.uv = A_uv;
-    A_cache.tangent = A_tan;
-
-    auto it = vertex_hash.find(A_cache);
-
-    if(it != vertex_hash.end())
-    {
-      indices_new.push_back(it->second);
-    }
-    else
-    {
-      vertex_hash[A_cache] = index;
-      indices_new.push_back(index);
-
-      vertices_new.at(index * 4 + 0) = A.x;
-      vertices_new.at(index * 4 + 1) = A.y;
-      vertices_new.at(index * 4 + 2) = A.z;
-      vertices_new.at(index * 4 + 3) = 1.0f;
-
-      normals_new.at(index * 4 + 0) = A_normal.x;
-      normals_new.at(index * 4 + 1) = A_normal.y;
-      normals_new.at(index * 4 + 2) = A_normal.z;
-      normals_new.at(index * 4 + 3) = 0.0f;
-
-      uv_new.at(index * 2 + 0) = A_uv.x;
-      uv_new.at(index * 2 + 1) = A_uv.y;
-
-      tangents_new.at(index * 4 + 0) = A_tan.x;
-      tangents_new.at(index * 4 + 1) = A_tan.y;
-      tangents_new.at(index * 4 + 2) = A_tan.z;
-      tangents_new.at(index * 4 + 3) = A_tan.w;
-
-      index++;
-    }
-
-    tmp = vertex_attrib_by_index_f4("pos", indB, mesh);
-    float3 B(tmp.x, tmp.y, tmp.z);
-    tmp = vertex_attrib_by_index_f4("normal", indB, mesh);
-    float3 B_normal(tmp.x, tmp.y, tmp.z);
-    tmp2 = vertex_attrib_by_index_f2("uv", indB, mesh);
-    float2 B_uv(tmp2.x, tmp2.y);
-    float4 B_tan = vertex_attrib_by_index_f4("tangent", indB, mesh);
-
-    vertex_cache B_cache;
-    B_cache.pos = B;
-    B_cache.normal = B_normal;
-    B_cache.uv = B_uv;
-    B_cache.tangent = B_tan;
-
-    it = vertex_hash.find(B_cache);
-    if(it != vertex_hash.end())
-    {
-      indices_new.push_back(it->second);
-    }
-    else
-    {
-      vertex_hash[B_cache] = index;
-      indices_new.push_back(index);
-
-      vertices_new.at(index * 4 + 0) = B.x;
-      vertices_new.at(index * 4 + 1) = B.y;
-      vertices_new.at(index * 4 + 2) = B.z;
-      vertices_new.at(index * 4 + 3) = 1.0f;
-
-      normals_new.at(index * 4 + 0) = B_normal.x;
-      normals_new.at(index * 4 + 1) = B_normal.y;
-      normals_new.at(index * 4 + 2) = B_normal.z;
-      normals_new.at(index * 4 + 3) = 0.0f;
-
-      uv_new.at(index * 2 + 0) = B_uv.x;
-      uv_new.at(index * 2 + 1) = B_uv.y;
-
-      tangents_new.at(index * 4 + 0) = B_tan.x;
-      tangents_new.at(index * 4 + 1) = B_tan.y;
-      tangents_new.at(index * 4 + 2) = B_tan.z;
-      tangents_new.at(index * 4 + 3) = B_tan.w;
-
-      index++;
-    }
-
-    tmp = vertex_attrib_by_index_f4("pos", indC, mesh);
-    float3 C(tmp.x, tmp.y, tmp.z);
-    tmp = vertex_attrib_by_index_f4("normal", indC, mesh);
-    float3 C_normal(tmp.x, tmp.y, tmp.z);
-    tmp2 = vertex_attrib_by_index_f2("uv", indC, mesh);
-    float2 C_uv(tmp2.x, tmp2.y);
-    float4 C_tan = vertex_attrib_by_index_f4("tangent", indC, mesh);
-
-    vertex_cache C_cache;
-    C_cache.pos = C;
-    C_cache.normal = C_normal;
-    C_cache.uv = C_uv;
-    C_cache.tangent = C_tan;
-
-
-    it = vertex_hash.find(C_cache);
-    if(it != vertex_hash.end())
-    {
-      indices_new.push_back(it->second);
-    }
-    else
-    {
-      vertex_hash[C_cache] = index;
-      indices_new.push_back(index);
-
-      vertices_new.at(index * 4 + 0) = C.x;
-      vertices_new.at(index * 4 + 1) = C.y;
-      vertices_new.at(index * 4 + 2) = C.z;
-      vertices_new.at(index * 4 + 3) = 1.0f;
-
-      normals_new.at(index * 4 + 0) = C_normal.x;
-      normals_new.at(index * 4 + 1) = C_normal.y;
-      normals_new.at(index * 4 + 2) = C_normal.z;
-      normals_new.at(index * 4 + 3) = 0.0f;
-
-      uv_new.at(index * 2 + 0) = C_uv.x;
-      uv_new.at(index * 2 + 1) = C_uv.y;
-
-      tangents_new.at(index * 4 + 0) = C_tan.x;
-      tangents_new.at(index * 4 + 1) = C_tan.y;
-      tangents_new.at(index * 4 + 2) = C_tan.z;
-      tangents_new.at(index * 4 + 3) = C_tan.w;
-
-      index++;
-    }
-
-  }
-
-  vertices_new.resize(index * 4);
-  normals_new.resize(index * 4);
-  uv_new.resize(index * 2);
-  tangents_new.resize(index * 4);
-
-  //std::cout << "vert old : " << mesh.verticesPos.size() << "  vert new :" << vertices_new.size() << std::endl;
-
-  pMesh->m_inputPointers.normals = nullptr;
-  pMesh->m_inputPointers.tangents = nullptr;
-
-  mesh.verticesPos.clear();
-  mesh.verticesPos.resize(vertices_new.size());
-  std::copy(vertices_new.begin(), vertices_new.end(), mesh.verticesPos.begin());
-
-  mesh.verticesNorm.clear();
-  mesh.verticesNorm.resize(normals_new.size());
-  std::copy(normals_new.begin(), normals_new.end(), mesh.verticesNorm.begin());
-
-  mesh.verticesTexCoord.clear();
-  mesh.verticesTexCoord.resize(uv_new.size());
-  std::copy(uv_new.begin(), uv_new.end(), mesh.verticesTexCoord.begin());
-
-  mesh.verticesTangent.clear();
-  mesh.verticesTangent.resize(tangents_new.size());
-  std::copy(tangents_new.begin(), tangents_new.end(), mesh.verticesTangent.begin());
-
-  mesh.triIndices.clear();
-  mesh.triIndices.resize(indices_new.size());
-  std::copy(indices_new.begin(), indices_new.end(), mesh.triIndices.begin());
-
-  mesh.matIndices.clear();
-  mesh.matIndices.resize(mid_new.size());
-  std::copy(mid_new.begin(), mid_new.end(), mesh.matIndices.begin());
-
-  indexNum = int(indices_new.size());
+  
 }
 
 
@@ -1890,9 +1699,9 @@ void HRUtils::getRandomPointsOnMesh(HRMeshRef mesh_ref, float *points, uint32_t 
       uint32_t idx_A = mesh.triIndices.at(i * 3 + 0);
       uint32_t idx_B = mesh.triIndices.at(i * 3 + 1);
       uint32_t idx_C = mesh.triIndices.at(i * 3 + 2);
-      float3 A = make_float3(mesh.verticesPos.at(idx_A * 4 + 0), mesh.verticesPos.at(idx_A * 4 + 1), mesh.verticesPos.at(idx_A * 4 + 2));
-      float3 B = make_float3(mesh.verticesPos.at(idx_B * 4 + 0), mesh.verticesPos.at(idx_B * 4 + 1), mesh.verticesPos.at(idx_B * 4 + 2));
-      float3 C = make_float3(mesh.verticesPos.at(idx_C * 4 + 0), mesh.verticesPos.at(idx_C * 4 + 1), mesh.verticesPos.at(idx_C * 4 + 2));
+      float3 A       = float3(mesh.verticesPos.at(idx_A * 4 + 0), mesh.verticesPos.at(idx_A * 4 + 1), mesh.verticesPos.at(idx_A * 4 + 2));
+      float3 B       = float3(mesh.verticesPos.at(idx_B * 4 + 0), mesh.verticesPos.at(idx_B * 4 + 1), mesh.verticesPos.at(idx_B * 4 + 2));
+      float3 C       = float3(mesh.verticesPos.at(idx_C * 4 + 0), mesh.verticesPos.at(idx_C * 4 + 1), mesh.verticesPos.at(idx_C * 4 + 2));
 
       float3 edge1A = normalize(B - A);
       float3 edge2A = normalize(C - A);

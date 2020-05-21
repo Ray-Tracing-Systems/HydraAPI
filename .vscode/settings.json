@@ -57,6 +57,13 @@
         "numeric": "cpp",
         "random": "cpp",
         "regex": "cpp",
-        "string": "cpp"
-    }
+        "string": "cpp",
+        "complex": "cpp",
+        "condition_variable": "cpp",
+        "csignal": "cpp",
+        "set": "cpp",
+        "future": "cpp",
+        "mutex": "cpp"
+    },
+    "cmake.configureOnOpen": false
 }

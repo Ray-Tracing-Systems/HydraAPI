@@ -23,7 +23,7 @@ extern HRObjectManager g_objManager;
 #include "tiny_obj_loader.h"
 
 #include "LiteMath.h"
-using namespace HydraLiteMath;
+using namespace LiteMath;
 
 
 HRTextureNodeRef _hrTexture2DCreateFromNode(pugi::xml_node a_node)
@@ -1092,18 +1092,21 @@ BBox HRUtils::InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_
       float4x4 mRes;
 
       if (origin)
-        mRes = mul(m1, m2);
+        mRes = m1*m2;
       else
-        mRes = mul(m2, m1);
+        mRes = m2*m1;
 
       int remapListId = mesh.remapListId;
 
+      float resRowMajor[16];
+      mRes.StoreRowMajor(resRowMajor);
+
       if(overrideRemapLists)
-        hrMeshInstance(a_scnTo, tmp, mRes.L(), remapListOverride, remapListSize);
+        hrMeshInstance(a_scnTo, tmp, resRowMajor, remapListOverride, remapListSize);
       else if(remapListId == -1)
-        hrMeshInstance(a_scnTo, tmp, mRes.L());
+        hrMeshInstance(a_scnTo, tmp, resRowMajor);
       else
-        hrMeshInstance(a_scnTo, tmp, mRes.L(), &backupListRemapLists.at((unsigned long)remapListId)[0],
+        hrMeshInstance(a_scnTo, tmp, resRowMajor, &backupListRemapLists.at((unsigned long)remapListId)[0],
                        int32_t(backupListRemapLists.at((unsigned long)remapListId).size()));
 
 

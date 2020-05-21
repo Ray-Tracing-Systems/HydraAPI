@@ -20,8 +20,6 @@
 #include <thread>
 
 #include "ssemath.h"
-#include "vfloat4_x64.h"
-
 
 #ifdef WIN32
 #include "../utils/clew/clew.h"
@@ -1078,7 +1076,7 @@ void RD_HydraConnection::GetFrameBufferLineLDR(int32_t a_xBegin, int32_t a_xEnd,
     return;
 
   data = data + y * m_width * 4;
-  typedef HydraLiteMath::float4 float4;
+  typedef LiteMath::float4 float4;
 
   const float4* dataHDR = (const float4*)data;
 

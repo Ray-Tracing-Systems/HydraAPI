@@ -612,7 +612,7 @@ HAPI int hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh,
   if(g_objManager.m_computeBBoxes && pMesh->pImpl != nullptr)
   {
     auto bbox = pMesh->pImpl->getBBox();
-    auto mat = HydraLiteMath::float4x4(a_mat);
+    auto mat  = LiteMath::float4x4(a_mat);
     auto inst_bbox = transformBBox(bbox, mat);
     pScn->m_bbox = mergeBBoxes(pScn->m_bbox, inst_bbox);
   }
@@ -667,9 +667,13 @@ HAPI void hrLightGroupInstanceExt(HRSceneInstRef a_pScn, HRLightGroupExt lightGr
 
   for (int i = 0; i < lightGroup.lightsNum; i++)
   {
-    const wchar_t* custPtr = (a_customAttribsArray == nullptr) ? nullptr : a_customAttribsArray[i];
-    HydraLiteMath::float4x4 mFinal = mul(HydraLiteMath::float4x4(m), HydraLiteMath::float4x4(lightGroup.matrix[i]));
-    _hrLightInstance(a_pScn, lightGroup.lights[i], mFinal.L(), pScn->lightGroupCounter, custPtr);
+    const wchar_t* custPtr    = (a_customAttribsArray == nullptr) ? nullptr : a_customAttribsArray[i];
+    LiteMath::float4x4 mFinal = LiteMath::float4x4(m)*LiteMath::float4x4(lightGroup.matrix[i]);
+
+    float rowMajorRes[16];
+    mFinal.StoreRowMajor(rowMajorRes);
+
+    _hrLightInstance(a_pScn, lightGroup.lights[i], rowMajorRes, pScn->lightGroupCounter, custPtr);
   }
 
   pScn->lightGroupCounter++;
