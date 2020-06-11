@@ -8,6 +8,8 @@
 using HydraRender::HDRImage4f;
 using HydraRender::LDRImage1i;
 
+#include "cmesh.h"
+
 
 #include <memory>
 #include <vector>
@@ -64,92 +66,6 @@ struct HRMesh : public HRObject<IHRMesh>
 
   std::shared_ptr<IHRMesh> pImpl;
 
-//protected:
-
-  struct InputTriMesh
-  {
-    InputTriMesh() : m_saveCompressed(false), m_placeToOrigin(false) { }
-
-    void clear()
-    {
-      verticesPos.clear();
-      verticesNorm.clear();
-      verticesTexCoord.clear();
-      verticesTangent.clear();
-      triIndices.clear();
-      matIndices.clear();
-      customArrays.clear();
-    }
-
-    void freeMem()
-    {
-      verticesPos      = std::vector<float>();
-      verticesNorm     = std::vector<float>();
-      verticesTexCoord = std::vector<float>();
-      verticesTangent  = std::vector<float>();
-      triIndices       = std::vector<uint32_t>();
-      matIndices       = std::vector<uint32_t>();
-      customArrays.clear();                       /// its a vector of vectors
-    }
-
-    void reserve(size_t vNum, size_t indNum)
-    {
-      verticesPos.reserve     (vNum * 4 + 10);
-      verticesNorm.reserve    (vNum * 4 + 10);
-      verticesTangent.reserve (vNum * 4 + 10);
-      verticesTexCoord.reserve(vNum * 2 + 10);
-      
-      if(triIndices.capacity() < indNum + 10)
-        triIndices.reserve(indNum + 10);
-      
-      if(matIndices.capacity() < indNum / 3 + 10)
-        matIndices.reserve(indNum / 3 + 10);
-      
-      for (auto& arr : customArrays)
-      {
-        arr.idata.reserve(1*vNum);
-        arr.fdata.reserve(4*vNum);
-      }
-    }
-  
-    void resize(size_t vNum, size_t indNum)
-    {
-      verticesPos.resize     (vNum * 4);
-      verticesNorm.resize    (vNum * 4);
-      verticesTangent.resize (vNum * 4);
-      verticesTexCoord.resize(vNum * 2);
-      
-      triIndices.resize      (indNum);
-      matIndices.resize      (indNum / 3);
-    
-      for (auto& arr : customArrays)
-      {
-        arr.idata.resize(1*vNum);
-        arr.fdata.resize(4*vNum);
-      }
-    }
-
-    std::vector<float>    verticesPos;       ///< float4
-    std::vector<float>    verticesNorm;      ///< float4
-    std::vector<float>    verticesTexCoord;  ///< float2
-    std::vector<float>    verticesTangent;   ///< float4
-    std::vector<uint32_t> triIndices;        ///< size of 3*triNum
-    std::vector<uint32_t> matIndices;        ///< size of 1*triNum
-
-    struct CustArray
-    {
-      std::vector<int>   idata;
-      std::vector<float> fdata;
-      std::wstring       name;
-      int depth;
-      int apply;
-    };
-
-    std::vector<CustArray> customArrays;
-    bool m_saveCompressed;
-    bool m_placeToOrigin;
-  };
-
   struct InputTriMeshPointers
   {
     InputTriMeshPointers() : pos(nullptr), normals(nullptr), texCoords(nullptr), tangents(nullptr), mindices(nullptr), 
@@ -195,7 +111,7 @@ struct HRMesh : public HRObject<IHRMesh>
     const int* mindices;
   };
 
-  InputTriMesh         m_input;
+  cmesh::SimpleMesh    m_input;
   InputTriMeshPointers m_inputPointers;
   int                  m_allMeshMatId;
   bool                 m_empty;
@@ -632,12 +548,8 @@ struct HRObjectManager
 };
 
 
-
 std::wstring ToWString(uint64_t i);
 std::wstring ToWString(int64_t i);
 std::wstring ToWString(int i);
 std::wstring ToWString(float i);
 std::wstring ToWString(unsigned int i);
-
-void ComputeVertexTangents(HRMesh::InputTriMesh& mesh, int indexNum);
-void ComputeVertexNormals(HRMesh::InputTriMesh& mesh, const int indexNum, bool useFaceNormals);

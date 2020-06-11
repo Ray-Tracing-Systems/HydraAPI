@@ -669,29 +669,29 @@ HRMeshDriverInput HR_GetMeshDataPointers(size_t a_meshId)
 
 std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndices);
 
-void HR_CopyMeshToInputMeshFromHydraGeomData(const HydraGeomData& data,  HRMesh::InputTriMesh& mesh2)
+void HR_CopyMeshToInputMeshFromHydraGeomData(const HydraGeomData& data,  cmesh::SimpleMesh& mesh2)
 {
   HydraGeomData::Header header = data.getHeader();
   const bool dontHaveTangents  = (header.flags & HydraGeomData::HAS_TANGENT)    == 0;
   const bool dontHaveNormals   = (header.flags & HydraGeomData::HAS_NO_NORMALS) != 0;
 
-  mesh2.resize(data.getVerticesNumber(), data.getIndicesNumber());
+  mesh2.Resize(data.getVerticesNumber(), data.getIndicesNumber());
 
-  memcpy(mesh2.verticesPos.data(),      data.getVertexPositionsFloat4Array(), sizeof(float)*4*data.getVerticesNumber());
-  memcpy(mesh2.verticesTexCoord.data(), data.getVertexTexcoordFloat2Array(),  sizeof(float)*2*data.getVerticesNumber());
+  memcpy(mesh2.vPos4f.data(),      data.getVertexPositionsFloat4Array(), sizeof(float)*4*data.getVerticesNumber());
+  memcpy(mesh2.vTexCoord2f.data(), data.getVertexTexcoordFloat2Array(),  sizeof(float)*2*data.getVerticesNumber());
 
-  memcpy(mesh2.triIndices.data(), data.getTriangleVertexIndicesArray(),   sizeof(int)*data.getIndicesNumber());
+  memcpy(mesh2.indices.data(),    data.getTriangleVertexIndicesArray(),   sizeof(int)*data.getIndicesNumber());
   memcpy(mesh2.matIndices.data(), data.getTriangleMaterialIndicesArray(), sizeof(int)*data.getIndicesNumber()/3);
 
   if(!dontHaveNormals)
-    memcpy(mesh2.verticesNorm.data(), data.getVertexNormalsFloat4Array(), sizeof(float)*4*data.getVerticesNumber());
+    memcpy(mesh2.vNorm4f.data(), data.getVertexNormalsFloat4Array(), sizeof(float)*4*data.getVerticesNumber());
   else
-    ComputeVertexNormals(mesh2, data.getIndicesNumber(), false);
+    ComputeNormals(mesh2, data.getIndicesNumber(), false);
 
   if(dontHaveTangents)
-    ComputeVertexTangents(mesh2, data.getIndicesNumber());
+    ComputeTangents(mesh2, data.getIndicesNumber());
   else
-    memcpy(mesh2.verticesTangent.data(), data.getVertexTangentsFloat4Array(), sizeof(float)*4*data.getVerticesNumber());
+    memcpy(mesh2.vTang4f.data(), data.getVertexTangentsFloat4Array(), sizeof(float)*4*data.getVerticesNumber());
 }
 
 std::string ws2s(const std::wstring& s);
@@ -726,9 +726,9 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, std::vector<HRBatchInfo>& a
   const bool dontHaveTangents = (header.flags & HydraGeomData::HAS_TANGENT)    == 0;
   const bool dontHaveNormals  = (header.flags & HydraGeomData::HAS_NO_NORMALS) != 0;
   
-  HRMeshDriverInput    input;
-  HRMesh::InputTriMesh mesh2;
-  HydraGeomData        data;
+  HRMeshDriverInput input;
+  cmesh::SimpleMesh mesh2;
+  HydraGeomData     data;
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////// obj loader
   tinyobj::attrib_t attrib;
@@ -772,11 +772,11 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, std::vector<HRBatchInfo>& a
     input.vertNum       = data.getVerticesNumber();
     input.triNum        = data.getIndicesNumber()/3;
   
-    input.pos4f         = mesh2.verticesPos.data();
-    input.norm4f        = mesh2.verticesNorm.data();
-    input.tan4f         = mesh2.verticesTangent.data();
-    input.texcoord2f    = mesh2.verticesTexCoord.data();
-    input.indices       = (const int*)mesh2.triIndices.data();
+    input.pos4f         = mesh2.vPos4f.data();
+    input.norm4f        = mesh2.vNorm4f.data();
+    input.tan4f         = mesh2.vTang4f.data();
+    input.texcoord2f    = mesh2.vTexCoord2f.data();
+    input.indices       = (const int*)mesh2.indices.data();
     input.triMatIndices = (const int*)mesh2.matIndices.data();
     input.allData       = nullptr;
   }
@@ -1286,7 +1286,7 @@ void HR_DriverUpdate(HRSceneInst& scn, HRRender* a_pRender)
                             &allocInfo.envLightTexSize);
 
     HR_DriverUpdateSettings(scn, a_pDriver);
-
+    
     allocInfo = a_pDriver->AllocAll(allocInfo);
 
     if (allocInfo.geomMem < neededMemG)

@@ -20,6 +20,7 @@ using LiteMath::float2;
 using LiteMath::float3;
 using LiteMath::float4;
 
+#include "cmesh.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////    Light    /////////////////////////////////////////////////////////////////////
@@ -173,26 +174,9 @@ HAPI void hrLightClose(HRLightRef a_pLight)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-struct HR_SimpleMesh
+static cmesh::SimpleMesh CreateSphereMeshForLight(int a_matId, float radius, int numberSlices)
 {
-  HR_SimpleMesh() = default;
-
-  HR_SimpleMesh(HR_SimpleMesh&& a_in)      = default;
-  HR_SimpleMesh(const HR_SimpleMesh& a_in) = default;
- 
-  HR_SimpleMesh& operator=(HR_SimpleMesh&& a_in)      = default;
-  HR_SimpleMesh& operator=(const HR_SimpleMesh& a_in) = default;
-
-  std::vector<float>      vPos;
-  std::vector<float>      vNorm;
-  std::vector<float>      vTexCoord;
-  std::vector<uint32_t>   triIndices;
-  std::vector<int>        matIndices;
-};
-
-static HR_SimpleMesh CreateSphereMeshForLight(int a_matId, float radius, int numberSlices)
-{
-  HR_SimpleMesh sphere;
+  cmesh::SimpleMesh sphere;
 
   int i, j;
 
@@ -201,13 +185,8 @@ static HR_SimpleMesh CreateSphereMeshForLight(int a_matId, float radius, int num
   int numberIndices = numberParallels * numberSlices * 3;
 
   float angleStep = (2.0f * 3.14159265358979323846f) / ((float)numberSlices);
-
-  sphere.vPos.resize(numberVertices * 4);
-  sphere.vNorm.resize(numberVertices * 4);
-  sphere.vTexCoord.resize(numberVertices * 2);
-
-  sphere.triIndices.resize(numberIndices);
-  sphere.matIndices.resize(numberIndices / 3);
+  
+  sphere.Resize(numberVertices, numberIndices);
 
   for (size_t k = 0; k < sphere.matIndices.size(); k++)
     sphere.matIndices[k] = a_matId;
@@ -220,22 +199,22 @@ static HR_SimpleMesh CreateSphereMeshForLight(int a_matId, float radius, int num
       int normalIndex = (i * (numberSlices + 1) + j) * 4;
       int texCoordsIndex = (i * (numberSlices + 1) + j) * 2;
 
-      sphere.vPos[vertexIndex + 0] = radius * sinf(angleStep * (float)i) * sinf(angleStep * (float)j);
-      sphere.vPos[vertexIndex + 1] = radius * cosf(angleStep * (float)i);
-      sphere.vPos[vertexIndex + 2] = radius * sinf(angleStep * (float)i) * cosf(angleStep * (float)j);
-      sphere.vPos[vertexIndex + 3] = 1.0f;
+      sphere.vPos4f[vertexIndex + 0] = radius * sinf(angleStep * (float)i) * sinf(angleStep * (float)j);
+      sphere.vPos4f[vertexIndex + 1] = radius * cosf(angleStep * (float)i);
+      sphere.vPos4f[vertexIndex + 2] = radius * sinf(angleStep * (float)i) * cosf(angleStep * (float)j);
+      sphere.vPos4f[vertexIndex + 3] = 1.0f;
 
-      sphere.vNorm[normalIndex + 0] = sphere.vPos[vertexIndex + 0] / radius;
-      sphere.vNorm[normalIndex + 1] = sphere.vPos[vertexIndex + 1] / radius;
-      sphere.vNorm[normalIndex + 2] = sphere.vPos[vertexIndex + 2] / radius;
-      sphere.vNorm[normalIndex + 3] = 1.0f;
+      sphere.vNorm4f[normalIndex + 0] = sphere.vPos4f[vertexIndex + 0] / radius;
+      sphere.vNorm4f[normalIndex + 1] = sphere.vPos4f[vertexIndex + 1] / radius;
+      sphere.vNorm4f[normalIndex + 2] = sphere.vPos4f[vertexIndex + 2] / radius;
+      sphere.vNorm4f[normalIndex + 3] = 1.0f;
 
-      sphere.vTexCoord[texCoordsIndex + 0] = (float)j / (float)numberSlices;
-      sphere.vTexCoord[texCoordsIndex + 1] = (1.0f - (float)i) / (float)(numberParallels - 1);
+      sphere.vTexCoord2f[texCoordsIndex + 0] = (float)j / (float)numberSlices;
+      sphere.vTexCoord2f[texCoordsIndex + 1] = (1.0f - (float)i) / (float)(numberParallels - 1);
     }
   }
 
-  auto* indexBuf = &sphere.triIndices[0];
+  auto* indexBuf = sphere.indices.data();
 
   for (i = 0; i < numberParallels; i++)
   {
@@ -249,12 +228,12 @@ static HR_SimpleMesh CreateSphereMeshForLight(int a_matId, float radius, int num
       *indexBuf++ = (i + 1) * (numberSlices + 1) + (j + 1);
       *indexBuf++ = i * (numberSlices + 1) + (j + 1);
 
-      int diff = int(indexBuf - &sphere.triIndices[0]);
+      int diff = int(indexBuf - sphere.indices.data());
       if (diff >= numberIndices)
         break;
     }
 
-    int diff = int(indexBuf - &sphere.triIndices[0]);
+    int diff = int(indexBuf - sphere.indices.data());
     if (diff >= numberIndices)
       break;
   }
@@ -264,25 +243,20 @@ static HR_SimpleMesh CreateSphereMeshForLight(int a_matId, float radius, int num
   return sphere;
 }
 
-static HR_SimpleMesh CreateRectMeshForLight(int a_matId, float2 size)
+static cmesh::SimpleMesh CreateRectMeshForLight(int a_matId, float2 size)
 {
   const int numVert    = 4;
   const int numIndices = 6;
 
-  HR_SimpleMesh mesh;
+  cmesh::SimpleMesh mesh;
+  mesh.Resize(numVert, numIndices);
 
-  mesh.vPos.resize(numVert*4);
-  mesh.vNorm.resize(numVert*4);
-  mesh.vTexCoord.resize(numVert*2);
-  mesh.triIndices.resize(numIndices);
-  mesh.matIndices.resize(numIndices/3);
+  float4* vertPos  = (float4*)mesh.vPos4f.data();
+  float4* vertNorm = (float4*)mesh.vNorm4f.data();
+  float2* vertTexc = (float2*)mesh.vTexCoord2f.data();
 
-  float4* vertPos  = (float4*)&mesh.vPos[0];
-  float4* vertNorm = (float4*)&mesh.vNorm[0];
-  float2* vertTexc = (float2*)&mesh.vTexCoord[0];
-
-  auto* indices  = &mesh.triIndices[0];
-  int* mindices  = &mesh.matIndices[0];
+  auto* indices  = mesh.indices.data();
+  auto* mindices = mesh.matIndices.data();
 
   const float4 norm = float4(0, -1, 0, 0);
 
@@ -305,9 +279,8 @@ static HR_SimpleMesh CreateRectMeshForLight(int a_matId, float2 size)
   return mesh;
 }
 
-static HR_SimpleMesh CreateDiskMeshForLight(int a_matId, float a_radius)
+static cmesh::SimpleMesh CreateDiskMeshForLight(int a_matId, float a_radius)
 {
-
   const int numVertOld    = 128;
   const int numIndicesOld = numVertOld * 3;
 
@@ -316,20 +289,15 @@ static HR_SimpleMesh CreateDiskMeshForLight(int a_matId, float a_radius)
 
   const int LAST_VERT = numVertOld;
 
-  HR_SimpleMesh mesh;
+  cmesh::SimpleMesh mesh;
+  mesh.Resize(numVert, numIndices);
 
-  mesh.vPos.resize(numVert*4);
-  mesh.vNorm.resize(numVert*4);
-  mesh.vTexCoord.resize(numVert*2);
-  mesh.triIndices.resize(numIndices);
-  mesh.matIndices.resize(numIndices/3);
+  float4* vertPos  = (float4*)mesh.vPos4f.data();
+  float4* vertNorm = (float4*)mesh.vNorm4f.data();
+  float2* vertTexc = (float2*)mesh.vTexCoord2f.data();
 
-  float4* vertPos  = (float4*)&mesh.vPos[0];
-  float4* vertNorm = (float4*)&mesh.vNorm[0];
-  float2* vertTexc = (float2*)&mesh.vTexCoord[0];
-
-  auto* indices    = &mesh.triIndices[0];
-  int* mindices    = &mesh.matIndices[0];
+  auto* indices    = mesh.indices.data();
+  auto* mindices   = mesh.matIndices.data();
 
   for (int i = 0; i < numIndices / 3; i++)
     mindices[i] = a_matId;
@@ -373,7 +341,7 @@ static HR_SimpleMesh CreateDiskMeshForLight(int a_matId, float a_radius)
   return mesh;
 }
 
-static HR_SimpleMesh CreateCylinderMeshForLight(int a_matId, float a_radius, float a_height, float a_angle, int a_numberSlices)
+static cmesh::SimpleMesh CreateCylinderMeshForLight(int a_matId, float a_radius, float a_height, float a_angle, int a_numberSlices)
 {
   const float DEG_TO_RAD     = float(3.14159265358979323846f) / 180.0f;
   const float partOfCircle   = a_angle / 360.0f;
@@ -385,20 +353,15 @@ static HR_SimpleMesh CreateCylinderMeshForLight(int a_matId, float a_radius, flo
   const int numVert    = (numberSliceZ+1)*(numberSliceX+1);
   const int numIndices = numberSliceZ*numberSliceX*6;
 
-  HR_SimpleMesh mesh;
+  cmesh::SimpleMesh mesh;
+  mesh.Resize(numVert, numIndices);
+  
+  float4* vertPos  = (float4*)mesh.vPos4f.data();
+  float4* vertNorm = (float4*)mesh.vNorm4f.data();
+  float2* vertTexc = (float2*)mesh.vTexCoord2f.data();
 
-  mesh.vPos.resize(numVert * 4);
-  mesh.vNorm.resize(numVert * 4);
-  mesh.vTexCoord.resize(numVert * 2);
-  mesh.triIndices.resize(numIndices);
-  mesh.matIndices.resize(numIndices / 3);
-
-  float4* vertPos  = (float4*)&mesh.vPos[0];
-  float4* vertNorm = (float4*)&mesh.vNorm[0];
-  float2* vertTexc = (float2*)&mesh.vTexCoord[0];
-
-  auto* indices = &mesh.triIndices[0];
-  int* mindices = &mesh.matIndices[0];
+  auto* indices    = mesh.indices.data();
+  auto* mindices   = mesh.matIndices.data();
 
   for (int i = 0; i < numIndices / 3; i++)
     mindices[i] = a_matId;
@@ -498,7 +461,7 @@ HRMaterialRef HR_UpdateLightMaterial(pugi::xml_node a_lightNode, const std::wstr
   return emissiveMtl;
 }
 
-HRMeshRef HR_UpdateLightMesh(const std::wstring& a_meshName, const HR_SimpleMesh& lmesh, const std::wstring& lightIdS)
+HRMeshRef HR_UpdateLightMesh(const std::wstring& a_meshName, const cmesh::SimpleMesh& lmesh, const std::wstring& lightIdS)
 {
   pugi::xml_node geomlib  = g_objManager.scnData.m_geometryLib;                             // #TODO: accelerate linear search
   pugi::xml_node geomNode = geomlib.find_child_by_attribute(L"light_id", lightIdS.c_str()); // #TODO: accelerate linear search
@@ -515,12 +478,12 @@ HRMeshRef HR_UpdateLightMesh(const std::wstring& a_meshName, const HR_SimpleMesh
     pugi::xml_node  meshNode = hrMeshParamNode(lightMesh);
     meshNode.force_attribute(L"light_id") = lightIdS.c_str();
 
-    hrMeshVertexAttribPointer4f   (lightMesh, L"pos",      &lmesh.vPos[0]);
-    hrMeshVertexAttribPointer4f   (lightMesh, L"norm",     &lmesh.vNorm[0]);
-    hrMeshVertexAttribPointer2f   (lightMesh, L"texcoord", &lmesh.vTexCoord[0]);
-    hrMeshPrimitiveAttribPointer1i(lightMesh, L"mind",     &lmesh.matIndices[0]);
+    hrMeshVertexAttribPointer4f   (lightMesh, L"pos",      lmesh.vPos4f.data());
+    hrMeshVertexAttribPointer4f   (lightMesh, L"norm",     lmesh.vNorm4f.data());
+    hrMeshVertexAttribPointer2f   (lightMesh, L"texcoord", lmesh.vTexCoord2f.data());
+    hrMeshPrimitiveAttribPointer1i(lightMesh, L"mind",     (const int*)lmesh.matIndices.data());
 
-    hrMeshAppendTriangles3(lightMesh, int(lmesh.triIndices.size()), (const int*)&lmesh.triIndices[0]);
+    hrMeshAppendTriangles3(lightMesh, int(lmesh.indices.size()), (const int*)lmesh.indices.data());
   }
   hrMeshClose(lightMesh);
 
@@ -552,7 +515,7 @@ bool HR_UpdateLightGeomAndMaterial(pugi::xml_node a_lightNode, const std::wstrin
 
   // update light mesh (2)
   //
-  HR_SimpleMesh lmesh;
+  cmesh::SimpleMesh lmesh;
   {
     if (a_shape == L"rect")
     {
@@ -592,16 +555,16 @@ bool HR_UpdateLightGeomAndMaterial(pugi::xml_node a_lightNode, const std::wstrin
         pugi::xml_node nodeXMl = mesh.xml_node();
         OpenHRMesh(&mesh, nodeXMl);
 
-        lmesh.vPos       = mesh.m_input.verticesPos;
-        lmesh.vNorm      = mesh.m_input.verticesNorm;
-        lmesh.vTexCoord  = mesh.m_input.verticesTexCoord;
-        lmesh.triIndices = mesh.m_input.triIndices;
+        lmesh.vPos4f      = mesh.m_input.vPos4f;
+        lmesh.vNorm4f     = mesh.m_input.vNorm4f;
+        lmesh.vTexCoord2f = mesh.m_input.vTexCoord2f;
+        lmesh.indices     = mesh.m_input.indices;
 
         lmesh.matIndices.resize(mesh.m_input.matIndices.size());
         for (size_t i = 0; i < lmesh.matIndices.size(); i++)
           lmesh.matIndices[i] = emissiveMtl.id;
 
-        mesh.m_input.freeMem();
+        mesh.m_input.FreeMem();
       }
       else
       {

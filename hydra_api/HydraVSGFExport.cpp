@@ -190,7 +190,7 @@ inline const uint64_t readInt64(const unsigned char* ptr) // THIS IS CORRECT BOT
   return  (uint64_t(b7) << 56) | (uint64_t(b6) << 48) | (uint64_t(b5) << 40) | (uint64_t(b4) << 32) | (uint64_t(b3) << 24) | (uint64_t(b2) << 16) | (uint64_t(b1) << 8) | uint64_t(b0);
 }
 
-void convertLittleBigEndian(unsigned int* a_buffer, int a_size)
+static void convertLittleBigEndian(unsigned int* a_buffer, int a_size)
 {
   unsigned char* bbuffer = (unsigned char*)a_buffer;
 

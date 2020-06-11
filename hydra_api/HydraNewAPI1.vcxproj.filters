@@ -150,6 +150,21 @@
     <ClCompile Include="HydraFsUtils.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="cmesh_mikey_connect.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="cmesh_processing.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="cmesh_processing_weld.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="cmesh_vsgf.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="cmesh.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LiteMath.h">
@@ -222,6 +237,12 @@
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="HydraVSGFCompress.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="cmesh_vsgf.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="cmesh.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>

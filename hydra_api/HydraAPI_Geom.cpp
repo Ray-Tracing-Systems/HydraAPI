@@ -626,12 +626,34 @@ static std::vector<T> ReadArrayFromMeshNode(pugi::xml_node meshNode, ChunkPointe
   return std::vector<T>(begin, end);
 }
 
+template<typename T>
+static std::vector<T, aligned<T, 16> > ReadAlignedArrayFromMeshNode(pugi::xml_node meshNode, ChunkPointer a_chunk, const wchar_t* a_arrayName) // pre a_chunk.InMemory()
+{
+  pugi::xml_node child = meshNode.first_child();
+  for (; child != nullptr; child = child.next_sibling())
+  {
+    if (std::wstring(child.name()) == a_arrayName)
+      break;
+  }
+
+  const char* data = (const char*)a_chunk.GetMemoryNow();
+
+  const size_t offset = size_t(child.attribute(L"offset").as_ullong());
+  const size_t bsize  = size_t(child.attribute(L"bytesize").as_ullong());
+
+  const T* begin = (const T*)(data + offset);
+  const T* end   = (const T*)(data + offset + bsize);
+
+  return std::vector<T, aligned<T, 16> >(begin, end);
+}
+
+
 const std::wstring GetRealFilePathOfDelayedMesh(pugi::xml_node a_node);
-void HR_CopyMeshToInputMeshFromHydraGeomData(const HydraGeomData& data,  HRMesh::InputTriMesh& mesh2);
+void HR_CopyMeshToInputMeshFromHydraGeomData(const HydraGeomData& data, cmesh::SimpleMesh& mesh2);
 
 void OpenHRMesh(HRMesh* pMesh, pugi::xml_node nodeXml)
 {
-  pMesh->m_input.clear();
+  pMesh->m_input.Clear();
   
   if(pMesh->pImpl == nullptr)
     return;
@@ -648,12 +670,12 @@ void OpenHRMesh(HRMesh* pMesh, pugi::xml_node nodeXml)
   {
     // (1) read common mesh attributes
     //
-    pMesh->m_input.verticesPos      = ReadArrayFromMeshNode<float>   (nodeXml, chunk, L"positions");
-    pMesh->m_input.verticesNorm     = ReadArrayFromMeshNode<float>   (nodeXml, chunk, L"normals");
-    pMesh->m_input.verticesTangent  = ReadArrayFromMeshNode<float>   (nodeXml, chunk, L"tangents");
-    pMesh->m_input.verticesTexCoord = ReadArrayFromMeshNode<float>   (nodeXml, chunk, L"texcoords");
-    pMesh->m_input.triIndices       = ReadArrayFromMeshNode<uint32_t>(nodeXml, chunk, L"indices");
-    pMesh->m_input.matIndices       = ReadArrayFromMeshNode<uint32_t>(nodeXml, chunk, L"matindices");
+    pMesh->m_input.vPos4f      = ReadAlignedArrayFromMeshNode<float>(nodeXml, chunk, L"positions");
+    pMesh->m_input.vNorm4f     = ReadAlignedArrayFromMeshNode<float>(nodeXml, chunk, L"normals");
+    pMesh->m_input.vTang4f     = ReadAlignedArrayFromMeshNode<float>(nodeXml, chunk, L"tangents");
+    pMesh->m_input.vTexCoord2f = ReadArrayFromMeshNode<float>   (nodeXml, chunk, L"texcoords");
+    pMesh->m_input.indices     = ReadArrayFromMeshNode<uint32_t>(nodeXml, chunk, L"indices");
+    pMesh->m_input.matIndices  = ReadArrayFromMeshNode<uint32_t>(nodeXml, chunk, L"matindices");
 
     // (2) #TODO: read custom mesh attributes
     //
@@ -682,28 +704,15 @@ void OpenHRMesh(HRMesh* pMesh, pugi::xml_node nodeXml)
     HR_CopyMeshToInputMeshFromHydraGeomData(data, pMesh->m_input);
 
     //pMesh->pImpl->MList() = FormMatDrawListRLE(pMesh->m_input.matIndices);
-
-    //// (1) read all mesh attributes
-    ////
-    //pMesh->m_input.verticesPos      = std::vector<float>(data.getVertexPositionsFloat4Array(), data.getVertexPositionsFloat4Array() + 4 * vnum);
-    //pMesh->m_input.verticesNorm     = std::vector<float>(data.getVertexNormalsFloat4Array(),   data.getVertexNormalsFloat4Array() + 4 * vnum);
-    //pMesh->m_input.verticesTangent  = std::vector<float>(data.getVertexTangentsFloat4Array(),  data.getVertexTangentsFloat4Array() + 4 * vnum);
-    //pMesh->m_input.verticesTexCoord = std::vector<float>(data.getVertexTexcoordFloat2Array(),  data.getVertexTexcoordFloat2Array() + 2 * vnum);
-    //
-    //pMesh->m_input.triIndices       = std::vector<uint32_t>(data.getTriangleVertexIndicesArray(),   data.getTriangleVertexIndicesArray() + inum);
-    //pMesh->m_input.matIndices       = std::vector<uint32_t>(data.getTriangleMaterialIndicesArray(), data.getTriangleMaterialIndicesArray() + inum / 3);
-    //
-    //// (2) #TODO: read custom mesh attributes
-    ////
   }
 
   // set pointers
   //
   pMesh->m_inputPointers.clear();
-  pMesh->m_inputPointers.pos       = pMesh->m_input.verticesPos.data();      pMesh->m_inputPointers.posStride = sizeof(float) * 4;
-  pMesh->m_inputPointers.normals   = pMesh->m_input.verticesNorm.data();     pMesh->m_inputPointers.normStride = sizeof(float) * 4;
-  pMesh->m_inputPointers.tangents  = pMesh->m_input.verticesTangent.data();  pMesh->m_inputPointers.tangStride = sizeof(float) * 4;
-  pMesh->m_inputPointers.texCoords = pMesh->m_input.verticesTexCoord.data();
+  pMesh->m_inputPointers.pos       = pMesh->m_input.vPos4f.data();   pMesh->m_inputPointers.posStride = sizeof(float) * 4;
+  pMesh->m_inputPointers.normals   = pMesh->m_input.vNorm4f.data();  pMesh->m_inputPointers.normStride = sizeof(float) * 4;
+  pMesh->m_inputPointers.tangents  = pMesh->m_input.vTang4f.data();  pMesh->m_inputPointers.tangStride = sizeof(float) * 4;
+  pMesh->m_inputPointers.texCoords = pMesh->m_input.vTexCoord2f.data(); 
   pMesh->m_inputPointers.mindices  = (const int*)pMesh->m_input.matIndices.data();
 
   // #TODO: set custom pointers
@@ -722,7 +731,7 @@ HAPI void hrMeshOpen(HRMeshRef a_mesh, HR_PRIM_TYPE a_type, HR_OPEN_MODE a_mode)
   pMesh->opened   = true;
   pMesh->openMode = a_mode;
 
-  pMesh->m_input.clear();
+  pMesh->m_input.Clear();
   pMesh->m_inputPointers.clear();
 
   pMesh->m_allMeshMatId  = -1;
@@ -800,12 +809,12 @@ HAPI void hrMeshClose(HRMeshRef a_mesh, bool a_compress, bool a_placeToOrigin)
 
   FillXMLFromMeshImpl(nodeXml, pImpl, false); 
 
-  pMesh->m_input.freeMem();
+  pMesh->m_input.FreeMem();
   pMesh->m_inputPointers.clear();
   pMesh->wasChanged = true;
   pMesh->m_empty    = (nodeXml.attribute(L"bytesize").as_int() == 0);
-  pMesh->m_input.m_saveCompressed = a_compress;
-  pMesh->m_input.m_placeToOrigin  = a_placeToOrigin;
+  //pMesh->m_input.m_saveCompressed = a_compress;
+  //pMesh->m_input.m_placeToOrigin  = a_placeToOrigin;
   g_objManager.scnData.m_changeList.meshUsed.insert(pMesh->id);
 
   nodeXml.attribute(L"dl") = 0; // if we 'open/close' mesh then it became common, not delayed load object
@@ -977,7 +986,7 @@ HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, int indexNum);
 
 static void AddCommonAttributesFromPointers(HRMesh* pMesh, int maxVertexId)
 {
-  const size_t oldVertexNum = pMesh->m_input.verticesPos.size() / 4;   // remember old vertex buffer size
+  const size_t oldVertexNum = pMesh->m_input.vPos4f.size() / 4;   // remember old vertex buffer size
 
   // append maxVertexId vertex data
   //
@@ -989,53 +998,53 @@ static void AddCommonAttributesFromPointers(HRMesh* pMesh, int maxVertexId)
 	const bool hasNormals  = (normPtr != nullptr);
   const bool hasTangents = (tangPtr != nullptr);
   
-  pMesh->m_input.verticesPos.reserve(maxVertexId*4);
-  pMesh->m_input.verticesTexCoord.reserve(maxVertexId*2);
+  pMesh->m_input.vPos4f.reserve(maxVertexId*4);
+  pMesh->m_input.vTexCoord2f.reserve(maxVertexId*2);
   
   if (hasNormals)
-    pMesh->m_input.verticesNorm.reserve(maxVertexId*4);
+    pMesh->m_input.vNorm4f.reserve(maxVertexId*4);
   if (hasTangents)
-    pMesh->m_input.verticesTangent.reserve(maxVertexId*4);
+    pMesh->m_input.vTang4f.reserve(maxVertexId*4);
     
   for (int i = 0; i <= maxVertexId; i++)
   {
-    pMesh->m_input.verticesPos.push_back(posPtr[0]);
-    pMesh->m_input.verticesPos.push_back(posPtr[1]);
-    pMesh->m_input.verticesPos.push_back(posPtr[2]);
-    pMesh->m_input.verticesPos.push_back(1.0f);
+    pMesh->m_input.vPos4f.push_back(posPtr[0]);
+    pMesh->m_input.vPos4f.push_back(posPtr[1]);
+    pMesh->m_input.vPos4f.push_back(posPtr[2]);
+    pMesh->m_input.vPos4f.push_back(1.0f);
 
     posPtr += pMesh->m_inputPointers.posStride;
 
 		if (hasNormals)
 		{
-      pMesh->m_input.verticesNorm.push_back(normPtr[0]);
-      pMesh->m_input.verticesNorm.push_back(normPtr[1]);
-      pMesh->m_input.verticesNorm.push_back(normPtr[2]);
-      pMesh->m_input.verticesNorm.push_back(0.0f);
+      pMesh->m_input.vNorm4f.push_back(normPtr[0]);
+      pMesh->m_input.vNorm4f.push_back(normPtr[1]);
+      pMesh->m_input.vNorm4f.push_back(normPtr[2]);
+      pMesh->m_input.vNorm4f.push_back(0.0f);
 
       normPtr += pMesh->m_inputPointers.normStride;
 		}
 
     if (hasTangents)
     {
-      pMesh->m_input.verticesTangent.push_back(tangPtr[0]);
-      pMesh->m_input.verticesTangent.push_back(tangPtr[1]);
-      pMesh->m_input.verticesTangent.push_back(tangPtr[2]);
-      pMesh->m_input.verticesTangent.push_back(0.0f);
+      pMesh->m_input.vTang4f.push_back(tangPtr[0]);
+      pMesh->m_input.vTang4f.push_back(tangPtr[1]);
+      pMesh->m_input.vTang4f.push_back(tangPtr[2]);
+      pMesh->m_input.vTang4f.push_back(0.0f);
 
       tangPtr += pMesh->m_inputPointers.tangStride;
     }
 		
     if (texcPtr != nullptr)
     {
-      pMesh->m_input.verticesTexCoord.push_back(texcPtr[0]);
-      pMesh->m_input.verticesTexCoord.push_back(texcPtr[1]);
+      pMesh->m_input.vTexCoord2f.push_back(texcPtr[0]);
+      pMesh->m_input.vTexCoord2f.push_back(texcPtr[1]);
       texcPtr += 2;
     }
     else
     {
-      pMesh->m_input.verticesTexCoord.push_back(0.0f);
-      pMesh->m_input.verticesTexCoord.push_back(0.0f);
+      pMesh->m_input.vTexCoord2f.push_back(0.0f);
+      pMesh->m_input.vTexCoord2f.push_back(0.0f);
     }
 
   }
@@ -1048,7 +1057,7 @@ static void AddCustomAttributesFromPointers(HRMesh* pMesh, int maxVertexId)
   for (auto ptrs : pMesh->m_inputPointers.customVertPointers)
   {
     {
-      HRMesh::InputTriMesh::CustArray arr;
+      cmesh::SimpleMesh::CustArray arr;
       arr.name  = ptrs.name;
       arr.depth = (ptrs.stride == 3) ? 4 : ptrs.stride;
       arr.apply = 0; // per vertex
@@ -1203,12 +1212,12 @@ HAPI void hrMeshAppendTriangles3(HRMeshRef a_mesh, int indNum, const int* indice
   
   // append triangle indices and find maxVertexId
   //
-  const size_t oldVertexNum  = pMesh->m_input.verticesPos.size() / 4;   // remember old vertex buffer size
+  const size_t oldVertexNum  = pMesh->m_input.VerticesNum();
   
-  if(pMesh->m_input.triIndices.capacity() < pMesh->m_input.triIndices.size() + size_t(indNum))
+  if(pMesh->m_input.indices.capacity() < pMesh->m_input.indices.size() + size_t(indNum))
   {
-    pMesh->m_input.triIndices.reserve(pMesh->m_input.triIndices.size() + size_t(indNum) + 100);
-    pMesh->m_input.matIndices.reserve(pMesh->m_input.triIndices.capacity()/3 + 100 );
+    pMesh->m_input.indices.reserve(pMesh->m_input.indices.size() + size_t(indNum) + 100);
+    pMesh->m_input.matIndices.reserve(pMesh->m_input.indices.capacity()/3 + 100 );
   }
   
   int maxVertexId = 0;
@@ -1217,7 +1226,7 @@ HAPI void hrMeshAppendTriangles3(HRMeshRef a_mesh, int indNum, const int* indice
     const int currIndex = indices[i];
     if (currIndex > maxVertexId)
       maxVertexId = currIndex;
-    pMesh->m_input.triIndices.push_back(int(oldVertexNum) + currIndex);
+    pMesh->m_input.indices.push_back(int(oldVertexNum) + currIndex);
   }
   
   // append maxVertexId vertex data
@@ -1225,7 +1234,7 @@ HAPI void hrMeshAppendTriangles3(HRMeshRef a_mesh, int indNum, const int* indice
   const size_t newVertexSize = oldVertexNum + maxVertexId;
   const size_t newIndexSize  = oldVertexNum + indNum;
 
-  pMesh->m_input.reserve(newVertexSize, newIndexSize);
+  pMesh->m_input.Reserve(newVertexSize, newIndexSize);
 
   AddCommonAttributesFromPointers(pMesh, maxVertexId);
   AddCustomAttributesFromPointers(pMesh, maxVertexId);
@@ -1291,18 +1300,18 @@ HAPI void* hrMeshGetAttribPointer(HRMeshRef a_mesh, const wchar_t* attributeName
   
   if (pMesh->opened)
   {
-    HRMesh::InputTriMesh& mesh = pMesh->m_input;
+    auto& mesh = pMesh->m_input;
   
     //std::cout << "mesh.verticesPos.size() = " << mesh.verticesPos.size() << std::endl;
     
     if (!wcscmp(attributeName, L"pos"))
-      return mesh.verticesPos.data();
+      return mesh.vPos4f.data();
     else if (!wcscmp(attributeName, L"norm"))
-      return mesh.verticesNorm.data();
+      return mesh.vNorm4f.data();
     else if (!wcscmp(attributeName, L"uv") || !wcscmp(attributeName, L"texcoord"))
-      return mesh.verticesTexCoord.data();
+      return mesh.vTexCoord2f.data();
     else if (!wcscmp(attributeName, L"tang"))
-      return mesh.verticesTangent.data();
+      return mesh.vTang4f.data();
     else
       return nullptr;
   }
@@ -1368,12 +1377,12 @@ HAPI void* hrMeshGetPrimitiveAttribPointer(HRMeshRef a_mesh, const wchar_t* attr
 
   if (pMesh->opened)
   {
-    HRMesh::InputTriMesh& mesh = pMesh->m_input;
+    auto& mesh = pMesh->m_input;
 
     if (!wcscmp(attributeName, L"mind"))
       return mesh.matIndices.data();
     else if (!wcscmp(attributeName, L"tind"))
-      return mesh.triIndices.data();
+      return mesh.indices.data();
     else
       return nullptr;
   }
@@ -1392,8 +1401,7 @@ HAPI HRMeshInfo  hrMeshGetInfo(HRMeshRef a_mesh)
   if (pMesh == nullptr)
     return info;
 
-  HRMesh::InputTriMesh& mesh = pMesh->m_input;
-  
+  auto& mesh     = pMesh->m_input;
   auto pImpl     = pMesh->pImpl;
   auto& mig_data = pMesh->mig_data;
 
@@ -1449,99 +1457,6 @@ HAPI HRMeshInfo  hrMeshGetInfo(HRMeshRef a_mesh)
   return info;
 }
 
-void ComputeVertexNormals(HRMesh::InputTriMesh& mesh, const int indexNum, bool useFaceNormals)
-{
-  int faceNum = indexNum / 3;
-
-  //std::vector<float3> faceNormals;
-  //faceNormals.reserve(faceNum);
-
-  std::vector<float3> vertexNormals(mesh.verticesPos.size() / 4, float3(0.0, 0.0, 0.0));
-
-
-  for (auto i = 0; i < faceNum; ++i)
-  {
-    float3 A = float3(mesh.verticesPos.at(4 * mesh.triIndices.at(3*i)),     mesh.verticesPos.at(4 * mesh.triIndices.at(3*i) + 1),     mesh.verticesPos.at(4 * mesh.triIndices.at(3*i) + 2));
-    float3 B = float3(mesh.verticesPos.at(4 * mesh.triIndices.at(3*i + 1)), mesh.verticesPos.at(4 * mesh.triIndices.at(3*i + 1) + 1), mesh.verticesPos.at(4 * mesh.triIndices.at(3*i + 1) + 2));
-    float3 C = float3(mesh.verticesPos.at(4 * mesh.triIndices.at(3*i + 2)), mesh.verticesPos.at(4 * mesh.triIndices.at(3*i + 2) + 1), mesh.verticesPos.at(4 * mesh.triIndices.at(3*i + 2) + 2));
-    
-    float3 edge1A = normalize(B - A);
-    float3 edge2A = normalize(C - A);
-
-    float3 edge1B = normalize(A - B);
-    float3 edge2B = normalize(C - B);
-
-    float3 edge1C = normalize(A - C);
-    float3 edge2C = normalize(B - C);
-
-/*
-    float3 edge1A = normalize(A - B);
-    float3 edge2A = normalize(A - C);
-
-    float3 edge1B = normalize(B - A);
-    float3 edge2B = normalize(B - C);
-
-    float3 edge1C = normalize(C - A);
-    float3 edge2C = normalize(C - B);
-    */
-
-    float3 face_normal = normalize(cross(edge1A, edge2A));
-    /*
-    vertexNormals.at(mesh.triIndices.at(3 * i)) += face_normal;
-    vertexNormals.at(mesh.triIndices.at(3 * i + 1)) += face_normal;
-    vertexNormals.at(mesh.triIndices.at(3 * i + 2)) += face_normal;
-    */
-    if(!useFaceNormals)
-    {
-      float dotA = dot(edge1A, edge2A);
-      float dotB = dot(edge1B, edge2B);
-      float dotC = dot(edge1C, edge2C);
-
-      const float lenA = length(cross(edge1A, edge2A));
-      const float lenB = length(cross(edge1B, edge2B));
-      const float lenC = length(cross(edge1C, edge2C));
-      
-      float wA = fmaxf(lenA*fabsf(std::acos(dotA)), 1e-5f);
-      float wB = fmaxf(lenB*fabsf(std::acos(dotB)), 1e-5f);
-      float wC = fmaxf(lenC*fabsf(std::acos(dotC)), 1e-5f);
-
-//      float face_area = 0.5f * sqrtf(powf(edge1A.y * edge2A.z - edge1A.z * edge2A.y, 2) +
-//                                     powf(edge1A.z * edge2A.x - edge1A.x * edge2A.z, 2) +
-//                                     powf(edge1A.x * edge2A.y - edge1A.y * edge2A.x, 2));
-      float face_area = 1.0f;
-
-      float3 normalA = face_normal * wA * face_area;
-      float3 normalB = face_normal * wB * face_area;
-      float3 normalC = face_normal * wC * face_area;
-
-      vertexNormals.at(mesh.triIndices.at(3 * i + 0)) += normalA;
-      vertexNormals.at(mesh.triIndices.at(3 * i + 1)) += normalB;
-      vertexNormals.at(mesh.triIndices.at(3 * i + 2)) += normalC;
-    }
-    else
-    {
-      vertexNormals.at(mesh.triIndices.at(3 * i + 0)) += face_normal;
-      vertexNormals.at(mesh.triIndices.at(3 * i + 1)) += face_normal;
-      vertexNormals.at(mesh.triIndices.at(3 * i + 2)) += face_normal;
-    }
-    //faceNormals.push_back(face_normal);
-  }
-
-  if(mesh.verticesNorm.size() != mesh.verticesPos.size())
-    mesh.verticesNorm.resize(mesh.verticesPos.size());
-
-  for (int i = 0; i < vertexNormals.size(); ++i)
-  {
-    float3 N = normalize(vertexNormals.at(i));
-
-    mesh.verticesNorm.at(4 * i + 0) = N.x;
-    mesh.verticesNorm.at(4 * i + 1) = N.y;
-    mesh.verticesNorm.at(4 * i + 2) = N.z;
-    mesh.verticesNorm.at(4 * i + 3) = 0.0f;
-  }
-
-}
-
 void hrMeshComputeNormals(HRMeshRef a_mesh, const int indexNum, bool useFaceNormals)
 {
 	HRMesh* pMesh = g_objManager.PtrById(a_mesh);
@@ -1551,32 +1466,8 @@ void hrMeshComputeNormals(HRMeshRef a_mesh, const int indexNum, bool useFaceNorm
 		return;
 	}
 
-	HRMesh::InputTriMesh& mesh = pMesh->m_input;
-
-  ComputeVertexNormals(mesh, indexNum, useFaceNormals);
+  cmesh::ComputeNormals(pMesh->m_input, indexNum, useFaceNormals);
 }
-
-void HR_ComputeTangentSpaceSimple(const int     vertexCount, const int     triangleCount, const uint32_t* triIndices,
-                                  const float4* verticesPos, const float4* verticesNorm, const float2* vertTexCoord,
-                                  float4* verticesTang);
-
-void ComputeVertexTangents(HRMesh::InputTriMesh& mesh, int indexNum)
-{
-  const int vertexCount      = int(mesh.verticesPos.size()/4);                   // #TODO: not 0-th element, last vertex from prev append!
-  const int triangleCount    = indexNum / 3;
-
-  const float4* verticesPos  = (const float4*)(mesh.verticesPos.data());         // #TODO: not 0-th element, last vertex from prev append!
-  const float4* verticesNorm = (const float4*)(mesh.verticesNorm.data());        // #TODO: not 0-th element, last vertex from prev append!
-  const float2* vertTexCoord = (const float2*)(mesh.verticesTexCoord.data());    // #TODO: not 0-th element, last vertex from prev append!
-
-  float4* verticesTang       = (float4*)(mesh.verticesTangent.data());           // #TODO: not 0-th element, last vertex from prev append!
-
-  HR_ComputeTangentSpaceSimple(vertexCount, triangleCount, mesh.triIndices.data(),
-                               verticesPos, verticesNorm, vertTexCoord,
-                               verticesTang);
-}
-
-void MikeyTSpaceCalc(HRMesh::InputTriMesh* pInput, bool basic);
 
 HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, int indexNum)
 {
@@ -1593,12 +1484,8 @@ HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, int indexNum)
     return;
   }
 
-  HRMesh::InputTriMesh& mesh = pMesh->m_input;
-  const int vertexCount      = int(pMesh->m_input.verticesPos.size()/4);
-  mesh.verticesTangent.resize(vertexCount*4); // #TODO: not 0-th element, last vertex from prev append!
+  cmesh::ComputeTangents(pMesh->m_input, pMesh->m_input.IndicesNum());
 
-  MikeyTSpaceCalc(&mesh, false);     // mikktspace implementation
-  //ComputeVertexTangents(mesh, indexNum); // simple algotithm
 }
 
 
