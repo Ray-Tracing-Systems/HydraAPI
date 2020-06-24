@@ -58,3 +58,7 @@ utils/clew/x64/
 utils/ies_parser/x64/
 utils/mikktspace/x64/
 main/demos/demo_02/
+*.log
+*.tlog
+*.pdb
+main/.vs/
