@@ -109,10 +109,10 @@ static void ExtractNormalsLine(const HRGBufferPixel* a_inLine, int32_t* a_outLin
   for (int x = 0; x < a_width; x++)
   {
     float norm[4];
-    norm[0] = fabs(a_inLine[x].norm[0]);
-    norm[1] = fabs(a_inLine[x].norm[1]);
-    norm[2] = fabs(a_inLine[x].norm[2]);
-    norm[3] = 1.0f;
+    norm[0] = a_inLine[x].norm[0] * 0.5F + 0.5F;
+    norm[1] = a_inLine[x].norm[1] * 0.5F + 0.5F;
+    norm[2] = a_inLine[x].norm[2] * 0.5F + 0.5F;
+    norm[3] = 1.0F;
 
     a_outLine[x] = RealColorToUint32(norm);
   }
