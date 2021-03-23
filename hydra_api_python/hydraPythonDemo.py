@@ -213,7 +213,7 @@ def blend_simple():
     color = diff.append_child("color")
     color.append_attribute("val").set_value("0.2 0.2 0.75")
     color.append_attribute("tex_apply_mode ").set_value("multiply")
-    texNode = hy.hrTextureBind(texChecker, diff.child("color"))
+    texNode = hy.hrTextureBind(texChecker, diff.child("color"), "texture")
     texNode.append_attribute("matrix")
     samplerMatrix = np.array([ 16,  0, 0, 0,
                                0, 16, 0, 0,
@@ -234,7 +234,7 @@ def blend_simple():
     color = diff.append_child("color")
     color.append_attribute("val").set_value("0.1 0.1 0.1")
     color.append_attribute("tex_apply_mode ").set_value("multiply")
-    texNode = hy.hrTextureBind(texChecker, diff.child("color"))
+    texNode = hy.hrTextureBind(texChecker, diff.child("color"), "texture")
     texNode.append_attribute("matrix")
     samplerMatrix2 = np.array([ 8,  0, 0, 0,
                                 0,  8, 0, 0,
@@ -283,7 +283,7 @@ def blend_simple():
     texNode.append_attribute("input_gamma").set_value(2.2)
     texNode.append_attribute("input_alpha").set_value("rgb")
     hy.WriteMatrix4x4(texNode, "matrix", samplerMatrix3)
-    hy.hrTextureBind(texChecker, mask)
+    hy.hrTextureBind(texChecker, mask, "texture")
     hy.hrMaterialClose(matBlend1)
 
     hy.hrMaterialOpen(matBlend2, hy.HR_WRITE_DISCARD)
@@ -299,7 +299,7 @@ def blend_simple():
     texNode.append_attribute("input_gamma").set_value(2.2)
     texNode.append_attribute("input_alpha").set_value("rgb")
     hy.WriteMatrix4x4(texNode, "matrix", samplerMatrix3)
-    hy.hrTextureBind(texYinYang, mask)
+    hy.hrTextureBind(texYinYang, mask, "texture")
     hy.hrMaterialClose(matBlend2)
 
     hy.hrMaterialOpen(matBlend3, hy.HR_WRITE_DISCARD)
@@ -315,7 +315,7 @@ def blend_simple():
     texNode.append_attribute("input_gamma").set_value(2.2)
     texNode.append_attribute("input_alpha").set_value("rgb")
     hy.WriteMatrix4x4(texNode, "matrix", samplerMatrix3)
-    hy.hrTextureBind(texChecker, mask)
+    hy.hrTextureBind(texChecker, mask, "texture")
     hy.hrMaterialClose(matBlend3)
 
     cubeOpenRef = createCubeOpenRef("box", 18.0, matGray.id)

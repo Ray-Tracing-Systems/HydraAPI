@@ -346,6 +346,7 @@ PYBIND11_MODULE(hydraPy, m)
       .def_readwrite("localDataPath", &HRInitInfo::localDataPath)
       .def_readwrite("sortMaterialIndices", &HRInitInfo::sortMaterialIndices)
       .def_readwrite("computeMeshBBoxes", &HRInitInfo::computeMeshBBoxes)
+      .def_readwrite("saveChanges", &HRInitInfo::saveChanges)
       .def_readwrite("vbSize", &HRInitInfo::vbSize);
 
   py::class_<MergeInfoPy>(m, "MergeInfo")
