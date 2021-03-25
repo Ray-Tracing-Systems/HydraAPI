@@ -250,8 +250,19 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromMemory(int w, int h, int bpp, const v
     g_objManager.SetLoc(texNodeXml, location);
     texNodeXml.append_attribute(L"offset").set_value(L"8");
     texNodeXml.append_attribute(L"bytesize").set_value(bytesize.c_str());
-    texNodeXml.append_attribute(L"width")  = w;
-    texNodeXml.append_attribute(L"height") = h;
+
+//    std::cout << "[hrTexture2DCreateFromMemory] : w = " << w << std::endl;
+//    std::cout << "[hrTexture2DCreateFromMemory] : h = " << h << std::endl;
+
+    texNodeXml.append_attribute(L"width").set_value(w);
+    texNodeXml.append_attribute(L"height").set_value(h);
+
+//    texNodeXml.append_attribute(L"width");
+//    texNodeXml.append_attribute(L"height");
+
+//    std::cout << "[hrTexture2DCreateFromMemory] : w in xml = " << ws2s(texNodeXml.attribute(L"width").value()) << std::endl;
+//    std::cout << "[hrTexture2DCreateFromMemory] : h in xml = " << ws2s(texNodeXml.attribute(L"height").value())  << std::endl;
+
     texNodeXml.append_attribute(L"dl").set_value(L"0");
 
     g_objManager.scnData.textures[ref.id].update(texNodeXml);

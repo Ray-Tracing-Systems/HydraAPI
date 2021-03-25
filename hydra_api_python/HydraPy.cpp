@@ -333,6 +333,7 @@ PYBIND11_MODULE(hydraPy, m)
           .def_readwrite("id", &HRRenderRef::id);
 
   py::class_<HRSceneLibraryInfo>(m, "HRSceneLibraryInfo")
+          .def(py::init<>())
           .def_readwrite("texturesNum", &HRSceneLibraryInfo::texturesNum)
           .def_readwrite("materialsNum", &HRSceneLibraryInfo::materialsNum)
           .def_readwrite("meshesNum", &HRSceneLibraryInfo::meshesNum)
@@ -373,17 +374,6 @@ PYBIND11_MODULE(hydraPy, m)
           .def_readwrite("progress", &HRRenderUpdateInfo::progress)
           .def_readwrite("msg", &HRRenderUpdateInfo::msg);
 
-  /*
-   *   float   depth;
-  float   norm[3];
-  float   texc[2];
-  float   rgba[4];
-  float   shadow;
-  float   coverage;
-  int32_t matId;
-  int32_t objId;
-  int32_t instId;
-   */
   py::class_<HRGBufferPixelPy>(m, "HRGBufferPixelPy")
           .def_readonly("depth", &HRGBufferPixelPy::depth)
 //          .def_property("norm", &HRGBufferPixel::get_norm, &HRGBufferPixel::set_norm)
@@ -399,6 +389,7 @@ PYBIND11_MODULE(hydraPy, m)
           .def_readonly("instId", &HRGBufferPixelPy::instId);
 
   py::class_<HRUtils::BBox>(m, "BBox")
+          .def(py::init<>())
           .def_readonly("x_min", &HRUtils::BBox::x_min)
           .def_readonly("x_max", &HRUtils::BBox::x_max)
           .def_readonly("y_min", &HRUtils::BBox::y_min)
@@ -574,6 +565,8 @@ PYBIND11_MODULE(hydraPy, m)
           .def("set", py::overload_cast<double>(&pugi::xml_text::set))
           .def("set", py::overload_cast<float>(&pugi::xml_text::set))
           .def("set", py::overload_cast<bool>(&pugi::xml_text::set))
-          .def("set", py::overload_cast<const wchar_t*>(&pugi::xml_text::set));
+          .def("set", py::overload_cast<const wchar_t*>(&pugi::xml_text::set))
+          .def("get", &pugi::xml_text::get);
+
 
 }

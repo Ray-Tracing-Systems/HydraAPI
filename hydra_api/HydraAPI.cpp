@@ -163,9 +163,8 @@ HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMod
   std::string dataPath = libPath + "/data";
 #endif
 
-  if (std::wstring(a_libPath) != L"" && a_openMode == HR_WRITE_DISCARD)
+  if (std::wstring(a_libPath).empty() && a_openMode == HR_WRITE_DISCARD)
   {
-
 #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
     hr_mkdir(libPath.c_str());
     hr_mkdir(dataPath.c_str());
