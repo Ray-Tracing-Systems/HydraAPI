@@ -137,11 +137,11 @@ HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMod
   if(input.substr(input.size() - 4) == L".xml")
   {
     // split path to file to (path to folder, file name)
-    auto pos  = input.find_last_of(L"/");
+    auto pos  = input.find_last_of(L'/');
     libFolder = input.substr(0, pos);
     libFile   = input.substr(pos+1, input.size());
     
-    auto posOfNumber = libFile.find(L"_");
+    auto posOfNumber = libFile.find(L'_');
     auto numberStr   = libFile.substr(posOfNumber+1,5); //#TODO: implement more smart number parsing
     std::wstringstream strIn(numberStr);
     strIn >> libStateId;
@@ -205,21 +205,20 @@ HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMod
   {
     if (a_libPath != nullptr && !std::wstring(a_libPath).empty())
     {
-      std::wstring dataPath = std::wstring(a_libPath) + L"/data";
-     
     #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600)
       hr_cleardir(libPath.c_str());
       std::string dataPath2 = ws2s(a_libPath) + "/data";
       hr_mkdir(dataPath2.c_str());
     #elif defined WIN32
+      std::wstring dataPathTmp = std::wstring(a_libPath) + L"/data";
       hr_cleardir(a_libPath);
-      hr_cleardir(dataPath.c_str());
+      hr_cleardir(dataPathTmp.c_str());
     #endif
     }
-    int32_t whileImage[4] = { int32_t(0xFFFFFFFF), int32_t(0xFFFFFFFF),
+    int32_t whiteImage[4] = { int32_t(0xFFFFFFFF), int32_t(0xFFFFFFFF),
                               int32_t(0xFFFFFFFF), int32_t(0xFFFFFFFF) };
 
-    hrTexture2DCreateFromMemory(2, 2, 4, whileImage); // dummy white texture
+    hrTexture2DCreateFromMemory(2, 2, 4, whiteImage); // dummy white texture
 
   }
   else if (a_openMode == HR_OPEN_EXISTING || a_openMode == HR_OPEN_READ_ONLY)

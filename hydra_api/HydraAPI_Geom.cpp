@@ -314,7 +314,7 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, HRModelLo
                                        0, 0, 0, 1};
             texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
             texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
-            texNode.append_attribute(L"input_gamma").set_value(2.2f);
+            texNode.append_attribute(L"input_gamma").set_value(L"2.2");
             texNode.append_attribute(L"input_alpha").set_value(L"rgb");
 
             HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
@@ -326,9 +326,9 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, HRModelLo
           pugi::xml_node refl = matNode.append_child(L"reflectivity");
           refl.append_attribute(L"brdf_type").set_value(L"phong");
           refl.append_child(L"color").append_attribute(L"val") = fthree2ws(materials.at(m).specular).c_str();
-          refl.append_child(L"glossiness").append_attribute(L"val") = 1.0f;
-          refl.append_child(L"fresnel").append_attribute(L"val").set_value(1);
-          refl.append_child(L"fresnel_ior").append_attribute(L"val").set_value(1.5);
+          refl.append_child(L"glossiness").append_attribute(L"val").set_value(L"1.0");
+          refl.append_child(L"fresnel").append_attribute(L"val").set_value(L"1");
+          refl.append_child(L"fresnel_ior").append_attribute(L"val").set_value(L"1.5");
 
         }
         VERIFY_XML(matNode);

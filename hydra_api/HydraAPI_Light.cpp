@@ -142,7 +142,7 @@ HAPI void hrLightClose(HRLightRef a_pLight)
   if (lightNode.child(L"ies") != nullptr)
   {
     const wchar_t* iesFilePath = lightNode.child(L"ies").attribute(L"data").as_string();
-    if (iesFilePath != nullptr && std::wstring(iesFilePath) != L"")
+    if (iesFilePath != nullptr && !std::wstring(iesFilePath).empty())
     {
       std::wstringstream fileNameOut;
       fileNameOut << L"data/ies_" << a_pLight.id << ".ies";
@@ -511,7 +511,7 @@ bool HR_UpdateLightGeomAndMaterial(pugi::xml_node a_lightNode, const std::wstrin
   //
   HRMaterialRef emissiveMtl = HR_UpdateLightMaterial(a_lightNode, lightIdS);
 
-  a_lightNode.force_attribute(L"mat_id").set_value(emissiveMtl.id);  // reference from light to it's material 
+  a_lightNode.force_attribute(L"mat_id").set_value(std::to_wstring(emissiveMtl.id).c_str());  // reference from light to it's material
 
   // update light mesh (2)
   //
@@ -703,7 +703,7 @@ void HR_UpdateLightsGeometryAndMaterial(pugi::xml_node a_lightLib, pugi::xml_nod
 
     nodeXML.append_attribute(L"id").set_value(nextInstId);
     nodeXML.append_attribute(L"mesh_id").set_value(instData.meshId);
-    nodeXML.append_attribute(L"rmap_id").set_value(-1);
+    nodeXML.append_attribute(L"rmap_id").set_value(L"-1");
     nodeXML.append_attribute(L"matrix").set_value(instData.matrixStr.c_str());
     nodeXML.append_attribute(L"light_id").set_value(instData.lightId);
     nodeXML.append_attribute(L"linst_id").set_value(instData.lightInstId);

@@ -90,12 +90,12 @@ else()
 endif()
 
 
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DIN_DEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
+
 #build hydra API static library
 add_library(hydra_api STATIC ${SOURCE_FILES} ${POST_PROC} ${GL_DEPENDENT} ${HR_EXTENSIONS})
 target_include_directories (hydra_api PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${OPENGL_INCLUDE_DIR})
-
-
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DIN_DEBUG")
 
 if(WIN32)
   add_definitions(-DUNICODE -D_UNICODE)

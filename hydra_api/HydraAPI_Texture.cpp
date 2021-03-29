@@ -241,9 +241,9 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromMemory(int w, int h, int bpp, const v
     std::wstringstream namestr;
     namestr << L"Map#" << ref.id;
     std::wstring texName = namestr.str();
-    std::wstring id = ToWString(ref.id);
+    std::wstring id = std::to_wstring(ref.id);
     std::wstring location = ChunkName(chunk);
-    std::wstring bytesize = ToWString(byteSize);
+    std::wstring bytesize = std::to_wstring(byteSize);
 
     texNodeXml.append_attribute(L"id").set_value(id.c_str());
     texNodeXml.append_attribute(L"name").set_value(texName.c_str());
@@ -251,17 +251,10 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromMemory(int w, int h, int bpp, const v
     texNodeXml.append_attribute(L"offset").set_value(L"8");
     texNodeXml.append_attribute(L"bytesize").set_value(bytesize.c_str());
 
-//    std::cout << "[hrTexture2DCreateFromMemory] : w = " << w << std::endl;
-//    std::cout << "[hrTexture2DCreateFromMemory] : h = " << h << std::endl;
 
     texNodeXml.append_attribute(L"width").set_value(w);
     texNodeXml.append_attribute(L"height").set_value(h);
 
-//    texNodeXml.append_attribute(L"width");
-//    texNodeXml.append_attribute(L"height");
-
-//    std::cout << "[hrTexture2DCreateFromMemory] : w in xml = " << ws2s(texNodeXml.attribute(L"width").value()) << std::endl;
-//    std::cout << "[hrTexture2DCreateFromMemory] : h in xml = " << ws2s(texNodeXml.attribute(L"height").value())  << std::endl;
 
     texNodeXml.append_attribute(L"dl").set_value(L"0");
 

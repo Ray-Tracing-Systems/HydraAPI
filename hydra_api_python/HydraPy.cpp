@@ -10,7 +10,8 @@
 //#include "pybind11/include/pybind11/stl_bind.h"
 #include "HydraAPI.h"
 #include "HydraXMLHelpers.h"
-
+//#include "pugixml.hpp"
+#include <filesystem>
 
 namespace py = pybind11;
 
@@ -304,11 +305,28 @@ HRSceneInstRef MergeLibraryIntoLibraryPy(const wchar_t* a_libPath, bool mergeLig
 }
 
 
+void hello(const std::wstring& save_path)
+{
+  pugi::xml_document doc;
+
+  auto c = doc.append_child(L"test_child");
+
+  auto grandchild = c.append_child(L"test_grandchild");
+
+  grandchild.append_attribute(L"int_attrib").set_value(2);
+  grandchild.append_attribute(L"string_attrib").set_value(L"2");
+
+  std::wstring output_file = save_path + L"/hello.xml";
+  std::wcout << "[pybind_pugi]: saving into ... " << output_file << std::endl;
+  auto created = std::filesystem::create_directory(save_path);
+  auto res = doc.save_file(output_file.c_str(), L" ");
+  if(!res)
+    std::wcout << "[pybind_pugi]: save error " << std::endl;
+}
+
 PYBIND11_MODULE(hydraPy, m)
 {
-
-  //py::bind_vector<std::vector<float>>(m, "VectorFloat");
-  //py::bind_vector<std::vector<int>>(m, "VectorInt");
+  m.def("hello", &hello);
 
   py::class_<HRMeshRef>(m, "HRMeshRef")
           .def(py::init<>())
@@ -567,6 +585,5 @@ PYBIND11_MODULE(hydraPy, m)
           .def("set", py::overload_cast<bool>(&pugi::xml_text::set))
           .def("set", py::overload_cast<const wchar_t*>(&pugi::xml_text::set))
           .def("get", &pugi::xml_text::get);
-
 
 }
