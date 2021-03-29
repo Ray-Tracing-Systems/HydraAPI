@@ -20,14 +20,80 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 find_package(FreeImage REQUIRED)
 include_directories(${FREEIMAGE_INCLUDE_DIRS} ${HYDRA_API_SRC_DIR})
 if(WIN32)
-	set(LIBS
-					${LIBS}
-					${FREEIMAGE_LIBRARIES}
-					${HYDRA_API_SRC_DIR}/x64/Release/HydraAPI.lib
-					${HYDRA_API_SRC_DIR}/x64/Release/ies_parser.lib
-					${HYDRA_API_SRC_DIR}/x64/Release/clew.lib
-					${HYDRA_API_LIB_DIR}/mikktspace.lib
-					${HYDRA_API_LIB_DIR}/corto.lib)
+#	set(LIBS
+#					${LIBS}
+#					${FREEIMAGE_LIBRARIES}
+#					${HYDRA_API_SRC_DIR}/x64/Release/HydraAPI.lib
+#					${HYDRA_API_SRC_DIR}/x64/Release/ies_parser.lib
+#					${HYDRA_API_SRC_DIR}/x64/Release/clew.lib
+#					${HYDRA_API_LIB_DIR}/mikktspace.lib
+#					${HYDRA_API_LIB_DIR}/corto.lib)
+set(HAPI_SOURCE_FILES
+		${HYDRA_API_SRC_DIR}/HydraAPI.cpp
+		${HYDRA_API_SRC_DIR}/cube2sphere.cpp
+		${HYDRA_API_SRC_DIR}/HydraLegacyUtils.cpp
+		${HYDRA_API_SRC_DIR}/HR_HDRImage4f.cpp
+		${HYDRA_API_SRC_DIR}/HR_HDRImageTool.cpp
+		${HYDRA_API_SRC_DIR}/HRMeshCommon.cpp
+		${HYDRA_API_SRC_DIR}/HRTextureCommon.cpp
+		${HYDRA_API_SRC_DIR}/HydraAPI_Camera.cpp
+		${HYDRA_API_SRC_DIR}/HydraAPI_FrameBuffer.cpp
+		${HYDRA_API_SRC_DIR}/HydraAPI_Geom.cpp
+		${HYDRA_API_SRC_DIR}/HydraAPI_GBuffer.cpp
+		${HYDRA_API_SRC_DIR}/HydraAPI_Light.cpp
+		${HYDRA_API_SRC_DIR}/HydraAPI_LoadExistingLibrary.cpp
+		${HYDRA_API_SRC_DIR}/HydraAPI_Material.cpp
+		${HYDRA_API_SRC_DIR}/HydraAPI_Texture.cpp
+		${HYDRA_API_SRC_DIR}/HydraAPI_TextureProcLex.cpp
+		${HYDRA_API_SRC_DIR}/HydraDriverUpdate.cpp
+		${HYDRA_API_SRC_DIR}/HydraObjectManager.cpp
+		${HYDRA_API_SRC_DIR}/HydraRenderDriverAPI.cpp
+		${HYDRA_API_SRC_DIR}/HydraVSGFExport.cpp
+		${HYDRA_API_SRC_DIR}/HydraVSGFCompress.cpp
+		${HYDRA_API_SRC_DIR}/HydraXMLVerify.cpp
+		${HYDRA_API_SRC_DIR}/pugixml.cpp
+		${HYDRA_API_SRC_DIR}/RenderDriverHydraConnection.cpp
+		${HYDRA_API_SRC_DIR}/RenderDriverDebugPrint.cpp
+		${HYDRA_API_SRC_DIR}/ssemath.cpp
+		${HYDRA_API_SRC_DIR}/VirtualBuffer.cpp
+		${HYDRA_API_SRC_DIR}/xxhash.c
+		${HYDRA_API_SRC_DIR}/HydraXMLHelpers.cpp
+		${HYDRA_API_SRC_DIR}/HydraTextureUtils.cpp
+		${HYDRA_API_SRC_DIR}/HydraAPI_GeomProcessing.cpp
+		${HYDRA_API_SRC_DIR}/HydraRngUtils.cpp
+		${HYDRA_API_SRC_DIR}/HydraVSGFCompress.cpp
+		${HYDRA_API_SRC_DIR}/cmesh.cpp
+		${HYDRA_API_SRC_DIR}/cmesh_mikey_connect.cpp
+		${HYDRA_API_SRC_DIR}/cmesh_processing_weld.cpp
+		${HYDRA_API_SRC_DIR}/cmesh_processing.cpp
+		${HYDRA_API_SRC_DIR}/cmesh_vsgf.cpp
+		${HYDRA_API_SRC_DIR}/SystemWin.cpp
+		${HYDRA_API_SRC_DIR}/HR_AccumImageWin.cpp
+		${HYDRA_API_SRC_DIR}/HydraLaunchProcessWin32.cpp
+
+		${HYDRA_API_SRC_DIR}/glad.c
+		${HYDRA_API_SRC_DIR}/OpenGLCoreProfileUtils.cpp
+		${HYDRA_API_SRC_DIR}/RenderDriverOpenGL3_Utility.cpp
+		${HYDRA_API_SRC_DIR}/HydraFsUtils.cpp
+		${HYDRA_API_SRC_DIR}/OpenGLContextWin.cpp)
+
+SET(LIB_SOURCES
+		${HYDRA_API_UTILS_SRC_DIR}/corto/bitstream.cpp
+		${HYDRA_API_UTILS_SRC_DIR}/corto/color_attribute.cpp
+		${HYDRA_API_UTILS_SRC_DIR}/corto/cstream.cpp
+		${HYDRA_API_UTILS_SRC_DIR}/corto/decoder.cpp
+		${HYDRA_API_UTILS_SRC_DIR}/corto/encoder.cpp
+		${HYDRA_API_UTILS_SRC_DIR}/corto/normal_attribute.cpp
+		${HYDRA_API_UTILS_SRC_DIR}/corto/tunstall.cpp
+
+		${HYDRA_API_UTILS_SRC_DIR}/clew/clew.c
+
+		${HYDRA_API_UTILS_SRC_DIR}/ies_parser/IESNA.C
+		${HYDRA_API_UTILS_SRC_DIR}/ies_parser/IES_READ.C
+
+		${HYDRA_API_UTILS_SRC_DIR}/mikktspace/mikktspace.c
+
+		)
 else()
 	set(LIBS ${LIBS} ${FREEIMAGE_LIBRARIES})
 
@@ -46,10 +112,19 @@ find_package(OpenGL REQUIRED)
 include_directories(${ADDITIONAL_INCLUDE_DIRS})
 
 
-#set(PYBIND11_PYTHON_VERSION 3.6)
+# set(PYBIND11_PYTHON_VERSION 3.7)
 
 add_subdirectory(pybind11)
-pybind11_add_module(hydra_api_python HydraPy.cpp) #
+
+if(WIN32)
+	add_definitions(-DUNICODE -D_UNICODE)
+	pybind11_add_module(hydra_api_python ${HAPI_SOURCE_FILES} ${LIB_SOURCES} HydraPy.cpp)
+else()
+
+	pybind11_add_module(hydra_api_python HydraPy.cpp) #
+endif()
+
+
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1")
 
@@ -57,8 +132,8 @@ target_include_directories (hydra_api_python PUBLIC .. ${OPENGL_INCLUDE_DIR})
 
 #build python bindings shared library
 if(WIN32)
-	add_definitions(-DUNICODE -D_UNICODE)
-	target_link_libraries(hydra_api_python LINK_PUBLIC ${LIBS} ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY})
+add_definitions(-DUNICODE -D_UNICODE)
+	target_link_libraries(hydra_api_python LINK_PUBLIC ${FREEIMAGE_LIBRARIES} ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY})
 else()
 
   set(THREADS_PREFER_PTHREAD_FLAG ON)

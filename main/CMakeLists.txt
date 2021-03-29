@@ -20,7 +20,7 @@ set(HYDRA_API_UTILS_SRC_DIR ${HYDRA_API_ROOT_DIR}/utils)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 
 if(WIN32)
-  link_directories(${ADDITIONAL_LIBRARY_DIRS})
+  link_directories(${ADDITIONAL_LIBRARY_DIRS} ${HYDRA_API_ROOT_DIR}/dependencies/lib_x64_win)
 else()
   find_package(glfw3 REQUIRED)
   include_directories(${GLFW_INCLUDE_DIRS})

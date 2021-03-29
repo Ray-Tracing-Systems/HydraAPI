@@ -4,17 +4,6 @@
 #include <cstring>
 #include <stdlib.h>
 
-#if defined(WIN32)
-#include <FreeImage.h>
-#include <GLFW/glfw3.h>
-#pragma comment(lib, "glfw3dll.lib")
-#pragma comment(lib, "FreeImage.lib")
-
-#else
-#include <FreeImage.h>
-#include <GLFW/glfw3.h>
-#endif
-
 
 #include "../hydra_api/HR_HDRImageTool.h"
 #include "../hydra_api/HydraXMLHelpers.h"

@@ -33,7 +33,7 @@ if (WIN32)
 		PATHS
 			$ENV{PROGRAMFILES}/lib
 			${FREEIMAGE_ROOT_DIR}/lib
-			${CMAKE_SOURCE_DIR}/../dependencies/lib_x64)
+			${CMAKE_SOURCE_DIR}/../dependencies/lib_x64_win)
 else()
 	# Find include files
 	find_path(
