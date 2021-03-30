@@ -443,6 +443,7 @@ PYBIND11_MODULE(hydraPy, m)
 
  // m.def("hrInit", &hrInit);
 //  m.def("hrDestroy", &hrDestroy);
+  m.def("hrSceneLibraryClose", &hrSceneLibraryClose);
   m.def("hrGetLastError", &hrGetLastError);
   m.def("hrErrorCallerPlace", &hrErrorCallerPlace);
   m.def("hrSceneLibraryInfo", &hrSceneLibraryInfo);
