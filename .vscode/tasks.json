@@ -17,8 +17,8 @@
             "type": "shell",
             "command": "cd cmake-build-debug && make -j 4",
             "group": {
-                "kind": "build",
-                "isDefault": false
+                "kind": "test",
+                "isDefault": true
             },
         }
     ]
