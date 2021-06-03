@@ -699,10 +699,14 @@ namespace LiteMath
   static inline float2 operator / (const float2 & u, const float2 & v) { return float2{u.x / v.x, u.y / v.y}; }
   static inline float2 operator - (const float2 & v) { return {-v.x, -v.y}; }
 
+  static inline float2 operator + (const float2& u, const float& v) { return float2{ u.x + v, u.y + v }; }
+  static inline float2 operator - (const float2& u, const float& v) { return float2{ u.x - v, u.y - v }; }
+
   static inline float2 & operator += (float2 & u, const float2 & v) { u.x += v.x; u.y += v.y; return u; }
   static inline float2 & operator -= (float2 & u, const float2 & v) { u.x -= v.x; u.y -= v.y; return u; }
   static inline float2 & operator *= (float2 & u, const float2 & v) { u.x *= v.x; u.y *= v.y; return u; }
   static inline float2 & operator /= (float2 & u, const float2 & v) { u.x /= v.x; u.y /= v.y; return u; }
+
 
   static inline float2 & operator += (float2 & u, float v) { u.x += v; u.y += v; return u; }
   static inline float2 & operator -= (float2 & u, float v) { u.x -= v; u.y -= v; return u; }
@@ -750,9 +754,19 @@ namespace LiteMath
   {
     int2() : x(0), y(0) {}
     int2(int a, int b) : x(a), y(b) {}
+    explicit int2(float2 a) : x(a.x), y(a.y) {}
 
     int x, y;
   };
+
+  static inline int2 operator * (const int2& u, float v) { return int2{ (int)((float)(u.x) * v), (int)((float)(u.y) * v) }; }
+  static inline int2 operator / (const int2& u, float v) { return int2{ (int)((float)(u.x) / v), (int)((float)(u.y) / v) }; }
+  static inline int2 operator * (float v, const int2& u) { return int2{ (int)(v * (float)(u.x)), (int)(v * (float)(u.y)) }; }
+  static inline int2 operator / (float v, const int2& u) { return int2{ (int)(v / (float)(u.x)), (int)(v / (float)(u.y)) }; }
+
+  static inline int2 operator + (const int2& u, const int2& v) { return int2{ u.x + v.x, u.y + v.y }; }
+  static inline int2 operator - (const int2& u, const int2& v) { return int2{ u.x - v.x, u.y - v.y }; }
+
 
   struct uint2
   {
