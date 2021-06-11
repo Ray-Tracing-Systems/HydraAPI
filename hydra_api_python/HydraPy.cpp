@@ -175,6 +175,14 @@ void hrMeshAppendTriangles3NumPy(HRMeshRef a_pMesh, int indNum, py::array_t<int3
   hrMeshAppendTriangles3(a_pMesh, indNum, myArr.data(0));
 }
 
+
+bool hrRenderGetFrameBufferHDR4fNumPy(const HRRenderRef a_pRender, int w, int h, py::array_t<float>& imgData)
+{
+  auto myArr = imgData.mutable_unchecked<1>();
+  return hrRenderGetFrameBufferHDR4f(a_pRender, w, h, myArr.mutable_data(0));
+}
+
+
 bool hrRenderGetFrameBufferLDR1iNumPy(const HRRenderRef a_pRender, int w, int h, py::array_t<int32_t> &imgData)
 {
   auto myArr = imgData.mutable_unchecked<1>();
@@ -235,6 +243,16 @@ HRUtils::BBox InstanceSceneIntoSceneRemapOverridePy(HRSceneInstRef a_scnFrom, HR
 
   return HRUtils::InstanceSceneIntoScene(a_scnFrom, a_scnTo,  mat.mutable_data(0), origin, remap_list.data(0),
                                   int32_t(remap_list.size()));
+}
+
+bool hrRenderLockFrameBufferUpdatePy(HRRenderRef a_pRender)
+{
+  return hrRenderLockFrameBufferUpdate(a_pRender);
+}
+
+void hrRenderUnlockFrameBufferUpdatePy(HRRenderRef a_pRender)
+{
+  hrRenderUnlockFrameBufferUpdate(a_pRender);
 }
 
 std::vector<HRGBufferPixelPy> hrRenderGetGBufferLinePy(HRRenderRef a_pRender, int w, int y)
@@ -352,59 +370,59 @@ PYBIND11_MODULE(hydraPy, m)
 
   py::class_<HRSceneLibraryInfo>(m, "HRSceneLibraryInfo")
           .def(py::init<>())
-          .def_readwrite("texturesNum", &HRSceneLibraryInfo::texturesNum)
-          .def_readwrite("materialsNum", &HRSceneLibraryInfo::materialsNum)
-          .def_readwrite("meshesNum", &HRSceneLibraryInfo::meshesNum)
-          .def_readwrite("camerasNum", &HRSceneLibraryInfo::camerasNum)
-          .def_readwrite("scenesNum", &HRSceneLibraryInfo::scenesNum)
+          .def_readwrite("texturesNum"     , &HRSceneLibraryInfo::texturesNum)
+          .def_readwrite("materialsNum"    , &HRSceneLibraryInfo::materialsNum)
+          .def_readwrite("meshesNum"       , &HRSceneLibraryInfo::meshesNum)
+          .def_readwrite("camerasNum"      , &HRSceneLibraryInfo::camerasNum)
+          .def_readwrite("scenesNum"       , &HRSceneLibraryInfo::scenesNum)
           .def_readwrite("renderDriversNum", &HRSceneLibraryInfo::renderDriversNum);
 
   py::class_<HRInitInfo>(m, "HRInitInfo")
       .def(py::init<>())
       .def_readwrite("copyTexturesToLocalFolder", &HRInitInfo::copyTexturesToLocalFolder)
-      .def_readwrite("localDataPath", &HRInitInfo::localDataPath)
-      .def_readwrite("sortMaterialIndices", &HRInitInfo::sortMaterialIndices)
-      .def_readwrite("computeMeshBBoxes", &HRInitInfo::computeMeshBBoxes)
-      .def_readwrite("saveChanges", &HRInitInfo::saveChanges)
-      .def_readwrite("vbSize", &HRInitInfo::vbSize);
+      .def_readwrite("localDataPath"            , &HRInitInfo::localDataPath)
+      .def_readwrite("sortMaterialIndices"      , &HRInitInfo::sortMaterialIndices)
+      .def_readwrite("computeMeshBBoxes"        , &HRInitInfo::computeMeshBBoxes)
+      .def_readwrite("saveChanges"              , &HRInitInfo::saveChanges)
+      .def_readwrite("vbSize"                   , &HRInitInfo::vbSize);
 
   py::class_<MergeInfoPy>(m, "MergeInfo")
       .def(py::init<>())
-      .def_readwrite("meshRange", &MergeInfoPy::meshRange)
+      .def_readwrite("meshRange"    , &MergeInfoPy::meshRange)
       .def_readwrite("texturesRange", &MergeInfoPy::texturesRange)
       .def_readwrite("materialRange", &MergeInfoPy::materialRange)
-      .def_readwrite("lightsRange", &MergeInfoPy::lightsRange);
+      .def_readwrite("lightsRange"  , &MergeInfoPy::lightsRange);
 
 
   py::class_<HRRenderDeviceInfoListElem>(m, "HRRenderDeviceInfoListElem")
-          .def_readonly("name", &HRRenderDeviceInfoListElem::name)
-          .def_readonly("driver", &HRRenderDeviceInfoListElem::driver)
-          .def_readonly("id", &HRRenderDeviceInfoListElem::id)
-          .def_readonly("isCPU", &HRRenderDeviceInfoListElem::isCPU)
+          .def_readonly("name"      , &HRRenderDeviceInfoListElem::name)
+          .def_readonly("driver"    , &HRRenderDeviceInfoListElem::driver)
+          .def_readonly("id"        , &HRRenderDeviceInfoListElem::id)
+          .def_readonly("isCPU"     , &HRRenderDeviceInfoListElem::isCPU)
           .def_readwrite("isEnabled", &HRRenderDeviceInfoListElem::isEnabled)
-          .def_readwrite("next", &HRRenderDeviceInfoListElem::next);
+          .def_readwrite("next"     , &HRRenderDeviceInfoListElem::next);
 
   py::class_<HRRenderUpdateInfo>(m, "HRRenderUpdateInfo")
           .def(py::init<>())
-          .def_readwrite("haveUpdateFB", &HRRenderUpdateInfo::haveUpdateFB)
+          .def_readwrite("haveUpdateFB" , &HRRenderUpdateInfo::haveUpdateFB)
           .def_readwrite("haveUpdateMSG", &HRRenderUpdateInfo::haveUpdateMSG)
-          .def_readwrite("finalUpdate", &HRRenderUpdateInfo::finalUpdate)
-          .def_readwrite("progress", &HRRenderUpdateInfo::progress)
-          .def_readwrite("msg", &HRRenderUpdateInfo::msg);
+          .def_readwrite("finalUpdate"  , &HRRenderUpdateInfo::finalUpdate)
+          .def_readwrite("progress"     , &HRRenderUpdateInfo::progress)
+          .def_readwrite("msg"          , &HRRenderUpdateInfo::msg);
 
   py::class_<HRGBufferPixelPy>(m, "HRGBufferPixelPy")
-          .def_readonly("depth", &HRGBufferPixelPy::depth)
-//          .def_property("norm", &HRGBufferPixel::get_norm, &HRGBufferPixel::set_norm)
-//          .def_property("texc", &HRGBufferPixel::get_texc, &HRGBufferPixel::set_texc)
-//          .def_property("rgba", &HRGBufferPixel::get_rgba, &HRGBufferPixel::set_rgba)
-          .def_readonly("norm", &HRGBufferPixelPy::norm)
-          .def_readonly("texc", &HRGBufferPixelPy::texc)
-          .def_readonly("rgba", &HRGBufferPixelPy::rgba)
-          .def_readonly("shadow", &HRGBufferPixelPy::shadow)
+          .def_readonly("depth"   , &HRGBufferPixelPy::depth)
+//          .def_property("norm"  , &HRGBufferPixel::get_norm, &HRGBufferPixel::set_norm)
+//          .def_property("texc"  , &HRGBufferPixel::get_texc, &HRGBufferPixel::set_texc)
+//          .def_property("rgba"  , &HRGBufferPixel::get_rgba, &HRGBufferPixel::set_rgba)
+          .def_readonly("norm"    , &HRGBufferPixelPy::norm)
+          .def_readonly("texc"    , &HRGBufferPixelPy::texc)
+          .def_readonly("rgba"    , &HRGBufferPixelPy::rgba)
+          .def_readonly("shadow"  , &HRGBufferPixelPy::shadow)
           .def_readonly("coverage", &HRGBufferPixelPy::coverage)
-          .def_readonly("matId", &HRGBufferPixelPy::matId)
-          .def_readonly("objId", &HRGBufferPixelPy::objId)
-          .def_readonly("instId", &HRGBufferPixelPy::instId);
+          .def_readonly("matId"   , &HRGBufferPixelPy::matId)
+          .def_readonly("objId"   , &HRGBufferPixelPy::objId)
+          .def_readonly("instId"  , &HRGBufferPixelPy::instId);
 
   py::class_<HRUtils::BBox>(m, "BBox")
           .def(py::init<>())
@@ -420,72 +438,72 @@ PYBIND11_MODULE(hydraPy, m)
 //          .def_readonly("indicesNum", &HROpenedMeshInfo::indicesNum);
 
   py::enum_<HR_OPEN_MODE>(m, "HR_OPEN_MODE", py::arithmetic())
-          .value("HR_OPEN_EXISTING", HR_OPEN_EXISTING)
-          .value("HR_WRITE_DISCARD", HR_WRITE_DISCARD)
+          .value("HR_OPEN_EXISTING" , HR_OPEN_EXISTING)
+          .value("HR_WRITE_DISCARD" , HR_WRITE_DISCARD)
           .value("HR_OPEN_READ_ONLY", HR_OPEN_READ_ONLY)
           .export_values();
 
 
   py::enum_<HR_PRIM_TYPE>(m, "HR_PRIM_TYPE", py::arithmetic())
-          .value("HR_TRIANGLE_LIST", HR_TRIANGLE_LIST)
-          .value("HR_TRIANGLE_IND3", HR_TRIANGLE_IND3)
-          .value("HR_TRIANGLE_IND9", HR_TRIANGLE_IND9)
+          .value("HR_TRIANGLE_LIST" , HR_TRIANGLE_LIST)
+          .value("HR_TRIANGLE_IND3" , HR_TRIANGLE_IND3)
+          .value("HR_TRIANGLE_IND9" , HR_TRIANGLE_IND9)
           .value("HR_TRIANGLE_IND12", HR_TRIANGLE_IND12)
           .export_values();
 
   py::enum_<HR_SEVERITY_LEVEL>(m, "HR_SEVERITY_LEVEL", py::arithmetic())
-          .value("HR_SEVERITY_DEBUG", HR_SEVERITY_DEBUG)
-          .value("HR_SEVERITY_INFO", HR_SEVERITY_INFO)
-          .value("HR_SEVERITY_WARNING", HR_SEVERITY_WARNING)
-          .value("HR_SEVERITY_ERROR", HR_SEVERITY_ERROR)
+          .value("HR_SEVERITY_DEBUG"         , HR_SEVERITY_DEBUG)
+          .value("HR_SEVERITY_INFO"          , HR_SEVERITY_INFO)
+          .value("HR_SEVERITY_WARNING"       , HR_SEVERITY_WARNING)
+          .value("HR_SEVERITY_ERROR"         , HR_SEVERITY_ERROR)
           .value("HR_SEVERITY_CRITICAL_ERROR", HR_SEVERITY_CRITICAL_ERROR)
           .export_values();
 
- // m.def("hrInit", &hrInit);
-//  m.def("hrDestroy", &hrDestroy);
-  m.def("hrSceneLibraryClose", &hrSceneLibraryClose);
-  m.def("hrGetLastError", &hrGetLastError);
-  m.def("hrErrorCallerPlace", &hrErrorCallerPlace);
-  m.def("hrSceneLibraryInfo", &hrSceneLibraryInfo);
-  m.def("hrSceneLibraryOpen", &hrSceneLibraryOpen);
+ // m.def("hrInit"                 , &hrInit);
+//  m.def("hrDestroy"              , &hrDestroy);
+  m.def("hrSceneLibraryClose"      , &hrSceneLibraryClose);
+  m.def("hrGetLastError"           , &hrGetLastError);
+  m.def("hrErrorCallerPlace"       , &hrErrorCallerPlace);
+  m.def("hrSceneLibraryInfo"       , &hrSceneLibraryInfo);
+  m.def("hrSceneLibraryOpen"       , &hrSceneLibraryOpen);
   m.def("hrTexture2DCreateFromFile", &hrTexture2DCreateFromFile, py::arg("a_fileName"), py::arg("w") = -1,
         py::arg("h") = -1, py::arg("bpp") = -1);
   m.def("hrTexture2DCreateFromFileDL", &hrTexture2DCreateFromFileDL, py::arg("a_fileName"),  py::arg("w") = -1,
         py::arg("h") = -1, py::arg("bpp") = -1, py::arg("a_copyFileToLocalData") = false);
   m.def("hrTexture2DUpdateFromFile", &hrTexture2DUpdateFromFile, py::arg("currentRef"), py::arg("a_fileName"),
         py::arg("w") = -1, py::arg("h") = -1, py::arg("bpp") = -1);
-  //m.def("hrTexture2DCreateFromMemory", &hrTexture2DCreateFromMemory);
-  //m.def("hrTexture2DUpdateFromMemory", &hrTexture2DUpdateFromMemory);
-  //m.def("hrArray1DCreateFromMemory", &hrArray1DCreateFromMemory);
+  //m.def("hrTexture2DCreateFromMemory" , &hrTexture2DCreateFromMemory);
+  //m.def("hrTexture2DUpdateFromMemory" , &hrTexture2DUpdateFromMemory);
+  //m.def("hrArray1DCreateFromMemory"   , &hrArray1DCreateFromMemory);
   //m.def("hrTexture2DCreateFromProcHDR", &hrTexture2DCreateFromProcHDR);
   //m.def("hrTexture2DCreateFromProcLDR", &hrTexture2DCreateFromProcLDR);
-  m.def("hrTextureCreateAdvanced", &hrTextureCreateAdvanced);
-  m.def("hrTextureNodeOpen", &hrTextureNodeOpen);
-  m.def("hrTextureNodeClose", &hrTextureNodeClose);
-  m.def("hrTextureBind", &hrTextureBind);
-  m.def("hrTextureParamNode", &hrTextureParamNode);
-  m.def("hrMaterialCreateBlend", &hrMaterialCreateBlend);
-  m.def("hrMaterialCreate", &hrMaterialCreate);
-  m.def("hrMaterialOpen", &hrMaterialOpen);
-  m.def("hrMaterialParamNode", &hrMaterialParamNode);
-  m.def("hrMaterialClose", &hrMaterialClose);
-  m.def("hrFindMaterialByName", &hrFindMaterialByName);
-  //m.def("hrMaterialCreateBRDFLeaf", &hrMaterialCreateBRDFLeaf);
-  m.def("hrLightCreate", &hrLightCreate);
-  m.def("hrLightOpen", &hrLightOpen);
-  m.def("hrLightClose", &hrLightClose);
-  m.def("hrLightParamNode", &hrLightParamNode);
-  m.def("hrFindLightByName", &hrFindLightByName);
-  m.def("hrCameraCreate", &hrCameraCreate);
-  m.def("hrCameraOpen", &hrCameraOpen);
-  m.def("hrCameraClose", &hrCameraClose);
-  m.def("hrCameraParamNode", &hrCameraParamNode);
-  m.def("hrFindCameraByName", &hrFindCameraByName);
-  m.def("hrMeshCreate", &hrMeshCreate);
-  m.def("hrMeshCreateFromFileDL", &hrMeshCreateFromFileDL);
-  m.def("hrMeshOpen", &hrMeshOpenPy);
-  m.def("hrMeshClose", &hrMeshClosePy);
-  m.def("hrMeshVertexAttribPointer1f", &hrMeshVertexAttribPointer1fPy);
+  m.def("hrTextureCreateAdvanced"       , &hrTextureCreateAdvanced);
+  m.def("hrTextureNodeOpen"             , &hrTextureNodeOpen);
+  m.def("hrTextureNodeClose"            , &hrTextureNodeClose);
+  m.def("hrTextureBind"                 , &hrTextureBind);
+  m.def("hrTextureParamNode"            , &hrTextureParamNode);
+  m.def("hrMaterialCreateBlend"         , &hrMaterialCreateBlend);
+  m.def("hrMaterialCreate"              , &hrMaterialCreate);
+  m.def("hrMaterialOpen"                , &hrMaterialOpen);
+  m.def("hrMaterialParamNode"           , &hrMaterialParamNode);
+  m.def("hrMaterialClose"               , &hrMaterialClose);
+  m.def("hrFindMaterialByName"          , &hrFindMaterialByName);
+  //m.def("hrMaterialCreateBRDFLeaf"    , &hrMaterialCreateBRDFLeaf);
+  m.def("hrLightCreate"                 , &hrLightCreate);
+  m.def("hrLightOpen"                   , &hrLightOpen);
+  m.def("hrLightClose"                  , &hrLightClose);
+  m.def("hrLightParamNode"              , &hrLightParamNode);
+  m.def("hrFindLightByName"             , &hrFindLightByName);
+  m.def("hrCameraCreate"                , &hrCameraCreate);
+  m.def("hrCameraOpen"                  , &hrCameraOpen);
+  m.def("hrCameraClose"                 , &hrCameraClose);
+  m.def("hrCameraParamNode"             , &hrCameraParamNode);
+  m.def("hrFindCameraByName"            , &hrFindCameraByName);
+  m.def("hrMeshCreate"                  , &hrMeshCreate);
+  m.def("hrMeshCreateFromFileDL"        , &hrMeshCreateFromFileDL);
+  m.def("hrMeshOpen"                    , &hrMeshOpenPy);
+  m.def("hrMeshClose"                   , &hrMeshClosePy);
+  m.def("hrMeshVertexAttribPointer1f"   , &hrMeshVertexAttribPointer1fPy);
   m.def("hrMeshVertexAttribPointer1fNumPy", &hrMeshVertexAttribPointer1fNumPy, py::arg("pMesh"),
         py::arg("a_name"), py::arg("arr").noconvert(), py::arg("a_stride"));
   m.def("hrMeshVertexAttribPointer2f", &hrMeshVertexAttribPointer2fPy);
@@ -501,70 +519,75 @@ PYBIND11_MODULE(hydraPy, m)
   m.def("hrMeshPrimitiveAttribPointer1iNumPy", &hrMeshPrimitiveAttribPointer1iNumPy, py::arg("pMesh"),
         py::arg("a_name"), py::arg("arr").noconvert(), py::arg("a_stride"));
 
-  m.def("hrMeshMaterialId", &hrMeshMaterialId);
-  m.def("hrMeshAppendTriangles3", &hrMeshAppendTriangles3Py);
-  m.def("hrMeshAppendTriangles3NumPy", &hrMeshAppendTriangles3NumPy, py::arg("a_pMesh"), py::arg("indNum"), py::arg("arr").noconvert());
-  m.def("hrMeshGetAttribPointer", &hrMeshGetAttribPointer);
+  m.def("hrMeshMaterialId"               , &hrMeshMaterialId);
+  m.def("hrMeshAppendTriangles3"         , &hrMeshAppendTriangles3Py);
+  m.def("hrMeshAppendTriangles3NumPy"    , &hrMeshAppendTriangles3NumPy, py::arg("a_pMesh"), py::arg("indNum"), py::arg("arr").noconvert());
+  m.def("hrMeshGetAttribPointer"         , &hrMeshGetAttribPointer);
   m.def("hrMeshGetPrimitiveAttribPointer", &hrMeshGetPrimitiveAttribPointer);
-  m.def("hrMeshGetInfo", &hrMeshGetInfo);
-  m.def("hrMeshParamNode", &hrMeshParamNode);
-  m.def("hrSceneCreate", &hrSceneCreate);
-  m.def("hrSceneOpen", &hrSceneOpen);
-  m.def("hrSceneClose", &hrSceneClose);
-  m.def("hrMeshInstance", &hrMeshInstancePy, py::arg("a_pScn"), py::arg("a_pMesh"), py::arg("a_mat").noconvert());
-  m.def("hrMeshInstanceRemap", &hrMeshInstancePyRemap, py::arg("a_pScn"), py::arg("a_pMesh"), py::arg("a_mat").noconvert(),
+  m.def("hrMeshGetInfo"                  , &hrMeshGetInfo);
+  m.def("hrMeshParamNode"                , &hrMeshParamNode);
+  m.def("hrSceneCreate"                  , &hrSceneCreate);
+  m.def("hrSceneOpen"                    , &hrSceneOpen);
+  m.def("hrSceneClose"                   , &hrSceneClose);
+  m.def("hrMeshInstance"                 , &hrMeshInstancePy, py::arg("a_pScn"), py::arg("a_pMesh"), py::arg("a_mat").noconvert());
+  m.def("hrMeshInstanceRemap"            , &hrMeshInstancePyRemap, py::arg("a_pScn"), py::arg("a_pMesh"), py::arg("a_mat").noconvert(),
         py::arg("a_mmListm").noconvert() = (py::array_t<int32_t>*)nullptr,  py::arg("a_mmListSize") = 0);
 
-  m.def("hrLightInstance", &hrLightInstancePy);
-  m.def("hrRenderCreate", &hrRenderCreate, py::arg("a_className"), py::arg("a_flags") = "");
-  m.def("hrRenderOpen", &hrRenderOpen);
-  m.def("hrRenderClose", &hrRenderClose);
-  m.def("hrRenderParamNode", &hrRenderParamNode);
-  m.def("hrRenderHaveUpdate", &hrRenderHaveUpdate);
-  m.def("hrRenderEnableDevice", &hrRenderEnableDevice);
-  //m.def("hrRenderGetFrameBufferHDR4f", &hrRenderGetFrameBufferHDR4f);
-  m.def("hrRenderGetFrameBufferLDR1i", &hrRenderGetFrameBufferLDR1iNumPy);
+  m.def("hrLightInstance"            , &hrLightInstancePy);
+  m.def("hrRenderCreate"             , &hrRenderCreate, py::arg("a_className"), py::arg("a_flags") = "");
+  m.def("hrRenderOpen"               , &hrRenderOpen);
+  m.def("hrRenderClose"              , &hrRenderClose);
+  m.def("hrRenderParamNode"          , &hrRenderParamNode);
+  m.def("hrRenderHaveUpdate"         , &hrRenderHaveUpdate);
+  m.def("hrRenderEnableDevice"       , &hrRenderEnableDevice);
+  
+  m.def("hrRenderGetFrameBufferHDR4f", &hrRenderGetFrameBufferHDR4fNumPy, py::arg("a_pRender"), py::arg("w"), py::arg("h"), py::arg("imgData"));
+  m.def("hrRenderGetFrameBufferLDR1i", &hrRenderGetFrameBufferLDR1iNumPy, py::arg("a_pRender"), py::arg("w"), py::arg("h"), py::arg("imgData"));
   m.def("hrRenderGetFrameBufferLDR1i", &hrRenderGetFrameBufferLDR1i);
-  m.def("hrRenderSaveFrameBufferLDR", &hrRenderSaveFrameBufferLDR);
+  m.def("hrRenderSaveFrameBufferLDR" , &hrRenderSaveFrameBufferLDR);
   m.def("hrRenderSaveGBufferLayerLDR", &hrRenderSaveGBufferLayerLDR, py::arg("a_pRender"), py::arg("a_outFileName"), py::arg("a_layerName"),
         py::arg("a_palette") = (const int*)nullptr, py::arg("a_paletteSize") = 0);
   m.def("hrRenderSaveFrameBufferHDR", &hrRenderSaveFrameBufferHDR);
-  m.def("hrRenderGetGBufferLine", &hrRenderGetGBufferLinePy, py::arg("a_pRender"), py::arg("w"), py::arg("y"));
-  m.def("hrRenderCommand", &hrRenderCommand);
-  m.def("hrRenderLogDir", &hrRenderLogDir);
-  m.def("hrCommit", &hrCommit, py::arg("a_pScn") = HRSceneInstRef(), py::arg("a_pRender") = HRRenderRef(),  py::arg("a_pCam") = HRCameraRef());
-  m.def("hrFlush", &hrFlush, py::arg("a_pScn") = HRSceneInstRef(), py::arg("a_pRender") = HRRenderRef(),  py::arg("a_pCam") = HRCameraRef());
-  m.def("WriteMatrix4x4", &WriteMatrix4x4Py, py::arg("a_node"), py::arg("a_attrib_name"), py::arg("a_mat").noconvert());
 
-  m.def("GetMaterialNameToIdMap", &HydraXMLHelpers::GetMaterialNameToIdMap);
+  m.def("hrRenderLockFrameBufferUpdate"  , &hrRenderLockFrameBufferUpdatePy  , py::arg("a_pRender"));
+  m.def("hrRenderUnlockFrameBufferUpdate", &hrRenderUnlockFrameBufferUpdatePy, py::arg("a_pRender"));
+  m.def("hrRenderGetGBufferLine"         , &hrRenderGetGBufferLinePy         , py::arg("a_pRender"), py::arg("w"), py::arg("y"));
+  
+  m.def("hrRenderCommand"           , &hrRenderCommand);
+  m.def("hrRenderLogDir"            , &hrRenderLogDir);
+  m.def("hrCommit"                  , &hrCommit, py::arg("a_pScn") = HRSceneInstRef(), py::arg("a_pRender") = HRRenderRef(),  py::arg("a_pCam") = HRCameraRef());
+  m.def("hrFlush"                   , &hrFlush, py::arg("a_pScn") = HRSceneInstRef(), py::arg("a_pRender") = HRRenderRef(),  py::arg("a_pCam") = HRCameraRef());
+  m.def("WriteMatrix4x4"            , &WriteMatrix4x4Py, py::arg("a_node"), py::arg("a_attrib_name"), py::arg("a_mat").noconvert());
 
-  m.def("InstanceSceneIntoScene", &InstanceSceneIntoScenePy, py::arg("a_scnFrom"), py::arg("a_scnTo"), py::arg("a_mat").noconvert(),
+  m.def("GetMaterialNameToIdMap"    , &HydraXMLHelpers::GetMaterialNameToIdMap);
+
+  m.def("InstanceSceneIntoScene"    , &InstanceSceneIntoScenePy, py::arg("a_scnFrom"), py::arg("a_scnTo"), py::arg("a_mat").noconvert(),
         py::arg("origin") = true);
   m.def("InstanceSceneIntoSceneRemapOverride", &InstanceSceneIntoSceneRemapOverridePy, py::arg("a_scnFrom"), py::arg("a_scnTo"),
         py::arg("a_mat").noconvert(), py::arg("origin") = true, py::arg("remap_override").noconvert() = (py::array_t<int32_t>*)nullptr);
 
 
-  m.def("MergeLibraryIntoLibrary", &MergeLibraryIntoLibraryPy, py::arg("a_libPath"), py::arg("mergeLights") = false,
+  m.def("MergeLibraryIntoLibrary"   , &MergeLibraryIntoLibraryPy, py::arg("a_libPath"), py::arg("mergeLights") = false,
       py::arg("copyScene") = false, py::arg("a_stateFileName") = "", py::arg("pInfo") = MergeInfoPy());
   m.def("MergeOneMaterialIntoLibrary", &HRUtils::MergeOneMaterialIntoLibrary, py::arg("a_libPath"), py::arg("a_matName"), py::arg("a_matId") = -1);
-  m.def("MergeOneMeshIntoLibrary", &HRUtils::MergeOneMeshIntoLibrary);
-  m.def("MergeOneLightIntoLibrary", &HRUtils::MergeOneLightIntoLibrary);
-  m.def("MergeOneTextureIntoLibrary", &HRUtils::MergeOneTextureIntoLibrary, py::arg("a_libPath"), py::arg("a_texName"), py::arg("a_texId") = -1);
+  m.def("MergeOneMeshIntoLibrary"    , &HRUtils::MergeOneMeshIntoLibrary);
+  m.def("MergeOneLightIntoLibrary"   , &HRUtils::MergeOneLightIntoLibrary);
+  m.def("MergeOneTextureIntoLibrary" , &HRUtils::MergeOneTextureIntoLibrary, py::arg("a_libPath"), py::arg("a_texName"), py::arg("a_texId") = -1);
 
-  m.def("getRandomPointsOnMesh", &getRandomPointsOnMeshPy, py::arg("mesh_ref"), py::arg("n_points") = 1,
+  m.def("getRandomPointsOnMesh"      , &getRandomPointsOnMeshPy, py::arg("mesh_ref"), py::arg("n_points") = 1,
         py::arg("tri_area_weighted") = false, py::arg("seed") = 0u);
 
-  m.def("GetMeshBBox", &HRUtils::GetMeshBBox);
+  m.def("GetMeshBBox"                , &HRUtils::GetMeshBBox);
 
 
   py::class_<pugi::xml_node>(m, "xml_node")
-          .def("force_child", &pugi::xml_node::force_child)
-          .def("force_attribute", &pugi::xml_node::force_attribute)
+          .def("force_child"     , &pugi::xml_node::force_child)
+          .def("force_attribute" , &pugi::xml_node::force_attribute)
           .def("append_attribute", &pugi::xml_node::append_attribute)
-          .def("append_child", py::overload_cast<const wchar_t*>(&pugi::xml_node::append_child))
-          .def("attribute", py::overload_cast<const wchar_t*>(&pugi::xml_node::attribute, py::const_))
-          .def("child", &pugi::xml_node::child)
-          .def("text", &pugi::xml_node::text);
+          .def("append_child"    , py::overload_cast<const wchar_t*>(&pugi::xml_node::append_child))
+          .def("attribute"       , py::overload_cast<const wchar_t*>(&pugi::xml_node::attribute, py::const_))
+          .def("child"           , &pugi::xml_node::child)
+          .def("text"            , &pugi::xml_node::text);
 
   py::class_<pugi::xml_attribute>(m, "xml_attribute")
           .def("set_value", py::overload_cast<int>(&pugi::xml_attribute::set_value))
