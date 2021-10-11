@@ -199,6 +199,8 @@ struct HRTextureNode : public HRObject<IHRTextureNode>
 		  if (other.customData != nullptr)
 			  memcpy(customData, other.customData, customDataSize);
 	  }
+
+    return *this;
   }
 
   std::shared_ptr<IHRTextureNode> pImpl;
