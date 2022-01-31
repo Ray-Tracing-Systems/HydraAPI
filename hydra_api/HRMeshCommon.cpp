@@ -297,7 +297,7 @@ protected:
     std::wstring fileName(a_fileName);
     std::wstring ext = str_tail(fileName, 6);
 
-    HydraGeomData::Header header;
+    HydraGeomData::Header header{};
 
     if(ext == L".vsgfc")
     {
@@ -338,12 +338,43 @@ protected:
       const auto allOffsets       = CalcOffsets(header.verticesNum, header.indicesNum, hasTangentOnLoad, hasNormalsOnLoad);
       const auto matIndOffset     = allOffsets.offsetMind;
 
-      std::vector<uint32_t> matIndixes(m_indNum/3);
-      fin.seekg (matIndOffset);
-      fin.read((char*)matIndixes.data(), matIndixes.size()*sizeof(int));
-      fin.close();
+      auto cur_pos = fin.tellg();
+      fin.seekg(std::ios_base::end, std::ios_base::beg);
+      auto pos = fin.tellg();
+      bool hasExtraData = pos > m_sizeInBytes;
+      fin.seekg(cur_pos, std::ios_base::beg);
 
-      m_matDrawList = FormMatDrawListRLE(matIndixes);
+      if(pos != m_sizeInBytes) // ext == L".vsgf2"
+      {
+        HydraHeaderC h2{};
+        fin.seekg(header.fileSizeInBytes);
+        fin.read((char*)&h2, sizeof(HydraHeaderC));
+
+        m_matDrawList.resize(h2.batchListArraySize);
+        fin.read((char*)m_matDrawList.data(), m_matDrawList.size()*sizeof(HRBatchInfo));
+
+        matNames.resize(h2.customDataSize);
+        fin.seekg(h2.customDataOffset, std::ios_base::beg);
+        fin.read ((char*)matNames.c_str(), h2.customDataSize);
+        fin.close();
+
+        m_bbox.x_min = h2.boxMin[0];
+        m_bbox.y_min = h2.boxMin[1];
+        m_bbox.z_min = h2.boxMin[2];
+
+        m_bbox.x_max = h2.boxMax[0];
+        m_bbox.y_max = h2.boxMax[1];
+        m_bbox.z_max = h2.boxMax[2];
+      }
+      else
+      {
+        std::vector<uint32_t> matIndixes(m_indNum / 3);
+        fin.seekg(matIndOffset);
+        fin.read((char *) matIndixes.data(), matIndixes.size() * sizeof(int));
+        fin.close();
+
+        m_matDrawList = FormMatDrawListRLE(matIndixes);
+      }
       //m_bbox;        // don't evaluate this for Proxy Object due to this is long operation
     }
 
