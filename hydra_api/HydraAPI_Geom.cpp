@@ -536,7 +536,7 @@ HAPI HRMeshRef hrMeshCreateFromFile(const wchar_t* a_fileName, HRModelLoadInfo a
     return _hrMeshCreateFromObjMerged(a_fileName, a_modelInfo);
   else if(tail == L".vsgfc")
     data = HR_LoadVSGFCompressedData(a_fileName, dataBuffer);
-  else if(tail == L".vsgf")
+  else if(tail == L".vsgf" || tail == L".vsgf2")
     data.read(a_fileName);
   else
   {
@@ -1535,7 +1535,7 @@ HAPI void hrMeshSaveVSGF(HRMeshRef a_meshRef, const wchar_t* a_fileName)
 {
   std::wstring inFileName(a_fileName);
   std::wstring tail = str_tail(inFileName, 5);
-  if(tail != L".vsgf")
+  if(tail != L".vsgf" && tail != L"vsgf2")
   {
     HrError(L"hrMeshSaveVSGF: bad file tail. Must be '.vsgf', but in fact it is ", tail.c_str());
     return;

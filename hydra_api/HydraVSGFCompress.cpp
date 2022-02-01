@@ -419,7 +419,20 @@ void _hrCompressMesh(const std::wstring& a_inPath, const std::wstring& a_outPath
 void _hrDecompressMesh(const std::wstring& a_path, const std::wstring& a_newPath)
 {
   std::vector<int> dataBuffer;
-//  HydraGeomData data = HR_LoadVSGFCompressedData(a_path.c_str(), dataBuffer);
+  auto path_s = ws2s(a_path);
+//  auto cMesh = cmesh::LoadMeshFromVSGF(path_s.c_str());
+//  cmesh::ComputeTangents(cMesh, cMesh.IndicesNum());
+  HydraGeomData data = HR_LoadVSGFCompressedData(a_path.c_str(), dataBuffer);
+
+  cmesh::SimpleMesh cMesh(data.getVerticesNumber(), data.getIndicesNumber());
+  memcpy(cMesh.vPos4f.data(), data.getVertexPositionsFloat4Array(), data.getVerticesNumber() * sizeof(float) * 4);
+  memcpy(cMesh.vNorm4f.data(), data.getVertexNormalsFloat4Array(), data.getVerticesNumber() * sizeof(float) * 4);
+  memcpy(cMesh.vTexCoord2f.data(), data.getVertexTexcoordFloat2Array(), data.getVerticesNumber() * sizeof(float) * 2);
+  memcpy(cMesh.indices.data(), data.getTriangleVertexIndicesArray(), data.getIndicesNumber() * sizeof(uint32_t));
+  memcpy(cMesh.matIndices.data(), data.getTriangleMaterialIndicesArray(), data.getIndicesNumber() * sizeof(uint32_t) / 3);
+
+  cmesh::ComputeTangents(cMesh, cMesh.IndicesNum());
+
   std::ifstream fin;
   hr_ifstream_open(fin, a_path.c_str());
 
@@ -439,13 +452,17 @@ void _hrDecompressMesh(const std::wstring& a_path, const std::wstring& a_newPath
 
   int* pMaterialsId = (int*)(p + offsets.offsetMind);
 
-  HydraGeomData data;
-  data.setData(uint32_t(h1.verticesNum), (float*)(p + offsets.offsetPos),  (float*)(p + offsets.offsetNorm),
-               (float*)(p + offsets.offsetTang), (float*)(p + offsets.offsetTexc),
-               uint32_t(h1.indicesNum),  (uint32_t*)(p + offsets.offsetInd), (uint32_t*)(pMaterialsId));
-
-  ReadCompressed(data, fin, h2.geometrySizeInBytes);
-
+  data.setData(uint32_t(h1.verticesNum), (float*)(cMesh.vPos4f.data()),  (float*)(cMesh.vNorm4f.data()),
+               cMesh.vTang4f.data(), cMesh.vTexCoord2f.data(),
+               uint32_t(h1.indicesNum),  cMesh.indices.data(), cMesh.matIndices.data());
+//  data.setData(uint32_t(h1.verticesNum), (float*)(p + offsets.offsetPos),  (float*)(p + offsets.offsetNorm),
+//               nullptr/*(float*)(p + offsets.offsetTang)*/, (float*)(p + offsets.offsetTexc),
+//               uint32_t(h1.indicesNum),  (uint32_t*)(p + offsets.offsetInd), (uint32_t*)(pMaterialsId));
+//  {
+//    HydraGeomData data2;
+//    ReadCompressed(data2, fin, h2.geometrySizeInBytes);
+//  }
+  fin.seekg(h2.customDataOffset, std::ios_base::beg);
 
   for(int batchId = 0; batchId < batchList.size(); batchId++)
   {
@@ -456,7 +473,6 @@ void _hrDecompressMesh(const std::wstring& a_path, const std::wstring& a_newPath
 
   std::vector<char> customData(h2.customDataSize, 0);
   fin.read((char*)customData.data(), h2.customDataSize);
-
   HR_SaveVSGFUncompressed(data, a_newPath.c_str(), customData.data(), customData.size(), false);
 
 //  std::ofstream fout;

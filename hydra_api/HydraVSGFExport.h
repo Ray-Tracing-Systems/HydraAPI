@@ -20,7 +20,7 @@ struct HydraGeomData
   void read(std::istream& a_input);
 
   void writeToMemory(char* a);
-  size_t sizeInBytes();
+  size_t sizeInBytes() const;
 
   // common vertex attributes
   //

@@ -8,6 +8,7 @@
 
 #include <sstream>
 #include <fstream>
+#include <filesystem>
 #include <unordered_set>
 #include <unordered_map>
 #include <algorithm>
@@ -338,13 +339,9 @@ protected:
       const auto allOffsets       = CalcOffsets(header.verticesNum, header.indicesNum, hasTangentOnLoad, hasNormalsOnLoad);
       const auto matIndOffset     = allOffsets.offsetMind;
 
-      auto cur_pos = fin.tellg();
-      fin.seekg(std::ios_base::end, std::ios_base::beg);
-      auto pos = fin.tellg();
-      bool hasExtraData = pos > m_sizeInBytes;
-      fin.seekg(cur_pos, std::ios_base::beg);
+      bool hasExtraData = std::experimental::filesystem::file_size(a_fileName) > m_sizeInBytes;
 
-      if(pos != m_sizeInBytes) // ext == L".vsgf2"
+      if(hasExtraData) // ext == L".vsgf2"
       {
         HydraHeaderC h2{};
         fin.seekg(header.fileSizeInBytes);
