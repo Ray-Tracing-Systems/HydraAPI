@@ -137,6 +137,13 @@ namespace HydraXMLHelpers
     }
   }
 
+  static inline void WriteFloat(pugi::xml_attribute a_attr, float a_value)
+  {
+    std::wstringstream outStream;
+    outStream << a_value;
+    a_attr.set_value(outStream.str().c_str());
+  }
+
   static inline void WriteFloat(pugi::xml_node a_node, float a_value)
   {
     std::wstringstream outStream;
@@ -169,6 +176,34 @@ namespace HydraXMLHelpers
   {
     std::wstringstream outStream;
     outStream << a_value[0] << L" " << a_value[1] << L" " << a_value[2];
+    a_attr.set_value(outStream.str().c_str());
+  }
+
+  static inline void WriteFloat4(pugi::xml_node a_node, LiteMath::float4 a_value)
+  {
+    std::wstringstream outStream;
+    outStream << a_value.x << L" " << a_value.y << L" " << a_value.z << L" " << a_value.w;
+    a_node.text() = outStream.str().c_str();
+  }
+
+  static inline void WriteFloat4(pugi::xml_attribute a_attr, LiteMath::float4 a_value)
+  {
+    std::wstringstream outStream;
+    outStream << a_value.x << L" " << a_value.y << L" " << a_value.z << L" " << a_value.w;
+    a_attr.set_value(outStream.str().c_str());
+  }
+
+  static inline void WriteFloat4(pugi::xml_node a_node, float a_value[4])
+  {
+    std::wstringstream outStream;
+    outStream << a_value[0] << L" " << a_value[1] << L" " << a_value[2] << L" " << a_value[3];
+    a_node.text() = outStream.str().c_str();
+  }
+
+  static inline void WriteFloat4(pugi::xml_attribute a_attr, float a_value[4])
+  {
+    std::wstringstream outStream;
+    outStream << a_value[0] << L" " << a_value[1] << L" " << a_value[2] << L" " << a_value[3];
     a_attr.set_value(outStream.str().c_str());
   }
 
