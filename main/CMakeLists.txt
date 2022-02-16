@@ -64,7 +64,7 @@ else()
   target_link_libraries(main LINK_PUBLIC
           ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY}
           hydra_api corto ies_parser mikktspace
-          ${LIBS} Threads::Threads stdc++fs rt dl OpenCL glfw)
+          ${LIBS} Threads::Threads rt dl OpenCL glfw)
 
 endif()
 
