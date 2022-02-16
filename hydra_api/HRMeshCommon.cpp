@@ -339,7 +339,7 @@ protected:
       const auto allOffsets       = CalcOffsets(header.verticesNum, header.indicesNum, hasTangentOnLoad, hasNormalsOnLoad);
       const auto matIndOffset     = allOffsets.offsetMind;
 
-      bool hasExtraData = std::experimental::filesystem::file_size(a_fileName) > m_sizeInBytes;
+      bool hasExtraData = std::filesystem::file_size(a_fileName) > m_sizeInBytes;
 
       if(hasExtraData) // ext == L".vsgf2"
       {
