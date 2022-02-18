@@ -52,8 +52,8 @@ void HydraGeomData::setData(uint32_t a_vertNum, const float* a_pos, const float*
 {
   m_header.verticesNum     = a_vertNum;
   m_header.indicesNum      = a_indicesNum;
-  m_header.fileSizeInBytes = sizeInBytes();
   m_header.flags           = (a_tangent != nullptr) ? HAS_TANGENT : 0;
+  m_header.fileSizeInBytes = sizeInBytes();
 
   m_positions = a_pos;
   m_normals   = a_norm;
@@ -65,9 +65,13 @@ void HydraGeomData::setData(uint32_t a_vertNum, const float* a_pos, const float*
   m_triMaterialIndices = a_triMatIndices;
 }
 
-size_t HydraGeomData::sizeInBytes()
+size_t HydraGeomData::sizeInBytes() const
 {
-  const size_t szInBytes = size_t(sizeof(float))*(m_header.verticesNum*4*3  + m_header.verticesNum*2) +
+  int numfloat4VertexAttributes = 1 + 1; // positions + normals
+  if(m_header.flags & HAS_TANGENT)
+    numfloat4VertexAttributes += 1;
+
+  const size_t szInBytes = size_t(sizeof(float))*(m_header.verticesNum*4*numfloat4VertexAttributes  + m_header.verticesNum*2) +
                            size_t(sizeof(int))*(m_header.indicesNum + m_header.indicesNum/3);
 
   return szInBytes + size_t(sizeof(Header));
