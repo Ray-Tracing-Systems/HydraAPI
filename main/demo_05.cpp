@@ -108,7 +108,7 @@ void demo_05_pbrt_spheres()
 
     auto transp = matNode.append_child(L"transparency");
 
-    transp.append_attribute(L"brdf_type").set_value(L"phong");
+    transp.append_attribute(L"brdf_type").set_value(L"ggx");
     transp.append_child(L"color").append_attribute(L"val").set_value(L"1.0 1.0 1.0");
     transp.append_child(L"glossiness").append_attribute(L"val").set_value(1.0);
     transp.append_child(L"thin_walled").append_attribute(L"val").set_value(0);
