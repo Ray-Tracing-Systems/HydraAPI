@@ -9,6 +9,7 @@ set(SOURCE_FILES
         demo_02.cpp
         demo_03.cpp
         demo_04.cpp
+        demo_05.cpp
         ../utils/mesh_utils.h
         ../utils/mesh_utils.cpp init_gl.cpp)
 
