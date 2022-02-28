@@ -52,8 +52,8 @@ void HydraGeomData::setData(uint32_t a_vertNum, const float* a_pos, const float*
 {
   m_header.verticesNum     = a_vertNum;
   m_header.indicesNum      = a_indicesNum;
-  m_header.fileSizeInBytes = sizeInBytes();
   m_header.flags           = (a_tangent != nullptr) ? HAS_TANGENT : 0;
+  m_header.fileSizeInBytes = sizeInBytes();
 
   m_positions = a_pos;
   m_normals   = a_norm;
@@ -65,9 +65,13 @@ void HydraGeomData::setData(uint32_t a_vertNum, const float* a_pos, const float*
   m_triMaterialIndices = a_triMatIndices;
 }
 
-size_t HydraGeomData::sizeInBytes()
+size_t HydraGeomData::sizeInBytes() const
 {
-  const size_t szInBytes = size_t(sizeof(float))*(m_header.verticesNum*4*3  + m_header.verticesNum*2) +
+  int numfloat4VertexAttributes = 1 + 1; // positions + normals
+  if(m_header.flags & HAS_TANGENT)
+    numfloat4VertexAttributes += 1;
+
+  const size_t szInBytes = size_t(sizeof(float))*(m_header.verticesNum*4*numfloat4VertexAttributes  + m_header.verticesNum*2) +
                            size_t(sizeof(int))*(m_header.indicesNum + m_header.indicesNum/3);
 
   return szInBytes + size_t(sizeof(Header));
@@ -110,6 +114,37 @@ void HydraGeomData::write(std::ostream& a_out)
 
   a_out.write((const char*)m_triVertIndices,     sizeof(uint32_t)*m_header.indicesNum);
   a_out.write((const char*)m_triMaterialIndices, sizeof(uint32_t)*(m_header.indicesNum / 3));
+}
+
+size_t HydraGeomData::writeDataOnly(std::ostream& a_out) const
+{
+  size_t szInBytes = 0;
+
+  a_out.write((const char*)m_positions, sizeof(float)*4*m_header.verticesNum);
+  szInBytes += sizeof(float)*4*m_header.verticesNum;
+
+  if(m_normals != nullptr)
+  {
+    a_out.write((const char *) m_normals, sizeof(float) * 4 * m_header.verticesNum);
+    szInBytes += sizeof(float) * 4 * m_header.verticesNum;
+  }
+
+  if(m_tangents != nullptr)
+  {
+    a_out.write((const char *) m_tangents, sizeof(float) * 4 * m_header.verticesNum);
+    szInBytes += sizeof(float) * 4 * m_header.verticesNum;
+  }
+
+  a_out.write((const char*)m_texcoords,  sizeof(float)*2*m_header.verticesNum);
+  szInBytes += sizeof(float) * 2 * m_header.verticesNum;
+
+  a_out.write((const char*)m_triVertIndices,     sizeof(uint32_t) * m_header.indicesNum);
+  szInBytes += sizeof(uint32_t) * m_header.indicesNum;
+
+  a_out.write((const char*)m_triMaterialIndices, sizeof(uint32_t)*(m_header.indicesNum / 3));
+  szInBytes += sizeof(uint32_t)*(m_header.indicesNum / 3);
+
+  return szInBytes;
 }
 
 void HydraGeomData::writeToMemory(char* a_dataToWrite)

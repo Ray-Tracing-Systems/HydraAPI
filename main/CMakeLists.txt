@@ -9,6 +9,7 @@ set(SOURCE_FILES
         demo_02.cpp
         demo_03.cpp
         demo_04.cpp
+        demo_05.cpp
         ../utils/mesh_utils.h
         ../utils/mesh_utils.cpp init_gl.cpp)
 
@@ -64,7 +65,7 @@ else()
   target_link_libraries(main LINK_PUBLIC
           ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY}
           hydra_api corto ies_parser mikktspace
-          ${LIBS} Threads::Threads stdc++fs rt dl OpenCL glfw)
+          ${LIBS} Threads::Threads rt dl OpenCL glfw)
 
 endif()
 

@@ -5,8 +5,9 @@
 #include "HydraAPI.h"
 #include "HydraInternal.h"
 
-std::wstring hr_fs::s2ws(const std::string& str)   { return s2ws(str); }
-std::string  hr_fs::ws2s(const std::wstring& wstr) { return ws2s(wstr);}
+// nice infinite recursion here..
+//std::wstring hr_fs::s2ws(const std::string& str)   { return s2ws(str); }
+//std::string  hr_fs::ws2s(const std::wstring& wstr) { return ws2s(wstr);}
 
 int hr_fs::mkdir(const char* a_folder)    { return hr_mkdir(a_folder); }
 int hr_fs::mkdir(const wchar_t* a_folder) { return hr_mkdir(a_folder); }

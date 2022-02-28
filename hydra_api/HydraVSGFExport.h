@@ -13,13 +13,14 @@ struct HydraGeomData
   
   void write(const std::string& a_fileName);
   void write(std::ostream& a_out);
+  size_t writeDataOnly(std::ostream& a_out) const;
 
   void read(const std::wstring& a_fileName);
   void read(const std::string& a_fileName);
   void read(std::istream& a_input);
 
   void writeToMemory(char* a);
-  size_t sizeInBytes();
+  size_t sizeInBytes() const;
 
   // common vertex attributes
   //

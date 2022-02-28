@@ -25,7 +25,7 @@ Linux:
 1. Clone HydraAPI repo
 2. sudo apt-get install libfreeimage-dev
 3. sudo apt-get install mesa-common-dev libglu1-mesa-dev libglfw3-dev libglfw3
-4. sudo apt install ocl-icd-opencl-dev
+4. sudo apt install ocl-icd-opencl-dev; [look this guide if have problems with OpenCL](doc/opencl_setup_linux.md)
 5. use Cmake;
 6. build and install HydraCore using Cmake and approptiate instruction
 

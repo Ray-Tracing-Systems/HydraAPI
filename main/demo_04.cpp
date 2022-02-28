@@ -39,13 +39,13 @@ void demo_04_instancing()
   const int DEMO_WIDTH  = 1024;
   const int DEMO_HEIGHT = 1024;
 
-  hrErrorCallerPlace(L"demo_03_caustics");
+  hrErrorCallerPlace(L"demo_04_instancing");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  hrSceneLibraryOpen(L"demos/demo_03", HR_WRITE_DISCARD);
+  hrSceneLibraryOpen(L"demos/demo_04", HR_WRITE_DISCARD);
 
   HRMaterialRef mat0 = hrMaterialCreate(L"mysimplemat");
   HRMaterialRef mat1 = hrMaterialCreate(L"red");
@@ -382,5 +382,5 @@ void demo_04_instancing()
       break;
   }
 
-  hrRenderSaveFrameBufferLDR(renderRef, L"demos/demo_03/z_out.png");
+  hrRenderSaveFrameBufferLDR(renderRef, L"demos/demo_04/z_out.png");
 }

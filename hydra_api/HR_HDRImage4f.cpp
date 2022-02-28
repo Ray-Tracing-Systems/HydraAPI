@@ -718,7 +718,7 @@ namespace HydraRender
 
   static inline vfloat4 unpackColor(unsigned int rgba, const vfloat4& a_mulInv)
   {
-    const vint4 intData = vint4{rgba & 0x000000FF, (rgba & 0x0000FF00) >> 8, (rgba & 0x00FF0000) >> 16, (rgba & 0xFF000000) >> 24};
+    const vuint4 intData = vuint4{rgba & 0x000000FF, (rgba & 0x0000FF00) >> 8, (rgba & 0x00FF0000) >> 16, (rgba & 0xFF000000) >> 24};
 
     return cvex::to_float32(intData)*a_mulInv;
   }

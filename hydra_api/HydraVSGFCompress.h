@@ -32,7 +32,7 @@ void _hrDecompressMesh(const std::wstring& a_path, const std::wstring& a_newPath
 
 struct HydraHeaderC // this header i used only for '.vsgfc', compressed format.
 {
-  uint64_t compressedSizeInBytes;
+  uint64_t geometrySizeInBytes;
   float    boxMin[3];
   float    boxMax[3];
   uint32_t batchListArraySize;

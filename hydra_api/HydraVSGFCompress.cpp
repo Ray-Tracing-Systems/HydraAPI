@@ -203,7 +203,7 @@ size_t HR_SaveVSGFCompressed(const HydraGeomData& data, const wchar_t* a_outfile
 
   HydraHeaderC h2;
 
-  h2.compressedSizeInBytes = 0;
+  h2.geometrySizeInBytes = 0;
   h2.batchListArraySize    = matDrawList.size();
   h2.boxMin[0]             = bbox.x_min;
   h2.boxMin[1]             = bbox.y_min;
@@ -241,9 +241,98 @@ size_t HR_SaveVSGFCompressed(const HydraGeomData& data, const wchar_t* a_outfile
 
   // write true file size to 'h2.compressedSizeInBytes' in file
   //
-  h2.compressedSizeInBytes = compressedBytes;
+  h2.geometrySizeInBytes = compressedBytes;
   fout.seekp(sizeof(HydraGeomData::Header), ios_base::beg);
   fout.write((char*)&h2, sizeof(HydraHeaderC));
+
+  return totalFileSize;
+}
+
+size_t HR_SaveVSGFUncompressed(const HydraGeomData& data, const wchar_t* a_outfileName, const char* a_customData,
+                               const int a_customDataSize, bool a_placeToOrigin)
+{
+  // (1) open file
+  //
+  std::ofstream fout;
+  hr_ofstream_open(fout, a_outfileName);
+
+  // (2) put vsgf header
+  //
+  const auto h1 = data.getHeader();
+  fout.write((char*)&h1, sizeof(HydraGeomData::Header));
+
+  // (3) write geometry data
+  //
+  auto geomDataSize = data.writeDataOnly(fout);
+
+  // **********************************************
+
+  // (4) put header2 (bbox, compressed file size in bytes that we have to overwrite later, and other)
+  //
+  const uint32_t* pInd    = (const uint32_t*)data.getTriangleMaterialIndicesArray();
+  const auto      indSize = data.getIndicesNumber()/3;
+
+  const auto& matDrawList = FormMatDrawListRLE(std::vector<uint32_t>(pInd, pInd+indSize));
+  auto bbox               = CalcBoundingBox4f(data.getVertexPositionsFloat4Array(), data.getVerticesNumber());
+
+  if (a_placeToOrigin)
+  {
+    const float centerX = 0.5f*(bbox.x_min + bbox.x_max);
+    const float centerY = 0.5f*(bbox.y_min + bbox.y_max);
+    const float centerZ = 0.5f*(bbox.z_min + bbox.z_max);
+
+    bbox.x_min -= centerX;
+    bbox.y_min -= centerY;
+    bbox.z_min -= centerZ;
+
+    bbox.x_max -= centerX;
+    bbox.y_max -= centerY;
+    bbox.z_max -= centerZ;
+
+    const int vNum = data.getVerticesNumber();
+    float4* vertices = (float4*)data.getVertexPositionsFloat4Array();
+
+    for (int i = 0; i < vNum; i++)
+    {
+      vertices[i].x -= centerX;
+      vertices[i].y -= centerY;
+      vertices[i].z -= centerZ;
+    }
+  }
+
+  //std::cout << "bbox.x_min\t" << bbox.x_min << std::endl;
+  //std::cout << "bbox.x_max\t" << bbox.x_max << std::endl;
+
+  //const std::string xmlNodeData = "";
+
+  size_t totalFileSize = sizeof(HydraGeomData::Header)  +
+                         sizeof(HydraHeaderC) +
+                         matDrawList.size()*sizeof(HRBatchInfo) + geomDataSize;
+
+  HydraHeaderC h2{};
+  h2.boxMin[0]             = bbox.x_min;
+  h2.boxMin[1]             = bbox.y_min;
+  h2.boxMin[2]             = bbox.z_min;
+  h2.boxMax[0]             = bbox.x_max;
+  h2.boxMax[1]             = bbox.y_max;
+  h2.boxMax[2]             = bbox.z_max;
+  h2.batchListArraySize    = matDrawList.size();
+  h2.geometrySizeInBytes   = geomDataSize;
+  h2.customDataOffset      = uint64_t(totalFileSize);
+  h2.customDataSize        = a_customDataSize;
+
+  fout.write((char*)&h2, sizeof(HydraHeaderC));
+
+  // (5) put material batch list
+  //
+  fout.write((char*)matDrawList.data(), matDrawList.size()*sizeof(HRBatchInfo));
+
+  // (6) put custom data
+  //
+  if(a_customDataSize != 0)
+    fout.write(a_customData, a_customDataSize);
+
+  totalFileSize += a_customDataSize;
 
   return totalFileSize;
 }
@@ -287,10 +376,8 @@ HydraGeomData HR_LoadVSGFCompressedData(const wchar_t* a_fileName, std::vector<i
   HydraGeomData::Header    h1;
   HydraHeaderC             h2;
 
-  HR_LoadVSGFCompressedBothHeaders(fin,
-                                   batchList, h1, h2);
+  HR_LoadVSGFCompressedBothHeaders(fin, batchList, h1, h2);
 
-  
   const size_t bufferSize = CalcVSGFSize(h1.verticesNum, h1.indicesNum);
   dataBuffer.resize(bufferSize/sizeof(int) + 1);
   char* p = (char*)dataBuffer.data();
@@ -306,7 +393,7 @@ HydraGeomData HR_LoadVSGFCompressedData(const wchar_t* a_fileName, std::vector<i
                                          (float*)(p + offsets.offsetTang), (float*)(p + offsets.offsetTexc),
                uint32_t(h1.indicesNum),  (uint32_t*)(p + offsets.offsetInd), (uint32_t*)(pMaterialsId));
 
-  ReadCompressed(data, fin, h2.compressedSizeInBytes);
+  ReadCompressed(data, fin, h2.geometrySizeInBytes);
   
 
   for(int batchId = 0; batchId < batchList.size(); batchId++)
@@ -332,8 +419,63 @@ void _hrCompressMesh(const std::wstring& a_inPath, const std::wstring& a_outPath
 void _hrDecompressMesh(const std::wstring& a_path, const std::wstring& a_newPath)
 {
   std::vector<int> dataBuffer;
+  auto path_s = ws2s(a_path);
+//  auto cMesh = cmesh::LoadMeshFromVSGF(path_s.c_str());
+//  cmesh::ComputeTangents(cMesh, cMesh.IndicesNum());
   HydraGeomData data = HR_LoadVSGFCompressedData(a_path.c_str(), dataBuffer);
-  std::ofstream fout;
-  hr_ofstream_open(fout, a_newPath.c_str());
-  data.write(fout);
+
+  cmesh::SimpleMesh cMesh(data.getVerticesNumber(), data.getIndicesNumber());
+  memcpy(cMesh.vPos4f.data(), data.getVertexPositionsFloat4Array(), data.getVerticesNumber() * sizeof(float) * 4);
+  memcpy(cMesh.vNorm4f.data(), data.getVertexNormalsFloat4Array(), data.getVerticesNumber() * sizeof(float) * 4);
+  memcpy(cMesh.vTexCoord2f.data(), data.getVertexTexcoordFloat2Array(), data.getVerticesNumber() * sizeof(float) * 2);
+  memcpy(cMesh.indices.data(), data.getTriangleVertexIndicesArray(), data.getIndicesNumber() * sizeof(uint32_t));
+  memcpy(cMesh.matIndices.data(), data.getTriangleMaterialIndicesArray(), data.getIndicesNumber() * sizeof(uint32_t) / 3);
+
+  cmesh::ComputeTangents(cMesh, cMesh.IndicesNum());
+
+  std::ifstream fin;
+  hr_ifstream_open(fin, a_path.c_str());
+
+  std::vector<HRBatchInfo> batchList;
+  HydraGeomData::Header    h1{};
+  HydraHeaderC             h2{};
+
+  HR_LoadVSGFCompressedBothHeaders(fin, batchList, h1, h2);
+
+  const size_t bufferSize = CalcVSGFSize(h1.verticesNum, h1.indicesNum);
+  dataBuffer.resize(bufferSize/sizeof(int) + 1);
+  char* p = (char*)dataBuffer.data();
+
+  memcpy(p, &h1, sizeof(HydraGeomData::Header));
+
+  const VSGFOffsets offsets = CalcOffsets(h1.verticesNum, h1.indicesNum);
+
+  int* pMaterialsId = (int*)(p + offsets.offsetMind);
+
+  data.setData(uint32_t(h1.verticesNum), (float*)(cMesh.vPos4f.data()),  (float*)(cMesh.vNorm4f.data()),
+               cMesh.vTang4f.data(), cMesh.vTexCoord2f.data(),
+               uint32_t(h1.indicesNum),  cMesh.indices.data(), cMesh.matIndices.data());
+//  data.setData(uint32_t(h1.verticesNum), (float*)(p + offsets.offsetPos),  (float*)(p + offsets.offsetNorm),
+//               nullptr/*(float*)(p + offsets.offsetTang)*/, (float*)(p + offsets.offsetTexc),
+//               uint32_t(h1.indicesNum),  (uint32_t*)(p + offsets.offsetInd), (uint32_t*)(pMaterialsId));
+//  {
+//    HydraGeomData data2;
+//    ReadCompressed(data2, fin, h2.geometrySizeInBytes);
+//  }
+  fin.seekg(h2.customDataOffset, std::ios_base::beg);
+
+  for(int batchId = 0; batchId < batchList.size(); batchId++)
+  {
+    const auto& batch = batchList[batchId];
+    for(int i=batch.triBegin; i < batch.triEnd; i++)
+      pMaterialsId[i] = batch.matId;
+  }
+
+  std::vector<char> customData(h2.customDataSize, 0);
+  fin.read((char*)customData.data(), h2.customDataSize);
+  HR_SaveVSGFUncompressed(data, a_newPath.c_str(), customData.data(), customData.size(), false);
+
+//  std::ofstream fout;
+//  hr_ofstream_open(fout, a_newPath.c_str());
+//  data.write(fout);
 }
