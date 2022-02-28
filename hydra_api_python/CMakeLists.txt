@@ -108,7 +108,9 @@ else()
 	find_library(HYDRA_API_CORTO corto HINTS ${HYDRA_API_LIB_DIR} NO_DEFAULT_PATH)
 	find_package(glfw3 REQUIRED)
 	include_directories(${GLFW_INCLUDE_DIRS})
-	include_directories(/home/vs/Software/Python-3.7.7/Include)
+
+#	set(PYTHON_EXECUTABLE /home/vs/Software/Python-3.9.7/Python)
+	include_directories(/home/vs/Software/Python-3.9.7/Include)
 	set(LIBS ${LIBS} ${GLFW_LIBRARIES})
 endif()
 
