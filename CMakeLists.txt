@@ -11,7 +11,7 @@ set(ADDITIONAL_INCLUDE_DIRS
         ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/include)
         
 set(ADDITIONAL_LIBRARY_DIRS
-        ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/lib_x64)
+        ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/lib_x64_win)
 
 add_subdirectory (utils/ies_parser)
 add_subdirectory (utils/mikktspace)
@@ -22,6 +22,7 @@ add_subdirectory (main)
 
 
 if(WIN32)
+  add_subdirectory (utils/clew)
   add_definitions(-DUNICODE -D_UNICODE)
 #  if(COMPILER_MSVC)
 #    set_target_properties(main PROPERTIES LINK_FLAGS "/LTCG")

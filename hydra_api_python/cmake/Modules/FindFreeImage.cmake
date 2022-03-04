@@ -17,23 +17,22 @@ include(FindPackageHandleStandardArgs)
 if (WIN32)
 	# Find include files
 	find_path(
-		FREEIMAGE_INCLUDE_DIR
-		NAMES FreeImage.h
-		PATHS
+			FREEIMAGE_INCLUDE_DIR
+			NAMES FreeImage.h
+			PATHS
 			$ENV{PROGRAMFILES}/include
 			${FREEIMAGE_ROOT_DIR}/include
 			${CMAKE_SOURCE_DIR}/../dependencies/include
-		DOC "The directory where FreeImage.h resides")
+			DOC "The directory where FreeImage.h resides")
 
-	MESSAGE( STATUS "CMAKE_SOURCE_DIR:         " ${CMAKE_SOURCE_DIR} )
 	# Find library files
 	find_library(
-		FREEIMAGE_LIBRARY
-		NAMES FreeImage.lib
-		PATHS
+			FREEIMAGE_LIBRARY
+			NAMES FreeImage
+			PATHS
 			$ENV{PROGRAMFILES}/lib
 			${FREEIMAGE_ROOT_DIR}/lib
-			${CMAKE_SOURCE_DIR}/../dependencies/lib_x64)
+			${CMAKE_SOURCE_DIR}/../dependencies/lib_x64_win)
 else()
 	# Find include files
 	find_path(
