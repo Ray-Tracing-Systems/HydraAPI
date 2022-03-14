@@ -10,6 +10,7 @@ set(SOURCE_FILES
         demo_03.cpp
         demo_04.cpp
         demo_05.cpp
+        demo_06.cpp
         ../utils/mesh_utils.h
         ../utils/mesh_utils.cpp init_gl.cpp)
 
