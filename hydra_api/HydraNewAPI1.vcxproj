@@ -233,7 +233,6 @@
     <ClInclude Include="HydraXMLHelpers.h" />
     <ClInclude Include="HydraVSGFExport.h" />
     <ClInclude Include="HydraInternal.h" />
-    <ClInclude Include="HydraInternalCommon.h" />
     <ClInclude Include="HydraObjectManager.h" />
     <ClInclude Include="HydraRenderDriverAPI.h" />
     <ClInclude Include="HydraXMLVerify.h" />

@@ -681,6 +681,13 @@ namespace LiteMath
   static inline float  lengthSquare(const float3 u) { return u.x*u.x + u.y*u.y + u.z*u.z; }
   static inline float3 normalize(const float3 & u) { return u / length(u); }
 
+  static inline float4 normalize3(const float4& u) { 
+    float3 f3(u.x, u.y, u.z); 
+    f3 = normalize(f3);  
+    float4 res(f3.x, f3.y, f3.z, u.w);
+    return res; 
+  }
+
   static inline float  maxcomp(const float3 & u) { return fmax(u.x, fmax(u.y, u.z)); }
   static inline float  mincomp(const float3 & u) { return fmin(u.x, fmin(u.y, u.z)); }
 
