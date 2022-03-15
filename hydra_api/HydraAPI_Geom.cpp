@@ -12,6 +12,7 @@
 #include <iomanip>
 #include <set>
 #include <algorithm>
+#include <filesystem>
 
 #include "LiteMath.h"
 using namespace LiteMath;
@@ -236,21 +237,20 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, HRModelLo
   std::string err;
 
   /*******************************************    Reading the .obj file    ********************************************/
-  auto pathS = ws2s(a_objectName);
-  // Getting the path to the .obj file
-  int strLength = pathS.size() - pathS.substr(pathS.find_last_of("/")).size();
-  std::string upToLastSlash = pathS.substr(0, strLength);
-  bool res = false;
+  auto path = std::filesystem::path(a_objectName);
+  auto matDir = path.parent_path();
 
+  bool res = false;
   // Check for mtl file in the same folder as .obj file in case 'mtlRelativePath' is not provided
   if(a_modelInfo.mtlRelativePath == nullptr)
   {
-    res = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, pathS.c_str(), upToLastSlash.c_str());
+    res = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path.string().c_str(), matDir.string().c_str());
   }
   else
   {
-    res = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, pathS.c_str(), ws2s(a_modelInfo.mtlRelativePath).c_str());
-    upToLastSlash = ws2s(a_modelInfo.mtlRelativePath);
+    std::filesystem::path mtlRelPath(a_modelInfo.mtlRelativePath);
+    res = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path.string().c_str(), mtlRelPath.string().c_str());
+    matDir = mtlRelPath;
   }
   if(!res)
   {
@@ -278,18 +278,18 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, HRModelLo
     else
       HrPrint(HR_SEVERITY_ERROR, L"Materials not found for: ", a_objectName);
 
-  if(ifMaterialsProvided) {
-    for (int m = 0; m < materials.size(); ++m) {
-
+  HRMaterialRef default_material;
+  if(ifMaterialsProvided) 
+  {
+    for (int m = 0; m < materials.size(); ++m) 
+    {
       /// Checking the material properties
       // Just setting [0.0, 0.0, 0.0] is case of empty variable
       bool ifDiffuseRGB = f3filled(materials.at(m).diffuse);
       bool ifDiffuseTexture = s1filled(materials.at(m).diffuse_texname);
       bool ifSpecularRGB = f3filled(materials.at(m).specular);
 
-
       HRMaterialRef current_material = hrMaterialCreate(s2ws(materials.at(m).name).c_str());
-
       hrMaterialOpen(current_material, HR_WRITE_DISCARD);
       {
         pugi::xml_node matNode = hrMaterialParamNode(current_material);
@@ -303,26 +303,29 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, HRModelLo
           }
           if (ifDiffuseTexture) {
             diffColor.append_attribute(L"tex_apply_mode").set_value(L"multiply");
-            std::wstring wpath = s2ws(upToLastSlash + "/" + materials.at(
-                    m).diffuse_texname);//.substr(1, materials.at(m).diffuse_texname.size() - 1));
-            HRTextureNodeRef diffuse_texture = hrTexture2DCreateFromFile(wpath.c_str());
-            auto texNode = hrTextureBind(diffuse_texture, diffColor);
-            texNode.append_attribute(L"matrix");
-            float samplerMatrix[16] = {1, 0, 0, 0,
-                                       0, 1, 0, 0,
-                                       0, 0, 1, 0,
-                                       0, 0, 0, 1};
-            texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
-            texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
-            texNode.append_attribute(L"input_gamma").set_value(2.2f);
-            texNode.append_attribute(L"input_alpha").set_value(L"rgb");
+            auto texPath = matDir.append(materials.at(m).diffuse_texname);
+            HRTextureNodeRef diffuse_texture = hrTexture2DCreateFromFile(texPath.wstring().c_str());
 
-            HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
+            if (diffuse_texture.id != 0)
+            {
+              auto texNode = hrTextureBind(diffuse_texture, diffColor);
+              texNode.append_attribute(L"matrix");
+              float samplerMatrix[16] = { 1, 0, 0, 0,
+                                         0, 1, 0, 0,
+                                         0, 0, 1, 0,
+                                         0, 0, 0, 1 };
+              texNode.append_attribute(L"addressing_mode_u").set_value(L"wrap");
+              texNode.append_attribute(L"addressing_mode_v").set_value(L"wrap");
+              texNode.append_attribute(L"input_gamma").set_value(2.2f);
+              texNode.append_attribute(L"input_alpha").set_value(L"rgb");
+
+              HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
+            }
           }
-
         }
 
-        if (ifSpecularRGB) {
+        if (ifSpecularRGB) 
+        {
           pugi::xml_node refl = matNode.append_child(L"reflectivity");
           refl.append_attribute(L"brdf_type").set_value(L"phong");
           refl.append_child(L"color").append_attribute(L"val") = fthree2ws(materials.at(m).specular).c_str();
@@ -337,6 +340,20 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, HRModelLo
 
       h_materials.push_back(current_material);
     }
+  }
+  else // no materials provided, create default gray material
+  {
+    default_material = hrMaterialCreate(L"DefaultMaterial");
+    hrMaterialOpen(default_material, HR_WRITE_DISCARD);
+    {
+      pugi::xml_node matNode = hrMaterialParamNode(default_material);
+      pugi::xml_node diff = matNode.append_child(L"diffuse");
+      diff.append_attribute(L"brdf_type").set_value(L"lambert");
+      auto diffColor = diff.append_child(L"color");
+      diffColor.append_attribute(L"val").set_value(L"0.5 0.5 0.5");
+    }
+    hrMaterialClose(default_material);
+    h_materials.push_back(default_material);
   }
 
   int mat_indxs_length = int(cumulative_indices_number / 3);
@@ -364,7 +381,9 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, HRModelLo
       // Setting material's index for each polygon
       if(ifMaterialsProvided)
         mat_ids[mat_counter++] = h_materials.at(shapes[s].mesh.material_ids[f]).id;
-
+      else
+        mat_ids[mat_counter++] = default_material.id;
+        
       int fv = shapes[s].mesh.num_face_vertices[f];
       // Loop over vertices in the face.
       for (size_t v = 0; v < fv; v++) {
@@ -532,7 +551,7 @@ HAPI HRMeshRef hrMeshCreateFromFile(const wchar_t* a_fileName, HRModelLoadInfo a
   HydraGeomData data;
   std::vector<int> dataBuffer;
 
-  if(tail == L".obj")
+  if(tail == L".obj" || tail == L".OBJ")
     return _hrMeshCreateFromObjMerged(a_fileName, a_modelInfo);
   else if(tail == L".vsgfc")
     data = HR_LoadVSGFCompressedData(a_fileName, dataBuffer);

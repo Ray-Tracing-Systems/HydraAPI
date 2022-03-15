@@ -1119,6 +1119,7 @@ BBox HRUtils::InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_
   return bbox;
 }
 
+/*
 MergeInfo HRUtils::LoadMultipleShapesFromObj(const wchar_t* a_objectName, bool a_copyToLocalFolder){
   tinyobj::attrib_t attrib;
   std::vector<tinyobj::shape_t> shapes;
@@ -1136,7 +1137,7 @@ MergeInfo HRUtils::LoadMultipleShapesFromObj(const wchar_t* a_objectName, bool a
     int indices_number = shapes[s].mesh.indices.size();
 
     // Vertices, Normals, Texture coordinates, Indices
-    float *verts = new float[indices_number * 4];
+    float *verts = new float[indices_number * 4]; // DELETE !~!!!!!
     float *norms = new float[indices_number * 4];
     float *tex_s = new float[indices_number * 2];
     int *indxs = new int[indices_number];
@@ -1206,5 +1207,5 @@ MergeInfo HRUtils::LoadMultipleShapesFromObj(const wchar_t* a_objectName, bool a
   }
 
   return res_mergeinfo;
-}
+}*/
 
