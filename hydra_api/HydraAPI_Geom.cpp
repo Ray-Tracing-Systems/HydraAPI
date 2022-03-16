@@ -1508,7 +1508,6 @@ HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, int indexNum)
 }
 
 
-
 void _hrConvertOldVSGFMesh(const std::wstring& a_path, const std::wstring& a_newPath)
 {
   // (1) to have this function works, we temporary convert it via common mesh that placed in memory, not really DelayedLoad (!!!)
@@ -1541,49 +1540,28 @@ void _hrConvertOldVSGFMesh(const std::wstring& a_path, const std::wstring& a_new
   
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-std::string  ws2s(const std::wstring& s);
-std::wstring s2ws(const std::string& s);
-
-
-HAPI void hrMeshSaveVSGF(HRMeshRef a_meshRef, const wchar_t* a_fileName)
+size_t _hrSaveVSGF2(const void* vsgfData, size_t a_vsgfSize, const wchar_t* a_outfileName, const char* a_customData,
+                    const int a_dataSize, bool a_placeToOrigin = false)
 {
-  std::wstring inFileName(a_fileName);
-  std::wstring tail = str_tail(inFileName, 5);
-  if(tail != L".vsgf" && tail != L"vsgf2")
-  {
-    HrError(L"hrMeshSaveVSGF: bad file tail. Must be '.vsgf', but in fact it is ", tail.c_str());
-    return;
-  }
+  HydraGeomData::Header* pHeader = (HydraGeomData::Header*)vsgfData;
 
-  HRMesh* pMesh = g_objManager.PtrById(a_meshRef);
-  if (pMesh == nullptr)
-  {
-    HrError(L"hrMeshSaveVSGF: nullptr mesh input");
-    return;
-  }
+  const VSGFOffsets offsets = CalcOffsets(pHeader->verticesNum, pHeader->indicesNum);
 
-  if (pMesh->opened)
-  {
-    HrError(L"hrMeshSaveVSGF: mesh is opened. Close it please before save. meshId = ", a_meshRef.id);
-    return;
-  }
+  char* p = (char*)vsgfData;
 
-  if(pMesh->pImpl->DataSizeInBytes() == 0 || pMesh->pImpl->GetData() == 0)
-  {
-    HrError(L"hrMeshSaveVSGF: mesh data in not avaliable; meshId = ", a_meshRef.id);
-    return;
-  }
+  HydraGeomData data;
 
-  std::ofstream fout;
-  hr_ofstream_open(fout, a_fileName);
-  fout.write((const char*)pMesh->pImpl->GetData(), pMesh->pImpl->DataSizeInBytes());
-  fout.close();
+  data.setData(uint32_t(pHeader->verticesNum), (float*)   (p + offsets.offsetPos),    (float*)(p + offsets.offsetNorm),
+               (float*)   (p + offsets.offsetTang),   (float*)(p + offsets.offsetTexc),
+               uint32_t(pHeader->indicesNum),  (uint32_t*)(p + offsets.offsetInd), (uint32_t*)(p + offsets.offsetMind));
+
+  return HR_SaveVSGFUncompressed(data, a_outfileName, a_customData, a_dataSize, a_placeToOrigin);
 }
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 void PrintMaterialListNames(std::ostream& strOut, HRMesh* pMesh)
@@ -1613,6 +1591,55 @@ void PrintMaterialListNames(std::ostream& strOut, HRMesh* pMesh)
     std::string matName = ws2s(pMaterial->xml_node().attribute(L"name").as_string());
     strOut << matName.c_str() << ";";
   }
+}
+
+HAPI void hrMeshSaveVSGF(HRMeshRef a_meshRef, const wchar_t* a_fileName)
+{
+  std::filesystem::path meshPath(a_fileName);
+  bool isVSGF  = meshPath.extension().wstring() == L".vsgf";
+  bool isVSGF2 = meshPath.extension().wstring() == L".vsgf2";
+  if(!(isVSGF || isVSGF2))
+  {
+    HrError(L"hrMeshSaveVSGF: bad file extension. Must be '.vsgf' or '.vsgf2', but in fact it is ",
+            meshPath.extension().wstring().c_str());
+    return;
+  }
+
+  HRMesh* pMesh = g_objManager.PtrById(a_meshRef);
+  if (pMesh == nullptr)
+  {
+    HrError(L"hrMeshSaveVSGF: nullptr mesh input");
+    return;
+  }
+
+  if (pMesh->opened)
+  {
+    HrError(L"hrMeshSaveVSGF: mesh is opened. Close it please before save. meshId = ", a_meshRef.id);
+    return;
+  }
+
+  if(pMesh->pImpl->DataSizeInBytes() == 0 || pMesh->pImpl->GetData() == 0)
+  {
+    HrError(L"hrMeshSaveVSGF: mesh data in not avaliable; meshId = ", a_meshRef.id);
+    return;
+  }
+
+  if(isVSGF)
+  {
+    std::ofstream fout;
+    hr_ofstream_open(fout, a_fileName);
+    fout.write((const char*)pMesh->pImpl->GetData(), pMesh->pImpl->DataSizeInBytes());
+    fout.close();
+  }
+  else if(isVSGF2)
+  {
+    std::stringstream strOut;
+    PrintMaterialListNames(strOut, pMesh);
+    std::string matnames = strOut.str();
+
+    _hrSaveVSGF2(pMesh->pImpl->GetData(), pMesh->pImpl->DataSizeInBytes(), a_fileName, matnames.c_str(), int(matnames.size()));
+  }
+
 }
 
 HAPI void hrMeshSaveVSGFCompressed(HRMeshRef a_meshRef, const wchar_t* a_fileName)
@@ -1656,6 +1683,7 @@ HAPI void hrMeshSaveVSGFCompressed(HRMeshRef a_meshRef, const wchar_t* a_fileNam
 
   HR_SaveVSGFCompressed(pMesh->pImpl->GetData(), pMesh->pImpl->DataSizeInBytes(), a_fileName, matnames.c_str(), int(matnames.size()));
 }
+
 
 BBox HRUtils::GetMeshBBox(HRMeshRef a_mesh)
 {

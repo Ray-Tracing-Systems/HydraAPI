@@ -864,9 +864,10 @@ HAPI HRMeshInfo hrMeshGetInfo(HRMeshRef a_mesh);
 HAPI pugi::xml_node    hrMeshParamNode(HRMeshRef a_meshRef);
 
 /**
-\brief immediately save current mesh to '.vsgf' file to specified path.
+\brief immediately save current mesh to '.vsgf' or '.vsgf2' file to specified path.
+ 'vsgf2' additionally explicitly stores material names, material draw list, bounding box
 \param a_meshRef  - mesh reference
-\param a_fileName - out file name; must end with '.vsgf'
+\param a_fileName - out file name; must end with '.vsgf' or '.vsgf2'
 
 */
 HAPI void              hrMeshSaveVSGF(HRMeshRef a_meshRef, const wchar_t* a_fileName);
