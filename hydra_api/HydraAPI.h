@@ -1212,6 +1212,9 @@ namespace HRUtils
               z_min(std::numeric_limits<float>::max()), z_max(std::numeric_limits<float>::lowest()) {}
   };
 
+
+  BBox GetSceneBBox(HRSceneInstRef a_sceneRef);
+
   BBox GetMeshBBox(HRMeshRef);
 
   BBox transformBBox(const BBox &a_bbox, const float m[16]);

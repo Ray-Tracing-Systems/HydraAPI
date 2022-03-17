@@ -1012,6 +1012,18 @@ HRLightRef HRUtils::MergeOneLightIntoLibrary(const wchar_t* a_libPath, const wch
   return ref;
 }
 
+BBox HRUtils::GetSceneBBox(HRSceneInstRef a_sceneRef)
+{
+  HRSceneInst* pScn = g_objManager.PtrById(a_sceneRef);
+  if (pScn == nullptr)
+  {
+    HrError(L"HRUtils::GetSceneBBox: incorrect scene reference");
+    return BBox();
+  }
+
+  return pScn->m_bbox;
+}
+
 BBox HRUtils::InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_scnTo, float a_mat[16],
                                      bool origin, const int32_t* remapListOverride, int32_t remapListSize)
 {
