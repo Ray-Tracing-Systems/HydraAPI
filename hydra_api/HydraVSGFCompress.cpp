@@ -64,7 +64,6 @@ using LiteMath::float4;
 using LiteMath::float2;
 
 
-
 void ReadCompressed(HydraGeomData& a_data, std::istream& a_input, size_t a_compressedSize)
 {
   std::vector<char> dataTemp(a_compressedSize);
@@ -354,9 +353,8 @@ size_t HR_SaveVSGFCompressed(const void* vsgfData, size_t a_vsgfSize, const wcha
   return HR_SaveVSGFCompressed(data, a_outfileName, a_customData, a_dataSize, a_placeToOrigin);
 }
 
-
-void HR_LoadVSGFCompressedBothHeaders(std::ifstream& fin,
-                                      std::vector<HRBatchInfo>& a_outBatchList, HydraGeomData::Header& h1, HydraHeaderC& h2)
+void HR_LoadVSGFCompressedHeaders(std::ifstream& fin, std::vector<HRBatchInfo>& a_outBatchList,
+                                  HydraGeomData::Header& h1, HydraHeaderC& h2)
 {
   fin.read((char*)&h1, sizeof(HydraGeomData::Header));
   fin.read((char*)&h2, sizeof(HydraHeaderC));
@@ -364,6 +362,19 @@ void HR_LoadVSGFCompressedBothHeaders(std::ifstream& fin,
   a_outBatchList.resize(h2.batchListArraySize);
 
   fin.read((char*)a_outBatchList.data(), sizeof(HRBatchInfo)*a_outBatchList.size());
+}
+
+void HR_LoadVSGF2Headers(std::ifstream& fin, std::vector<HRBatchInfo>& a_outBatchList,
+                         HydraGeomData::Header& h1, HydraHeaderC& h2)
+{
+  fin.read((char*)&h1, sizeof(HydraGeomData::Header));
+  auto currP = fin.tellg();
+  fin.seekg(h1.fileSizeInBytes);
+  fin.read((char*)&h2, sizeof(HydraHeaderC));
+
+  a_outBatchList.resize(h2.batchListArraySize);
+  fin.read((char*)a_outBatchList.data(), sizeof(HRBatchInfo)*a_outBatchList.size());
+  fin.seekg(currP, ios_base::beg);
 }
 
 
@@ -376,7 +387,7 @@ HydraGeomData HR_LoadVSGFCompressedData(const wchar_t* a_fileName, std::vector<i
   HydraGeomData::Header    h1;
   HydraHeaderC             h2;
 
-  HR_LoadVSGFCompressedBothHeaders(fin, batchList, h1, h2);
+  HR_LoadVSGFCompressedHeaders(fin, batchList, h1, h2);
 
   const size_t bufferSize = CalcVSGFSize(h1.verticesNum, h1.indicesNum);
   dataBuffer.resize(bufferSize/sizeof(int) + 1);
@@ -440,7 +451,7 @@ void _hrDecompressMesh(const std::wstring& a_path, const std::wstring& a_newPath
   HydraGeomData::Header    h1{};
   HydraHeaderC             h2{};
 
-  HR_LoadVSGFCompressedBothHeaders(fin, batchList, h1, h2);
+  HR_LoadVSGFCompressedHeaders(fin, batchList, h1, h2);
 
   const size_t bufferSize = CalcVSGFSize(h1.verticesNum, h1.indicesNum);
   dataBuffer.resize(bufferSize/sizeof(int) + 1);

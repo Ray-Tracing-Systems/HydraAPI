@@ -163,6 +163,8 @@
     <ClCompile Include="demo_02.cpp" />
     <ClCompile Include="demo_03.cpp" />
     <ClCompile Include="demo_04.cpp" />
+    <ClCompile Include="demo_05.cpp" />
+    <ClCompile Include="demo_06.cpp" />
     <ClCompile Include="init_gl.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>

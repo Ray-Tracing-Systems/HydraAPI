@@ -106,17 +106,20 @@ struct HRRenderRef      { int32_t id; HRRenderRef()       : id(-1) {} }; ///< Re
 
 struct HRModelLoadInfo
 {
-    HRModelLoadInfo() : mtlRelativePath(nullptr),
-                        useMaterial(false),
-                        useCentering(true),
-                        transform{1.0f, 0.0f, 0.0f, 0.0f,
-                                  0.0f, 1.0f, 0.0f, 0.0f,
-                                  0.0f, 0.0f, 1.0f, 0.0f,
-                                  0.0f, 0.0f, 0.0f, 1.0f} {};
-    wchar_t* mtlRelativePath;   ///< Relative path to .mtl files. Default setting = nullptr => importer will look for them in the same folder as .obj file.
-    bool     useMaterial;       ///< Flag, indicating whether to apply materials from .obj file or not. Default setting = true
-    bool     useCentering;      ///< Flag, indicating whether to perform centering around [0.0, 0.0, 0.0] or not. Default setting = true
-    float    transform[16];     ///< Transform matrix. Default setting = identity matrix. This flag overwrites 'useCentering' flag
+  HRModelLoadInfo() : mtlRelativePath(nullptr),
+                      useMaterial(false),
+                    //  createDefaultMaterials(false),
+                      useCentering(true),
+                      transform{1.0f, 0.0f, 0.0f, 0.0f,
+                                0.0f, 1.0f, 0.0f, 0.0f,
+                                0.0f, 0.0f, 1.0f, 0.0f,
+                                0.0f, 0.0f, 0.0f, 1.0f} {};
+  wchar_t* mtlRelativePath;        ///< Relative path to .mtl files. Default setting = nullptr => importer will look for them in the same folder as .obj file.
+  bool     useMaterial;            ///< Flag, indicating whether to apply materials from .obj file or not. Default setting = true
+ /* bool     createDefaultMaterials; ///< Flag, if true, default materials for each material id found in loaded meshes will be created.
+                                   ///  If false, material ids for all loaded meshes will be set to 0. Ignored if useMaterial is true. */
+  bool     useCentering;           ///< Flag, indicating whether to perform centering around [0.0, 0.0, 0.0] or not. Default setting = true
+  float    transform[16];          ///< Transform matrix. Default setting = identity matrix. This flag overwrites 'useCentering' flag
 };
 
 /// When open any HRObject you must specify one of these 2 flags.
@@ -861,9 +864,10 @@ HAPI HRMeshInfo hrMeshGetInfo(HRMeshRef a_mesh);
 HAPI pugi::xml_node    hrMeshParamNode(HRMeshRef a_meshRef);
 
 /**
-\brief immediately save current mesh to '.vsgf' file to specified path.
+\brief immediately save current mesh to '.vsgf' or '.vsgf2' file to specified path.
+ 'vsgf2' additionally explicitly stores material names, material draw list, bounding box
 \param a_meshRef  - mesh reference
-\param a_fileName - out file name; must end with '.vsgf'
+\param a_fileName - out file name; must end with '.vsgf' or '.vsgf2'
 
 */
 HAPI void              hrMeshSaveVSGF(HRMeshRef a_meshRef, const wchar_t* a_fileName);
@@ -1184,7 +1188,8 @@ namespace HRUtils
   bool hrRenderSaveDepthRaw(HRRenderRef a_pRender, const wchar_t* a_outFileName);
 
   // Parses the .obj file, consisting of 1+ shapes
-  MergeInfo LoadMultipleShapesFromObj(const wchar_t* a_fileName, bool a_copyToLocalFolder = false);
+  // horribly broken needs rewrite
+  // MergeInfo LoadMultipleShapesFromObj(const wchar_t* a_fileName, bool a_copyToLocalFolder = false);
 
 
   /**
@@ -1206,6 +1211,9 @@ namespace HRUtils
               y_min(std::numeric_limits<float>::max()), y_max(std::numeric_limits<float>::lowest()),
               z_min(std::numeric_limits<float>::max()), z_max(std::numeric_limits<float>::lowest()) {}
   };
+
+
+  BBox GetSceneBBox(HRSceneInstRef a_sceneRef);
 
   BBox GetMeshBBox(HRMeshRef);
 

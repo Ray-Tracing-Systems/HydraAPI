@@ -266,8 +266,8 @@ uint64_t MeshVSGF::offset(const wchar_t* a_arrayname) const
 
 std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndices);
 
-void HR_LoadVSGFCompressedBothHeaders(std::ifstream& fin,
-                                      std::vector<HRBatchInfo>& a_outBatchList, HydraGeomData::Header& h1, HydraHeaderC& h2);
+void HR_LoadVSGFCompressedHeaders(std::ifstream& fin,
+                                  std::vector<HRBatchInfo>& a_outBatchList, HydraGeomData::Header& h1, HydraHeaderC& h2);
 
 struct MeshVSGFProxy : public MeshVSGF
 {
@@ -303,8 +303,8 @@ protected:
     if(ext == L".vsgfc")
     {
       HydraHeaderC h2;
-      HR_LoadVSGFCompressedBothHeaders(fin,
-                                       m_matDrawList, header, h2);
+      HR_LoadVSGFCompressedHeaders(fin,
+                                   m_matDrawList, header, h2);
       m_vertNum     = header.verticesNum;
       m_indNum      = header.indicesNum;
       m_sizeInBytes = header.fileSizeInBytes;
