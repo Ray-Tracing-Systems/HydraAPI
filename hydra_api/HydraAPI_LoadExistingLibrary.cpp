@@ -104,7 +104,9 @@ HAPI HRMeshRef _hrMeshCreateFromNode(pugi::xml_node a_node)
 
   if (pMesh->pImpl == nullptr)
     HrError(L"LoadExistingLibrary, _hrMeshCreateFromNode can't load mesh from location = ", a_fileName);
-
+  else
+    pMesh->m_empty = false;
+ 
   return ref;
 }
 
