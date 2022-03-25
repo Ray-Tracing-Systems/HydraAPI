@@ -8,6 +8,7 @@
 
 #include <sstream>
 #include <iomanip>
+#include <filesystem>
 
 #include "HydraObjectManager.h"
 
@@ -552,9 +553,9 @@ HRMaterialRef _hrMaterialMergeFromNode(pugi::xml_node a_node, const std::wstring
 
 HRTextureNodeRef _hrTexture2DMergeFromNode(pugi::xml_node a_node, const std::wstring &a_libPath)
 {
-  const std::wstring dl       = a_node.attribute(L"dl").as_string();
-  const std::wstring loc      = a_node.attribute(L"loc").as_string();
-  const std::wstring a_objectName = a_node.attribute(L"name").as_string();
+  const std::wstring dl        = a_node.attribute(L"dl").as_string();
+  const std::wstring loc       = a_node.attribute(L"loc").as_string();
+  const std::wstring a_objName = a_node.attribute(L"name").as_string();
 
   std::wstring a_fileName;
   if(dl == L"1")
@@ -568,7 +569,34 @@ HRTextureNodeRef _hrTexture2DMergeFromNode(pugi::xml_node a_node, const std::wst
     a_fileName = ss.str();
   }
 
-  HRTextureNodeRef ref = hrTexture2DCreateFromFile(a_fileName.c_str());
+  HRTextureNodeRef ref;
+  ref.id = 0;
+  if (a_node.child(L"code"))  // check if it's procedural texture , this section needs to be tested
+  {
+    std::filesystem::path codePath(a_node.child(L"code").attribute(L"file").value());
+    auto foundCode = std::filesystem::exists(codePath);
+    if (foundCode)
+    {
+      ref = hrTextureCreateAdvanced(a_node.attribute(L"type").value(), a_node.attribute(L"name").value());
+      hrTextureNodeOpen(ref, HR_WRITE_DISCARD);
+      {
+        auto texNode = hrTextureParamNode(ref);
+
+        auto code_node = texNode.append_child(L"code");
+        code_node.append_attribute(L"main") = a_node.child(L"code").attribute(L"main").value();
+        code_node.append_attribute(L"file") = a_node.child(L"code").attribute(L"file").value();
+      }
+      hrTextureNodeClose(ref);
+    }
+    else
+    {
+      HrPrint(HR_SEVERITY_WARNING, L"Error merging procedural texture. File does not exist: ", a_fileName);
+    }
+  }
+  else
+  {
+    ref = hrTexture2DCreateFromFile(a_fileName.c_str());
+  }
 
   return ref;
 }
