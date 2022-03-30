@@ -83,7 +83,6 @@ if(USE_GL)
 endif()
 
 find_package (Threads REQUIRED)
-find_package(OpenMP REQUIRED)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 
