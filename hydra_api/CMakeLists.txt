@@ -4,12 +4,7 @@ project(hydra_api C CXX)
 set(CMAKE_CXX_STANDARD 17)
 
 set(SOURCE_FILES
-        HydraAPI.h HydraAPI.cpp
-        alloc16.h
-        cube2sphere.cpp
-        HydraLegacyUtils.h HydraLegacyUtils.cpp
-        HR_HDRImage.h HR_HDRImage4f.cpp
-        HR_HDRImageTool.h HR_HDRImageTool.cpp
+        HydraAPI.cpp
         HRMeshCommon.cpp
         HRTextureCommon.cpp
         HydraAPI_Camera.cpp
@@ -21,31 +16,32 @@ set(SOURCE_FILES
         HydraAPI_Material.cpp
         HydraAPI_Texture.cpp
         HydraAPI_TextureProcLex.cpp
+        HydraTextureUtils.cpp
+        HydraLegacyUtils.cpp
         HydraDriverUpdate.cpp
-        HydraInternal.h
-        HydraObjectManager.h HydraObjectManager.cpp
-        HydraRenderDriverAPI.h HydraRenderDriverAPI.cpp
-        HydraVSGFExport.h HydraVSGFExport.cpp
-        HydraVSGFCompress.h HydraVSGFCompress.cpp
-        HydraXMLHelpers.h  HydraXMLVerify.h HydraXMLVerify.cpp
-        LiteMath.h
-        pugiconfig.hpp
-        pugixml.cpp
-        pugixml.hpp
-        RenderDriverHydraConnection.cpp
-        RenderDriverDebugPrint.cpp
-        ssemath.cpp
-        ssemath.h
+        HydraObjectManager.cpp
+        HydraRenderDriverAPI.cpp
+        HydraRngUtils.cpp
         VirtualBuffer.cpp
         xxhash.c
-        xxhash.h
+        cube2sphere.cpp
+
+        HydraFsUtils.cpp
+
+        RenderDriverHydraConnection.cpp
+        RenderDriverDebugPrint.cpp
+
         HydraXMLHelpers.cpp
-        HydraTextureUtils.cpp
-        HydraTextureUtils.h
+        HydraXMLVerify.cpp
+        pugixml.cpp
+
+        ssemath.cpp
+        HR_HDRImage4f.cpp
+        HR_HDRImageTool.cpp
+
         HydraAPI_GeomProcessing.cpp
-        vfloat4_x64.h
-        HydraRngUtils.cpp
-        HydraVSGFCompress.h HydraVSGFCompress.cpp
+        HydraVSGFExport.cpp
+        HydraVSGFCompress.cpp
         cmesh.cpp
         cmesh_mikey_connect.cpp
         cmesh_processing_weld.cpp
@@ -54,8 +50,9 @@ set(SOURCE_FILES
 
 
 if (WIN32)
-    set(SOURCE_FILES ${SOURCE_FILES} SystemWin.cpp HR_AccumImageWin.cpp)
-    set(SOURCE_FILES ${SOURCE_FILES} HydraLaunchProcessWin32.cpp)
+    set(SOURCE_FILES ${SOURCE_FILES} SystemWin.cpp
+                                     HR_AccumImageWin.cpp
+                                     HydraLaunchProcessWin32.cpp)
 else()
 	set(SOURCE_FILES ${SOURCE_FILES} SystemUnix.cpp
                                      HR_AccumImageLinux.cpp
@@ -68,41 +65,43 @@ set(HR_EXTENSIONS HRExtensions.cpp)
 set(GL_DEPENDENT
         glad.c
         OpenGLCoreProfileUtils.h OpenGLCoreProfileUtils.cpp
-        RenderDriverOpenGL3_Utility.h RenderDriverOpenGL3_Utility.cpp HydraFsUtils.cpp)
+        RenderDriverOpenGL3_Utility.h RenderDriverOpenGL3_Utility.cpp)
 
 
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
-find_package(FreeImage REQUIRED)
-include_directories(${FREEIMAGE_INCLUDE_DIRS})
-set(LIBS ${LIBS} ${FREEIMAGE_LIBRARIES})
+#list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
+#find_package(FreeImage REQUIRED)
+#include_directories(${FREEIMAGE_INCLUDE_DIRS})
+#set(LIBS ${LIBS} ${FREEIMAGE_LIBRARIES})
 
-find_package(OpenGL REQUIRED)
+message(STATUS "HAPI USE_GL = ${USE_GL}")
+if(USE_GL)
+    cmake_policy(SET CMP0072 OLD)
+    find_package(OpenGL REQUIRED)
+    set(SOURCE_FILES ${SOURCE_FILES} ${GL_DEPENDENT})
+    include_directories (${OPENGL_INCLUDE_DIR})
+endif()
+
 find_package (Threads REQUIRED)
 find_package(OpenMP REQUIRED)
-
-include_directories(${ADDITIONAL_INCLUDE_DIRS})
-
-if(WIN32)
-else()
-    find_package (Threads REQUIRED)
-    set(THREADS_PREFER_PTHREAD_FLAG ON)
-endif()
+set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 
 #build hydra API static library
-add_library(hydra_api STATIC ${SOURCE_FILES} ${POST_PROC} ${GL_DEPENDENT} ${HR_EXTENSIONS})
-target_include_directories (hydra_api PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${OPENGL_INCLUDE_DIR})
+add_library(hydra_api STATIC ${SOURCE_FILES} ${HR_EXTENSIONS})
+target_include_directories (hydra_api PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${ADDITIONAL_INCLUDE_DIRS})
 
+#target_link_libraries(hydra_api freeimage)
+#add_dependencies(hydra_api freeimage)
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DIN_DEBUG")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1 -mavx")
 
 if(WIN32)
   add_definitions(-DUNICODE -D_UNICODE)
 #  target_link_libraries(hydra_api LINK_PUBLIC ${LIBS} ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY} corto ies_parser mikttspace)
 else()
   set_property(TARGET hydra_api PROPERTY POSITION_INDEPENDENT_CODE ON)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1")
 
   if (CMAKE_CXX_COMPILER_ID MATCHES "Clang") # enable sanitize youself if needed
       #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=memory -fno-omit-frame-pointer -fsanitize=leak)
@@ -113,10 +112,6 @@ else()
       MESSAGE( STATUS "WE USE GCC  (HydraAPI);")
   endif()
 
-  MESSAGE( STATUS "CMAKE_CXX_FLAGS(HydraAPI): " ${CMAKE_CXX_FLAGS} )
-#  target_link_libraries(hydra_api LINK_PUBLIC Threads::Threads ${LIBS}
-#                        ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY}
-#                        ${OpenMP_CXX_LIBRARIES}
-#                        ies_parser mikktspace corto
-#                        stdc++fs rt dl OpenCL)
 endif()
+
+MESSAGE( STATUS "CMAKE_CXX_FLAGS(HydraAPI): " ${CMAKE_CXX_FLAGS})

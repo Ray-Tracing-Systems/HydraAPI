@@ -13,6 +13,8 @@ set(ADDITIONAL_INCLUDE_DIRS
 set(ADDITIONAL_LIBRARY_DIRS
         ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/lib_x64_win)
 
+SET(USE_GL ON CACHE BOOL "Build OpenGL render drivers")
+
 add_subdirectory (utils/ies_parser)
 add_subdirectory (utils/mikktspace)
 add_subdirectory (utils/corto)
@@ -20,14 +22,13 @@ add_subdirectory (hydra_api)
 add_subdirectory (main)
 #add_subdirectory (hydra_api_python)
 
+add_custom_target(freeimage
+        COMMAND make
+        WORKING_DIRECTORY ../dependencies/FreeImage)
+
 
 if(WIN32)
   add_subdirectory (utils/clew)
   add_definitions(-DUNICODE -D_UNICODE)
-#  if(COMPILER_MSVC)
-#    set_target_properties(main PROPERTIES LINK_FLAGS "/LTCG")
-#    set_target_properties(hydra_api PROPERTIES LINK_FLAGS "/LTCG")
-#    set_target_properties(ies_parser PROPERTIES LINK_FLAGS "/LTCG")
-#  endif(COMPILER_MSVC)
   set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT main)
 endif(WIN32)

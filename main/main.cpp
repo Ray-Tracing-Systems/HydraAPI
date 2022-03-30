@@ -9,7 +9,7 @@ using pugi::xml_node;
 #include <windows.h> // for SetConsoleCtrlHandler
 #else
 #include <unistd.h>
-#include <signal.h>
+#include <csignal>
 #endif
 
 void InfoCallBack(const wchar_t* message, const wchar_t* callerPlace, HR_SEVERITY_LEVEL a_level)
@@ -93,7 +93,7 @@ int main(int argc, const char** argv)
     std::cout << "getcwd() error" <<std::endl;
   
   {
-    struct sigaction sigIntHandler;
+    struct sigaction sigIntHandler{};
     sigIntHandler.sa_handler = sig_handler;
     sigemptyset(&sigIntHandler.sa_mask);
     sigIntHandler.sa_flags = SA_RESETHAND;
@@ -114,8 +114,8 @@ int main(int argc, const char** argv)
     //demo_01_plane_box();
     //demo_02_load_obj();
     //demo_03_caustics();
-    //demo_04_instancing();
-    demo_05_pbrt_spheres();
+    demo_04_instancing();
+//    demo_05_pbrt_spheres();
   }
   catch (std::runtime_error& e)
   {
