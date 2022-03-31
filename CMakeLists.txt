@@ -14,20 +14,23 @@ set(USE_GL ON CACHE BOOL "Build OpenGL render drivers")
 
 if(WIN32)
   set(ADDITIONAL_LIBRARY_DIRS
-          ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/lib_x64_win)
+          ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/lib_x64_win CACHE STRING "Path to dependencies (freeimage and, if USE_GL is ON, glfw)")
 else()
   set(USE_FIND_PACKAGE OFF CACHE BOOL "Use find_package to find system installation of dependencies")
   set(ADDITIONAL_LIBRARY_DIRS
-          ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/lib_x64_linux)
+          ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/lib_x64_linux CACHE STRING "Path to dependencies (freeimage and, if USE_GL is ON, glfw)")
 endif()
 
 add_subdirectory (utils/ies_parser)
 add_subdirectory (utils/mikktspace)
 add_subdirectory (utils/corto)
 add_subdirectory (hydra_api)
-add_subdirectory (main)
 #add_subdirectory (hydra_api_python)
 
+
+if(USE_GL)
+    add_subdirectory (main)
+endif()
 
 if(WIN32)
   add_subdirectory (utils/clew)
