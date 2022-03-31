@@ -48,11 +48,16 @@ set(SOURCE_FILES
         cmesh_processing.cpp
         cmesh_vsgf.cpp)
 
+set(GL_DEPENDENT
+        glad.c
+        OpenGLCoreProfileUtils.h OpenGLCoreProfileUtils.cpp
+        RenderDriverOpenGL3_Utility.h RenderDriverOpenGL3_Utility.cpp)
 
 if (WIN32)
     set(SOURCE_FILES ${SOURCE_FILES} SystemWin.cpp
                                      HR_AccumImageWin.cpp
                                      HydraLaunchProcessWin32.cpp)
+    set(GL_DEPENDENT ${GL_DEPENDENT} OpenGLContextWin.cpp)
 else()
 	set(SOURCE_FILES ${SOURCE_FILES} SystemUnix.cpp
                                      HR_AccumImageLinux.cpp
@@ -62,12 +67,6 @@ endif()
 
 set(HR_EXTENSIONS HRExtensions.cpp)
 
-set(GL_DEPENDENT
-        glad.c
-        OpenGLCoreProfileUtils.h OpenGLCoreProfileUtils.cpp
-        RenderDriverOpenGL3_Utility.h RenderDriverOpenGL3_Utility.cpp)
-
-
 
 #list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 #find_package(FreeImage REQUIRED)
@@ -76,6 +75,7 @@ set(GL_DEPENDENT
 
 message(STATUS "HAPI USE_GL = ${USE_GL}")
 if(USE_GL)
+    add_compile_definitions(USE_GL)
     cmake_policy(SET CMP0072 OLD)
     find_package(OpenGL REQUIRED)
     set(SOURCE_FILES ${SOURCE_FILES} ${GL_DEPENDENT})

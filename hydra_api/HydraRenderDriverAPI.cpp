@@ -1,6 +1,9 @@
 #include "HydraRenderDriverAPI.h"
 #include "HydraInternal.h"
+
+#ifdef USE_GL
 #include "RenderDriverOpenGL3_Utility.h"
+#endif
 
 std::unordered_map<std::wstring, HRDriverInfo> RenderDriverFactory::create_methods;
 
@@ -30,6 +33,7 @@ void registerBuiltInRenderDrivers()
 
   //*****************************************************************************************************
 
+#ifdef USE_GL
   HRDriverInfo utilityDriverInfo;
   utilityDriverInfo.supportHDRFrameBuffer        = false;
   utilityDriverInfo.supportHDRTextures           = true;
@@ -45,7 +49,7 @@ void registerBuiltInRenderDrivers()
   utilityDriverInfo.driverName = L"opengl3Utility";
   utilityDriverInfo.createFunction = CreateOpenGL3_Utility_RenderDriver;
   RenderDriverFactory::Register(L"opengl3Utility", utilityDriverInfo);
-
+#endif
   //*****************************************************************************************************
 
   HRDriverInfo debugPrintDriverInfo;

@@ -1152,11 +1152,13 @@ HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pC
     g_objManager.m_pDriver->GetRenderDriverName(driver_name);
     auto driver_info = RenderDriverFactory::GetDriverInfo(driver_name.c_str());
 
+#ifdef USE_GL
     if (driver_info.supportUtilityPrepass && doPrepass)
     {
       std::cout << "Starting scene prepass..." << std::endl;
       fixed_state = HR_UtilityDriverStart(newPath.c_str(), pSettings);
     }
+#endif
     //std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     //std::cout << "Resolution fix elapsed time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms" <<std::endl;
 
