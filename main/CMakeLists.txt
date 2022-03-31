@@ -23,13 +23,15 @@ set(HYDRA_API_UTILS_SRC_DIR ${HYDRA_API_ROOT_DIR}/utils)
 find_package (Threads REQUIRED)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 
+include_directories(${ADDITIONAL_INCLUDE_DIRS})
+link_directories(${ADDITIONAL_LIBRARY_DIRS})
+    
 if(USE_GL)
   cmake_policy(SET CMP0072 OLD)
   find_package(OpenGL REQUIRED)
 
   if(WIN32)
-    include_directories(${ADDITIONAL_INCLUDE_DIRS})
-    link_directories(${ADDITIONAL_LIBRARY_DIRS})
+      # ################
   else()
     if(USE_FIND_PACKAGE)
       find_package(glfw3 REQUIRED)
@@ -45,12 +47,12 @@ if(USE_GL)
 
   include_directories(${OPENGL_INCLUDE_DIR})
 else()
-  message(ERROR "HydraAPI demos require OpenGL. Set USE_GL to ON")
+  message(WARNING " HydraAPI demos require OpenGL. Set USE_GL to ON if you want to build them")
 endif()
 
 
 add_executable(main ${SOURCE_FILES})
-include_directories(${ADDITIONAL_INCLUDE_DIRS} ${HYDRA_API_SRC_DIR} ${HYDRA_API_UTILS_SRC_DIR})
+include_directories(${HYDRA_API_SRC_DIR} ${HYDRA_API_UTILS_SRC_DIR})
 
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1 -mavx")

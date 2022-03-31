@@ -1644,6 +1644,10 @@ bool HydraCreateHiddenWindow(int width, int height, int a_major, int a_minor, in
 
 std::wstring HR_UtilityDriverStart(const wchar_t* state_path, HRRender* a_pOriginalRender)
 {
+#ifndef USE_GL
+  HrError(L"HR_UtilityDriverStart: Utility driver requires HydraAPI to be compiled with OpenGL support (USE_GL = ON)");
+  return state_path;
+#else
   std::wstring new_state_path(L"");
 
   if (state_path == std::wstring(L"") || state_path == nullptr)
@@ -1730,4 +1734,5 @@ std::wstring HR_UtilityDriverStart(const wchar_t* state_path, HRRender* a_pOrigi
     CreatePrecompProcTex(stateToProcess, resDict);
   }
   return SaveFixedStateXML(stateToProcess, state_path, L"_fixed");
+#endif
 }
