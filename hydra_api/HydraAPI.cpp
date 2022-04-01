@@ -1152,7 +1152,7 @@ HAPI void hrFlush(HRSceneInstRef a_pScn, HRRenderRef a_pRender, HRCameraRef a_pC
     g_objManager.m_pDriver->GetRenderDriverName(driver_name);
     auto driver_info = RenderDriverFactory::GetDriverInfo(driver_name.c_str());
 
-#ifdef USE_GL
+#if defined(USE_GL) || !defined(HYDRA_API_CMAKE)
     if (driver_info.supportUtilityPrepass && doPrepass)
     {
       std::cout << "Starting scene prepass..." << std::endl;

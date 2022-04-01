@@ -1,7 +1,7 @@
 #include "HydraRenderDriverAPI.h"
 #include "HydraInternal.h"
 
-#ifdef USE_GL
+#if defined(USE_GL) || !defined(HYDRA_API_CMAKE)
 #include "RenderDriverOpenGL3_Utility.h"
 #endif
 
@@ -33,7 +33,7 @@ void registerBuiltInRenderDrivers()
 
   //*****************************************************************************************************
 
-#ifdef USE_GL
+#if defined(USE_GL) || !defined(HYDRA_API_CMAKE)
   HRDriverInfo utilityDriverInfo;
   utilityDriverInfo.supportHDRFrameBuffer        = false;
   utilityDriverInfo.supportHDRTextures           = true;

@@ -1644,7 +1644,7 @@ bool HydraCreateHiddenWindow(int width, int height, int a_major, int a_minor, in
 
 std::wstring HR_UtilityDriverStart(const wchar_t* state_path, HRRender* a_pOriginalRender)
 {
-#ifndef USE_GL
+#if not defined(USE_GL) and defined(HYDRA_API_CMAKE)
   HrError(L"HR_UtilityDriverStart: Utility driver requires HydraAPI to be compiled with OpenGL support (USE_GL = ON)");
   return state_path;
 #else

@@ -13,12 +13,18 @@ set(ADDITIONAL_INCLUDE_DIRS
 set(USE_GL ON CACHE BOOL "Build OpenGL render drivers")
 
 if(WIN32)
+  add_compile_definitions(UNICODE _UNICODE)
   set(ADDITIONAL_LIBRARY_DIRS
           ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/lib_x64_win CACHE STRING "Path to dependencies (freeimage and, if USE_GL is ON, glfw)")
 else()
   set(USE_FIND_PACKAGE OFF CACHE BOOL "Use find_package to find system installation of dependencies")
   set(ADDITIONAL_LIBRARY_DIRS
           ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/lib_x64_linux CACHE STRING "Path to dependencies (freeimage and, if USE_GL is ON, glfw)")
+endif()
+
+add_compile_definitions(HYDRA_API_CMAKE)
+if(USE_GL)
+  add_compile_definitions(USE_GL)
 endif()
 
 add_subdirectory (utils/ies_parser)
@@ -34,7 +40,6 @@ endif()
 
 if(WIN32)
   add_subdirectory (utils/clew)
-  add_definitions(-DUNICODE -D_UNICODE)
   if(USE_GL)
     set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT main)
   else()
