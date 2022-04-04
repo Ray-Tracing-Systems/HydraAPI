@@ -18,11 +18,11 @@ This repo contains the second one.
 sudo apt install ocl-icd-opencl-dev; 
 ```
 [check this guide if you have problems with OpenCL](doc/opencl_setup_linux.md)
-3. To work with images HydraAPI uses FreeImage library, we provide prebuilt binaries in 'dependencies/lib_x64_*' directory.
+3. To work with images HydraAPI uses FreeImage (ver. 3.1.80) library, we provide prebuilt binaries in 'dependencies/lib_x64_*' directory.
    - You can always try to substitute the prebuilt binaries with your own.
 4. If you want to build demos ("main" target) you will need OpenGL. 
    - Set CMake "USE_GL" option to "ON".
-   - HydraAPI uses [GLFW](https://github.com/glfw/glfw), we provide prebuilt binaries in 'dependencies/lib_x64_*' directory.
+   - HydraAPI uses [GLFW](https://github.com/glfw/glfw) (ver. 3.3.6), we provide prebuilt binaries in 'dependencies/lib_x64_*' directory.
      - Set ADDITIONAL_LIBRARY_DIRS CMake variable to other directory if you want.
      - You can always try to substitute the prebuilt binaries with your own.
    - (Linux only) GLFW requires OS-dependent windowing libraries to be installed:
