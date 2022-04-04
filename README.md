@@ -10,20 +10,10 @@ This repo contains the second one.
 ![](image.jpg)
 <p align="center">An example of our renderer in 3ds max</p>
 
-# Building HydraAPI
-
-Windows:
+## Building HydraAPI
 
 1. Clone HydraAPI repo
-2. Copy 'bin2' folder content to 'C:/[Hydra]/bin2' under windows;
-3. Open 'hydra_api/HydraNewAPI1.sln' under windows with visual studio 2015 or later; If use 2015 you will need to downgrade platform toolset to v140 (2015).
-4. **Select x64 configuration**
-5. Set 'main' as startup project.
-6. Now you can run some demo and tests
-
-Linux:
-1. Clone HydraAPI repo
-2. Install OpenCL loader, for example:
+2. (Linux only) Install OpenCL loader, for example:
 ```shell
 sudo apt install ocl-icd-opencl-dev; 
 ```
@@ -33,9 +23,9 @@ sudo apt install ocl-icd-opencl-dev;
 4. If you want to build demos ("main" target) you will need OpenGL. 
    - Set CMake "USE_GL" option to "ON".
    - HydraAPI uses [GLFW](https://github.com/glfw/glfw), we provide prebuilt binaries in 'dependencies/lib_x64_*' directory.
-     - Set ADDITIONAL_LIBRARY_DIRS Cmake variable to other directory if you want.
+     - Set ADDITIONAL_LIBRARY_DIRS CMake variable to other directory if you want.
      - You can always try to substitute the prebuilt binaries with your own.
-   - GLFW requires OS-dependent windowing libraries to be installed:
+   - (Linux only) GLFW requires OS-dependent windowing libraries to be installed:
      - on Debian/Ubuntu and derivatives: xorg-dev
      - on Fedora and derivatives: libXcursor-devel libXi-devel libXinerama-devel libXrandr-devel
      - for details check [GLFW website](https://www.glfw.org/docs/latest/compile.html).
@@ -44,6 +34,10 @@ sudo apt install ocl-icd-opencl-dev;
 cmake -DCMAKE_BUILD_TYPE=Release -DUSE_GL=ON ..
 ```
 6. Build HydraAPI using appropriate tools (make, MSVC, etc.)
+
+
+Alternatively under Windows you can use provided MSVC solution - **"hydra_api/HydraNewAPI1.sln"**.
+
 
 Optionally, to build and use python bindings library (tested only under Linux):
 1. Get pybind11 as submodule (HydraAPI root dir):
