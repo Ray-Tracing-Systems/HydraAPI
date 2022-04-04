@@ -32,13 +32,13 @@ sudo apt install ocl-icd-opencl-dev;
    - You can always try to substitute the prebuilt binaries with your own.
 4. If you want to build demos ("main" target) you will need OpenGL. 
    - Set CMake "USE_GL" option to "ON".
-   - HydraAPI uses [GLFW](https://github.com/glfw/glfw), we provide prebuilt binaries in 'dependencies/lib_x64_*' directory;
-on Linux you can also use system installation of dependencies by setting CMake "USE_FIND_PACKAGE" option to "ON".
-     - you can always try to substitute the prebuilt binaries with your own.
+   - HydraAPI uses [GLFW](https://github.com/glfw/glfw), we provide prebuilt binaries in 'dependencies/lib_x64_*' directory.
+     - Set ADDITIONAL_LIBRARY_DIRS Cmake variable to other directory if you want.
+     - You can always try to substitute the prebuilt binaries with your own.
    - GLFW requires OS-dependent windowing libraries to be installed:
      - on Debian/Ubuntu and derivatives: xorg-dev
      - on Fedora and derivatives: libXcursor-devel libXi-devel libXinerama-devel libXrandr-devel
-     - check [GLFW website](https://www.glfw.org/docs/latest/compile.html) for details.
+     - for details check [GLFW website](https://www.glfw.org/docs/latest/compile.html).
 5. Use CMake to generate project, for example:
 ```shell
 cmake -DCMAKE_BUILD_TYPE=Release -DUSE_GL=ON ..
