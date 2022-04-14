@@ -2,18 +2,7 @@
 
 #include <iomanip>
 #include <cstring>
-#include <stdlib.h>
-
-#if defined(WIN32)
-#include <FreeImage.h>
-#include <GLFW/glfw3.h>
-#pragma comment(lib, "glfw3dll.lib")
-#pragma comment(lib, "FreeImage.lib")
-
-#else
-#include <FreeImage.h>
-#include <GLFW/glfw3.h>
-#endif
+#include <cstdlib>
 
 
 #include "../hydra_api/HR_HDRImageTool.h"
@@ -275,12 +264,10 @@ namespace HRUtils
         finalData[y * sphW + x] = RealColorToUint32(rgba);
       }
     }
-
     // for test purpose use
     // HydraRender::SaveImageToFile(std::string("z_spheremap.png"), sphW, sphH, (unsigned int*)&finalData[0]);
 
     return hrTexture2DCreateFromMemory(sphW, sphH, 4, &finalData[0]);
   }
-
 
 };
