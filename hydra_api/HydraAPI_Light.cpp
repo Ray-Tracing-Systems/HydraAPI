@@ -750,3 +750,19 @@ HAPI HRLightRef hrFindLightByName(const wchar_t *a_lightName)
 
   return light;
 }
+
+HAPI HRMeshRef hrFindMeshByName(const wchar_t* a_meshName)
+{
+  HRMeshRef mesh; mesh.id = -1;
+  if (a_meshName == nullptr)
+    return mesh;
+
+  for (auto obj : g_objManager.scnData.meshes) {
+    if (obj.name == std::wstring(a_meshName)) {
+      mesh.id = obj.id;
+      break;
+    }
+  }
+
+  return mesh;
+}
