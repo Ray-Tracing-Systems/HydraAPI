@@ -42,6 +42,11 @@ struct HydraGeomData
   void setData(uint32_t a_vertNum, const float* a_pos, const float* a_norm, const float* a_tangent, const float* a_texCoord,
                uint32_t a_indicesNum, const uint32_t* a_triVertIndices, const uint32_t* a_triMatIndices);
 
+  void copyData(uint32_t a_vertNum, const float* a_pos, const float* a_norm, const float* a_tangent, const float* a_texCoord,
+                uint32_t a_indicesNum, const uint32_t* a_triVertIndices, const uint32_t* a_triMatIndices);
+
+  void moveData(uint32_t a_vertNum, const float* a_pos, const float* a_norm, const float* a_tangent, const float* a_texCoord,
+                uint32_t a_indicesNum, const uint32_t* a_triVertIndices, const uint32_t* a_triMatIndices);
 
   struct Header
   {

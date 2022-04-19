@@ -227,7 +227,7 @@ inline bool s1filled(const std::string str)
   return str.compare("");
 }
 
-HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, HRModelLoadInfo a_modelInfo)
+void HR_LoadDataFromOBJ(const wchar_t* a_objectName, HRModelLoadInfo a_modelInfo, HydraGeomData& data)
 {
   tinyobj::attrib_t attrib;
   std::vector<tinyobj::shape_t> shapes;
@@ -242,7 +242,7 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, HRModelLo
 
   bool res = false;
   // Check for mtl file in the same folder as .obj file in case 'mtlRelativePath' is not provided
-  if(a_modelInfo.mtlRelativePath == nullptr)
+  if (a_modelInfo.mtlRelativePath == nullptr)
   {
     res = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path.string().c_str(), matDir.string().c_str());
   }
@@ -252,17 +252,18 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, HRModelLo
     res = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path.string().c_str(), mtlRelPath.string().c_str());
     matDir = mtlRelPath;
   }
-  if(!res)
+  if (!res)
   {
-    HrPrint(HR_SEVERITY_ERROR, L"_hrMeshCreateFromObjMerged, failed to load obj file ", a_objectName);
-    return HRMeshRef();
+    HrPrint(HR_SEVERITY_ERROR, L"HR_LoadDataFromOBJ, failed to load obj file ", a_objectName);
+    return;
   }
 
   // The number of indices
   std::vector<size_t> shape_indices_number;
   size_t cumulative_indices_number = 0;
   shape_indices_number.push_back(0);
-  for (size_t s = 0; s < shapes.size(); s++) {
+  for (size_t s = 0; s < shapes.size(); s++) 
+  {
     shape_indices_number.push_back(shapes[s].mesh.indices.size());
     cumulative_indices_number += shapes[s].mesh.indices.size();
   }
@@ -272,16 +273,16 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, HRModelLo
   std::vector<HRMaterialRef> h_materials;
   // Check if there are materials associated with the .obj file
   // If not, set material id to '0' for the whole mesh
-  if(a_modelInfo.useMaterial)
-    if(materials.size() != 0)
+  if (a_modelInfo.useMaterial)
+    if (materials.size() != 0)
       ifMaterialsProvided = true;
     else
       HrPrint(HR_SEVERITY_ERROR, L"Materials not found for: ", a_objectName);
 
   HRMaterialRef default_material;
-  if(ifMaterialsProvided) 
+  if (ifMaterialsProvided)
   {
-    for (int m = 0; m < materials.size(); ++m) 
+    for (int m = 0; m < materials.size(); ++m)
     {
       /// Checking the material properties
       // Just setting [0.0, 0.0, 0.0] is case of empty variable
@@ -324,7 +325,7 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, HRModelLo
           }
         }
 
-        if (ifSpecularRGB) 
+        if (ifSpecularRGB)
         {
           pugi::xml_node refl = matNode.append_child(L"reflectivity");
           refl.append_attribute(L"brdf_type").set_value(L"phong");
@@ -357,7 +358,7 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, HRModelLo
   }
 
   int mat_indxs_length = int(cumulative_indices_number / 3);
-  std::vector<int> mat_ids(mat_indxs_length);
+  std::vector<uint32_t> mat_ids(mat_indxs_length);
   int mat_counter = 0;
   /*******************************************   Preparing the mesh data   ********************************************/
 
@@ -365,7 +366,7 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, HRModelLo
   std::vector<float> verts(cumulative_indices_number * 4);
   std::vector<float> norms(cumulative_indices_number * 4);
   std::vector<float> tex_s(cumulative_indices_number * 2);
-  std::vector<int  > indxs(cumulative_indices_number);
+  std::vector<uint32_t> indxs(cumulative_indices_number);
 
   bool has_normals = true;
   bool has_tex = true;
@@ -373,17 +374,17 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, HRModelLo
   for (size_t s = 0; s < shapes.size(); s++) {
     size_t index_offset = 0;
     size_t index_shape_offset = 0;
-    for(int i = 0; i <= s; ++i){
+    for (int i = 0; i <= s; ++i) {
       index_shape_offset += shape_indices_number[i];
     }
     size_t vertices_num = shapes[s].mesh.num_face_vertices.size();
     for (size_t f = 0; f < vertices_num; f++) {
       // Setting material's index for each polygon
-      if(ifMaterialsProvided)
-        mat_ids[mat_counter++] = h_materials.at(shapes[s].mesh.material_ids[f]).id;
+      if (!materials.empty())
+        mat_ids[mat_counter++] = shapes[s].mesh.material_ids[f];
       else
-        mat_ids[mat_counter++] = default_material.id;
-        
+        mat_ids[mat_counter++] = 0;
+
       int fv = shapes[s].mesh.num_face_vertices[f];
       // Loop over vertices in the face.
       for (size_t v = 0; v < fv; v++) {
@@ -402,14 +403,16 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, HRModelLo
           norms[4 * (index_shape_offset + index_offset + v) + 1] = attrib.normals[3 * idx.normal_index + 1];
           norms[4 * (index_shape_offset + index_offset + v) + 2] = attrib.normals[3 * idx.normal_index + 2];
           norms[4 * (index_shape_offset + index_offset + v) + 3] = 0.0;
-        } else {
+        }
+        else {
           has_normals = false;
         }
         // Setting texture coordinates
         if (idx.texcoord_index != -1) {
           tex_s[2 * (index_shape_offset + index_offset + v) + 0] = attrib.texcoords[2 * idx.texcoord_index + 0];
           tex_s[2 * (index_shape_offset + index_offset + v) + 1] = attrib.texcoords[2 * idx.texcoord_index + 1];
-        } else {
+        }
+        else {
           //has_tex = false;
           tex_s[2 * (index_shape_offset + index_offset + v) + 0] = 0.5;
           tex_s[2 * (index_shape_offset + index_offset + v) + 1] = 0.5;
@@ -421,29 +424,23 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, HRModelLo
 
 
   /*******************************************   Setting up the buffers   *********************************************/
+  data.moveData(cumulative_indices_number, verts.data(), norms.data(), nullptr, tex_s.data(),
+                cumulative_indices_number, indxs.data(), mat_ids.data());
+}
+
+HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, HRModelLoadInfo a_modelInfo)
+{
+  HydraGeomData geomData;
+  HR_LoadDataFromOBJ(a_objectName, a_modelInfo, geomData);
 
   HRMeshRef ref = hrMeshCreate(a_objectName);
-
   hrMeshOpen(ref, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
   {
-    hrMeshVertexAttribPointer4f(ref, L"pos", verts.data());
-
-    if (has_normals)
-      hrMeshVertexAttribPointer4f(ref, L"norm", norms.data());
-    else
-      hrMeshVertexAttribPointer4f(ref, L"norm", nullptr);
-
-    //if (has_tex)
-      hrMeshVertexAttribPointer2f(ref, L"texcoord", tex_s.data());
-    //else
-    //  hrMeshVertexAttribPointer2f(ref, L"texcoord", nullptr);
-
-    if(ifMaterialsProvided)
-      hrMeshPrimitiveAttribPointer1i(ref, L"mind", mat_ids.data());
-    else
-      hrMeshMaterialId(ref, 0);
-
-    hrMeshAppendTriangles3(ref, cumulative_indices_number, indxs.data());
+    hrMeshVertexAttribPointer4f(ref, L"pos", geomData.getVertexPositionsFloat4Array());
+    hrMeshVertexAttribPointer4f(ref, L"norm", geomData.getVertexNormalsFloat4Array());
+    hrMeshVertexAttribPointer2f(ref, L"texcoord", geomData.getVertexTexcoordFloat2Array());
+    hrMeshPrimitiveAttribPointer1i(ref, L"mind", (const int32_t*)(geomData.getTriangleMaterialIndicesArray()));
+    hrMeshAppendTriangles3(ref, geomData.getIndicesNumber(), (const int32_t*)geomData.getTriangleMaterialIndicesArray());
   }
   hrMeshClose(ref);
 
@@ -474,9 +471,26 @@ HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName, bool a_copyToLo
     return ref;
   }
 
-  pMesh->pImpl  = g_objManager.m_pFactory->CreateVSGFProxy(a_fileName);
-  pMesh->opened = false;
+  std::filesystem::path path(a_fileName);
 
+  if (path.extension().wstring() == L".obj" || path.extension().wstring() == L".OBJ")
+  {
+    pMesh->pImpl = g_objManager.m_pFactory->CreateOBJProxy(a_fileName);
+    pMesh->xml_node().append_attribute(L"type").set_value(L"obj");
+  }
+  else if (path.extension().wstring() == L".vsgf" || path.extension().wstring() == L".vsgfc" || 
+           path.extension().wstring() == L".vsgf2")
+  {
+    pMesh->pImpl = g_objManager.m_pFactory->CreateVSGFProxy(a_fileName);
+  }
+  else
+  {
+    HrError(L"hrMeshCreateFromFileDL: unsupported file format: ", path.extension().wstring().c_str());
+    pMesh->pImpl = nullptr;
+    return ref;
+  }
+
+  pMesh->opened = false;
   if (pMesh->pImpl == nullptr)
     return ref;
 

@@ -115,7 +115,7 @@ struct HRModelLoadInfo
                                 0.0f, 0.0f, 1.0f, 0.0f,
                                 0.0f, 0.0f, 0.0f, 1.0f} {};
   wchar_t* mtlRelativePath;        ///< Relative path to .mtl files. Default setting = nullptr => importer will look for them in the same folder as .obj file.
-  bool     useMaterial;            ///< Flag, indicating whether to apply materials from .obj file or not. Default setting = true
+  bool     useMaterial;            ///< Flag, indicating whether to apply materials from .obj file or not. Default setting = false
  /* bool     createDefaultMaterials; ///< Flag, if true, default materials for each material id found in loaded meshes will be created.
                                    ///  If false, material ids for all loaded meshes will be set to 0. Ignored if useMaterial is true. */
   bool     useCentering;           ///< Flag, indicating whether to perform centering around [0.0, 0.0, 0.0] or not. Default setting = true

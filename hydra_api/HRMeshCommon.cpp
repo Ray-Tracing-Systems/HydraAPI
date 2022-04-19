@@ -13,14 +13,14 @@
 #include <unordered_map>
 #include <algorithm>
 
+#include "tiny_obj_loader.h"
+
 extern HRObjectManager g_objManager;
 
 #ifdef WIN32
 #undef min
 #undef max
 #endif
-
-
 
 std::vector< LiteMath::float4> getVerticesFromBBox(const BBox &a_bbox)
 {
@@ -264,6 +264,7 @@ uint64_t MeshVSGF::offset(const wchar_t* a_arrayname) const
 
 }
 
+
 std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndices);
 
 void HR_LoadVSGFCompressedHeaders(std::ifstream& fin,
@@ -295,8 +296,10 @@ protected:
       return false;
     }
     
-    std::wstring fileName(a_fileName);
-    std::wstring ext = str_tail(fileName, 6);
+    std::filesystem::path fileName(a_fileName);
+    //std::wstring fileName(a_fileName);
+    
+    std::wstring ext = fileName.extension();//str_tail(fileName, 6);
 
     HydraGeomData::Header header{};
 
@@ -678,10 +681,110 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromFile(HRMesh* pSysObj,
   return pMeshImpl;
 }
 
+
+struct MeshOBJProxy : public IHRMesh
+{
+  MeshOBJProxy() : m_loaded(false) {}
+  MeshOBJProxy(const wchar_t* a_fileName)
+  {
+    m_loaded = ReadOBJHeader(a_fileName);
+  }
+
+  uint64_t chunkId()       const override { return uint64_t(m_chunkId); }
+  uint64_t vertNum()       const override { return m_vertNum; }
+  uint64_t indNum()        const override { return m_indNum; }
+  size_t DataSizeInBytes() const override { return m_sizeInBytes; }
+  const void* GetData()    const override { return nullptr; }
+
+
+  const std::vector<HRBatchInfo>& MList() const override { return m_matDrawList; }
+  std::vector<HRBatchInfo>& MList()             override { return m_matDrawList; }
+
+  std::string MaterialNamesList() override { return ""; }
+
+  // always empty ?
+  const std::unordered_map<std::wstring, std::tuple<std::wstring, size_t, size_t, int> >& GetOffsAndSizeForAttrs() const override { return m_custAttribs; }
+
+  bool     m_loaded;
+protected:
+  std::unordered_map<std::wstring, std::tuple<std::wstring, size_t, size_t, int> > m_custAttribs;
+  size_t   m_sizeInBytes;
+  size_t   m_chunkId;
+
+  size_t   m_vertNum;
+  size_t   m_indNum;
+
+  std::vector<HRBatchInfo> m_matDrawList;
+  BBox m_bbox;
+
+  bool m_hasTangentOnLoad;
+  bool m_hasNormalsOnLoad;
+
+  bool ReadOBJHeader(const wchar_t* a_fileName)
+  {
+    std::filesystem::path fileName(a_fileName);
+
+    if(!std::filesystem::exists(fileName))
+    {
+      HrPrint(HR_SEVERITY_ERROR, L"MeshOBJProxy::ReadOBJHeader, can't open file: ", a_fileName);
+      return false;
+    }
+    
+    tinyobj::attrib_t attrib;
+    std::string warn;
+    std::string err;
+    std::vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials;
+    auto matDir = fileName.parent_path();
+
+    auto res = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, fileName.string().c_str(), fileName.string().c_str());
+    if (!res)
+    {
+      HrPrint(HR_SEVERITY_ERROR, L"MeshOBJProxy::ReadOBJHeader, failed to load obj file ", a_fileName);
+      return false;
+    }
+
+    // The number of indices
+    std::vector<size_t> shape_indices_number;
+    size_t cumulative_indices_number = 0;
+    shape_indices_number.push_back(0);
+    for (size_t s = 0; s < shapes.size(); s++) 
+    {
+      shape_indices_number.push_back(shapes[s].mesh.indices.size());
+      cumulative_indices_number += shapes[s].mesh.indices.size();
+    }
+
+    const uint8_t floatsPerVert = 4 + 4 + 4 + 2; // pos + norm + tang + tex_coord
+    m_vertNum = cumulative_indices_number;
+    m_indNum  = cumulative_indices_number;
+    m_sizeInBytes = m_vertNum * (floatsPerVert) * sizeof(float) + m_indNum * sizeof(uint32_t);
+    m_chunkId = size_t(-1);
+
+    m_hasNormalsOnLoad = !attrib.normals.empty();
+    m_hasTangentOnLoad = false;
+    
+    HRBatchInfo elem = {0, 0, 0}; // whole mesh
+    elem.matId    = 0;
+    elem.triBegin = 0;
+    elem.triEnd   = (cumulative_indices_number / 3) - 1;
+    m_matDrawList = { elem };
+
+    return true;
+  }
+};
+
 std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFProxy(const wchar_t* a_fileName)
 {
   std::shared_ptr<MeshVSGFProxy> pImpl = std::make_shared<MeshVSGFProxy>(a_fileName);
   if(!pImpl->m_loaded)
+    return nullptr;
+  return pImpl;
+}
+
+std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateOBJProxy(const wchar_t* a_fileName)
+{
+  std::shared_ptr<MeshOBJProxy> pImpl = std::make_shared<MeshOBJProxy>(a_fileName);
+  if (!pImpl->m_loaded)
     return nullptr;
   return pImpl;
 }

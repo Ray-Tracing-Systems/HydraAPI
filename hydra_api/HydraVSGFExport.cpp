@@ -65,6 +65,96 @@ void HydraGeomData::setData(uint32_t a_vertNum, const float* a_pos, const float*
   m_triMaterialIndices = a_triMatIndices;
 }
 
+void HydraGeomData::copyData(uint32_t a_vertNum, const float* a_pos, const float* a_norm, const float* a_tangent, const float* a_texCoord,
+  uint32_t a_indicesNum, const uint32_t* a_triVertIndices, const uint32_t* a_triMatIndices)
+{
+  m_header.verticesNum = a_vertNum;
+  m_header.indicesNum = a_indicesNum;
+  m_header.flags = (a_tangent != nullptr) ? HAS_TANGENT : 0;
+  m_header.fileSizeInBytes = sizeInBytes();
+
+  freeMemIfNeeded();
+  m_ownMemory = true;
+
+  m_data = new char[m_header.fileSizeInBytes];
+
+  char* ptr = m_data;
+  memcpy(ptr, a_pos, sizeof(float) * 4 * m_header.verticesNum);
+  m_positions = (float*)ptr;
+  ptr += sizeof(float) * 4 * m_header.verticesNum;
+
+  memcpy(ptr, a_norm, sizeof(float) * 4 * m_header.verticesNum);
+  m_normals = (float*)ptr;
+  ptr += sizeof(float) * 4 * m_header.verticesNum;
+
+  if (a_tangent)
+  {
+    memcpy(ptr, a_tangent, sizeof(float) * 4 * m_header.verticesNum);
+    m_tangents = (float*)ptr;
+    ptr += sizeof(float) * 4 * m_header.verticesNum;
+  }
+
+  memcpy(ptr, a_texCoord, sizeof(float) * 2 * m_header.verticesNum);
+  m_texcoords = (float*)ptr;
+  ptr += sizeof(float) * 2 * m_header.verticesNum;
+ 
+  memcpy(ptr, a_triVertIndices, sizeof(uint32_t) * m_header.indicesNum);
+  m_triVertIndices = (uint32_t*) ptr;
+  ptr += sizeof(uint32_t) * m_header.indicesNum;
+
+  memcpy(ptr, a_triMatIndices, sizeof(uint32_t) * (m_header.indicesNum / 3));
+  m_triMaterialIndices = (uint32_t*)ptr;
+  ptr += sizeof(uint32_t) * (m_header.indicesNum / 3);
+}
+
+void HydraGeomData::moveData(uint32_t a_vertNum, const float* a_pos, const float* a_norm, const float* a_tangent, const float* a_texCoord,
+  uint32_t a_indicesNum, const uint32_t* a_triVertIndices, const uint32_t* a_triMatIndices)
+{
+  m_header.verticesNum = a_vertNum;
+  m_header.indicesNum = a_indicesNum;
+  m_header.flags = (a_tangent != nullptr) ? HAS_TANGENT : 0;
+  m_header.fileSizeInBytes = sizeInBytes();
+
+  freeMemIfNeeded();
+  m_ownMemory = true;
+
+  m_data = new char[m_header.fileSizeInBytes];
+
+  char* ptr = m_data;
+  memmove(ptr, a_pos, sizeof(float) * 4 * m_header.verticesNum);
+  m_positions = (float*)ptr;
+  ptr += sizeof(float) * 4 * m_header.verticesNum;
+  a_pos = nullptr;
+
+  memmove(ptr, a_norm, sizeof(float) * 4 * m_header.verticesNum);
+  m_normals = (float*)ptr;
+  ptr += sizeof(float) * 4 * m_header.verticesNum;
+  a_norm = nullptr;
+
+  if (a_tangent)
+  {
+    memmove(ptr, a_tangent, sizeof(float) * 4 * m_header.verticesNum);
+    m_tangents = (float*)ptr;
+    ptr += sizeof(float) * 4 * m_header.verticesNum;
+    a_tangent = nullptr;
+  }
+
+  memmove(ptr, a_texCoord, sizeof(float) * 2 * m_header.verticesNum);
+  m_texcoords = (float*)ptr;
+  ptr += sizeof(float) * 2 * m_header.verticesNum;
+  a_texCoord = nullptr;
+
+  memmove(ptr, a_triVertIndices, sizeof(uint32_t) * m_header.indicesNum);
+  m_triVertIndices = (uint32_t*)ptr;
+  ptr += sizeof(uint32_t) * m_header.indicesNum;
+  a_triVertIndices = nullptr;
+
+  memmove(ptr, a_triMatIndices, sizeof(uint32_t) * (m_header.indicesNum / 3));
+  m_triMaterialIndices = (uint32_t*)ptr;
+  ptr += sizeof(uint32_t) * (m_header.indicesNum / 3);
+  a_triMatIndices = nullptr;
+}
+
 size_t HydraGeomData::sizeInBytes() const
 {
   int numfloat4VertexAttributes = 1 + 1; // positions + normals

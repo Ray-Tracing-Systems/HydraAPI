@@ -29,7 +29,7 @@ namespace cmesh
   {
     auto *pInput = static_cast <cmesh::SimpleMesh*> (context->m_pUserData);
     auto index   = pInput->indices.at(primnum * 3 + vtxnum);
-  
+
     outpos[0] = pInput->vPos4f.at(index * 4 + 0);
     outpos[1] = pInput->vPos4f.at(index * 4 + 1);
     outpos[2] = pInput->vPos4f.at(index * 4 + 2);

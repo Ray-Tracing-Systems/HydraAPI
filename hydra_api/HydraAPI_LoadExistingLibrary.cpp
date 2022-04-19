@@ -101,7 +101,25 @@ HAPI HRMeshRef _hrMeshCreateFromNode(pugi::xml_node a_node)
   g_objManager.scnData.meshes.push_back(mesh);
 
   HRMesh* pMesh = &g_objManager.scnData.meshes.back();
-  pMesh->pImpl  = g_objManager.m_pFactory->CreateVSGFProxy(a_fileName); // delay mesh load untill it will be needed by RenderDriver::UpdateMesh
+
+
+  // delay mesh load untill it will be needed by RenderDriver::UpdateMesh
+  std::filesystem::path path(a_fileName);
+  if (path.extension().wstring() == L".obj" || path.extension().wstring() == L".OBJ")
+  {
+    pMesh->pImpl = g_objManager.m_pFactory->CreateOBJProxy(a_fileName);
+  }
+  else if (path.extension().wstring() == L".vsgf" || path.extension().wstring() == L".vsgfc" ||
+    path.extension().wstring() == L".vsgf2")
+  {
+    pMesh->pImpl = g_objManager.m_pFactory->CreateVSGFProxy(a_fileName);
+  }
+  else
+  {
+    HrError(L"LoadExistingLibrary, _hrMeshCreateFromNode: unsupported file format: ", path.extension().wstring().c_str());
+    pMesh->pImpl = nullptr;
+    return ref;
+  }
 
   if (pMesh->pImpl == nullptr)
     HrError(L"LoadExistingLibrary, _hrMeshCreateFromNode can't load mesh from location = ", a_fileName);

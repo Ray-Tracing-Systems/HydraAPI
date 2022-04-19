@@ -23,6 +23,7 @@
 
 #include <chrono>
 #include <cassert>
+#include <filesystem>
 
 #include "tiny_obj_loader.h"
 
@@ -708,107 +709,129 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, std::vector<HRBatchInfo>& a
     HrError(L"UpdateMeshFromChunk: Can't open file: ", path);
     return;
   }
+
+  std::filesystem::path p(path);
+  const std::vector<std::wstring> vsgf_extensions = { L".vsgf", L".vsgfc", L".vsgf2" };
+  const std::vector<std::wstring> obj_extensions  = { L".obj", L".OBJ" };
+  const std::wstring tail = p.extension();
   
-  HydraGeomData::Header header;
-  fin.read((char*)&header, sizeof(header));
-  fin.close();
-  
-  const std::wstring tail = str_tail(path, 6);
-  if(tail != L".vsgfc" && header.fileSizeInBytes != a_byteSize)
+  bool isVSGF = std::find(vsgf_extensions.begin(), vsgf_extensions.end(), tail) != vsgf_extensions.end();
+  bool isOBJ = !isVSGF;
+  if (!isVSGF)
   {
-    HrPrint(HR_SEVERITY_WARNING, L"UpdateMeshFromChunk, different byte size of chunk, may be broken mesh: ", path);
-    a_byteSize = std::max<int64_t>(a_byteSize, header.fileSizeInBytes);
+    isOBJ = std::find(obj_extensions.begin(), obj_extensions.end(), tail) != obj_extensions.end();
   }
-  
-  g_objManager.m_tempBuffer.resize(a_byteSize / sizeof(int) + sizeof(int) * 16);
-  char* dataPtr = (char*)g_objManager.m_tempBuffer.data();
-  
-  const bool dontHaveTangents = (header.flags & HydraGeomData::HAS_TANGENT)    == 0;
-  const bool dontHaveNormals  = (header.flags & HydraGeomData::HAS_NO_NORMALS) != 0;
-  
-  HRMeshDriverInput input;
-  cmesh::SimpleMesh mesh2;
-  HydraGeomData     data;
 
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////// obj loader
-  tinyobj::attrib_t attrib;
-  std::vector<tinyobj::shape_t> shapes;
-  std::vector<tinyobj::material_t> materials;
-  std::vector<float> verts;
-  std::vector<float> norms;
-  std::vector<float> tex_s;
-  std::vector<int  > indxs;
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////// obj loader
-
-  // decompress '.vsgfc' format
-  //
-  if(tail == L".obj")
+  HRMeshDriverInput input   {};
+  HydraGeomData     data    {};
+  cmesh::SimpleMesh tmpMesh {};
+  if (isOBJ)
   {
-    HrPrint(HR_SEVERITY_ERROR, L"UpdateMeshFromChunk, obj loader is not implemented here, ", path);
-    return;
-  }
-  else if(tail == L".vsgfc")
-  {
-    data                = HR_LoadVSGFCompressedData(path, g_objManager.m_tempBuffer, &a_batches);
+    HR_LoadDataFromOBJ(path, {}, data);
+    HR_CopyMeshToInputMeshFromHydraGeomData(data, tmpMesh); // convert to simpleMesh to run tangents calculation
 
-    input.vertNum       = data.getVerticesNumber();
-    input.triNum        = data.getIndicesNumber()/3;
+    a_batches = FormMatDrawListRLE(tmpMesh.matIndices);
 
-    input.pos4f         = data.getVertexPositionsFloat4Array();
-    input.norm4f        = data.getVertexNormalsFloat4Array();
-    input.tan4f         = data.getVertexTangentsFloat4Array();
-    input.texcoord2f    = data.getVertexTexcoordFloat2Array();
-    input.indices       = (const int*)data.getTriangleVertexIndicesArray();
-    input.triMatIndices = (const int*)data.getTriangleMaterialIndicesArray();
-    input.allData       = (char*)g_objManager.m_tempBuffer.data();
-  }
-  else if(dontHaveTangents || dontHaveNormals)  // (1) process the case when we don't have tangents or normals ...
-  {
-    data.read(path);
-    HR_CopyMeshToInputMeshFromHydraGeomData(data, mesh2);
+    input.vertNum = data.getVerticesNumber();
+    input.triNum  = data.getIndicesNumber() / 3;
 
-    a_batches           = FormMatDrawListRLE(mesh2.matIndices);
-
-    input.vertNum       = data.getVerticesNumber();
-    input.triNum        = data.getIndicesNumber()/3;
-  
-    input.pos4f         = mesh2.vPos4f.data();
-    input.norm4f        = mesh2.vNorm4f.data();
-    input.tan4f         = mesh2.vTang4f.data();
-    input.texcoord2f    = mesh2.vTexCoord2f.data();
-    input.indices       = (const int*)mesh2.indices.data();
-    input.triMatIndices = (const int*)mesh2.matIndices.data();
+    input.pos4f         = tmpMesh.vPos4f.data();
+    input.norm4f        = tmpMesh.vNorm4f.data();
+    input.tan4f         = tmpMesh.vTang4f.data();
+    input.texcoord2f    = tmpMesh.vTexCoord2f.data();
+    input.indices       = (const int*)tmpMesh.indices.data();
+    input.triMatIndices = (const int*)tmpMesh.matIndices.data();
     input.allData       = nullptr;
+    //input.vertNum = data.getVerticesNumber();
+    //input.triNum  = data.getIndicesNumber() / 3;
+
+    //input.pos4f         = data.getVertexPositionsFloat4Array();
+    //input.norm4f        = data.getVertexNormalsFloat4Array();
+    //input.tan4f         = data.getVertexTangentsFloat4Array();
+    //input.texcoord2f    = data.getVertexTexcoordFloat2Array();
+    //input.indices       = (const int*)data.getTriangleVertexIndicesArray();
+    //input.triMatIndices = (const int*)data.getTriangleMaterialIndicesArray();
+    //input.allData       = nullptr;
   }
-  // (3) read it "as is"
-  //
-  else
+  else if (isVSGF)
   {
-    hr_ifstream_open(fin, path);
-    fin.read(dataPtr, a_byteSize);
+    HydraGeomData::Header header;
+    fin.read((char*)&header, sizeof(header));
     fin.close();
-  
-    uint64_t offsetPos  = mesh.pImpl->offset(L"pos");
-    uint64_t offsetNorm = mesh.pImpl->offset(L"norm");
-    uint64_t offsetTexc = mesh.pImpl->offset(L"texc");
-    uint64_t offsetTang = mesh.pImpl->offset(L"tan");
-    uint64_t offsetInd  = mesh.pImpl->offset(L"ind");
-    uint64_t offsetMInd = mesh.pImpl->offset(L"mind");
-  
-    input.vertNum       = nodeXML.attribute(L"vertNum").as_int();
-    input.triNum        = nodeXML.attribute(L"triNum").as_int();
-  
-    input.pos4f         = (float*)(dataPtr + offsetPos);
-    input.norm4f        = (float*)(dataPtr + offsetNorm);
-    input.tan4f         = (float*)(dataPtr + offsetTang);
-    input.texcoord2f    = (float*)(dataPtr + offsetTexc);
-    input.indices       = (int*)  (dataPtr + offsetInd);
-    input.triMatIndices = (int*)  (dataPtr + offsetMInd);
-    input.allData       = dataPtr;
 
-    a_batches           = FormMatDrawListRLE(std::vector<uint32_t>(input.triMatIndices, input.triMatIndices + input.triNum));
+    if (tail != L".vsgfc" && header.fileSizeInBytes != a_byteSize)
+    {
+      HrPrint(HR_SEVERITY_WARNING, L"UpdateMeshFromChunk, different byte size of chunk, may be broken mesh: ", path);
+      a_byteSize = std::max<int64_t>(a_byteSize, header.fileSizeInBytes);
+    }
+
+    g_objManager.m_tempBuffer.resize(a_byteSize / sizeof(int) + sizeof(int) * 16);
+    char* dataPtr = (char*)g_objManager.m_tempBuffer.data();
+
+    const bool dontHaveTangents = (header.flags & HydraGeomData::HAS_TANGENT) == 0;
+    const bool dontHaveNormals = (header.flags & HydraGeomData::HAS_NO_NORMALS) != 0;
+
+    if (tail == L".vsgfc")  // decompress '.vsgfc' format
+    {
+      data = HR_LoadVSGFCompressedData(path, g_objManager.m_tempBuffer, &a_batches);
+
+      input.vertNum = data.getVerticesNumber();
+      input.triNum  = data.getIndicesNumber() / 3;
+
+      input.pos4f         = data.getVertexPositionsFloat4Array();
+      input.norm4f        = data.getVertexNormalsFloat4Array();
+      input.tan4f         = data.getVertexTangentsFloat4Array();
+      input.texcoord2f    = data.getVertexTexcoordFloat2Array();
+      input.indices       = (const int*)data.getTriangleVertexIndicesArray();
+      input.triMatIndices = (const int*)data.getTriangleMaterialIndicesArray();
+      input.allData       = (char*)g_objManager.m_tempBuffer.data();
+    }
+    else if (dontHaveTangents || dontHaveNormals) // convert to simple to calc. normals and/or tangents
+    {
+      data.read(path);
+
+      HR_CopyMeshToInputMeshFromHydraGeomData(data, tmpMesh);
+
+      a_batches = FormMatDrawListRLE(tmpMesh.matIndices);
+
+      input.vertNum = data.getVerticesNumber();
+      input.triNum = data.getIndicesNumber() / 3;
+
+      input.pos4f         = tmpMesh.vPos4f.data();
+      input.norm4f        = tmpMesh.vNorm4f.data();
+      input.tan4f         = tmpMesh.vTang4f.data();
+      input.texcoord2f    = tmpMesh.vTexCoord2f.data();
+      input.indices       = (const int*)tmpMesh.indices.data();
+      input.triMatIndices = (const int*)tmpMesh.matIndices.data();
+      input.allData       = nullptr;
+    }
+    else
+    {
+      hr_ifstream_open(fin, path);
+      fin.read(dataPtr, a_byteSize);
+      fin.close();
+
+      uint64_t offsetPos  = mesh.pImpl->offset(L"pos");
+      uint64_t offsetNorm = mesh.pImpl->offset(L"norm");
+      uint64_t offsetTexc = mesh.pImpl->offset(L"texc");
+      uint64_t offsetTang = mesh.pImpl->offset(L"tan");
+      uint64_t offsetInd  = mesh.pImpl->offset(L"ind");
+      uint64_t offsetMInd = mesh.pImpl->offset(L"mind");
+
+      input.vertNum = nodeXML.attribute(L"vertNum").as_int();
+      input.triNum  = nodeXML.attribute(L"triNum").as_int();
+
+      input.pos4f         = (float*)(dataPtr + offsetPos);
+      input.norm4f        = (float*)(dataPtr + offsetNorm);
+      input.tan4f         = (float*)(dataPtr + offsetTang);
+      input.texcoord2f    = (float*)(dataPtr + offsetTexc);
+      input.indices       = (int*)(dataPtr + offsetInd);
+      input.triMatIndices = (int*)(dataPtr + offsetMInd);
+      input.allData       = dataPtr;
+
+      a_batches = FormMatDrawListRLE(std::vector<uint32_t>(input.triMatIndices, input.triMatIndices + input.triNum));
+    }
   }
-
   //#TODO: add debug assert/check that all materials from 'a_batches' were updated previously to 'a_pDriver'
 
   a_pDriver->UpdateMesh(a_id, nodeXML, input, a_batches.data(), int32_t(a_batches.size()));

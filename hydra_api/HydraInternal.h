@@ -9,6 +9,7 @@
 #include "HydraAPI.h"
 #include "HydraRenderDriverAPI.h"
 #include "LiteMath.h"
+#include "HydraVSGFExport.h"
 
 #include <string>
 #include <vector>
@@ -65,6 +66,8 @@ std::vector< LiteMath::float4> getVerticesFromBBox(const BBox &a_bbox);
 std::wstring HR_PreprocessMeshes(const wchar_t *state_path);
 void hrMeshComputeNormals(HRMeshRef a_mesh, int indexNum, bool useFaceNormals = false);
 void hrMeshWeldVertices(HRMeshRef a_mesh, int &indexNum);
+
+void HR_LoadDataFromOBJ(const wchar_t* a_objectName, HRModelLoadInfo a_modelInfo, HydraGeomData& data);
 
 void registerBuiltInRenderDrivers();
 
@@ -162,6 +165,7 @@ struct IHydraFactory
   virtual std::shared_ptr<IHRMesh>        CreateVSGFFromFile           (HRMesh* pSysObj, const std::wstring& a_fileName, pugi::xml_node a_node)   = 0;
 
   virtual std::shared_ptr<IHRMesh>        CreateVSGFProxy(const wchar_t* a_fileName) = 0;
+  virtual std::shared_ptr<IHRMesh>        CreateOBJProxy (const wchar_t* a_fileName)  = 0;
 };
 
 int32_t ChunkIdFromFileName(const wchar_t* a_chunkFileName);
@@ -449,6 +453,7 @@ struct HydraFactoryCommon : public IHydraFactory
   std::shared_ptr<IHRMesh>        CreateVSGFFromSimpleInputMesh(HRMesh* pSysObj, bool a_saveCompressed) override;
   std::shared_ptr<IHRMesh>        CreateVSGFFromFile(HRMesh* pSysObj, const std::wstring& a_fileName, pugi::xml_node) override;
   std::shared_ptr<IHRMesh>        CreateVSGFProxy   (const wchar_t* a_fileName) override;
+  std::shared_ptr<IHRMesh>        CreateOBJProxy    (const wchar_t* a_fileName) override;
 };
 
 
