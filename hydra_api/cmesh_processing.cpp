@@ -1,4 +1,5 @@
 #include "cmesh.h"
+#include <cstring>
 
 #include "LiteMath.h"
 using LiteMath::float4;

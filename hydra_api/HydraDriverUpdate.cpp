@@ -714,7 +714,7 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, std::vector<HRBatchInfo>& a
   std::filesystem::path p(path);
   const std::vector<std::wstring> vsgf_extensions = { L".vsgf", L".vsgfc", L".vsgf2" };
   const std::vector<std::wstring> obj_extensions  = { L".obj", L".OBJ" };
-  const std::wstring tail = p.extension();
+  const std::wstring tail = p.extension().wstring();
   
   bool isVSGF = std::find(vsgf_extensions.begin(), vsgf_extensions.end(), tail) != vsgf_extensions.end();
   bool isOBJ = !isVSGF;
