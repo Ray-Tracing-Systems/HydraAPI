@@ -1,5 +1,5 @@
 #include "cmesh.h"
-#include "cmesh_vsgf.h"
+#include "HydraVSGFExport.h"
 
 #include <cmath>
 #include <fstream>
@@ -140,7 +140,7 @@ cmesh::SimpleMesh cmesh::LoadMeshFromVSGF(const char* a_fileName)
   if(!input.is_open())
     return SimpleMesh();
 
-  cmesh::HydraGeomData data;
+  HydraGeomData data;
   data.read(input); 
 
   SimpleMesh res(data.getVerticesNumber(), data.getIndicesNumber());

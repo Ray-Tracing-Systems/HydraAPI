@@ -45,8 +45,7 @@ set(SOURCE_FILES
         cmesh.cpp
         cmesh_mikey_connect.cpp
         cmesh_processing_weld.cpp
-        cmesh_processing.cpp
-        cmesh_vsgf.cpp)
+        cmesh_processing.cpp)
 
 set(GL_DEPENDENT
         glad.c

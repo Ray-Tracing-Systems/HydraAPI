@@ -1,5 +1,4 @@
 #include "cmesh.h"
-#include "cmesh_vsgf.h"
 
 #include <cmath>
 #include <fstream>
