@@ -476,7 +476,7 @@ HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName, bool a_copyToLo
   if (path.extension().wstring() == L".obj" || path.extension().wstring() == L".OBJ")
   {
     pMesh->pImpl = g_objManager.m_pFactory->CreateOBJProxy(a_fileName);
-    pMesh->xml_node().append_attribute(L"type").set_value(L"obj");
+    pMesh->xml_node().attribute(L"type").set_value(L"obj");
   }
   else if (path.extension().wstring() == L".vsgf" || path.extension().wstring() == L".vsgfc" || 
            path.extension().wstring() == L".vsgf2")
@@ -682,7 +682,8 @@ static std::vector<T, aligned<T, 16> > ReadAlignedArrayFromMeshNode(pugi::xml_no
 
 
 const std::wstring GetRealFilePathOfDelayedMesh(pugi::xml_node a_node);
-void HR_CopyMeshToInputMeshFromHydraGeomData(const HydraGeomData& data, cmesh::SimpleMesh& mesh2);
+void HR_CopyMeshToInputMeshFromHydraGeomData(const HydraGeomData& data, cmesh::SimpleMesh& mesh2,
+  cmesh::TANG_ALGORITHMS tangent_comp_alg = cmesh::TANG_ALGORITHMS::TANG_MIKEY);
 
 void OpenHRMesh(HRMesh* pMesh, pugi::xml_node nodeXml)
 {

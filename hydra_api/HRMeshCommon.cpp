@@ -342,9 +342,9 @@ protected:
       const auto allOffsets       = CalcOffsets(header.verticesNum, header.indicesNum, hasTangentOnLoad, hasNormalsOnLoad);
       const auto matIndOffset     = allOffsets.offsetMind;
 
-      bool hasExtraData = std::filesystem::file_size(a_fileName) > m_sizeInBytes;
+     // bool hasExtraData = std::filesystem::file_size(a_fileName) > m_sizeInBytes;
 
-      if(hasExtraData) // ext == L".vsgf2"
+      if(ext == L".vsgf2") //
       {
         HydraHeaderC h2{};
         fin.seekg(header.fileSizeInBytes);
@@ -744,7 +744,7 @@ protected:
       return false;
     }
 
-    // The number of indices
+    
     std::vector<size_t> shape_indices_number;
     size_t cumulative_indices_number = 0;
     shape_indices_number.push_back(0);
@@ -754,15 +754,20 @@ protected:
       cumulative_indices_number += shapes[s].mesh.indices.size();
     }
 
-    const uint8_t floatsPerVert = 4 + 4 + 4 + 2; // pos + norm + tang + tex_coord
+    // even if there is no tangents or normals, HydraModern still expects them
+    // and memory in HydraModern is allocated according to m_sizeInBytes, so we need to account for it here...
+    const uint8_t floatsPerVert = 4 + 4 + 4 + 2; // pos + norm + tang + tex_coord 
     m_vertNum = cumulative_indices_number;
     m_indNum  = cumulative_indices_number;
-    m_sizeInBytes = m_vertNum * (floatsPerVert) * sizeof(float) + m_indNum * sizeof(uint32_t);
+    m_sizeInBytes = m_vertNum * (floatsPerVert) * sizeof(float) + // vertex attributes
+                    m_indNum * sizeof(uint32_t) +                 // indices
+                    (m_indNum / 3) * sizeof(uint32_t);            // material ids
     m_chunkId = size_t(-1);
 
     m_hasNormalsOnLoad = !attrib.normals.empty();
     m_hasTangentOnLoad = false;
     
+
     HRBatchInfo elem = {0, 0, 0}; // whole mesh
     elem.matId    = 0;
     elem.triBegin = 0;

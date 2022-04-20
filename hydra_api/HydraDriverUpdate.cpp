@@ -670,7 +670,8 @@ HRMeshDriverInput HR_GetMeshDataPointers(size_t a_meshId)
 
 std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndices);
 
-void HR_CopyMeshToInputMeshFromHydraGeomData(const HydraGeomData& data,  cmesh::SimpleMesh& mesh2)
+void HR_CopyMeshToInputMeshFromHydraGeomData(const HydraGeomData& data,  cmesh::SimpleMesh& mesh2,
+  cmesh::TANG_ALGORITHMS tangent_comp_alg)
 {
   HydraGeomData::Header header = data.getHeader();
   const bool dontHaveTangents  = (header.flags & HydraGeomData::HAS_TANGENT)    == 0;
@@ -690,7 +691,7 @@ void HR_CopyMeshToInputMeshFromHydraGeomData(const HydraGeomData& data,  cmesh::
     ComputeNormals(mesh2, data.getIndicesNumber(), false);
 
   if(dontHaveTangents)
-    ComputeTangents(mesh2, data.getIndicesNumber());
+    ComputeTangents(mesh2, data.getIndicesNumber(), tangent_comp_alg);
   else
     memcpy(mesh2.vTang4f.data(), data.getVertexTangentsFloat4Array(), sizeof(float)*4*data.getVerticesNumber());
 }
@@ -722,13 +723,21 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, std::vector<HRBatchInfo>& a
     isOBJ = std::find(obj_extensions.begin(), obj_extensions.end(), tail) != obj_extensions.end();
   }
 
+  cmesh::TANG_ALGORITHMS tang_alg = cmesh::TANG_ALGORITHMS::TANG_MIKEY;
+  if (nodeXML.attribute(L"tangent_computation"))
+  {
+    std::wstring tang_str = nodeXML.attribute(L"tangent_computation").as_string();
+    if (tang_str == L"simple")
+      tang_alg = cmesh::TANG_ALGORITHMS::TANG_SIMPLE;
+  }
+
   HRMeshDriverInput input   {};
   HydraGeomData     data    {};
   cmesh::SimpleMesh tmpMesh {};
   if (isOBJ)
   {
     HR_LoadDataFromOBJ(path, {}, data);
-    HR_CopyMeshToInputMeshFromHydraGeomData(data, tmpMesh); // convert to simpleMesh to run tangents calculation
+    HR_CopyMeshToInputMeshFromHydraGeomData(data, tmpMesh, tang_alg); // convert to simpleMesh to run tangents calculation
 
     a_batches = FormMatDrawListRLE(tmpMesh.matIndices);
 
@@ -742,16 +751,16 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, std::vector<HRBatchInfo>& a
     input.indices       = (const int*)tmpMesh.indices.data();
     input.triMatIndices = (const int*)tmpMesh.matIndices.data();
     input.allData       = nullptr;
-    //input.vertNum = data.getVerticesNumber();
-    //input.triNum  = data.getIndicesNumber() / 3;
+  /*  input.vertNum = data.getVerticesNumber();
+    input.triNum  = data.getIndicesNumber() / 3;
 
-    //input.pos4f         = data.getVertexPositionsFloat4Array();
-    //input.norm4f        = data.getVertexNormalsFloat4Array();
-    //input.tan4f         = data.getVertexTangentsFloat4Array();
-    //input.texcoord2f    = data.getVertexTexcoordFloat2Array();
-    //input.indices       = (const int*)data.getTriangleVertexIndicesArray();
-    //input.triMatIndices = (const int*)data.getTriangleMaterialIndicesArray();
-    //input.allData       = nullptr;
+    input.pos4f         = data.getVertexPositionsFloat4Array();
+    input.norm4f        = data.getVertexNormalsFloat4Array();
+    input.tan4f         = data.getVertexTangentsFloat4Array();
+    input.texcoord2f    = data.getVertexTexcoordFloat2Array();
+    input.indices       = (const int*)data.getTriangleVertexIndicesArray();
+    input.triMatIndices = (const int*)data.getTriangleMaterialIndicesArray();
+    input.allData       = nullptr;*/
   }
   else if (isVSGF)
   {
@@ -790,7 +799,7 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, std::vector<HRBatchInfo>& a
     {
       data.read(path);
 
-      HR_CopyMeshToInputMeshFromHydraGeomData(data, tmpMesh);
+      HR_CopyMeshToInputMeshFromHydraGeomData(data, tmpMesh, tang_alg);
 
       a_batches = FormMatDrawListRLE(tmpMesh.matIndices);
 
