@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <filesystem>
 #include <fstream>
 
 //#include "HydraInternal.h" // #TODO: this is only for hr_mkdir and hr_cleardir. Remove this further
@@ -443,16 +444,17 @@ bool RD_HydraConnection::EnableDevice(int32_t id, bool a_enable)
 
 void RD_HydraConnection::SetLogDir(const wchar_t* a_logDir, bool a_hideCmd)
 {
-  m_logFolder  = a_logDir;
-  m_logFolderS = ws2s(m_logFolder);
-
-  const std::wstring check = s2ws(m_logFolderS);
-  if (m_logFolder != check)
+  std::filesystem::path logPath(a_logDir);
+  if (std::filesystem::exists(logPath))
   {
-    if (m_pInfoCallBack != nullptr)
+    m_logFolder  = logPath.wstring();
+    m_logFolderS = logPath.string();
+    m_hideCmd = a_hideCmd;
+  }
+  else if (m_pInfoCallBack != nullptr)
+  {
       m_pInfoCallBack(L"bad log dir", L"RD_HydraConnection::SetLogDir", HR_SEVERITY_WARNING);
   }
-  m_hideCmd = a_hideCmd;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
