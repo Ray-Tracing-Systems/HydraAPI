@@ -299,7 +299,7 @@ protected:
     std::filesystem::path fileName(a_fileName);
     //std::wstring fileName(a_fileName);
     
-    std::wstring ext = fileName.extension();//str_tail(fileName, 6);
+    std::wstring ext = fileName.extension().wstring();//str_tail(fileName, 6);
 
     HydraGeomData::Header header{};
 
