@@ -92,7 +92,11 @@ void HRObjectManager::destroy()
 
 const std::wstring HRObjectManager::GetLoc(pugi::xml_node a_node) const
 {
-  return scnData.m_path + std::wstring(L"/") + std::wstring(a_node.attribute(L"loc").as_string());
+  const std::wstring locAttr = a_node.attribute(L"loc").as_string();
+  if (locAttr.empty())
+    return locAttr;
+  else
+    return scnData.m_path + std::wstring(L"/") + locAttr;
 }
 
 void HRObjectManager::SetLoc(pugi::xml_node a_node, const std::wstring& a_loc)
