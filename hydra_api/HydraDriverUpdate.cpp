@@ -19,7 +19,10 @@
 
 #include "HydraVSGFExport.h"
 #include "HydraVSGFCompress.h"
+
+#if defined(USE_GL)
 #include "RenderDriverOpenGL3_Utility.h"
+#endif
 
 #include <chrono>
 #include <cassert>
