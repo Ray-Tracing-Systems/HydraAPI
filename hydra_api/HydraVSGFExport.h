@@ -98,8 +98,8 @@ struct VSGFOffsets
   uint64_t offsetMind;
 };
 
-VSGFOffsets CalcOffsets(int numVert, int numInd, bool a_haveTangents = true, bool a_haveNormals = true);
+VSGFOffsets CalcOffsets(size_t numVert, size_t numInd, bool a_haveTangents = true, bool a_haveNormals = true);
 
-size_t CalcVSGFSize(int numVert, int numInd);
+size_t CalcVSGFSize(size_t numVert, size_t numInd);
 
 void _hrDebugPrintVSGF(const wchar_t* a_fileNameIn, const wchar_t* a_fileNameOut);
