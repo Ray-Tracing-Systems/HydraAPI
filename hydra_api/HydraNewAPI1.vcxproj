@@ -71,13 +71,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>../dependencies/include;$(IncludePath)</IncludePath>
-    <LibraryPath>../dependencies/lib_x64_win;$(LibraryPath)</LibraryPath>
+    <IncludePath>../dependencies/optional/nanosvg;../dependencies/optional/msdfgen/include;../dependencies/include;$(IncludePath)</IncludePath>
+    <LibraryPath>../dependencies/optional/msdfgen/lib/win_x64_debug;../dependencies/lib_x64_win;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>../dependencies/include;$(IncludePath)</IncludePath>
-    <LibraryPath>../dependencies/lib_x64_win;$(LibraryPath)</LibraryPath>
+    <IncludePath>../dependencies/optional/nanosvg;../dependencies/optional/msdfgen/include;../dependencies/include;$(IncludePath)</IncludePath>
+    <LibraryPath>../dependencies/lib_x64_win;../dependencies/optional/msdfgen/lib/win_x64_release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='2020Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -178,6 +178,7 @@
     <ClCompile Include="cube2sphere.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="HRExtensions.cpp" />
+    <ClCompile Include="HRExtensions_VectorTex.cpp" />
     <ClCompile Include="HRMeshCommon.cpp" />
     <ClCompile Include="HRTextureCommon.cpp" />
     <ClCompile Include="HR_AccumImageWin.cpp" />
