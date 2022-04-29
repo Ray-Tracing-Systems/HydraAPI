@@ -159,10 +159,10 @@
     <ClCompile Include="cmesh_processing_weld.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="cmesh_vsgf.cpp">
+    <ClCompile Include="cmesh.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="cmesh.cpp">
+    <ClCompile Include="HRExtensions_VectorTex.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
@@ -177,9 +177,6 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="HydraObjectManager.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="HydraInternalCommon.h">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="pugiconfig.hpp">
@@ -237,9 +234,6 @@
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="HydraVSGFCompress.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="cmesh_vsgf.h">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="cmesh.h">
