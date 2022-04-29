@@ -404,7 +404,7 @@ void HydraGeomData::read(const std::wstring& a_fileName)
   fin.close();
 }
 
-VSGFOffsets CalcOffsets(int numVert, int numInd, bool a_haveTangents, bool a_haveNormals)
+VSGFOffsets CalcOffsets(size_t numVert, size_t numInd, bool a_haveTangents, bool a_haveNormals)
 {
   VSGFOffsets res;
 
@@ -439,7 +439,7 @@ VSGFOffsets CalcOffsets(int numVert, int numInd, bool a_haveTangents, bool a_hav
   return res;
 }
 
-size_t CalcVSGFSize(int numVert, int numInd)
+size_t CalcVSGFSize(size_t numVert, size_t numInd)
 {
   VSGFOffsets offsets = CalcOffsets(numVert, numInd, true, true);
   return offsets.offsetMind + (numInd/3)*sizeof(int);
