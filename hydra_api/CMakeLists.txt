@@ -66,6 +66,7 @@ endif()
 
 set(HR_EXTENSIONS HRExtensions.cpp)
 
+set(VEC_TEX_EXTENSION HRExtensions_VectorTex.cpp)
 
 #list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 #find_package(FreeImage REQUIRED)
@@ -79,6 +80,12 @@ if(USE_GL)
     find_package(OpenGL REQUIRED)
     set(SOURCE_FILES ${SOURCE_FILES} ${GL_DEPENDENT})
     include_directories (${OPENGL_INCLUDE_DIR})
+endif()
+
+if(VECTOR_TEX_SUPPORT)
+	include_directories(${HYDRA_API_ROOT_DIR}/dependencies/optional/msdfgen/include)
+	include_directories(${HYDRA_API_ROOT_DIR}/dependencies/optional/nanosvg)
+    set(SOURCE_FILES ${SOURCE_FILES} ${VEC_TEX_EXTENSION})
 endif()
 
 find_package (Threads REQUIRED)
