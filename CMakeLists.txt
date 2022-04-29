@@ -8,11 +8,13 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${HYDRA_API_OUTPUT_DIRECTORY})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${HYDRA_API_OUTPUT_DIRECTORY})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${HYDRA_API_OUTPUT_DIRECTORY})
 
+set(HYDRA_API_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(ADDITIONAL_INCLUDE_DIRS
         ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/include)
 
 set(USE_GL OFF CACHE BOOL "Build OpenGL render drivers")
+set(VECTOR_TEX_SUPPORT ON CACHE BOOL "Build with vector textures support extension")
 
 if(WIN32)
   add_compile_definitions(UNICODE _UNICODE)
@@ -26,6 +28,10 @@ endif()
 add_compile_definitions(HYDRA_API_CMAKE)
 if(USE_GL)
   add_compile_definitions(USE_GL)
+endif()
+
+if(VECTOR_TEX_SUPPORT)
+  add_compile_definitions(VECTOR_TEX_SUPPORT)
 endif()
 
 add_subdirectory (utils/ies_parser)
