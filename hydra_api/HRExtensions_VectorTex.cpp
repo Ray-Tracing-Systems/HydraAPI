@@ -216,7 +216,11 @@ namespace hr_vtex
 
     nsvgRasterize(rast, a_image, 0, 0, 1, data, a_image->width, a_image->height, a_image->width * 4);
 
-    return hrTexture2DCreateFromMemory(a_image->width, a_image->height, 4, data);
+    auto ref = hrTexture2DCreateFromMemory(a_image->width, a_image->height, 4, data);
+
+    delete data;
+
+    return ref;
   }
 
   HRTextureNodeRef hrTextureVector2DCreateFromFile(const wchar_t* a_fileName, const vtexInfo* a_createInfo, pugi::xml_node* texNode)
