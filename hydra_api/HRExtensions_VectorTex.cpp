@@ -218,7 +218,7 @@ namespace hr_vtex
 
     auto ref = hrTexture2DCreateFromMemory(a_image->width, a_image->height, 4, data);
 
-    delete data;
+    delete [] data;
 
     return ref;
   }
