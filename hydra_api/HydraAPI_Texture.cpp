@@ -217,6 +217,7 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromMemory(int w, int h, int bpp, const v
 
   HRTextureNode texRes; // int w, int h, int bpp, const void* a_data
   texRes.name = outStr.str();
+  texRes.id = int32_t(g_objManager.scnData.textures.size());
   texRes.wasChanged = true;
   g_objManager.scnData.textures.push_back(texRes);
   g_objManager.scnData.m_changeList.texturesUsed.insert(texRes.id);
