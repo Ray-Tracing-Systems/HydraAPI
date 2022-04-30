@@ -25,17 +25,17 @@ namespace HRUtils
 
   static inline float myclamp(float u, float a, float b) { float r = fmax(a, u); return fmin(r, b); }
 
-  static inline int RealColorToUint32(const float real_color[4])
+  uint32_t RealColorToUint32(float R, float G, float B, float A)
   {
-    float  r = myclamp(real_color[0] * 255.0f, 0.0f, 255.0f);
-    float  g = myclamp(real_color[1] * 255.0f, 0.0f, 255.0f);
-    float  b = myclamp(real_color[2] * 255.0f, 0.0f, 255.0f);
-    float  a = myclamp(real_color[3] * 255.0f, 0.0f, 255.0f);
+    float r = myclamp(R * 255.0f, 0.0f, 255.0f);
+    float g = myclamp(G * 255.0f, 0.0f, 255.0f);
+    float b = myclamp(B * 255.0f, 0.0f, 255.0f);
+    float a = myclamp(A * 255.0f, 0.0f, 255.0f);
 
-    unsigned char red = (unsigned char)r;
-    unsigned char green = (unsigned char)g;
-    unsigned char blue = (unsigned char)b;
-    unsigned char alpha = (unsigned char)a;
+    unsigned char red   = static_cast<unsigned char>(r);
+    unsigned char green = static_cast<unsigned char>(g);
+    unsigned char blue  = static_cast<unsigned char>(b);
+    unsigned char alpha = static_cast<unsigned char>(a);
 
     return red | (green << 8) | (blue << 16) | (alpha << 24);
   }
@@ -260,8 +260,7 @@ namespace HRUtils
 
         const float4 fpix = read_imagef_sw4(uv, &data[face][0], w, h);
 
-        float rgba[4] = { fpix.x, fpix.y, fpix.z, fpix.w };
-        finalData[y * sphW + x] = RealColorToUint32(rgba);
+        finalData[y * sphW + x] = RealColorToUint32(fpix.x, fpix.y, fpix.z, fpix.w);
       }
     }
     // for test purpose use

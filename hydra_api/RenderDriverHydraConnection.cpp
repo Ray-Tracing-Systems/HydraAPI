@@ -1047,21 +1047,6 @@ void RD_HydraConnection::GetFrameBufferLineHDR(int32_t a_xBegin, int32_t a_xEnd,
 static inline float clamp(float u, float a, float b) { float r = fmax(a, u); return fmin(r, b); }
 static inline int   clamp(int u, int a, int b) { int r = (a > u) ? a : u; return (r < b) ? r : b; }
 
-static inline int RealColorToUint32(const float real_color[4])
-{
-  float  r = clamp(real_color[0] * 255.0f, 0.0f, 255.0f);
-  float  g = clamp(real_color[1] * 255.0f, 0.0f, 255.0f);
-  float  b = clamp(real_color[2] * 255.0f, 0.0f, 255.0f);
-  float  a = clamp(real_color[3] * 255.0f, 0.0f, 255.0f);
-
-  unsigned char red   = (unsigned char)r;
-  unsigned char green = (unsigned char)g;
-  unsigned char blue  = (unsigned char)b;
-  unsigned char alpha = (unsigned char)a;
-
-  return red | (green << 8) | (blue << 16) | (alpha << 24);
-}
-
 
 void RD_HydraConnection::GetFrameBufferLineLDR(int32_t a_xBegin, int32_t a_xEnd, int32_t y, int32_t* a_out)
 {
@@ -1092,12 +1077,10 @@ void RD_HydraConnection::GetFrameBufferLineLDR(int32_t a_xBegin, int32_t a_xEnd,
     for (int i = a_xBegin; i < a_xEnd; i++)  // #TODO: use sse and fast pow
     {
       const float4 color = dataHDR[i];
-      float color2[4];
-      color2[0] = powf(color.x*normConst, invGamma);
-      color2[1] = powf(color.y*normConst, invGamma);
-      color2[2] = powf(color.z*normConst, invGamma);
-      color2[3] = 1.0f;
-      a_out[i - a_xBegin] = RealColorToUint32(color2);
+      a_out[i - a_xBegin] = HRUtils::RealColorToUint32(powf(color.x * normConst, invGamma),
+                                                       powf(color.y * normConst, invGamma),
+                                                       powf(color.z * normConst, invGamma),
+                                                       1.0f);
     }
   }
   else // sse version

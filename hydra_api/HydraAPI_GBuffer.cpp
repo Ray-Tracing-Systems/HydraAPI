@@ -35,20 +35,6 @@ HAPI void hrRenderGetGBufferLine(HRRenderRef a_pRender, int32_t a_lineNumber, HR
   pDriver->GetGBufferLine(a_lineNumber, a_lineData, a_startX, a_endX, g_objManager.scnData.m_shadowCatchers);
 }
 
-static inline int RealColorToUint32(const float real_color[4])
-{
-  float  r = fminf(real_color[0] * 255.0f, 255.0f);
-  float  g = fminf(real_color[1] * 255.0f, 255.0f);
-  float  b = fminf(real_color[2] * 255.0f, 255.0f);
-  float  a = fminf(real_color[3] * 255.0f, 255.0f);
-
-  unsigned char red   = (unsigned char)r;
-  unsigned char green = (unsigned char)g;
-  unsigned char blue  = (unsigned char)b;
-  unsigned char alpha = (unsigned char)a;
-
-  return red | (green << 8) | (blue << 16) | (alpha << 24);
-}
 
 static void ExtractDepthLine(const HRGBufferPixel* a_inLine, int32_t* a_outLine, int a_width, const float dmin, const float dmax)
 {
@@ -58,13 +44,7 @@ static void ExtractDepthLine(const HRGBufferPixel* a_inLine, int32_t* a_outLine,
     if (d > 1e5f || a_inLine[x].matId < 0)
       d = 1.0f;
 
-    float depth[4];
-    depth[0] = 1.0f - d;
-    depth[1] = 1.0f - d;
-    depth[2] = 1.0f - d;
-    depth[3] = 1.0f;
-
-    a_outLine[x] = RealColorToUint32(depth);
+    a_outLine[x] = HRUtils::RealColorToUint32(1.0f - d, 1.0f - d, 1.0f - d, 1.0f);
   }
 }
 
@@ -93,13 +73,7 @@ static void ExtractDepthLineSpecial(const HRGBufferPixel* a_inLine, int32_t* a_o
   {
     const float d = a_inLine[x].depth / dmax;
 
-    float res[4];
-    res[0] = d;
-    res[1] = d;
-    res[2] = d;
-    res[3] = 1.0f;
-
-    a_outLine[x] = RealColorToUint32(res);
+    a_outLine[x] = HRUtils::RealColorToUint32(d, d, d, 1.0f);
   }
 }
 
@@ -114,7 +88,10 @@ static void ExtractNormalsLine(const HRGBufferPixel* a_inLine, int32_t* a_outLin
     norm[2] = fabs(a_inLine[x].norm[2]);
     norm[3] = 1.0f;
 
-    a_outLine[x] = RealColorToUint32(norm);
+    a_outLine[x] = RealColorToUint32(fabs(a_inLine[x].norm[0]),
+                                     fabs(a_inLine[x].norm[1]),
+                                     fabs(a_inLine[x].norm[2]),
+                                     1.0f);
   }
 }
 
@@ -122,13 +99,7 @@ static void ExtractTexCoordLine(const HRGBufferPixel* a_inLine, int32_t* a_outLi
 {
   for (int x = 0; x < a_width; x++)
   {
-    float texc[4];
-    texc[0] = a_inLine[x].texc[0];
-    texc[1] = a_inLine[x].texc[1];
-    texc[2] = 0.0f;
-    texc[3] = 1.0f;
-
-    a_outLine[x] = RealColorToUint32(texc);
+    a_outLine[x] = RealColorToUint32(a_inLine[x].texc[0], a_inLine[x].texc[1], 0.0f, 1.0f);
   }
 }
 
@@ -144,13 +115,10 @@ static void ExtractTexColorLine(const HRGBufferPixel* a_inLine, int32_t* a_outLi
     texc[2] = a_inLine[x].rgba[2];
     texc[3] = 1.0f;
 
-    const float color[4] = { powf(texc[0], invGamma),
-                             powf(texc[1], invGamma),
-                             powf(texc[2], invGamma),
-                             texc[3]
-    };
-
-    a_outLine[x] = RealColorToUint32(color);
+    a_outLine[x] = RealColorToUint32(powf(texc[0], invGamma),
+                                     powf(texc[1], invGamma),
+                                     powf(texc[2], invGamma),
+                                     texc[3]);
   }
 }
 
@@ -158,13 +126,7 @@ static void ExtractAlphaLine(const HRGBufferPixel* a_inLine, int32_t* a_outLine,
 {
   for (int x = 0; x < a_width; x++)
   {
-    float texc[4];
-    texc[0] = a_inLine[x].rgba[3];
-    texc[1] = a_inLine[x].rgba[3];
-    texc[2] = a_inLine[x].rgba[3];
-    texc[3] = 1.0f;
-
-    a_outLine[x] = RealColorToUint32(texc);
+    a_outLine[x] = RealColorToUint32(a_inLine[x].rgba[3], a_inLine[x].rgba[3], a_inLine[x].rgba[3], 1.0f);
   }
 }
 
@@ -172,13 +134,7 @@ static void ExtractShadowLine(const HRGBufferPixel* a_inLine, int32_t* a_outLine
 {
   for (int x = 0; x < a_width; x++)
   {
-    float texc[4];
-    texc[0] = a_inLine[x].shadow;
-    texc[1] = a_inLine[x].shadow;
-    texc[2] = a_inLine[x].shadow;
-    texc[3] = 1.0f;
-
-    a_outLine[x] = RealColorToUint32(texc);
+    a_outLine[x] = RealColorToUint32(a_inLine[x].shadow, a_inLine[x].shadow, a_inLine[x].shadow, 1.0f);
   }
 }
 
@@ -244,8 +200,7 @@ static void ExtractCoverage(const HRGBufferPixel* a_inLine, int32_t* a_outLine, 
   for (int x = 0; x < a_width; x++)
   {
     const float cov    = a_inLine[x].coverage;
-    const float col[4] = { cov, cov, cov, 1};
-    a_outLine[x]  = RealColorToUint32(col);
+    a_outLine[x]  = RealColorToUint32(cov, cov, cov, 1);
   }
 }
 
