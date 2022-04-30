@@ -14,7 +14,7 @@
 #include "HydraLegacyUtils.h"
 #include "xxhash.h"
 
-
+#include <filesystem>
 #include <unordered_map>
 #include <regex>
 #include <limits>       
@@ -209,17 +209,18 @@ std::string ParseProcMainRetType(const std::string& fname, const std::string& al
 void ProcessProcTexFile(const std::wstring& in_file, const std::wstring& out_file, const std::wstring& mainName, const std::wstring& a_prefix,
                         pugi::xml_node a_node)
 {
-  const std::string in_fileS  = ws2s(in_file);
-  const std::string out_fileS = ws2s(out_file);
-  const std::string fname     = ws2s(mainName);
-  const std::string prefix    = "prtex" + ws2s(a_prefix) + "_";
+  const std::filesystem::path in_path(in_file);
+  const std::filesystem::path out_path(out_file);
+  const std::string fname  = ws2s(mainName);
+  auto prefix_s            = ws2s(a_prefix);
+  const std::string prefix = "prtex" + prefix_s + "_";
 
-  std::ifstream fin(in_fileS.c_str());
-  std::ofstream fout(out_fileS.c_str());
+  std::ifstream fin(in_path);
+  std::ofstream fout(out_path);
 
   if (!fin.is_open())
   {
-    std::cout << "Can't find procedural texture: " << in_fileS.c_str() << std::endl;
+    std::cout << "Can't find procedural texture: " << in_path << std::endl;
     return;
   }
 
