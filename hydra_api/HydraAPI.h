@@ -1222,6 +1222,8 @@ namespace HRUtils
 
   void getRandomPointsOnMesh(HRMeshRef mesh_ref, float *points, uint32_t n_points, bool tri_area_weighted, uint32_t seed = 0u);
 
+  uint32_t RealColorToUint32(float R, float G, float B, float A);
+
   HRTextureNodeRef Cube2SphereLDR(HRTextureNodeRef a_cube[6]);
 
   BBox InstanceSceneIntoScene(HRSceneInstRef a_scnFrom, HRSceneInstRef a_scnTo, float a_mat[16], bool origin = true,

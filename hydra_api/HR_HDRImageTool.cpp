@@ -360,20 +360,6 @@ void InternalImageTool::SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, 
 namespace HydraRender
 {
   static inline float clamp(float u, float a, float b) { return fminf(fmaxf(a, u), b); }
-  static inline uint32_t RealColorToUint32(float x, float y, float z, float w)
-  {
-    float  r = clamp(x*255.0f, 0.0f, 255.0f);
-    float  g = clamp(y*255.0f, 0.0f, 255.0f);
-    float  b = clamp(z*255.0f, 0.0f, 255.0f);
-    float  a = clamp(w*255.0f, 0.0f, 255.0f);
-
-    unsigned char red   = (unsigned char)r;
-    unsigned char green = (unsigned char)g;
-    unsigned char blue  = (unsigned char)b;
-    unsigned char alpha = (unsigned char)a;
-
-    return red | (green << 8) | (blue << 16) | (alpha << 24);
-  }
 
   void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char *message)
   {
