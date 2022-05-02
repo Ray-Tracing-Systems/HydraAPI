@@ -12,7 +12,9 @@ extern HRObjectManager g_objManager;
 #include <filesystem>
 #include <iostream>
 #include <cassert>
+#include <cstdio>
 
+//#define   MSDFGEN_USE_SKIA
 #include "msdfgen.h"
 #include "msdfgen-ext.h"
 
@@ -21,6 +23,9 @@ extern HRObjectManager g_objManager;
 
 #define NANOSVGRAST_IMPLEMENTATION
 #include "nanosvgrast.h"
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 
 #define DEBUG_SDF_GEN
 
@@ -60,6 +65,7 @@ namespace hr_vtex
       //if (contour.winding() < 0)
       contour.reverse();
     }
+    //msdfgen::resolveShapeGeometry(outShape);
     return outShape;
   }
 
@@ -247,8 +253,10 @@ namespace hr_vtex
     nsvgRasterize(rast, a_image, 0, 0, 1, (unsigned char*)pixel_data.data(), width, height, width * sizeof(pixel_data[0]) * 4);
     auto ref = hrTexture2DCreateFromMemory(width, height, sizeof(pixel_data[0]) * 4, pixel_data.data());
 
-    /*HydraRender::SaveImageToFile(L"raster.png", width, height, (unsigned int*)pixel_data.data());
-    auto ref = hrTexture2DCreateFromFile(L"raster.png");*/
+
+    stbi_write_png("raster.png", width, height, 4, pixel_data.data(), width * 4);
+    //HydraRender::SaveImageToFile(L"raster.png", width, height, (unsigned int*)pixel_data.data());
+    //auto ref = hrTexture2DCreateFromFile(L"raster.png");
 
     return ref;
   }
@@ -284,6 +292,64 @@ namespace hr_vtex
     return pixels;
   }
 
+  const std::string VECTOR_TEX_SHADER = R"END(
+    float clamp(float x, float minVal, float maxVal)
+    {
+        return min(max(x, minVal), maxVal);
+    }
+
+    float fract(float x)
+    {
+        return x - floor(x);
+    }
+
+    float smoothstep(float edge0, float edge1, float x)
+    {
+      const float t = clamp((x - edge0) / (edge1 - edge0), 0.0f, 1.0f);
+      return t * t * (3.0f - 2.0f * t);
+    }
+
+    float median(float r, float g, float b) {
+        return max(min(r, g), min(max(r, g), b));
+    }
+
+    float mix(float x, float y, float a)
+    {
+      return x * (1.0f - a) + y * a;
+    }
+
+    float4 mix4(float4 x, float4 y, float a)
+    {
+      return make_float4(mix(x.x, y.x, a), mix(x.y, y.y, a), mix(x.z, y.z, a), mix(x.w, y.w, a));
+    }
+
+    #define SDF    0
+    #define MSDF   1
+    #define RASTER 2
+
+    float4 main(const SurfaceInfo* sHit, int mode, sampler2D sdfTexture, float2 texScale, float4 objColor, float4 bgColor)
+    {
+      const float2 texCoord = readAttr(sHit,"TexCoord0");
+      float2 texCoord_adj = texCoord;
+      texCoord_adj.x = fract(texCoord_adj.x * texScale.x);
+      texCoord_adj.y = fract(texCoord_adj.y * texScale.y);
+  
+      const float4 texColor = texture2D(sdfTexture, texCoord_adj, TEX_CLAMP_U | TEX_CLAMP_V);
+      if(mode == SDF || mode == MSDF)
+      {
+	    const float distance = median(texColor.x, texColor.y, texColor.z);
+	    const float smoothing = 1.0f/64.0f;
+	    float alpha = smoothstep(0.5f - smoothing, 0.5f + smoothing, distance);  
+	
+	    return mix4(bgColor, objColor, alpha);
+      }
+      else if(mode == RASTER)
+      {
+	    return mix4(bgColor, texColor, texColor.w);
+      }
+    }
+    )END";
+
   HRTextureNodeRef hrTextureVector2DCreateFromFile(const wchar_t* a_fileName, const vtexInfo* a_createInfo, pugi::xml_node* texNode)
   {
     /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -315,46 +381,62 @@ namespace hr_vtex
       return ref;
     }
 
+    HRTextureNodeRef texSDF;
     if (a_createInfo->mode == VTEX_MODE::VTEX_RASTERIZE)
     {
-      return rasterizeSVG(image);
+      texSDF = rasterizeSVG(image);
     }
-
-    auto sdfData = generateSDFs(image, *a_createInfo);
-    mergeSDFs(image, *a_createInfo, sdfData);
-
-    // @TODO: combined and texture array variants
-    HRTextureNodeRef texSDF;
-    if (a_createInfo->mode == VTEX_MODE::VTEX_SDF)
+    else
     {
-      const auto& sdf = msdfgen::BitmapRef<float, 1>(std::get<0>(sdfData.combinedSDF));
-#ifdef DEBUG_SDF_GEN
-      auto debug_save_path = std::string(DEBUG_SDF_GEN_DIR) + std::string("sdf.png");
-      msdfgen::savePng(sdf, debug_save_path.c_str());
-#endif
-      const auto pixel_data = convertSDFData(sdf);
-      texSDF = hrTexture2DCreateFromMemory(sdf.width, sdf.height, sizeof(pixel_data[0]), pixel_data.data());
-    }
-    else if (a_createInfo->mode == VTEX_MODE::VTEX_MSDF)
-    {
-      const auto& sdf = msdfgen::BitmapRef<float, 3>(std::get<1>(sdfData.combinedSDF));
-#ifdef DEBUG_SDF_GEN
-      auto debug_save_path = std::string(DEBUG_SDF_GEN_DIR) + std::string("msdf.png");
-      msdfgen::savePng(sdf, debug_save_path.c_str());
-#endif
-      const auto pixel_data = convertSDFData(sdf);
-      texSDF = hrTexture2DCreateFromMemory(sdf.width, sdf.height, sizeof(pixel_data[0]), pixel_data.data());  
-    }
+      auto sdfData = generateSDFs(image, *a_createInfo);
+      mergeSDFs(image, *a_createInfo, sdfData);
 
+      // @TODO: combined and texture array variants
+      if (a_createInfo->mode == VTEX_MODE::VTEX_SDF)
+      {
+        const auto& sdf = msdfgen::BitmapRef<float, 1>(std::get<0>(sdfData.combinedSDF));
+#ifdef DEBUG_SDF_GEN
+        auto debug_save_path = std::string(DEBUG_SDF_GEN_DIR) + std::string("sdf.png");
+        msdfgen::savePng(sdf, debug_save_path.c_str());
+#endif
+        const auto pixel_data = convertSDFData(sdf);
+        texSDF = hrTexture2DCreateFromMemory(sdf.width, sdf.height, sizeof(pixel_data[0]), pixel_data.data());
+      }
+      else if (a_createInfo->mode == VTEX_MODE::VTEX_MSDF)
+      {
+        const auto& sdf = msdfgen::BitmapRef<float, 3>(std::get<1>(sdfData.combinedSDF));
+#ifdef DEBUG_SDF_GEN
+        auto debug_save_path = std::string(DEBUG_SDF_GEN_DIR) + std::string("msdf.png");
+        msdfgen::savePng(sdf, debug_save_path.c_str());
+#endif
+        const auto pixel_data = convertSDFData(sdf);
+        texSDF = hrTexture2DCreateFromMemory(sdf.width, sdf.height, sizeof(pixel_data[0]), pixel_data.data());
+      }
+
+    }
     // @TODO: store shaders in a string and create temp file
-    std::filesystem::path sdf_shader_path;
-    if(a_createInfo->mode == VTEX_MODE::VTEX_SDF)
-      sdf_shader_path = "E:/repos/hydra/HydraAPI/hydra_api/data/sdf_texture.c";
-    else if (a_createInfo->mode == VTEX_MODE::VTEX_MSDF)
-      sdf_shader_path = "E:/repos/hydra/HydraAPI/hydra_api/data/msdf_texture.c";
-
+    
+    std::string tmp_shader_name = std::tmpnam(nullptr);
+    std::filesystem::path sdf_shader_path = std::filesystem::temp_directory_path().append(tmp_shader_name);
+    {
+      std::ofstream out(sdf_shader_path);
+      if (out.is_open())
+      {
+        out << VECTOR_TEX_SHADER;
+        out.close();
+      }
+      else
+      {
+        HrPrint(HR_SEVERITY_WARNING, L"hrTextureVector2DCreateFromFile. Can't create temporary shader file");
+        ref.id = 0;
+        return ref;
+      }
+     
+    }
+    //std::filesystem::path sdf_shader_path = "E:/repos/hydra/HydraAPI/hydra_api/data/vector_tex.c";
+    
     pugi::xml_node proc_tex_node;
-    HRTextureNodeRef texProc = hrTextureCreateAdvanced(L"proc", L"SDF");
+    HRTextureNodeRef texProc = hrTextureCreateAdvanced(L"proc", L"vector_tex");
     hrTextureNodeOpen(texProc, HR_WRITE_DISCARD);
     {
       proc_tex_node = hrTextureParamNode(texProc);
@@ -370,25 +452,44 @@ namespace hr_vtex
     auto p1 = texNode->append_child(L"arg");
     auto p2 = texNode->append_child(L"arg");
     auto p3 = texNode->append_child(L"arg");
+    auto p4 = texNode->append_child(L"arg");
+    auto p5 = texNode->append_child(L"arg");
 
     // @TODO: colors, texture array, etc.
-    p1.append_attribute(L"id") = 0;
-    p1.append_attribute(L"name") = L"sdfTexture";
-    p1.append_attribute(L"type") = L"sampler2D";
+    p1.append_attribute(L"id")   = 0;
+    p1.append_attribute(L"name") = L"mode";
+    p1.append_attribute(L"type") = L"int";
     p1.append_attribute(L"size") = 1;
-    p1.append_attribute(L"val")  = std::to_wstring(texSDF.id).c_str();
+    p1.append_attribute(L"val")  = static_cast<int>(a_createInfo->mode);
 
     p2.append_attribute(L"id")   = 1;
-    p2.append_attribute(L"name") = L"texScale";
-    p2.append_attribute(L"type") = L"float2";
+    p2.append_attribute(L"name") = L"sdfTexture";
+    p2.append_attribute(L"type") = L"sampler2D";
     p2.append_attribute(L"size") = 1;
-    p2.append_attribute(L"val")  = L"1 1";
+    p2.append_attribute(L"val")  = std::to_wstring(texSDF.id).c_str();
 
     p3.append_attribute(L"id")   = 2;
-    p3.append_attribute(L"name") = L"inColor";
-    p3.append_attribute(L"type") = L"float4";
+    p3.append_attribute(L"name") = L"texScale";
+    p3.append_attribute(L"type") = L"float2";
     p3.append_attribute(L"size") = 1;
-    p3.append_attribute(L"val")  = L"1 0 1 1";
+    p3.append_attribute(L"val")  = L"1 1";
+
+    p4.append_attribute(L"id")   = 3;
+    p4.append_attribute(L"name") = L"objColor";
+    p4.append_attribute(L"type") = L"float4";
+    p4.append_attribute(L"size") = 1;
+    p4.append_attribute(L"val")  = L"1 0 1 1";
+
+    std::wstringstream ws;
+    ws << a_createInfo->bgColor[0] << L" "
+       << a_createInfo->bgColor[1] << L" "
+       << a_createInfo->bgColor[2] << L" "
+       << a_createInfo->bgColor[3];
+    p5.append_attribute(L"id")   = 4;
+    p5.append_attribute(L"name") = L"bgColor";
+    p5.append_attribute(L"type") = L"float4";
+    p5.append_attribute(L"size") = 1;
+    p5.append_attribute(L"val")  = ws.str().c_str();
 
     return texProc;
   }
