@@ -304,7 +304,7 @@ void ProcessProcTexFile(const std::wstring& in_file, const std::wstring& out_fil
       if (args[i].size > 1)
       {
         genStream << "(__global " << args[i].type.c_str() << "*" << ")(stack + " << currOffset << ")";
-        currOffset += args[i].size;
+        currOffset += args[i].size * SizeOfInputTypeInWords(args[i].type);
       }
       else
       {
@@ -328,7 +328,7 @@ void ProcessProcTexFile(const std::wstring& in_file, const std::wstring& out_fil
           genStream << "make_float2(stack[" << currOffset + 0 << "], " << "stack[" << currOffset + 1 << "]" << ")";
           currOffset += 2;
         }
-        else if (args[i].type == "int" || args[i].type == "sampler2D")
+        else if (args[i].type == "int" || args[i].type == "sampler2D" || args[i].type == "unsigned")
         {
           genStream << "as_int(stack[" << currOffset << "])";
           currOffset++;

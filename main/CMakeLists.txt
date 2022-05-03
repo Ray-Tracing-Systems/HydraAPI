@@ -14,7 +14,6 @@ set(SOURCE_FILES
         ../utils/mesh_utils.h
         ../utils/mesh_utils.cpp init_gl.cpp)
 
-set(HYDRA_API_ROOT_DIR      ${CMAKE_SOURCE_DIR}/../HydraAPI CACHE PATH "Path to HydraAPI") #
 set(HYDRA_API_SRC_DIR       ${HYDRA_API_ROOT_DIR}/hydra_api)
 set(HYDRA_API_LIB_DIR       ${HYDRA_API_ROOT_DIR}/bin)
 set(HYDRA_API_UTILS_SRC_DIR ${HYDRA_API_ROOT_DIR}/utils)
@@ -35,6 +34,22 @@ else()
 endif()
 
 
+if(VECTOR_TEX_SUPPORT)
+	include_directories(${HYDRA_API_ROOT_DIR}/dependencies/optional/msdfgen/include)
+	include_directories(${HYDRA_API_ROOT_DIR}/dependencies/optional/nanosvg)
+	
+	if(WIN32)
+		set(MSDF_LIB_DIR_DEBUG   ${HYDRA_API_ROOT_DIR}/dependencies/optional/msdfgen/lib/win_x64_debug)
+		set(MSDF_LIB_DIR_RELEASE ${HYDRA_API_ROOT_DIR}/dependencies/optional/msdfgen/lib/win_x64_release)
+	else()
+		set(MSDF_LIB_DIR_DEBUG   ${HYDRA_API_ROOT_DIR}/dependencies/optional/msdfgen/lib/linux_x64_debug)
+		set(MSDF_LIB_DIR_RELEASE ${HYDRA_API_ROOT_DIR}/dependencies/optional/msdfgen/lib/linux_x64_release)
+	endif()
+	
+	find_library(MSDF_LIB_DEBUG   NAMES msdfgen REQUIRED HINTS ${MSDF_LIB_DIR_DEBUG})
+	find_library(MSDF_LIB_RELEASE NAMES msdfgen REQUIRED HINTS ${MSDF_LIB_DIR_RELEASE})
+endif()
+
 add_executable(main ${SOURCE_FILES})
 include_directories(${HYDRA_API_SRC_DIR} ${HYDRA_API_UTILS_SRC_DIR})
 
@@ -44,6 +59,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1 -mavx")
 add_dependencies(main hydra_api corto ies_parser mikktspace)
 target_link_libraries(main LINK_PUBLIC hydra_api corto ies_parser mikktspace freeimage)
 
+if(VECTOR_TEX_SUPPORT)
+	target_link_libraries(main LINK_PUBLIC debug     ${MSDF_LIB_DEBUG})  
+	target_link_libraries(main LINK_PUBLIC optimized ${MSDF_LIB_RELEASE})  
+endif()
+
 if(WIN32)
   add_dependencies(main clew)
   add_definitions(-DUNICODE -D_UNICODE)
@@ -51,6 +71,7 @@ if(WIN32)
   if(USE_GL)
     target_link_libraries(main LINK_PUBLIC ${OPENGL_gl_LIBRARY} glfw3dll)
   endif()
+  
   target_link_libraries(main LINK_PUBLIC clew)
 
 else()
@@ -66,7 +87,7 @@ else()
   endif()
 
   if(USE_GL)
-    target_link_libraries(main LINK_PUBLIC ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY} ${GLFW_LIBRARIES} glfw)
+    target_link_libraries(main LINK_PUBLIC ${OPENGL_gl_LIBRARY} ${GLFW_LIBRARIES} glfw)
   endif()
 
   target_link_libraries(main LINK_PUBLIC Threads::Threads rt dl OpenCL::OpenCL )
