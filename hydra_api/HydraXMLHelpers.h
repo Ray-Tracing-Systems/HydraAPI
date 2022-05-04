@@ -353,5 +353,19 @@ namespace HydraXMLHelpers
 
   std::vector<std::vector<int> > ReadRemapLists(pugi::xml_node a_node);
 
- 
+  pugi::xml_node procTexFloat4Arg        (pugi::xml_node& parent, uint32_t id, const std::wstring& argName, const LiteMath::float4& val);
+  pugi::xml_node procTexFloat4Arg        (pugi::xml_node& parent, uint32_t id, const std::wstring& argName, const float val[4]);
+  pugi::xml_node procTexFloat3Arg        (pugi::xml_node& parent, uint32_t id, const std::wstring& argName, const LiteMath::float3& val);
+  pugi::xml_node procTexFloat3Arg        (pugi::xml_node& parent, uint32_t id, const std::wstring& argName, const float val[3]);
+  pugi::xml_node procTexFloat2Arg        (pugi::xml_node& parent, uint32_t id, const std::wstring& argName, const LiteMath::float2& val);
+  pugi::xml_node procTexFloat2Arg        (pugi::xml_node& parent, uint32_t id, const std::wstring& argName, const float val[2]);
+  pugi::xml_node procTexSampler2DArg     (pugi::xml_node& parent, uint32_t id, const std::wstring& argName, HRTextureNodeRef tex);
+  pugi::xml_node procTexSampler2DArrArg  (pugi::xml_node& parent, uint32_t id, const std::wstring& argName, HRTextureNodeRef* texs, uint32_t numTexs);
+  pugi::xml_node procTexIntArg           (pugi::xml_node& parent, uint32_t id, const std::wstring& argName, const int32_t val);
+  pugi::xml_node procTexIntArrArg        (pugi::xml_node& parent, uint32_t id, const std::wstring& argName, const int32_t* vals, uint32_t numVals);
+  pugi::xml_node procTexUintArg          (pugi::xml_node& parent, uint32_t id, const std::wstring& argName, const uint32_t val);
+  pugi::xml_node procTexUintArrArg       (pugi::xml_node& parent, uint32_t id, const std::wstring& argName, const uint32_t* vals, uint32_t numVals);
+  pugi::xml_node procTexFloatArg         (pugi::xml_node& parent, uint32_t id, const std::wstring& argName, const float val);
+  pugi::xml_node procTexFloatArrArg      (pugi::xml_node& parent, uint32_t id, const std::wstring& argName, const float* vals, uint32_t numVals);
+
 };
