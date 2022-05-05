@@ -28,10 +28,10 @@ extern HRObjectManager g_objManager;
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
-#define DEBUG_SDF_GEN
+//#define DEBUG_SDF_GEN
 
 #ifdef DEBUG_SDF_GEN
-#define DEBUG_SDF_GEN_DIR "E:/repos/hydra/HydraAPI-tests/tests_images/test_ext_vtex_1/"
+#define DEBUG_SDF_GEN_DIR "tests_images/test_ext_vtex_1/"
 #endif
 
 namespace hr_vtex
@@ -82,6 +82,15 @@ namespace hr_vtex
         return make_float4(r, g, b, a);
       }
 
+      float2 applyTexMatrix(const float2 texCoords, const float matrix[6])
+      {
+        float2 result = texCoords;
+        result.x = result.x * matrix[0] + result.y * matrix[1] + matrix[2];
+        result.y = result.x * matrix[3] + result.y * matrix[4] + matrix[5];
+        
+        return result;
+      }
+
       float4 addOutline(const float distance, const float smoothing_factor, const float4 outlineColor, const float4 objColor)
       {
         float4 baseColor = objColor;
@@ -111,11 +120,8 @@ namespace hr_vtex
   static const std::string SINGLE_TEX_BODY_PART1 = R"END(
       {
         const float2 texCoord = readAttr(sHit,"TexCoord0");
-        float2 texCoord_adj = texCoord;
-        texCoord_adj.x = fract(texCoord_adj.x * texScale.x);
-        texCoord_adj.y = fract(texCoord_adj.y * texScale.y);
-        const float4 outlineColor = make_float4(0.0f, 0.0f, 0.0f, 1.0f);
-        const float4 texColor = texture2D(sdfTexture, texCoord_adj, TEX_CLAMP_U | TEX_CLAMP_V);
+        float2 texCoord_adj = applyTexMatrix(texCoord, texMatrix);
+        const float4 texColor = texture2D(sdfTexture, texCoord_adj, texFlags); 
         if(mode == SDF || mode == MSDF)
         {
 	        const float4 objColor = colorFromUint(objColorU);
@@ -136,13 +142,13 @@ namespace hr_vtex
   std::string makeSingleTexMainDeclaration(bool addOutlineSupport)
   {
     std::stringstream ss;
-    ss << "float4 main(const SurfaceInfo* sHit, int mode, sampler2D sdfTexture, unsigned objColorU, ";
+    ss << "float4 main(const SurfaceInfo* sHit, int mode, float texMatrix[6], int texFlags, float4 bgColor, sampler2D sdfTexture, unsigned objColorU";
     if (addOutlineSupport)
     {
-      ss << "unsigned outlineColor, ";
+      ss << ", unsigned outlineColor";
     }
 
-    ss << " float4 bgColor, float2 texScale)";
+    ss << ")";
 
     return ss.str();
   }
@@ -168,15 +174,12 @@ namespace hr_vtex
   static const std::string MULTI_TEX_BODY_PART1 = R"END(
       {
         const float2 texCoord = readAttr(sHit,"TexCoord0");
-        float2 texCoord_adj = texCoord;
-        texCoord_adj.x = fract(texCoord_adj.x * texScale.x);
-        texCoord_adj.y = fract(texCoord_adj.y * texScale.y);
-        const float4 outlineColor = make_float4(0.0f, 0.0f, 0.0f, 1.0f);
+        float2 texCoord_adj = applyTexMatrix(texCoord, texMatrix);
 	      float4 resColor = bgColor;
 	      for(int i = 0; i < numTextures; i += 1)
 	      {
 	        const float4 objColor = colorFromUint(objColors[i]);
-	        const float4 texColor = texture2D(sdfTexture[i], texCoord_adj, TEX_CLAMP_U | TEX_CLAMP_V);
+	        const float4 texColor = texture2D(sdfTexture[i], texCoord_adj, texFlags); 
 	        const float distance  = (mode == MSDF) ? median(texColor.x, texColor.y, texColor.z) : texColor.x;
 	        const float alpha     = smoothstep(DIST_THRESHOLD - SMOOTHING_CONST, DIST_THRESHOLD + SMOOTHING_CONST, distance); 
       )END";
@@ -191,7 +194,7 @@ namespace hr_vtex
   std::string makeMultiTexMainDeclaration(bool addOutlineSupport, uint32_t numTextures)
   {
     std::stringstream ss;
-    ss << "float4 main(const SurfaceInfo * sHit, int mode, sampler2D sdfTexture[" << numTextures << "], "
+    ss << "float4 main(const SurfaceInfo * sHit, int mode, float texMatrix[6], int texFlags, float4 bgColor, sampler2D sdfTexture[" << numTextures << "], "
       << "unsigned objColors[" << numTextures << "], ";
     if (addOutlineSupport)
     {
@@ -199,7 +202,7 @@ namespace hr_vtex
          << "unsigned hasOutline[" << numTextures << "], ";
     }
 
-    ss << " int numTextures, float4 bgColor, float2 texScale)";
+    ss << " int numTextures)";
 
     return ss.str();
   }
@@ -293,7 +296,7 @@ namespace hr_vtex
   }
 
 
-  SDFData generateSDFs(const NSVGimage *a_image, const vtexInfo& a_settings)
+  SDFData generateSDFs(const NSVGimage *a_image, const VectorTexCreateInfo& a_settings)
   {
     // sdf generator settings for high quality
     const msdfgen::ErrorCorrectionConfig errCorr(msdfgen::ErrorCorrectionConfig::EDGE_PRIORITY,  //EDGE_ONLY
@@ -379,7 +382,7 @@ namespace hr_vtex
     return result;
   }
 
-  void mergeSDFs(const NSVGimage* a_image, const vtexInfo& a_settings, SDFData& a_sdfData)
+  void mergeSDFs(const NSVGimage* a_image, const VectorTexCreateInfo& a_settings, SDFData& a_sdfData)
   {
     assert(a_sdfData.sdfs.size() == a_sdfData.bounds.size());
 
@@ -507,7 +510,7 @@ namespace hr_vtex
   }
 
 
-  HRTextureNodeRef hrTextureVector2DCreateFromFile(const wchar_t* a_fileName, const vtexInfo* a_createInfo, pugi::xml_node* texNode)
+  HRTextureNodeRef hrTextureVector2DCreateFromFile(const wchar_t* a_fileName, const VectorTexCreateInfo* a_createInfo, pugi::xml_node* texNode)
   {
     {
       auto p = g_objManager.scnData.m_textureCache.find(a_fileName);
@@ -599,7 +602,7 @@ namespace hr_vtex
       std::ofstream out(sdf_shader_path);
       if (out.is_open())
       {
-        out << makeVecTexShader(a_createInfo->drawOutline, texSDFs.size(), 1.0f / 128.0f, 1.0f / 256.0f);
+        out << makeVecTexShader(a_createInfo->drawOutline, texSDFs.size(), a_createInfo->distThreshold, a_createInfo->smoothFac);
         out.close();
       }
       else
@@ -625,38 +628,43 @@ namespace hr_vtex
 
     *texNode = proc_tex_node.append_child(L"temp_args");
 
+    float textureMatrix[6] = { a_createInfo->textureMatrix[0], a_createInfo->textureMatrix[1], a_createInfo->textureMatrix[2],
+                           a_createInfo->textureMatrix[3], a_createInfo->textureMatrix[4], a_createInfo->textureMatrix[5] };
+
+    if (a_createInfo->mode == VTEX_MODE::VTEX_RASTERIZE) //flip Y coordinate
+      textureMatrix[4] *= -1.0f;
+
     int argIdx = 0;
-    HydraXMLHelpers::procTexIntArg(*texNode, argIdx++, L"mode", static_cast<int>(a_createInfo->mode));
+    HydraXMLHelpers::procTexIntArg     (*texNode, argIdx++, L"mode", static_cast<int>(a_createInfo->mode));
+    HydraXMLHelpers::procTexFloatArrArg(*texNode, argIdx++, L"texMatrix", textureMatrix, 6);
+    HydraXMLHelpers::procTexIntArg     (*texNode, argIdx++, L"texFlags", a_createInfo->textureFlags);
+    HydraXMLHelpers::procTexFloat4Arg  (*texNode, argIdx++, L"bgColor", a_createInfo->bgColor);
+
     if (a_createInfo->sdfCombine || a_createInfo->mode == VTEX_MODE::VTEX_RASTERIZE)
     {
+      uint32_t shapeColor = HRUtils::RealColorToUint32(a_createInfo->overrideShapeColor[0], a_createInfo->overrideShapeColor[1],
+                                                       a_createInfo->overrideShapeColor[2], a_createInfo->overrideShapeColor[3]);
       HydraXMLHelpers::procTexSampler2DArg(*texNode, argIdx++, L"sdfTexture", texSDFs[0]);
-      HydraXMLHelpers::procTexUintArg     (*texNode, argIdx++, L"objColorU",  sdfData.flat_colors[0]);
-      HydraXMLHelpers::procTexFloat4Arg   (*texNode, argIdx++, L"bgColor",    a_createInfo->bgColor);
+      HydraXMLHelpers::procTexUintArg     (*texNode, argIdx++, L"objColorU", shapeColor);
 
-      if(a_createInfo->drawOutline)
-        HydraXMLHelpers::procTexUintArg(*texNode, argIdx++, L"outlineColor", sdfData.stroke_colors[0]);
-      
-      LiteMath::float2 scale(1.0f, 1.0f);
-      if (a_createInfo->mode == VTEX_MODE::VTEX_RASTERIZE)
-        scale = LiteMath::float2(1.0f, -1.0f);
-
-      HydraXMLHelpers::procTexFloat2Arg(*texNode, argIdx++, L"texScale", scale);
+      if (a_createInfo->drawOutline)
+      {
+        uint32_t strokeColor = HRUtils::RealColorToUint32(a_createInfo->overrideOutlineColor[0], a_createInfo->overrideOutlineColor[1],
+                                                          a_createInfo->overrideOutlineColor[2], a_createInfo->overrideOutlineColor[3]);
+        HydraXMLHelpers::procTexUintArg(*texNode, argIdx++, L"outlineColor", strokeColor);
+      }
     }
     else
     {
       assert(sdfData.flat_colors.size() == texSDFs.size());
-      HydraXMLHelpers::procTexSampler2DArrArg(*texNode, argIdx++, L"sdfTexture",    texSDFs.data(), texSDFs.size());
-      HydraXMLHelpers::procTexUintArrArg     (*texNode, argIdx++, L"objColors",     sdfData.flat_colors.data(), texSDFs.size());
+      HydraXMLHelpers::procTexSampler2DArrArg(*texNode, argIdx++, L"sdfTexture", texSDFs.data(), texSDFs.size());
+      HydraXMLHelpers::procTexUintArrArg     (*texNode, argIdx++, L"objColors",  sdfData.flat_colors.data(), texSDFs.size());
       if (a_createInfo->drawOutline)
       {
         HydraXMLHelpers::procTexUintArrArg(*texNode, argIdx++, L"outlineColors", sdfData.stroke_colors.data(), texSDFs.size());
-        HydraXMLHelpers::procTexUintArrArg(*texNode, argIdx++, L"hasOutline", sdfData.has_outline.data(), texSDFs.size());
+        HydraXMLHelpers::procTexUintArrArg(*texNode, argIdx++, L"hasOutline",    sdfData.has_outline.data(), texSDFs.size());
       }
-      HydraXMLHelpers::procTexIntArg         (*texNode, argIdx++, L"numTextures",   texSDFs.size());
-      HydraXMLHelpers::procTexFloat4Arg      (*texNode, argIdx++, L"bgColor",       a_createInfo->bgColor);
-
-      LiteMath::float2 scale(1.0f, 1.0f);
-      HydraXMLHelpers::procTexFloat2Arg(*texNode, argIdx++, L"texScale", scale);
+      HydraXMLHelpers::procTexIntArg         (*texNode, argIdx++, L"numTextures", texSDFs.size());
     }
 
     return texProc;

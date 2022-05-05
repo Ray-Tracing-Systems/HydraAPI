@@ -240,6 +240,28 @@ namespace HydraXMLHelpers
     return arg;
   }
 
+  void moveChildNodes(pugi::xml_node& source, pugi::xml_node& destination)
+  {
+    auto& child = source.first_child();
+    while (child)
+    {
+      auto next = child.next_sibling();
+      destination.append_move(child);
+      child = next;
+    }
+  }
+
+  void copyChildNodes(pugi::xml_node& source, pugi::xml_node& destination)
+  {
+    auto& child = source.first_child();
+    while (child)
+    {
+      auto next = child.next_sibling();
+      destination.append_copy(child);
+      child = next;
+    }
+  }
+
   std::vector<std::pair<std::string, int> > GetMaterialNameToIdMap()
   {
     std::vector<std::pair<std::string, int> > my_map;

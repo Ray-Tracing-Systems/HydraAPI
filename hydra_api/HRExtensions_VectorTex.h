@@ -11,22 +11,50 @@ namespace hr_vtex
 
   enum class VTEX_MODE
   {
-    VTEX_SDF,
-    VTEX_MSDF,
-    VTEX_RASTERIZE
+    VTEX_SDF,       // ordinary sdf
+    VTEX_MSDF,      // multi-channel sdf (overall, better quality)
+    VTEX_RASTERIZE  // rasterize vector texture
   };
 
-  struct vtexInfo
+  enum TextureFlags
   {
-    float     bgColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    VTEX_MODE mode        = VTEX_MODE::VTEX_MSDF;
-    uint32_t  dpi         = 128;   // dots per inch - affects output resolution
-    bool      sdfCombine  = false; // combine all separate shapes sdfs into one texture or create a texture array
-    float     sdfAngThres = 3.0f;  // maximum angle (in radians) to be considered a corner when generating MSDF
-    bool      drawOutline = true;
+    TEX_WRAP    = 0,
+    TEX_CLAMP_U = 4,
+    TEX_CLAMP_V = 8
+  };
+
+  struct VectorTexCreateInfo
+  {
+    float     bgColor[4]    = { 1.0f, 1.0f, 1.0f, 1.0f };  // background color 
+    VTEX_MODE mode          = VTEX_MODE::VTEX_MSDF; 
+    uint32_t  dpi           = 128;   // dots per inch - affects output resolution
+    float     sdfAngThres   = 3.0f;  // maximum angle (in radians) to be considered a corner when generating MSDF
+
+   
+    // Background color transitions into shape color through a zone, determined by the next two parameters in the following way:
+    //            [distThreshold - smoothFac, distThreshold + smoothFac] 
+    // Making the transition zone too narrow by reducing these parameters too much will produce aliasing effects.
+    // These parameters should be changed mostly in the case of drawing outlines. 
+    // Outline (or "stroke") throughout it's width will have distance changing from 0.0 (background) to 1.0 (shape).
+    // Thus, the transition zone will "eat up" outline making rendered figure shrink in size, compared to SVG original.
+    // So, if the correct size of a shape is important, these values will need to be reduced. 
+    // To somewhat compensate aliasing produced in this case, dpi can be increased.
+    float     smoothFac     = 1.0f / 64.0f;  
+    float     distThreshold = 0.1f;  
+    bool      drawOutline   = true;  // draw outlines for shapes that have them (have "stroke fill" defined in SVG)
+                                     // only solid outlines are supported   
+
+    bool      sdfCombine = false; // combine all separate shapes sdfs into one texture or create a texture array
+    // if sdfCombine == true, the following two values will be used to override shape and outline colors:
+    float     overrideShapeColor[4]   = { 1.0f, 1.0f, 0.0f, 1.0f };
+    float     overrideOutlineColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+    float     textureMatrix[6] = { 1.0f, 0.0f, 0.0f, // 2-by-3 row-major matrix for transforming texture coordinates
+                                   0.0f, 1.0f, 0.0f };
+    int       textureFlags     = TEX_WRAP;
   };
 
   static constexpr float defaultSDFRange = 4.0f;
 
-  HAPI HRTextureNodeRef hrTextureVector2DCreateFromFile(const wchar_t* a_fileName, const vtexInfo* a_createInfo, pugi::xml_node* texNode);
+  HAPI HRTextureNodeRef hrTextureVector2DCreateFromFile(const wchar_t* a_fileName, const VectorTexCreateInfo* a_createInfo, pugi::xml_node* texNode);
 }
