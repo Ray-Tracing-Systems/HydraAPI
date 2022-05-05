@@ -85,6 +85,12 @@ endif()
 if(VECTOR_TEX_SUPPORT)
 	include_directories(${HYDRA_API_ROOT_DIR}/dependencies/optional/msdfgen/include)
 	include_directories(${HYDRA_API_ROOT_DIR}/dependencies/optional/nanosvg)
+	include_directories(${HYDRA_API_ROOT_DIR}/dependencies/optional/skia/headers)
+	include_directories(${HYDRA_API_ROOT_DIR}/dependencies/optional/skia/headers/include)
+	include_directories(${HYDRA_API_ROOT_DIR}/dependencies/optional/skia/headers/modules)
+	include_directories(${HYDRA_API_ROOT_DIR}/dependencies/optional/skia/headers/src)
+	include_directories(${HYDRA_API_ROOT_DIR}/dependencies/optional/skia/headers/third_party)
+	
     set(SOURCE_FILES ${SOURCE_FILES} ${VEC_TEX_EXTENSION})
 endif()
 

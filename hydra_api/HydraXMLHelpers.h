@@ -368,4 +368,7 @@ namespace HydraXMLHelpers
   pugi::xml_node procTexFloatArg         (pugi::xml_node& parent, uint32_t id, const std::wstring& argName, const float val);
   pugi::xml_node procTexFloatArrArg      (pugi::xml_node& parent, uint32_t id, const std::wstring& argName, const float* vals, uint32_t numVals);
 
+
+  void moveChildNodes(pugi::xml_node& source, pugi::xml_node& destination);
+  void copyChildNodes(pugi::xml_node& source, pugi::xml_node& destination);
 };
