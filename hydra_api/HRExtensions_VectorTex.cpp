@@ -14,6 +14,7 @@ extern HRObjectManager g_objManager;
 #include <iostream>
 #include <cassert>
 #include <cstdio>
+#include <cmath>
 
 #define  MSDFGEN_USE_SKIA
 #include "msdfgen.h"
@@ -305,8 +306,8 @@ namespace hr_vtex
     const msdfgen::GeneratorConfig       sdfConf(true);
     const msdfgen::Projection            proj(1.0f, 0.0f);
 
-    const auto width  = static_cast<uint32_t>(std::ceilf(a_image->width));
-    const auto height = static_cast<uint32_t>(std::ceilf(a_image->height));
+    const auto width  = static_cast<uint32_t>(std::ceil(a_image->width));
+    const auto height = static_cast<uint32_t>(std::ceil(a_image->height));
 
     SDFData result;
     int i = 0;
@@ -342,10 +343,10 @@ namespace hr_vtex
         msdfgen::Bitmap<float, 3> msdf(width, height);
         msdfgen::generateMSDF(msdf, shape, proj, sdfRange, msdfConf);
 
-        auto bottom = static_cast<int>(height - std::floorf(b.t));
-        auto top    = static_cast<int>(height - std::fmaxf(0.0f, std::floorf(b.b)));
-        auto left   = static_cast<int>(std::fmaxf(0.0f, std::floorf(b.l)));
-        auto right  = static_cast<int>(std::floorf(b.r));
+        auto bottom = static_cast<int>(height - std::floor(b.t));
+        auto top    = static_cast<int>(height - std::fmaxf(0.0f, std::floor(b.b)));
+        auto left   = static_cast<int>(std::fmaxf(0.0f, std::floor(b.l)));
+        auto right  = static_cast<int>(std::floor(b.r));
 
        /* msdfgen::Bitmap<float, 3> msdf_clean(width, height);
         for (size_t y = bottom; y < top; ++y)
@@ -386,8 +387,8 @@ namespace hr_vtex
   {
     assert(a_sdfData.sdfs.size() == a_sdfData.bounds.size());
 
-    const auto width = static_cast<uint32_t>(std::ceilf(a_image->width));
-    const auto height = static_cast<uint32_t>(std::ceilf(a_image->height));
+    const auto width = static_cast<uint32_t>(std::ceil(a_image->width));
+    const auto height = static_cast<uint32_t>(std::ceil(a_image->height));
 
     if (a_settings.mode == VTEX_MODE::VTEX_SDF)
     {
@@ -420,10 +421,10 @@ namespace hr_vtex
     {
       const auto& b = a_sdfData.bounds[idx];
 
-      auto bottom = static_cast<int>(height - std::floorf(b.t));
-      auto top    = static_cast<int>(height - std::fmaxf(0.0f, std::floorf(b.b)));
-      auto left   = static_cast<int>(std::fmaxf(0.0f, std::floorf(b.l)));
-      auto right  = static_cast<int>(std::floorf(b.r));
+      auto bottom = static_cast<int>(height - std::floor(b.t));
+      auto top    = static_cast<int>(height - std::fmaxf(0.0f, std::floor(b.b)));
+      auto left   = static_cast<int>(std::fmaxf(0.0f, std::floor(b.l)));
+      auto right  = static_cast<int>(std::floor(b.r));
 
       for (size_t y = bottom; y < top; ++y)
       {
@@ -446,8 +447,8 @@ namespace hr_vtex
 
   HRTextureNodeRef rasterizeSVG(NSVGimage* a_image)
   {
-    const auto width  = static_cast<uint32_t>(std::ceilf(a_image->width));
-    const auto height = static_cast<uint32_t>(std::ceilf(a_image->height));
+    const auto width  = static_cast<uint32_t>(std::ceil(a_image->width));
+    const auto height = static_cast<uint32_t>(std::ceil(a_image->height));
 
     struct NSVGrasterizer* rast = nsvgCreateRasterizer();
     std::vector<unsigned char> pixel_data(width * height * 4, 0);
