@@ -242,7 +242,7 @@ namespace HydraXMLHelpers
 
   void moveChildNodes(pugi::xml_node& source, pugi::xml_node& destination)
   {
-    auto& child = source.first_child();
+    auto child = source.first_child();
     while (child)
     {
       auto next = child.next_sibling();
@@ -253,7 +253,7 @@ namespace HydraXMLHelpers
 
   void copyChildNodes(pugi::xml_node& source, pugi::xml_node& destination)
   {
-    auto& child = source.first_child();
+    auto child = source.first_child();
     while (child)
     {
       auto next = child.next_sibling();

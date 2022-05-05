@@ -47,15 +47,23 @@ if(VECTOR_TEX_SUPPORT)
 		set(MSDF_LIB_DIR_DEBUG   ${HYDRA_API_ROOT_DIR}/dependencies/optional/msdfgen/lib/win_x64_debug)
 		set(MSDF_LIB_DIR_RELEASE ${HYDRA_API_ROOT_DIR}/dependencies/optional/msdfgen/lib/win_x64_release)
 		set(SKIA_LIB_DIR         ${HYDRA_API_ROOT_DIR}/dependencies/optional/skia/win_x64)
+
+        find_library(MSDF_LIB_DEBUG   NAMES msdfgen REQUIRED HINTS ${MSDF_LIB_DIR_DEBUG})
+        find_library(MSDF_LIB_RELEASE NAMES msdfgen REQUIRED HINTS ${MSDF_LIB_DIR_RELEASE})
 	else()
 		set(MSDF_LIB_DIR_DEBUG   ${HYDRA_API_ROOT_DIR}/dependencies/optional/msdfgen/lib/linux_x64_debug)
 		set(MSDF_LIB_DIR_RELEASE ${HYDRA_API_ROOT_DIR}/dependencies/optional/msdfgen/lib/linux_x64_release)
 		set(SKIA_LIB_DIR         ${HYDRA_API_ROOT_DIR}/dependencies/optional/skia/linux_x64)
+
+        find_library(MSDF_LIB_CORE_DEBUG   NAMES msdfgen-core REQUIRED HINTS ${MSDF_LIB_DIR_DEBUG})
+        find_library(MSDF_LIB_EXT_DEBUG    NAMES msdfgen-ext  REQUIRED HINTS ${MSDF_LIB_DIR_DEBUG})
+        find_library(MSDF_LIB_CORE_RELEASE NAMES msdfgen-core REQUIRED HINTS ${MSDF_LIB_DIR_RELEASE})
+        find_library(MSDF_LIB_EXT_RELEASE  NAMES msdfgen-ext  REQUIRED HINTS ${MSDF_LIB_DIR_RELEASE})
+        set(MSDF_LIB_DEBUG   ${MSDF_LIB_CORE_DEBUG}   ${MSDF_LIB_EXT_DEBUG})
+        set(MSDF_LIB_RELEASE ${MSDF_LIB_CORE_RELEASE} ${MSDF_LIB_EXT_RELEASE})
 	endif()
-	
-	find_library(MSDF_LIB_DEBUG   NAMES msdfgen REQUIRED HINTS ${MSDF_LIB_DIR_DEBUG})
-	find_library(MSDF_LIB_RELEASE NAMES msdfgen REQUIRED HINTS ${MSDF_LIB_DIR_RELEASE})
-	find_library(SKIA_LIB         NAMES skia.dll skia REQUIRED HINTS ${SKIA_LIB_DIR})
+
+	find_library(SKIA_LIB NAMES skia.dll skia REQUIRED HINTS ${SKIA_LIB_DIR})
 endif()
 
 add_executable(main ${SOURCE_FILES})
