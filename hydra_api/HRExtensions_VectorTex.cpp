@@ -25,8 +25,8 @@ extern HRObjectManager g_objManager;
 #define NANOSVGRAST_IMPLEMENTATION
 #include "nanosvgrast.h"
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
+//#define STB_IMAGE_WRITE_IMPLEMENTATION
+//#include "stb_image_write.h"
 
 //#define DEBUG_SDF_GEN
 
