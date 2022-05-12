@@ -65,6 +65,9 @@ SharedAccumImageLinux::~SharedAccumImageLinux()
 
 void SharedAccumImageLinux::Free()
 {
+//  if(m_mutex)
+//    Unlock();
+
   sem_close(m_mutex);
   if(m_ownThisResource)
     sem_unlink(m_mutexName.c_str());
@@ -108,7 +111,6 @@ bool SharedAccumImageLinux::Create(int a_width, int a_height, int a_depth, const
       if (pHeader->width == a_width && pHeader->height == a_height && pHeader->depth == a_depth && m_shmemName == a_name)
         return true;
     }
-
 
     m_shmemName = a_name;
     m_mutexName = std::string(a_name) + "_mutex";
@@ -283,7 +285,6 @@ bool SharedAccumImageLinux::Lock(int a_miliseconds)
     perror("clock_gettime(SharedAccumImageLinux::Lock)");
     return false;
   }
-
   long seconds      = a_miliseconds / 1000;
   long milliseconds = a_miliseconds % 1000;
 
@@ -307,7 +308,9 @@ bool SharedAccumImageLinux::Lock(int a_miliseconds)
     return false;
   }
   else
+  {
     return true;
+  }
 
   /*sem_wait(m_mutex);
   perror("sem_wait");*/

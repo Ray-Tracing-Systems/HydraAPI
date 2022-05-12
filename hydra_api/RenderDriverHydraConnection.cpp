@@ -652,7 +652,7 @@ void RD_HydraConnection::CreateAndClearSharedImage()
 {
   ////////////////////////////////////////////////////////////////////////////////////////////
 
-  const std::string hydraImageName = NewSharedImageName();
+  std::string hydraImageName = m_lastSharedImageName;
   const std::vector<int> devList   = GetCurrDeviceList();
 
   const bool needGBuffer = m_needGbuff;
@@ -660,19 +660,27 @@ void RD_HydraConnection::CreateAndClearSharedImage()
 
   ////////////////////////////////////////////////////////////////////////////////////////////
 
-  if (m_pSharedImage == nullptr)
-    m_pSharedImage = CreateImageAccum();
-  else
-    m_pSharedImage->Clear();
+  if (m_pSharedImage != nullptr) // if image exists check if it can be reused
+  {
+    auto *pHeader = m_pSharedImage->Header();
+    if (pHeader->width == m_width && pHeader->height == m_height && pHeader->depth == layersNum)
+    {
+      m_pSharedImage->Clear();
+    }
+    else
+    {
+      delete m_pSharedImage;
+      m_pSharedImage = nullptr;
+    }
+  }
 
   if (m_pSharedImage == nullptr)
   {
-    //#TODO: call error callback or do some thing like that
-    return;
+    m_pSharedImage = CreateImageAccum();
+    hydraImageName = NewSharedImageName();
   }
 
   char err[256];
-  
   const bool shmemImageIsOk = m_pSharedImage->Create(m_width, m_height, layersNum, hydraImageName.c_str(), err); // #TODO: change this and pass via cmd line
   
   if (!shmemImageIsOk)
@@ -903,7 +911,7 @@ HRRenderUpdateInfo RD_HydraConnection::HaveUpdateNow(int a_maxRaysPerPixel)
   if (m_pConnection != nullptr && !m_pConnection->hasConnection())
   { 
     result.finalUpdate = true;
-	this->ExecuteCommand(L"exitnow", nullptr);
+	  this->ExecuteCommand(L"exitnow", nullptr);
   }  
 
   return result;
