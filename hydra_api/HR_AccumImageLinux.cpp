@@ -52,7 +52,7 @@ private:
   bool m_ownThisResource;
 };
 
-SharedAccumImageLinux::SharedAccumImageLinux() : m_buffDescriptor(0), m_mutex(nullptr), m_memory(nullptr), m_msgSend(nullptr), m_msgRcv(nullptr), m_images(nullptr),
+SharedAccumImageLinux::SharedAccumImageLinux() : m_buffDescriptor(-1), m_mutex(nullptr), m_memory(nullptr), m_msgSend(nullptr), m_msgRcv(nullptr), m_images(nullptr),
                                                  m_ownThisResource(false), totalSize(0)
 {
 
@@ -66,8 +66,8 @@ SharedAccumImageLinux::~SharedAccumImageLinux()
 void SharedAccumImageLinux::Free()
 {
   sem_close(m_mutex);
-  //if(m_ownThisResource)
-  sem_unlink(m_mutexName.c_str());
+  if(m_ownThisResource)
+    sem_unlink(m_mutexName.c_str());
   
   m_mutex = nullptr;
 
@@ -79,8 +79,8 @@ void SharedAccumImageLinux::Free()
     close(m_buffDescriptor);
   m_buffDescriptor = -1;
   
-  //if(m_ownThisResource)
-  shm_unlink(m_shmemName.c_str());
+  if(m_ownThisResource)
+    shm_unlink(m_shmemName.c_str());
 
   m_msgSend = nullptr;
   m_msgRcv  = nullptr;
@@ -196,6 +196,7 @@ bool SharedAccumImageLinux::Attach(const char* name, char errMsg[256])
   m_mutexName = mutexName;
   m_shmemName = std::string(name);
 
+  std::cout << "SharedAccumImageLinux::Attach: " << m_mutexName << std::endl;
   m_mutex = sem_open(m_mutexName.c_str(), 0);
   if (m_mutex == nullptr || m_mutex == SEM_FAILED)
   {
@@ -276,15 +277,33 @@ void SharedAccumImageLinux::AttachTo(char* a_memory)
 
 bool SharedAccumImageLinux::Lock(int a_miliseconds)
 {
-  timespec ts;
-  ts.tv_sec  = a_miliseconds / 1000;
-  ts.tv_nsec = a_miliseconds * 1'000'000 - ts.tv_sec * 1'000'000'000;
+  struct timespec ts;
+  if (clock_gettime(CLOCK_REALTIME, &ts) == -1)
+  {
+    perror("clock_gettime(SharedAccumImageLinux::Lock)");
+    return false;
+  }
 
-  int res = sem_timedwait(m_mutex, &ts);
+  long seconds      = a_miliseconds / 1000;
+  long milliseconds = a_miliseconds % 1000;
 
+  milliseconds = milliseconds * 1000 * 1000 + ts.tv_nsec;
+  long add = milliseconds / (1000 * 1000 * 1000);
+  ts.tv_sec += (add + seconds);
+  ts.tv_nsec = milliseconds % (1000 * 1000 * 1000);
+
+  // std::cout <<"SharedAccumImageLinux::Lock for " << ts.tv_sec << "seconds; " << ts.tv_nsec << "nanoseconds" << std::endl;
+
+  int res = 0;
+  while ((res = sem_timedwait(m_mutex, &ts)) == -1 && errno == EINTR)
+    continue;
   if(res == -1)
   {
-    perror("sem_timedwait(SharedAccumImageLinux::Lock)");
+    if (errno == ETIMEDOUT)
+      std::cout << "sem_timedwait(SharedAccumImageLinux::Lock) time out\n";
+    else
+      perror("sem_timedwait(SharedAccumImageLinux::Lock)");
+
     return false;
   }
   else
