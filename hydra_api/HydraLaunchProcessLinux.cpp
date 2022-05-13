@@ -301,7 +301,7 @@ void HydraProcessLauncher::stopAllRenderProcesses()
       if (pid <= 0)
         continue;
 
-      kill(pid, SIGTERM);
+      kill(pid, SIGUSR1);
     }
   
     m_mdProcessList.resize(0);
