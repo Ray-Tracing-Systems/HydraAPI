@@ -251,7 +251,7 @@ namespace HydraXMLHelpers
     }
   }
 
-  void copyChildNodes(pugi::xml_node& source, pugi::xml_node& destination)
+  void copyChildNodes(const pugi::xml_node& source, pugi::xml_node& destination)
   {
     auto child = source.first_child();
     while (child)

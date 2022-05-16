@@ -370,5 +370,5 @@ namespace HydraXMLHelpers
 
 
   void moveChildNodes(pugi::xml_node& source, pugi::xml_node& destination);
-  void copyChildNodes(pugi::xml_node& source, pugi::xml_node& destination);
+  void copyChildNodes(const pugi::xml_node& source, pugi::xml_node& destination);
 };
