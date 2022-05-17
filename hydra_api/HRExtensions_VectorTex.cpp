@@ -113,37 +113,55 @@ namespace hr_vtex
         return baseColor;
       }
       
-      #define SDF    0
-      #define MSDF   1
-      #define RASTER 2
+      float4 rgb_mask_from_alpha(float4 color)
+      {
+        return make_float4(color.w, color.w, color.w, color.w);
+      }
     )END";
 
+  static std::string makeDefines()
+  {
+    std::stringstream ss;
+    ss << "#define SDF " << static_cast<int>(VTEX_MODE::VTEX_SDF) << "\n";
+    ss << "#define MSDF " << static_cast<int>(VTEX_MODE::VTEX_MSDF) << "\n";
+    ss << "#define RASTER " << static_cast<int>(VTEX_MODE::VTEX_RASTERIZE) << "\n";
+    ss << "#define MASK_FLAG " << static_cast<int>(VTEX_MASK_FLAG) << "\n";
+
+    return ss.str();
+  }
+
   static const std::string SINGLE_TEX_BODY_PART1 = R"END(
-      {
         const float2 texCoord = readAttr(sHit,"TexCoord0");
         float2 texCoord_adj = applyTexMatrix(texCoord, texMatrix);
-        const float4 texColor = texture2D(sdfTexture, texCoord_adj, texFlags); 
-        if(mode == SDF || mode == MSDF)
+        const float4 texColor = texture2D(sdfTexture, texCoord_adj, texFlags);
+        if(mode & RASTER)
+        {
+          const float4 resColor = mix4(bgColor, texColor, texColor.w);
+          if(mode & MASK_FLAG)
+            return rgb_mask_from_alpha(resColor);
+          else
+	          return resColor;
+        }
+        else if(mode & SDF || mode & MSDF)
         {
 	        const float4 objColor = colorFromUint(objColorU);
-	        const float distance  = (mode == MSDF) ? median(texColor.x, texColor.y, texColor.z) : texColor.x;
+	        const float distance  = (mode & MSDF) ? median(texColor.x, texColor.y, texColor.z) : texColor.x;
 	        const float alpha     = smoothstep(DIST_THRESHOLD - SMOOTHING_CONST, DIST_THRESHOLD + SMOOTHING_CONST, distance);
     )END";
 
   static const std::string SINGLE_TEX_BODY_PART2 = R"END(
-	        return mix4(bgColor, baseColor, alpha);
+	        const float4 resColor = mix4(bgColor, baseColor, alpha);
+          if(mode & MASK_FLAG)
+            return rgb_mask_from_alpha(resColor);
+          else
+	          return resColor;
         }
-        else if(mode == RASTER)
-        {
-	        return mix4(bgColor, texColor, texColor.w);
-        }
-      }
     )END";
 
   std::string makeSingleTexMainDeclaration(bool addOutlineSupport)
   {
     std::stringstream ss;
-    ss << "float4 main(const SurfaceInfo* sHit, int mode, float texMatrix[6], int texFlags, float4 bgColor, sampler2D sdfTexture, unsigned objColorU";
+    ss << "float4 main(const SurfaceInfo* sHit, unsigned mode, float texMatrix[6], int texFlags, float4 bgColor, sampler2D sdfTexture, unsigned objColorU";
     if (addOutlineSupport)
     {
       ss << ", unsigned outlineColor";
@@ -154,10 +172,14 @@ namespace hr_vtex
     return ss.str();
   }
 
-  std::string makeSingleTexMain(bool addOutlineSupport)
+  std::string makeSingleTexMain(bool addOutlineSupport, float distance_threshold, float smoothing_const)
   {
     std::stringstream ss;
-    ss << makeSingleTexMainDeclaration(addOutlineSupport) << SINGLE_TEX_BODY_PART1;
+    ss << makeSingleTexMainDeclaration(addOutlineSupport);
+    ss << "{";
+    ss << "  const float SMOOTHING_CONST = " << smoothing_const << ";\n";
+    ss << "  const float DIST_THRESHOLD = "  << distance_threshold << ";\n";
+    ss << SINGLE_TEX_BODY_PART1;
     
     if (addOutlineSupport)
     {
@@ -168,12 +190,12 @@ namespace hr_vtex
       ss << "float4 baseColor = objColor;\n";
     }
     ss << SINGLE_TEX_BODY_PART2;
+    ss << "}";
 
     return ss.str();
   }
 
   static const std::string MULTI_TEX_BODY_PART1 = R"END(
-      {
         const float2 texCoord = readAttr(sHit,"TexCoord0");
         float2 texCoord_adj = applyTexMatrix(texCoord, texMatrix);
 	      float4 resColor = bgColor;
@@ -181,21 +203,24 @@ namespace hr_vtex
 	      {
 	        const float4 objColor = colorFromUint(objColors[i]);
 	        const float4 texColor = texture2D(sdfTexture[i], texCoord_adj, texFlags); 
-	        const float distance  = (mode == MSDF) ? median(texColor.x, texColor.y, texColor.z) : texColor.x;
+	        const float distance  = (mode & MSDF) ? median(texColor.x, texColor.y, texColor.z) : texColor.x;
 	        const float alpha     = smoothstep(DIST_THRESHOLD - SMOOTHING_CONST, DIST_THRESHOLD + SMOOTHING_CONST, distance); 
       )END";
 
   static const std::string MULTI_TEX_BODY_PART2 = R"END(
 	        resColor = mix4(resColor, baseColor, alpha);
 	      }
-	      return resColor;
-      }
+        //resColor = mix4(bgColor, resColor, resColor.w);
+        if(mode & MASK_FLAG)
+          return rgb_mask_from_alpha(resColor);
+        else
+          return resColor;
       )END";
 
   std::string makeMultiTexMainDeclaration(bool addOutlineSupport, uint32_t numTextures)
   {
     std::stringstream ss;
-    ss << "float4 main(const SurfaceInfo * sHit, int mode, float texMatrix[6], int texFlags, float4 bgColor, sampler2D sdfTexture[" << numTextures << "], "
+    ss << "float4 main(const SurfaceInfo * sHit, unsigned mode, float texMatrix[6], int texFlags, float4 bgColor, sampler2D sdfTexture[" << numTextures << "], "
       << "unsigned objColors[" << numTextures << "], ";
     if (addOutlineSupport)
     {
@@ -203,15 +228,19 @@ namespace hr_vtex
          << "unsigned hasOutline[" << numTextures << "], ";
     }
 
-    ss << " int numTextures)";
+    ss << " unsigned numTextures)";
 
     return ss.str();
   }
 
-  std::string makeMultiTexMain(bool addOutlineSupport, uint32_t numTextures)
+  std::string makeMultiTexMain(bool addOutlineSupport, uint32_t numTextures, float distance_threshold, float smoothing_const)
   {
     std::stringstream ss;
-    ss << makeMultiTexMainDeclaration(addOutlineSupport, numTextures) << MULTI_TEX_BODY_PART1;
+    ss << makeMultiTexMainDeclaration(addOutlineSupport, numTextures);
+    ss << "{";
+    ss << "  const float SMOOTHING_CONST = " << smoothing_const << ";\n";
+    ss << "  const float DIST_THRESHOLD = "  << distance_threshold << ";\n";
+    ss << MULTI_TEX_BODY_PART1;
 
     if (addOutlineSupport)
     {
@@ -223,6 +252,7 @@ namespace hr_vtex
       ss << "float4 baseColor = objColor;\n";
     }
     ss << MULTI_TEX_BODY_PART2;
+    ss << "}";
 
     return ss.str();
   }
@@ -231,17 +261,15 @@ namespace hr_vtex
   {
     std::stringstream ss;
     ss << HELPER_FUNCS;
+    ss << makeDefines();
 
-    ss << "const float SMOOTHING_CONST = " << smoothing_const << ";\n";
-    ss << "const float DIST_THRESHOLD = "  << distance_threshold << ";\n";
-    
     if (numTextures == 1)
     {
-      ss << makeSingleTexMain(addOutlineSupport);
+      ss << makeSingleTexMain(addOutlineSupport, distance_threshold, smoothing_const);
     }
     else
     {
-      ss << makeMultiTexMain(addOutlineSupport, numTextures);
+      ss << makeMultiTexMain(addOutlineSupport, numTextures, distance_threshold, smoothing_const);
     }
 
     return ss.str();
@@ -296,6 +324,15 @@ namespace hr_vtex
     }
   }
 
+  LiteMath::float4 colorFromUint(unsigned val)
+  {
+    const float a = ((val & 0xFF000000) >> 24) / 255.0f;
+    const float b = ((val & 0x00FF0000) >> 16) / 255.0f;
+    const float g = ((val & 0x0000FF00) >> 8 ) / 255.0f;
+    const float r = ((val & 0x000000FF)      ) / 255.0f;
+
+    return {r, g, b, a};
+  }
 
   SDFData generateSDFs(const NSVGimage *a_image, const VectorTexCreateInfo& a_settings)
   {
@@ -368,6 +405,9 @@ namespace hr_vtex
       }
       
       result.flat_colors.push_back(s->fill.color);
+//      const auto col = colorFromUint(result.flat_colors.back());
+//      std::cout << col.x << " " << col.y << " " << col.z << " " << col.w << std::endl;
+
       if (s->stroke.type == 0)
       {
         result.stroke_colors.push_back(s->fill.color);
@@ -510,7 +550,6 @@ namespace hr_vtex
     return pixels;
   }
 
-
   HRTextureNodeRef hrTextureVector2DCreateFromFile(const wchar_t* a_fileName, const VectorTexCreateInfo* a_createInfo, pugi::xml_node* texNode)
   {
     {
@@ -597,7 +636,7 @@ namespace hr_vtex
       }
     }
 
-    std::string tmp_shader_name = std::tmpnam(nullptr);
+    std::string           tmp_shader_name = std::tmpnam(nullptr);
     std::filesystem::path sdf_shader_path = std::filesystem::temp_directory_path().append(tmp_shader_name); 
     {
       std::ofstream out(sdf_shader_path);
@@ -615,8 +654,8 @@ namespace hr_vtex
      
     }
 
-    pugi::xml_node proc_tex_node;
     HRTextureNodeRef texProc = hrTextureCreateAdvanced(L"proc", L"vector_tex");
+    pugi::xml_node proc_tex_node;
     hrTextureNodeOpen(texProc, HR_WRITE_DISCARD);
     {
       proc_tex_node = hrTextureParamNode(texProc);
@@ -636,7 +675,10 @@ namespace hr_vtex
       textureMatrix[4] *= -1.0f;
 
     int argIdx = 0;
-    HydraXMLHelpers::procTexIntArg     (*texNode, argIdx++, L"mode", static_cast<int>(a_createInfo->mode));
+    auto mode  = static_cast<uint32_t>(a_createInfo->mode);
+    if(a_createInfo->generateMask) mode = mode | VTEX_MASK_FLAG;
+
+    HydraXMLHelpers::procTexUintArg    (*texNode, argIdx++, L"mode", mode);
     HydraXMLHelpers::procTexFloatArrArg(*texNode, argIdx++, L"texMatrix", textureMatrix, 6);
     HydraXMLHelpers::procTexIntArg     (*texNode, argIdx++, L"texFlags", a_createInfo->textureFlags);
     HydraXMLHelpers::procTexFloat4Arg  (*texNode, argIdx++, L"bgColor", a_createInfo->bgColor);
@@ -665,7 +707,7 @@ namespace hr_vtex
         HydraXMLHelpers::procTexUintArrArg(*texNode, argIdx++, L"outlineColors", sdfData.stroke_colors.data(), texSDFs.size());
         HydraXMLHelpers::procTexUintArrArg(*texNode, argIdx++, L"hasOutline",    sdfData.has_outline.data(), texSDFs.size());
       }
-      HydraXMLHelpers::procTexIntArg         (*texNode, argIdx++, L"numTextures", texSDFs.size());
+      HydraXMLHelpers::procTexUintArg     (*texNode, argIdx++, L"numTextures", texSDFs.size());
     }
 
     return texProc;

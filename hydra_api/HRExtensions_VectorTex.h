@@ -16,6 +16,8 @@ namespace hr_vtex
     VTEX_RASTERIZE  // rasterize vector texture
   };
 
+  constexpr uint32_t VTEX_MASK_FLAG = 8;
+
   enum TextureFlags
   {
     TEX_WRAP    = 0,
@@ -25,9 +27,10 @@ namespace hr_vtex
 
   struct VectorTexCreateInfo
   {
-    float     bgColor[4]    = { 1.0f, 1.0f, 1.0f, 1.0f };  // background color 
+    float     bgColor[4]    = { 1.0f, 1.0f, 1.0f, 1.0f };  // background color
+    bool      generateMask  = false; // use vector texture as mask (for example, in a blend material) -> alpha will be written to rgb
     VTEX_MODE mode          = VTEX_MODE::VTEX_MSDF; 
-    uint32_t  dpi           = 128;   // dots per inch - affects output resolution
+    float     dpi           = 128.0f;   // dots per inch - affects output resolution
     float     sdfAngThres   = 3.0f;  // maximum angle (in radians) to be considered a corner when generating MSDF
 
    
