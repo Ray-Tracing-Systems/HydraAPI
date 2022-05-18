@@ -683,7 +683,7 @@ namespace hr_vtex
     HydraXMLHelpers::procTexIntArg     (*texNode, argIdx++, L"texFlags", a_createInfo->textureFlags);
     HydraXMLHelpers::procTexFloat4Arg  (*texNode, argIdx++, L"bgColor", a_createInfo->bgColor);
 
-    if (a_createInfo->sdfCombine || a_createInfo->mode == VTEX_MODE::VTEX_RASTERIZE)
+    if (a_createInfo->sdfCombine || texSDFs.size() == 1 || a_createInfo->mode == VTEX_MODE::VTEX_RASTERIZE)
     {
       uint32_t shapeColor = HRUtils::RealColorToUint32(a_createInfo->overrideShapeColor[0], a_createInfo->overrideShapeColor[1],
                                                        a_createInfo->overrideShapeColor[2], a_createInfo->overrideShapeColor[3]);
