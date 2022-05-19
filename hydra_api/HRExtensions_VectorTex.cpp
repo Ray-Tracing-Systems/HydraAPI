@@ -562,6 +562,8 @@ namespace hr_vtex
       }
     }
 
+    size_t totalTextureMemoryUsed = 0;
+
     HRTextureNodeRef ref;
     const std::filesystem::path inputPath(a_fileName);
     if (!std::filesystem::exists(inputPath))
@@ -585,6 +587,13 @@ namespace hr_vtex
     {
       texSDFs.push_back(rasterizeSVG(image));
       sdfData.flat_colors.push_back(0); // placeholder value, not actually used
+
+      hrTextureNodeOpen(texSDFs.back(), HR_OPEN_READ_ONLY);
+      {
+        auto node = hrTextureParamNode(texSDFs.back());
+        totalTextureMemoryUsed += node.attribute(L"bytesize").as_ullong();
+      }
+      hrTextureNodeClose(texSDFs.back());
     }
     else
     {
@@ -603,6 +612,7 @@ namespace hr_vtex
 #endif
           const auto pixel_data = convertSDFData(sdf);
           texSDFs.push_back(hrTexture2DCreateFromMemory(sdf.width, sdf.height, sizeof(pixel_data[0]), pixel_data.data()));
+          totalTextureMemoryUsed += sdf.width * sdf.height * sizeof(pixel_data[0]);
         }
         else if (a_createInfo->mode == VTEX_MODE::VTEX_MSDF)
         {
@@ -613,6 +623,7 @@ namespace hr_vtex
 #endif
           const auto pixel_data = convertSDFData(sdf);
           texSDFs.push_back(hrTexture2DCreateFromMemory(sdf.width, sdf.height, sizeof(pixel_data[0]), pixel_data.data()));
+          totalTextureMemoryUsed += sdf.width * sdf.height * sizeof(pixel_data[0]);
         }
       }
       else
@@ -624,12 +635,14 @@ namespace hr_vtex
             const auto& sdf_ = msdfgen::BitmapRef<float, 1>(std::get<0>(sdf));
             const auto pixel_data = convertSDFData(sdf_);
             texSDFs.push_back(hrTexture2DCreateFromMemory(sdf_.width, sdf_.height, sizeof(pixel_data[0]), pixel_data.data()));
+            totalTextureMemoryUsed += sdf_.width * sdf_.height * sizeof(pixel_data[0]);
           }
           else if (a_createInfo->mode == VTEX_MODE::VTEX_MSDF)
           {
             const auto& sdf_ = msdfgen::BitmapRef<float, 3>(std::get<1>(sdf));
             const auto pixel_data = convertSDFData(sdf_);
             auto tex = hrTexture2DCreateFromMemory(sdf_.width, sdf_.height, sizeof(pixel_data[0]), pixel_data.data());
+            totalTextureMemoryUsed += sdf_.width * sdf_.height * sizeof(pixel_data[0]);
             texSDFs.push_back(tex);
           }
         }
@@ -654,6 +667,13 @@ namespace hr_vtex
      
     }
 
+    // add proc tex arguments to used memory amount
+    totalTextureMemoryUsed += 6 * sizeof(float) + sizeof(uint32_t) * 4 + sizeof(float) * 4 + sizeof(int32_t) * texSDFs.size() * 2;
+    if (a_createInfo->drawOutline)
+    {
+      totalTextureMemoryUsed += sizeof(int32_t) * texSDFs.size() * 2;
+    }
+
     HRTextureNodeRef texProc = hrTextureCreateAdvanced(L"proc", L"vector_tex");
     pugi::xml_node proc_tex_node;
     hrTextureNodeOpen(texProc, HR_WRITE_DISCARD);
@@ -663,13 +683,15 @@ namespace hr_vtex
       auto code_node = proc_tex_node.append_child(L"code");
       code_node.append_attribute(L"file") = sdf_shader_path.wstring().c_str();
       code_node.append_attribute(L"main") = L"main";
+
+      proc_tex_node.append_attribute(L"memory_estimate").set_value(totalTextureMemoryUsed);
     }
     hrTextureNodeClose(texProc);
 
     *texNode = proc_tex_node.append_child(L"temp_args");
 
     float textureMatrix[6] = { a_createInfo->textureMatrix[0], a_createInfo->textureMatrix[1], a_createInfo->textureMatrix[2],
-                           a_createInfo->textureMatrix[3], a_createInfo->textureMatrix[4], a_createInfo->textureMatrix[5] };
+                               a_createInfo->textureMatrix[3], a_createInfo->textureMatrix[4], a_createInfo->textureMatrix[5] };
 
     if (a_createInfo->mode == VTEX_MODE::VTEX_RASTERIZE) //flip Y coordinate
       textureMatrix[4] *= -1.0f;
