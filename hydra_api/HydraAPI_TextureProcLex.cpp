@@ -269,17 +269,18 @@ void ProcessProcTexFile(const std::wstring& in_file, const std::wstring& out_fil
 
       for (const auto& f : funNames) // rename functions
       {
-        std::regex e("\\b" + f + "\\b");
-        line2 = std::regex_replace(line2, e, prefix + f);
+        auto reg_str = "\\b" + f + "\\b";
+        std::regex e(reg_str);
+        const auto format = prefix + f;
+        line2 = std::regex_replace(line2, e, format);
       }
 
       fout << line2.c_str() << std::endl;
     }
+    fout << std::endl << std::endl;
 
     // generate function call
     //
-    fout << std::endl << std::endl;
-
     const std::string fname2 = prefix + fname;
 
     std::stringstream genStream;
@@ -352,7 +353,6 @@ void ProcessProcTexFile(const std::wstring& in_file, const std::wstring& out_fil
 
     std::wstring fnCall = s2ws(genStream.str());
     a_node.append_child(L"call").text() = fnCall.c_str();
-
   }
   catch (...)
   {
