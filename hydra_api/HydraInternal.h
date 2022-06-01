@@ -456,5 +456,15 @@ struct HydraFactoryCommon : public IHydraFactory
   std::shared_ptr<IHRMesh>        CreateOBJProxy    (const wchar_t* a_fileName) override;
 };
 
+struct HRMeshInfo2
+{
+  int32_t vertNum    = 0;
+  int32_t indicesNum = 0;
+  float   boxMin[3]  = {0.0f, 0.0f, 0.0f};
+  float   boxMax[3]  = {0.0f, 0.0f, 0.0f};
 
+  std::vector<HRBatchInfo>  batchesVec;
+  std::vector<std::string> matNamesVec;
+};
 
+HRMeshInfo2 hrMeshGetInfoVSGF2(const wchar_t* a_fileName);

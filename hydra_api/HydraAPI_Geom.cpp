@@ -1486,8 +1486,67 @@ HAPI HRMeshInfo  hrMeshGetInfo(HRMeshRef a_mesh)
       info.boxMax[i] = 0;
     }
   }
-  
- 
+  return info;
+}
+
+
+HRMeshInfo2 hrMeshGetInfoVSGF2(const wchar_t* a_fileName)
+{
+  HRMeshInfo2 info{};
+
+  std::ifstream fin;
+  hr_ifstream_open(fin, a_fileName);
+
+  if(!fin.is_open())
+  {
+    HrPrint(HR_SEVERITY_ERROR, L"hrMeshGetInfoVSGF2, can't open file: ", a_fileName);
+    return info;
+  }
+
+  std::filesystem::path fileName(a_fileName);
+  std::wstring ext = fileName.extension().wstring();
+
+  if(ext != L".vsgf2")
+  {
+    HrPrint(HR_SEVERITY_ERROR, L"hrMeshGetInfoVSGF2 supports only .vsgf2 files. Input: ", a_fileName);
+    return info;
+  }
+
+  HydraGeomData::Header header{};
+  fin.read((char*)&header, sizeof(HydraGeomData::Header));
+  info.vertNum    = header.verticesNum;
+  info.indicesNum = header.indicesNum;
+
+  HydraHeaderC h2{};
+  fin.seekg(header.fileSizeInBytes);
+  fin.read((char*)&h2, sizeof(HydraHeaderC));
+
+  info.batchesVec.resize(h2.batchListArraySize);
+  fin.read((char*)info.batchesVec.data(), info.batchesVec.size() * sizeof(HRBatchInfo));
+
+  std::string matNames;
+  matNames.resize(h2.customDataSize);
+  fin.seekg(h2.customDataOffset, std::ios_base::beg);
+  fin.read ((char*)matNames.c_str(), h2.customDataSize);
+  fin.close();
+
+  std::stringstream ss(matNames);
+  std::string segment;
+  std::vector<std::string> seglist;
+  uint32_t i = 0;
+  while(std::getline(ss, segment, ';'))
+  {
+    info.matNamesVec.push_back(segment);
+  }
+
+  info.boxMax[0] = h2.boxMax[0];
+  info.boxMax[1] = h2.boxMax[1];
+  info.boxMax[2] = h2.boxMax[2];
+
+  info.boxMin[0] = h2.boxMin[0];
+  info.boxMin[1] = h2.boxMin[1];
+  info.boxMin[2] = h2.boxMin[2];
+
   return info;
 }
 
