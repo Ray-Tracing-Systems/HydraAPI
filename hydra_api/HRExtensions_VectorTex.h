@@ -43,7 +43,7 @@ namespace hr_vtex
     // So, if the correct size of a shape is important, these values will need to be reduced. 
     // To somewhat compensate aliasing produced in this case, dpi can be increased.
     float     smoothFac     = 1.0f / 64.0f;  
-    float     distThreshold = 0.1f;  
+    float     distThreshold = 0.5f;
     bool      drawOutline   = true;  // draw outlines for shapes that have them (have "stroke fill" defined in SVG)
                                      // only solid outlines are supported   
 
