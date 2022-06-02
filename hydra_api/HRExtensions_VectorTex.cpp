@@ -343,8 +343,8 @@ namespace hr_vtex
     const msdfgen::GeneratorConfig       sdfConf(true);
     const msdfgen::Projection            proj(1.0f, 0.0f);
 
-    const auto width  = static_cast<uint32_t>(std::ceil(a_image->width));
-    const auto height = static_cast<uint32_t>(std::ceil(a_image->height));
+    const auto width  = static_cast<uint32_t>(std::ceil(a_image->width  * a_settings.resolutionScale));
+    const auto height = static_cast<uint32_t>(std::ceil(a_image->height * a_settings.resolutionScale));
 
     SDFData result;
     int i = 0;
@@ -380,10 +380,10 @@ namespace hr_vtex
         msdfgen::Bitmap<float, 3> msdf(width, height);
         msdfgen::generateMSDF(msdf, shape, proj, sdfRange, msdfConf);
 
-        auto bottom = static_cast<int>(height - std::floor(b.t));
-        auto top    = static_cast<int>(height - std::fmaxf(0.0f, std::floor(b.b)));
-        auto left   = static_cast<int>(std::fmaxf(0.0f, std::floor(b.l)));
-        auto right  = static_cast<int>(std::floor(b.r));
+//        auto bottom = static_cast<int>(height - std::floor(b.t));
+//        auto top    = static_cast<int>(height - std::fmaxf(0.0f, std::floor(b.b)));
+//        auto left   = static_cast<int>(std::fmaxf(0.0f, std::floor(b.l)));
+//        auto right  = static_cast<int>(std::floor(b.r));
 
        /* msdfgen::Bitmap<float, 3> msdf_clean(width, height);
         for (size_t y = bottom; y < top; ++y)
@@ -427,8 +427,8 @@ namespace hr_vtex
   {
     assert(a_sdfData.sdfs.size() == a_sdfData.bounds.size());
 
-    const auto width = static_cast<uint32_t>(std::ceil(a_image->width));
-    const auto height = static_cast<uint32_t>(std::ceil(a_image->height));
+    const auto width = static_cast<uint32_t>(std::ceil(a_image->width  * a_settings.resolutionScale));
+    const auto height = static_cast<uint32_t>(std::ceil(a_image->height * a_settings.resolutionScale));
 
     if (a_settings.mode == VTEX_MODE::VTEX_SDF)
     {
@@ -485,10 +485,10 @@ namespace hr_vtex
     }
   }
 
-  HRTextureNodeRef rasterizeSVG(NSVGimage* a_image)
+  HRTextureNodeRef rasterizeSVG(NSVGimage* a_image, const VectorTexCreateInfo& a_settings)
   {
-    const auto width  = static_cast<uint32_t>(std::ceil(a_image->width));
-    const auto height = static_cast<uint32_t>(std::ceil(a_image->height));
+    const auto width  = static_cast<uint32_t>(std::ceil(a_image->width  * a_settings.resolutionScale));
+    const auto height = static_cast<uint32_t>(std::ceil(a_image->height * a_settings.resolutionScale));
 
     struct NSVGrasterizer* rast = nsvgCreateRasterizer();
     std::vector<unsigned char> pixel_data(width * height * 4, 0);
@@ -573,7 +573,7 @@ namespace hr_vtex
       return ref;
     }
 
-    auto image = nsvgParseFromFile(inputPath.string().c_str(), "px", a_createInfo->dpi);
+    auto image = nsvgParseFromFile(inputPath.string().c_str(), "px", 1.0f / a_createInfo->resolutionScale);
     if (!image)
     {
       HrPrint(HR_SEVERITY_WARNING, L"hrTextureVector2DCreateFromFile can't parse SVG image: ", a_fileName);
@@ -585,7 +585,7 @@ namespace hr_vtex
     std::vector<HRTextureNodeRef> texSDFs;
     if (a_createInfo->mode == VTEX_MODE::VTEX_RASTERIZE)
     {
-      texSDFs.push_back(rasterizeSVG(image));
+      texSDFs.push_back(rasterizeSVG(image, *a_createInfo));
       sdfData.flat_colors.push_back(0); // placeholder value, not actually used
 
       hrTextureNodeOpen(texSDFs.back(), HR_OPEN_READ_ONLY);
@@ -613,6 +613,7 @@ namespace hr_vtex
           const auto pixel_data = convertSDFData(sdf);
           texSDFs.push_back(hrTexture2DCreateFromMemory(sdf.width, sdf.height, sizeof(pixel_data[0]), pixel_data.data()));
           totalTextureMemoryUsed += sdf.width * sdf.height * sizeof(pixel_data[0]);
+          std::cout << "vector tex: w = " << sdf.width << "; h = " << sdf.height << std::endl;
         }
         else if (a_createInfo->mode == VTEX_MODE::VTEX_MSDF)
         {
@@ -624,6 +625,7 @@ namespace hr_vtex
           const auto pixel_data = convertSDFData(sdf);
           texSDFs.push_back(hrTexture2DCreateFromMemory(sdf.width, sdf.height, sizeof(pixel_data[0]), pixel_data.data()));
           totalTextureMemoryUsed += sdf.width * sdf.height * sizeof(pixel_data[0]);
+          std::cout << "vector tex: w = " << sdf.width << "; h = " << sdf.height << std::endl;
         }
       }
       else
@@ -636,6 +638,7 @@ namespace hr_vtex
             const auto pixel_data = convertSDFData(sdf_);
             texSDFs.push_back(hrTexture2DCreateFromMemory(sdf_.width, sdf_.height, sizeof(pixel_data[0]), pixel_data.data()));
             totalTextureMemoryUsed += sdf_.width * sdf_.height * sizeof(pixel_data[0]);
+            std::cout << "vector tex: w = " << sdf_.width << "; h = " << sdf_.height << std::endl;
           }
           else if (a_createInfo->mode == VTEX_MODE::VTEX_MSDF)
           {
@@ -644,6 +647,7 @@ namespace hr_vtex
             auto tex = hrTexture2DCreateFromMemory(sdf_.width, sdf_.height, sizeof(pixel_data[0]), pixel_data.data());
             totalTextureMemoryUsed += sdf_.width * sdf_.height * sizeof(pixel_data[0]);
             texSDFs.push_back(tex);
+            std::cout << "vector tex: w = " << sdf_.width << "; h = " << sdf_.height << std::endl;
           }
         }
       }
@@ -731,6 +735,8 @@ namespace hr_vtex
       }
       HydraXMLHelpers::procTexUintArg     (*texNode, argIdx++, L"numTextures", texSDFs.size());
     }
+
+    nsvgDelete(image);
 
     return texProc;
   }

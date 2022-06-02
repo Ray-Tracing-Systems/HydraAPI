@@ -27,11 +27,11 @@ namespace hr_vtex
 
   struct VectorTexCreateInfo
   {
-    float     bgColor[4]    = { 1.0f, 1.0f, 1.0f, 1.0f };  // background color
-    bool      generateMask  = false; // use vector texture as mask (for example, in a blend material) -> alpha will be written to rgb
-    VTEX_MODE mode          = VTEX_MODE::VTEX_MSDF; 
-    float     dpi           = 128.0f;   // dots per inch - affects output resolution
-    float     sdfAngThres   = 3.0f;  // maximum angle (in radians) to be considered a corner when generating MSDF
+    float     bgColor[4]      = { 1.0f, 1.0f, 1.0f, 1.0f };  // background color
+    bool      generateMask    = false; // use vector texture as mask (for example, in a blend material) -> alpha will be written to rgb
+    VTEX_MODE mode            = VTEX_MODE::VTEX_MSDF;
+    float     resolutionScale = 1.0f;  // scale multiplier for images with pixel size, dpi for other sizes
+    float     sdfAngThres     = 3.0f;  // maximum angle (in radians) to be considered a corner when generating MSDF
 
    
     // Background color transitions into shape color through a zone, determined by the next two parameters in the following way:

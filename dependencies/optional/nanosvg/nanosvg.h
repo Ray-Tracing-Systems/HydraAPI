@@ -788,7 +788,7 @@ static float nsvg__convertToPixels(NSVGparser* p, NSVGcoordinate c, float orig, 
 	NSVGattrib* attr = nsvg__getAttr(p);
 	switch (c.units) {
 		case NSVG_UNITS_USER:		return c.value;
-		case NSVG_UNITS_PX:			return c.value;
+		case NSVG_UNITS_PX:			return c.value * p->dpi;
 		case NSVG_UNITS_PT:			return c.value / 72.0f * p->dpi;
 		case NSVG_UNITS_PC:			return c.value / 6.0f * p->dpi;
 		case NSVG_UNITS_MM:			return c.value / 25.4f * p->dpi;
