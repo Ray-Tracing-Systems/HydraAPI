@@ -613,7 +613,7 @@ namespace hr_vtex
           const auto pixel_data = convertSDFData(sdf);
           texSDFs.push_back(hrTexture2DCreateFromMemory(sdf.width, sdf.height, sizeof(pixel_data[0]), pixel_data.data()));
           totalTextureMemoryUsed += sdf.width * sdf.height * sizeof(pixel_data[0]);
-          std::cout << "vector tex: w = " << sdf.width << "; h = " << sdf.height << std::endl;
+//          std::cout << "vector tex: w = " << sdf.width << "; h = " << sdf.height << std::endl;
         }
         else if (a_createInfo->mode == VTEX_MODE::VTEX_MSDF)
         {
@@ -625,7 +625,7 @@ namespace hr_vtex
           const auto pixel_data = convertSDFData(sdf);
           texSDFs.push_back(hrTexture2DCreateFromMemory(sdf.width, sdf.height, sizeof(pixel_data[0]), pixel_data.data()));
           totalTextureMemoryUsed += sdf.width * sdf.height * sizeof(pixel_data[0]);
-          std::cout << "vector tex: w = " << sdf.width << "; h = " << sdf.height << std::endl;
+//          std::cout << "vector tex: w = " << sdf.width << "; h = " << sdf.height << std::endl;
         }
       }
       else
@@ -638,7 +638,7 @@ namespace hr_vtex
             const auto pixel_data = convertSDFData(sdf_);
             texSDFs.push_back(hrTexture2DCreateFromMemory(sdf_.width, sdf_.height, sizeof(pixel_data[0]), pixel_data.data()));
             totalTextureMemoryUsed += sdf_.width * sdf_.height * sizeof(pixel_data[0]);
-            std::cout << "vector tex: w = " << sdf_.width << "; h = " << sdf_.height << std::endl;
+//            std::cout << "vector tex: w = " << sdf_.width << "; h = " << sdf_.height << std::endl;
           }
           else if (a_createInfo->mode == VTEX_MODE::VTEX_MSDF)
           {
@@ -647,7 +647,7 @@ namespace hr_vtex
             auto tex = hrTexture2DCreateFromMemory(sdf_.width, sdf_.height, sizeof(pixel_data[0]), pixel_data.data());
             totalTextureMemoryUsed += sdf_.width * sdf_.height * sizeof(pixel_data[0]);
             texSDFs.push_back(tex);
-            std::cout << "vector tex: w = " << sdf_.width << "; h = " << sdf_.height << std::endl;
+//            std::cout << "vector tex: w = " << sdf_.width << "; h = " << sdf_.height << std::endl;
           }
         }
       }
