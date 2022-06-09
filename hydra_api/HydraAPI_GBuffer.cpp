@@ -403,29 +403,11 @@ bool HRUtils::hrRenderSaveDepthRaw(HRRenderRef a_pRender, const wchar_t* a_outFi
     pDriver->GetGBufferLine(y, &gbufferLine[0], 0, width, g_objManager.scnData.m_shadowCatchers);
     for (int x = 0; x < width; x++)
     {
-      const float d = gbufferLine[x].depth;
-
-      float res[4];
-      res[0] = d;
-      res[1] = d;
-      res[2] = d;
-      res[3] = 1.0f;
-
-      data[y * width + x] = d;
+      data[y * width + x] = gbufferLine[x].depth;
     }
   }
 
-  std::wstring s1(a_outFileName);
-  std::string  s2(s1.begin(), s1.end());
-  std::ofstream fout(s2.c_str(), std::ios::out | std::ios::binary);
-
-  fout.write((char*)&width, sizeof(int32_t));
-  fout.write((char*)&height, sizeof(int32_t));
-
-  fout.write((char*)data, width * height * sizeof(float));
-
-  fout.flush();
-  fout.close();
+  g_objManager.m_pImgTool->SaveMonoHDRImageToFileHDR(a_outFileName, width, height, data);
 
   return true;
 }

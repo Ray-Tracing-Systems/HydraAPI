@@ -580,6 +580,7 @@ namespace HydraRender
     void SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, const int*   a_data) override;
 
     void Save16BitMonoImageTo16BitPNG(const wchar_t* a_fileName, int w, int h, const unsigned short* a_data) override;
+    void SaveMonoHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, const float* a_data) override;
 
   private:
 
@@ -873,6 +874,35 @@ namespace HydraRender
       return;
     }
 
+    FreeImage_Unload(image);
+  }
+
+  void FreeImageTool::SaveMonoHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, const float* a_data)
+  {
+    const std::wstring fileExt = CutFileExt(a_fileName);
+    FIBITMAP* image = FreeImage_AllocateT(FIT_FLOAT, w, h);
+    auto bits = FreeImage_GetBits(image);
+
+    memcpy(bits, a_data, w * h * sizeof(float));
+
+    auto imageType = FIF_HDR;
+    if (fileExt == L".exr" || fileExt == L".EXR")
+      imageType = FIF_EXR;
+    else if (fileExt == L".tiff" || fileExt == L".TIFF")
+      imageType = FIF_TIFF;
+
+#if defined WIN32
+    if (!FreeImage_SaveU(imageType, image, a_fileName))
+#else
+    char filename_s[512];
+    wcstombs(filename_s, a_fileName, sizeof(filename_s));
+    if (!FreeImage_Save(imageType, image, filename_s))
+#endif
+    {
+      FreeImage_Unload(image);
+      HrError(L"SaveMonoHDRImageToFileHDR(): FreeImage_Save error on ", a_fileName);
+      return;
+    }
     FreeImage_Unload(image);
   }
 

@@ -152,6 +152,7 @@ struct IHRImageTool
 
  */
   virtual void Save16BitMonoImageTo16BitPNG(const wchar_t* a_fileName, int w, int h, const unsigned short* a_data) {}
+  virtual void SaveMonoHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, const float* a_data) {}
 
 private:
   IHRImageTool(const IHRImageTool& a_rhs)            = default;
