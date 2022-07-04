@@ -48,7 +48,7 @@ HRTextureNodeRef _hrTexture2DCreateFromNode(pugi::xml_node a_node)
   g_objManager.scnData.textures      [ref.id].update(a_node);
   g_objManager.scnData.m_textureCache[a_fileName2] = ref.id; // remember texture id for given file name
 
-  if (loc != L"")
+  if (!loc.empty())
     texture.pImpl = g_objManager.m_pFactory->CreateTextureInfoFromChunkFile(&texture, loc.c_str(), a_node);
 
   return ref;

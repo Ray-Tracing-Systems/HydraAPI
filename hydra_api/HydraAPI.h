@@ -338,11 +338,12 @@ HAPI HRTextureNodeRef hrTexture2DUpdateFromFile(HRTextureNodeRef currentRef, con
 \param data - pointer to image data
 \param w    - texture width; 
 \param h    - texture height; 
-\param bpp  - bytes per pixel; 
+\param bpp  - bytes per pixel;
+\param chan - channels;
 
 */
 
-HAPI HRTextureNodeRef  hrTexture2DCreateFromMemory(int w, int h, int bpp, const void* data);
+HAPI HRTextureNodeRef  hrTexture2DCreateFromMemory(int w, int h, int bpp, const void* data, int chan = 4);
 
 
 /**
@@ -353,9 +354,10 @@ HAPI HRTextureNodeRef  hrTexture2DCreateFromMemory(int w, int h, int bpp, const 
 \param w    - new texture width;
 \param h    - new texture height;
 \param bpp  - new bytes per pixel;
+\param chan - channels;
 
 */
-HAPI HRTextureNodeRef hrTexture2DUpdateFromMemory(HRTextureNodeRef currentRef, int w, int h, int bpp, const void* a_data);
+HAPI HRTextureNodeRef hrTexture2DUpdateFromMemory(HRTextureNodeRef currentRef, int w, int h, int bpp, const void* a_data, int chan = 4);
 
 
 /**

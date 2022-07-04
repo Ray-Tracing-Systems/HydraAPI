@@ -589,16 +589,18 @@ std::wstring ChunkName(const ChunkPointer& a_chunk)
 
   switch (a_chunk.type)
   {
-  case CHUNK_TYPE_UNKNOWN:   namestream << L".bin";      break;
-  case CHUNK_TYPE_ARRAY1F:   namestream << L".array1f";  break;
-  case CHUNK_TYPE_ARRAY1UI:  namestream << L".array1ui"; break;
-  case CHUNK_TYPE_ARRAY2F:   namestream << L".array2f";  break;
-  case CHUNK_TYPE_ARRAY4F:   namestream << L".array4f";  break;
-  case CHUNK_TYPE_IMAGE4UB:  namestream << L".image4ub"; break;
-  case CHUNK_TYPE_IMAGE4F:   namestream << L".image4f";  break;
-  case CHUNK_TYPE_IMAGE4HF:  namestream << L".image4hf"; break;
-  case CHUNK_TYPE_VSGF:      namestream << L".vsgf";     break;
-  default:                   namestream << L".bin";      break;
+    case CHUNK_TYPE_UNKNOWN:   namestream << L".bin";      break;
+    case CHUNK_TYPE_ARRAY1F:   namestream << L".array1f";  break;
+    case CHUNK_TYPE_ARRAY1UI:  namestream << L".array1ui"; break;
+    case CHUNK_TYPE_ARRAY2F:   namestream << L".array2f";  break;
+    case CHUNK_TYPE_ARRAY4F:   namestream << L".array4f";  break;
+    case CHUNK_TYPE_IMAGE4UB:  namestream << L".image4ub"; break;
+    case CHUNK_TYPE_IMAGE4F:   namestream << L".image4f";  break;
+    case CHUNK_TYPE_IMAGE4HF:  namestream << L".image4hf"; break;
+    case CHUNK_TYPE_VSGF:      namestream << L".vsgf";     break;
+    case CHUNK_TYPE_IMAGE1UB:  namestream << L".image1ub"; break;
+    case CHUNK_TYPE_IMAGE1F:   namestream << L".image1f";  break;
+    default:                   namestream << L".bin";      break;
   };
 
   return namestream.str();

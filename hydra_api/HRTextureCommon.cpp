@@ -25,13 +25,13 @@ size_t IHRTextureNode::DataSizeInBytes() const
   return size_t(width()*height())*size_t(bpp());
 }
 
-bool IHRTextureNode::ReadDataFromChunkTo(std::vector<int>& a_dataConteiner)
+bool IHRTextureNode::ReadDataFromChunkTo(std::vector<int>& a_dataContainer)
 {
   auto chunk = g_objManager.scnData.m_vbCache.chunk_at(chunkId());
 
   auto sizeInInts = DataSizeInBytes() / sizeof(int) + 1;
-  if (a_dataConteiner.size() < sizeInInts)
-    a_dataConteiner.resize(sizeInInts);
+  if (a_dataContainer.size() < sizeInInts)
+    a_dataContainer.resize(sizeInInts);
 
   // copy from memory
   //
@@ -40,7 +40,7 @@ bool IHRTextureNode::ReadDataFromChunkTo(std::vector<int>& a_dataConteiner)
     char* data = (char*)chunk.GetMemoryNow();
     if (data != nullptr)
     {
-      memcpy(a_dataConteiner.data(), data + sizeof(int)*2, DataSizeInBytes());
+      memcpy(a_dataContainer.data(), data + sizeof(int) * 2, DataSizeInBytes());
       return true;
     }
   }
@@ -52,8 +52,8 @@ bool IHRTextureNode::ReadDataFromChunkTo(std::vector<int>& a_dataConteiner)
   InternalImageTool chunkLoader;
 
   int w, h, bpp;
-  return chunkLoader.LoadImageFromFile(locPath.c_str(), 
-                                       w, h, bpp, a_dataConteiner);
+  return chunkLoader.LoadImageFromFile(locPath.c_str(),
+                                       w, h, bpp, a_dataContainer);
 }
 
 const void* IHRTextureNode::GetData() const
@@ -77,55 +77,69 @@ const void* IHRTextureNode::GetData() const
 
 struct BitmapLDRNode : public IHRTextureNode
 {
-  BitmapLDRNode(uint32_t w, uint32_t h, size_t a_sz, size_t a_chId) : m_width(w), m_height(h), m_sizeInBytes(a_sz), m_chunkId(a_chId) {}
+  BitmapLDRNode(uint32_t w, uint32_t h, size_t a_sz, size_t a_chId, uint32_t a_chan) : m_width(w), m_height(h),
+  m_sizeInBytes(a_sz), m_chunkId(a_chId), m_bytesPerPixel(a_chan), m_channels(a_chan) {}
 
-  uint64_t chunkId() const override { return uint64_t(m_chunkId); }
-  uint32_t width()   const override { return m_width; }
-  uint32_t height()  const override { return m_height; }
-  uint32_t bpp()     const override { return 4; }
+  uint64_t chunkId()  const override { return uint64_t(m_chunkId); }
+  uint32_t width()    const override { return m_width; }
+  uint32_t height()   const override { return m_height; }
+  uint32_t bpp()      const override { return m_bytesPerPixel; }
+  uint32_t channels() const override { return m_channels; }
 
   uint32_t m_width;
   uint32_t m_height;
   size_t   m_sizeInBytes;
   size_t   m_chunkId;
+  uint32_t m_bytesPerPixel;
+  uint32_t m_channels;
 };
 
 struct BitmapHDRNode : public IHRTextureNode
 {
-  BitmapHDRNode(uint32_t w, uint32_t h, size_t a_sz, size_t a_chId) : m_width(w), m_height(h), m_sizeInBytes(a_sz), m_chunkId(a_chId) {}
+  BitmapHDRNode(uint32_t w, uint32_t h, size_t a_sz, size_t a_chId, uint32_t a_chan) : m_width(w), m_height(h),
+  m_sizeInBytes(a_sz), m_chunkId(a_chId), m_channels(a_chan)
+  {
+    m_bytesPerPixel = m_channels * 4;
+  }
 
-  uint64_t chunkId() const override { return uint64_t(m_chunkId); }
-  uint32_t width()   const override { return m_width; }
-  uint32_t height()  const override { return m_height; }
-  uint32_t bpp()     const override { return 16; }
+  uint64_t chunkId()  const override { return uint64_t(m_chunkId); }
+  uint32_t width()    const override { return m_width; }
+  uint32_t height()   const override { return m_height; }
+  uint32_t bpp()      const override { return m_bytesPerPixel; }
+  uint32_t channels() const override { return m_channels; }
 
   uint32_t m_width;
   uint32_t m_height;
   size_t   m_sizeInBytes;
   size_t   m_chunkId;
+  uint32_t m_bytesPerPixel;
+  uint32_t m_channels;
 };
 
 struct BitmapProxy : public IHRTextureNode
 {
-  BitmapProxy(uint32_t w, uint32_t h, size_t a_sz, size_t a_chId) : m_width(w), m_height(h), m_sizeInBytes(a_sz), m_chunkId(a_chId), m_bytesPerPixel(4) {}
+  BitmapProxy(uint32_t w, uint32_t h, size_t a_sz, size_t a_chId, uint32_t a_chan) : m_width(w), m_height(h),
+  m_sizeInBytes(a_sz), m_chunkId(a_chId), m_bytesPerPixel(a_chan), m_channels(a_chan) {}
 
-  uint64_t chunkId() const override { return uint64_t(m_chunkId); }
-  uint32_t width()   const override { return m_width; }
-  uint32_t height()  const override { return m_height; }
-  uint32_t bpp()     const override { return 4; }
+  uint64_t chunkId()  const override { return uint64_t(m_chunkId); }
+  uint32_t width()    const override { return m_width; }
+  uint32_t height()   const override { return m_height; }
+  uint32_t bpp()      const override { return m_bytesPerPixel; }
+  uint32_t channels() const override { return m_channels; }
 
   uint32_t     m_width;
   uint32_t     m_height;
   size_t       m_sizeInBytes;
   size_t       m_chunkId;
-  int          m_bytesPerPixel;
+  uint32_t     m_bytesPerPixel;
+  uint32_t     m_channels;
   std::wstring fileName;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTexture2DFromMemory(HRTextureNode* pSysObj, int width, int height, int bpp, const void* a_data)
+std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTexture2DFromMemory(HRTextureNode* pSysObj, int width, int height, int bpp, int chan, const void* a_data)
 {
   const size_t textureSizeInBytes     = size_t(width)*size_t(height)*size_t(bpp);
   const size_t totalByteSizeOfTexture = textureSizeInBytes + size_t(2 * sizeof(unsigned int));
@@ -139,8 +153,16 @@ std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTexture2DFromMemory(HR
   }
 
   auto& chunk         = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
-  chunk.type          = (bpp <= 4) ? CHUNK_TYPE_IMAGE4UB : CHUNK_TYPE_IMAGE4F;
-  unsigned char* data = (unsigned char*)chunk.GetMemoryNow();
+  if(chan == 1 && bpp == 1)
+    chunk.type = CHUNK_TYPE_IMAGE1UB;
+  else if(chan == 4 && bpp <= 4)
+    chunk.type = CHUNK_TYPE_IMAGE4UB;
+  else if(chan == 1 && bpp == 4)
+    chunk.type = CHUNK_TYPE_IMAGE1F;
+  else if(chan == 4 && bpp > 4)
+    chunk.type = CHUNK_TYPE_IMAGE4F;
+
+  auto data = (unsigned char*)chunk.GetMemoryNow();
 
   if (data == nullptr)
   {
@@ -148,23 +170,23 @@ std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTexture2DFromMemory(HR
     return nullptr;
   }
 
-  unsigned int* pW = (unsigned int*)data;
+  auto pW = (unsigned int*)data;
   unsigned int* pH = pW+1;
 
   (*pW) = width;
   (*pH) = height;
 
-  data += 2*sizeof(unsigned int);
+  data += 2 * sizeof(unsigned int);
 
   memcpy(data, a_data, textureSizeInBytes);
 
-  std::shared_ptr<BitmapLDRNode> p1 = std::make_shared<BitmapLDRNode>(width, height, totalByteSizeOfTexture, chunkId);
-  std::shared_ptr<BitmapHDRNode> p2 = std::make_shared<BitmapHDRNode>(width, height, totalByteSizeOfTexture, chunkId);
+  std::shared_ptr<BitmapLDRNode> p1 = std::make_shared<BitmapLDRNode>(width, height, totalByteSizeOfTexture, chunkId, chan);
+  std::shared_ptr<BitmapHDRNode> p2 = std::make_shared<BitmapHDRNode>(width, height, totalByteSizeOfTexture, chunkId, chan);
 
   std::shared_ptr<IHRTextureNode> p11 = p1;
   std::shared_ptr<IHRTextureNode> p22 = p2;
 
-  return (bpp <= 4) ? p11 : p22;
+  return (chunk.type == CHUNK_TYPE_IMAGE1F || chunk.type == CHUNK_TYPE_IMAGE4F) ? p22 : p11;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -176,10 +198,10 @@ std::shared_ptr<IHRTextureNode> CreateTexture2D_WithImageTool(HRTextureNode* pSy
   //
   const wchar_t* filename = a_fileName.c_str();
 
-  int width, height, bpp;
-  bool loaded = g_objManager.m_pImgTool->LoadImageFromFile(filename, 
-                                                           width, height, bpp, g_objManager.m_tempBuffer);
-  
+  int width, height, bpp, chan;
+  std::vector<unsigned char> tmpBuf;
+  bool loaded = g_objManager.m_pImgTool->LoadImageFromFile(filename,width, height, bpp, chan, tmpBuf);
+
   if (!loaded)
     return nullptr;
 
@@ -189,13 +211,20 @@ std::shared_ptr<IHRTextureNode> CreateTexture2D_WithImageTool(HRTextureNode* pSy
   //
   size_t chunkId = g_objManager.scnData.m_vbCache.AllocChunk(totalByteSizeOfTexture, pSysObj->id);
   auto& chunk    = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
-  chunk.type     = (bpp <= 4) ? CHUNK_TYPE_IMAGE4UB : CHUNK_TYPE_IMAGE4F;
+  if(chan == 1 && bpp == 1)
+    chunk.type = CHUNK_TYPE_IMAGE1UB;
+  else if(chan == 4 && bpp <= 4)
+    chunk.type = CHUNK_TYPE_IMAGE4UB;
+  else if(chan == 1 && bpp == 4)
+    chunk.type = CHUNK_TYPE_IMAGE1F;
+  else if(chan == 4 && bpp > 4)
+    chunk.type = CHUNK_TYPE_IMAGE4F;
 
   //unsigned char* data = new unsigned char[size];
   char* data = (char*)chunk.GetMemoryNow();
   if (data == nullptr)
   {
-    std::shared_ptr<BitmapProxy> p = std::make_shared<BitmapProxy>(width, height, totalByteSizeOfTexture, chunkId); //#TODO: return nullptr here?
+    std::shared_ptr<BitmapProxy> p = std::make_shared<BitmapProxy>(width, height, totalByteSizeOfTexture, chunkId, chan);
     p->fileName        = a_fileName;
     p->m_bytesPerPixel = bpp;
     return p;
@@ -205,26 +234,25 @@ std::shared_ptr<IHRTextureNode> CreateTexture2D_WithImageTool(HRTextureNode* pSy
   unsigned int* pH = pW + 1;
   data += 2 * sizeof(unsigned int);
 
-  memcpy(data, g_objManager.m_tempBuffer.data(), size_t(width*height)*size_t(bpp));
+  memcpy(data, tmpBuf.data(), size_t(width * height) * size_t(bpp));
 
-  if (g_objManager.m_tempBuffer.size() > TEMP_BUFFER_MAX_SIZE_DONT_FREE)
-    g_objManager.m_tempBuffer = g_objManager.EmptyBuffer();
+  tmpBuf = {};
 
   (*pW) = width;
   (*pH) = height;
 
   // return resulting object
   //
-  std::shared_ptr<BitmapLDRNode> p1 = std::make_shared<BitmapLDRNode>(width, height, totalByteSizeOfTexture, chunkId);
-  std::shared_ptr<BitmapHDRNode> p2 = std::make_shared<BitmapHDRNode>(width, height, totalByteSizeOfTexture, chunkId);
+  std::shared_ptr<BitmapLDRNode> p1 = std::make_shared<BitmapLDRNode>(width, height, totalByteSizeOfTexture, chunkId, chan);
+  std::shared_ptr<BitmapHDRNode> p2 = std::make_shared<BitmapHDRNode>(width, height, totalByteSizeOfTexture, chunkId, chan);
 
   std::shared_ptr<IHRTextureNode> p11 = p1;
   std::shared_ptr<IHRTextureNode> p22 = p2;
 
-  return (bpp == 4) ? p11 : p22;
+  return (chunk.type == CHUNK_TYPE_IMAGE1F || chunk.type == CHUNK_TYPE_IMAGE4F) ? p22 : p11;
 }
 
-std::shared_ptr<IHRTextureNode> CreateTexture2DImage4UB(HRTextureNode* pSysObj, const std::wstring& a_fileName)
+std::shared_ptr<IHRTextureNode> CreateTexture2DImageUB(HRTextureNode* pSysObj, const std::wstring& a_fileName, int chan)
 {
   std::string m_fileName(a_fileName.begin(), a_fileName.end());
   std::ifstream fin(m_fileName.c_str(), std::ios::binary);
@@ -238,20 +266,23 @@ std::shared_ptr<IHRTextureNode> CreateTexture2DImage4UB(HRTextureNode* pSysObj, 
   fin.read((char*)&width, sizeof(unsigned int));
   fin.read((char*)&height, sizeof(unsigned int));
 
-  size_t totalByteSizeOfTexture = size_t(width)*size_t(height)*size_t(sizeof(char)*4);
+  size_t totalByteSizeOfTexture = size_t(width) * size_t(height) * size_t(sizeof(char) * chan);
   totalByteSizeOfTexture += size_t(2 * sizeof(unsigned int));
 
   size_t chunkId = g_objManager.scnData.m_vbCache.AllocChunk(totalByteSizeOfTexture, pSysObj->id);
   auto& chunk    = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
-  chunk.type     = CHUNK_TYPE_IMAGE4UB;
+  if(chan == 1)
+    chunk.type = CHUNK_TYPE_IMAGE1UB;
+  else if (chan == 4)
+    chunk.type = CHUNK_TYPE_IMAGE4UB;
+  else
+    HrError(L"[CreateTexture2DImageUB]: unsupported image channel number", chan);
 
   char* data = (char*)chunk.GetMemoryNow();
   if (data == nullptr)
   {
-
-    std::shared_ptr<BitmapProxy> p = std::make_shared<BitmapProxy>(width, height, totalByteSizeOfTexture, chunkId); //#TODO: return nullptr here?
+    std::shared_ptr<BitmapProxy> p = std::make_shared<BitmapProxy>(width, height, totalByteSizeOfTexture, chunkId, chan); //#TODO: return nullptr here?
     p->fileName        = a_fileName;
-    p->m_bytesPerPixel = 4;
     return p;
   }
 
@@ -262,18 +293,18 @@ std::shared_ptr<IHRTextureNode> CreateTexture2DImage4UB(HRTextureNode* pSysObj, 
   (*pW) = width;
   (*pH) = height;
 
-  fin.read(data, size_t(width)*size_t(height)*size_t(sizeof(char)*4));
+  fin.read(data, size_t(width) * size_t(height) * size_t(sizeof(char) * chan));
 
   fin.close();
 
-  std::shared_ptr<BitmapLDRNode> p1 = std::make_shared<BitmapLDRNode>(width, height, totalByteSizeOfTexture, chunkId);
+  std::shared_ptr<BitmapLDRNode> p1 = std::make_shared<BitmapLDRNode>(width, height, totalByteSizeOfTexture, chunkId, chan);
 
   std::shared_ptr<IHRTextureNode> p11 = p1;
 
   return p11;
 }
 
-std::shared_ptr<IHRTextureNode> CreateTexture2DImage4F(HRTextureNode* pSysObj, const std::wstring& a_fileName)
+std::shared_ptr<IHRTextureNode> CreateTexture2DImageF(HRTextureNode* pSysObj, const std::wstring& a_fileName, int chan)
 {
   std::string m_fileName(a_fileName.begin(), a_fileName.end());
   std::ifstream fin(m_fileName.c_str(), std::ios::binary);
@@ -287,20 +318,24 @@ std::shared_ptr<IHRTextureNode> CreateTexture2DImage4F(HRTextureNode* pSysObj, c
   fin.read((char*)&width, sizeof(unsigned int));
   fin.read((char*)&height, sizeof(unsigned int));
 
-  size_t totalByteSizeOfTexture = size_t(width)*size_t(height)*size_t(sizeof(float) * 4);
+  size_t totalByteSizeOfTexture = size_t(width)*size_t(height)*size_t(sizeof(float) * chan);
   totalByteSizeOfTexture += size_t(2 * sizeof(unsigned int));
 
   size_t chunkId = g_objManager.scnData.m_vbCache.AllocChunk(totalByteSizeOfTexture, pSysObj->id);
   auto& chunk    = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
-  chunk.type     = CHUNK_TYPE_IMAGE4F;
+  if(chan == 1)
+    chunk.type = CHUNK_TYPE_IMAGE1F;
+  else if (chan == 4)
+    chunk.type = CHUNK_TYPE_IMAGE4F;
+  else
+    HrError(L"[CreateTexture2DImageF]: unsupported image channel number", chan);
 
   char* data = (char*)chunk.GetMemoryNow();
   if (data == nullptr)
   {
 
-    std::shared_ptr<BitmapProxy> p = std::make_shared<BitmapProxy>(width, height, totalByteSizeOfTexture, chunkId); //#TODO: return nullptr here?
+    std::shared_ptr<BitmapProxy> p = std::make_shared<BitmapProxy>(width, height, totalByteSizeOfTexture, chunkId, chan); //#TODO: return nullptr here?
     p->fileName        = a_fileName;
-    p->m_bytesPerPixel = 16;
     return p;
   }
 
@@ -311,11 +346,11 @@ std::shared_ptr<IHRTextureNode> CreateTexture2DImage4F(HRTextureNode* pSysObj, c
   (*pW) = width;
   (*pH) = height;
 
-  fin.read(data, size_t(width)*size_t(height)*size_t(sizeof(float)*4));
+  fin.read(data, size_t(width) * size_t(height) * size_t(sizeof(float) * chan));
 
   fin.close();
 
-  std::shared_ptr<BitmapLDRNode> p1 = std::make_shared<BitmapLDRNode>(width, height, totalByteSizeOfTexture, chunkId);
+  std::shared_ptr<BitmapLDRNode> p1 = std::make_shared<BitmapLDRNode>(width, height, totalByteSizeOfTexture, chunkId, chan);
 
   std::shared_ptr<IHRTextureNode> p11 = p1;
 
@@ -326,11 +361,19 @@ std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTexture2DFromFile(HRTe
 {
   if(a_fileName.find(L".image4ub") != std::wstring::npos)
   {
-    return CreateTexture2DImage4UB(pSysObj, a_fileName);
+    return CreateTexture2DImageUB(pSysObj, a_fileName, 4);
+  }
+  if(a_fileName.find(L".image1ub") != std::wstring::npos)
+  {
+    return CreateTexture2DImageUB(pSysObj, a_fileName, 1);
   }
   else if(a_fileName.find(L".image4f") != std::wstring::npos)
   {
-    return CreateTexture2DImage4F(pSysObj, a_fileName);
+    return CreateTexture2DImageF(pSysObj, a_fileName, 4);
+  }
+  else if(a_fileName.find(L".image1f") != std::wstring::npos)
+  {
+    return CreateTexture2DImageF(pSysObj, a_fileName, 1);
   }
   else
   {
@@ -345,7 +388,7 @@ int32_t ChunkIdFromFileName(const wchar_t* a_chunkFileName)
   const std::wstring chnk_str(L"chunk_");
 
   auto posBeg = fileName.find(chnk_str);
-  auto posEnd = fileName.find_last_of(L".");
+  auto posEnd = fileName.find_last_of(L'.');
   if (posBeg == std::wstring::npos || posEnd == std::wstring::npos)
     return -1;
 
@@ -383,27 +426,35 @@ std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTextureInfoFromChunkFi
   struct BitmapInfo : public IHRTextureNode
   {
 
-    BitmapInfo() : m_chunkId(uint64_t(-1)), m_width(0), m_height(0), m_bpp(0) {}
+    BitmapInfo() : m_chunkId(uint64_t(-1)), m_width(0), m_height(0), m_bpp(0), m_channels(0) {}
 
-    uint64_t chunkId() const override { return m_chunkId; }
-    uint32_t width()   const override { return m_width;   }
-    uint32_t height()  const override { return m_height;  }
-    uint32_t bpp()     const override { return m_bpp;     }
+    uint64_t chunkId()  const override { return m_chunkId; }
+    uint32_t width()    const override { return m_width;   }
+    uint32_t height()   const override { return m_height;  }
+    uint32_t bpp()      const override { return m_bpp;     }
+    uint32_t channels() const override { return m_channels;     }
 
     uint64_t m_chunkId;
     uint32_t m_width;
     uint32_t m_height;
     uint32_t m_bpp;
+    uint32_t m_channels;
   };
 
-  std::shared_ptr<BitmapInfo> pBitMapIndo = std::make_shared<BitmapInfo>();
+  std::shared_ptr<BitmapInfo> pBitMapInfo = std::make_shared<BitmapInfo>();
 
-  pBitMapIndo->m_chunkId = ChunkIdFromFileName(a_chunkFileName);
-  pBitMapIndo->m_width   = uint32_t(wh[0]);
-  pBitMapIndo->m_height  = uint32_t(wh[1]);
-  pBitMapIndo->m_bpp     = uint32_t(bpp);
+  pBitMapInfo->m_chunkId  = ChunkIdFromFileName(a_chunkFileName);
+  pBitMapInfo->m_width    = uint32_t(wh[0]);
+  pBitMapInfo->m_height   = uint32_t(wh[1]);
+  pBitMapInfo->m_bpp      = uint32_t(bpp);
 
-  return pBitMapIndo;
+  auto ext = CutFileExt(a_chunkFileName);
+  if(ext == L".image4ub" || ext == L".image4f")
+    pBitMapInfo->m_channels = 4u;
+  else if(ext == L".image1ub" || ext == L".image1f")
+    pBitMapInfo->m_channels = 1u;
+
+  return pBitMapInfo;
 }
 
 

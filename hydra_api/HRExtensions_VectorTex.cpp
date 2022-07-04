@@ -497,10 +497,10 @@ namespace hr_vtex
     auto ref = hrTexture2DCreateFromMemory(width, height, sizeof(pixel_data[0]) * 4, pixel_data.data());
 
 
-#ifdef DEBUG_SDF_GEN
-    std::string path = std::string(DEBUG_SDF_GEN_DIR) + std::string("rasterized_texture.png");
-    stbi_write_png(path.c_str(), width, height, 4, pixel_data.data(), width * 4);
-#endif
+//#ifdef DEBUG_SDF_GEN
+//    std::string path = std::string(DEBUG_SDF_GEN_DIR) + std::string("rasterized_texture.png");
+//    stbi_write_png(path.c_str(), width, height, 4, pixel_data.data(), width * 4);
+//#endif
     
     return ref;
   }
@@ -630,6 +630,7 @@ namespace hr_vtex
       }
       else
       {
+        int i = 0;
         for (auto& sdf : sdfData.sdfs)
         {
           if (a_createInfo->mode == VTEX_MODE::VTEX_SDF)
@@ -643,12 +644,17 @@ namespace hr_vtex
           else if (a_createInfo->mode == VTEX_MODE::VTEX_MSDF)
           {
             const auto& sdf_ = msdfgen::BitmapRef<float, 3>(std::get<1>(sdf));
+#ifdef DEBUG_SDF_GEN
+            auto debug_save_path = std::string(DEBUG_SDF_GEN_DIR) + std::to_string(i) + std::string("_msdf.png");
+            msdfgen::savePng(sdf_, debug_save_path.c_str());
+#endif
             const auto pixel_data = convertSDFData(sdf_);
             auto tex = hrTexture2DCreateFromMemory(sdf_.width, sdf_.height, sizeof(pixel_data[0]), pixel_data.data());
             totalTextureMemoryUsed += sdf_.width * sdf_.height * sizeof(pixel_data[0]);
             texSDFs.push_back(tex);
 //            std::cout << "vector tex: w = " << sdf_.width << "; h = " << sdf_.height << std::endl;
           }
+          i++;
         }
       }
     }

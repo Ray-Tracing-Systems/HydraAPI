@@ -191,16 +191,17 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, int
 
 HAPI HRTextureNodeRef hrTexture2DUpdateFromFile(HRTextureNodeRef currentRef, const wchar_t* a_fileName, int w, int h, int bpp)
 {
-  int w1, h1, bpp1;
-  if (g_objManager.m_pImgTool->LoadImageFromFile(a_fileName, w1, h1, bpp1, g_objManager.m_tempBuffer))
-    return hrTexture2DUpdateFromMemory(currentRef, w1, h1, bpp1, g_objManager.m_tempBuffer.data());
+  int w1, h1, bpp1, chan1;
+  std::vector<unsigned char> tmpBuf; //@TODO: fix this
+  if (g_objManager.m_pImgTool->LoadImageFromFile(a_fileName, w1, h1, bpp1, chan1, tmpBuf))
+    return hrTexture2DUpdateFromMemory(currentRef, w1, h1, bpp1, tmpBuf.data(), chan1);
   else
     return currentRef;
 }
 
 
 
-HAPI HRTextureNodeRef hrTexture2DCreateFromMemory(int w, int h, int bpp, const void* a_data)
+HAPI HRTextureNodeRef hrTexture2DCreateFromMemory(int w, int h, int bpp, const void* a_data, int chan)
 {
   if (w == 0 || h == 0 || bpp == 0 || a_data == nullptr)
   {
@@ -226,12 +227,12 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromMemory(int w, int h, int bpp, const v
   ref.id = HR_IDType(g_objManager.scnData.textures.size() - 1);
 
   HRTextureNode& texture = g_objManager.scnData.textures[ref.id];
-  auto pTextureImpl      = g_objManager.m_pFactory->CreateTexture2DFromMemory(&texture, w, h, bpp, a_data);
+  auto pTextureImpl      = g_objManager.m_pFactory->CreateTexture2DFromMemory(&texture, w, h, bpp, chan, a_data);
   texture.pImpl          = pTextureImpl;
 
   pugi::xml_node texNodeXml = g_objManager.textures_lib_append_child();
 
-  auto byteSize = size_t(w)*size_t(h)*size_t(bpp);
+  auto byteSize = size_t(w) * size_t(h) * size_t(bpp);
 
   if (pTextureImpl != nullptr)
   {
@@ -253,6 +254,7 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromMemory(int w, int h, int bpp, const v
     texNodeXml.append_attribute(L"bytesize").set_value(bytesize.c_str());
     texNodeXml.append_attribute(L"width")  = w;
     texNodeXml.append_attribute(L"height") = h;
+    texNodeXml.append_attribute(L"channels") = chan;
     texNodeXml.append_attribute(L"dl").set_value(L"0");
 
     g_objManager.scnData.textures[ref.id].update(texNodeXml);
@@ -268,7 +270,7 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromMemory(int w, int h, int bpp, const v
 }
 
 
-HAPI HRTextureNodeRef hrTexture2DUpdateFromMemory(HRTextureNodeRef currentRef, int w, int h, int bpp, const void* a_data)
+HAPI HRTextureNodeRef hrTexture2DUpdateFromMemory(HRTextureNodeRef currentRef, int w, int h, int bpp, const void* a_data, int chan)
 {
   if (w == 0 || h == 0 || bpp == 0 || a_data == nullptr)
   {
@@ -287,7 +289,7 @@ HAPI HRTextureNodeRef hrTexture2DUpdateFromMemory(HRTextureNodeRef currentRef, i
       const void* data     = pImpl->GetData();
       const size_t texSize = pImpl->DataSizeInBytes();
 
-      if (data != nullptr && texSize == size_t(w*h)*size_t(bpp) && pImpl->width() == w && pImpl->height() == h)
+      if (data != nullptr && texSize == size_t(w * h) * size_t(bpp) && pImpl->width() == w && pImpl->height() == h)
         if (memcmp(data, a_data, texSize) == 0)
           return currentRef;
     }
@@ -302,12 +304,12 @@ HAPI HRTextureNodeRef hrTexture2DUpdateFromMemory(HRTextureNodeRef currentRef, i
 	ref.id = currentRef.id;
 
 	HRTextureNode& texture = g_objManager.scnData.textures[ref.id];
-	auto pTextureImpl      = g_objManager.m_pFactory->CreateTexture2DFromMemory(&texture, w, h, bpp, a_data);
+	auto pTextureImpl      = g_objManager.m_pFactory->CreateTexture2DFromMemory(&texture, w, h, bpp, chan, a_data);
 	texture.pImpl          = pTextureImpl;
 
 	pugi::xml_node texNodeXml = texture.xml_node();
 
-	auto byteSize = size_t(w)*size_t(h)*size_t(bpp);
+	auto byteSize = size_t(w) * size_t(h) * size_t(bpp);
 
 	ChunkPointer chunk = g_objManager.scnData.m_vbCache.chunk_at(pTextureImpl->chunkId());
 
@@ -327,6 +329,7 @@ HAPI HRTextureNodeRef hrTexture2DUpdateFromMemory(HRTextureNodeRef currentRef, i
 	texNodeXml.force_attribute(L"bytesize").set_value(bytesize.c_str());
   texNodeXml.force_attribute(L"width")  = w;
   texNodeXml.force_attribute(L"height") = h;
+  texNodeXml.force_attribute(L"channels") = chan;
   texNodeXml.force_attribute(L"dl").set_value(L"0");
 
 	g_objManager.scnData.textures[ref.id].update(texNodeXml);

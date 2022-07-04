@@ -1504,16 +1504,17 @@ void CreatePrecompProcTex(pugi::xml_document &doc, resolution_dict &dict)
 
     HRTextureNode &texture = g_objManager.scnData.textures[texIdRes.first];
 
+    int chan = 4;
     int bpp = 4;
     bool isProc = false;
     if (texture.hdrCallback != nullptr)
     {
-      bpp = sizeof(float) * 4;
+      bpp = sizeof(float) * chan;
       auto *imageData = new float[w * h * bpp / sizeof(float)];
 
       texture.hdrCallback(imageData, w, h, texture.customData);
 
-      auto pTextureImpl = g_objManager.m_pFactory->CreateTexture2DFromMemory(&texture, w, h, bpp, imageData);
+      auto pTextureImpl = g_objManager.m_pFactory->CreateTexture2DFromMemory(&texture, w, h, bpp, chan, imageData);
       texture.pImpl = pTextureImpl;
 
       delete[] imageData;
@@ -1526,7 +1527,7 @@ void CreatePrecompProcTex(pugi::xml_document &doc, resolution_dict &dict)
 
       texture.ldrCallback(imageData, w, h, texture.customData);
 
-      auto pTextureImpl = g_objManager.m_pFactory->CreateTexture2DFromMemory(&texture, w, h, bpp, imageData);
+      auto pTextureImpl = g_objManager.m_pFactory->CreateTexture2DFromMemory(&texture, w, h, bpp, chan, imageData);
       texture.pImpl = pTextureImpl;
 
       delete[] imageData;

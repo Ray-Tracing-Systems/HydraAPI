@@ -119,13 +119,14 @@ struct IHRTextureNode : public IHRObject ///< Not empty Data (reimplement DataSe
   IHRTextureNode()           = default;
   ~IHRTextureNode() override = default;
 
-  virtual uint32_t width()   const { return 0; }
-  virtual uint32_t height()  const { return 0; }
-  virtual uint32_t bpp()     const { return 0; }
+  virtual uint32_t width()    const { return 0; }
+  virtual uint32_t height()   const { return 0; }
+  virtual uint32_t bpp()      const { return 0; }
+  virtual uint32_t channels() const { return 0; }
 
   size_t      DataSizeInBytes() const override;
   const void* GetData() const override;
-  bool        ReadDataFromChunkTo(std::vector<int>& a_dataConteiner) override;
+  bool        ReadDataFromChunkTo(std::vector<int>& a_dataContainer) override;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -158,7 +159,7 @@ struct IHydraFactory
   virtual ~IHydraFactory() = default;
 
   virtual std::shared_ptr<IHRTextureNode> CreateTexture2DFromFile(HRTextureNode* pSysObj, const std::wstring& a_fileName)                               = 0;
-  virtual std::shared_ptr<IHRTextureNode> CreateTexture2DFromMemory(HRTextureNode* pSysObj, int w, int h, int bpp, const void* a_data)                  = 0;
+  virtual std::shared_ptr<IHRTextureNode> CreateTexture2DFromMemory(HRTextureNode* pSysObj, int w, int h, int bpp, int chan, const void* a_data)                  = 0;
   virtual std::shared_ptr<IHRTextureNode> CreateTextureInfoFromChunkFile(HRTextureNode* pSysObj, const wchar_t* a_chunkFileName, pugi::xml_node a_node) = 0;
 
   virtual std::shared_ptr<IHRMesh>        CreateVSGFFromSimpleInputMesh(HRMesh* pSysObj, bool a_saveCompressed)                                               = 0;
@@ -217,6 +218,8 @@ enum CHUNK_TYPE { CHUNK_TYPE_UNKNOWN  = 0,
                   CHUNK_TYPE_IMAGE4F  = 6,
                   CHUNK_TYPE_IMAGE4HF = 7,
                   CHUNK_TYPE_VSGF     = 8,
+                  CHUNK_TYPE_IMAGE1UB = 9,
+                  CHUNK_TYPE_IMAGE1F  = 10,
 };
 
 
@@ -447,7 +450,7 @@ struct HydraFactoryCommon : public IHydraFactory
   ~HydraFactoryCommon() = default;
 
   std::shared_ptr<IHRTextureNode> CreateTexture2DFromFile(HRTextureNode* pSysObj, const std::wstring& a_fileName) override;
-  std::shared_ptr<IHRTextureNode> CreateTexture2DFromMemory(HRTextureNode* pSysObj, int w, int h, int bpp, const void* a_data) override;
+  std::shared_ptr<IHRTextureNode> CreateTexture2DFromMemory(HRTextureNode* pSysObj, int w, int h, int bpp, int chan, const void* a_data) override;
   std::shared_ptr<IHRTextureNode> CreateTextureInfoFromChunkFile(HRTextureNode* pSysObj, const wchar_t* a_chunkFileName, pugi::xml_node a_node) override;
 
   std::shared_ptr<IHRMesh>        CreateVSGFFromSimpleInputMesh(HRMesh* pSysObj, bool a_saveCompressed) override;
