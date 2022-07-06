@@ -382,14 +382,14 @@ void UpdateImageFromFileOrChunk(int32_t a_id, HRTextureNode& img, IHRRenderDrive
   {
     const wchar_t* filename = node.attribute(L"path").as_string();
 
-    int width, height, bpp;
-    bool loaded = g_objManager.m_pImgTool->LoadImageFromFile(filename, 
-                                                             width, height, bpp, g_objManager.m_tempBuffer);
+    int width, height, bpp, chan;
+    std::vector<unsigned char> tmpData; // @TODO: fix later
+    bool loaded = g_objManager.m_pImgTool->LoadImageFromFile(filename, width, height, bpp, chan, tmpData);
 
     if(loaded)
-      a_pDriver->UpdateImage(a_id, width, height, bpp, (char*)g_objManager.m_tempBuffer.data(), node);
+      a_pDriver->UpdateImage(a_id, width, height, bpp, chan, tmpData.data(), node);
     else
-      a_pDriver->UpdateImage(a_id, 0, 0, 0, nullptr, node);
+      a_pDriver->UpdateImage(a_id, 0, 0, 0, 0, nullptr, node);
 
     if (g_objManager.m_tempBuffer.size() > TEMP_BUFFER_MAX_SIZE_DONT_FREE)
       g_objManager.m_tempBuffer = g_objManager.EmptyBuffer();
@@ -399,6 +399,9 @@ void UpdateImageFromFileOrChunk(int32_t a_id, HRTextureNode& img, IHRRenderDrive
     auto w           = node.attribute(L"width").as_int();
     auto h           = node.attribute(L"height").as_int();
     auto sizeInBytes = node.attribute(L"bytesize").as_llong();
+    int chan = 4;
+    if(node.attribute(L"channels"))
+      chan = node.attribute(L"channels").as_int();
 
     if(w == 0 || h == 0 || sizeInBytes == 0)
     {
@@ -425,11 +428,11 @@ void UpdateImageFromFileOrChunk(int32_t a_id, HRTextureNode& img, IHRRenderDrive
     {
       fin.read(data, sizeInBytes);
       uint64_t dataOffset = node.attribute(L"offset").as_ullong();
-      a_pDriver->UpdateImage(a_id, w, h, bpp, data + dataOffset, node);
+      a_pDriver->UpdateImage(a_id, w, h, bpp, chan, data + dataOffset, node);
       fin.close();
     }
     else
-      a_pDriver->UpdateImage(a_id, w, h, bpp, nullptr, node);
+      a_pDriver->UpdateImage(a_id, w, h, bpp, chan, nullptr, node);
   }
 
 }
@@ -463,13 +466,15 @@ int32_t HR_DriverUpdateTextures(HRSceneInst& scn, ChangeList& objList, HRRender*
     int32_t w     = 0;
     int32_t h     = 0;
     int32_t bpp   = 4;
+    int32_t chan  = 4;
     char* dataPtr = nullptr;
 
     if (texNode.pImpl != nullptr)
     {
-      w   = texNode.pImpl->width();
-      h   = texNode.pImpl->height();
-      bpp = texNode.pImpl->bpp();
+      w    = texNode.pImpl->width();
+      h    = texNode.pImpl->height();
+      bpp  = texNode.pImpl->bpp();
+      chan = texNode.pImpl->channels();
 
       uint64_t chunkId = texNode.pImpl->chunkId();
       if (chunkId != uint64_t(-1) && chunkId < g_objManager.scnData.m_vbCache.size()) // cache may be inactive, so m_vbCache.size() size may be 0
@@ -500,7 +505,7 @@ int32_t HR_DriverUpdateTextures(HRSceneInst& scn, ChangeList& objList, HRRender*
       else if(isProc)
       {
         a_pRender->m_updated.texturesUsed.insert(texId);
-        a_pDriver->UpdateImage(texId, -1, -1, 4, nullptr, texNodeXML);
+        a_pDriver->UpdateImage(texId, -1, -1, 4, 4, nullptr, texNodeXML);
       }
       else
         UpdateImageFromFileOrChunk(texId, texNode, a_pDriver);
@@ -508,7 +513,7 @@ int32_t HR_DriverUpdateTextures(HRSceneInst& scn, ChangeList& objList, HRRender*
     else
     {
       a_pRender->m_updated.texturesUsed.insert(texId);
-      a_pDriver->UpdateImage(texId, w, h, bpp, dataPtr + dataOffset, texNodeXML);
+      a_pDriver->UpdateImage(texId, w, h, bpp, chan, dataPtr + dataOffset, texNodeXML);
     }
 
     texturesUpdated++;

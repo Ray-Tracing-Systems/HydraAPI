@@ -22,7 +22,7 @@ struct RD_OGL32_Utility : IHRRenderDriver
     void ClearAll() override;
     HRDriverAllocInfo AllocAll(HRDriverAllocInfo a_info) override;
 
-    bool UpdateImage(int32_t a_texId, int32_t w, int32_t h, int32_t bpp, const void* a_data, pugi::xml_node a_texNode) override;
+    bool UpdateImage(int32_t a_texId, int32_t w, int32_t h, int32_t bpp, int32_t chan, const void* a_data, pugi::xml_node a_texNode) override;
     bool UpdateMaterial(int32_t a_matId, pugi::xml_node a_materialNode) override;
     bool UpdateLight(int32_t a_lightIdId, pugi::xml_node a_lightNode) override;
 
