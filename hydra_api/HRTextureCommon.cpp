@@ -458,7 +458,7 @@ std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTextureInfoFromChunkFi
 }
 
 
-void GetTextureFileInfo(const wchar_t* a_fileName, int32_t* pW, int32_t* pH, size_t* pByteSize)
+void GetTextureFileInfo(const wchar_t* a_fileName, int32_t* pW, int32_t* pH, size_t* pBytesPP, int32_t* pChan)
 {
   FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
 
@@ -480,7 +480,8 @@ void GetTextureFileInfo(const wchar_t* a_fileName, int32_t* pW, int32_t* pH, siz
   {
     (*pW)        = 0;
     (*pH)        = 0;
-    (*pByteSize) = 0;
+    (*pBytesPP) = 0;
+    (*pChan)     = 0;
     return;
   }
 
@@ -499,7 +500,8 @@ void GetTextureFileInfo(const wchar_t* a_fileName, int32_t* pW, int32_t* pH, siz
   {
     (*pW) = 0;
     (*pH) = 0;
-    (*pByteSize) = 0;
+    (*pBytesPP) = 0;
+    (*pChan)     = 0;
     return;
   }
 
@@ -507,21 +509,46 @@ void GetTextureFileInfo(const wchar_t* a_fileName, int32_t* pW, int32_t* pH, siz
   {
     (*pW) = 0;
     (*pH) = 0;
-    (*pByteSize) = 0;
+    (*pBytesPP) = 0;
+    (*pChan)     = 0;
     return;
   }
+
+  auto type = FreeImage_GetImageType(dib);
 
   auto width  = FreeImage_GetWidth(dib);
   auto height = FreeImage_GetHeight(dib);
   auto bpp    = FreeImage_GetBPP(dib);
-  if (bpp <= 24) 
-    bpp = 32;
-  else if (bpp < 128) 
-    bpp = 128;
+
+  if(type == FIT_FLOAT)
+  {
+    (*pChan) = 1;
+    (*pBytesPP) = 4;
+  }
+  else if(type == FIT_RGBF)
+  {
+    (*pChan) = 3;
+    (*pBytesPP) = 12;
+  }
+  else if(type == FIT_RGBAF)
+  {
+    (*pChan) = 4;
+    (*pBytesPP) = 16;
+  }
+  else if(type == FIT_BITMAP)
+  {
+    (*pChan) = 4;
+    (*pBytesPP) = 4;
+  }
+
+//    if (bpp <= 24)
+//    bpp = 32;
+//  else if (bpp < 128)
+//    bpp = 128;
 
   FreeImage_Unload(dib);
 
   (*pW)        = width;
   (*pH)        = height;
-  (*pByteSize) = bpp/8;
+//  (*pBytesPP) = bpp/8;
 }

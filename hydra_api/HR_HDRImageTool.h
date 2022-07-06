@@ -26,10 +26,10 @@ namespace HydraRender
   void SaveImageToFile      (const std::wstring& a_fileName, const HydraRender::HDRImage4f& image, float a_gamma = 2.2f);
 
 
-  void LoadImageFromFile(const std::string& a_fileName, std::vector<float>& data, int& w, int& h);
+  void LoadImageFromFile(const std::string& a_fileName, std::vector<float>& data, int& w, int& h, int& chan);
   void LoadImageFromFile(const std::string& a_fileName, HydraRender::HDRImage4f& image);
 
-  void LoadImageFromFile(const std::wstring& a_fileName, std::vector<float>& data, int& w, int& h);
+  void LoadImageFromFile(const std::wstring& a_fileName, std::vector<float>& data, int& w, int& h, int& chan);
   void LoadImageFromFile(const std::wstring& a_fileName, HydraRender::HDRImage4f& image);
 
   bool LoadLDRImageFromFile(const char* a_fileName,

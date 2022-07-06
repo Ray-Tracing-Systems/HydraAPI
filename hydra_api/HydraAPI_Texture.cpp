@@ -59,6 +59,7 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFile(const wchar_t* a_fileName, int w
 
   ChunkPointer chunk(&g_objManager.scnData.m_vbCache);
 
+  int chan = 4;
   if (pTextureImpl != nullptr)
   {
     auto chunkId = pTextureImpl->chunkId();
@@ -67,6 +68,7 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFile(const wchar_t* a_fileName, int w
     w   = pTextureImpl->width();
     h   = pTextureImpl->height();
     bpp = pTextureImpl->bpp();
+    chan = pTextureImpl->channels();
   }
   else
   {
@@ -97,6 +99,7 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFile(const wchar_t* a_fileName, int w
   texNodeXml.append_attribute(L"bytesize").set_value(bytesize.c_str());
   texNodeXml.append_attribute(L"width") = w;
   texNodeXml.append_attribute(L"height") = h;
+  texNodeXml.append_attribute(L"channels") = chan;
   texNodeXml.append_attribute(L"dl").set_value(L"0");
 
   g_objManager.scnData.textures[ref.id].update(texNodeXml);
@@ -105,7 +108,7 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFile(const wchar_t* a_fileName, int w
   return ref;
 }
 
-void GetTextureFileInfo(const wchar_t* a_fileName, int32_t* pW, int32_t* pH, size_t* pByteSize);
+void GetTextureFileInfo(const wchar_t* a_fileName, int32_t* pW, int32_t* pH, size_t* pByteSize, int32_t* chan);
 std::wstring CutFileName(const std::wstring& fileName);
 
 HAPI HRTextureNodeRef hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, int w, int h, int bpp, bool a_copyFileToLocalData)
@@ -170,13 +173,14 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, int
     texNodeXml.append_attribute(L"loc").set_value(fileName2.c_str());
   }
 
-  int32_t w1, h1;
+  int32_t w1, h1, chan;
   size_t  bpp1;
-  GetTextureFileInfo(a_fileName, &w1, &h1, &bpp1);
+  GetTextureFileInfo(a_fileName, &w1, &h1, &bpp1, &chan);
 
   texNodeXml.append_attribute(L"width")    = w1; 
   texNodeXml.append_attribute(L"height")   = h1; 
-  texNodeXml.append_attribute(L"bytesize") = w1*h1*bpp1;
+  texNodeXml.append_attribute(L"bytesize") = w1 * h1 * bpp1;
+  texNodeXml.append_attribute(L"channels") = chan;
   texNodeXml.append_attribute(L"dl").set_value(L"1");
 
   if(w > 0) texNodeXml.append_attribute(L"width_rec")  = w;

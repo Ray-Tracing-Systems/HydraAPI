@@ -90,6 +90,12 @@ static void HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* fil
     bpp = 4;
     chan = 1;
   }
+//  else if(type == FIT_BITMAP && bitsPerPixel == 24)
+//  {
+//    converted = FreeImage_ConvertTo24Bits(dib);
+//    chan = 3;
+//    bpp = chan;
+//  }
   else if(type == FIT_BITMAP)
   {
     converted = FreeImage_ConvertTo32Bits(dib);
@@ -142,6 +148,10 @@ static bool HRUtils_GetImageDataFromFreeImageObject(FIBITMAP* converted, int cha
       for(unsigned int j = 0; j < chan; ++j)
       {
         data[chan * i + j] = bits[chan * i + j];
+      }
+      if(chan >= 3) // swap red and blue because freeimage
+      {
+        std::swap(data[chan * i], data[chan * i + 2]);
       }
     }
 //    for (unsigned int y = 0; y<height; y++)
@@ -534,7 +544,7 @@ namespace HydraRender
   void LoadImageFromFile(const std::string& a_fileName, std::vector<float>& data, int& w, int& h, int& chan) // loads both LDR and HDR images(!)
   {
     const std::wstring fileNameW = s2ws(a_fileName);
-    LoadImageFromFile(fileNameW.c_str(), data, w, h, chan);
+    LoadImageFromFile(fileNameW, data, w, h, chan);
   }
 
   /**
