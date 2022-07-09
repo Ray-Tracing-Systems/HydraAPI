@@ -102,18 +102,18 @@ static void HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* fil
     chan = 4;
     bpp = chan;
   }
-  else if(type == FIT_RGBF)
-  {
-    converted = FreeImage_ConvertToRGBF(dib);
-    chan = 3;
-    bpp = sizeof(float) * chan;
-  }
-  else if(type == FIT_RGBAF)
+  else if(type == FIT_RGBF || type == FIT_RGBAF)
   {
     converted = FreeImage_ConvertToRGBAF(dib);
     chan = 4;
     bpp = sizeof(float) * chan;
   }
+//  else if(type == FIT_RGBAF)
+//  {
+//    converted = FreeImage_ConvertToRGBAF(dib);
+//    chan = 4;
+//    bpp = sizeof(float) * chan;
+//  }
 }
 
 static bool HRUtils_GetImageDataFromFreeImageObject(FIBITMAP* converted, int chan, char* data)
