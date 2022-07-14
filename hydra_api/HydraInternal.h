@@ -394,11 +394,13 @@ HRMeshDriverInput HR_GetMeshDataPointers(size_t a_meshId);
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define MESSAGE_SIZE 1024
+#define ERR_MSG_SZ 256
 
 struct HRSharedBufferHeader
 {
   int   width;     // 
-  int   height;    // 
+  int   height;    //
+  int   channels;
   int   depth;     // count update times; if does not change in time, seems no connection;
   float spp;       // 
 
@@ -422,8 +424,9 @@ struct IHRSharedAccumImage
   IHRSharedAccumImage()          = default;
   virtual ~IHRSharedAccumImage() = default;
 
-  virtual bool Create(int w, int h, int d, const char* name, char errMsg[256]) = 0; 
-  virtual bool Attach(const char* name, char errMsg[256])                      = 0;
+  virtual bool Create(int w, int h, int d, const char* name, char errMsg[ERR_MSG_SZ]) = 0;
+  virtual bool Create(int w, int h, int d, int channels, const char* name, char errMsg[ERR_MSG_SZ]) = 0;
+  virtual bool Attach(const char* name, char errMsg[ERR_MSG_SZ]) = 0;
 
   virtual void Clear() = 0;
                  

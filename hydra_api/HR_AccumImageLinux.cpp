@@ -13,15 +13,17 @@
 
 #include <iostream>
 
+
 struct SharedAccumImageLinux : public IHRSharedAccumImage
 {
   SharedAccumImageLinux();
   ~SharedAccumImageLinux() override;
 
-  bool   Create(int a_width, int a_height, int a_depth, const char* a_name, char a_errMsg[256]) override;
-  bool   Attach(const char* name, char errMsg[256]) override;
+  bool   Create(int a_width, int a_height, int a_depth, const char* a_name, char a_errMsg[ERR_MSG_SZ]) override;
+  bool   Create(int a_width, int a_height, int a_depth, int a_channels, const char* a_name, char a_errMsg[ERR_MSG_SZ]) override;
+  bool   Attach(const char* name, char errMsg[ERR_MSG_SZ]) override;
 
-  void Clear() override;
+  void   Clear() override;
 
   bool   Lock(int a_miliseconds) override;
   void   Unlock() override;
@@ -32,7 +34,8 @@ struct SharedAccumImageLinux : public IHRSharedAccumImage
   float*  ImageData(int layerId) override;
 
 private:
-
+  bool CreateInternal(int a_width, int a_height, int a_depth, int a_channels, const char* a_name, char a_errMsg[ERR_MSG_SZ]);
+  size_t GetImageSize();
   void Free();
   void AttachTo(char* a_memory);
 
@@ -44,7 +47,6 @@ private:
   char*  m_msgSend;
   char*  m_msgRcv;
   float* m_images;
-
   uint64_t totalSize;
 
   std::string m_mutexName;
@@ -91,30 +93,42 @@ void SharedAccumImageLinux::Free()
   m_ownThisResource = false;
 }
 
-
-bool SharedAccumImageLinux::Create(int a_width, int a_height, int a_depth, const char* a_name, char a_errMsg[256])
+size_t SharedAccumImageLinux::GetImageSize()
 {
-  memset(a_errMsg, 0, 256);
+  auto* pHeader = Header();
 
-  if (a_width == 0 || a_height == 0 || a_depth == 0)
+  return uint64_t(sizeof(HRSharedBufferHeader)) + uint64_t(MESSAGE_SIZE * 2) +
+         uint64_t(pHeader->width * pHeader->height) * size_t(pHeader->depth * sizeof(float) * pHeader->channels) +
+         uint64_t(1024);
+}
+
+bool SharedAccumImageLinux::CreateInternal(int a_width, int a_height, int a_depth, int a_channels, const char* a_name, char a_errMsg[ERR_MSG_SZ])
+{
+  memset(a_errMsg, 0, ERR_MSG_SZ);
+
+  if (a_width == 0 || a_height == 0 || a_depth == 0 || a_channels == 0)
   {
     Free();
     if(a_errMsg != nullptr)
-      strcpy(a_errMsg, "");
+      strncpy(a_errMsg, "", ERR_MSG_SZ);
     return true;
   }
-  else // #TODO: if new width != old width ...
+  else
   {
     if (m_memory != nullptr)
     {
       auto* pHeader = Header();
-      if (pHeader->width == a_width && pHeader->height == a_height && pHeader->depth == a_depth && m_shmemName == a_name)
+      if (pHeader->width == a_width && pHeader->height == a_height && pHeader->depth == a_depth &&
+          pHeader->channels == a_channels && m_shmemName == a_name)
+      {
         return true;
+      }
     }
 
     m_shmemName = a_name;
     m_mutexName = std::string(a_name) + "_mutex";
-    totalSize   = uint64_t(sizeof(HRSharedBufferHeader)) + uint64_t(MESSAGE_SIZE * 2) + uint64_t(a_width*a_height)*size_t(a_depth*sizeof(float)*4) + uint64_t(1024);
+    totalSize   = uint64_t(sizeof(HRSharedBufferHeader)) + uint64_t(MESSAGE_SIZE * 2) +
+                  uint64_t(a_width * a_height) * size_t(a_depth * a_channels * sizeof(float)) + uint64_t(1024);
 
     Free();
 
@@ -122,7 +136,7 @@ bool SharedAccumImageLinux::Create(int a_width, int a_height, int a_depth, const
     if (m_mutex == nullptr)
     {
       perror("sem_open");
-      strcpy(a_errMsg, "FAILED to create mutex (shared_mutex_init)");
+      strncpy(a_errMsg, "FAILED to create mutex (shared_mutex_init)", ERR_MSG_SZ);
       return false;
     }
 
@@ -131,7 +145,7 @@ bool SharedAccumImageLinux::Create(int a_width, int a_height, int a_depth, const
 
     if(m_buffDescriptor == -1 || truncate_res == -1)
     {
-      strcpy(a_errMsg, "FAILED to alloc shared memory (shm_open, ftruncate)");
+      strncpy(a_errMsg, "FAILED to alloc shared memory (shm_open, ftruncate)", ERR_MSG_SZ);
       Free();
       return false;
     }
@@ -139,16 +153,11 @@ bool SharedAccumImageLinux::Create(int a_width, int a_height, int a_depth, const
     m_memory = (char*)mmap(nullptr, totalSize + 1, PROT_READ | PROT_WRITE, MAP_SHARED, m_buffDescriptor, 0);
     if(m_memory == MAP_FAILED)
     {
-      strcpy(a_errMsg, "FAILED to map shared memory (mmap)");
+      strncpy(a_errMsg, "FAILED to map shared memory (mmap)", ERR_MSG_SZ);
       Free();
       return false;
     }
 
-    //const int totalSize2 = totalSize / 4;
-    //int* memi            = (int*)m_memory;
-    //#pragma omp parallel for
-    //for (int64_t i = 0; i < totalSize2; i++)
-    //  memi[i] = 0;
 
     memset(m_memory, 0, size_t(totalSize));
 
@@ -166,7 +175,7 @@ bool SharedAccumImageLinux::Create(int a_width, int a_height, int a_depth, const
     pHeader->messageRcvOffset   = pHeader->messageSendOffset + MESSAGE_SIZE;
     pHeader->imageDataOffset    = pHeader->messageSendOffset + MESSAGE_SIZE*2;
 
-    // now find offset for imageDataOffset to make resulting pointer is aligned(16) !!!
+    // now find offset for imageDataOffset to make resulting pointer aligned(16) !!!
     //
     char* pData = m_memory + pHeader->imageDataOffset;
     auto intptr = reinterpret_cast<std::uintptr_t>(pData);
@@ -183,15 +192,25 @@ bool SharedAccumImageLinux::Create(int a_width, int a_height, int a_depth, const
 
     AttachTo(m_memory);
   }
-  
+
   m_ownThisResource = true;
-  strcpy(a_errMsg, "");
+  strncpy(a_errMsg, "", ERR_MSG_SZ);
   return true;
 }
 
-bool SharedAccumImageLinux::Attach(const char* name, char errMsg[256])
+bool SharedAccumImageLinux::Create(int a_width, int a_height, int a_depth, int a_channels, const char* a_name, char a_errMsg[ERR_MSG_SZ])
 {
-  memset(errMsg, 0, 256);
+  return CreateInternal(a_width, a_height, a_depth, a_channels, a_name, a_errMsg);
+}
+
+bool SharedAccumImageLinux::Create(int a_width, int a_height, int a_depth, const char* a_name, char a_errMsg[ERR_MSG_SZ])
+{
+  return CreateInternal(a_width, a_height, a_depth, 4, a_name, a_errMsg);
+}
+
+bool SharedAccumImageLinux::Attach(const char* name, char errMsg[ERR_MSG_SZ])
+{
+  memset(errMsg, 0, ERR_MSG_SZ);
   Free();
 
   const std::string mutexName = std::string(name) + "_mutex";
@@ -203,7 +222,7 @@ bool SharedAccumImageLinux::Attach(const char* name, char errMsg[256])
   if (m_mutex == nullptr || m_mutex == SEM_FAILED)
   {
     perror("sem_open");
-    strcpy(errMsg, "FAILED to attach semaphore (sem_open)");
+    strncpy(errMsg, "FAILED to attach semaphore (sem_open)", ERR_MSG_SZ);
     return false;
   }
 
@@ -211,7 +230,7 @@ bool SharedAccumImageLinux::Attach(const char* name, char errMsg[256])
   if(m_buffDescriptor == -1)
   {
     perror("shm_open");
-    strcpy(errMsg, "FAILED to attach shmem (shm_open)");
+    strncpy(errMsg, "FAILED to attach shmem (shm_open)", ERR_MSG_SZ);
     Free();
     return false;
   }
@@ -222,28 +241,22 @@ bool SharedAccumImageLinux::Attach(const char* name, char errMsg[256])
   if(m_memory == MAP_FAILED)
   {
     perror("mmap");
-    strcpy(errMsg, "FAILED to map shared memory (mmap)");
+    strncpy(errMsg, "FAILED to map shared memory (mmap)", ERR_MSG_SZ);
     Free();
     return false;
   }
 
-  auto* pHeader = (HRSharedBufferHeader*)m_memory;
-
-  int a_width  = pHeader->width;
-  int a_height = pHeader->height;
-  int a_depth  = pHeader->depth;
-
   if (m_memory != nullptr)
     munmap(m_memory, totalSize);
 
-  totalSize = uint64_t(sizeof(HRSharedBufferHeader)) + uint64_t(MESSAGE_SIZE * 2) + uint64_t(a_width*a_height)*uint64_t(a_depth*sizeof(float)*4) + uint64_t(1024);
+  totalSize = GetImageSize();
 
   m_memory = (char*)mmap(nullptr, totalSize + 1, PROT_READ | PROT_WRITE, MAP_SHARED, m_buffDescriptor, 0);
 
   if(m_memory == MAP_FAILED)
   {
     perror("mmap");
-    strcpy(errMsg, "FAILED to map shared memory (mmap)");
+    strncpy(errMsg, "FAILED to map shared memory (mmap)", ERR_MSG_SZ);
     Free();
     return false;
   }
@@ -264,7 +277,7 @@ void SharedAccumImageLinux::Clear()
   pHeader->counterSnd = 0;
 
   auto pImg = ImageData(0);
-  memset(pImg, 0, size_t(pHeader->width*pHeader->height)*size_t(sizeof(float)*4));
+  memset(pImg, 0, size_t(pHeader->width * pHeader->height) * size_t(pHeader->channels * sizeof(float)));
 }
 
 
@@ -279,7 +292,7 @@ void SharedAccumImageLinux::AttachTo(char* a_memory)
 
 bool SharedAccumImageLinux::Lock(int a_miliseconds)
 {
-  struct timespec ts;
+  struct timespec ts{};
   if (clock_gettime(CLOCK_REALTIME, &ts) == -1)
   {
     perror("clock_gettime(SharedAccumImageLinux::Lock)");
