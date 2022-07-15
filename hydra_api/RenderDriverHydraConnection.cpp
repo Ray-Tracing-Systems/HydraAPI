@@ -147,6 +147,7 @@ protected:
 
   int m_width;
   int m_height;
+  int m_channels;
 
   float m_avgBrightness;
   int   m_avgBCounter;
@@ -371,10 +372,11 @@ IHRRenderDriver* CreateHydraConnection_RenderDriver()
 }
 
 
-RD_HydraConnection::RD_HydraConnection() : m_pConnection(nullptr), m_pSharedImage(nullptr), m_progressVal(0.0f), m_firstUpdate(true), m_width(0), m_height(0),
-                       m_avgBrightness(0.0f), m_avgBCounter(0), m_enableMedianFilter(false), m_medianthreshold(0.4f), m_stopThreadImmediately(false),
-                       haveUpdateFromMT(false), m_threadIsRun(false), m_threadFinished(false), hadFinalUpdate(false), m_clewInitRes(-1), m_instancesNum(0),
-                       m_colorImageIsLocked(false)
+RD_HydraConnection::RD_HydraConnection() : m_pConnection(nullptr), m_pSharedImage(nullptr), m_progressVal(0.0f), m_firstUpdate(true),
+                                           m_width(0), m_height(0), m_channels(0), m_avgBrightness(0.0f), m_avgBCounter(0),
+                                           m_enableMedianFilter(false), m_medianthreshold(0.4f), m_stopThreadImmediately(false),
+                                           haveUpdateFromMT(false), m_threadIsRun(false), m_threadFinished(false), hadFinalUpdate(false),
+                                           m_clewInitRes(-1), m_instancesNum(0), m_colorImageIsLocked(false)
 {
   InitBothDeviceList();
 
@@ -503,6 +505,15 @@ bool RD_HydraConnection::UpdateSettings(pugi::xml_node a_settingsNode)
 {
   m_width     = a_settingsNode.child(L"width").text().as_int();
   m_height    = a_settingsNode.child(L"height").text().as_int();
+
+  if(a_settingsNode.child(L"framebuffer_channels"))
+  {
+    m_channels = a_settingsNode.child(L"framebuffer_channels").text().as_int();
+  }
+  else
+  {
+    m_channels = 4;
+  }
  
   m_needGbuff = (std::wstring(a_settingsNode.child(L"evalgbuffer").text().as_string()) == L"1");
 
@@ -663,7 +674,7 @@ void RD_HydraConnection::CreateAndClearSharedImage()
   if (m_pSharedImage != nullptr) // if image exists check if it can be reused
   {
     auto *pHeader = m_pSharedImage->Header();
-    if (pHeader->width == m_width && pHeader->height == m_height && pHeader->depth == layersNum)
+    if (pHeader->width == m_width && pHeader->height == m_height && pHeader->channels == m_channels && pHeader->depth == layersNum)
     {
       m_pSharedImage->Clear();
     }
@@ -681,7 +692,8 @@ void RD_HydraConnection::CreateAndClearSharedImage()
   }
 
   char err[256];
-  const bool shmemImageIsOk = m_pSharedImage->Create(m_width, m_height, layersNum, hydraImageName.c_str(), err); // #TODO: change this and pass via cmd line
+  const bool shmemImageIsOk = m_pSharedImage->Create(m_width, m_height, m_channels, layersNum,
+                                                     hydraImageName.c_str(), err);
   
   if (!shmemImageIsOk)
   {
@@ -813,7 +825,6 @@ void RD_HydraConnection::EndFlush()
   //
   if(m_enableMLT)
   {
-    
     m_colorMLTFinalImage.resize(m_width, m_height);
     const size_t imagesize = m_colorMLTFinalImage.width()*m_colorMLTFinalImage.height()*4;
     float* colorMLTFinal   = m_colorMLTFinalImage.data();
@@ -951,7 +962,7 @@ static inline void decodeNormal(unsigned int a_data, float a_norm[3])
 
 static inline HRGBufferPixel UnpackGBuffer(const float a_input[4], const float a_input2[4])
 {
-  HRGBufferPixel res;
+  HRGBufferPixel res{};
 
   res.depth = a_input[0];
   res.matId = as_int(a_input[2]) & 0x00FFFFFF;
@@ -1023,7 +1034,8 @@ void RD_HydraConnection::GetFrameBufferLineHDR(int32_t a_xBegin, int32_t a_xEnd,
   if (m_pSharedImage->Header()->counterRcv == 0 || m_pSharedImage->Header()->spp < 1e-5f)
     return;
 
-  data = data + y*m_width*4;
+  //TODO: check for mono framebuffer with size non-divisible by 4
+  data = data + y * m_width * 4;
 
   const float invSpp = m_enableMLT ? 1.0f : 1.0f / m_pSharedImage->Header()->spp;
   const cvex::vfloat4 mult = cvex::splat(invSpp);
@@ -1070,21 +1082,30 @@ void RD_HydraConnection::GetFrameBufferLineLDR(int32_t a_xBegin, int32_t a_xEnd,
   if (m_pSharedImage->Header()->counterRcv == 0 || m_pSharedImage->Header()->spp < 1e-5f)
     return;
 
-  data = data + y * m_width * 4;
+  int channels = m_pSharedImage->Header()->channels;
+
+  //TODO: check for mono framebuffer with size non-divisible by 4
+  data = data + y * m_width * channels;
   typedef LiteMath::float4 float4;
 
-  const float4* dataHDR = (const float4*)data;
+//  const float4* dataHDR = (const float4*)data;
 
   const float invGamma  = 1.0f / 2.2f;
   const float normConst = m_enableMLT ? 1.0f : 1.0f / m_pSharedImage->Header()->spp;
 
   // not sse version
   //
-  if (!HydraSSE::g_useSSE)
+  if (!HydraSSE::g_useSSE || channels == 1)
   {
     for (int i = a_xBegin; i < a_xEnd; i++)  // #TODO: use sse and fast pow
     {
-      const float4 color = dataHDR[i];
+      float4 color{};
+      if(channels == 1)
+        color = {data[i], data[i], data[i], data[i]};
+      else if(channels == 4)
+        color = {data[i * 4 + 0], data[i * 4 + 1], data[i * 4 + 2], data[i * 4 + 3]};
+
+//        const float4 color = dataHDR[i];
       a_out[i - a_xBegin] = HRUtils::RealColorToUint32(powf(color.x * normConst, invGamma),
                                                        powf(color.y * normConst, invGamma),
                                                        powf(color.z * normConst, invGamma),
@@ -1093,11 +1114,14 @@ void RD_HydraConnection::GetFrameBufferLineLDR(int32_t a_xBegin, int32_t a_xEnd,
   }
   else // sse version
   {
-    const __m128 powerf4 = _mm_set_ps1(invGamma);
-    const __m128 normc   = _mm_set_ps1(normConst);
+    if(channels == 4)
+    {
+      const __m128 powerf4 = _mm_set_ps1(invGamma);
+      const __m128 normc = _mm_set_ps1(normConst);
 
-    for (int i = a_xBegin; i < a_xEnd; i++)  
-      a_out[i - a_xBegin] = HydraSSE::gammaCorr((const float*)(dataHDR + i), normc, powerf4);
+      for (int i = a_xBegin; i < a_xEnd; i++)
+        a_out[i - a_xBegin] = HydraSSE::gammaCorr((const float *) (data + i), normc, powerf4);
+    }
   }
 
 }

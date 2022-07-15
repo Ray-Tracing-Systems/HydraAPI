@@ -166,6 +166,7 @@ bool SharedAccumImageLinux::CreateInternal(int a_width, int a_height, int a_dept
     pHeader->width      = a_width;
     pHeader->height     = a_height;
     pHeader->depth      = a_depth;
+    pHeader->channels   = a_channels;
     pHeader->spp        = 0.0f;
     pHeader->counterRcv = 0;
     pHeader->counterSnd = 0;
