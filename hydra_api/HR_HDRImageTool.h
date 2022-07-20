@@ -21,7 +21,7 @@ namespace HydraRender
   void SaveImageToFile(const std::string& a_fileName, int w, int h, unsigned int* data);
   void SaveImageToFile(const std::string& a_fileName, const HydraRender::HDRImage4f& image, float a_gamma = 2.2f);
 
-  void SaveHDRImageToFileHDR(const std::wstring& a_fileName, int w, int h, const float* a_data);
+  void SaveHDRImageToFileHDR(const std::wstring& a_fileName, int w, int h, int chan, const float* a_data);
   void SaveImageToFile      (const std::wstring& a_fileName, int w, int h, const unsigned int* data);
   void SaveImageToFile      (const std::wstring& a_fileName, const HydraRender::HDRImage4f& image, float a_gamma = 2.2f);
 

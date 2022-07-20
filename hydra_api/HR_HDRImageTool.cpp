@@ -420,7 +420,7 @@ bool InternalImageTool::LoadImageFromFile(const wchar_t* a_fileName, int& w, int
   return true;
 }
 
-void InternalImageTool::SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, const float* a_data)
+void InternalImageTool::SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, int chan, const float* a_data)
 {
 #ifdef WIN32
   std::ofstream fout(a_fileName, std::ios::binary);
@@ -430,7 +430,7 @@ void InternalImageTool::SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, 
 #endif
   int wh[2] = { w,h };
   fout.write((const char*)wh, sizeof(int) * 2);
-  fout.write((const char*)a_data, sizeof(float) * size_t(4 * w*h));
+  fout.write((const char*)a_data, sizeof(float) * size_t(chan * w * h));
   fout.close();
 }
 
@@ -477,15 +477,15 @@ namespace HydraRender
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  void SaveHDRImageToFileHDR(const std::string& a_fileName, int w, int h, const float* a_data)
+  void SaveHDRImageToFileHDR(const std::string& a_fileName, int w, int h, int chan, const float* a_data)
   {
     const std::wstring fileNameW = s2ws(a_fileName);
-    g_objManager.m_pImgTool->SaveHDRImageToFileHDR(fileNameW.c_str(), w, h, a_data);
+    g_objManager.m_pImgTool->SaveHDRImageToFileHDR(fileNameW.c_str(), w, h, chan, a_data);
   }
 
-  void SaveHDRImageToFileHDR(const std::wstring& a_fileName, int w, int h, const float* a_data)
+  void SaveHDRImageToFileHDR(const std::wstring& a_fileName, int w, int h, int chan, const float* a_data)
   {
-    g_objManager.m_pImgTool->SaveHDRImageToFileHDR(a_fileName.c_str(), w, h, a_data);
+    g_objManager.m_pImgTool->SaveHDRImageToFileHDR(a_fileName.c_str(), w, h, chan, a_data);
   }
 
   void SaveImageToFile(const std::string& a_fileName, int w, int h, unsigned int* data)
@@ -684,7 +684,7 @@ namespace HydraRender
     bool LoadImageFromFile(const wchar_t* a_fileName, 
                            int& w, int& h, int &chan, std::vector<float>& a_data) override;
 
-    void SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, const float* a_data) override;
+    void SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, int chan, const float* a_data) override;
     void SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, const int*   a_data) override;
 
     void Save16BitMonoImageTo16BitPNG(const wchar_t* a_fileName, int w, int h, const unsigned short* a_data) override;
@@ -855,12 +855,12 @@ namespace HydraRender
     return true;
   }
 
-  void FreeImageTool::SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, const float* a_data)
+  void FreeImageTool::SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, int chan, const float* a_data)
   {
     const std::wstring fileExt = CutFileExt(a_fileName);
 
-    if (fileExt == L".image4f")
-      m_pInternal->SaveHDRImageToFileHDR(a_fileName, w, h, a_data);
+    if (fileExt == L".image4f" || fileExt == L".image1f")
+      m_pInternal->SaveHDRImageToFileHDR(a_fileName, w, h, chan, a_data);
     else
     {
     #ifdef WIN32 // old 3ds max FreeImage version
@@ -881,7 +881,12 @@ namespace HydraRender
       BYTE* bits    = FreeImage_GetBits(dib);
       memcpy(bits, &tempData[0], sizeof(float3)*w*h);
     #else
-      FIBITMAP *dib = FreeImage_ConvertFromRawBitsEx(FALSE, (BYTE*)a_data, FIT_RGBAF, w, h, 4*4*w, 4*32, FI_RGBA_BLUE_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_RED_MASK, FALSE);
+      auto type = FIT_RGBAF;
+      if(chan == 1)
+        type = FIT_FLOAT;
+      FIBITMAP *dib = FreeImage_ConvertFromRawBitsEx(FALSE, (BYTE*)a_data, type, w, h,
+                                                     sizeof(float) * chan * w, chan * sizeof(float) * 8,
+                                                     FI_RGBA_BLUE_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_RED_MASK, FALSE);
     #endif
 
       FreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);

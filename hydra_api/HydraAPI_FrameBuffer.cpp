@@ -218,6 +218,15 @@ HAPI bool hrRenderSaveFrameBufferHDR(HRRenderRef a_pRender, const wchar_t* a_out
 {
   HRRender* pRender = g_objManager.PtrById(a_pRender);
 
+  int channels = 4;
+  hrRenderOpen(a_pRender, HR_OPEN_READ_ONLY);
+  {
+    auto node = hrRenderParamNode(a_pRender);
+    if(node.child(L"framebuffer_channels"))
+      channels = node.child(L"framebuffer_channels").text().as_int();
+  }
+  hrRenderClose(a_pRender);
+
   if (pRender == nullptr)
   {
     HrError(L"hrRenderSaveFrameBufferHDR, nullptr Render Driver ");
@@ -243,11 +252,11 @@ HAPI bool hrRenderSaveFrameBufferHDR(HRRenderRef a_pRender, const wchar_t* a_out
 
   auto pImgTool = g_objManager.m_pImgTool;
   auto& imgData = g_objManager.m_tempBuffer;
-  if (imgData.size() < size_t(w*h)*size_t(4))
-    imgData.resize(size_t(w*h)*size_t(4));
+  if (imgData.size() < size_t(w * h) * size_t(channels))
+    imgData.resize(size_t(w * h) * size_t(channels));
 
   pRender->m_pDriver->GetFrameBufferHDR(w, h, (float*)imgData.data(), L"color");
-  pImgTool->SaveHDRImageToFileHDR(a_outFileName, w, h, (const float*)imgData.data());
+  pImgTool->SaveHDRImageToFileHDR(a_outFileName, w, h, channels, (const float*)imgData.data());
 
   if (imgData.size() > TEMP_BUFFER_MAX_SIZE_DONT_FREE) // free temp buffer if it's too large
     imgData = g_objManager.EmptyBuffer();

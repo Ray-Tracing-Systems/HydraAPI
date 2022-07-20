@@ -1034,29 +1034,43 @@ void RD_HydraConnection::GetFrameBufferLineHDR(int32_t a_xBegin, int32_t a_xEnd,
   if (m_pSharedImage->Header()->counterRcv == 0 || m_pSharedImage->Header()->spp < 1e-5f)
     return;
 
-  //TODO: check for mono framebuffer with size non-divisible by 4
-  data = data + y * m_width * 4;
+  const int channels = m_pSharedImage->Header()->channels;
+  data = data + y * m_width * channels;
 
   const float invSpp = m_enableMLT ? 1.0f : 1.0f / m_pSharedImage->Header()->spp;
   const cvex::vfloat4 mult = cvex::splat(invSpp);
   auto intptr        = reinterpret_cast<std::uintptr_t>(data);
-  
-  if (intptr % 16 == 0)
+
+  if(m_pSharedImage->Header()->channels == 4)
   {
-    for (int i = a_xBegin*4; i < a_xEnd*4; i += 4)
+    if (intptr % 16 == 0)
     {
-      const cvex::vfloat4 color1 = cvex::load(data + i);
-      const cvex::vfloat4 color2 = mult*color1;
-      cvex::store(a_out + i - a_xBegin*4, color2);
+      for (int i = a_xBegin * 4; i < a_xEnd * 4; i += 4)
+      {
+        const cvex::vfloat4 color1 = cvex::load(data + i);
+        const cvex::vfloat4 color2 = mult * color1;
+        cvex::store(a_out + i - a_xBegin * 4, color2);
+      }
+    }
+    else
+    {
+      for (int i = a_xBegin * 4; i < a_xEnd * 4; i += 4)
+      {
+        const cvex::vfloat4 color1 = cvex::load(data + i);
+        const cvex::vfloat4 color2 = mult * color1;
+        cvex::store_u(a_out + i - a_xBegin * 4, color2);
+      }
     }
   }
   else
   {
-    for (int i = a_xBegin * 4; i < a_xEnd * 4; i += 4)
+    #pragma omp parallel for
+    for (int i = a_xBegin; i < a_xEnd; ++i)
     {
-      const cvex::vfloat4 color1 = cvex::load(data + i);
-      const cvex::vfloat4 color2 = mult*color1;
-      cvex::store_u(a_out + i - a_xBegin*4, color2);
+      for(int j = 0; j < channels; ++j)
+      {
+        a_out[i * channels + j] = data[i * channels + j] * invSpp;
+      }
     }
   }
 
@@ -1142,9 +1156,10 @@ void RD_HydraConnection::UnlockFrameBufferUpdate()
 
 void RD_HydraConnection::GetFrameBufferHDR(int32_t w, int32_t h, float* a_out, const wchar_t* a_layerName)
 {
+  const int channels = m_pSharedImage->Header()->channels;
   #pragma omp parallel for
   for (int y = 0; y < h; y++)
-    GetFrameBufferLineHDR(0, w, y, a_out + y * w * 4, a_layerName);
+    GetFrameBufferLineHDR(0, w, y, a_out + y * w * channels, a_layerName);
 }
 
 void RD_HydraConnection::GetFrameBufferLDR(int32_t w, int32_t h, int32_t* a_out)

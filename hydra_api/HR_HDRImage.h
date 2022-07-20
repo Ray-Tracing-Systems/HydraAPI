@@ -150,7 +150,7 @@ struct IHRImageTool
   virtual bool LoadImageFromFile(const wchar_t* a_fileName,
                                  int& w, int& h, int& chan, std::vector<float>& a_data) = 0;
 
-  virtual void SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, const float* a_data) = 0;
+  virtual void SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, int chan, const float* a_data) = 0;
   virtual void SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, const int*   a_data) = 0;
 
   /**
@@ -181,7 +181,7 @@ public:
   bool LoadImageFromFile(const wchar_t* a_fileName,
                          int& w, int& h, int& chan, std::vector<float>& a_data) override;
 
-  void SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, const float* a_data) override;
+  void SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, int chan, const float* a_data) override;
   void SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, const int*   a_data) override;
 };
 
