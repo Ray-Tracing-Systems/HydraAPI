@@ -4,6 +4,7 @@
 #include "LiteMath.h"
 
 #include <string>
+#include <algorithm>
 #include <sstream>
 
 extern HRObjectManager g_objManager;
@@ -259,6 +260,20 @@ namespace HydraXMLHelpers
       auto next = child.next_sibling();
       destination.append_copy(child);
       child = next;
+    }
+  }
+
+  void forceAttributes(const pugi::xml_node& source, pugi::xml_node& destination, const std::unordered_set<std::wstring> &skip)
+  {
+    auto attr = source.first_attribute();
+    while (attr)
+    {
+      auto next = attr.next_attribute();
+      if(!skip.count(attr.name()))
+      {
+        destination.force_attribute(attr.name()).set_value(attr.value());
+      }
+      attr = next;
     }
   }
 

@@ -692,7 +692,7 @@ void RD_HydraConnection::CreateAndClearSharedImage()
   }
 
   char err[256];
-  const bool shmemImageIsOk = m_pSharedImage->Create(m_width, m_height, m_channels, layersNum,
+  const bool shmemImageIsOk = m_pSharedImage->Create(m_width, m_height, layersNum, m_channels,
                                                      hydraImageName.c_str(), err);
   
   if (!shmemImageIsOk)
@@ -1102,7 +1102,7 @@ void RD_HydraConnection::GetFrameBufferLineLDR(int32_t a_xBegin, int32_t a_xEnd,
   data = data + y * m_width * channels;
   typedef LiteMath::float4 float4;
 
-//  const float4* dataHDR = (const float4*)data;
+//
 
   const float invGamma  = 1.0f / 2.2f;
   const float normConst = m_enableMLT ? 1.0f : 1.0f / m_pSharedImage->Header()->spp;
@@ -1134,7 +1134,7 @@ void RD_HydraConnection::GetFrameBufferLineLDR(int32_t a_xBegin, int32_t a_xEnd,
       const __m128 normc = _mm_set_ps1(normConst);
 
       for (int i = a_xBegin; i < a_xEnd; i++)
-        a_out[i - a_xBegin] = HydraSSE::gammaCorr((const float *) (data + i), normc, powerf4);
+        a_out[i - a_xBegin] = HydraSSE::gammaCorr((const float *) (data + i * 4), normc, powerf4);
     }
   }
 

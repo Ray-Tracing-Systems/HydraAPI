@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <iomanip>
+#include <unordered_set>
 #include "pugixml.hpp"
 #include "LiteMath.h"
 #include "HydraAPI.h"
@@ -371,4 +372,5 @@ namespace HydraXMLHelpers
 
   void moveChildNodes(pugi::xml_node& source, pugi::xml_node& destination);
   void copyChildNodes(const pugi::xml_node& source, pugi::xml_node& destination);
+  void forceAttributes(const pugi::xml_node& source, pugi::xml_node& destination, const std::unordered_set<std::wstring> &skip = {L"id"});
 };

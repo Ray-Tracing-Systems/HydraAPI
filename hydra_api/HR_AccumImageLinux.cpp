@@ -338,7 +338,7 @@ void SharedAccumImageLinux::Unlock()
 float* SharedAccumImageLinux::ImageData(int layerId)
 {
   auto* pHeader = (HRSharedBufferHeader*)m_memory;
-  return m_images + int64_t(pHeader->width*pHeader->height)*int64_t(layerId*4);
+  return m_images + int64_t(pHeader->width * pHeader->height) * int64_t(layerId * pHeader->channels);
 }
 
 char* SharedAccumImageLinux::MessageSendData()
