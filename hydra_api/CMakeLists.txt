@@ -64,7 +64,7 @@ else()
 endif()
 
 
-set(HR_EXTENSIONS HRExtensions.cpp)
+set(HR_EXTENSIONS HRExtensions.cpp HRExtensions_Spectral.cpp)
 
 set(VEC_TEX_EXTENSION HRExtensions_VectorTex.cpp)
 
