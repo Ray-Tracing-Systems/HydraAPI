@@ -84,7 +84,7 @@ static void HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* fil
     bpp = 1;
     chan = 1;
   }
-  else if(type == FIT_FLOAT)
+  else if(type == FIT_FLOAT || type == FIT_UINT16)
   {
     converted = FreeImage_ConvertToFloat(dib);
     bpp = 4;
