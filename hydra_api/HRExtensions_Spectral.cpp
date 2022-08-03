@@ -1,4 +1,5 @@
 #include "HRExtensions_Spectral.h"
+#include "HRExtensions_SpectralConstants.h"
 
 #include "HR_HDRImageTool.h"
 #include "HydraObjectManager.h"
@@ -11,8 +12,8 @@ extern HRObjectManager g_objManager;
 namespace hr_spectral
 {
   //from PBRT-v3
-  float AverageSpectrumSamples(const float *lambda, const float *vals, int n,
-                               float lambdaStart, float lambdaEnd) {
+  float AverageSpectrumSamples(const float *lambda, const float *vals, int n, float lambdaStart, float lambdaEnd)
+  {
 //    for (int i = 0; i < n - 1; ++i) CHECK_GT(lambda[i + 1], lambda[i]);
 //    CHECK_LT(lambdaStart, lambdaEnd);
     // Handle cases with out-of-bounds range or single sample only
@@ -61,7 +62,7 @@ namespace hr_spectral
     }
   }
 
-  LiteMath::float3 ToXYZ(const std::vector<float> &spec, const std::vector<int> &wavelengths,
+  LiteMath::float3 ToXYZ(const std::vector<float> &spec, const std::vector<float> &wavelengths,
                     const std::vector<float> &Xconv, const std::vector<float> &Yconv, const std::vector<float> &Zconv)
   {
     LiteMath::float3 xyz {0.0f, 0.0f, 0.0f};
@@ -72,7 +73,7 @@ namespace hr_spectral
       xyz[2] += Zconv[i] * spec[i];
     }
 
-    float scale = float(wavelengths.back() - wavelengths.front()) / float(CIE_Y_integral * spec.size());
+    float scale = (wavelengths.back() - wavelengths.front()) / float(CIE_Y_integral * spec.size());
     xyz[0] *= scale;
     xyz[1] *= scale;
     xyz[2] *= scale;
@@ -80,14 +81,22 @@ namespace hr_spectral
     return xyz;
   }
 
-  LiteMath::float3 ToRGB(const std::vector<float> &spec, const std::vector<int> &wavelengths,
+  float ToY(const std::vector<float> &spec, const std::vector<float> &wavelengths, const std::vector<float> &Yconv)
+  {
+    float yy = 0.f;
+    for (int i = 0; i < spec.size(); ++i) yy += Yconv[i] * spec[i];
+    return yy * (wavelengths.back() - wavelengths.front()) / float(CIE_Y_integral * spec.size());
+  }
+
+  LiteMath::float3 ToRGB(const std::vector<float> &spec, const std::vector<float> &wavelengths,
                     const std::vector<float> &Xconv, const std::vector<float> &Yconv, const std::vector<float> &Zconv)
   {
     auto xyz = ToXYZ(spec, wavelengths, Xconv, Yconv, Zconv);
     return XYZToRGB(xyz);
   }
 
-  void SpectralDataToRGB(std::filesystem::path &a_filePath, int a_width, int a_height, const std::vector<std::vector<float>> &spec, const std::vector<int> &wavelengths)
+  void SpectralDataToRGB(std::filesystem::path &a_filePath, int a_width, int a_height, const std::vector<std::vector<float>> &spec,
+                         const std::vector<float> &wavelengths)
   {
     if(spec.empty() || wavelengths.empty())
     {
@@ -151,7 +160,171 @@ namespace hr_spectral
 //      imgData = g_objManager.EmptyBuffer();
   }
 
-  void SpectralImagesToRGB(std::filesystem::path &a_filePath, const std::vector<std::filesystem::path> &a_specPaths, const std::vector<int> &wavelengths)
+  void SpectralDataToY(std::filesystem::path &a_filePath, int a_width, int a_height, const std::vector<std::vector<float>> &spec,
+                       const std::vector<float> &wavelengths)
+  {
+    if(spec.empty() || wavelengths.empty())
+    {
+      HrError(L"[hr_spectral::SpectralDataToY] Empty spectral vector or wavelengths vector");
+      return;
+    }
+
+    if(a_width * a_height != spec[0].size())
+    {
+      HrError(L"[hr_spectral::SpectralDataToY] Size of a single image from spectral vector is not equal to width * height");
+      return;
+    }
+
+    if(spec.size() != wavelengths.size())
+    {
+      HrError(L"[hr_spectral::SpectralDataToY] Number of spectral samples is not equal to size of wavelengths vector");
+      return;
+    }
+
+    std::vector<float> X;
+    std::vector<float> Y;
+    std::vector<float> Z;
+    ComputeXYZConversionCurves(wavelengths.front(), wavelengths.back(), wavelengths.size(), X, Y, Z);
+
+    std::vector<float> imgData(a_width * a_height);
+
+#pragma omp parallel for
+    for(size_t i = 0; i < a_width * a_height; ++i)
+    {
+      std::vector<float> spectralPixel(spec.size());
+      for(size_t j = 0; j < spec.size(); ++j) // TODO: bad memory access, worth it to fix?
+        spectralPixel[j] = spec[j][i];
+
+      imgData[i] =  ToY(spectralPixel, wavelengths, Y);
+    }
+
+    auto pImgTool = g_objManager.m_pImgTool;
+    pImgTool->SaveHDRImageToFileHDR(a_filePath.wstring().c_str(), a_width, a_height, 1, imgData.data());
+  }
+
+  void AddLoadedBufferToSingleChannelImg(std::vector<float> &imgData, const std::vector<float> &buffer, const int32_t channels)
+  {
+    // add all channels from buf to imgData
+    #pragma omp parallel for
+    for(size_t i = 0; i < imgData.size(); ++i)
+    {
+      for(int k = 0; k < channels; ++k)
+      {
+        imgData[i] += buffer[i * channels + k];
+      }
+    }
+  }
+
+  void AppendLoadedBufferToSpectralData(std::vector<std::vector<float>> &spectralData, std::vector<float> &buffer,
+                                        const int32_t a_width, const int32_t a_height, const int32_t channels)
+  {
+    if(channels == 1)
+      spectralData.push_back(std::move(buffer));
+    else
+    {
+      for (int k = 0; k < channels; ++k)
+      {
+        std::vector<float> oneChannel(a_width * a_height);
+#pragma omp parallel for
+        for (size_t j = 0; j < a_width * a_height; ++j)
+        {
+          oneChannel[j] = buffer[j * channels + k];
+        }
+        spectralData.push_back(std::move(oneChannel));
+      }
+    }
+  }
+
+  std::vector<std::vector<float>> LoadSpectralDataFromFiles(const std::vector<std::filesystem::path> &a_specPaths,
+                                                            int32_t &a_width, int32_t &a_height)
+  {
+    auto pImgTool = g_objManager.m_pImgTool;
+
+    std::vector<std::vector<float>> spectralData;
+    spectralData.reserve(a_specPaths.size());
+
+    int channels;
+    std::vector<float> tempBuf;
+    pImgTool->LoadImageFromFile(a_specPaths[0].wstring().c_str(), a_width, a_height, channels, tempBuf);
+
+    AppendLoadedBufferToSpectralData(spectralData, tempBuf, a_width, a_height, channels);
+
+    for(int i = 1; i < a_specPaths.size(); ++i)
+    {
+      int w, h;
+      pImgTool->LoadImageFromFile(a_specPaths[i].wstring().c_str(), w, h, channels, tempBuf);
+      if(w != a_width || h != a_height)
+      {
+        HrError(L"[hr_spectral::LoadSpectralDataFromFiles] Spectral image does not match the first spectral image in size. Image index: ", i);
+        return {};
+      }
+      AppendLoadedBufferToSpectralData(spectralData, tempBuf, a_width, a_height, channels);
+    }
+
+    return spectralData;
+  }
+
+  void AverageSpectralImages(std::filesystem::path &a_filePath, const std::vector<std::filesystem::path> &a_specPaths)
+  {
+    auto pImgTool = g_objManager.m_pImgTool;
+
+    int width, height, channels;
+    std::vector<float> tempBuf;
+    pImgTool->LoadImageFromFile(a_specPaths[0].wstring().c_str(), width, height, channels, tempBuf);
+
+    std::vector<float> imgData(width * height);
+    AddLoadedBufferToSingleChannelImg(imgData, tempBuf, channels);
+    int totalSpectralBands = channels;
+
+    for(int i = 1; i < a_specPaths.size(); ++i)
+    {
+      int w, h;
+      pImgTool->LoadImageFromFile(a_specPaths[i].wstring().c_str(), w, h, channels, tempBuf);
+      if(w != width || h != height)
+      {
+        HrError(L"[hr_spectral::AverageSpectralImages] Spectral image does not match the first spectral image in size. Image index: ", i);
+        return;
+      }
+      AddLoadedBufferToSingleChannelImg(imgData, tempBuf, channels);
+      totalSpectralBands += channels;
+    }
+
+    const float divisor = 1.0f / float(totalSpectralBands);
+    #pragma omp parallel for
+    for(size_t j = 0; j < imgData.size(); ++j)
+    {
+      imgData[j] *= divisor;
+    }
+
+    pImgTool->SaveHDRImageToFileHDR(a_filePath.wstring().c_str(), width, height, 1, imgData.data());
+  }
+
+  void AverageSpectralImagesV2(std::filesystem::path &a_filePath, const std::vector<std::filesystem::path> &a_specPaths,
+                               const std::vector<float> &wavelengths)
+  {
+    auto pImgTool = g_objManager.m_pImgTool;
+
+    int width, height;
+    auto spectralData = LoadSpectralDataFromFiles(a_specPaths, width, height);
+
+    std::vector<float> imgData(width * height);
+    #pragma omp parallel for
+    for(size_t i = 0; i < width * height; ++i)
+    {
+      std::vector<float> spectralPixel(spectralData.size());
+      for(size_t j = 0; j < spectralData.size(); ++j) // TODO: bad memory access, worth it to fix?
+        spectralPixel[j] = spectralData[j][i];
+
+      imgData[i] = AverageSpectrumSamples(wavelengths.data(), spectralPixel.data(), spectralPixel.size(),
+                                          wavelengths.front(), wavelengths.back());
+    }
+
+    pImgTool->SaveHDRImageToFileHDR(a_filePath.wstring().c_str(), width, height, 1, imgData.data());
+  }
+
+
+  void SpectralImagesToRGB(std::filesystem::path &a_filePath, const std::vector<std::filesystem::path> &a_specPaths,
+                           const std::vector<float> &wavelengths)
   {
     if(a_specPaths.size() != wavelengths.size())
     {
@@ -159,28 +332,28 @@ namespace hr_spectral
       return;
     }
 
-    auto pImgTool = g_objManager.m_pImgTool;
-
-    std::vector<std::vector<float>> spectralData;
-    spectralData.resize(wavelengths.size());
-
-    int width, height, channels;
-    pImgTool->LoadImageFromFile(a_specPaths[0].wstring().c_str(), width, height, channels, spectralData[0]);
-    for(size_t i = 1; i < a_specPaths.size(); ++i)
-    {
-      int w, h, chan;
-      pImgTool->LoadImageFromFile(a_specPaths[i].wstring().c_str(), w, h, chan, spectralData[i]);
-      if(w != width || h != height || chan != channels)
-      {
-        HrError(L"[hr_spectral::SpectralImagesToRGB] Spectral image does not match the first spectral image in size. Image index: ", i);
-        return;
-      }
-    }
+    int width, height;
+    auto spectralData = LoadSpectralDataFromFiles(a_specPaths, width, height);
 
     SpectralDataToRGB(a_filePath, width, height, spectralData, wavelengths);
   }
 
-  std::vector<HRMaterialRef> CreateSpectralDiffuseMaterials(const std::vector<int> &wavelengths,
+  void SpectralImagesToY(std::filesystem::path &a_filePath, const std::vector<std::filesystem::path> &a_specPaths,
+                         const std::vector<float> &wavelengths)
+  {
+    if(a_specPaths.size() != wavelengths.size())
+    {
+      HrError(L"[hr_spectral::SpectralImagesToY] Number of spectral images is not equal to size of wavelengths vector");
+      return;
+    }
+
+    int width, height;
+    auto spectralData = LoadSpectralDataFromFiles(a_specPaths, width, height);
+
+    SpectralDataToY(a_filePath, width, height, spectralData, wavelengths);
+  }
+
+  std::vector<HRMaterialRef> CreateSpectralDiffuseMaterials(const std::vector<float> &wavelengths,
                                                             const std::vector<float> &spd,
                                                             const std::wstring& name)
   {
@@ -212,7 +385,7 @@ namespace hr_spectral
     return result;
   }
 
-  std::vector<HRLightRef> CreateSpectralLights(const HRLightRef &baseLight, const std::vector<int> &wavelengths,
+  std::vector<HRLightRef> CreateSpectralLights(const HRLightRef &baseLight, const std::vector<float> &wavelengths,
                                                const std::vector<float> &spd, const std::wstring& name)
   {
     assert(wavelengths.size() == spd.size());
@@ -222,7 +395,7 @@ namespace hr_spectral
     hrLightOpen(baseLight, HR_OPEN_READ_ONLY);
     auto baselightNode = hrLightParamNode(baseLight);
 
-    for(int i = 0 ; i < spd.size(); ++i)
+    for(size_t i = 0 ; i < spd.size(); ++i)
     {
       std::wstringstream ws;
       ws << name << L"_" << wavelengths[i];
@@ -248,8 +421,53 @@ namespace hr_spectral
     return result;
   }
 
+  std::vector<HRLightRef> CreateSpectralLightsD65(const HRLightRef &baseLight, const std::vector<float> &wavelengths,
+                                                  const std::wstring& name)
+  {
+    std::vector<HRLightRef> result;
+    result.reserve(wavelengths.size());
+
+    hrLightOpen(baseLight, HR_OPEN_READ_ONLY);
+    auto baselightNode = hrLightParamNode(baseLight);
+
+    for(size_t i = 0 ; i < wavelengths.size(); ++i)
+    {
+      std::wstringstream ws;
+      ws << name << L"_" << wavelengths[i];
+      HRLightRef light = hrLightCreate(ws.str().c_str());
+      hrLightOpen(light, HR_WRITE_DISCARD);
+      {
+        auto lightNode = hrLightParamNode(light);
+
+        HydraXMLHelpers::forceAttributes(baselightNode, lightNode, {L"id", L"name", L"mat_id"});
+        HydraXMLHelpers::copyChildNodes(baselightNode, lightNode);
+
+        auto colorNode = lightNode.force_child(L"intensity").force_child(L"color");
+        auto val = colorNode.force_attribute(L"val");
+
+        if(uint32_t(wavelengths[i]) < D_65_FIRST_WAVELENGTH ||
+           uint32_t(wavelengths[i]) > D_65_FIRST_WAVELENGTH + D_65_ARRAY_SIZE * D_65_PRECISION )
+        {
+          HrError(L"[hr_spectral::CreateSpectralLightsD65] Wavelength out of known range for d65", wavelengths[i]);
+          return {};
+        }
+
+        float d65_val = D_65_SPD[uint32_t(wavelengths[i]) - D_65_FIRST_WAVELENGTH] / D_65_MAX_VAL;
+
+        HydraXMLHelpers::WriteFloat3(val, {d65_val, d65_val, d65_val});
+      }
+      hrLightClose(light);
+
+      result.push_back(light);
+    }
+
+    hrLightClose(baseLight);
+
+    return result;
+  }
+
   std::vector<HRMaterialRef> CreateSpectralDiffuseMaterialsFromSPDFile(const std::filesystem::path &spd_file,
-                                                                       const std::vector<int> &wavelengths,
+                                                                       const std::vector<float> &wavelengths,
                                                                        const std::wstring& name)
   {
     if(!std::filesystem::exists(spd_file))
@@ -258,7 +476,7 @@ namespace hr_spectral
       return {};
     }
 
-    std::vector<int> file_wavelengths;
+    std::vector<float> file_wavelengths;
     std::vector<float> file_spd;
 
     std::ifstream in(spd_file);
@@ -266,8 +484,8 @@ namespace hr_spectral
     while(std::getline(in, line))
     {
       auto split_pos = line.find_first_of(' ');
-      int wavelength = std::stoi(line.substr(0, split_pos));
-      float power    = std::stof(line.substr(split_pos + 1, (line.size() - split_pos)));
+      float wavelength = std::stof(line.substr(0, split_pos));
+      float power      = std::stof(line.substr(split_pos + 1, (line.size() - split_pos)));
 
       file_spd.push_back(power);
       file_wavelengths.push_back(wavelength);
@@ -277,7 +495,8 @@ namespace hr_spectral
     spd.reserve(wavelengths.size());
     for(const auto& w: wavelengths)
     {
-      auto found = std::find_if(file_wavelengths.begin(), file_wavelengths.end(), [w](int x){return x == w;});
+      auto found = std::find_if(file_wavelengths.begin(), file_wavelengths.end(),
+                                [w](float x){return fabsf(x - w) < LiteMath::EPSILON;});
       if(found != file_wavelengths.end())
       {
         auto idx = found - file_wavelengths.begin();
@@ -315,7 +534,7 @@ namespace hr_spectral
     return result;
   }
 
-  std::vector<HRMaterialRef> CreateSpectralTexturedDiffuseMaterials(const std::vector<int> &wavelengths,
+  std::vector<HRMaterialRef> CreateSpectralTexturedDiffuseMaterials(const std::vector<float> &wavelengths,
                                                                     const std::vector<std::filesystem::path> &texPaths,
                                                                     const LiteMath::float4x4 &texMatrix,
                                                                     const std::wstring& name)
