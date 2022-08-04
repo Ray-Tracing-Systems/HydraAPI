@@ -55,9 +55,14 @@ namespace hr_spectral
                                                                     const std::vector<std::filesystem::path> &texPaths,
                                                                     const LiteMath::float4x4 &texMatrix,
                                                                     const std::wstring& name = L"mat");
+
   std::vector<HRMaterialRef> CreateSpectralDiffuseMaterialsFromSPDFile(const std::filesystem::path &spd_file,
                                                                        const std::vector<float> &wavelengths,
                                                                        const std::wstring& name = L"mat");
+
+  std::vector<HRMaterialRef> CreateSpectralDiffuseMaterialsFromSPDFile3channel(const std::filesystem::path &spd_file,
+                                                                               const std::vector<float> &wavelengths,
+                                                                               const std::wstring& name = L"mat");
 
   std::vector<HRLightRef> CreateSpectralLights(const HRLightRef &baseLight, const std::vector<float> &wavelengths,
                                                const std::vector<float> &spd, const std::wstring& name = L"light");

@@ -204,11 +204,12 @@ namespace hr_spectral
 
   void AddLoadedBufferToSingleChannelImg(std::vector<float> &imgData, const std::vector<float> &buffer, const int32_t channels)
   {
+    int dataChannels = (channels == 4) ? 3 : channels; // alpha channel does not store spectral data
     // add all channels from buf to imgData
     #pragma omp parallel for
     for(size_t i = 0; i < imgData.size(); ++i)
     {
-      for(int k = 0; k < channels; ++k)
+      for(int k = 0; k < dataChannels; ++k)
       {
         imgData[i] += buffer[i * channels + k];
       }
@@ -218,11 +219,12 @@ namespace hr_spectral
   void AppendLoadedBufferToSpectralData(std::vector<std::vector<float>> &spectralData, std::vector<float> &buffer,
                                         const int32_t a_width, const int32_t a_height, const int32_t channels)
   {
+    int dataChannels = (channels == 4) ? 3 : channels; // alpha channel does not store spectral data
     if(channels == 1)
       spectralData.push_back(std::move(buffer));
     else
     {
-      for (int k = 0; k < channels; ++k)
+      for (int k = 0; k < dataChannels; ++k)
       {
         std::vector<float> oneChannel(a_width * a_height);
 #pragma omp parallel for
@@ -246,7 +248,6 @@ namespace hr_spectral
     int channels;
     std::vector<float> tempBuf;
     pImgTool->LoadImageFromFile(a_specPaths[0].wstring().c_str(), a_width, a_height, channels, tempBuf);
-
     AppendLoadedBufferToSpectralData(spectralData, tempBuf, a_width, a_height, channels);
 
     for(int i = 1; i < a_specPaths.size(); ++i)
@@ -326,12 +327,6 @@ namespace hr_spectral
   void SpectralImagesToRGB(std::filesystem::path &a_filePath, const std::vector<std::filesystem::path> &a_specPaths,
                            const std::vector<float> &wavelengths)
   {
-    if(a_specPaths.size() != wavelengths.size())
-    {
-      HrError(L"[hr_spectral::SpectralImagesToRGB] Number of spectral images is not equal to size of wavelengths vector");
-      return;
-    }
-
     int width, height;
     auto spectralData = LoadSpectralDataFromFiles(a_specPaths, width, height);
 
@@ -525,6 +520,86 @@ namespace hr_spectral
         auto color = diff.append_child(L"color");
         auto val = color.append_attribute(L"val");
         HydraXMLHelpers::WriteFloat3(val, {spd[i], spd[i], spd[i]});
+      }
+      hrMaterialClose(mat);
+
+      result.push_back(mat);
+    }
+
+    return result;
+  }
+
+  std::vector<HRMaterialRef> CreateSpectralDiffuseMaterialsFromSPDFile3channel(const std::filesystem::path &spd_file,
+                                                                               const std::vector<float> &wavelengths,
+                                                                               const std::wstring& name)
+  {
+    if(!std::filesystem::exists(spd_file))
+    {
+      HrError(L".spd file does not exist");
+      return {};
+    }
+
+    std::vector<float> file_wavelengths;
+    std::vector<float> file_spd;
+
+    std::ifstream in(spd_file);
+    std::string line;
+    while(std::getline(in, line))
+    {
+      auto split_pos = line.find_first_of(' ');
+      float wavelength = std::stof(line.substr(0, split_pos));
+      float power      = std::stof(line.substr(split_pos + 1, (line.size() - split_pos)));
+
+      file_spd.push_back(power);
+      file_wavelengths.push_back(wavelength);
+    }
+
+    std::vector<float> spd;
+    spd.reserve(wavelengths.size());
+    for(const auto& w: wavelengths)
+    {
+      auto found = std::find_if(file_wavelengths.begin(), file_wavelengths.end(),
+                                [w](float x){return fabsf(x - w) < LiteMath::EPSILON;});
+      if(found != file_wavelengths.end())
+      {
+        auto idx = found - file_wavelengths.begin();
+        spd.push_back(file_spd[idx]);
+      }
+      else
+      {
+        // TODO: interpolate values
+      }
+    }
+
+    std::vector<HRMaterialRef> result;
+    result.reserve(spd.size());
+    int i = 0;
+    while(i < spd.size())
+    {
+      std::wstringstream ws;
+      ws << name << L"_" << wavelengths[i];
+      HRMaterialRef mat = hrMaterialCreate(ws.str().c_str());
+      hrMaterialOpen(mat, HR_WRITE_DISCARD);
+      {
+        auto matNode = hrMaterialParamNode(mat);
+
+        auto diff = matNode.append_child(L"diffuse");
+        diff.append_attribute(L"brdf_type").set_value(L"lambert");
+
+        auto color = diff.append_child(L"color");
+        auto val = color.append_attribute(L"val");
+
+        if(spd.size() - i == 1 || spd.size() - i == 2)
+        {
+          HydraXMLHelpers::WriteFloat3(val, {spd[i], spd[i], spd[i]});
+          i += 1;
+        }
+        else
+        {
+          HydraXMLHelpers::WriteFloat3(val, {spd[i + 0], spd[i + 1], spd[i + 2]});
+          i += 3;
+        }
+
       }
       hrMaterialClose(mat);
 
