@@ -641,14 +641,71 @@ namespace HydraRender
     return true;
   }
 
+  bool LoadHDRImageFromFile(const char* a_fileName, int* pW, int* pH, int* pChan, std::vector<float>& a_data)
+  {
+    FreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);
+
+    FREE_IMAGE_FORMAT fif = FIF_EXR; // image format
+
+    fif = FreeImage_GetFileType(a_fileName, 0);
+
+    if (fif == FIF_UNKNOWN)
+      fif = FreeImage_GetFIFFromFilename(a_fileName);
+
+    FIBITMAP* dib = nullptr;
+    if (FreeImage_FIFSupportsReading(fif))
+      dib = FreeImage_Load(fif, a_fileName);
+    else
+    {
+      std::cout << "LoadHDRImageFromFile() : FreeImage_FIFSupportsReading/FreeImage_Load failed!" << std::endl;
+      return false;
+    }
+    
+    auto imageType = FreeImage_GetImageType(dib);
+
+    BYTE* bits = FreeImage_GetBits(dib);
+    auto width = FreeImage_GetWidth(dib);
+    auto height = FreeImage_GetHeight(dib);
+    auto bitsPerPixel = FreeImage_GetBPP(dib);
+
+    int channels = 0;
+    if (imageType == FIT_RGBAF)
+      channels = 4;
+    else if (imageType == FIT_FLOAT)
+      channels = 1;
+    else
+    {
+      std::cout << "LoadHDRImageFromFile() : Unsupported channels number in image (must be 1 or 4)" << std::endl;
+      return false;
+    }
+
+    a_data.resize(width * height * channels);
+    float* fbits = (float*)bits;
+
+    for (unsigned int i = 0; i < width * height; i++)
+    {
+      for (unsigned int j = 0; j < channels; ++j)
+      {
+        a_data[channels * i + j] = fbits[channels * i + j];
+      }
+    }
+
+    FreeImage_Unload(dib);
+
+    (*pW)    = width;
+    (*pH)    = height;
+    (*pChan) = channels;
+    return true;
+  }
+
   float MSE_RGB_LDR(const std::vector<int32_t>& image1, const std::vector<int32_t>& image2)
   {
     if(image1.size() != image2.size())
-      return 0.0f;
+      return std::numeric_limits<float>::infinity();
 
     double accum = 0.0;
 
-    for(int i=0;i<image1.size();i++)
+    for(size_t i = 0; i < image1.size(); ++i)
     {
       const int pxData1 = image1[i];
       const int pxData2 = image2[i];
@@ -664,6 +721,29 @@ namespace HydraRender
     }
 
     return float(accum/double(image1.size()));
+  }
+
+  float MSE_HDR(const std::vector<float>& image1, const std::vector<float>& image2, const int channels)
+  {
+    if (image1.size() != image2.size())
+      return std::numeric_limits<float>::infinity();
+
+    double accum = 0.0;
+    size_t SIZE = image1.size() / channels;
+
+    for (size_t i = 0; i < SIZE; ++i)
+    {
+    
+      for (size_t k = 0; k < channels; ++k)
+      {
+        const float px1 = image1[i * channels + k];
+        const float px2 = image2[i * channels + k];
+
+        accum += double(px1 - px2) * double(px1 - px2);
+      }
+    }
+
+    return float(accum / double(SIZE));
   }
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -863,31 +943,12 @@ namespace HydraRender
       m_pInternal->SaveHDRImageToFileHDR(a_fileName, w, h, chan, a_data);
     else
     {
-    #ifdef WIN32 // old 3ds max FreeImage version
-      struct float3 { float x, y, z; };
-      struct float4 { float x, y, z, w; };
-      const float4* data = (const float4*)a_data;
-      std::vector<float3> tempData(w*h);
-      for (int i = 0; i < w*h; i++)
-      {
-        float4 src = data[i];
-        float3 dst;
-        dst.x = src.x;
-        dst.y = src.y;
-        dst.z = src.z;
-        tempData[i] = dst;
-      }
-      FIBITMAP* dib = FreeImage_AllocateT(FIT_RGBF, w, h);
-      BYTE* bits    = FreeImage_GetBits(dib);
-      memcpy(bits, &tempData[0], sizeof(float3)*w*h);
-    #else
       auto type = FIT_RGBAF;
       if(chan == 1)
         type = FIT_FLOAT;
       FIBITMAP *dib = FreeImage_ConvertFromRawBitsEx(FALSE, (BYTE*)a_data, type, w, h,
                                                      sizeof(float) * chan * w, chan * sizeof(float) * 8,
                                                      FI_RGBA_BLUE_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_RED_MASK, FALSE);
-    #endif
 
       FreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);
 

@@ -1109,15 +1109,16 @@ void RD_HydraConnection::GetFrameBufferLineLDR(int32_t a_xBegin, int32_t a_xEnd,
 
   // not sse version
   //
-  if (!HydraSSE::g_useSSE || channels == 1)
+  if (!HydraSSE::g_useSSE || channels != 4)
   {
+    #pragma omp parallel for
     for (int i = a_xBegin; i < a_xEnd; i++)  // #TODO: use sse and fast pow
     {
       float4 color{};
       if(channels == 1)
-        color = {data[i], data[i], data[i], data[i]};
+        color = float4{data[i], data[i], data[i], data[i]};
       else if(channels == 4)
-        color = {data[i * 4 + 0], data[i * 4 + 1], data[i * 4 + 2], data[i * 4 + 3]};
+        color = float4{data[i * 4 + 0], data[i * 4 + 1], data[i * 4 + 2], data[i * 4 + 3]};
 
 //        const float4 color = dataHDR[i];
       a_out[i - a_xBegin] = HRUtils::RealColorToUint32(powf(color.x * normConst, invGamma),

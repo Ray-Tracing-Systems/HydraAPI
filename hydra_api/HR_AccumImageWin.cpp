@@ -20,8 +20,9 @@ struct SharedAccumImageWin32 : public IHRSharedAccumImage
   SharedAccumImageWin32();
   ~SharedAccumImageWin32();
 
-  bool   Create(int w, int h, int d, const char* name, char errMsg[256]) override;
-  bool   Attach(const char* name, char errMsg[256]) override;
+  bool Create(int w, int h, int d, const char* name, char errMsg[ERR_MSG_SZ]) override;
+  bool Create(int w, int h, int d, int channels, const char* name, char errMsg[ERR_MSG_SZ]) override;
+  bool Attach(const char* name, char errMsg[ERR_MSG_SZ]) override;
 
   void Clear() override;
 
@@ -34,6 +35,7 @@ struct SharedAccumImageWin32 : public IHRSharedAccumImage
   float*  ImageData(int layerNum) override;
 
 private:
+  bool CreateInternal(int a_width, int a_height, int a_depth, int a_channels, const char* a_name, char a_errMsg[ERR_MSG_SZ]);
 
   void Free();
   void AttachTo(char* memory);
@@ -78,16 +80,15 @@ void SharedAccumImageWin32::Free()
   m_images  = nullptr;
 }
 
-
-bool SharedAccumImageWin32::Create(int a_width, int a_height, int a_depth, const char* a_name, char a_errMsg[256])
+bool SharedAccumImageWin32::CreateInternal(int a_width, int a_height, int a_depth, int a_channels, const char* a_name, char a_errMsg[ERR_MSG_SZ])
 {
-  memset(a_errMsg, 0, 256);
+  memset(a_errMsg, 0, ERR_MSG_SZ);
 
-  if (a_width == 0 || a_height == 0 || a_depth == 0)
+  if (a_width == 0 || a_height == 0 || a_depth == 0 || a_channels == 0)
   {
     Free();
-    if(a_errMsg != nullptr)
-      strcpy(a_errMsg, "");
+    if (a_errMsg != nullptr)
+      strncpy(a_errMsg, "", ERR_MSG_SZ);
     return true;
   }
   else // #TODO: if new width != old width ... 
@@ -95,40 +96,46 @@ bool SharedAccumImageWin32::Create(int a_width, int a_height, int a_depth, const
     if (m_memory != nullptr)
     {
       auto* pHeader = Header();
-      if (pHeader->width == a_width && pHeader->height == a_height && pHeader->depth == a_depth && m_shmemName == a_name)
+      if (pHeader->width == a_width && pHeader->height == a_height && pHeader->depth == a_depth &&
+          pHeader->channels == a_channels && m_shmemName == a_name)
+      {
         return true;
+      }
     }
 
     Free();
+
     m_shmemName = a_name;
-    
-    const int64_t totalSize     = int64_t(sizeof(HRSharedBufferHeader)) + int64_t(MESSAGE_SIZE * 2) + int64_t(a_width*a_height)*int64_t(a_depth*sizeof(float)*4) + int64_t(1024);
     const std::string mutexName = std::string(a_name) + "_mutex";
+
+    const int64_t totalSize = int64_t(sizeof(HRSharedBufferHeader)) + int64_t(MESSAGE_SIZE * 2) +
+                              int64_t(a_width * a_height) * int64_t(a_depth * a_channels * sizeof(float)) +
+                              int64_t(1024);
+    
 
     m_mutex = CreateMutexA(NULL, FALSE, mutexName.c_str());
 
     if (m_mutex == NULL || m_mutex == INVALID_HANDLE_VALUE)
     {
-      strcpy(a_errMsg, "FAILED to create mutex (CreateMutexA)");
+      strncpy(a_errMsg, "FAILED to create mutex (CreateMutexA)", ERR_MSG_SZ);
       return false;
     }
 
     DWORD high = (DWORD)(totalSize >> 32);
-    DWORD low  = (DWORD)(totalSize & 0x00000000FFFFFFFF);
+    DWORD low = (DWORD)(totalSize & 0x00000000FFFFFFFF);
 
     m_buffHandle = CreateFileMappingA(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, high, low, a_name);
-
     if (m_buffHandle == NULL || m_buffHandle == INVALID_HANDLE_VALUE)
     {
-      strcpy(a_errMsg, "FAILED to alloc shared memory (CreateFileMappingA)");
+      strncpy(a_errMsg, "FAILED to alloc shared memory (CreateFileMappingA)", ERR_MSG_SZ);
       Free();
       return false;
     }
 
     m_memory = (char*)MapViewOfFile(m_buffHandle, FILE_MAP_WRITE | FILE_MAP_READ, 0, 0, 0);
-    if(m_memory == nullptr)
+    if (m_memory == nullptr)
     {
-      strcpy(a_errMsg, "FAILED to map shared memory (MapViewOfFile)");
+      strncpy(a_errMsg, "FAILED to map shared memory (MapViewOfFile)", ERR_MSG_SZ);
       Free();
       return false;
     }
@@ -146,14 +153,15 @@ bool SharedAccumImageWin32::Create(int a_width, int a_height, int a_depth, const
     pHeader->width      = a_width;
     pHeader->height     = a_height;
     pHeader->depth      = a_depth;
+    pHeader->channels   = a_channels;
     pHeader->spp        = 0.0f;
     pHeader->counterRcv = 0;
     pHeader->counterSnd = 0;
 
-    pHeader->totalByteSize      = totalSize;
-    pHeader->messageSendOffset  = sizeof(HRSharedBufferHeader);
-    pHeader->messageRcvOffset   = pHeader->messageSendOffset + MESSAGE_SIZE;
-    pHeader->imageDataOffset    = pHeader->messageSendOffset + MESSAGE_SIZE*2;
+    pHeader->totalByteSize     = totalSize;
+    pHeader->messageSendOffset = sizeof(HRSharedBufferHeader);
+    pHeader->messageRcvOffset  = pHeader->messageSendOffset + MESSAGE_SIZE;
+    pHeader->imageDataOffset   = pHeader->messageSendOffset + MESSAGE_SIZE * 2;
 
     // now find offset for imageDataOffset to make resulting pointer is aligned(16) !!!
     //
@@ -173,13 +181,23 @@ bool SharedAccumImageWin32::Create(int a_width, int a_height, int a_depth, const
     AttachTo(m_memory);
   }
 
-  strcpy(a_errMsg, "");
+  strncpy(a_errMsg, "", ERR_MSG_SZ);
   return true;
 }
 
-bool SharedAccumImageWin32::Attach(const char* name, char errMsg[256])
+bool SharedAccumImageWin32::Create(int a_width, int a_height, int a_depth, const char* a_name, char a_errMsg[ERR_MSG_SZ])
 {
-  memset(errMsg, 0, 256);
+  return CreateInternal(a_width, a_height, a_depth, 4, a_name, a_errMsg);
+}
+
+bool SharedAccumImageWin32::Create(int a_width, int a_height, int a_depth, int a_channels, const char* a_name, char a_errMsg[ERR_MSG_SZ])
+{
+  return CreateInternal(a_width, a_height, a_depth, a_channels, a_name, a_errMsg);
+}
+
+bool SharedAccumImageWin32::Attach(const char* name, char a_errMsg[ERR_MSG_SZ])
+{
+  memset(a_errMsg, 0, ERR_MSG_SZ);
   Free();
 
   const std::string mutexName = std::string(name) + "_mutex";
@@ -187,7 +205,7 @@ bool SharedAccumImageWin32::Attach(const char* name, char errMsg[256])
   m_mutex = OpenMutexA(MUTEX_ALL_ACCESS, FALSE, mutexName.c_str());
   if (m_mutex == NULL || m_mutex == INVALID_HANDLE_VALUE)
   {
-    strcpy(errMsg, "FAILED to attach mutex (OpenMutexA)");
+    strncpy(a_errMsg, "FAILED to attach mutex (OpenMutexA)", ERR_MSG_SZ);
     return false;
   }
 
@@ -195,7 +213,7 @@ bool SharedAccumImageWin32::Attach(const char* name, char errMsg[256])
 
   if (m_buffHandle == NULL || m_buffHandle == INVALID_HANDLE_VALUE)
   {
-    strcpy(errMsg, "FAILED to attach shmem (OpenFileMappingA)");
+    strncpy(a_errMsg, "FAILED to attach shmem (OpenFileMappingA)", ERR_MSG_SZ);
     Free();
     return false;
   }
@@ -203,14 +221,14 @@ bool SharedAccumImageWin32::Attach(const char* name, char errMsg[256])
   m_memory = (char*)MapViewOfFile(m_buffHandle, FILE_MAP_WRITE | FILE_MAP_READ, 0, 0, 0);
   if (m_memory == nullptr)
   {
-    strcpy(errMsg, "FAILED to map shared memory (MapViewOfFile)");
+    strncpy(a_errMsg, "FAILED to map shared memory (MapViewOfFile)", ERR_MSG_SZ);
     Free();
     return false;
   }
 
   AttachTo(m_memory);
 
-  strcpy(errMsg, "");
+  strncpy(a_errMsg, "", ERR_MSG_SZ);
   return true;
 }
 
@@ -223,7 +241,7 @@ void SharedAccumImageWin32::Clear()
   pHeader->counterSnd = 0;
 
   auto pImg = ImageData(0);
-  memset(pImg, 0, size_t(pHeader->width*pHeader->height)*size_t(sizeof(float)*4));
+  memset(pImg, 0, size_t(pHeader->width * pHeader->height) * size_t(pHeader->channels * sizeof(float)));
 }
 
 
@@ -254,7 +272,7 @@ void SharedAccumImageWin32::Unlock()
 float* SharedAccumImageWin32::ImageData(int layerId)
 {
   HRSharedBufferHeader* pHeader = (HRSharedBufferHeader*)m_memory;
-  return m_images + int64_t(pHeader->width*pHeader->height)*int64_t(layerId*4);
+  return m_images + int64_t(pHeader->width * pHeader->height) * int64_t(layerId * pHeader->channels);
 }
 
 char* SharedAccumImageWin32::MessageSendData()

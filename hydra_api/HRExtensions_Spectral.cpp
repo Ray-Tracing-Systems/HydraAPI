@@ -336,12 +336,6 @@ namespace hr_spectral
   void SpectralImagesToY(std::filesystem::path &a_filePath, const std::vector<std::filesystem::path> &a_specPaths,
                          const std::vector<float> &wavelengths)
   {
-    if(a_specPaths.size() != wavelengths.size())
-    {
-      HrError(L"[hr_spectral::SpectralImagesToY] Number of spectral images is not equal to size of wavelengths vector");
-      return;
-    }
-
     int width, height;
     auto spectralData = LoadSpectralDataFromFiles(a_specPaths, width, height);
 

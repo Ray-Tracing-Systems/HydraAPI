@@ -72,7 +72,7 @@ HAPI void hrLightOpen(HRLightRef a_pLight, HR_OPEN_MODE a_openMode)
 
   if (pLight->opened)
   {
-    HrError(L"hrLightOpen, double open material, with id = ", pLight->id);
+    HrError(L"hrLightOpen, double open light, with id = ", pLight->id);
     return;
   }
 
@@ -90,14 +90,14 @@ HAPI void hrLightOpen(HRLightRef a_pLight, HR_OPEN_MODE a_openMode)
     nodeXml.attribute(L"distribution").set_value(L"omni");
     nodeXml.attribute(L"id").set_value(pLight->id);
   }
-  else if (a_openMode == HR_OPEN_EXISTING)
-  {
+  //else if (a_openMode == HR_OPEN_EXISTING)
+  //{
 
-  }
-  else
-  {
-    HrError(L"hrLightOpen, bad open mode ");
-  }
+  //}
+  //else
+  //{
+  //  HrError(L"hrLightOpen, bad open mode ");
+  //}
 
 }
 
