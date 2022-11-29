@@ -280,7 +280,10 @@ HAPI HRTextureNodeRef hrTexture2DUpdateFromMemory(HRTextureNodeRef currentRef, i
   //   
   {
     auto* pSysObject = g_objManager.PtrById(currentRef);
-    auto pImpl       = pSysObject->pImpl;
+    std::shared_ptr<IHRTextureNode> pImpl = nullptr;
+
+    if(pSysObject != nullptr)
+      pImpl = pSysObject->pImpl;
 
     if (pImpl != nullptr)
     {
