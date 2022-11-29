@@ -122,7 +122,7 @@ HRMesh* HRObjectManager::PtrById(HRMeshRef a_ref)
 {
   if (scnData.meshes.empty())
     return nullptr;
-  else if (a_ref.id < 0 || a_ref.id > (int)(scnData.meshes.size()))
+  else if (a_ref.id < 0 || a_ref.id >= (int)(scnData.meshes.size()))
   {
     HrError(L"Invalid HRMeshRef, id = ", a_ref.id);
     return nullptr;
