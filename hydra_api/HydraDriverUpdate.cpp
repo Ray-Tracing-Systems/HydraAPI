@@ -705,8 +705,16 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, std::vector<HRBatchInfo>& a
 {
   pugi::xml_node nodeXML = mesh.xml_node();
 
+  std::wstring pathAbs;
+
   std::ifstream fin;
   hr_ifstream_open(fin, path);
+  if(!fin.is_open())           // try relative path
+  {
+    pathAbs = g_objManager.scnData.m_libFolder + std::wstring(L"/") + std::wstring(path);
+    path    = pathAbs.c_str();
+    hr_ifstream_open(fin, path);
+  }
 
   if(!fin.is_open())
   {

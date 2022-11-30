@@ -67,6 +67,8 @@
     "thread": "cpp",
     "cinttypes": "cpp",
     "typeinfo": "cpp",
-    "semaphore": "cpp"
+    "semaphore": "cpp",
+    "__nullptr": "cpp",
+    "filesystem": "cpp"
   }
 }
