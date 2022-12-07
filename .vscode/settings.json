@@ -69,6 +69,11 @@
     "typeinfo": "cpp",
     "semaphore": "cpp",
     "__nullptr": "cpp",
-    "filesystem": "cpp"
+    "filesystem": "cpp",
+    "shared_mutex": "cpp",
+    "__bit_reference": "cpp",
+    "__hash_table": "cpp",
+    "__string": "cpp",
+    "__tree": "cpp"
   }
 }

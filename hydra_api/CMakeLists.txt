@@ -16,6 +16,8 @@ set(SOURCE_FILES
         HydraAPI_Material.cpp
         HydraAPI_Texture.cpp
         HydraAPI_TextureProcLex.cpp
+        HydraAPI_EXR.cpp
+        ../dependencies/include/miniz.c
         HydraTextureUtils.cpp
         HydraLegacyUtils.cpp
         HydraDriverUpdate.cpp
