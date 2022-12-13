@@ -9,6 +9,10 @@ extern HRObjectManager g_objManager;
 #include <filesystem>
 #include <algorithm>
 
+
+
+bool SaveImagesToMultilayerEXR(const float** data, int width, int height, const char** outchannelnames, int n_images, const char* outfilename, bool a_invertY = false);
+
 namespace hr_spectral
 {
   //from PBRT-v3
@@ -46,6 +50,100 @@ namespace hr_spectral
     return sum / (lambdaEnd - lambdaStart);
   }
 
+  // Given a piecewise-linear SPD with values in vIn[] at corresponding
+// wavelengths lambdaIn[], where lambdaIn is assumed to be sorted but may
+// be irregularly spaced, resample the spectrum over the range of
+// wavelengths [lambdaMin, lambdaMax], with a total of nOut wavelength
+// samples between lambdaMin and lamdbaMax (including those at
+// endpoints). The resampled spectrum values are written to vOut.
+//from PBRT-v3
+  void ResampleLinearSpectrum(const float* lambdaIn, const float* vIn, int nIn, 
+    float lambdaMin, float lambdaMax, int nOut, float* vOut) 
+  {
+    assert(nOut > 2);
+    
+    //for (int i = 0; i < nIn - 1; ++i) CHECK_GT(lambdaIn[i + 1], lambdaIn[i]);
+    //CHECK_LT(lambdaMin, lambdaMax);
+
+
+    float delta = (lambdaMax - lambdaMin) / (nOut - 1);
+
+    auto lambdaInClamped = [&](int index) {
+      assert(index >= -1 && index <= nIn);
+      if (index == -1) 
+      {
+        //CHECK_LT(lambdaMin - delta, lambdaIn[0]);
+        return lambdaMin - delta;
+      }
+      else if (index == nIn) 
+      {
+        //CHECK_GT(lambdaMax + delta, lambdaIn[nIn - 1]);
+        return lambdaMax + delta;
+      }
+      return lambdaIn[index];
+    };
+
+    
+    auto vInClamped = [&](int index) {
+      assert(index >= -1 && index <= nIn);
+      return vIn[LiteMath::clamp(index, 0, nIn - 1)];
+    };
+
+
+    auto resample = [&](float lambda) -> float {
+      if (lambda + delta / 2 <= lambdaIn[0]) return vIn[0];
+      if (lambda - delta / 2 >= lambdaIn[nIn - 1]) return vIn[nIn - 1];
+      
+      if (nIn == 1) return vIn[0];
+
+      int start, end;
+      if (lambda - delta < lambdaIn[0])
+      {
+        start = -1;
+      }
+      else 
+      {
+        start = FindInterval(nIn, [&](int i) { return lambdaIn[i] <= lambda - delta; });
+        assert(start >= 0 && start < nIn);
+      }
+
+      if (lambda + delta > lambdaIn[nIn - 1])
+      {
+        end = nIn;
+      }
+      else 
+      {
+        end = start > 0 ? start : 0;
+        while (end < nIn && lambda + delta > lambdaIn[end]) ++end;
+      }
+
+      if (end - start == 2 && lambdaInClamped(start) <= lambda - delta &&
+          lambdaIn[start + 1] == lambda &&
+          lambdaInClamped(end) >= lambda + delta) 
+      {
+        return vIn[start + 1];
+      }
+      else if (end - start == 1) 
+      {
+        float t = (lambda - lambdaInClamped(start)) /
+          (lambdaInClamped(end) - lambdaInClamped(start));
+        assert(t >= 0 && t <= 1);
+        return LiteMath::lerp(vInClamped(start), vInClamped(end), t);
+      }
+      else 
+      {
+        return AverageSpectrumSamples(lambdaIn, vIn, nIn, lambda - delta / 2, lambda + delta / 2);
+      }
+    };
+
+
+    for (int outOffset = 0; outOffset < nOut; ++outOffset) 
+    {
+      float lambda = LiteMath::lerp(lambdaMin, lambdaMax, float(outOffset) / (nOut - 1));
+      vOut[outOffset] = resample(lambda);
+    }
+  }
+
   void ComputeXYZConversionCurves(float firstWavelength, float lastWavelength, uint32_t totalWavelengths,
                                   std::vector<float> &X, std::vector<float> &Y, std::vector<float> &Z)
   {
@@ -60,6 +158,41 @@ namespace hr_spectral
       Y[i] = AverageSpectrumSamples(CIE_lambda, CIE_Y, nCIESamples, wl0, wl1);
       Z[i] = AverageSpectrumSamples(CIE_lambda, CIE_Z, nCIESamples, wl0, wl1);
     }
+  }
+
+  // temporary solution
+  void ComputeXYZConversionCurvesUneven(const std::vector<float> wavelengths, std::vector<float>& X, std::vector<float>& Y, std::vector<float>& Z,
+    float step = 10.0f)
+  {
+    X.resize(wavelengths.size());
+    Y.resize(wavelengths.size());
+    Z.resize(wavelengths.size());
+    float firstWavelength = wavelengths.front();
+    float lastWavelength = wavelengths.back();
+    float diff = (lastWavelength - firstWavelength);
+    int totalSteps = int(diff / step) + 1;
+
+    std::vector<float> XX;
+    std::vector<float> YY;
+    std::vector<float> ZZ;
+    XX.resize(totalSteps); YY.resize(totalSteps); ZZ.resize(totalSteps);
+    for (int i = 0; i < totalSteps; ++i)
+    {
+      auto wl0 = LiteMath::lerp(firstWavelength, lastWavelength, float(i) / float(totalSteps));
+      auto wl1 = LiteMath::lerp(firstWavelength, lastWavelength, float(i + 1) / float(totalSteps));
+      XX[i] = AverageSpectrumSamples(CIE_lambda, CIE_X, nCIESamples, wl0, wl1);
+      YY[i] = AverageSpectrumSamples(CIE_lambda, CIE_Y, nCIESamples, wl0, wl1);
+      ZZ[i] = AverageSpectrumSamples(CIE_lambda, CIE_Z, nCIESamples, wl0, wl1);
+    }
+
+    for (int i = 0; i < wavelengths.size(); ++i)
+    {
+      int steps = int((wavelengths[i] - firstWavelength) / step);
+      X[i] = XX[steps];
+      Y[i] = YY[steps];
+      Z[i] = ZZ[steps];
+    }
+
   }
 
   LiteMath::float3 ToXYZ(const std::vector<float> &spec, const std::vector<float> &wavelengths,
@@ -96,7 +229,7 @@ namespace hr_spectral
   }
 
   void SpectralDataToRGB(std::filesystem::path &a_filePath, int a_width, int a_height, const std::vector<std::vector<float>> &spec,
-                         const std::vector<float> &wavelengths)
+                         const std::vector<float> &wavelengths, bool need_resample)
   {
     if(spec.empty() || wavelengths.empty())
     {
@@ -119,7 +252,18 @@ namespace hr_spectral
     std::vector<float> X;
     std::vector<float> Y;
     std::vector<float> Z;
-    ComputeXYZConversionCurves(wavelengths.front(), wavelengths.back(), wavelengths.size(), X, Y, Z);
+
+    if (need_resample)
+    {
+      // TODO: proper resample
+      /*ResampleLinearSpectrum(wavelengths.data(), spec.data(), spec.size(), wavelengths.front(), wavelengths.back(),
+        wavelengths.size(), spectrum_new.data());*/
+      ComputeXYZConversionCurvesUneven(wavelengths, X, Y, Z);
+    }
+    else
+    {
+      ComputeXYZConversionCurves(wavelengths.front(), wavelengths.back(), wavelengths.size(), X, Y, Z);
+    }
 
 //    auto& imgData = g_objManager.m_tempBuffer;
 //    if (imgData.size() < a_width * a_height)
@@ -161,7 +305,7 @@ namespace hr_spectral
   }
 
   void SpectralDataToY(std::filesystem::path &a_filePath, int a_width, int a_height, const std::vector<std::vector<float>> &spec,
-                       const std::vector<float> &wavelengths)
+                       const std::vector<float> &wavelengths, bool need_resample)
   {
     if(spec.empty() || wavelengths.empty())
     {
@@ -184,7 +328,17 @@ namespace hr_spectral
     std::vector<float> X;
     std::vector<float> Y;
     std::vector<float> Z;
-    ComputeXYZConversionCurves(wavelengths.front(), wavelengths.back(), wavelengths.size(), X, Y, Z);
+    if (need_resample)
+    {
+      // TODO: proper resample
+      /*ResampleLinearSpectrum(wavelengths.data(), spec.data(), spec.size(), wavelengths.front(), wavelengths.back(),
+        wavelengths.size(), spectrum_new.data());*/
+      ComputeXYZConversionCurvesUneven(wavelengths, X, Y, Z);
+    }
+    else
+    {
+      ComputeXYZConversionCurves(wavelengths.front(), wavelengths.back(), wavelengths.size(), X, Y, Z);
+    }
 
     std::vector<float> imgData(a_width * a_height);
 
@@ -325,21 +479,44 @@ namespace hr_spectral
 
 
   void SpectralImagesToRGB(std::filesystem::path &a_filePath, const std::vector<std::filesystem::path> &a_specPaths,
-                           const std::vector<float> &wavelengths)
+                           const std::vector<float> &wavelengths, bool need_resample)
   {
     int width, height;
     auto spectralData = LoadSpectralDataFromFiles(a_specPaths, width, height);
 
-    SpectralDataToRGB(a_filePath, width, height, spectralData, wavelengths);
+    SpectralDataToRGB(a_filePath, width, height, spectralData, wavelengths, need_resample);
   }
 
+
   void SpectralImagesToY(std::filesystem::path &a_filePath, const std::vector<std::filesystem::path> &a_specPaths,
-                         const std::vector<float> &wavelengths)
+                         const std::vector<float> &wavelengths, bool need_resample)
   {
     int width, height;
     auto spectralData = LoadSpectralDataFromFiles(a_specPaths, width, height);
 
-    SpectralDataToY(a_filePath, width, height, spectralData, wavelengths);
+    SpectralDataToY(a_filePath, width, height, spectralData, wavelengths, need_resample);
+  }
+
+  void SpectralImagesToMultilayerEXR(std::filesystem::path& a_filePath, const std::vector<std::filesystem::path>& a_specPaths, 
+    const std::vector<float>& wavelengths)
+  {
+    int width, height;
+    auto spectralData = LoadSpectralDataFromFiles(a_specPaths, width, height);
+    std::vector<const float*> spectralDataPlain;
+    spectralDataPlain.reserve(spectralData.size());
+    for (const auto& spec : spectralData)
+    {
+      spectralDataPlain.push_back(spec.data());
+    }
+
+    std::vector<std::string> channel_names_tmp(wavelengths.size());
+    std::vector<const char*> channel_names(wavelengths.size());
+    for (size_t i = 0; i < wavelengths.size(); i++)
+    {
+      channel_names_tmp[i] = std::to_string(int(wavelengths[i])) + ".Y";
+      channel_names[i] = channel_names_tmp[i].c_str();
+    }
+    SaveImagesToMultilayerEXR(spectralDataPlain.data(), width, height, channel_names.data(), wavelengths.size(), a_filePath.string().c_str(), true);
   }
 
   std::vector<HRMaterialRef> CreateSpectralDiffuseMaterials(const std::vector<float> &wavelengths,
@@ -603,16 +780,97 @@ namespace hr_spectral
     return result;
   }
 
-  std::vector<HRMaterialRef> CreateSpectralTexturedDiffuseMaterials(const std::vector<float> &wavelengths,
-                                                                    const std::vector<std::filesystem::path> &texPaths,
-                                                                    const LiteMath::float4x4 &texMatrix,
-                                                                    const std::wstring& name)
+  std::vector<HRMaterialRef> CreateSpectralTexturedDiffuseRoughSpecMaterials(const std::vector<float>& wavelengths,
+                                                                             const std::vector<std::filesystem::path>& diffTexs,
+                                                                             const std::vector<std::filesystem::path>& glossTexs,
+                                                                             const LiteMath::float4x4& diffTexMatrix,
+                                                                             const LiteMath::float4x4& glossTexMatrix,
+                                                                             const float ior,
+                                                                             const std::wstring& name)
+  {
+    assert(wavelengths.size() == diffTexs.size());
+    assert(glossTexs.size() == diffTexs.size());
+    std::vector<HRMaterialRef> result;
+    result.reserve(diffTexs.size());
+
+    for(int i = 0 ; i < wavelengths.size(); ++i)
+    {
+      std::wstringstream ws;
+      ws << name << L"_" << wavelengths[i];
+
+      auto diffTexRef = hrTexture2DCreateFromFile(diffTexs[i].wstring().c_str());
+      auto glossTexRef = hrTexture2DCreateFromFile(glossTexs[i].wstring().c_str());
+
+      HRMaterialRef mat = hrMaterialCreate(ws.str().c_str());
+      hrMaterialOpen(mat, HR_WRITE_DISCARD);
+      {
+        auto matNode = hrMaterialParamNode(mat);
+
+        auto diff = matNode.append_child(L"diffuse");
+        diff.append_attribute(L"brdf_type").set_value(L"lambert");
+
+        auto color = diff.append_child(L"color");
+        auto val = color.append_attribute(L"val");
+        val.set_value(L"1.0 1.0 1.0");
+
+        color.append_attribute(L"tex_apply_mode") = L"replace";
+        {
+          auto texNode = hrTextureBind(diffTexRef, color);
+
+          texNode.append_attribute(L"matrix");
+          float samplerMatrix[16] = { diffTexMatrix(0,0), diffTexMatrix(0,1), diffTexMatrix(0,2), diffTexMatrix(0,3),
+                                      diffTexMatrix(1,0), diffTexMatrix(1,1), diffTexMatrix(1,2), diffTexMatrix(1,3),
+                                      diffTexMatrix(2,0), diffTexMatrix(2,1), diffTexMatrix(2,2), diffTexMatrix(2,3),
+                                      diffTexMatrix(3,0), diffTexMatrix(3,1), diffTexMatrix(3,2), diffTexMatrix(3,3), };
+
+          texNode.append_attribute(L"addressing_mode_u").set_value(L"clamp");
+          texNode.append_attribute(L"addressing_mode_v").set_value(L"clamp");
+          texNode.append_attribute(L"input_gamma").set_value(1.0f);
+          texNode.append_attribute(L"input_alpha").set_value(L"rgb");
+          HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
+        }
+
+        auto refl = matNode.append_child(L"reflectivity");
+        refl.append_attribute(L"brdf_type").set_value(L"ggx");
+        refl.append_child(L"color").append_attribute(L"val").set_value(L"1.0 1.0 1.0");
+        refl.append_child(L"fresnel").append_attribute(L"val").set_value(1);
+        refl.append_child(L"fresnel_ior").append_attribute(L"val").set_value(ior);
+        auto gloss = refl.append_child(L"glossiness");
+        gloss.append_attribute(L"val").set_value(L"1.0");
+        {
+          auto texNode = hrTextureBind(glossTexRef, gloss);
+
+          texNode.append_attribute(L"matrix");
+          float samplerMatrix[16] = { glossTexMatrix(0,0), glossTexMatrix(0,1), glossTexMatrix(0,2), glossTexMatrix(0,3),
+                                      glossTexMatrix(1,0), glossTexMatrix(1,1), glossTexMatrix(1,2), glossTexMatrix(1,3),
+                                      glossTexMatrix(2,0), glossTexMatrix(2,1), glossTexMatrix(2,2), glossTexMatrix(2,3),
+                                      glossTexMatrix(3,0), glossTexMatrix(3,1), glossTexMatrix(3,2), glossTexMatrix(3,3), };
+
+          texNode.append_attribute(L"addressing_mode_u").set_value(L"clamp");
+          texNode.append_attribute(L"addressing_mode_v").set_value(L"clamp");
+          texNode.append_attribute(L"input_gamma").set_value(1.0f);
+          texNode.append_attribute(L"input_alpha").set_value(L"rgb");
+          HydraXMLHelpers::WriteMatrix4x4(texNode, L"matrix", samplerMatrix);
+        }
+      }
+      hrMaterialClose(mat);
+
+      result.push_back(mat);
+    }
+
+    return result;
+  }
+
+  std::vector<HRMaterialRef> CreateSpectralTexturedDiffuseMaterials(const std::vector<float>& wavelengths,
+    const std::vector<std::filesystem::path>& texPaths,
+    const LiteMath::float4x4& texMatrix,
+    const std::wstring& name)
   {
     assert(wavelengths.size() == texPaths.size());
     std::vector<HRMaterialRef> result;
     result.reserve(texPaths.size());
 
-    for(int i = 0 ; i < wavelengths.size(); ++i)
+    for (int i = 0; i < wavelengths.size(); ++i)
     {
       std::wstringstream ws;
       ws << name << L"_" << wavelengths[i];

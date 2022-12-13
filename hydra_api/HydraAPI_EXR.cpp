@@ -5,10 +5,7 @@
 #include <string>
 #include <algorithm>
 
-#include <sys/types.h>
-#include <dirent.h>
-#include <errno.h>
-#include <math.h>
+#include <cmath>
 
 #if defined(_WIN32)
 #ifndef NOMINMAX
@@ -18,6 +15,174 @@
 
 #define TINYEXR_IMPLEMENTATION
 #include "tinyexr.h"
+
+void HrError(std::wstring a_str);
+bool SaveImageToEXR(const float* data, int width, int height, int channels, const char* outfilename, float a_normConst = 1.0f, bool a_invertY = false)
+{
+  EXRHeader header;
+  InitEXRHeader(&header);
+
+  EXRImage image;
+  InitEXRImage(&image);
+  image.num_channels = channels;
+
+  std::vector <std::vector<float>> images(channels);
+  for (auto& img : images)
+  {
+    img.resize(width* height);
+  }
+  
+  
+  if (a_invertY) 
+  {
+    for (int y = 0; y < height; y++) 
+    {
+      const int offsetY1 = y * width * channels;
+      const int offsetY2 = (height - y - 1) * width * channels;
+      for (int x = 0; x < width; x++) 
+      {
+        for (int c = 0; c < channels; ++c)
+        {
+          images[c][offsetY1 + x] = data[offsetY2 + x * channels + c] * a_normConst;
+        }
+      }
+    }
+  }
+  else 
+  {
+    for (size_t i = 0; i < size_t(width * height); i++) 
+    {
+      for (int c = 0; c < channels; ++c)
+      {
+        images[c][i] = data[channels * i + c] * a_normConst;
+      }
+    }
+  }
+
+  std::vector<float*> image_ptrs(channels);
+  {  
+    int i = 0;
+    for (auto& img_ptr : image_ptrs)
+    {
+      img_ptr = images[i].data();
+      i++;
+    }
+  }
+
+  image.images = (unsigned char**)image_ptrs.data();
+  image.width = width;
+  image.height = height;
+  header.num_channels = channels;
+  header.channels = (EXRChannelInfo*)malloc(sizeof(EXRChannelInfo) * header.num_channels);
+  
+  strncpy(header.channels[0].name, "Y", 255);
+  header.channels[0].name[strlen("Y")] = '\0';
+  for (int i = 1; i < channels; ++i)
+  {
+    std::string channel_name = std::to_string(i);
+    strncpy(header.channels[i].name, channel_name.c_str(), 255);
+    header.channels[i].name[strlen(channel_name.c_str())] = '\0';
+  }
+
+  header.pixel_types = (int*)malloc(sizeof(int) * header.num_channels);
+  header.requested_pixel_types = (int*)malloc(sizeof(int) * header.num_channels);
+  for (int i = 0; i < header.num_channels; i++) 
+  {
+    header.pixel_types[i] = TINYEXR_PIXELTYPE_FLOAT; 
+    header.requested_pixel_types[i] = TINYEXR_PIXELTYPE_FLOAT; 
+  }
+
+  const char* err = nullptr;
+  int ret = SaveEXRImageToFile(&image, &header, outfilename, &err);
+  if (ret != TINYEXR_SUCCESS) {
+    fprintf(stderr, "Save EXR err: %s\n", err);
+    FreeEXRErrorMessage(err); 
+    return false;
+  }
+
+  free(header.channels);
+  free(header.pixel_types);
+  free(header.requested_pixel_types);
+
+  return true;
+}
+
+
+bool SaveImagesToMultilayerEXR(const float** data, int width, int height, const char** outchannelnames, int n_images, const char* outfilename, bool a_invertY = false)
+{
+  EXRHeader header;
+  InitEXRHeader(&header);
+
+  EXRImage image;
+  InitEXRImage(&image);
+  image.num_channels = n_images;
+  image.images = (unsigned char**)data;
+  
+  std::vector<float*> image_ptrs(n_images);
+  std::vector <std::vector<float>> images(n_images);
+  if (a_invertY) // need to create a copy to invert pixels,
+  {
+    int i = 0;
+    for (auto& img : images)
+    {
+      img.resize(width * height);
+      //memcpy(img.data(), data[i], width * height * sizeof(float));
+      for (int y = 0; y < height; y++)
+      {
+        const int offsetY1 = y * width;
+        const int offsetY2 = (height - y - 1) * width;
+        for (int x = 0; x < width; x++)
+        {
+          img[offsetY1 + x] = data[i][offsetY2 + x];
+        }
+      }
+      image_ptrs[i] = img.data();
+      i++;
+    }
+    
+    image.images = (unsigned char**)image_ptrs.data();
+  }
+
+  image.width = width;
+  image.height = height;
+  header.num_channels = n_images;
+  header.channels = (EXRChannelInfo*)malloc(sizeof(EXRChannelInfo) * header.num_channels);
+
+  for (int i = 0; i < n_images; ++i)
+  {
+    if (strlen(outchannelnames[i]) >= 255)
+    {
+      std::wstringstream ws;
+      ws << L"[SaveImagesToMulitlayerEXR] ::channel name too long" << strlen(outchannelnames[i]);
+      HrError(ws.str());
+    }
+    strncpy(header.channels[i].name, outchannelnames[i], 255);
+    header.channels[i].name[strlen(outchannelnames[i])] = '\0';
+  }
+
+  header.pixel_types = (int*)malloc(sizeof(int) * header.num_channels);
+  header.requested_pixel_types = (int*)malloc(sizeof(int) * header.num_channels);
+  for (int i = 0; i < header.num_channels; i++)
+  {
+    header.pixel_types[i] = TINYEXR_PIXELTYPE_FLOAT;
+    header.requested_pixel_types[i] = TINYEXR_PIXELTYPE_FLOAT;
+  }
+
+  const char* err = nullptr;
+  int ret = SaveEXRImageToFile(&image, &header, outfilename, &err);
+  if (ret != TINYEXR_SUCCESS) {
+    fprintf(stderr, "Save EXR err: %s\n", err);
+    FreeEXRErrorMessage(err);
+    return false;
+  }
+
+  free(header.channels);
+  free(header.pixel_types);
+  free(header.requested_pixel_types);
+
+  return true;
+}
+
 
 bool SaveImage4fToEXR(const float* rgb, int width, int height, const char* outfilename, float a_normConst = 1.0f, bool a_invertY = false) 
 {

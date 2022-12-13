@@ -40,9 +40,11 @@
 namespace hr_spectral
 {
   void SpectralImagesToRGB(std::filesystem::path &a_filePath, const std::vector<std::filesystem::path> &a_specPaths,
-                           const std::vector<float> &wavelengths);
+                           const std::vector<float> &wavelengths, bool need_resample = false);
   void SpectralImagesToY(std::filesystem::path &a_filePath, const std::vector<std::filesystem::path> &a_specPaths,
-                         const std::vector<float> &wavelengths);
+                         const std::vector<float> &wavelengths, bool need_resample = false);
+  void SpectralImagesToMultilayerEXR(std::filesystem::path& a_filePath, const std::vector<std::filesystem::path>& a_specPaths,
+    const std::vector<float>& wavelengths);
   void AverageSpectralImages(std::filesystem::path &a_filePath, const std::vector<std::filesystem::path> &a_specPaths);
   void AverageSpectralImagesV2(std::filesystem::path &a_filePath, const std::vector<std::filesystem::path> &a_specPaths,
                                const std::vector<float> &wavelengths);
@@ -55,6 +57,14 @@ namespace hr_spectral
                                                                     const std::vector<std::filesystem::path> &texPaths,
                                                                     const LiteMath::float4x4 &texMatrix,
                                                                     const std::wstring& name = L"mat");
+
+  std::vector<HRMaterialRef> CreateSpectralTexturedDiffuseRoughSpecMaterials(const std::vector<float>& wavelengths,
+                                                                             const std::vector<std::filesystem::path>& diffTexs,
+                                                                             const std::vector<std::filesystem::path>& glossTexs,
+                                                                             const LiteMath::float4x4& diffTexMatrix,
+                                                                             const LiteMath::float4x4& glossTexMatrix,
+                                                                             const float ior = 1.5f,
+                                                                             const std::wstring& name = L"mat");
 
   std::vector<HRMaterialRef> CreateSpectralDiffuseMaterialsFromSPDFile(const std::filesystem::path &spd_file,
                                                                        const std::vector<float> &wavelengths,
@@ -101,6 +111,23 @@ namespace hr_spectral
     xyz[2] = 0.019334f * rgb[0] + 0.119193f * rgb[1] + 0.950227f * rgb[2];
 
     return xyz;
+  }
+
+  //from PBRT-v3
+  template <typename Predicate>
+  int FindInterval(int size, const Predicate& pred) {
+    int first = 0, len = size;
+    while (len > 0) {
+      int half = len >> 1, middle = first + half;
+      // Bisect range based on value of _pred_ at _middle_
+      if (pred(middle)) {
+        first = middle + 1;
+        len -= half + 1;
+      }
+      else
+        len = half;
+    }
+    return LiteMath::clamp(first - 1, 0, size - 2);
   }
 }
 
