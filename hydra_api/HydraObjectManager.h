@@ -374,6 +374,7 @@ struct HRSceneData : public HRObject<IHRSceneData>
   std::wstring m_path;
   std::wstring m_pathState;
   std::wstring m_fileState;
+  std::wstring m_libFolder;
 
   ChangeList m_changeList;
 

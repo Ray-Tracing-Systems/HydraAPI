@@ -16,6 +16,7 @@
 #include "tiny_obj_loader.h"
 
 extern HRObjectManager g_objManager;
+std::wstring GetAbsolutePath(const std::wstring& a_path);
 
 #ifdef WIN32
 #undef min
@@ -682,6 +683,7 @@ std::shared_ptr<IHRMesh> HydraFactoryCommon::CreateVSGFFromFile(HRMesh* pSysObj,
 }
 
 
+
 struct MeshOBJProxy : public IHRMesh
 {
   MeshOBJProxy() : m_loaded(false) {}
@@ -723,6 +725,8 @@ protected:
   bool ReadOBJHeader(const wchar_t* a_fileName)
   {
     std::filesystem::path fileName(a_fileName);
+    if(!std::filesystem::exists(fileName)) // try relative path
+      fileName = std::filesystem::path(g_objManager.scnData.m_libFolder + std::wstring(L"/") + std::wstring(a_fileName));
 
     if(!std::filesystem::exists(fileName))
     {
@@ -741,6 +745,7 @@ protected:
     if (!res)
     {
       HrPrint(HR_SEVERITY_ERROR, L"MeshOBJProxy::ReadOBJHeader, failed to load obj file ", a_fileName);
+      HrPrint(HR_SEVERITY_ERROR, L"MeshOBJProxy::ReadOBJHeader: ", err.c_str());
       return false;
     }
 

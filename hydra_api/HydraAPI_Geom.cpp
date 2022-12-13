@@ -238,8 +238,10 @@ void HR_LoadDataFromOBJ(const wchar_t* a_objectName, HRModelLoadInfo a_modelInfo
 
   /*******************************************    Reading the .obj file    ********************************************/
   auto path = std::filesystem::path(a_objectName);
-  auto matDir = path.parent_path();
+  if(!std::filesystem::exists(path)) // try relative path
+    path = std::filesystem::path(g_objManager.scnData.m_libFolder + std::wstring(L"/") + std::wstring(a_objectName));
 
+  auto matDir = path.parent_path();
   bool res = false;
   // Check for mtl file in the same folder as .obj file in case 'mtlRelativePath' is not provided
   if (a_modelInfo.mtlRelativePath == nullptr)

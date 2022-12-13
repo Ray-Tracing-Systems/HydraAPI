@@ -214,6 +214,8 @@ HAPI bool hrRenderSaveFrameBufferLDR(HRRenderRef a_pRender, const wchar_t* a_out
   return true;
 }
 
+bool SaveImage4fToEXR(const float* rgb, int width, int height, const char* outfilename, float a_normConst = 1.0f, bool a_invertY = false); 
+
 HAPI bool hrRenderSaveFrameBufferHDR(HRRenderRef a_pRender, const wchar_t* a_outFileName)
 {
   HRRender* pRender = g_objManager.PtrById(a_pRender);
@@ -256,7 +258,13 @@ HAPI bool hrRenderSaveFrameBufferHDR(HRRenderRef a_pRender, const wchar_t* a_out
     imgData.resize(size_t(w * h) * size_t(channels));
 
   pRender->m_pDriver->GetFrameBufferHDR(w, h, (float*)imgData.data(), L"color");
-  pImgTool->SaveHDRImageToFileHDR(a_outFileName, w, h, channels, (const float*)imgData.data());
+  if(std::wstring(a_outFileName).find(L".exr") != std::string::npos || std::wstring(a_outFileName).find(L".EXR") != std::string::npos) 
+  {
+    std::string fileNameS = ws2s(std::wstring(a_outFileName));
+    SaveImage4fToEXR((const float*)imgData.data(), w, h, fileNameS.c_str(), 1.0f, true);
+  }
+  else
+    pImgTool->SaveHDRImageToFileHDR(a_outFileName, w, h, (const float*)imgData.data());
 
   if (imgData.size() > TEMP_BUFFER_MAX_SIZE_DONT_FREE) // free temp buffer if it's too large
     imgData = g_objManager.EmptyBuffer();

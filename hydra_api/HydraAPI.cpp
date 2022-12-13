@@ -148,6 +148,7 @@ HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMod
     
     g_objManager.scnData.m_pathState = input;
     g_objManager.scnData.m_fileState = libFile;
+    g_objManager.scnData.m_libFolder = libFolder;
     input = libFolder;
   }
   
