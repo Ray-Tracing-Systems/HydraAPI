@@ -46,7 +46,7 @@ namespace hr_vtex
     float     distThreshold = 0.5f;
     bool      drawOutline   = true;  // draw outlines for shapes that have them (have "stroke fill" defined in SVG)
                                      // only solid outlines are supported   
-
+    bool      cutSDFbyShapeBBox = false;
     bool      sdfCombine = false; // combine all separate shapes sdfs into one texture or create a texture array
     // if sdfCombine == true, the following two values will be used to override shape and outline colors:
     float     overrideShapeColor[4]   = { 1.0f, 1.0f, 0.0f, 1.0f };

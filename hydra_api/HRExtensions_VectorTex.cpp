@@ -32,7 +32,7 @@ extern HRObjectManager g_objManager;
 //#define DEBUG_SDF_GEN
 
 #ifdef DEBUG_SDF_GEN
-#define DEBUG_SDF_GEN_DIR "tests_images/test_ext_vtex_1/"
+#define DEBUG_SDF_GEN_DIR "tests_images/test_ext_vtex_example/"
 #endif
 
 namespace hr_vtex
@@ -343,11 +343,22 @@ namespace hr_vtex
     const msdfgen::GeneratorConfig       sdfConf(true);
     const msdfgen::Projection            proj(1.0f, 0.0f);
 
-    const auto width  = static_cast<uint32_t>(std::ceil(a_image->width  * a_settings.resolutionScale));
-    const auto height = static_cast<uint32_t>(std::ceil(a_image->height * a_settings.resolutionScale));
+    const auto width  = static_cast<int32_t>(std::ceil(a_image->width  * a_settings.resolutionScale));
+    const auto height = static_cast<int32_t>(std::ceil(a_image->height * a_settings.resolutionScale));
+
+    msdfgen::Bitmap<float, 3> clean_bitmap(width, height);
+    //@TODO: modify bitmap class to init pixels with 0 more efficiently
+    for (int32_t y = 0; y < height; ++y)
+    {
+      for (int32_t x = 0; x < width; ++x)
+      {
+        clean_bitmap(x, y)[0] = 0;
+        clean_bitmap(x, y)[1] = 0;
+        clean_bitmap(x, y)[2] = 0;
+      }
+    }
 
     SDFData result;
-    int i = 0;
     for (NSVGshape* s = a_image->shapes; s != NULL; s = s->next)
     {
       float sdfRange = defaultSDFRange;
@@ -360,8 +371,6 @@ namespace hr_vtex
       shape.normalize();
       msdfgen::Shape::Bounds b = { };
       b = shape.getBounds();
-      result.bounds.push_back(std::move(b));
-
       if (a_settings.mode == VTEX_MODE::VTEX_SDF)
       {
         msdfgen::Bitmap<float, 1> sdf(width, height);
@@ -380,31 +389,49 @@ namespace hr_vtex
         msdfgen::Bitmap<float, 3> msdf(width, height);
         msdfgen::generateMSDF(msdf, shape, proj, sdfRange, msdfConf);
 
-//        auto bottom = static_cast<int>(height - std::floor(b.t));
-//        auto top    = static_cast<int>(height - std::fmaxf(0.0f, std::floor(b.b)));
-//        auto left   = static_cast<int>(std::fmaxf(0.0f, std::floor(b.l)));
-//        auto right  = static_cast<int>(std::floor(b.r));
+        int pad = 5;
 
-       /* msdfgen::Bitmap<float, 3> msdf_clean(width, height);
-        for (size_t y = bottom; y < top; ++y)
+        auto bottom = std::max(height - static_cast<int>(std::floor(b.t)) - pad, 0);
+        auto top    = std::min(height - static_cast<int>(std::fmaxf(0.0f, std::floor(b.b))) + pad, height);
+        auto left   = std::max(static_cast<int>(std::fmaxf(0.0f, std::floor(b.l))) - pad, 0);
+        auto right  = std::min(static_cast<int>(std::floor(b.r)) + pad, width);
+
+        if(a_settings.cutSDFbyShapeBBox)
         {
-          for (size_t x = left; x < right; ++x)
+          msdfgen::Bitmap<float, 3> msdf_clean(clean_bitmap);
+          for (int32_t y = bottom; y < top; ++y)
           {
-            msdf_clean(x, y)[0] = msdf(x, y)[0];
-            msdf_clean(x, y)[1] = msdf(x, y)[1];
-            msdf_clean(x, y)[2] = msdf(x, y)[2];
+            for (int32_t x = left; x < right; ++x)
+            {
+              msdf_clean(x, y)[0] = msdf(x, y)[0];
+              msdf_clean(x, y)[1] = msdf(x, y)[1];
+              msdf_clean(x, y)[2] = msdf(x, y)[2];
+            }
           }
-        }*/
 
 #ifdef DEBUG_SDF_GEN
-        std::string path = std::string(DEBUG_SDF_GEN_DIR) + std::string("msdf") + std::to_string(i) + ".png";
-        ++i;
-        msdfgen::savePng(msdf, path.c_str());
+          std::string path = std::string(DEBUG_SDF_GEN_DIR) + std::string("msdf") + std::to_string(i) + ".png";
+          ++i;
+          msdfgen::savePng(msdf_clean, path.c_str());
 #endif
-        result.sdfs.push_back(std::move(msdf));
+          result.sdfs.push_back(std::move(msdf_clean));
+        }
+        else
+        {
+#ifdef DEBUG_SDF_GEN
+          std::string path = std::string(DEBUG_SDF_GEN_DIR) + std::string("msdf") + std::to_string(i) + ".png";
+          ++i;
+          msdfgen::savePng(msdf, path.c_str());
+#endif
+          result.sdfs.push_back(std::move(msdf));
+        }
       }
-      
-      result.flat_colors.push_back(s->fill.color);
+      result.bounds.push_back(b);
+
+//      if (s->fill.type == 0)
+//        result.flat_colors.push_back(0);
+//      else
+        result.flat_colors.push_back(s->fill.color);
 //      const auto col = colorFromUint(result.flat_colors.back());
 //      std::cout << col.x << " " << col.y << " " << col.z << " " << col.w << std::endl;
 
@@ -645,8 +672,8 @@ namespace hr_vtex
           {
             const auto& sdf_ = msdfgen::BitmapRef<float, 3>(std::get<1>(sdf));
 #ifdef DEBUG_SDF_GEN
-            auto debug_save_path = std::string(DEBUG_SDF_GEN_DIR) + std::to_string(i) + std::string("_msdf.png");
-            msdfgen::savePng(sdf_, debug_save_path.c_str());
+//            auto debug_save_path = std::string(DEBUG_SDF_GEN_DIR) + std::to_string(i) + std::string("_msdf.png");
+//            msdfgen::savePng(sdf_, debug_save_path.c_str());
 #endif
             const auto pixel_data = convertSDFData(sdf_);
             auto tex = hrTexture2DCreateFromMemory(sdf_.width, sdf_.height, sizeof(pixel_data[0]), pixel_data.data());
