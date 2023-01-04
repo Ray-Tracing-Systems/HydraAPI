@@ -240,7 +240,7 @@ void ProcessProcTexFile(const std::wstring& in_file, const std::wstring& out_fil
   //
   std::vector<std::string> funNamesFiltered;
   std::copy_if(funNames.begin(), funNames.end(), std::back_inserter(funNamesFiltered),
-               [&](std::string s) { return (s != "if") && (s != "while"); });
+               [&](const std::string &s) { return (s != "if") && (s != "while"); });
 
   funNames = funNamesFiltered;
 

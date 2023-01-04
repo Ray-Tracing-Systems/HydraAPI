@@ -22,9 +22,11 @@
 
 #include "ssemath.h"
 
+
 #ifdef WIN32
 #include "../utils/clew/clew.h"
 #else
+#define CL_TARGET_OPENCL_VERSION 100
 #include <CL/cl.h>
 #endif
 

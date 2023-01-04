@@ -83,7 +83,7 @@ namespace hr_vtex
         return make_float4(r, g, b, a);
       }
 
-      float2 applyTexMatrix(const float2 texCoords, const float matrix[6])
+      float2 applyTexMatrix(const float2 texCoords, __global float matrix[6])
       {
         float2 result = texCoords;
         result.x = result.x * matrix[0] + result.y * matrix[1] + matrix[2];
@@ -161,7 +161,7 @@ namespace hr_vtex
   std::string makeSingleTexMainDeclaration(bool addOutlineSupport)
   {
     std::stringstream ss;
-    ss << "float4 main(const SurfaceInfo* sHit, unsigned mode, float texMatrix[6], int texFlags, float4 bgColor, sampler2D sdfTexture, unsigned objColorU";
+    ss << "float4 main(const SurfaceInfo* sHit, unsigned mode, __global float texMatrix[6], int texFlags, float4 bgColor, sampler2D sdfTexture, unsigned objColorU";
     if (addOutlineSupport)
     {
       ss << ", unsigned outlineColor";
@@ -220,12 +220,12 @@ namespace hr_vtex
   std::string makeMultiTexMainDeclaration(bool addOutlineSupport, uint32_t numTextures)
   {
     std::stringstream ss;
-    ss << "float4 main(const SurfaceInfo * sHit, unsigned mode, float texMatrix[6], int texFlags, float4 bgColor, sampler2D sdfTexture[" << numTextures << "], "
-      << "unsigned objColors[" << numTextures << "], ";
+    ss << "float4 main(const SurfaceInfo * sHit, unsigned mode, __global float texMatrix[6], int texFlags, float4 bgColor, __global sampler2D sdfTexture[" << numTextures << "], "
+      << "__global unsigned objColors[" << numTextures << "], ";
     if (addOutlineSupport)
     {
-      ss << "unsigned outlineColors[" << numTextures << "], "
-         << "unsigned hasOutline[" << numTextures << "], ";
+      ss << "__global unsigned outlineColors[" << numTextures << "], "
+         << "__global unsigned hasOutline[" << numTextures << "], ";
     }
 
     ss << " unsigned numTextures)";
