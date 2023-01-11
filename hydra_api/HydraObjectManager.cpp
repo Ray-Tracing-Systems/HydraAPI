@@ -60,6 +60,25 @@ void HRObjectManager::init(HRInitInfo a_initInfo)
   scnData.init(m_attachMode, m_pVBSysMutex, a_initInfo.vbSize);
 
   m_pImgTool = HydraRender::CreateImageTool();
+
+  m_dllFreeImageHangle = NULL;
+
+#ifdef WIN32
+  m_dllFreeImageHangle = LoadLibraryW(L"../FreeImage.dll");
+
+  if (m_dllFreeImageHangle != NULL)
+  {    
+    //typedef void (*funcInitialize)(BOOL);
+    using funcInitialize = void(*)(BOOL);
+
+    auto func = (funcInitialize)GetProcAddress(m_dllFreeImageHangle, "FreeImage_Initialise");
+    if (func != nullptr)
+      func(TRUE);
+  }
+#else
+
+#endif // WIN32
+
 }
 
 

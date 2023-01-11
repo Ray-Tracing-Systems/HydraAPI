@@ -19,7 +19,7 @@
 #include "LiteMath.h"
 #include "HydraXMLHelpers.h"
 
-#include "FreeImage.h"
+//#include "FreeImage.h"
 
 #pragma warning(disable:4996) // Visual Studio " 'wcsncpy': This function or variable may be unsafe. Consider using wcsncpy_s instead."
 
@@ -75,7 +75,7 @@ std::wstring ToWString(unsigned int i)
 
 HAPI void _hrInit(HRInitInfo a_initInfo)
 {
-  FreeImage_Initialise(true);
+  //FreeImage_Initialise(true);
   g_objManager.destroy();
   g_objManager.init(a_initInfo);
   setlocale(LC_ALL, "C");

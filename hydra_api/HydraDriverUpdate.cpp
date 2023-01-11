@@ -7,12 +7,12 @@
 #pragma warning(disable:4996)
 
 #if defined(WIN32)
-#include "FreeImage.h"
-#pragma comment(lib, "FreeImage.lib")
-#undef min
-#undef max
+  //#include "FreeImage.h"
+  //#pragma comment(lib, "FreeImage.lib")
+  #undef min
+  #undef max
 #else
-#include <FreeImage.h>
+  //#include <FreeImage.h>
 #endif
 
 #include <algorithm>

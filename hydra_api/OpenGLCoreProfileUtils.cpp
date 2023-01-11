@@ -13,7 +13,7 @@ namespace oldies
   };
 };
 
-#include "FreeImage.h"
+//#include "FreeImage.h"
 #include <algorithm>
 
 #ifndef WIN32

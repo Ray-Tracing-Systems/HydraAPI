@@ -482,6 +482,7 @@ struct HRRender : public HRObject<IHRRender>
 
 #define TEMP_BUFFER_MAX_SIZE_DONT_FREE 104857600
 
+
 struct HRObjectManager
 {
   HRObjectManager() : m_pFactory(nullptr), m_pDriver(nullptr), m_pImgTool(nullptr), m_currSceneId(0), m_currRenderId(0), m_currCamId(0), m_pVBSysMutex(nullptr),
@@ -526,6 +527,8 @@ struct HRObjectManager
   std::shared_ptr<IHRRenderDriver>     m_pDriver;
   std::unordered_set<IHRRenderDriver*> driverAllocated;
   std::shared_ptr<IHRImageTool>        m_pImgTool;
+
+  HMODULE m_dllFreeImageHangle;
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 

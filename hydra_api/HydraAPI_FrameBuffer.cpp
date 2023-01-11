@@ -16,7 +16,7 @@ extern std::wstring      g_lastError;
 extern std::wstring      g_lastErrorCallerPlace;
 extern HRObjectManager   g_objManager;
 
-#include <FreeImage.h>
+//#include <FreeImage.h>
 #include <cmath>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
