@@ -4,6 +4,7 @@
 #include "HydraInternal.h"
 #include "HydraRenderDriverAPI.h"
 #include "HR_HDRImage.h"
+#include "FreeImage.h"
 
 using HydraRender::HDRImage4f;
 using HydraRender::LDRImage1i;
@@ -483,6 +484,115 @@ struct HRRender : public HRObject<IHRRender>
 #define TEMP_BUFFER_MAX_SIZE_DONT_FREE 104857600
 
 
+struct HRFreeImageDLL
+{  
+  HMODULE m_dllFreeImageHangle  = NULL;
+
+
+  // Init / Error routines ----------------------------------------------------
+  using FREEIMAGE_INITIALISE           = void             (*)(BOOL); 
+
+
+  // Message output functions -------------------------------------------------
+  using FREEIMAGE_SETOUTPUTMESSAGE     = void             (*)(FreeImage_OutputMessageFunction omf);
+
+
+  // Allocate / Clone / Unload routines ---------------------------------------
+  //DLL_API FIBITMAP* DLL_CALLCONV FreeImage_Allocate(int width, int height, int bpp, unsigned red_mask FI_DEFAULT(0), unsigned green_mask FI_DEFAULT(0), unsigned blue_mask FI_DEFAULT(0));
+  using FREEIMAGE_ALLOCATE             = FIBITMAP*        (*)(int width, int height, int bpp, unsigned red_mask, unsigned green_mask, unsigned blue_mask);
+  //DLL_API FIBITMAP* DLL_CALLCONV FreeImage_AllocateT(FREE_IMAGE_TYPE type, int width, int height, int bpp FI_DEFAULT(8), unsigned red_mask FI_DEFAULT(0), unsigned green_mask FI_DEFAULT(0), unsigned blue_mask FI_DEFAULT(0));
+  using FREEIMAGE_ALLOCATET            = FIBITMAP*        (*)(FREE_IMAGE_TYPE type, int width, int height, int bpp, unsigned red_mask, unsigned green_mask, unsigned blue_mask);
+  using FREEIMAGE_UNLOAD               = void             (*)(FIBITMAP* dib);
+
+
+  // Load / Save routines -----------------------------------------------------
+  using FREEIMAGE_LOAD                 = FIBITMAP*        (*)(FREE_IMAGE_FORMAT fif, const char*    filename, int flags);
+  using FREEIMAGE_LOADU                = FIBITMAP*        (*)(FREE_IMAGE_FORMAT fif, const wchar_t* filename, int flags);
+  using FREEIMAGE_SAVEU                = BOOL             (*)(FREE_IMAGE_FORMAT fif, FIBITMAP* dib, const wchar_t* filename, int flags);
+
+
+  // Plugin Interface ---------------------------------------------------------
+  using FREEIMAGE_GETFIFFROMFILENAME   = FREE_IMAGE_FORMAT(*)(const char*    filename);
+  using FREEIMAGE_GETFIFFROMFILENAMEU  = FREE_IMAGE_FORMAT(*)(const wchar_t* filename);
+  using FREEIMAGE_FIFSUPPORTSREADING   = BOOL             (*)(FREE_IMAGE_FORMAT fif);
+
+
+  // File type request routines ------------------------------------------------
+  using FREEIMAGE_GETFILETYPE          = FREE_IMAGE_FORMAT(*)(const char*    filename, int size);
+  using FREEIMAGE_GETFILETYPEU         = FREE_IMAGE_FORMAT(*)(const wchar_t* filename, int size);
+
+
+  // DIB info routines --------------------------------------------------------
+  using FREEIMAGE_GETIMAGETYPE         = FREE_IMAGE_TYPE  (*)(FIBITMAP* dib);
+  using FREEIMAGE_GETBITS              = BYTE*            (*)(FIBITMAP* dib);
+  using FREEIMAGE_GETBPP               = unsigned         (*)(FIBITMAP* dib);
+  using FREEIMAGE_GETWIDTH             = unsigned         (*)(FIBITMAP* dib);
+  using FREEIMAGE_GETHEIGHT            = unsigned         (*)(FIBITMAP* dib);
+
+
+  // Smart conversion routines ------------------------------------------------
+  using FREEIMAGE_CONVERTFROMRAWBITSEX = FIBITMAP*        (*)(BOOL copySource, BYTE* bits, FREE_IMAGE_TYPE type, int width, int height, int pitch, unsigned bpp, unsigned red_mask, unsigned green_mask, unsigned blue_mask, BOOL topdown);
+  using FREEIMAGE_CONVERTTO8BITS       = FIBITMAP*        (*)(FIBITMAP* dib);
+  using FREEIMAGE_CONVERTTO32BITS      = FIBITMAP*        (*)(FIBITMAP* dib);
+  using FREEIMAGE_CONVERTTOFLOAT       = FIBITMAP*        (*)(FIBITMAP* dib);
+  using FREEIMAGE_CONVERTTORGBAF       = FIBITMAP*        (*)(FIBITMAP* dib);
+
+
+  /////////////////////////////////////////////////////////////////////////////
+
+
+  // Init / Error routines ----------------------------------------------------
+  FREEIMAGE_INITIALISE           m_pFreeImage_Initialise           = nullptr;
+
+
+  // Message output functions -------------------------------------------------
+  FREEIMAGE_SETOUTPUTMESSAGE     m_pFreeImage_SetOutputMessage     = nullptr;
+
+                 
+  // Allocate / Clone / Unload routines ---------------------------------------
+  FREEIMAGE_ALLOCATE             m_pFreeImage_Allocate             = nullptr;
+  FREEIMAGE_ALLOCATET            m_pFreeImage_AllocateT            = nullptr;
+  FREEIMAGE_UNLOAD               m_pFreeImage_Unload               = nullptr;
+
+
+  // Load / Save routines -----------------------------------------------------
+  FREEIMAGE_LOAD                 m_pFreeImage_Load                 = nullptr;
+  FREEIMAGE_LOADU                m_pFreeImage_LoadU                = nullptr;
+  FREEIMAGE_SAVEU                m_pFreeImage_SaveU                = nullptr;
+                   
+  // Plugin Interface ---------------------------------------------------------
+  FREEIMAGE_GETFIFFROMFILENAME   m_pFreeImage_GetFIFFromFilename   = nullptr;
+  FREEIMAGE_GETFIFFROMFILENAMEU  m_pFreeImage_GetFIFFromFilenameU  = nullptr;
+  FREEIMAGE_FIFSUPPORTSREADING   m_pFreeImage_FIFSupportsReading   = nullptr;
+
+
+  // File type request routines ------------------------------------------------
+  FREEIMAGE_GETFILETYPE          m_pFreeImage_GetFileType          = nullptr;
+  FREEIMAGE_GETFILETYPEU         m_pFreeImage_GetFileTypeU         = nullptr;
+
+
+  // DIB info routines --------------------------------------------------------
+  FREEIMAGE_GETIMAGETYPE         m_pFreeImage_GetImageType         = nullptr;
+  FREEIMAGE_GETBITS              m_pFreeImage_GetBits              = nullptr;
+  FREEIMAGE_GETBPP               m_pFreeImage_GetBPP               = nullptr;
+  FREEIMAGE_GETWIDTH             m_pFreeImage_GetWidth             = nullptr;
+  FREEIMAGE_GETHEIGHT            m_pFreeImage_GetHeight            = nullptr;
+
+
+  // Smart conversion routines ------------------------------------------------
+  FREEIMAGE_CONVERTFROMRAWBITSEX m_pFreeImage_ConvertFromRawBitsEx = nullptr; // not in FreeImage.dll 3dsMax 2020-2022, has FreeImage_ConvertFromRawBits
+  FREEIMAGE_CONVERTTO8BITS       m_pFreeImage_ConvertTo8Bits       = nullptr;
+  FREEIMAGE_CONVERTTO32BITS      m_pFreeImage_ConvertTo32Bits      = nullptr;
+  FREEIMAGE_CONVERTTOFLOAT       m_pFreeImage_ConvertToFloat       = nullptr;
+  FREEIMAGE_CONVERTTORGBAF       m_pFreeImage_ConvertToRGBAF       = nullptr; // not in FreeImage.dll 3dsMax 2020-2022, has FreeImage_ConvertToRGBF
+
+
+  void Initialize();
+};
+
+
+
+
 struct HRObjectManager
 {
   HRObjectManager() : m_pFactory(nullptr), m_pDriver(nullptr), m_pImgTool(nullptr), m_currSceneId(0), m_currRenderId(0), m_currCamId(0), m_pVBSysMutex(nullptr),
@@ -528,7 +638,7 @@ struct HRObjectManager
   std::unordered_set<IHRRenderDriver*> driverAllocated;
   std::shared_ptr<IHRImageTool>        m_pImgTool;
 
-  HMODULE m_dllFreeImageHangle;
+  HRFreeImageDLL m_FreeImageDll;
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 

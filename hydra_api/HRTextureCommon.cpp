@@ -11,12 +11,12 @@
 
 #pragma warning(disable:4996)
 
-//#if defined(WIN32)
-//  #include "FreeImage.h"
-//  #pragma comment(lib, "FreeImage.lib")
-//#else
-//  #include <FreeImage.h>
-//#endif
+#if defined(WIN32)
+  #include "FreeImage.h"
+  //#pragma comment(lib, "FreeImage.lib")
+#else
+  #include <FreeImage.h>
+#endif
 
 extern HRObjectManager g_objManager;
 
@@ -458,97 +458,109 @@ std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTextureInfoFromChunkFi
 }
 
 
-//void GetTextureFileInfo(const wchar_t* a_fileName, int32_t* pW, int32_t* pH, size_t* pBytesPP, int32_t* pChan)
-//{
-//  FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
-//
-//#if defined WIN32
-//  fif = FreeImage_GetFileTypeU(a_fileName, 0);
-//#else
-//  char filename_s[256];
-//  wcstombs(filename_s, a_fileName, sizeof(filename_s));
-//  fif = FreeImage_GetFileType(filename_s, 0);
-//#endif
-//
-//  if (fif == FIF_UNKNOWN)
-//#if defined WIN32
-//    fif = FreeImage_GetFIFFromFilenameU(a_fileName);
-//#else
-//    fif = FreeImage_GetFIFFromFilename(filename_s);
-//#endif
-//  if (fif == FIF_UNKNOWN)
-//  {
-//    (*pW)        = 0;
-//    (*pH)        = 0;
-//    (*pBytesPP) = 0;
-//    (*pChan)     = 0;
-//    return;
-//  }
-//
-//  //check that the plugin has reading capabilities and load the file
-//  //
-//
-//  FIBITMAP* dib = nullptr;
-//
-//  if (FreeImage_FIFSupportsReading(fif))
-//#if defined WIN32
-//    dib = FreeImage_LoadU(fif, a_fileName);
-//#else
-//    dib = FreeImage_Load(fif, filename_s);
-//#endif
-//  else
-//  {
-//    (*pW) = 0;
-//    (*pH) = 0;
-//    (*pBytesPP) = 0;
-//    (*pChan)     = 0;
-//    return;
-//  }
-//
-//  if(dib == nullptr)
-//  {
-//    (*pW) = 0;
-//    (*pH) = 0;
-//    (*pBytesPP) = 0;
-//    (*pChan)     = 0;
-//    return;
-//  }
-//
-//  auto type = FreeImage_GetImageType(dib);
-//
-//  auto width  = FreeImage_GetWidth(dib);
-//  auto height = FreeImage_GetHeight(dib);
-//  auto bpp    = FreeImage_GetBPP(dib);
-//
-//  if(type == FIT_FLOAT)
-//  {
-//    (*pChan) = 1;
-//    (*pBytesPP) = 4;
-//  }
-//  else if(type == FIT_RGBF)
-//  {
-//    (*pChan) = 3;
-//    (*pBytesPP) = 12;
-//  }
-//  else if(type == FIT_RGBAF)
-//  {
-//    (*pChan) = 4;
-//    (*pBytesPP) = 16;
-//  }
-//  else if(type == FIT_BITMAP)
-//  {
-//    (*pChan) = 4;
-//    (*pBytesPP) = 4;
-//  }
-//
-////    if (bpp <= 24)
-////    bpp = 32;
-////  else if (bpp < 128)
-////    bpp = 128;
-//
-//  FreeImage_Unload(dib);
-//
-//  (*pW)        = width;
-//  (*pH)        = height;
-////  (*pBytesPP) = bpp/8;
-//}
+void GetTextureFileInfo(const wchar_t* a_fileName, int32_t* pW, int32_t* pH, size_t* pBytesPP, int32_t* pChan)
+{
+  FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
+
+#if defined WIN32
+  //fif = FreeImage_GetFileTypeU(a_fileName, 0);
+  fif = g_objManager.m_FreeImageDll.m_pFreeImage_GetFileTypeU(a_fileName, 0);
+#else
+  char filename_s[256];
+  wcstombs(filename_s, a_fileName, sizeof(filename_s));
+  fif = FreeImage_GetFileType(filename_s, 0);
+#endif
+
+  if (fif == FIF_UNKNOWN)
+#if defined WIN32
+    //fif = FreeImage_GetFIFFromFilenameU(a_fileName);
+    fif = g_objManager.m_FreeImageDll.m_pFreeImage_GetFIFFromFilenameU(a_fileName);
+#else
+    fif = FreeImage_GetFIFFromFilename(filename_s);
+#endif
+  if (fif == FIF_UNKNOWN)
+  {
+    (*pW)       = 0;
+    (*pH)       = 0;
+    (*pBytesPP) = 0;
+    (*pChan)    = 0;
+    return;
+  }
+
+  //check that the plugin has reading capabilities and load the file
+  //
+
+  FIBITMAP* dib = nullptr;
+
+  //if (FreeImage_FIFSupportsReading(fif))
+  if (g_objManager.m_FreeImageDll.m_pFreeImage_FIFSupportsReading(fif))
+  {
+#if defined WIN32
+    //dib = FreeImage_LoadU(fif, a_fileName);
+    dib = g_objManager.m_FreeImageDll.m_pFreeImage_LoadU(fif, a_fileName, 0);
+#else
+    dib = FreeImage_Load(fif, filename_s);
+#endif
+  }
+  else
+  {
+    (*pW)       = 0;
+    (*pH)       = 0;
+    (*pBytesPP) = 0;
+    (*pChan)    = 0;
+    return;
+  }
+
+  if (dib == nullptr)
+  {
+    (*pW)       = 0;
+    (*pH)       = 0;
+    (*pBytesPP) = 0;
+    (*pChan)    = 0;
+    return;
+  }
+
+  //auto type   = FreeImage_GetImageType(dib);
+  auto type   = g_objManager.m_FreeImageDll.m_pFreeImage_GetImageType(dib);
+  
+
+  //auto width  = FreeImage_GetWidth(dib);
+  //auto height = FreeImage_GetHeight(dib);
+  //auto bpp    = FreeImage_GetBPP(dib);
+  auto width    = g_objManager.m_FreeImageDll.m_pFreeImage_GetWidth(dib);
+  auto height   = g_objManager.m_FreeImageDll.m_pFreeImage_GetHeight(dib);
+  auto bpp      = g_objManager.m_FreeImageDll.m_pFreeImage_GetBPP(dib);
+
+  if (type      == FIT_FLOAT)
+  {
+    (*pChan)    = 1;
+    (*pBytesPP) = 4;
+  }
+  else if (type == FIT_RGBF)
+  {
+    (*pChan)    = 3;
+    (*pBytesPP) = 12;
+  }
+  else if (type == FIT_RGBAF)
+  {
+    (*pChan)    = 4;
+    (*pBytesPP) = 16;
+  }
+  else if (type == FIT_BITMAP)
+  {
+    (*pChan)    = 4;
+    (*pBytesPP) = 4;
+  }
+
+  //    if (bpp <= 24)
+  //    bpp = 32;
+  //  else if (bpp < 128)
+  //    bpp = 128;
+
+  //FreeImage_Unload(dib);
+  g_objManager.m_FreeImageDll.m_pFreeImage_Unload(dib);
+
+  (*pW) = width;
+  (*pH) = height;
+  //  (*pBytesPP) = bpp/8;
+}

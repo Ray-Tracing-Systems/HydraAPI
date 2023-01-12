@@ -108,7 +108,7 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFile(const wchar_t* a_fileName, int w
   return ref;
 }
 
-//void GetTextureFileInfo(const wchar_t* a_fileName, int32_t* pW, int32_t* pH, size_t* pByteSize, int32_t* chan);
+void GetTextureFileInfo(const wchar_t* a_fileName, int32_t* pW, int32_t* pH, size_t* pByteSize, int32_t* chan);
 std::wstring CutFileName(const std::wstring& fileName);
 
 HAPI HRTextureNodeRef hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, int w, int h, int bpp, bool a_copyFileToLocalData)
@@ -175,7 +175,7 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, int
 
   int32_t w1, h1, chan;
   size_t  bpp1;
-  //GetTextureFileInfo(a_fileName, &w1, &h1, &bpp1, &chan);
+  GetTextureFileInfo(a_fileName, &w1, &h1, &bpp1, &chan);
 
   texNodeXml.append_attribute(L"width")    = w1; 
   texNodeXml.append_attribute(L"height")   = h1; 
