@@ -463,7 +463,6 @@ void GetTextureFileInfo(const wchar_t* a_fileName, int32_t* pW, int32_t* pH, siz
   FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
 
 #if defined WIN32
-  //fif = FreeImage_GetFileTypeU(a_fileName, 0);
   fif = g_objManager.m_FreeImageDll.m_pFreeImage_GetFileTypeU(a_fileName, 0);
 #else
   char filename_s[256];
@@ -473,7 +472,6 @@ void GetTextureFileInfo(const wchar_t* a_fileName, int32_t* pW, int32_t* pH, siz
 
   if (fif == FIF_UNKNOWN)
 #if defined WIN32
-    //fif = FreeImage_GetFIFFromFilenameU(a_fileName);
     fif = g_objManager.m_FreeImageDll.m_pFreeImage_GetFIFFromFilenameU(a_fileName);
 #else
     fif = FreeImage_GetFIFFromFilename(filename_s);
@@ -492,11 +490,9 @@ void GetTextureFileInfo(const wchar_t* a_fileName, int32_t* pW, int32_t* pH, siz
 
   FIBITMAP* dib = nullptr;
 
-  //if (FreeImage_FIFSupportsReading(fif))
   if (g_objManager.m_FreeImageDll.m_pFreeImage_FIFSupportsReading(fif))
   {
 #if defined WIN32
-    //dib = FreeImage_LoadU(fif, a_fileName);
     dib = g_objManager.m_FreeImageDll.m_pFreeImage_LoadU(fif, a_fileName, 0);
 #else
     dib = FreeImage_Load(fif, filename_s);
@@ -520,13 +516,7 @@ void GetTextureFileInfo(const wchar_t* a_fileName, int32_t* pW, int32_t* pH, siz
     return;
   }
 
-  //auto type   = FreeImage_GetImageType(dib);
-  auto type   = g_objManager.m_FreeImageDll.m_pFreeImage_GetImageType(dib);
-  
-
-  //auto width  = FreeImage_GetWidth(dib);
-  //auto height = FreeImage_GetHeight(dib);
-  //auto bpp    = FreeImage_GetBPP(dib);
+  auto type     = g_objManager.m_FreeImageDll.m_pFreeImage_GetImageType(dib);  
   auto width    = g_objManager.m_FreeImageDll.m_pFreeImage_GetWidth(dib);
   auto height   = g_objManager.m_FreeImageDll.m_pFreeImage_GetHeight(dib);
   auto bpp      = g_objManager.m_FreeImageDll.m_pFreeImage_GetBPP(dib);
@@ -557,7 +547,6 @@ void GetTextureFileInfo(const wchar_t* a_fileName, int32_t* pW, int32_t* pH, siz
   //  else if (bpp < 128)
   //    bpp = 128;
 
-  //FreeImage_Unload(dib);
   g_objManager.m_FreeImageDll.m_pFreeImage_Unload(dib);
 
   (*pW) = width;

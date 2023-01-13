@@ -486,10 +486,10 @@ void HRFreeImageDLL::Initialize()
 
   // Smart conversion routines ------------------------------------------------
 
-  m_pFreeImage_ConvertFromRawBitsEx = (FREEIMAGE_CONVERTFROMRAWBITSEX)GetProcAddress(m_dllFreeImageHangle, "FreeImage_ConvertFromRawBitsEx");
-  if (m_pFreeImage_ConvertFromRawBitsEx == nullptr)
+  m_pFreeImage_ConvertFromRawBits = (FREEIMAGE_CONVERTFROMRAWBITS)GetProcAddress(m_dllFreeImageHangle, "FreeImage_ConvertFromRawBits");
+  if (m_pFreeImage_ConvertFromRawBits == nullptr)
   {
-    message += L"FreeImage_ConvertFromRawBitsEx, ";
+    message += L"FreeImage_ConvertFromRawBits, ";
     hasError = true;
   }
 
@@ -515,10 +515,10 @@ void HRFreeImageDLL::Initialize()
   }
 
 
-  m_pFreeImage_ConvertToRGBAF = (FREEIMAGE_CONVERTTORGBAF)GetProcAddress(m_dllFreeImageHangle, "FreeImage_ConvertToRGBAF");
-  if (m_pFreeImage_ConvertToRGBAF == nullptr)
+  m_pFreeImage_ConvertToRGBF = (FREEIMAGE_CONVERTTORGBF)GetProcAddress(m_dllFreeImageHangle, "FreeImage_ConvertToRGBF");
+  if (m_pFreeImage_ConvertToRGBF == nullptr)
   {
-    message += L"FreeImage_ConvertToRGBAF, ";
+    message += L"FreeImage_ConvertToRGBF, ";
     hasError = true;
   }
 

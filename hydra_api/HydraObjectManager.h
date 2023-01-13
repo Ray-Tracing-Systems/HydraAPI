@@ -531,11 +531,13 @@ struct HRFreeImageDLL
 
 
   // Smart conversion routines ------------------------------------------------
-  using FREEIMAGE_CONVERTFROMRAWBITSEX = FIBITMAP*        (*)(BOOL copySource, BYTE* bits, FREE_IMAGE_TYPE type, int width, int height, int pitch, unsigned bpp, unsigned red_mask, unsigned green_mask, unsigned blue_mask, BOOL topdown);
+  using FREEIMAGE_CONVERTFROMRAWBITS   = FIBITMAP*        (*)(                 BYTE* bits,                       int width, int height, int pitch, unsigned bpp, unsigned red_mask, unsigned green_mask, unsigned blue_mask, BOOL topdown);
+  //using FREEIMAGE_CONVERTFROMRAWBITSEX = FIBITMAP*      (*)(BOOL copySource, BYTE* bits, FREE_IMAGE_TYPE type, int width, int height, int pitch, unsigned bpp, unsigned red_mask, unsigned green_mask, unsigned blue_mask, BOOL topdown); // not in FreeImage.dll 3dsMax 2020+. Replaced by FreeImage_ConvertFromRawBits.
   using FREEIMAGE_CONVERTTO8BITS       = FIBITMAP*        (*)(FIBITMAP* dib);
   using FREEIMAGE_CONVERTTO32BITS      = FIBITMAP*        (*)(FIBITMAP* dib);
   using FREEIMAGE_CONVERTTOFLOAT       = FIBITMAP*        (*)(FIBITMAP* dib);
-  using FREEIMAGE_CONVERTTORGBAF       = FIBITMAP*        (*)(FIBITMAP* dib);
+  using FREEIMAGE_CONVERTTORGBF        = FIBITMAP*        (*)(FIBITMAP* dib);
+  //using FREEIMAGE_CONVERTTORGBAF     = FIBITMAP*        (*)(FIBITMAP* dib); not in FreeImage.dll 3dsMax 2020+. Replaced by FreeImage_ConvertToRGBF.
 
 
   /////////////////////////////////////////////////////////////////////////////
@@ -580,12 +582,13 @@ struct HRFreeImageDLL
 
 
   // Smart conversion routines ------------------------------------------------
-  FREEIMAGE_CONVERTFROMRAWBITSEX m_pFreeImage_ConvertFromRawBitsEx = nullptr; // not in FreeImage.dll 3dsMax 2020-2022, has FreeImage_ConvertFromRawBits
+  FREEIMAGE_CONVERTFROMRAWBITS   m_pFreeImage_ConvertFromRawBits   = nullptr;
+  //FREEIMAGE_CONVERTFROMRAWBITSEX m_pFreeImage_ConvertFromRawBitsEx = nullptr; // not in FreeImage.dll 3dsMax 2020+. Replaced by FreeImage_ConvertFromRawBits.
   FREEIMAGE_CONVERTTO8BITS       m_pFreeImage_ConvertTo8Bits       = nullptr;
   FREEIMAGE_CONVERTTO32BITS      m_pFreeImage_ConvertTo32Bits      = nullptr;
   FREEIMAGE_CONVERTTOFLOAT       m_pFreeImage_ConvertToFloat       = nullptr;
-  FREEIMAGE_CONVERTTORGBAF       m_pFreeImage_ConvertToRGBAF       = nullptr; // not in FreeImage.dll 3dsMax 2020-2022, has FreeImage_ConvertToRGBF
-
+  FREEIMAGE_CONVERTTORGBF        m_pFreeImage_ConvertToRGBF        = nullptr;
+  //FREEIMAGE_CONVERTTORGBAF       m_pFreeImage_ConvertToRGBAF       = nullptr; // not in FreeImage.dll 3dsMax 2020+. Replaced by FreeImage_ConvertToRGBF.
 
   void Initialize();
 };
