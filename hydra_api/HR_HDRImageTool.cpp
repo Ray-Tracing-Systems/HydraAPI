@@ -113,15 +113,15 @@ static void HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* fil
     //converted    = g_objManager.m_FreeImageDll.m_pFreeImage_ConvertToRGBAF(dib); //FreeImage_ConvertToRGBAF not in FreeImage.dll 3ds max 2020+.
     //chan         = 4;
     converted    = g_objManager.m_FreeImageDll.m_pFreeImage_ConvertToRGBF(dib);
-    chan         = 3;
+    chan         = 4;
     bpp          = sizeof(float) * chan;
   }
-//  else if(type == FIT_RGBAF)
-//  {
-//    converted  = FreeImage_ConvertToRGBAF(dib);
-//    chan       = 4;
-//    bpp        = sizeof(float) * chan;
-//  }
+  //else if(type == FIT_RGBAF)
+  //{
+  //  converted  = FreeImage_ConvertToRGBAF(dib);
+  //  chan       = 4;
+  //  bpp        = sizeof(float) * chan;
+  //}
 }
 
 
@@ -136,33 +136,45 @@ static bool HRUtils_GetImageDataFromFreeImageObject(FIBITMAP* converted, int cha
   if (bits == nullptr || width == 0 || height == 0)
     return false;
 
-  if(type == FIT_FLOAT || type == FIT_RGBF || type == FIT_RGBAF) 
+  if(type == FIT_FLOAT) 
   {
     auto fbits = (float*)bits;
     auto fdata = (float*)data;
 
-#pragma omp parallel for
+    #pragma omp parallel for
     for (int i = 0; i < width*height; ++i)
     {
       for(int j = 0; j < chan; ++j)
-      {
         fdata[chan * i + j] = fbits[chan * i + j];
-      }
+    }
+  }
+  else if (type == FIT_RGBF || type == FIT_RGBAF)
+  {
+    auto fbits = (float*)bits;
+    auto fdata = (float*)data;
+
+    #pragma omp parallel for
+    for (int i = 0; i < width * height; ++i)
+    {
+      const int channel3 = 3 * i;
+      const int channel4 = 4 * i;
+
+      fdata[channel4 + 0] = fbits[channel3 + 0];
+      fdata[channel4 + 1] = fbits[channel3 + 1];
+      fdata[channel4 + 2] = fbits[channel3 + 2];
+      fdata[channel4 + 3] = 1.0F;
     }
   }
   else if (type == FIT_BITMAP)
   {
-#pragma omp parallel for
+    #pragma omp parallel for
     for (int i = 0; i < width*height; ++i)
     {
       for(int j = 0; j < chan; ++j)
-      {
         data[chan * i + j] = bits[chan * i + j];
-      }
+
       if(chan >= 3) // swap red and blue because freeimage
-      {
         std::swap(data[chan * i], data[chan * i + 2]);
-      }
     }
 
 //    for (unsigned int y = 0; y<height; y++)
