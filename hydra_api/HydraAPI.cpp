@@ -171,7 +171,8 @@ HAPI int32_t hrSceneLibraryOpen(const wchar_t* a_libPath, HR_OPEN_MODE a_openMod
     hr_mkdir(libPath.c_str());
     hr_mkdir(dataPath.c_str());
 #elif defined WIN32
-    std::wstring dataPath = std::wstring(a_libPath) + L"/data";
+    std::filesystem::path libPath  = std::wstring(a_libPath);
+    std::filesystem::path dataPath = libPath / L"data";
     hr_cleardir(a_libPath);
     hr_mkdir(a_libPath);
     hr_mkdir(dataPath.c_str());

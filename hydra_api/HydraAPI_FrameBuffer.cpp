@@ -9,6 +9,7 @@
 #include <sstream>
 #include <fstream>
 #include <iomanip>
+#include <filesystem>
 
 #include "HydraObjectManager.h"
 
@@ -309,6 +310,18 @@ HAPI void hrRenderCommand(HRRenderRef a_pRender, const wchar_t* a_command, wchar
 
 HAPI void hrRenderLogDir(HRRenderRef a_pRender, const wchar_t* a_logDir, bool a_hrRenderLogDir)
 {
+  // fix directory path if it don't end with '\' or '/'  
+  std::filesystem::path copyOfPath(a_logDir);
+
+  /*std::wstring copyOfPath(a_logDir);
+  if (copyOfPath != L"")
+  {
+    if (copyOfPath[copyOfPath.size() - 1] != L"/"[0] &&
+      copyOfPath[copyOfPath.size() - 1] != L"\\"[0])
+      copyOfPath += L"/";
+  }*/
+
+
   HRRender* pRender = g_objManager.PtrById(a_pRender);
   if (pRender == nullptr)
   {
@@ -322,15 +335,5 @@ HAPI void hrRenderLogDir(HRRenderRef a_pRender, const wchar_t* a_logDir, bool a_
     return;
   }
 
-  // fix directory path if it don't end with '\' or '/'
-  //
-  std::wstring copyOfPath(a_logDir);
-  if (copyOfPath != L"")
-  {
-    if (copyOfPath[copyOfPath.size() - 1] != L"/"[0] &&
-      copyOfPath[copyOfPath.size() - 1] != L"\\"[0])
-      copyOfPath += L"/";
-  }
   pRender->m_pDriver->SetLogDir(copyOfPath.c_str(), a_hrRenderLogDir);
-
 }
