@@ -80,9 +80,9 @@ static void HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* fil
 
   if(type == FIT_BITMAP && bitsPerPixel ==  8)
   {
-    converted = FreeImage_ConvertTo8Bits(dib);
-    bpp = 1;
-    chan = 1;
+    converted = FreeImage_ConvertTo32Bits(dib);
+    chan      = 4;
+    bpp       = chan;
   }
   else if(type == FIT_FLOAT || type == FIT_UINT16)
   {
@@ -90,12 +90,6 @@ static void HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* fil
     bpp = 4;
     chan = 1;
   }
-//  else if(type == FIT_BITMAP && bitsPerPixel == 24)
-//  {
-//    converted = FreeImage_ConvertTo24Bits(dib);
-//    chan = 3;
-//    bpp = chan;
-//  }
   else if(type == FIT_BITMAP)
   {
     converted = FreeImage_ConvertTo32Bits(dib);
@@ -108,12 +102,6 @@ static void HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* fil
     chan = 4;
     bpp = sizeof(float) * chan;
   }
-//  else if(type == FIT_RGBAF)
-//  {
-//    converted = FreeImage_ConvertToRGBAF(dib);
-//    chan = 4;
-//    bpp = sizeof(float) * chan;
-//  }
 }
 
 static bool HRUtils_GetImageDataFromFreeImageObject(FIBITMAP* converted, int chan, char* data)
