@@ -184,8 +184,9 @@ using namespace cvex;
 
 int RD_HydraConnection::MLT_FrameBufferUpdateLoop()
 {
+  std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
   m_colorImageIsLocked = false;
-  
   size_t iter = 0;
 
   const float* indirect = m_pSharedImage->ImageData(0);
@@ -839,9 +840,11 @@ void RD_HydraConnection::EndFlush()
       colorMLTFinal[i+3] = 0.0f;
     }
     
-    m_mltFrameBufferUpdateThread   = std::async(std::launch::async, &RD_HydraConnection::MLT_FrameBufferUpdateLoop, this);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000)); // a bug in shared memory connectio, therefore we need this 
+    m_colorImageIsLocked           = false;
     m_lastMaxRaysPerPixel          = 1000000;
     m_mltFrameBufferUpdate_ExitNow = false;
+    m_mltFrameBufferUpdateThread   = std::async(std::launch::async, &RD_HydraConnection::MLT_FrameBufferUpdateLoop, this);
   }
   else
   {
