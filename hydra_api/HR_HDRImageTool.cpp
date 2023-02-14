@@ -494,14 +494,12 @@ namespace HydraRender
     struct float4 { float x, y, z, w; };
     const float4* in_buff = (const float4*)image.data();
 
-    const float invGamma = 1.0f / a_gamma;
-
     for (int i = 0; i < image.width()*image.height(); i++)
     {
       float4 data = in_buff[i];
-      data.x      = powf(data.x, invGamma);
-      data.y      = powf(data.y, invGamma);
-      data.z      = powf(data.z, invGamma);
+      data.x      = LinearToSRGB(data.x);
+      data.y      = LinearToSRGB(data.y);
+      data.z      = LinearToSRGB(data.z);
       data.w      = 1.0f;
       ldrImageData[i] = RealColorToUint32(data.x, data.y, data.z, data.w);
     }

@@ -103,9 +103,17 @@ static void ExtractTexCoordLine(const HRGBufferPixel* a_inLine, int32_t* a_outLi
   }
 }
 
+static inline float LinearToSRGB(float l)
+{
+  if(l <= 0.00313066844250063f)
+    return l*12.92f;
+  else
+    return 1.055*std::pow(l, 1.0f/2.4f) - 0.055;
+}
+
 static void ExtractTexColorLine(const HRGBufferPixel* a_inLine, int32_t* a_outLine, int a_width)
 {
-  const float invGamma = 1.0f / 2.2f;
+  //const float invGamma = 1.0f / 2.2f;
 
   for (int x = 0; x < a_width; x++)
   {
@@ -115,9 +123,9 @@ static void ExtractTexColorLine(const HRGBufferPixel* a_inLine, int32_t* a_outLi
     texc[2] = a_inLine[x].rgba[2];
     texc[3] = 1.0f;
 
-    a_outLine[x] = RealColorToUint32(powf(texc[0], invGamma),
-                                     powf(texc[1], invGamma),
-                                     powf(texc[2], invGamma),
+    a_outLine[x] = RealColorToUint32(LinearToSRGB(texc[0]),
+                                     LinearToSRGB(texc[1]),
+                                     LinearToSRGB(texc[2]),
                                      texc[3]);
   }
 }

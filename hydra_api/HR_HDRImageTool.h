@@ -85,4 +85,12 @@ namespace HydraRender
     return float(summ) / float(image1.size());
   }
 
+  static inline float LinearToSRGB(float l)
+  {
+    if(l <= 0.00313066844250063f)
+      return l*12.92f;
+    else
+      return 1.055*std::pow(l, 1.0f/2.4f) - 0.055;
+  }
+
 };

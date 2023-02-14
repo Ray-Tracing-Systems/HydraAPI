@@ -671,7 +671,14 @@ namespace HydraRender
 
     return red | (green << 8) | (blue << 16) | (alpha << 24);
   }
-
+  
+  static inline float LinearToSRGB(float l)
+  {
+    if(l <= 0.00313066844250063f)
+      return l*12.92f;
+    else
+      return 1.055*std::pow(l, 1.0f/2.4f) - 0.055;
+  }
 
   static void convertFloat4ToLDR2(const float* dataPtr, std::vector<unsigned int>& dataLDR, float a_gamma)
   {
@@ -685,10 +692,10 @@ namespace HydraRender
       float b = dataPtr[i * 4 + 2];
       float a = dataPtr[i * 4 + 3];
 
-      r = pow(r, power);
-      g = pow(g, power);
-      b = pow(b, power);
-      a = pow(a, power);
+      r = LinearToSRGB(r);
+      g = LinearToSRGB(g);
+      b = LinearToSRGB(b);
+      a = LinearToSRGB(a);
 
       dataLDR[i] = HR_HDRImage4f_RealColorToUint32(r, g, b, a);
     }
