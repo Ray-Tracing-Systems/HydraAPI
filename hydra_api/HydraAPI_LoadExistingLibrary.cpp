@@ -358,11 +358,10 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
     HrPrint(HR_SEVERITY_INFO, L"HydraAPI, loading xml ... ");
 
   auto loadResult = g_objManager.scnData.m_xmlDoc.load_file(fileName.c_str());
-
   if (!loadResult)
   {
     HrError(L"[_hrSceneLibraryLoad]: pugixml load: ", loadResult.description());
-    return 0;
+    return -1;
   }
 
   if (g_objManager.m_attachMode)

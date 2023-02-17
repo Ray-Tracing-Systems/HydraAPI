@@ -30,6 +30,7 @@
 *.exe
 *.out
 *.app
+<<<<<<< HEAD
 doc_xml/hydra_xml.pdf
 
 # Folders
@@ -41,3 +42,32 @@ build_generated/
 papers/
 main/data/textures_gen/
 main/demos/demo_02/
+=======
+
+# Folders
+bin/
+build_generated/
+clew/x64/
+hydra_api/x64/
+ies_parser/x64/
+hydra_api/.vs/
+main/data/textures_gen/
+main/x64/
+PostProcessDLL/x64/
+PostProcessDLLExample/x64/
+mikktspace/x64/
+utils/clew/x64/
+utils/corto/x64/
+utils/clew/x64/
+utils/ies_parser/x64/
+utils/mikktspace/x64/
+main/demos/demo_02/
+
+
+# Files
+papers/comp_prog_2018_rus/main_rus.synctex.gz
+papers/comp_prog_2018_rus/main_rus.pdf
+papers/comp_prog_2018_rus/main_rus.log
+papers/comp_prog_2018_rus/main_rus.aux
+doc_xml/hydra_xml.pdf
+>>>>>>> origin/fixes2023

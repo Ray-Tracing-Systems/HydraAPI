@@ -57,6 +57,13 @@
 
 #endif
 
+
+const int QMC_DOF = 1;
+const int QMC_MTL = 1 << 1;
+const int QMC_LGT = 1 << 2;
+const int QMC_ALL = QMC_DOF | QMC_MTL | QMC_LGT;
+
+
 /**
 \brief Information about total current numbers of all objects inside API in it's current state 
 

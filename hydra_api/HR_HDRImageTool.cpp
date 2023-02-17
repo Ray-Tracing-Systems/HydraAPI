@@ -86,9 +86,15 @@ static void HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* fil
 
   if(type        == FIT_BITMAP && bitsPerPixel ==  8)
   {
+<<<<<<< HEAD
     converted    = g_objManager.m_FreeImageDll.m_pFreeImage_ConvertTo8Bits(dib);
     bpp          = 1;
     chan         = 1;
+=======
+    converted = FreeImage_ConvertTo32Bits(dib);
+    chan      = 4;
+    bpp       = chan;
+>>>>>>> origin/fixes2023
   }
   else if(type   == FIT_FLOAT || type == FIT_UINT16)
   {
@@ -96,6 +102,7 @@ static void HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* fil
     bpp          = 4;
     chan         = 1;
   }
+<<<<<<< HEAD
 //  else if(type == FIT_BITMAP && bitsPerPixel == 24)
 //  {
 //    converted  = FreeImage_ConvertTo24Bits(dib);
@@ -103,6 +110,9 @@ static void HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* fil
 //    bpp        = chan;
 //  }
   else if(type   == FIT_BITMAP)
+=======
+  else if(type == FIT_BITMAP)
+>>>>>>> origin/fixes2023
   {
     converted    = g_objManager.m_FreeImageDll.m_pFreeImage_ConvertTo32Bits(dib);
     chan         = 4;
@@ -116,12 +126,15 @@ static void HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* fil
     chan         = 4;
     bpp          = sizeof(float) * chan;
   }
+<<<<<<< HEAD
   //else if(type == FIT_RGBAF)
   //{
   //  converted  = FreeImage_ConvertToRGBAF(dib);
   //  chan       = 4;
   //  bpp        = sizeof(float) * chan;
   //}
+=======
+>>>>>>> origin/fixes2023
 }
 
 
@@ -528,14 +541,12 @@ namespace HydraRender
     struct float4 { float x, y, z, w; };
     const float4* in_buff = (const float4*)image.data();
 
-    const float invGamma = 1.0f / a_gamma;
-
     for (int i = 0; i < image.width()*image.height(); i++)
     {
       float4 data = in_buff[i];
-      data.x      = powf(data.x, invGamma);
-      data.y      = powf(data.y, invGamma);
-      data.z      = powf(data.z, invGamma);
+      data.x      = LinearToSRGB(data.x);
+      data.y      = LinearToSRGB(data.y);
+      data.z      = LinearToSRGB(data.z);
       data.w      = 1.0f;
       ldrImageData[i] = RealColorToUint32(data.x, data.y, data.z, data.w);
     }

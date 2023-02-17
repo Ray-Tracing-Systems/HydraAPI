@@ -184,8 +184,9 @@ using namespace cvex;
 
 int RD_HydraConnection::MLT_FrameBufferUpdateLoop()
 {
+  std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
   m_colorImageIsLocked = false;
-  
   size_t iter = 0;
 
   const float* indirect = m_pSharedImage->ImageData(0);
@@ -839,9 +840,11 @@ void RD_HydraConnection::EndFlush()
       colorMLTFinal[i+3] = 0.0f;
     }
     
-    m_mltFrameBufferUpdateThread   = std::async(std::launch::async, &RD_HydraConnection::MLT_FrameBufferUpdateLoop, this);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000)); // a bug in shared memory connectio, therefore we need this 
+    m_colorImageIsLocked           = false;
     m_lastMaxRaysPerPixel          = 1000000;
     m_mltFrameBufferUpdate_ExitNow = false;
+    m_mltFrameBufferUpdateThread   = std::async(std::launch::async, &RD_HydraConnection::MLT_FrameBufferUpdateLoop, this);
   }
   else
   {
@@ -1082,7 +1085,13 @@ void RD_HydraConnection::GetFrameBufferLineHDR(int32_t a_xBegin, int32_t a_xEnd,
 
 static inline float clamp(float u, float a, float b) { float r = fmax(a, u); return fmin(r, b); }
 static inline int   clamp(int u, int a, int b) { int r = (a > u) ? a : u; return (r < b) ? r : b; }
-
+static inline float LinearToSRGB(float l)
+  {
+    if(l <= 0.00313066844250063f)
+      return l*12.92f;
+    else
+      return 1.055*std::pow(l, 1.0f/2.4f) - 0.055;
+  }
 
 void RD_HydraConnection::GetFrameBufferLineLDR(int32_t a_xBegin, int32_t a_xEnd, int32_t y, int32_t* a_out)
 {
@@ -1106,12 +1115,12 @@ void RD_HydraConnection::GetFrameBufferLineLDR(int32_t a_xBegin, int32_t a_xEnd,
 
 //
 
-  const float invGamma  = 1.0f / 2.2f;
+  //const float invGamma  = 1.0f / 2.2f;
   const float normConst = m_enableMLT ? 1.0f : 1.0f / m_pSharedImage->Header()->spp;
 
   // not sse version
   //
-  if (!HydraSSE::g_useSSE || channels != 4)
+  //if (!HydraSSE::g_useSSE || channels != 4)
   {
     #pragma omp parallel for
     for (int i = a_xBegin; i < a_xEnd; i++)  // #TODO: use sse and fast pow
@@ -1123,23 +1132,23 @@ void RD_HydraConnection::GetFrameBufferLineLDR(int32_t a_xBegin, int32_t a_xEnd,
         color = float4{data[i * 4 + 0], data[i * 4 + 1], data[i * 4 + 2], data[i * 4 + 3]};
 
 //        const float4 color = dataHDR[i];
-      a_out[i - a_xBegin] = HRUtils::RealColorToUint32(powf(color.x * normConst, invGamma),
-                                                       powf(color.y * normConst, invGamma),
-                                                       powf(color.z * normConst, invGamma),
+      a_out[i - a_xBegin] = HRUtils::RealColorToUint32(LinearToSRGB(color.x * normConst),
+                                                       LinearToSRGB(color.y * normConst),
+                                                       LinearToSRGB(color.z * normConst),
                                                        1.0f);
     }
   }
-  else // sse version
-  {
-    if(channels == 4)
-    {
-      const __m128 powerf4 = _mm_set_ps1(invGamma);
-      const __m128 normc = _mm_set_ps1(normConst);
-
-      for (int i = a_xBegin; i < a_xEnd; i++)
-        a_out[i - a_xBegin] = HydraSSE::gammaCorr((const float *) (data + i * 4), normc, powerf4);
-    }
-  }
+  //else // sse version
+  //{
+  //  if(channels == 4)
+  //  {
+  //    const __m128 powerf4 = _mm_set_ps1(invGamma);
+  //    const __m128 normc = _mm_set_ps1(normConst);
+  //
+  //    for (int i = a_xBegin; i < a_xEnd; i++)
+  //      a_out[i - a_xBegin] = HydraSSE::gammaCorr((const float *) (data + i * 4), normc, powerf4);
+  //  }
+  //}
 
 }
 

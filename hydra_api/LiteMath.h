@@ -345,6 +345,34 @@ namespace LiteMath
   static inline float4 make_float4(float a, float b, float c, float d) { return float4{a,b,c,d}; }
   static inline float3 make_float3(float a, float b, float c)          { return float3{a,b,c};   }
   static inline float2 make_float2(float a, float b)                   { return float2{a,b};     }
+  
+  struct double3
+  {
+    inline double3() : x(0), y(0), z(0) {}
+    inline double3(double a, double b, double c) : x(a), y(b), z(c) {}
+    inline explicit double3(const double* ptr) : x(ptr[0]), y(ptr[1]), z(ptr[2]) {}
+    inline explicit double3(float3 v) : x(v.x), y(v.y), z(v.z) {}
+
+    inline double& operator[](int i)       { return M[i]; }
+    inline double  operator[](int i) const { return M[i]; }
+
+    union
+    {
+      struct {double x, y, z; };
+      double M[3];
+    };
+  };
+
+  static inline double3 operator + (const double3 & u, const double3 & v) { return double3{u.x + v.x, u.y + v.y, u.z + v.z}; }
+  static inline double3 operator - (const double3 & u, const double3 & v) { return double3{u.x - v.x, u.y - v.y, u.z - v.z}; }
+  static inline double3 operator * (const double3 & u, const double3 & v) { return double3{u.x * v.x, u.y * v.y, u.z * v.z}; }
+  static inline double3 operator / (const double3 & u, const double3 & v) { return double3{u.x / v.x, u.y / v.y, u.z / v.z}; }
+
+  static inline double3 operator * (const double3 & u, double v) { return double3{u.x * v, u.y * v, u.z * v}; }
+  static inline double3 operator * (double v, const double3 & u) { return double3{u.x * v, u.y * v, u.z * v}; }
+
+  static inline double  dot  (const double3 & u, const double3 & v) { return (u.x*v.x + u.y*v.y + u.z*v.z); }
+  static inline double3 cross(const double3 & u, const double3 & v) { return double3{u.y*v.z - u.z*v.y, u.z*v.x - u.x*v.z, u.x*v.y - u.y*v.x}; }
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
