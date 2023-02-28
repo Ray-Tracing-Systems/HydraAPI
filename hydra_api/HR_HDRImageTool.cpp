@@ -21,6 +21,42 @@ std::wstring s2ws(const std::string& s);
 
 void HR_MyDebugSaveBMP(const wchar_t* fname, const int* pixels, int w, int h);
 
+namespace FreeImageFixes
+{
+    static FIBITMAP* convertToRGBAF(FIBITMAP* pDib)
+    {
+        const unsigned width = FreeImage_GetWidth(pDib);
+        const unsigned height = FreeImage_GetHeight(pDib);
+
+        auto pNew = FreeImage_AllocateT(FIT_RGBAF, width, height);
+        FreeImage_CloneMetadata(pNew, pDib);
+
+        const unsigned src_pitch = FreeImage_GetPitch(pDib);
+        const unsigned dst_pitch = FreeImage_GetPitch(pNew);
+
+        const BYTE *src_bits = (BYTE*)FreeImage_GetBits(pDib);
+        BYTE* dst_bits = (BYTE*)FreeImage_GetBits(pNew);
+
+        for (unsigned y = 0; y < height; y++)
+        {
+            const FIRGBF *src_pixel = (FIRGBF*)src_bits;
+            FIRGBAF* dst_pixel = (FIRGBAF*)dst_bits;
+
+            for (unsigned x = 0; x < width; x++)
+            {
+                // Convert pixels directly, while adding a "dummy" alpha of 1.0
+                dst_pixel[x].red   = src_pixel[x].red;
+                dst_pixel[x].green = src_pixel[x].green;
+                dst_pixel[x].blue  = src_pixel[x].blue;
+                dst_pixel[x].alpha = 1.0F;
+
+            }
+            src_bits += src_pitch;
+            dst_bits += dst_pitch;
+        }
+        return pNew;
+    }
+}
 
 static void HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* filename, FIBITMAP*& dib, FIBITMAP*& converted,
                                                               FREE_IMAGE_FORMAT* pFif, int& bpp, int& chan)
@@ -113,11 +149,10 @@ static void HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* fil
   }
   else if(type   == FIT_RGBF || type == FIT_RGBAF) 
   {
-    //converted    = g_objManager.m_FreeImageDll.m_pFreeImage_ConvertToRGBAF(dib); //FreeImage_ConvertToRGBAF not in FreeImage.dll 3ds max 2020+.
-    //chan         = 4;
-    converted    = g_objManager.m_FreeImageDll.m_pFreeImage_ConvertToRGBF(dib);
-    chan         = 4;
-    bpp          = sizeof(float) * chan;
+    //converted = FreeImage_ConvertToRGBAF(dib);
+    converted = FreeImageFixes::convertToRGBAF(dib);
+    chan = 4;
+    bpp = sizeof(float) * chan;
   }
   //else if(type == FIT_RGBAF)
   //{
