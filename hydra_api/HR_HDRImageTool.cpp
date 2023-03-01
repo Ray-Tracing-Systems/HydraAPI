@@ -12,7 +12,7 @@
 #include "HydraObjectManager.h"
 
 #include "FreeImage.h"
-#pragma comment(lib, "FreeImage.lib")
+//#pragma comment(lib, "FreeImage.lib")
 
 extern HRObjectManager g_objManager;
 
@@ -21,42 +21,6 @@ std::wstring s2ws(const std::string& s);
 
 void HR_MyDebugSaveBMP(const wchar_t* fname, const int* pixels, int w, int h);
 
-namespace FreeImageFixes
-{
-    static FIBITMAP* convertToRGBAF(FIBITMAP* pDib)
-    {
-        const unsigned width = FreeImage_GetWidth(pDib);
-        const unsigned height = FreeImage_GetHeight(pDib);
-
-        auto pNew = FreeImage_AllocateT(FIT_RGBAF, width, height);
-        FreeImage_CloneMetadata(pNew, pDib);
-
-        const unsigned src_pitch = FreeImage_GetPitch(pDib);
-        const unsigned dst_pitch = FreeImage_GetPitch(pNew);
-
-        const BYTE *src_bits = (BYTE*)FreeImage_GetBits(pDib);
-        BYTE* dst_bits = (BYTE*)FreeImage_GetBits(pNew);
-
-        for (unsigned y = 0; y < height; y++)
-        {
-            const FIRGBF *src_pixel = (FIRGBF*)src_bits;
-            FIRGBAF* dst_pixel = (FIRGBAF*)dst_bits;
-
-            for (unsigned x = 0; x < width; x++)
-            {
-                // Convert pixels directly, while adding a "dummy" alpha of 1.0
-                dst_pixel[x].red   = src_pixel[x].red;
-                dst_pixel[x].green = src_pixel[x].green;
-                dst_pixel[x].blue  = src_pixel[x].blue;
-                dst_pixel[x].alpha = 1.0F;
-
-            }
-            src_bits += src_pitch;
-            dst_bits += dst_pitch;
-        }
-        return pNew;
-    }
-}
 
 static void HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* filename, FIBITMAP*& dib, FIBITMAP*& converted,
                                                               FREE_IMAGE_FORMAT* pFif, int& bpp, int& chan)
@@ -68,38 +32,43 @@ static void HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* fil
                                     //
 
 #if defined WIN32
-  fif = FreeImage_GetFileTypeU(filename, 0);
+  fif          = g_objManager.m_FreeImageDll.m_pFreeImage_GetFileTypeU(filename, 0);
 #else
   char filename_s[256];
   wcstombs(filename_s, filename, sizeof(filename_s));
-  fif = FreeImage_GetFileType(filename_s, 0);
+  fif          = FreeImage_GetFileType(filename_s, 0);
 #endif
 
-  if (fif == FIF_UNKNOWN)
-#if defined WIN32
-    fif = FreeImage_GetFIFFromFilenameU(filename);
-#else
-    fif = FreeImage_GetFIFFromFilename(filename_s);
-#endif
-  if (fif == FIF_UNKNOWN)
+  if (fif      == FIF_UNKNOWN)
   {
-    bpp = 0;
-    chan = 0;
+#if defined WIN32
+    fif        = g_objManager.m_FreeImageDll.m_pFreeImage_GetFIFFromFilenameU(filename);
+#else
+    fif        = FreeImage_GetFIFFromFilename(filename_s);
+#endif
+  }
+
+  if (fif      == FIF_UNKNOWN)
+  {
+    bpp        = 0;
+    chan       = 0;
     return;
   }
 
   //check that the plugin has reading capabilities and load the file
   //
-  if (FreeImage_FIFSupportsReading(fif))
+  if (g_objManager.m_FreeImageDll.m_pFreeImage_FIFSupportsReading(fif))
+  {
 #if defined WIN32
-    dib = FreeImage_LoadU(fif, filename);
+    dib        = g_objManager.m_FreeImageDll.m_pFreeImage_LoadU(fif, filename, 0);
 #else
-    dib = FreeImage_Load(fif, filename_s);
+    dib        = FreeImage_Load(fif, filename_s);
 #endif
+  }
   else
   {
-    bpp = 0;
-    chan = 0;
+    bpp        = 0;
+    chan       = 0;
     return;
   }
 
@@ -107,79 +76,110 @@ static void HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* fil
 
   if (!dib)
   {
-    bpp = 0;
-    chan = 0;
+    bpp        = 0;
+    chan       = 0;
     return;
   }
 
-  auto type = FreeImage_GetImageType(dib);
-  auto bitsPerPixel = FreeImage_GetBPP(dib);
+  auto type           = g_objManager.m_FreeImageDll.m_pFreeImage_GetImageType(dib);
+  auto bitsPerPixel   = g_objManager.m_FreeImageDll.m_pFreeImage_GetBPP(dib);
 
-  if(type == FIT_BITMAP && bitsPerPixel ==  8)
+  if(type        == FIT_BITMAP && bitsPerPixel ==  8)
   {
-    converted = FreeImage_ConvertTo32Bits(dib);
-    chan      = 4;
-    bpp       = chan;
+    converted    = g_objManager.m_FreeImageDll.m_pFreeImage_ConvertTo8Bits(dib);
+    bpp          = 1;
+    chan         = 1;
+    converted    = g_objManager.m_FreeImageDll.m_pFreeImage_ConvertTo32Bits(dib);// //FreeImage_ConvertTo32Bits(dib);
+    chan         = 4;
+    bpp          = chan;
   }
-  else if(type == FIT_FLOAT || type == FIT_UINT16)
+  else if(type   == FIT_FLOAT || type == FIT_UINT16)
   {
-    converted = FreeImage_ConvertToFloat(dib);
-    bpp = 4;
-    chan = 1;
+    converted    = g_objManager.m_FreeImageDll.m_pFreeImage_ConvertToFloat(dib);
+    bpp          = 4;
+    chan         = 1;
   }
+//  else if(type == FIT_BITMAP && bitsPerPixel == 24)
+//  {
+//    converted  = FreeImage_ConvertTo24Bits(dib);
+//    chan       = 3;
+//    bpp        = chan;
+//  }
   else if(type == FIT_BITMAP)
   {
-    converted = FreeImage_ConvertTo32Bits(dib);
-    chan = 4;
-    bpp = chan;
+    converted    = g_objManager.m_FreeImageDll.m_pFreeImage_ConvertTo32Bits(dib);
+    chan         = 4;
+    bpp          = chan;
   }
-  else if(type == FIT_RGBF || type == FIT_RGBAF)
+  else if(type   == FIT_RGBF || type == FIT_RGBAF) 
   {
-    //converted = FreeImage_ConvertToRGBAF(dib);
-    converted = FreeImageFixes::convertToRGBAF(dib);
-    chan = 4;
-    bpp = sizeof(float) * chan;
+    //converted    = g_objManager.m_FreeImageDll.m_pFreeImage_ConvertToRGBAF(dib); //FreeImage_ConvertToRGBAF not in FreeImage.dll 3ds max 2020+.
+    //chan         = 4;
+    converted    = g_objManager.m_FreeImageDll.m_pFreeImage_ConvertToRGBF(dib);
+    chan           = 4;
+    bpp            = sizeof(float) * chan;
   }
+  //else if(type == FIT_RGBAF)
+  //{
+  //  converted  = FreeImage_ConvertToRGBAF(dib);
+  //  chan       = 4;
+  //  bpp        = sizeof(float) * chan;
+  //}
 }
+
 
 static bool HRUtils_GetImageDataFromFreeImageObject(FIBITMAP* converted, int chan, char* data)
 {
-  auto bits         = FreeImage_GetBits(converted);
-  auto width        = FreeImage_GetWidth(converted);
-  auto height       = FreeImage_GetHeight(converted);
-  auto bitsPerPixel = FreeImage_GetBPP(converted);
-  auto type = FreeImage_GetImageType(converted);
+  auto bits         = g_objManager.m_FreeImageDll.m_pFreeImage_GetBits(converted);
+  auto width        = g_objManager.m_FreeImageDll.m_pFreeImage_GetWidth(converted);
+  auto height       = g_objManager.m_FreeImageDll.m_pFreeImage_GetHeight(converted);
+  auto bitsPerPixel = g_objManager.m_FreeImageDll.m_pFreeImage_GetBPP(converted);
+  auto type         = g_objManager.m_FreeImageDll.m_pFreeImage_GetImageType(converted);
 
   if (bits == nullptr || width == 0 || height == 0)
     return false;
 
-  if(type == FIT_FLOAT || type == FIT_RGBF || type == FIT_RGBAF)
+  if(type == FIT_FLOAT) 
   {
     auto fbits = (float*)bits;
     auto fdata = (float*)data;
 
-    for (unsigned int i = 0; i < width*height; i++)
+    #pragma omp parallel for
+    for (int i = 0; i < width*height; ++i)
     {
-      for(unsigned int j = 0; j < chan; ++j)
-      {
+      for(int j = 0; j < chan; ++j)
         fdata[chan * i + j] = fbits[chan * i + j];
-      }
     }
   }
+  else if (type == FIT_RGBF || type == FIT_RGBAF)
+  {
+    auto fbits = (float*)bits;
+    auto fdata = (float*)data;
 
+    #pragma omp parallel for
+    for (int i = 0; i < width * height; ++i)
+    {
+      const int channel3 = 3 * i;
+      const int channel4 = 4 * i;
+
+      fdata[channel4 + 0] = fbits[channel3 + 0];
+      fdata[channel4 + 1] = fbits[channel3 + 1];
+      fdata[channel4 + 2] = fbits[channel3 + 2];
+      fdata[channel4 + 3] = 1.0F;
+    }
+  }
   else if (type == FIT_BITMAP)
   {
-    for (unsigned int i = 0; i < width*height; i++)
+    #pragma omp parallel for
+    for (int i = 0; i < width*height; ++i)
     {
-      for(unsigned int j = 0; j < chan; ++j)
-      {
+      for(int j = 0; j < chan; ++j)
         data[chan * i + j] = bits[chan * i + j];
-      }
+
       if(chan >= 3) // swap red and blue because freeimage
-      {
         std::swap(data[chan * i], data[chan * i + 2]);
-      }
     }
+
 //    for (unsigned int y = 0; y<height; y++)
 //    {
 //      int lineOffset1 = y*width;
@@ -198,7 +198,6 @@ static bool HRUtils_GetImageDataFromFreeImageObject(FIBITMAP* converted, int cha
 //        data[4 * offset1 + 3] = bits[4 * offset2 + 3];
 //      }
 //    }
-
   }
   return true;
 }
@@ -602,32 +601,31 @@ namespace HydraRender
   /**
   \brief load LDR image from file
   */
-  bool LoadLDRImageFromFile(const char* a_fileName,
-                            int* pW, int* pH, std::vector<int32_t>& a_data)
+  bool LoadLDRImageFromFile(const char* a_fileName, int* pW, int* pH, std::vector<int32_t>& a_data)
   {
-    FreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);
+    g_objManager.m_FreeImageDll.m_pFreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);
 
     FREE_IMAGE_FORMAT fif = FIF_PNG; // image format
 
-    fif = FreeImage_GetFileType(a_fileName, 0);
+    fif = g_objManager.m_FreeImageDll.m_pFreeImage_GetFileType(a_fileName, 0);
 
     if (fif == FIF_UNKNOWN)
-      fif = FreeImage_GetFIFFromFilename(a_fileName);
+      fif = g_objManager.m_FreeImageDll.m_pFreeImage_GetFIFFromFilename(a_fileName);
 
     FIBITMAP* dib = nullptr;
-    if (FreeImage_FIFSupportsReading(fif))
-      dib = FreeImage_Load(fif, a_fileName);
+    if (g_objManager.m_FreeImageDll.m_pFreeImage_FIFSupportsReading(fif))
+      dib = g_objManager.m_FreeImageDll.m_pFreeImage_Load(fif, a_fileName, 0);
     else
     {
       std::cout << "LoadLDRImageFromFile() : FreeImage_FIFSupportsReading/FreeImage_Load failed!" << std::endl;
       return false;
     }
 
-    FIBITMAP* converted = FreeImage_ConvertTo32Bits(dib);
-    BYTE* bits          = FreeImage_GetBits(converted);
-    auto width          = FreeImage_GetWidth(converted);
-    auto height         = FreeImage_GetHeight(converted);
-    auto bitsPerPixel   = FreeImage_GetBPP(converted);
+    FIBITMAP* converted = g_objManager.m_FreeImageDll.m_pFreeImage_ConvertTo32Bits(dib);
+    BYTE* bits          = g_objManager.m_FreeImageDll.m_pFreeImage_GetBits(converted);
+    auto width          = g_objManager.m_FreeImageDll.m_pFreeImage_GetWidth(converted);
+    auto height         = g_objManager.m_FreeImageDll.m_pFreeImage_GetHeight(converted);
+    auto bitsPerPixel   = g_objManager.m_FreeImageDll.m_pFreeImage_GetBPP(converted);
 
 
     if (width == 0 || height == 0)
@@ -639,16 +637,16 @@ namespace HydraRender
     a_data.resize(width*height);
     BYTE* data = (BYTE*)a_data.data();
 
-
-    for (unsigned int y = 0; y<height; y++)
+#pragma omp parallel for
+    for (int y = 0; y < height; ++y)
     {
-      int lineOffset1 = y*width;
-      int lineOffset2 = y*width;
+      const int lineOffset1 = y * width;
+      const int lineOffset2 = y * width;
 
-      for (unsigned int x = 0; x<width; x++)
+      for (int x = 0; x < width; ++x)
       {
-        int offset1 = lineOffset1 + x;
-        int offset2 = lineOffset2 + x;
+        const int offset1 = lineOffset1 + x;
+        const int offset2 = lineOffset2 + x;
 
         data[4 * offset1 + 0] = bits[4 * offset2 + 2];
         data[4 * offset1 + 1] = bits[4 * offset2 + 1];
@@ -657,40 +655,41 @@ namespace HydraRender
       }
     }
 
-    FreeImage_Unload(dib);
-    FreeImage_Unload(converted);
+    g_objManager.m_FreeImageDll.m_pFreeImage_Unload(dib);
+    g_objManager.m_FreeImageDll.m_pFreeImage_Unload(converted);
 
     (*pW) = width;
     (*pH) = height;
     return true;
   }
 
+
   bool LoadHDRImageFromFile(const char* a_fileName, int* pW, int* pH, int* pChan, std::vector<float>& a_data)
   {
-    FreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);
+    g_objManager.m_FreeImageDll.m_pFreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);
 
     FREE_IMAGE_FORMAT fif = FIF_EXR; // image format
 
-    fif = FreeImage_GetFileType(a_fileName, 0);
+    fif = g_objManager.m_FreeImageDll.m_pFreeImage_GetFileType(a_fileName, 0);
 
     if (fif == FIF_UNKNOWN)
-      fif = FreeImage_GetFIFFromFilename(a_fileName);
+      fif = g_objManager.m_FreeImageDll.m_pFreeImage_GetFIFFromFilename(a_fileName);
 
     FIBITMAP* dib = nullptr;
-    if (FreeImage_FIFSupportsReading(fif))
-      dib = FreeImage_Load(fif, a_fileName);
+
+    if (g_objManager.m_FreeImageDll.m_pFreeImage_FIFSupportsReading(fif))
+      dib = g_objManager.m_FreeImageDll.m_pFreeImage_Load(fif, a_fileName, 0);
     else
     {
       std::cout << "LoadHDRImageFromFile() : FreeImage_FIFSupportsReading/FreeImage_Load failed!" << std::endl;
       return false;
-    }
-    
-    auto imageType = FreeImage_GetImageType(dib);
+    }    
 
-    BYTE* bits = FreeImage_GetBits(dib);
-    auto width = FreeImage_GetWidth(dib);
-    auto height = FreeImage_GetHeight(dib);
-    auto bitsPerPixel = FreeImage_GetBPP(dib);
+    auto imageType    = g_objManager.m_FreeImageDll.m_pFreeImage_GetImageType(dib);
+    BYTE* bits        = g_objManager.m_FreeImageDll.m_pFreeImage_GetBits(dib);
+    auto width        = g_objManager.m_FreeImageDll.m_pFreeImage_GetWidth(dib);
+    auto height       = g_objManager.m_FreeImageDll.m_pFreeImage_GetHeight(dib);
+    auto bitsPerPixel = g_objManager.m_FreeImageDll.m_pFreeImage_GetBPP(dib);
 
     int channels = 0;
     if (imageType == FIT_RGBAF)
@@ -706,21 +705,23 @@ namespace HydraRender
     a_data.resize(width * height * channels);
     float* fbits = (float*)bits;
 
-    for (unsigned int i = 0; i < width * height; i++)
+#pragma omp parallel for
+    for (int i = 0; i < width * height; i++)
     {
-      for (unsigned int j = 0; j < channels; ++j)
+      for (int j = 0; j < channels; ++j)
       {
         a_data[channels * i + j] = fbits[channels * i + j];
       }
     }
 
-    FreeImage_Unload(dib);
+    g_objManager.m_FreeImageDll.m_pFreeImage_Unload(dib);
 
     (*pW)    = width;
     (*pH)    = height;
     (*pChan) = channels;
     return true;
   }
+
 
   float MSE_RGB_LDR(const std::vector<int32_t>& image1, const std::vector<int32_t>& image2)
   {
@@ -828,15 +829,13 @@ namespace HydraRender
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  bool FreeImageTool::LoadImageFromFile(const wchar_t* a_fileName, 
-                                        int& w, int& h, int& bpp, std::vector<int>& a_data)
+  bool FreeImageTool::LoadImageFromFile(const wchar_t* a_fileName, int& w, int& h, int& bpp, std::vector<int>& a_data)
   {
     const std::wstring fileExt = CutFileExt(a_fileName);
 
     if (fileExt == L".image4f" || fileExt == L".image1i" || fileExt == L".image1ui" || fileExt == L".image4b" || fileExt == L".image4ub")
     {
-      return m_pInternal->LoadImageFromFile(a_fileName, 
-                                            w, h, bpp, a_data);
+      return m_pInternal->LoadImageFromFile(a_fileName, w, h, bpp, a_data);
     }
 
     FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
@@ -850,14 +849,14 @@ namespace HydraRender
       return false;
     }
 
-    w   = FreeImage_GetWidth(converted);
-    h   = FreeImage_GetHeight(converted);
+    w = g_objManager.m_FreeImageDll.m_pFreeImage_GetWidth(converted);
+    h = g_objManager.m_FreeImageDll.m_pFreeImage_GetHeight(converted);
     
     if (w == 0 || h == 0)
     {
       HrError(L"FreeImage failed for undefined reason, file : ", a_fileName);
-      FreeImage_Unload(converted);
-      FreeImage_Unload(dib);
+      g_objManager.m_FreeImageDll.m_pFreeImage_Unload(converted);
+      g_objManager.m_FreeImageDll.m_pFreeImage_Unload(dib);
       return false;
     }
    
@@ -865,8 +864,8 @@ namespace HydraRender
    
     HRUtils_GetImageDataFromFreeImageObject(converted, chan, (char*)a_data.data());
     
-    FreeImage_Unload(converted);
-    FreeImage_Unload(dib);
+    g_objManager.m_FreeImageDll.m_pFreeImage_Unload(converted);
+    g_objManager.m_FreeImageDll.m_pFreeImage_Unload(dib);
 
     return true;
   }
@@ -893,14 +892,14 @@ namespace HydraRender
       return false;
     }
 
-    w   = FreeImage_GetWidth(converted);
-    h   = FreeImage_GetHeight(converted);
+    w = g_objManager.m_FreeImageDll.m_pFreeImage_GetWidth(converted);
+    h = g_objManager.m_FreeImageDll.m_pFreeImage_GetHeight(converted);
 
     if (w == 0 || h == 0)
     {
       HrError(L"FreeImage failed for undefined reason, file : ", a_fileName);
-      FreeImage_Unload(converted);
-      FreeImage_Unload(dib);
+      g_objManager.m_FreeImageDll.m_pFreeImage_Unload(converted);
+      g_objManager.m_FreeImageDll.m_pFreeImage_Unload(dib);
       return false;
     }
 
@@ -908,8 +907,8 @@ namespace HydraRender
 
     HRUtils_GetImageDataFromFreeImageObject(converted, chan, (char*)a_data.data());
 
-    FreeImage_Unload(converted);
-    FreeImage_Unload(dib);
+    g_objManager.m_FreeImageDll.m_pFreeImage_Unload(converted);
+    g_objManager.m_FreeImageDll.m_pFreeImage_Unload(dib);
 
     return true;
   }
@@ -938,14 +937,14 @@ namespace HydraRender
       return false;
     }
 
-    w   = FreeImage_GetWidth(converted);
-    h   = FreeImage_GetHeight(converted);
+    w = g_objManager.m_FreeImageDll.m_pFreeImage_GetWidth(converted);
+    h = g_objManager.m_FreeImageDll.m_pFreeImage_GetHeight(converted);
 
     if (w == 0 || h == 0)
     {
       HrError(L"FreeImage failed for undefined reason, file : ", a_fileName);
-      FreeImage_Unload(converted);
-      FreeImage_Unload(dib);
+      g_objManager.m_FreeImageDll.m_pFreeImage_Unload(converted);
+      g_objManager.m_FreeImageDll.m_pFreeImage_Unload(dib);
       return false;
     }
 
@@ -953,8 +952,8 @@ namespace HydraRender
 
     HRUtils_GetImageDataFromFreeImageObject(converted, chan, (char*)a_data.data());
 
-    FreeImage_Unload(converted);
-    FreeImage_Unload(dib);
+    g_objManager.m_FreeImageDll.m_pFreeImage_Unload(converted);
+    g_objManager.m_FreeImageDll.m_pFreeImage_Unload(dib);
 
     return true;
   }
@@ -970,32 +969,31 @@ namespace HydraRender
       auto type = FIT_RGBAF;
       if(chan == 1)
         type = FIT_FLOAT;
-      FIBITMAP *dib = FreeImage_ConvertFromRawBitsEx(FALSE, (BYTE*)a_data, type, w, h,
-                                                     sizeof(float) * chan * w, chan * sizeof(float) * 8,
-                                                     FI_RGBA_BLUE_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_RED_MASK, FALSE);
 
-      FreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);
 
-      auto imageType = FIF_HDR;
-      if(fileExt == L".exr" || fileExt == L".EXR")
-        imageType = FIF_EXR;
-      else if (fileExt == L".tiff" || fileExt == L".TIFF")
-        imageType = FIF_TIFF;
+      //FIBITMAP *dib = g_objManager.m_FreeImageDll.m_pFreeImage_ConvertFromRawBitsEx(FALSE, (BYTE*)a_data, type, w, h, sizeof(float) * chan * w, chan * sizeof(float) * 8, FI_RGBA_BLUE_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_RED_MASK, FALSE);
+      FIBITMAP *dib   = g_objManager.m_FreeImageDll.m_pFreeImage_ConvertFromRawBits  (       (BYTE*)a_data,       w, h, sizeof(float) * chan * w, chan * sizeof(float) * 8, FI_RGBA_BLUE_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_RED_MASK, FALSE);
+
+      g_objManager.m_FreeImageDll.m_pFreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);
+
+      auto imageType   = FIF_HDR;
+      if      (fileExt == L".exr"  || fileExt == L".EXR")  imageType      = FIF_EXR;
+      else if (fileExt == L".tiff" || fileExt == L".TIFF") imageType      = FIF_TIFF;
 
       #if defined WIN32
-      if (!FreeImage_SaveU(imageType, dib, a_fileName))
+      if (!g_objManager.m_FreeImageDll.m_pFreeImage_SaveU(imageType, dib, a_fileName, 0))
       #else
       char filename_s[512];
       wcstombs(filename_s, a_fileName, sizeof(filename_s));
       if (!FreeImage_Save(imageType, dib, filename_s))
       #endif
       {
-        FreeImage_Unload(dib);
+        g_objManager.m_FreeImageDll.m_pFreeImage_Unload(dib);
         HrError(L"SaveImageToFile(): FreeImage_Save error: ", a_fileName);
         return;
       }
 
-      FreeImage_Unload(dib);
+      g_objManager.m_FreeImageDll.m_pFreeImage_Unload(dib);
     }
   }
 
@@ -1011,8 +1009,8 @@ namespace HydraRender
       //  bits[4 * i + 3] = 255;
       // FIBITMAP *dib = FreeImage_ConvertFromRawBits((BYTE*)a_data, w, h, 4 * w, 32, FI_RGBA_BLUE_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_RED_MASK, FALSE);
 
-      FIBITMAP* dib = FreeImage_Allocate(w, h, 32);
-      BYTE* bits    = FreeImage_GetBits(dib);
+      FIBITMAP* dib = g_objManager.m_FreeImageDll.m_pFreeImage_Allocate(w, h, 32, 0, 0, 0);
+      BYTE* bits    = g_objManager.m_FreeImageDll.m_pFreeImage_GetBits(dib);
       //memcpy(bits, data, w*h*sizeof(int32_t));
       const BYTE* data2 = (const BYTE*)a_data;
       for (int i = 0; i<w*h; i++)
@@ -1023,7 +1021,7 @@ namespace HydraRender
         bits[4 * i + 3] = 255; // data2[4 * i + 3]; // 255 to kill alpha channel
       }
 
-      FreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);
+      g_objManager.m_FreeImageDll.m_pFreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);
 
       auto imageFileFormat = FIF_PNG;
 
@@ -1036,19 +1034,19 @@ namespace HydraRender
           imageFileFormat = FIF_BMP;
       }
       #if defined WIN32
-      if (!FreeImage_SaveU(imageFileFormat, dib, a_fileName))
+      if (!g_objManager.m_FreeImageDll.m_pFreeImage_SaveU(imageFileFormat, dib, a_fileName, 0))
       #else
       char filename_s[512];
       wcstombs(filename_s, a_fileName, sizeof(filename_s));
       if (!FreeImage_Save(imageFileFormat, dib, filename_s))
       #endif
       {
-        FreeImage_Unload(dib);
+        g_objManager.m_FreeImageDll.m_pFreeImage_Unload(dib);
         HrError(L"SaveImageToFile(): FreeImage_Save error on ", a_fileName);
         return;
       }
 
-      FreeImage_Unload(dib);
+      g_objManager.m_FreeImageDll.m_pFreeImage_Unload(dib);
     } // else 
 
   } // end function
@@ -1056,32 +1054,32 @@ namespace HydraRender
 
   void FreeImageTool::Save16BitMonoImageTo16BitPNG(const wchar_t* a_fileName, int w, int h, const unsigned short* a_data)
   {
-    FIBITMAP* image = FreeImage_AllocateT(FIT_UINT16, w, h);
-    auto bits       = FreeImage_GetBits(image);
+    FIBITMAP* image = g_objManager.m_FreeImageDll.m_pFreeImage_AllocateT(FIT_UINT16, w, h, 8, 0, 0, 0);
+    auto bits       = g_objManager.m_FreeImageDll.m_pFreeImage_GetBits(image);
 
     memcpy(bits, a_data, w*h*sizeof(unsigned short));
 
     #if defined WIN32
-    if (!FreeImage_SaveU(FIF_PNG, image, a_fileName))
+    if (!g_objManager.m_FreeImageDll.m_pFreeImage_SaveU(FIF_PNG, image, a_fileName, 0))
     #else
     char filename_s[512];
     wcstombs(filename_s, a_fileName, sizeof(filename_s));
     if (!FreeImage_Save(FIF_PNG, image, filename_s))
     #endif
     {
-      FreeImage_Unload(image);
+      g_objManager.m_FreeImageDll.m_pFreeImage_Unload(image);
       HrError(L"SaveImageToFile(): FreeImage_Save error on ", a_fileName);
       return;
     }
 
-    FreeImage_Unload(image);
+    g_objManager.m_FreeImageDll.m_pFreeImage_Unload(image);
   }
 
   void FreeImageTool::SaveMonoHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, const float* a_data)
   {
     const std::wstring fileExt = CutFileExt(a_fileName);
-    FIBITMAP* image = FreeImage_AllocateT(FIT_FLOAT, w, h);
-    auto bits = FreeImage_GetBits(image);
+    FIBITMAP* image            = g_objManager.m_FreeImageDll.m_pFreeImage_AllocateT(FIT_FLOAT, w, h, 8, 0, 0, 0);
+    auto bits                  = g_objManager.m_FreeImageDll.m_pFreeImage_GetBits(image);
 
     memcpy(bits, a_data, w * h * sizeof(float));
 
@@ -1092,18 +1090,18 @@ namespace HydraRender
       imageType = FIF_TIFF;
 
 #if defined WIN32
-    if (!FreeImage_SaveU(imageType, image, a_fileName))
+    if (!g_objManager.m_FreeImageDll.m_pFreeImage_SaveU(imageType, image, a_fileName, 0))
 #else
     char filename_s[512];
     wcstombs(filename_s, a_fileName, sizeof(filename_s));
     if (!FreeImage_Save(imageType, image, filename_s))
 #endif
     {
-      FreeImage_Unload(image);
+      g_objManager.m_FreeImageDll.m_pFreeImage_Unload(image);
       HrError(L"SaveMonoHDRImageToFileHDR(): FreeImage_Save error on ", a_fileName);
       return;
     }
-    FreeImage_Unload(image);
+    g_objManager.m_FreeImageDll.m_pFreeImage_Unload(image);
   }
 
 };
