@@ -154,8 +154,6 @@ void PluginShmemPipe::runAllRenderProcesses(RenderProcessRunParams a_params, con
       std::stringstream ss;
       ss << "-nowindow 1 ";
       ss << a_params.customExeArgs.c_str();
-      if(a_params.customLogFold != "")
-        ss << " -logdir \"" << a_params.customLogFold.c_str() << "\" ";
 
       //if (pImageA != nullptr)
       //pImageA->SendMsg("-node_t A -sid 0 -layer wait -action wait");
@@ -196,6 +194,10 @@ void PluginShmemPipe::runAllRenderProcesses(RenderProcessRunParams a_params, con
         ss3 << " -cl_device_id " << devId << " ";
         if (a_params.customExePath != "")
           ss3 << "-hydradir " << a_params.customExePath.c_str() << " ";
+
+        if (a_params.customLogFold != "")
+          ss3 << "-logdir " << a_params.customLogFold.c_str();
+
         const std::string cmdFull = basicCmd + ss3.str();
 
         ZeroMemory(&m_mdProcessList[i], sizeof(PROCESS_INFORMATION));
