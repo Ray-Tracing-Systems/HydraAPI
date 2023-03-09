@@ -36,7 +36,13 @@ void _HrPrint(HR_SEVERITY_LEVEL a_level, const wchar_t* a_str)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+static void FreeImageErrorHandlerHydraInternal(FREE_IMAGE_FORMAT fif, const char *message)
+{
+  std::wstringstream strOut;
+  strOut << L"(FIF = " << fif << L")";
+  const std::wstring wstr = std::wstring(L"[FreeImage ") + strOut.str() + std::wstring(L"]: ") + s2ws(message);
+  HrError(wstr);
+}
 
 namespace HydraRender
 {
@@ -62,6 +68,7 @@ void HRObjectManager::init(HRInitInfo a_initInfo)
   m_pImgTool = HydraRender::CreateImageTool();
 
   m_FreeImageDll.Initialize();
+  m_FreeImageDll.m_pFreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);
 }
 
 
@@ -542,4 +549,6 @@ void HRFreeImageDLL::Initialize()
   if (hasError)
     HrError(message); // In FreeImage.dll not found: FreeImage_ConvertFromRawBitsEx, FreeImage_ConvertToRGBAF
 
+  if(FreeImage_Initialise != nullptr)
+    FreeImage_Initialise();
 }

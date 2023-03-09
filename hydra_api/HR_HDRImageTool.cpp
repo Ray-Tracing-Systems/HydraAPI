@@ -208,13 +208,6 @@ static bool HRUtils_GetImageDataFromFreeImageObject(FIBITMAP* converted, int cha
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static void FreeImageErrorHandlerHydraInternal(FREE_IMAGE_FORMAT fif, const char *message)
-{
-  std::wstringstream strOut;
-  strOut << L"(FIF = " << fif << L")";
-  const std::wstring wstr = std::wstring(L"[FreeImage ") + strOut.str() + std::wstring(L"]: ") + s2ws(message);
-  HrError(wstr);
-}
 
 
 static inline float clamp(float u, float a, float b) { float r = fmax(a, u); return fmin(r, b); }
@@ -605,8 +598,6 @@ namespace HydraRender
   */
   bool LoadLDRImageFromFile(const char* a_fileName, int* pW, int* pH, std::vector<int32_t>& a_data)
   {
-    g_objManager.m_FreeImageDll.m_pFreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);
-
     FREE_IMAGE_FORMAT fif = FIF_PNG; // image format
 
     fif = g_objManager.m_FreeImageDll.m_pFreeImage_GetFileType(a_fileName, 0);
@@ -668,8 +659,6 @@ namespace HydraRender
 
   bool LoadHDRImageFromFile(const char* a_fileName, int* pW, int* pH, int* pChan, std::vector<float>& a_data)
   {
-    g_objManager.m_FreeImageDll.m_pFreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);
-
     FREE_IMAGE_FORMAT fif = FIF_EXR; // image format
 
     fif = g_objManager.m_FreeImageDll.m_pFreeImage_GetFileType(a_fileName, 0);
@@ -974,8 +963,6 @@ namespace HydraRender
      
       FIBITMAP *dib   = g_objManager.m_FreeImageDll.m_pFreeImage_ConvertFromRawBits  (       (BYTE*)a_data,       w, h, sizeof(float) * chan * w, chan * sizeof(float) * 8, FI_RGBA_BLUE_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_RED_MASK, FALSE);
 
-      g_objManager.m_FreeImageDll.m_pFreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);
-
       auto imageType   = FIF_HDR;
       if      (fileExt == L".exr"  || fileExt == L".EXR")  imageType      = FIF_EXR;
       else if (fileExt == L".tiff" || fileExt == L".TIFF") imageType      = FIF_TIFF;
@@ -1014,8 +1001,6 @@ namespace HydraRender
         bits[4 * i + 2] = data2[4 * i + 0];
         bits[4 * i + 3] = 255; // data2[4 * i + 3]; // 255 to kill alpha channel
       }
-
-      g_objManager.m_FreeImageDll.m_pFreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);
 
       auto imageFileFormat = FIF_PNG;
 
