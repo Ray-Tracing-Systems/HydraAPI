@@ -21,6 +21,41 @@ std::wstring s2ws(const std::string& s);
 
 void HR_MyDebugSaveBMP(const wchar_t* fname, const int* pixels, int w, int h);
 
+namespace FreeImageFixes
+{
+    static FIBITMAP* convertToRGBAF(FIBITMAP* pDib)
+    {
+        const unsigned width  = g_objManager.m_FreeImageDll.m_pFreeImage_GetWidth(pDib);
+        const unsigned height = g_objManager.m_FreeImageDll.m_pFreeImage_GetHeight(pDib);
+
+        auto pNew = g_objManager.m_FreeImageDll.m_pFreeImage_AllocateT(FIT_RGBAF, width, height, 16, 0,0,0);
+        g_objManager.m_FreeImageDll.m_pFreeImage_CloneMetadata(pNew, pDib);
+
+        const unsigned src_pitch = g_objManager.m_FreeImageDll.m_pFreeImage_GetPitch(pDib);
+        const unsigned dst_pitch = g_objManager.m_FreeImageDll.m_pFreeImage_GetPitch(pNew);
+
+        const BYTE *src_bits = (BYTE*)g_objManager.m_FreeImageDll.m_pFreeImage_GetBits(pDib);
+        BYTE* dst_bits       = (BYTE*)g_objManager.m_FreeImageDll.m_pFreeImage_GetBits(pNew);
+
+        for (unsigned y = 0; y < height; y++)
+        {
+            const FIRGBF *src_pixel = (FIRGBF*)src_bits;
+            FIRGBAF* dst_pixel = (FIRGBAF*)dst_bits;
+
+            for (unsigned x = 0; x < width; x++)
+            {
+                // Convert pixels directly, while adding a "dummy" alpha of 1.0
+                dst_pixel[x].red   = src_pixel[x].red;
+                dst_pixel[x].green = src_pixel[x].green;
+                dst_pixel[x].blue  = src_pixel[x].blue;
+                dst_pixel[x].alpha = 1.0F;
+            }
+            src_bits += src_pitch;
+            dst_bits += dst_pitch;
+        }
+        return pNew;
+    }
+}
 
 static void HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* filename, FIBITMAP*& dib, FIBITMAP*& converted,
                                                               FREE_IMAGE_FORMAT* pFif, int& bpp, int& chan)
@@ -31,24 +66,11 @@ static void HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* fil
                                     //if still unknown, try to guess the file format from the file extension
                                     //
 
-#if defined WIN32
-  fif          = g_objManager.m_FreeImageDll.m_pFreeImage_GetFileTypeU(filename, 0);
-#else
-  char filename_s[256];
-  wcstombs(filename_s, filename, sizeof(filename_s));
-  fif          = FreeImage_GetFileType(filename_s, 0);
-#endif
-
+  fif = g_objManager.m_FreeImageDll.m_pFreeImage_GetFileTypeU(filename, 0);
   if (fif      == FIF_UNKNOWN)
-  {
-#if defined WIN32
-    fif        = g_objManager.m_FreeImageDll.m_pFreeImage_GetFIFFromFilenameU(filename);
-#else
-    fif        = FreeImage_GetFIFFromFilename(filename_s);
-#endif
-  }
+    fif = g_objManager.m_FreeImageDll.m_pFreeImage_GetFIFFromFilenameU(filename);
 
-  if (fif      == FIF_UNKNOWN)
+  if (fif == FIF_UNKNOWN)
   {
     bpp        = 0;
     chan       = 0;
@@ -58,13 +80,7 @@ static void HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* fil
   //check that the plugin has reading capabilities and load the file
   //
   if (g_objManager.m_FreeImageDll.m_pFreeImage_FIFSupportsReading(fif))
-  {
-#if defined WIN32
-    dib        = g_objManager.m_FreeImageDll.m_pFreeImage_LoadU(fif, filename, 0);
-#else
-    dib        = FreeImage_Load(fif, filename_s);
-#endif
-  }
+    dib = g_objManager.m_FreeImageDll.m_pFreeImage_LoadU(fif, filename, 0);
   else
   {
     bpp        = 0;
@@ -99,32 +115,18 @@ static void HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* fil
     bpp          = 4;
     chan         = 1;
   }
-//  else if(type == FIT_BITMAP && bitsPerPixel == 24)
-//  {
-//    converted  = FreeImage_ConvertTo24Bits(dib);
-//    chan       = 3;
-//    bpp        = chan;
-//  }
   else if(type == FIT_BITMAP)
   {
     converted    = g_objManager.m_FreeImageDll.m_pFreeImage_ConvertTo32Bits(dib);
     chan         = 4;
     bpp          = chan;
   }
-  else if(type   == FIT_RGBF || type == FIT_RGBAF) 
+  else if(type == FIT_RGBF || type == FIT_RGBAF)
   {
-    //converted    = g_objManager.m_FreeImageDll.m_pFreeImage_ConvertToRGBAF(dib); //FreeImage_ConvertToRGBAF not in FreeImage.dll 3ds max 2020+.
-    //chan         = 4;
-    converted    = g_objManager.m_FreeImageDll.m_pFreeImage_ConvertToRGBF(dib);
-    chan           = 4;
-    bpp            = sizeof(float) * chan;
+    converted = FreeImageFixes::convertToRGBAF(dib);
+    chan      = 4;
+    bpp       = sizeof(float) * chan;
   }
-  //else if(type == FIT_RGBAF)
-  //{
-  //  converted  = FreeImage_ConvertToRGBAF(dib);
-  //  chan       = 4;
-  //  bpp        = sizeof(float) * chan;
-  //}
 }
 
 
@@ -969,9 +971,7 @@ namespace HydraRender
       auto type = FIT_RGBAF;
       if(chan == 1)
         type = FIT_FLOAT;
-
-
-      //FIBITMAP *dib = g_objManager.m_FreeImageDll.m_pFreeImage_ConvertFromRawBitsEx(FALSE, (BYTE*)a_data, type, w, h, sizeof(float) * chan * w, chan * sizeof(float) * 8, FI_RGBA_BLUE_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_RED_MASK, FALSE);
+     
       FIBITMAP *dib   = g_objManager.m_FreeImageDll.m_pFreeImage_ConvertFromRawBits  (       (BYTE*)a_data,       w, h, sizeof(float) * chan * w, chan * sizeof(float) * 8, FI_RGBA_BLUE_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_RED_MASK, FALSE);
 
       g_objManager.m_FreeImageDll.m_pFreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);
@@ -979,14 +979,8 @@ namespace HydraRender
       auto imageType   = FIF_HDR;
       if      (fileExt == L".exr"  || fileExt == L".EXR")  imageType      = FIF_EXR;
       else if (fileExt == L".tiff" || fileExt == L".TIFF") imageType      = FIF_TIFF;
-
-      #if defined WIN32
+     
       if (!g_objManager.m_FreeImageDll.m_pFreeImage_SaveU(imageType, dib, a_fileName, 0))
-      #else
-      char filename_s[512];
-      wcstombs(filename_s, a_fileName, sizeof(filename_s));
-      if (!FreeImage_Save(imageType, dib, filename_s))
-      #endif
       {
         g_objManager.m_FreeImageDll.m_pFreeImage_Unload(dib);
         HrError(L"SaveImageToFile(): FreeImage_Save error: ", a_fileName);
@@ -1033,13 +1027,8 @@ namespace HydraRender
         if (resolution.find(L".bmp") != std::wstring::npos || resolution.find(L".BMP") != std::wstring::npos)
           imageFileFormat = FIF_BMP;
       }
-      #if defined WIN32
+
       if (!g_objManager.m_FreeImageDll.m_pFreeImage_SaveU(imageFileFormat, dib, a_fileName, 0))
-      #else
-      char filename_s[512];
-      wcstombs(filename_s, a_fileName, sizeof(filename_s));
-      if (!FreeImage_Save(imageFileFormat, dib, filename_s))
-      #endif
       {
         g_objManager.m_FreeImageDll.m_pFreeImage_Unload(dib);
         HrError(L"SaveImageToFile(): FreeImage_Save error on ", a_fileName);
@@ -1058,14 +1047,7 @@ namespace HydraRender
     auto bits       = g_objManager.m_FreeImageDll.m_pFreeImage_GetBits(image);
 
     memcpy(bits, a_data, w*h*sizeof(unsigned short));
-
-    #if defined WIN32
     if (!g_objManager.m_FreeImageDll.m_pFreeImage_SaveU(FIF_PNG, image, a_fileName, 0))
-    #else
-    char filename_s[512];
-    wcstombs(filename_s, a_fileName, sizeof(filename_s));
-    if (!FreeImage_Save(FIF_PNG, image, filename_s))
-    #endif
     {
       g_objManager.m_FreeImageDll.m_pFreeImage_Unload(image);
       HrError(L"SaveImageToFile(): FreeImage_Save error on ", a_fileName);
@@ -1089,13 +1071,7 @@ namespace HydraRender
     else if (fileExt == L".tiff" || fileExt == L".TIFF")
       imageType = FIF_TIFF;
 
-#if defined WIN32
     if (!g_objManager.m_FreeImageDll.m_pFreeImage_SaveU(imageType, image, a_fileName, 0))
-#else
-    char filename_s[512];
-    wcstombs(filename_s, a_fileName, sizeof(filename_s));
-    if (!FreeImage_Save(imageType, image, filename_s))
-#endif
     {
       g_objManager.m_FreeImageDll.m_pFreeImage_Unload(image);
       HrError(L"SaveMonoHDRImageToFileHDR(): FreeImage_Save error on ", a_fileName);

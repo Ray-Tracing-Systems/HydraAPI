@@ -516,8 +516,8 @@ struct HRFreeImageDLL
   using FREEIMAGE_GETFIFFROMFILENAME   = FREE_IMAGE_FORMAT(*)(const char*    filename);
   using FREEIMAGE_GETFIFFROMFILENAMEU  = FREE_IMAGE_FORMAT(*)(const wchar_t* filename);
   using FREEIMAGE_FIFSUPPORTSREADING   = BOOL             (*)(FREE_IMAGE_FORMAT fif);
-
-
+  using FREEIMAGE_CLONEMETADATA        = BOOL             (*)(FIBITMAP *dst, FIBITMAP *src);
+  
   // File type request routines ------------------------------------------------
   using FREEIMAGE_GETFILETYPE          = FREE_IMAGE_FORMAT(*)(const char*    filename, int size);
   using FREEIMAGE_GETFILETYPEU         = FREE_IMAGE_FORMAT(*)(const wchar_t* filename, int size);
@@ -529,7 +529,7 @@ struct HRFreeImageDLL
   using FREEIMAGE_GETBPP               = unsigned         (*)(FIBITMAP* dib);
   using FREEIMAGE_GETWIDTH             = unsigned         (*)(FIBITMAP* dib);
   using FREEIMAGE_GETHEIGHT            = unsigned         (*)(FIBITMAP* dib);
-
+  //using FREEIMAGE_GET_SMS              = unsigned         (*)(FIBITMAP* dib);
 
   // Smart conversion routines ------------------------------------------------
   using FREEIMAGE_CONVERTFROMRAWBITS   = FIBITMAP*        (*)(                 BYTE* bits,                       int width, int height, int pitch, unsigned bpp, unsigned red_mask, unsigned green_mask, unsigned blue_mask, BOOL topdown);
@@ -540,7 +540,7 @@ struct HRFreeImageDLL
   using FREEIMAGE_CONVERTTORGBF        = FIBITMAP*        (*)(FIBITMAP* dib);
   //using FREEIMAGE_CONVERTTORGBAF     = FIBITMAP*        (*)(FIBITMAP* dib); not in FreeImage.dll 3dsMax 2020+. Replaced by FreeImage_ConvertToRGBF.
 
-
+  
   /////////////////////////////////////////////////////////////////////////////
 
 
@@ -580,7 +580,7 @@ struct HRFreeImageDLL
   FREEIMAGE_GETBPP               m_pFreeImage_GetBPP               = nullptr;
   FREEIMAGE_GETWIDTH             m_pFreeImage_GetWidth             = nullptr;
   FREEIMAGE_GETHEIGHT            m_pFreeImage_GetHeight            = nullptr;
-
+  FREEIMAGE_GETHEIGHT            m_pFreeImage_GetPitch             = nullptr;
 
   // Smart conversion routines ------------------------------------------------
   FREEIMAGE_CONVERTFROMRAWBITS   m_pFreeImage_ConvertFromRawBits   = nullptr;
@@ -590,6 +590,8 @@ struct HRFreeImageDLL
   FREEIMAGE_CONVERTTOFLOAT       m_pFreeImage_ConvertToFloat       = nullptr;
   FREEIMAGE_CONVERTTORGBF        m_pFreeImage_ConvertToRGBF        = nullptr;
   //FREEIMAGE_CONVERTTORGBAF       m_pFreeImage_ConvertToRGBAF       = nullptr; // not in FreeImage.dll 3dsMax 2020+. Replaced by FreeImage_ConvertToRGBF.
+  
+  FREEIMAGE_CLONEMETADATA m_pFreeImage_CloneMetadata = nullptr;
 
   void Initialize();
 };

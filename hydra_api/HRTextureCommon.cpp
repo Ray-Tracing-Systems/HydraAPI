@@ -462,20 +462,10 @@ void GetTextureFileInfo(const wchar_t* a_fileName, int32_t* pW, int32_t* pH, siz
 {
   FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
 
-#if defined WIN32
   fif = g_objManager.m_FreeImageDll.m_pFreeImage_GetFileTypeU(a_fileName, 0);
-#else
-  char filename_s[256];
-  wcstombs(filename_s, a_fileName, sizeof(filename_s));
-  fif = FreeImage_GetFileType(filename_s, 0);
-#endif
-
   if (fif == FIF_UNKNOWN)
-#if defined WIN32
     fif = g_objManager.m_FreeImageDll.m_pFreeImage_GetFIFFromFilenameU(a_fileName);
-#else
-    fif = FreeImage_GetFIFFromFilename(filename_s);
-#endif
+
   if (fif == FIF_UNKNOWN)
   {
     (*pW)       = 0;
@@ -492,11 +482,7 @@ void GetTextureFileInfo(const wchar_t* a_fileName, int32_t* pW, int32_t* pH, siz
 
   if (g_objManager.m_FreeImageDll.m_pFreeImage_FIFSupportsReading(fif))
   {
-#if defined WIN32
     dib = g_objManager.m_FreeImageDll.m_pFreeImage_LoadU(fif, a_fileName, 0);
-#else
-    dib = FreeImage_Load(fif, filename_s);
-#endif
   }
   else
   {

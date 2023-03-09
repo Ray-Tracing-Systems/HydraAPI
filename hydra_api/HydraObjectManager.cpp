@@ -518,7 +518,6 @@ void HRFreeImageDLL::Initialize()
     hasError = true;
   }
 
-
   m_pFreeImage_ConvertToRGBF = (FREEIMAGE_CONVERTTORGBF)HydraGetProcAddress(m_dllFreeImageHangle, "FreeImage_ConvertToRGBF");
   if (m_pFreeImage_ConvertToRGBF == nullptr)
   {
@@ -526,9 +525,21 @@ void HRFreeImageDLL::Initialize()
     hasError = true;
   }
 
-  if (hasError)
+  m_pFreeImage_CloneMetadata = (FREEIMAGE_CLONEMETADATA)HydraGetProcAddress(m_dllFreeImageHangle, "FreeImage_CloneMetadata");
+  if (m_pFreeImage_CloneMetadata == nullptr)
   {
-    HrError(message); // In FreeImage.dll not found: FreeImage_ConvertFromRawBitsEx, FreeImage_ConvertToRGBAF
+    message += L"FreeImage_CloneMetadata, ";
+    hasError = true;
   }
+
+  m_pFreeImage_GetPitch = (FREEIMAGE_GETHEIGHT)HydraGetProcAddress(m_dllFreeImageHangle, "FreeImage_GetPitch");
+  if (m_pFreeImage_GetPitch == nullptr)
+  {
+    message += L"FreeImage_GetPitch, ";
+    hasError = true;
+  }
+
+  if (hasError)
+    HrError(message); // In FreeImage.dll not found: FreeImage_ConvertFromRawBitsEx, FreeImage_ConvertToRGBAF
 
 }
