@@ -5,6 +5,7 @@
 #include "HydraRenderDriverAPI.h"
 #include "HR_HDRImage.h"
 #include "FreeImage.h"
+#include "HydraDLib.h"
 
 using HydraRender::HDRImage4f;
 using HydraRender::LDRImage1i;
@@ -486,7 +487,7 @@ struct HRRender : public HRObject<IHRRender>
 
 struct HRFreeImageDLL
 {  
-  HMODULE m_dllFreeImageHangle  = NULL;
+  HydraDllHandle* m_dllFreeImageHangle = nullptr;
 
 
   // Init / Error routines ----------------------------------------------------

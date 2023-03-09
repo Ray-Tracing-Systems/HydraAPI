@@ -329,13 +329,17 @@ void HRSceneData::clear()
 }
 
 void HRFreeImageDLL::Initialize()
-{
-#ifdef WIN32
-  m_dllFreeImageHangle = LoadLibraryW(L"c:/Program Files/Autodesk/3ds Max 2020/FreeImage.dll");
+{ 
+  #ifdef WIN32
+  const wchar_t* dllname = L"FreeImage.dll";
+  #else
+  const wchar_t* dllname = L"libfreeimage.so";
+  #endif
 
+  m_dllFreeImageHangle = HydraLoadLibrary(dllname);
   if (m_dllFreeImageHangle == NULL)
   {
-    HrError(L"Not found FreeImage.dll.");
+    HrError(L"Not found FreeImage.dll/FreeImage.so");
     return;
   }
 
@@ -344,7 +348,7 @@ void HRFreeImageDLL::Initialize()
   
   // Init / Error routines ----------------------------------------------------
 
-  m_pFreeImage_Initialise = (FREEIMAGE_INITIALISE)GetProcAddress(m_dllFreeImageHangle, "FreeImage_Initialise");
+  m_pFreeImage_Initialise = (FREEIMAGE_INITIALISE)HydraGetProcAddress(m_dllFreeImageHangle, "FreeImage_Initialise");
   if (m_pFreeImage_Initialise == nullptr)
   {
     message += L"FreeImage_Initialise, ";
@@ -355,7 +359,7 @@ void HRFreeImageDLL::Initialize()
 
   // Message output functions -------------------------------------------------
 
-  m_pFreeImage_SetOutputMessage = (FREEIMAGE_SETOUTPUTMESSAGE)GetProcAddress(m_dllFreeImageHangle, "FreeImage_SetOutputMessage");
+  m_pFreeImage_SetOutputMessage = (FREEIMAGE_SETOUTPUTMESSAGE)HydraGetProcAddress(m_dllFreeImageHangle, "FreeImage_SetOutputMessage");
   if (m_pFreeImage_SetOutputMessage == nullptr)
   {
     message += L"FreeImage_SetOutputMessage, ";
@@ -364,21 +368,21 @@ void HRFreeImageDLL::Initialize()
 
   // Allocate / Clone / Unload routines ---------------------------------------
 
-  m_pFreeImage_Allocate = (FREEIMAGE_ALLOCATE)GetProcAddress(m_dllFreeImageHangle, "FreeImage_Allocate");
+  m_pFreeImage_Allocate = (FREEIMAGE_ALLOCATE)HydraGetProcAddress(m_dllFreeImageHangle, "FreeImage_Allocate");
   if (m_pFreeImage_Allocate == nullptr)
   {
     message += L"FreeImage_Allocate, ";
     hasError = true;
   }
 
-  m_pFreeImage_AllocateT = (FREEIMAGE_ALLOCATET)GetProcAddress(m_dllFreeImageHangle, "FreeImage_AllocateT");
+  m_pFreeImage_AllocateT = (FREEIMAGE_ALLOCATET)HydraGetProcAddress(m_dllFreeImageHangle, "FreeImage_AllocateT");
   if (m_pFreeImage_AllocateT == nullptr)
   {
     message += L"FreeImage_AllocateT, ";
     hasError = true;
   }
 
-  m_pFreeImage_Unload = (FREEIMAGE_UNLOAD)GetProcAddress(m_dllFreeImageHangle, "FreeImage_Unload");
+  m_pFreeImage_Unload = (FREEIMAGE_UNLOAD)HydraGetProcAddress(m_dllFreeImageHangle, "FreeImage_Unload");
   if (m_pFreeImage_Unload == nullptr)
   {
     message += L"FreeImage_Unload, ";
@@ -387,21 +391,21 @@ void HRFreeImageDLL::Initialize()
 
   // Load / Save routines -----------------------------------------------------
 
-  m_pFreeImage_Load = (FREEIMAGE_LOAD)GetProcAddress(m_dllFreeImageHangle, "FreeImage_Load");
+  m_pFreeImage_Load = (FREEIMAGE_LOAD)HydraGetProcAddress(m_dllFreeImageHangle, "FreeImage_Load");
   if (m_pFreeImage_Load == nullptr)
   {
     message += L"FreeImage_Load, ";
     hasError = true;
   }
 
-  m_pFreeImage_LoadU = (FREEIMAGE_LOADU)GetProcAddress(m_dllFreeImageHangle, "FreeImage_LoadU");
+  m_pFreeImage_LoadU = (FREEIMAGE_LOADU)HydraGetProcAddress(m_dllFreeImageHangle, "FreeImage_LoadU");
   if (m_pFreeImage_LoadU == nullptr)
   {
     message += L"FreeImage_LoadU, ";
     hasError = true;
   }
 
-  m_pFreeImage_SaveU = (FREEIMAGE_SAVEU)GetProcAddress(m_dllFreeImageHangle, "FreeImage_SaveU");
+  m_pFreeImage_SaveU = (FREEIMAGE_SAVEU)HydraGetProcAddress(m_dllFreeImageHangle, "FreeImage_SaveU");
   if (m_pFreeImage_SaveU == nullptr)
   {
     message += L"FreeImage_SaveU, ";
@@ -410,21 +414,21 @@ void HRFreeImageDLL::Initialize()
 
   // Plugin Interface ---------------------------------------------------------
 
-  m_pFreeImage_GetFIFFromFilename = (FREEIMAGE_GETFIFFROMFILENAME)GetProcAddress(m_dllFreeImageHangle, "FreeImage_GetFIFFromFilename");
+  m_pFreeImage_GetFIFFromFilename = (FREEIMAGE_GETFIFFROMFILENAME)HydraGetProcAddress(m_dllFreeImageHangle, "FreeImage_GetFIFFromFilename");
   if (m_pFreeImage_GetFIFFromFilename == nullptr)
   {
     message += L"FreeImage_GetFIFFromFilename, ";
     hasError = true;
   }
 
-  m_pFreeImage_GetFIFFromFilenameU = (FREEIMAGE_GETFIFFROMFILENAMEU)GetProcAddress(m_dllFreeImageHangle, "FreeImage_GetFIFFromFilenameU");
+  m_pFreeImage_GetFIFFromFilenameU = (FREEIMAGE_GETFIFFROMFILENAMEU)HydraGetProcAddress(m_dllFreeImageHangle, "FreeImage_GetFIFFromFilenameU");
   if (m_pFreeImage_GetFIFFromFilenameU == nullptr)
   {
     message += L"FreeImage_GetFIFFromFilenameU, ";
     hasError = true;
   }
 
-  m_pFreeImage_FIFSupportsReading = (FREEIMAGE_FIFSUPPORTSREADING)GetProcAddress(m_dllFreeImageHangle, "FreeImage_FIFSupportsReading");
+  m_pFreeImage_FIFSupportsReading = (FREEIMAGE_FIFSUPPORTSREADING)HydraGetProcAddress(m_dllFreeImageHangle, "FreeImage_FIFSupportsReading");
   if (m_pFreeImage_FIFSupportsReading == nullptr)
   {
     message += L"FreeImage_FIFSupportsReading, ";
@@ -433,14 +437,14 @@ void HRFreeImageDLL::Initialize()
 
   // File type request routines ------------------------------------------------
 
-  m_pFreeImage_GetFileType = (FREEIMAGE_GETFILETYPE)GetProcAddress(m_dllFreeImageHangle, "FreeImage_GetFileType");
+  m_pFreeImage_GetFileType = (FREEIMAGE_GETFILETYPE)HydraGetProcAddress(m_dllFreeImageHangle, "FreeImage_GetFileType");
   if (m_pFreeImage_GetFileType == nullptr)
   {
     message += L"FreeImage_GetFileType, ";
     hasError = true;
   }
 
-  m_pFreeImage_GetFileTypeU = (FREEIMAGE_GETFILETYPEU)GetProcAddress(m_dllFreeImageHangle, "FreeImage_GetFileTypeU");
+  m_pFreeImage_GetFileTypeU = (FREEIMAGE_GETFILETYPEU)HydraGetProcAddress(m_dllFreeImageHangle, "FreeImage_GetFileTypeU");
   if (m_pFreeImage_GetFileTypeU == nullptr)
   {
     message += L"FreeImage_GetFileTypeU, ";
@@ -449,35 +453,35 @@ void HRFreeImageDLL::Initialize()
 
   // DIB info routines --------------------------------------------------------
 
-  m_pFreeImage_GetImageType = (FREEIMAGE_GETIMAGETYPE)GetProcAddress(m_dllFreeImageHangle, "FreeImage_GetImageType");
+  m_pFreeImage_GetImageType = (FREEIMAGE_GETIMAGETYPE)HydraGetProcAddress(m_dllFreeImageHangle, "FreeImage_GetImageType");
   if (m_pFreeImage_GetImageType == nullptr)
   {
     message += L"FreeImage_GetImageType, ";
     hasError = true;
   }
 
-  m_pFreeImage_GetBits = (FREEIMAGE_GETBITS)GetProcAddress(m_dllFreeImageHangle, "FreeImage_GetBits");
+  m_pFreeImage_GetBits = (FREEIMAGE_GETBITS)HydraGetProcAddress(m_dllFreeImageHangle, "FreeImage_GetBits");
   if (m_pFreeImage_GetBits == nullptr)
   {
     message += L"FreeImage_GetBits, ";
     hasError = true;
   }
 
-  m_pFreeImage_GetBPP = (FREEIMAGE_GETBPP)GetProcAddress(m_dllFreeImageHangle, "FreeImage_GetBPP");
+  m_pFreeImage_GetBPP = (FREEIMAGE_GETBPP)HydraGetProcAddress(m_dllFreeImageHangle, "FreeImage_GetBPP");
   if (m_pFreeImage_GetBPP == nullptr)
   {
     message += L"FreeImage_GetBPP, ";
     hasError = true;
   }
 
-  m_pFreeImage_GetWidth = (FREEIMAGE_GETWIDTH)GetProcAddress(m_dllFreeImageHangle, "FreeImage_GetWidth");
+  m_pFreeImage_GetWidth = (FREEIMAGE_GETWIDTH)HydraGetProcAddress(m_dllFreeImageHangle, "FreeImage_GetWidth");
   if (m_pFreeImage_GetWidth == nullptr)
   {
     message += L"FreeImage_GetWidth, ";
     hasError = true;
   }
 
-  m_pFreeImage_GetHeight = (FREEIMAGE_GETHEIGHT)GetProcAddress(m_dllFreeImageHangle, "FreeImage_GetHeight");
+  m_pFreeImage_GetHeight = (FREEIMAGE_GETHEIGHT)HydraGetProcAddress(m_dllFreeImageHangle, "FreeImage_GetHeight");
   if (m_pFreeImage_GetHeight == nullptr)
   {
     message += L"FreeImage_GetHeight, ";
@@ -486,28 +490,28 @@ void HRFreeImageDLL::Initialize()
 
   // Smart conversion routines ------------------------------------------------
 
-  m_pFreeImage_ConvertFromRawBits = (FREEIMAGE_CONVERTFROMRAWBITS)GetProcAddress(m_dllFreeImageHangle, "FreeImage_ConvertFromRawBits");
+  m_pFreeImage_ConvertFromRawBits = (FREEIMAGE_CONVERTFROMRAWBITS)HydraGetProcAddress(m_dllFreeImageHangle, "FreeImage_ConvertFromRawBits");
   if (m_pFreeImage_ConvertFromRawBits == nullptr)
   {
     message += L"FreeImage_ConvertFromRawBits, ";
     hasError = true;
   }
 
-  m_pFreeImage_ConvertTo8Bits = (FREEIMAGE_CONVERTTO8BITS)GetProcAddress(m_dllFreeImageHangle, "FreeImage_ConvertTo8Bits");
+  m_pFreeImage_ConvertTo8Bits = (FREEIMAGE_CONVERTTO8BITS)HydraGetProcAddress(m_dllFreeImageHangle, "FreeImage_ConvertTo8Bits");
   if (m_pFreeImage_ConvertTo8Bits == nullptr)
   {
     message += L"FreeImage_ConvertTo8Bits, ";
     hasError = true;
   }
 
-  m_pFreeImage_ConvertTo32Bits = (FREEIMAGE_CONVERTTO32BITS)GetProcAddress(m_dllFreeImageHangle, "FreeImage_ConvertTo32Bits");
+  m_pFreeImage_ConvertTo32Bits = (FREEIMAGE_CONVERTTO32BITS)HydraGetProcAddress(m_dllFreeImageHangle, "FreeImage_ConvertTo32Bits");
   if (m_pFreeImage_ConvertTo32Bits == nullptr)
   {
     message += L"FreeImage_ConvertTo32Bits, ";
     hasError = true;
   }
 
-  m_pFreeImage_ConvertToFloat = (FREEIMAGE_CONVERTTOFLOAT)GetProcAddress(m_dllFreeImageHangle, "FreeImage_ConvertToFloat");
+  m_pFreeImage_ConvertToFloat = (FREEIMAGE_CONVERTTOFLOAT)HydraGetProcAddress(m_dllFreeImageHangle, "FreeImage_ConvertToFloat");
   if (m_pFreeImage_ConvertToFloat == nullptr)
   {
     message += L"FreeImage_ConvertToFloat, ";
@@ -515,7 +519,7 @@ void HRFreeImageDLL::Initialize()
   }
 
 
-  m_pFreeImage_ConvertToRGBF = (FREEIMAGE_CONVERTTORGBF)GetProcAddress(m_dllFreeImageHangle, "FreeImage_ConvertToRGBF");
+  m_pFreeImage_ConvertToRGBF = (FREEIMAGE_CONVERTTORGBF)HydraGetProcAddress(m_dllFreeImageHangle, "FreeImage_ConvertToRGBF");
   if (m_pFreeImage_ConvertToRGBF == nullptr)
   {
     message += L"FreeImage_ConvertToRGBF, ";
@@ -527,7 +531,4 @@ void HRFreeImageDLL::Initialize()
     HrError(message); // In FreeImage.dll not found: FreeImage_ConvertFromRawBitsEx, FreeImage_ConvertToRGBAF
   }
 
-#else
-
-#endif // WIN32
 }

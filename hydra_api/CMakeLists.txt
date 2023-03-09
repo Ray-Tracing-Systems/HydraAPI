@@ -57,12 +57,14 @@ set(GL_DEPENDENT
 if (WIN32)
     set(SOURCE_FILES ${SOURCE_FILES} SystemWin.cpp
                                      HR_AccumImageWin.cpp
-                                     HydraLaunchProcessWin32.cpp)
+                                     HydraLaunchProcessWin32.cpp
+                                     HydraDLibWin64.cpp)
     set(GL_DEPENDENT ${GL_DEPENDENT} OpenGLContextWin.cpp)
 else()
 	set(SOURCE_FILES ${SOURCE_FILES} SystemUnix.cpp
                                      HR_AccumImageLinux.cpp
-                                     HydraLaunchProcessLinux.cpp)
+                                     HydraLaunchProcessLinux.cpp
+                                     HydraDLibUnix.cpp)
 endif()
 
 
