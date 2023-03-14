@@ -133,7 +133,13 @@ static void HRUtils_LoadImageFromFileToPairOfFreeImageObjects(const wchar_t* fil
     chan = 4;
     bpp = chan;
   }
-  else if(type == FIT_RGBF || type == FIT_RGBAF)
+  else if (type == FIT_RGBAF)
+  {
+    converted = dib;
+    chan = 4;
+    bpp  = sizeof(float) * chan;
+  }
+  else if(type == FIT_RGBF)
   {
     //converted = FreeImage_ConvertToRGBAF(dib);
     converted = FreeImageFixes::convertToRGBAF(dib);
@@ -865,9 +871,16 @@ namespace HydraRender
    
     HRUtils_GetImageDataFromFreeImageObject(converted, chan, (char*)a_data.data());
     
-    FreeImage_Unload(converted);
-    FreeImage_Unload(dib);
-
+    if(converted == dib)  
+    {
+      FreeImage_Unload(dib);
+      converted = nullptr;
+    }
+    else
+    { 
+      FreeImage_Unload(converted);
+      FreeImage_Unload(dib);
+    }
     return true;
   }
 
@@ -908,8 +921,16 @@ namespace HydraRender
 
     HRUtils_GetImageDataFromFreeImageObject(converted, chan, (char*)a_data.data());
 
-    FreeImage_Unload(converted);
-    FreeImage_Unload(dib);
+    if (converted == dib)
+    {
+      FreeImage_Unload(dib);
+      converted = nullptr;
+    }
+    else
+    {
+      FreeImage_Unload(converted);
+      FreeImage_Unload(dib);
+    }
 
     return true;
   }
@@ -953,8 +974,16 @@ namespace HydraRender
 
     HRUtils_GetImageDataFromFreeImageObject(converted, chan, (char*)a_data.data());
 
-    FreeImage_Unload(converted);
-    FreeImage_Unload(dib);
+    if (converted == dib)
+    {
+      FreeImage_Unload(dib);
+      converted = nullptr;
+    }
+    else
+    {
+      FreeImage_Unload(converted);
+      FreeImage_Unload(dib);
+    }
 
     return true;
   }
