@@ -65,10 +65,10 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFile(const wchar_t* a_fileName, int w
     auto chunkId = pTextureImpl->chunkId();
     chunk = g_objManager.scnData.m_vbCache.chunk_at(chunkId);
 
-    w   = pTextureImpl->width();
-    h   = pTextureImpl->height();
-    bpp = pTextureImpl->bpp();
-    chan = pTextureImpl->channels();
+    w    = pTextureImpl->width();
+    h    = pTextureImpl->height();
+    bpp  = pTextureImpl->bpp()      > 4 ? 16 : 4;
+    chan = pTextureImpl->channels() > 1 ? 4  : 1;
   }
   else
   {
@@ -97,8 +97,8 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFile(const wchar_t* a_fileName, int w
 
   texNodeXml.append_attribute(L"offset").set_value(L"8");
   texNodeXml.append_attribute(L"bytesize").set_value(bytesize.c_str());
-  texNodeXml.append_attribute(L"width") = w;
-  texNodeXml.append_attribute(L"height") = h;
+  texNodeXml.append_attribute(L"width")    = w;
+  texNodeXml.append_attribute(L"height")   = h;
   texNodeXml.append_attribute(L"channels") = chan;
   texNodeXml.append_attribute(L"dl").set_value(L"0");
 
@@ -177,10 +177,13 @@ HAPI HRTextureNodeRef hrTexture2DCreateFromFileDL(const wchar_t* a_fileName, int
   size_t  bpp1;
   GetTextureFileInfo(a_fileName, &w1, &h1, &bpp1, &chan);
 
+  const int bppFix  = bpp1 > 4 ? 16 : 4;
+  const int chanFix = chan > 1 ? 4 : 1;
+
   texNodeXml.append_attribute(L"width")    = w1; 
   texNodeXml.append_attribute(L"height")   = h1; 
-  texNodeXml.append_attribute(L"bytesize") = w1 * h1 * bpp1;
-  texNodeXml.append_attribute(L"channels") = chan;
+  texNodeXml.append_attribute(L"bytesize") = size_t(w1 * h1) * size_t(bppFix);
+  texNodeXml.append_attribute(L"channels") = chanFix;
   texNodeXml.append_attribute(L"dl").set_value(L"1");
 
   if(w > 0) texNodeXml.append_attribute(L"width_rec")  = w;

@@ -917,7 +917,8 @@ namespace HydraRender
       return false;
     }
 
-    a_data.resize(w * h * bpp);
+    size_t totalSize = size_t(w) * size_t(h) * size_t(bpp);
+    a_data.resize(totalSize);
 
     HRUtils_GetImageDataFromFreeImageObject(converted, chan, (char*)a_data.data());
 

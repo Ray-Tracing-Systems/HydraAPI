@@ -432,7 +432,7 @@ std::shared_ptr<IHRTextureNode> HydraFactoryCommon::CreateTextureInfoFromChunkFi
     uint32_t width()    const override { return m_width;   }
     uint32_t height()   const override { return m_height;  }
     uint32_t bpp()      const override { return m_bpp;     }
-    uint32_t channels() const override { return m_channels;     }
+    uint32_t channels() const override { return m_channels;}
 
     uint64_t m_chunkId;
     uint32_t m_width;
