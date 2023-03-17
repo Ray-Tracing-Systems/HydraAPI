@@ -706,6 +706,13 @@ HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName, bool a_copyToLo
 HAPI HRMeshRef hrMeshCreateFromFile(const wchar_t* a_fileName, HRModelLoadInfo a_modelInfo = HRModelLoadInfo());
 
 /**
+\brief get instance xml node
+\param a_pScn - pointer to scene
+\param a_id - id instance
+*/
+HAPI pugi::xml_node hrInstanceNode(HRSceneInstRef a_pScn, int32_t a_id);
+
+/**
 \brief open mesh
 \param a_pMesh - pointer to mesh
 \param a_type - primitive type that will be used during current open/close session.

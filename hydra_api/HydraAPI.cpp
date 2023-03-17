@@ -387,6 +387,8 @@ HAPI void hrSceneOpen(HRSceneInstRef a_pScn, HR_OPEN_MODE a_mode)
 
     pScn->m_remapList.clear();
     pScn->m_remapCache.clear();
+        
+    pScn->m_pTmpXlmDoc = std::make_shared<pugi::xml_document>();
   }
   else if (a_mode == HR_OPEN_EXISTING)
   {
@@ -485,6 +487,8 @@ HAPI void hrSceneClose(HRSceneInstRef a_pScn)
     nodeXML.append_attribute(L"scn_id").set_value(scn_id.c_str());
     nodeXML.append_attribute(L"scn_sid").set_value(scn_sid.c_str());
     nodeXML.append_attribute(L"matrix").set_value(mstr.c_str());
+
+    nodeXML.append_copy(elem.node);
   }
 
   // lights
@@ -535,7 +539,11 @@ HAPI void hrSceneClose(HRSceneInstRef a_pScn)
   pScn->drawBeginLight  = pScn->drawListLights.size();
   pScn->opened          = false;
   pScn->driverDirtyFlag = true;
+
+  pScn->m_pTmpXlmDoc.reset();
+  pScn->m_pTmpXlmDoc = nullptr;
 }
+
 
 HAPI int hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh, 
                          float a_mat[16], const int32_t* a_mmListm, int32_t a_mmListSize)
@@ -603,13 +611,16 @@ HAPI int hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh,
   }
 
   HRSceneInst::Instance model;
-  model.meshId      = a_pMesh.id;
-  model.remapListId = mmId;                
+  model.meshId                                  = a_pMesh.id;
+  model.remapListId                             = mmId;                
   memcpy(model.m, a_mat, 16 * sizeof(float));
-  model.scene_id = a_pScn.id;
-  model.scene_sid = pScn->instancedScenesCounter;
+  model.scene_id                                = a_pScn.id;
+  model.scene_sid                               = pScn->instancedScenesCounter;  
+  model.node                                    = pScn->m_pTmpXlmDoc->append_child(L"transform_sequence");
+  model.node.force_attribute(L"transformation") = L"scale * rotation * position";
+  model.node.force_attribute(L"rotation")       = L"Euler in dergees";
   pScn->drawList.push_back(model);
-
+  
   if(g_objManager.m_computeBBoxes && pMesh->pImpl != nullptr)
   {
     auto bbox = pMesh->pImpl->getBBox();

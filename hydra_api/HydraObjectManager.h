@@ -435,6 +435,8 @@ struct HRSceneInst : public HRObject<IHRSceneInst>
     pugi::xml_node node;
   };
 
+  std::shared_ptr<pugi::xml_document> m_pTmpXlmDoc = nullptr;
+
   std::vector<Instance> drawList;
   size_t                drawBegin;
 

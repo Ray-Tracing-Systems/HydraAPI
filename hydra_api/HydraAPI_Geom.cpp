@@ -755,6 +755,28 @@ void OpenHRMesh(HRMesh* pMesh, pugi::xml_node nodeXml)
   //
 }
 
+HAPI pugi::xml_node hrInstanceNode(HRSceneInstRef a_pScn, int32_t a_id)
+{
+  HRSceneInst* pScn = g_objManager.PtrById(a_pScn);
+
+  if (pScn == nullptr)
+  {
+    HrError(L"hrInstanceNode: nullptr HRSceneInst");
+    return pugi::xml_node();
+  }
+
+  HRSceneInst::Instance* pInst = &pScn->drawList[a_id];
+  
+  if (pInst == nullptr)
+  {
+    HrError(L"hrInstanceNode: nullptr HRSceneInst::Instance");
+    return pugi::xml_node();
+  }
+
+  return pInst->node;
+}
+
+
 HAPI void hrMeshOpen(HRMeshRef a_mesh, HR_PRIM_TYPE a_type, HR_OPEN_MODE a_mode)
 {
   HRMesh* pMesh = g_objManager.PtrById(a_mesh);
@@ -785,7 +807,6 @@ HAPI void hrMeshOpen(HRMeshRef a_mesh, HR_PRIM_TYPE a_type, HR_OPEN_MODE a_mode)
   {
     OpenHRMesh(pMesh, nodeXml);
   }
-
 }
 
 HAPI pugi::xml_node hrMeshParamNode(HRMeshRef a_mesh)
