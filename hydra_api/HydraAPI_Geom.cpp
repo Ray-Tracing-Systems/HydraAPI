@@ -765,6 +765,12 @@ HAPI pugi::xml_node hrInstanceNode(HRSceneInstRef a_pScn, int32_t a_id)
     return pugi::xml_node();
   }
 
+  if (a_id < 0)
+  {
+    HrError(L"Instance id < 0");
+    return pugi::xml_node();
+  }
+
   HRSceneInst::Instance* pInst = &pScn->drawList[a_id];
   
   if (pInst == nullptr)
