@@ -386,18 +386,17 @@ HAPI void hrSceneOpen(HRSceneInstRef a_pScn, HR_OPEN_MODE a_mode)
     clear_node_childs(sceneNode);                       // #NOTE: strange bug in 3ds max plugin; for some reason this node is not empty
 
     pScn->m_remapList.clear();
-    pScn->m_remapCache.clear();
-        
-    pScn->m_pTmpXlmDoc = std::make_shared<pugi::xml_document>();
+    pScn->m_remapCache.clear();        
   }
   else if (a_mode == HR_OPEN_EXISTING)
   {
     sceneNode.attribute(L"discard").set_value(L"0");
   }
 
-  pScn->drawBegin = pScn->drawList.size();
-  pScn->opened    = true;
-  pScn->openMode  = a_mode;
+  pScn->m_pTmpXlmDoc = std::make_shared<pugi::xml_document>();
+  pScn->drawBegin    = pScn->drawList.size();
+  pScn->opened       = true;
+  pScn->openMode     = a_mode;
 }
 
 HAPI pugi::xml_node hrSceneParamNode(HRSceneInstRef a_pScn)
