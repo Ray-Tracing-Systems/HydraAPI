@@ -755,19 +755,19 @@ void OpenHRMesh(HRMesh* pMesh, pugi::xml_node nodeXml)
   //
 }
 
-HAPI pugi::xml_node hrInstanceNode(HRSceneInstRef a_pScn, int32_t a_id)
+HAPI pugi::xml_node hrGetMeshInstanceNode(HRSceneInstRef a_pScn, int32_t a_id)
 {
   HRSceneInst* pScn = g_objManager.PtrById(a_pScn);
 
   if (pScn == nullptr)
   {
-    HrError(L"hrInstanceNode: nullptr HRSceneInst");
+    HrError(L"hrGetMeshInstanceNode: nullptr HRSceneInst");
     return pugi::xml_node();
   }
 
   if (a_id < 0)
   {
-    HrError(L"Instance id < 0");
+    HrError(L"hrGetMeshInstanceNode: id < 0");
     return pugi::xml_node();
   }
 
@@ -775,7 +775,36 @@ HAPI pugi::xml_node hrInstanceNode(HRSceneInstRef a_pScn, int32_t a_id)
   
   if (pInst == nullptr)
   {
-    HrError(L"hrInstanceNode: nullptr HRSceneInst::Instance");
+    HrError(L"hrGetMeshInstanceNode: nullptr HRSceneInst::Instance");
+    return pugi::xml_node();
+  }
+
+  return pInst->node;
+}
+
+
+
+HAPI pugi::xml_node hrGetLightInstanceNode(HRSceneInstRef a_pScn, int32_t a_id)
+{
+  HRSceneInst* pScn = g_objManager.PtrById(a_pScn);
+
+  if (pScn == nullptr)
+  {
+    HrError(L"hrGetLightInstanceNode: nullptr HRSceneInst");
+    return pugi::xml_node();
+  }
+
+  if (a_id < 0)
+  {
+    HrError(L"hrGetLightInstanceNode: id < 0");
+    return pugi::xml_node();
+  }
+
+  HRSceneInst::Instance* pInst = &pScn->drawListLights[a_id];
+
+  if (pInst == nullptr)
+  {
+    HrError(L"hrGetLightInstanceNode: nullptr HRSceneInst::Instance");
     return pugi::xml_node();
   }
 

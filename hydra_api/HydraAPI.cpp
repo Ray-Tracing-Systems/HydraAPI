@@ -480,12 +480,12 @@ HAPI void hrSceneClose(HRSceneInstRef a_pScn)
 
     std::wstring mstr = outMat.str();
 
-    nodeXML.append_attribute(L"id").set_value(id.c_str());
-    nodeXML.append_attribute(L"mesh_id").set_value(mod_id.c_str());
-    nodeXML.append_attribute(L"rmap_id").set_value(mat_id.c_str());
-    nodeXML.append_attribute(L"scn_id").set_value(scn_id.c_str());
-    nodeXML.append_attribute(L"scn_sid").set_value(scn_sid.c_str());
-    nodeXML.append_attribute(L"matrix").set_value(mstr.c_str());
+    nodeXML.append_attribute(L"id")      = id.c_str();
+    nodeXML.append_attribute(L"mesh_id") = mod_id.c_str();
+    nodeXML.append_attribute(L"rmap_id") = mat_id.c_str();
+    nodeXML.append_attribute(L"scn_id")  = scn_id.c_str();
+    nodeXML.append_attribute(L"scn_sid") = scn_sid.c_str();
+    nodeXML.append_attribute(L"matrix")  = mstr.c_str();
 
     nodeXML.append_copy(elem.node);
   }
@@ -508,11 +508,13 @@ HAPI void hrSceneClose(HRSceneInstRef a_pScn)
 
     std::wstring mstr = outMat.str();
 
-    nodeXML.append_attribute(L"id").set_value(id.c_str());
-    nodeXML.append_attribute(L"light_id").set_value(mod_id.c_str());
-    nodeXML.append_attribute(L"matrix").set_value(mstr.c_str());
-    nodeXML.append_attribute(L"lgroup_id").set_value(lgi_id.c_str());
+    nodeXML.append_attribute(L"id")        = id.c_str();
+    nodeXML.append_attribute(L"light_id")  = mod_id.c_str();
+    nodeXML.append_attribute(L"matrix")    = mstr.c_str();
+    nodeXML.append_attribute(L"lgroup_id") = lgi_id.c_str();
     
+    nodeXML.append_copy(elem.node);
+
     if (i < pScn->drawLightsCustom.size())
     {
       const std::wstring& customAttribs = pScn->drawLightsCustom[i];
@@ -631,38 +633,47 @@ HAPI int hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh,
   return int(pScn->drawList.size() - 1); // number current instance
 }
 
-static void _hrLightInstance(HRSceneInstRef a_pScn, HRLightRef a_pLight, float a_mat[16], int32_t a_lightGroupInstanceId, const wchar_t* a_customAttribs)
+
+static int _hrLightInstance(HRSceneInstRef a_pScn, HRLightRef a_pLight, float a_mat[16], int32_t a_lightGroupInstanceId, const wchar_t* a_customAttribs)
 {
   HRSceneInst* pScn = g_objManager.PtrById(a_pScn);
   if (pScn == nullptr)
   {
     HrError(L"hrLightInstance: nullptr input");
-    return;
+    return -1;
   }
 
   if (!pScn->opened)
   {
     HrError(L"hrLightInstance: scene is not opened");
-    return;
+    return -1;
   }
 
   HRSceneInst::Instance model;
-  model.lightId          = a_pLight.id;
-  model.lightGroupInstId = a_lightGroupInstanceId;
-  model.meshId           = -1;
-  model.remapListId  = -1;
+  model.lightId                                 = a_pLight.id;
+  model.lightGroupInstId                        = a_lightGroupInstanceId;
+  model.meshId                                  = -1;
+  model.remapListId                             = -1;
+  model.node                                    = pScn->m_pTmpXlmDoc->append_child(L"transform_sequence");
+  model.node.force_attribute(L"transformation") = L"scale * rotation * position";
+  model.node.force_attribute(L"rotation")       = L"Euler in dergees";
   memcpy(model.m, a_mat, 16 * sizeof(float));
+
   pScn->drawListLights.push_back(model);
   if (a_customAttribs == nullptr)
     pScn->drawLightsCustom.push_back(L"");
   else
     pScn->drawLightsCustom.push_back(a_customAttribs);
+
+  return int(pScn->drawListLights.size() - 1); // number current instance  
 }
 
-HAPI void hrLightInstance(HRSceneInstRef a_pScn, HRLightRef a_pLight, float a_mat[16], const wchar_t* a_customAttribs)
+
+HAPI int hrLightInstance(HRSceneInstRef a_pScn, HRLightRef a_pLight, float a_mat[16], const wchar_t* a_customAttribs)
 {
-  _hrLightInstance(a_pScn, a_pLight, a_mat, -1, a_customAttribs);
+  return _hrLightInstance(a_pScn, a_pLight, a_mat, -1, a_customAttribs);
 }
+
 
 HAPI void hrLightGroupInstanceExt(HRSceneInstRef a_pScn, HRLightGroupExt lightGroup, float m[16], const wchar_t** a_customAttribsArray)
 {

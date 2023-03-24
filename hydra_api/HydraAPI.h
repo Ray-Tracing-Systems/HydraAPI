@@ -686,7 +686,7 @@ enum HR_PRIM_TYPE { HR_TRIANGLE_LIST  = 0,    ///< simple triangle list
 \param a_objectName - object name. Can be "" or nullptr
 
 */
-HAPI HRMeshRef hrMeshCreate(const wchar_t* a_objectName);
+HAPI HRMeshRef         hrMeshCreate(const wchar_t* a_objectName);
 
 /**
 \brief create mesh from internal vsgf format with delayed load.
@@ -695,7 +695,7 @@ HAPI HRMeshRef hrMeshCreate(const wchar_t* a_objectName);
 \param a_copyToLocalFolder - indicates if we need to copy input '.vsgf' file to local folder
 
 */
-HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName, bool a_copyToLocalFolder = false);
+HAPI HRMeshRef         hrMeshCreateFromFileDL(const wchar_t* a_fileName, bool a_copyToLocalFolder = false);
 
 /**
 \brief create mesh from obj, obj+mtl or internal vsgf format.
@@ -703,21 +703,29 @@ HAPI HRMeshRef hrMeshCreateFromFileDL(const wchar_t* a_fileName, bool a_copyToLo
 \param a_modelInfo - structure, describing how to import the model
 
 */
-HAPI HRMeshRef hrMeshCreateFromFile(const wchar_t* a_fileName, HRModelLoadInfo a_modelInfo = HRModelLoadInfo());
+HAPI HRMeshRef         hrMeshCreateFromFile(const wchar_t* a_fileName, HRModelLoadInfo a_modelInfo = HRModelLoadInfo());
 
 /**
-\brief get instance xml node
+\brief get mesh instance xml node
 \param a_pScn - pointer to scene
 \param a_id - id instance
+\return the XML node of the mesh instance. 
 */
-HAPI pugi::xml_node hrInstanceNode(HRSceneInstRef a_pScn, int32_t a_id);
+HAPI pugi::xml_node    hrGetMeshInstanceNode(HRSceneInstRef a_pScn, int32_t a_id);
+
+/**
+\brief get light instance xml node
+\param a_pScn - pointer to scene
+\param a_id - id instance
+\return the XML node of the light instance.
+*/
+HAPI pugi::xml_node    hrGetLightInstanceNode(HRSceneInstRef a_pScn, int32_t a_id);
 
 /**
 \brief open mesh
 \param a_pMesh - pointer to mesh
 \param a_type - primitive type that will be used during current open/close session.
 \param a_mode - open mode
-
 */
 HAPI void              hrMeshOpen(HRMeshRef a_pMesh, HR_PRIM_TYPE a_type, HR_OPEN_MODE a_mode);
 
@@ -736,9 +744,7 @@ HAPI void              hrMeshClose(HRMeshRef a_pMesh, bool a_compress = false, b
 \param a_name    - attribute name 
 \param a_pointer - input data pointer
 \param a_stride  - input stride in bytes; 0 means 4, like in OpenGL whan attributes are placed tightly, just an float array
-
 */
-
 HAPI void              hrMeshVertexAttribPointer1f(HRMeshRef pMesh, const wchar_t* a_name, const float* a_pointer, int a_stride = 0);
 
 /**
@@ -747,7 +753,6 @@ HAPI void              hrMeshVertexAttribPointer1f(HRMeshRef pMesh, const wchar_
 \param a_name    - attribute name
 \param a_pointer - input data pointer
 \param a_stride  - input stride in bytes; 0 means 8, like in OpenGL whan attributes are placed tightly, just an float2 array
-
 */
 HAPI void              hrMeshVertexAttribPointer2f(HRMeshRef pMesh, const wchar_t* a_name, const float* a_pointer, int a_stride = 0);
 
@@ -757,7 +762,6 @@ HAPI void              hrMeshVertexAttribPointer2f(HRMeshRef pMesh, const wchar_
 \param a_name    - attribute name
 \param a_pointer - input data pointer
 \param a_stride  - input stride in bytes; 0 means 12, like in OpenGL whan attributes are placed tightly, just an float3 array
-
 */
 HAPI void              hrMeshVertexAttribPointer3f(HRMeshRef pMesh, const wchar_t* a_name, const float* a_pointer, int a_stride = 0);
 
@@ -911,9 +915,9 @@ HAPI void              hrSceneClose(HRSceneInstRef pScn);
 /**
 \brief get params node for scene
 \param a_pScn - pointer to scene
-
+\return the XML node of the scene
 */
-HAPI pugi::xml_node  hrSceneParamNode(HRSceneInstRef a_pScn);
+HAPI pugi::xml_node    hrSceneParamNode(HRSceneInstRef a_pScn);
 
 /**
 \brief like glDrawArraysInstanced
@@ -922,8 +926,9 @@ HAPI pugi::xml_node  hrSceneParamNode(HRSceneInstRef a_pScn);
 \param a_mat    - matrix
 \param a_mmList - multimaterial remap pairs array;             @ALWAYS must be multiple of 2
 \param a_mmListSize - size of multimaterial remap pairs array; @EXAMPLE: [0,1,3,4,7,5] means [0-->1; 3-->4; 7-->5;]
+\return number current instance
 */
-HAPI int              hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh, float a_mat[16], 
+HAPI int               hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh, float a_mat[16], 
                                       const int32_t* a_mmListm = nullptr, int32_t a_mmListSize = 0);
 /**
 \brief like glDrawArraysInstanced, but for lights
@@ -931,9 +936,9 @@ HAPI int              hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh, f
 \param a_pMesh         - pointer to mesh
 \param a_mat           - matrix
 \param a_customAttribs - wstring that contains custom attrib list. For example: L"color_mult ="\1 0 0"\ rotationMatrix = "\1 0 0 0 1 0 0 0 1"\"
-
+\return number current instance
 */
-HAPI void              hrLightInstance(HRSceneInstRef pScn, HRLightRef  pLight, float m[16], const wchar_t* a_customAttribs = nullptr);
+HAPI int               hrLightInstance(HRSceneInstRef a_pScn, HRLightRef  a_pLight, float a_mat[16], const wchar_t* a_customAttribs = nullptr);
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
