@@ -99,6 +99,8 @@ if(WIN32)
 			${HYDRA_API_UTILS_SRC_DIR}/ies_parser/IES_READ.C
 
 			${HYDRA_API_UTILS_SRC_DIR}/mikktspace/mikktspace.c)
+	include_directories("c:/Python310/include")
+	set(PYTHON_EXECUTABLE "c:/Python310/Python")
 else()
 
 set(HAPI_SOURCE_FILES ${HAPI_SOURCE_FILES}
