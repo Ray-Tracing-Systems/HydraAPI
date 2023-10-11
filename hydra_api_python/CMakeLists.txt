@@ -3,7 +3,7 @@ project(hydraPy C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 
-
+add_compile_definitions(HYDRA_API_CMAKE)
 set(USE_GL OFF CACHE BOOL "Build OpenGL render drivers")
 
 set(ADDITIONAL_INCLUDE_DIRS
