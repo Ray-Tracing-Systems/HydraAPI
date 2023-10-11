@@ -527,6 +527,8 @@ PYBIND11_MODULE(hydraPy, m)
   m.def("hrRenderParamNode", &hrRenderParamNode);
   m.def("hrRenderHaveUpdate", &hrRenderHaveUpdate);
   m.def("hrRenderEnableDevice", &hrRenderEnableDevice);
+  m.def("hrRenderLockFrameBufferUpdate", &hrRenderLockFrameBufferUpdate);
+  m.def("hrRenderUnlockFrameBufferUpdate", &hrRenderUnlockFrameBufferUpdate);
   m.def("hrRenderGetFrameBufferHDR4f", &hrRenderGetFrameBufferHDR4fPy);
   m.def("hrRenderGetFrameBufferHDR4fNumPy", &hrRenderGetFrameBufferHDR4fNumPy);
   m.def("hrRenderGetFrameBufferLDR1i", &hrRenderGetFrameBufferLDR1iNumPy);
