@@ -4,9 +4,9 @@
 
 //#include <unordered_map>
 
-#include "pybind11/include/pybind11/pybind11.h"
-#include "pybind11/include/pybind11/stl.h"
-#include <pybind11/numpy.h>
+#include "pybind11/pybind11.h"
+#include "pybind11/stl.h"
+#include "pybind11/numpy.h"
 //#include "pybind11/include/pybind11/stl_bind.h"
 #include "HydraAPI.h"
 #include "HydraXMLHelpers.h"
@@ -19,6 +19,7 @@ namespace py = pybind11;
 
 std::unordered_map<std::wstring, std::vector<float>> g_vertexAttribf;
 std::unordered_map<std::wstring, std::vector<int>> g_vertexAttribi;
+std::vector<float> g_frameBuffer;
 
 
 struct HRGBufferPixelPy
@@ -303,6 +304,20 @@ HRSceneInstRef MergeLibraryIntoLibraryPy(const wchar_t* a_libPath, bool mergeLig
     return MergeLibraryIntoLibrary(a_libPath, mergeLights, copyScene, a_stateFileName, nullptr);
 }
 
+bool hrRenderGetFrameBufferHDR4fPy(HRRenderRef a_pRender, int w, int h, std::vector<float>& pointer, const wchar_t* a_layerName)
+{
+  g_frameBuffer = pointer;
+  return hrRenderGetFrameBufferHDR4f(a_pRender, w, h, &g_frameBuffer[0], a_layerName);
+}
+
+bool hrRenderGetFrameBufferHDR4fNumPy(const HRRenderRef a_pRender, int w, int h, py::array_t<float> &imgData, const wchar_t* a_layerName)
+{
+  auto myArr = imgData.mutable_unchecked<1>();
+  return hrRenderGetFrameBufferHDR4f(a_pRender, w, h, myArr.mutable_data(0), a_layerName);
+}
+
+
+
 
 PYBIND11_MODULE(hydraPy, m)
 {
@@ -512,9 +527,10 @@ PYBIND11_MODULE(hydraPy, m)
   m.def("hrRenderParamNode", &hrRenderParamNode);
   m.def("hrRenderHaveUpdate", &hrRenderHaveUpdate);
   m.def("hrRenderEnableDevice", &hrRenderEnableDevice);
-  //m.def("hrRenderGetFrameBufferHDR4f", &hrRenderGetFrameBufferHDR4f);
+  m.def("hrRenderGetFrameBufferHDR4f", &hrRenderGetFrameBufferHDR4fPy);
+  m.def("hrRenderGetFrameBufferHDR4fNumPy", &hrRenderGetFrameBufferHDR4fNumPy);
   m.def("hrRenderGetFrameBufferLDR1i", &hrRenderGetFrameBufferLDR1iNumPy);
-  m.def("hrRenderGetFrameBufferLDR1i", &hrRenderGetFrameBufferLDR1i);
+  // m.def("hrRenderGetFrameBufferLDR1i", &hrRenderGetFrameBufferLDR1i);
   m.def("hrRenderSaveFrameBufferLDR", &hrRenderSaveFrameBufferLDR);
   m.def("hrRenderSaveGBufferLayerLDR", &hrRenderSaveGBufferLayerLDR, py::arg("a_pRender"), py::arg("a_outFileName"), py::arg("a_layerName"),
         py::arg("a_palette") = (const int*)nullptr, py::arg("a_paletteSize") = 0);

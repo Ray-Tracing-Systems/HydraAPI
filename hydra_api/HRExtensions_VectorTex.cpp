@@ -771,6 +771,9 @@ namespace hr_vtex
 
     nsvgDelete(image);
 
+    if(a_createInfo->mode == VTEX_MODE::VTEX_MSDF || a_createInfo->mode == VTEX_MODE::VTEX_SDF)
+      std::cout << "Loaded vector texture " << a_fileName << ", resulting *sdf tex num: " << texSDFs.size() << std::endl;
+
     return texProc;
   }
 }
