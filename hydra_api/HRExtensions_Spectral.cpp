@@ -282,11 +282,11 @@ namespace hr_spectral
     std::vector<float> imgData(a_width * a_height * channels);
 
     #pragma omp parallel for
-    for(size_t i = 0; i < a_width * a_height; ++i)
+    for(int i = 0; i < a_width * a_height; ++i)
     {
       std::vector<float> spectralPixel(spec.size());
-      for(size_t j = 0; j < spec.size(); ++j) // TODO: bad memory access, worth it to fix?
-        spectralPixel[j] = spec[j][i];
+      for(int j = 0; j < spec.size(); ++j) // TODO: bad memory access, worth it to fix?
+        spectralPixel[(size_t)(j)] = spec[(size_t)(j)][(size_t)(i)];
 
       auto rgb = ToRGB(spectralPixel, wavelengths, X, Y, Z);
       imgData[i * channels + 0] = rgb.x;
@@ -343,11 +343,11 @@ namespace hr_spectral
     std::vector<float> imgData(a_width * a_height);
 
 #pragma omp parallel for
-    for(size_t i = 0; i < a_width * a_height; ++i)
+    for(int i = 0; i < a_width * a_height; ++i)
     {
       std::vector<float> spectralPixel(spec.size());
-      for(size_t j = 0; j < spec.size(); ++j) // TODO: bad memory access, worth it to fix?
-        spectralPixel[j] = spec[j][i];
+      for(int j = 0; j < spec.size(); ++j) // TODO: bad memory access, worth it to fix?
+        spectralPixel[(size_t)(j)] = spec[(size_t)(j)][(size_t)(i)];
 
       imgData[i] =  ToY(spectralPixel, wavelengths, Y);
     }
@@ -361,11 +361,11 @@ namespace hr_spectral
     int dataChannels = (channels == 4) ? 3 : channels; // alpha channel does not store spectral data
     // add all channels from buf to imgData
     #pragma omp parallel for
-    for(size_t i = 0; i < imgData.size(); ++i)
+    for(int i = 0; i < imgData.size(); ++i)
     {
       for(int k = 0; k < dataChannels; ++k)
       {
-        imgData[i] += buffer[i * channels + k];
+        imgData[(size_t)(i)] += buffer[(size_t)(i) * channels + (size_t)(k)];
       }
     }
   }
@@ -382,9 +382,9 @@ namespace hr_spectral
       {
         std::vector<float> oneChannel(a_width * a_height);
 #pragma omp parallel for
-        for (size_t j = 0; j < a_width * a_height; ++j)
+        for (int j = 0; j < a_width * a_height; ++j)
         {
-          oneChannel[j] = buffer[j * channels + k];
+          oneChannel[(size_t)(j)] = buffer[(size_t)(j) * channels + (size_t)(k)];
         }
         spectralData.push_back(std::move(oneChannel));
       }
@@ -446,9 +446,9 @@ namespace hr_spectral
 
     const float divisor = 1.0f / float(totalSpectralBands);
     #pragma omp parallel for
-    for(size_t j = 0; j < imgData.size(); ++j)
+    for(int j = 0; j < imgData.size(); ++j)
     {
-      imgData[j] *= divisor;
+      imgData[(size_t)(j)] *= divisor;
     }
 
     pImgTool->SaveHDRImageToFileHDR(a_filePath.wstring().c_str(), width, height, 1, imgData.data());
@@ -464,11 +464,11 @@ namespace hr_spectral
 
     std::vector<float> imgData(width * height);
     #pragma omp parallel for
-    for(size_t i = 0; i < width * height; ++i)
+    for(int i = 0; i < width * height; ++i)
     {
       std::vector<float> spectralPixel(spectralData.size());
-      for(size_t j = 0; j < spectralData.size(); ++j) // TODO: bad memory access, worth it to fix?
-        spectralPixel[j] = spectralData[j][i];
+      for(int j = 0; j < spectralData.size(); ++j) // TODO: bad memory access, worth it to fix?
+        spectralPixel[(size_t)(j)] = spectralData[(size_t)(j)][(size_t)(i)];
 
       imgData[i] = AverageSpectrumSamples(wavelengths.data(), spectralPixel.data(), spectralPixel.size(),
                                           wavelengths.front(), wavelengths.back());
