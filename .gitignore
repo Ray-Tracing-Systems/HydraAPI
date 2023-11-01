@@ -33,6 +33,7 @@
 
 # Folders
 bin/
+build/
 build_generated/
 clew/x64/
 hydra_api/x64/
