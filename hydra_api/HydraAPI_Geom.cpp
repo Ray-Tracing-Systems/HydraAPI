@@ -439,9 +439,10 @@ HAPI HRMeshRef _hrMeshCreateFromObjMerged(const wchar_t* a_objectName, HRModelLo
   hrMeshOpen(ref, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
   {
     hrMeshVertexAttribPointer4f(ref, L"pos", geomData.getVertexPositionsFloat4Array());
-    hrMeshVertexAttribPointer4f(ref, L"norm", geomData.getVertexNormalsFloat4Array());
+    //hrMeshVertexAttribPointer4f(ref, L"norm", geomData.getVertexNormalsFloat4Array());
     hrMeshVertexAttribPointer2f(ref, L"texcoord", geomData.getVertexTexcoordFloat2Array());
-    hrMeshPrimitiveAttribPointer1i(ref, L"mind", (const int32_t*)(geomData.getTriangleMaterialIndicesArray()));
+    //hrMeshPrimitiveAttribPointer1i(ref, L"mind", (const int32_t*)(geomData.getTriangleMaterialIndicesArray()));
+    hrMeshMaterialId(ref, 0);
     hrMeshAppendTriangles3(ref, geomData.getIndicesNumber(), (const int32_t*)geomData.getTriangleVertexIndicesArray());
   }
   hrMeshClose(ref);

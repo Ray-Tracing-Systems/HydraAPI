@@ -112,10 +112,10 @@ int main(int argc, const char** argv)
   try
   {
     //demo_01_plane_box();
-    //demo_02_load_obj();
+    demo_02_load_obj();
     //demo_03_caustics();
-    demo_04_instancing();
-//    demo_05_pbrt_spheres();
+    //demo_04_instancing();
+    //demo_05_pbrt_spheres();
   }
   catch (std::runtime_error& e)
   {

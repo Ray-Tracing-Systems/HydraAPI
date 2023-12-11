@@ -74,6 +74,7 @@
     "__bit_reference": "cpp",
     "__hash_table": "cpp",
     "__string": "cpp",
-    "__tree": "cpp"
+    "__tree": "cpp",
+    "variant": "cpp"
   }
 }

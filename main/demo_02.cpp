@@ -30,6 +30,8 @@ extern GLFWwindow* g_window;
 void initGLIfNeeded(int a_width, int a_height, const char* name);
 ///////////////////////////////////////////////////////////////////////// window and opegl
 
+void _hrDebugPrintVSGF(const wchar_t* a_fileNameIn, const wchar_t* a_fileNameOut);
+
 void demo_02_load_obj()
 {
   const int DEMO_WIDTH  = 512;
@@ -124,10 +126,36 @@ void demo_02_load_obj()
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
   
   HRMeshRef cubeOpenRef = hrMeshCreate(L"my_box");
-  HRMeshRef bunnyRef    = hrMeshCreateFromFile(L"data/meshes/bunny.obj"); //#NOTE: loaded from ".obj" models are guarantee to have material id '0' for all triangles
-                                                                          // to apply other material, please see further for remap list application to object instance
+  //HRMeshRef bunnyRef    = hrMeshCreateFromFile(L"data/meshes/bunny.obj"); //#NOTE: loaded from ".obj" models are guarantee to have material id '0' for all triangles
+  //                                                                        // to apply other material, please see further for remap list application to object instance
+  
+  HRMeshRef        bunnyRef = hrMeshCreateFromFile(L"/home/frol/temp/03_ResultsFromPasha_Magic123/chair2/mesh.obj");
+  HRTextureNodeRef texBunny = hrTexture2DCreateFromFile(L"/home/frol/temp/03_ResultsFromPasha_Magic123/chair2/albedo.png");
+  hlm::float3 modelOffset   = hlm::float3(1, -2.0, 0);
+  float modelScale          = 8.0f;
+
+  //HRMeshRef        bunnyRef = hrMeshCreateFromFile(L"/home/frol/temp/03_ResultsFromPasha_Magic123/bird/mesh.obj");
+  //HRTextureNodeRef texBunny = hrTexture2DCreateFromFile(L"/home/frol/temp/03_ResultsFromPasha_Magic123/bird/albedo.png");
+  //hlm::float3 modelOffset   = hlm::float3(1, -1.0, 0);
+  //float modelScale          = 6.0f;
+  
+  HRMaterialRef matObj = hrMaterialCreate(L"matObject");
+  hrMaterialOpen(matObj, HR_WRITE_DISCARD);
+  {
+    xml_node matNode = hrMaterialParamNode(matObj);
+    xml_node diff = matNode.append_child(L"diffuse");
+    diff.append_attribute(L"brdf_type").set_value(L"lambert");
+    auto color = diff.append_child(L"color");
+    color.append_attribute(L"val") = L"1 1 1";
+    color.append_attribute(L"tex_apply_mode").set_value(L"multiply");
+    hrTextureBind(texBunny, color);
+    VERIFY_XML(matNode);
+  }
+  hrMaterialClose(matObj);
+  
   hrMeshOpen(cubeOpenRef, HR_TRIANGLE_IND3, HR_WRITE_DISCARD);
   {
     hrMeshVertexAttribPointer4f(cubeOpenRef, L"pos",      &cubeOpen.vPos[0]);
@@ -211,9 +239,9 @@ void demo_02_load_obj()
     node.append_child(L"method_tertiary").text()  = L"pathtracing";
     node.append_child(L"method_caustic").text()   = L"pathtracing";
     
-    node.append_child(L"trace_depth").text()      = 8;
-    node.append_child(L"diff_trace_depth").text() = 4;
-    node.append_child(L"maxRaysPerPixel").text()  = 1024;
+    node.append_child(L"trace_depth").text()      = 6;
+    node.append_child(L"diff_trace_depth").text() = 3;
+    node.append_child(L"maxRaysPerPixel").text()  = 256;
     node.append_child(L"qmc_variant").text()      = (HYDRA_QMC_DOF_FLAG | HYDRA_QMC_MTL_FLAG | HYDRA_QMC_LGT_FLAG); // enable all of them, results to '7'
   }
   hrRenderClose(renderRef);
@@ -221,39 +249,70 @@ void demo_02_load_obj()
   // create scene
   //
   HRSceneInstRef scnRef = hrSceneCreate(L"my scene");
-  
   const float DEG_TO_RAD = float(3.14159265358979323846f) / 180.0f;
   
-  hrSceneOpen(scnRef, HR_WRITE_DISCARD);
+  const int NFrames = 25;
+  for(int frame = 0; frame < NFrames; frame++)
   {
-    // instance bynny and cornell box
+    hrSceneOpen(scnRef, HR_WRITE_DISCARD);
+    {
+      // instance bynny and cornell box
+      //
+      auto mrotObj    = hlm::rotate4x4Y(360.0f*DEG_TO_RAD*float(frame)/float(NFrames));
+      auto mscale     = hlm::scale4x4(hlm::float3(modelScale,modelScale,modelScale));
+      auto mtranslate = hlm::translate4x4(modelOffset);
+      auto mres       = mtranslate*mrotObj*mscale;
+      
+      float rowMajorData[16];
+      mres.StoreRowMajor(rowMajorData);
+  
+      int32_t remapList[2] = {0, matObj.id};                                                          // #NOTE: remaplist of size 1 here: [0 --> mat4.id]
+      hrMeshInstance(scnRef, bunnyRef, rowMajorData, remapList, sizeof(remapList)/sizeof(int32_t)); //
+      
+      auto mrot = hlm::rotate4x4Y(180.0f*DEG_TO_RAD);
+      mrot.StoreRowMajor(rowMajorData);
+  
+      hrMeshInstance(scnRef, cubeOpenRef, rowMajorData);
+      
+      //// instance light (!!!)
+      //
+      mtranslate = hlm::translate4x4(hlm::float3(0, 3.85f, 0));
+      mtranslate.StoreRowMajor(rowMajorData);
+  
+      hrLightInstance(scnRef, rectLight, rowMajorData);
+    }
+    hrSceneClose(scnRef);
+  
+    hrFlush(scnRef, renderRef, camRef);
+
+    std::cout << "rendering frame " << frame << std::endl;
+
+    // and wait while it finish
     //
-    auto mscale     = hlm::scale4x4(hlm::float3(3,3,3));
-    auto mtranslate = hlm::translate4x4(hlm::float3(1, -4.2, 0));
-    auto mres       = mtranslate*mscale;
+    while (true)
+    {
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
     
-    float rowMajorData[16];
-    mres.StoreRowMajor(rowMajorData);
-
-    int32_t remapList[2] = {0, mat4.id};                                                          // #NOTE: remaplist of size 1 here: [0 --> mat4.id]
-    hrMeshInstance(scnRef, bunnyRef, rowMajorData, remapList, sizeof(remapList)/sizeof(int32_t)); //
+      HRRenderUpdateInfo info = hrRenderHaveUpdate(renderRef);
     
-    auto mrot = hlm::rotate4x4Y(180.0f*DEG_TO_RAD);
-    mrot.StoreRowMajor(rowMajorData);
-
-    hrMeshInstance(scnRef, cubeOpenRef, rowMajorData);
+      if (info.haveUpdateFB)
+      {
+        std::cout << "rendering progress = " << info.progress << "% \r";
+        std::cout.flush();
+      }
     
-    //// instance light (!!!)
-    //
-    mtranslate = hlm::translate4x4(hlm::float3(0, 3.85f, 0));
-    mtranslate.StoreRowMajor(rowMajorData);
-
-    hrLightInstance(scnRef, rectLight, rowMajorData);
+      if (info.finalUpdate)
+        break;
+    }
+  
+    std::wstringstream strOut;
+    strOut << std::fixed  << L"demos/demo_02/zout_" << std::setfill(L"0"[0]) << std::setw(2) << frame << L".png";
+    auto str = strOut.str();
+    
+    hrRenderSaveFrameBufferLDR(renderRef, str.c_str());
   }
-  hrSceneClose(scnRef);
   
-  hrFlush(scnRef, renderRef, camRef);
-  
+  /*
   //////////////////////////////////////////////////////// opengl
   std::vector<int32_t> image(DEMO_WIDTH*DEMO_HEIGHT);
   initGLIfNeeded(DEMO_WIDTH,DEMO_HEIGHT, "load 'obj.' file demo");
@@ -285,8 +344,10 @@ void demo_02_load_obj()
     
     if (info.finalUpdate)
       break;
-  }
+  }*/
   
-  hrRenderSaveFrameBufferLDR(renderRef, L"demos/demo_02/z_out.png");
+  //hrRenderSaveFrameBufferLDR(renderRef, L"demos/demo_02/z_out.png");
   
+  //_hrDebugPrintVSGF(L"/home/frol/PROG/HydraRepos/HydraAPI/main/demos/demo_02/data/chunk_00001.vsgf", 
+  //                  L"/home/frol/PROG/HydraRepos/HydraAPI/main/demos/demo_02/data/chunk_00001.txt");
 }
