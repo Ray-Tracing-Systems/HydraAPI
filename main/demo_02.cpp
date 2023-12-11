@@ -34,8 +34,8 @@ void _hrDebugPrintVSGF(const wchar_t* a_fileNameIn, const wchar_t* a_fileNameOut
 
 void demo_02_load_obj()
 {
-  const int DEMO_WIDTH  = 512;
-  const int DEMO_HEIGHT = 512;
+  const int DEMO_WIDTH  = 640;
+  const int DEMO_HEIGHT = 480;
   
   hrErrorCallerPlace(L"demo_02_load_obj");
   
@@ -132,16 +132,35 @@ void demo_02_load_obj()
   //HRMeshRef bunnyRef    = hrMeshCreateFromFile(L"data/meshes/bunny.obj"); //#NOTE: loaded from ".obj" models are guarantee to have material id '0' for all triangles
   //                                                                        // to apply other material, please see further for remap list application to object instance
   
-  HRMeshRef        bunnyRef = hrMeshCreateFromFile(L"/home/frol/temp/03_ResultsFromPasha_Magic123/chair2/mesh.obj");
-  HRTextureNodeRef texBunny = hrTexture2DCreateFromFile(L"/home/frol/temp/03_ResultsFromPasha_Magic123/chair2/albedo.png");
-  hlm::float3 modelOffset   = hlm::float3(1, -2.0, 0);
-  float modelScale          = 8.0f;
+  //HRMeshRef        bunnyRef = hrMeshCreateFromFile(L"/home/frol/temp/03_ResultsFromPasha_Magic123/chair2/mesh.obj");
+  //HRTextureNodeRef texBunny = hrTexture2DCreateFromFile(L"/home/frol/temp/03_ResultsFromPasha_Magic123/chair2/albedo.png");
+  //hlm::float3 modelOffset   = hlm::float3(1, -2.0, 0);
+  //float modelScale          = 8.0f;
 
   //HRMeshRef        bunnyRef = hrMeshCreateFromFile(L"/home/frol/temp/03_ResultsFromPasha_Magic123/bird/mesh.obj");
   //HRTextureNodeRef texBunny = hrTexture2DCreateFromFile(L"/home/frol/temp/03_ResultsFromPasha_Magic123/bird/albedo.png");
-  //hlm::float3 modelOffset   = hlm::float3(1, -1.0, 0);
-  //float modelScale          = 6.0f;
   
+  //HRMeshRef        bunnyRef = hrMeshCreateFromFile(L"/home/frol/temp/03_ResultsFromPasha_Magic123/cup/mesh.obj");
+  //HRTextureNodeRef texBunny = hrTexture2DCreateFromFile(L"/home/frol/temp/03_ResultsFromPasha_Magic123/cup/albedo.png");
+  
+  //HRMeshRef        bunnyRef = hrMeshCreateFromFile(L"/home/frol/temp/03_ResultsFromPasha_Magic123/tiger_toy_white_background/mesh.obj");
+  //HRTextureNodeRef texBunny = hrTexture2DCreateFromFile(L"/home/frol/temp/03_ResultsFromPasha_Magic123/tiger_toy_white_background/albedo.png");
+
+  //HRMeshRef        bunnyRef = hrMeshCreateFromFile(L"/home/frol/temp/03_ResultsFromPasha_Magic123/hedgehog_toy/mesh.obj");
+  //HRTextureNodeRef texBunny = hrTexture2DCreateFromFile(L"/home/frol/temp/03_ResultsFromPasha_Magic123/hedgehog_toy/albedo.png");
+
+  //HRMeshRef        bunnyRef = hrMeshCreateFromFile(L"/home/frol/temp/03_ResultsFromPasha_Magic123/journal_table/mesh.obj");
+  //HRTextureNodeRef texBunny = hrTexture2DCreateFromFile(L"/home/frol/temp/03_ResultsFromPasha_Magic123/journal_table/albedo.png");
+
+  //HRMeshRef        bunnyRef = hrMeshCreateFromFile(L"/home/frol/temp/03_ResultsFromPasha_Magic123/old_statue_of_smoker/mesh.obj");
+  //HRTextureNodeRef texBunny = hrTexture2DCreateFromFile(L"/home/frol/temp/03_ResultsFromPasha_Magic123/old_statue_of_smoker/albedo.png");
+
+  HRMeshRef        bunnyRef = hrMeshCreateFromFile(L"/home/frol/temp/03_ResultsFromPasha_Magic123/puma_shoes/mesh.obj");
+  HRTextureNodeRef texBunny = hrTexture2DCreateFromFile(L"/home/frol/temp/03_ResultsFromPasha_Magic123/puma_shoes/albedo.png");
+
+  hlm::float3 modelOffset   = hlm::float3(1, -1.0, 0);
+  float modelScale          = 6.0f;
+
   HRMaterialRef matObj = hrMaterialCreate(L"matObject");
   hrMaterialOpen(matObj, HR_WRITE_DISCARD);
   {
