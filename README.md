@@ -18,8 +18,9 @@ This repo contains the second one.
 sudo apt install ocl-icd-opencl-dev; 
 ```
 [check this guide if you have problems with OpenCL](doc/opencl_setup_linux.md)
+
 3. Install FreeImage library, we provide prebuilt binaries (ver. 3.1.80) in 'dependencies/lib_x64_*' directory.
-   - You can always try to substitute the prebuilt binaries with your own.
+- You can always try to substitute the prebuilt binaries with your own.
 ```shell
 sudo apt install libfreeimage-dev; 
 ```
