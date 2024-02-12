@@ -71,6 +71,9 @@ void HR_LoadDataFromOBJ(const wchar_t* a_objectName, HRModelLoadInfo a_modelInfo
 
 void registerBuiltInRenderDrivers();
 
+int ReadDeviceId(const char* a_cmdLine);
+std::string NewSharedImageName();
+
 
 struct IHRMesh : public IHRObject ///< Not empty Data (reimplement DataSerialize/DataDeserialize)
 {

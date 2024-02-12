@@ -462,6 +462,7 @@ public:
   }
 };
 
+IHRRenderDriver* CreateHydraCore3_RenderDriver();
 IHRRenderDriver* CreateHydraConnection_RenderDriver();
 IHRRenderDriver* CreateDebugPrint_RenderDriver();
 

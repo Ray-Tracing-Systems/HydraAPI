@@ -58,3 +58,7 @@ papers/comp_prog_2018_rus/main_rus.pdf
 papers/comp_prog_2018_rus/main_rus.log
 papers/comp_prog_2018_rus/main_rus.aux
 doc_xml/hydra_xml.pdf
+*.gz
+*.log
+*.aux
+*.def2
