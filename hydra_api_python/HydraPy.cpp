@@ -570,6 +570,7 @@ PYBIND11_MODULE(hydraPy, m)
           .def("force_attribute", &pugi::xml_node::force_attribute)
           .def("append_attribute", &pugi::xml_node::append_attribute)
           .def("append_child", py::overload_cast<const wchar_t*>(&pugi::xml_node::append_child))
+          .def("remove_child", py::overload_cast<const wchar_t*>(&pugi::xml_node::remove_child))
           .def("attribute", py::overload_cast<const wchar_t*>(&pugi::xml_node::attribute, py::const_))
           .def("child", &pugi::xml_node::child)
           .def("text", &pugi::xml_node::text);
