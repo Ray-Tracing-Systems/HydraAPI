@@ -36,26 +36,26 @@ void registerBuiltInRenderDrivers()
   //*****************************************************************************************************
   // Hydra Core 3
 
-  HRDriverInfo hydraCore3Info;
-  hydraCore3Info.supportHDRFrameBuffer              = true;
-  hydraCore3Info.supportHDRTextures                 = true;
-  hydraCore3Info.supportMultiMaterialInstance       = true;
+  //HRDriverInfo hydraCore3Info;
+  //hydraCore3Info.supportHDRFrameBuffer              = true;
+  //hydraCore3Info.supportHDRTextures                 = true;
+  //hydraCore3Info.supportMultiMaterialInstance       = true;
 
-  hydraCore3Info.supportImageLoadFromInternalFormat = true;
-  hydraCore3Info.supportMeshLoadFromInternalFormat  = true;
+  //hydraCore3Info.supportImageLoadFromInternalFormat = true;
+  //hydraCore3Info.supportMeshLoadFromInternalFormat  = true;
 
-  hydraCore3Info.supportImageLoadFromExternalFormat = true;
-  hydraCore3Info.supportLighting                    = true;
-  hydraCore3Info.createsLightGeometryItself         = false;
-  hydraCore3Info.supportGetFrameBufferLine          = true;
-  hydraCore3Info.supportUtilityPrepass              = true;
-  hydraCore3Info.supportDisplacement                = false;
+  //hydraCore3Info.supportImageLoadFromExternalFormat = true;
+  //hydraCore3Info.supportLighting                    = true;
+  //hydraCore3Info.createsLightGeometryItself         = false;
+  //hydraCore3Info.supportGetFrameBufferLine          = true;
+  //hydraCore3Info.supportUtilityPrepass              = true;
+  //hydraCore3Info.supportDisplacement                = false;
 
-  hydraCore3Info.memTotal                           = int64_t(8) * int64_t(1024 * 1024 * 1024); // #TODO: wth i have to do with that ???
+  //hydraCore3Info.memTotal                           = int64_t(8) * int64_t(1024 * 1024 * 1024); // #TODO: wth i have to do with that ???
 
-  hydraCore3Info.driverName                         = L"HydraCore3";
-  hydraCore3Info.createFunction                     = CreateHydraCore3_RenderDriver;
-  RenderDriverFactory::Register(L"HydraCore3", hydraCore3Info);
+  //hydraCore3Info.driverName                         = L"HydraCore3";
+  //hydraCore3Info.createFunction                     = CreateHydraCore3_RenderDriver;
+  //RenderDriverFactory::Register(L"HydraCore3", hydraCore3Info);
 
   //*****************************************************************************************************
   // OpenGL3
