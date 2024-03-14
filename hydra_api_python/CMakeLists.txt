@@ -75,6 +75,8 @@ set(HAPI_SOURCE_FILES
 	${HYDRA_API_SRC_DIR}/cmesh_processing.cpp)
 
 if(WIN32)
+	link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../dependencies/lib_x64_win)
+
 	set(HAPI_SOURCE_FILES ${HAPI_SOURCE_FILES}
 			${HYDRA_API_SRC_DIR}/SystemWin.cpp
 			${HYDRA_API_SRC_DIR}/HR_AccumImageWin.cpp)
@@ -99,8 +101,8 @@ if(WIN32)
 			${HYDRA_API_UTILS_SRC_DIR}/ies_parser/IES_READ.C
 
 			${HYDRA_API_UTILS_SRC_DIR}/mikktspace/mikktspace.c)
-	include_directories("c:/Python310/include")
-	set(PYTHON_EXECUTABLE "c:/Python310/Python")
+#	include_directories("c:/Python310/include")
+#	set(PYTHON_EXECUTABLE "c:/Python310/Python")
 else()
 
 set(HAPI_SOURCE_FILES ${HAPI_SOURCE_FILES}

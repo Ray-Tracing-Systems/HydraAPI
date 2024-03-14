@@ -32,6 +32,7 @@ set(SOURCE_FILES
 
         RenderDriverHydraConnection.cpp
         RenderDriverDebugPrint.cpp
+        RenderDriverHydraCore3.cpp
 
         HydraXMLHelpers.cpp
         HydraXMLVerify.cpp
