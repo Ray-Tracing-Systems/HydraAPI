@@ -297,8 +297,11 @@ namespace hr_spectral
 
 
     auto pImgTool = g_objManager.m_pImgTool;
-//    pImgTool->SaveLDRImageToFileLDR(a_filePath.wstring().c_str(), a_width, a_height, imgData.data());
-    pImgTool->SaveHDRImageToFileHDR(a_filePath.wstring().c_str(), a_width, a_height, 4, imgData.data());
+    if(a_filePath.extension().string() == std::string(".exr")) 
+      pImgTool->SaveHDRImageToFileHDR(a_filePath.wstring().c_str(), a_width, a_height, 4, imgData.data());
+    else // if(a_filePath.extension().string() == std::string(".png")) 
+      pImgTool->SaveHDRImageToFileLDR(a_filePath.wstring().c_str(), a_width, a_height, 4, imgData.data());
+    
 
 //    if (imgData.size() > TEMP_BUFFER_MAX_SIZE_DONT_FREE)
 //      imgData = g_objManager.EmptyBuffer();

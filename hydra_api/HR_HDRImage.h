@@ -150,9 +150,10 @@ struct IHRImageTool
   virtual bool LoadImageFromFile(const wchar_t* a_fileName,
                                  int& w, int& h, int& chan, std::vector<float>& a_data) = 0;
 
+  virtual void SaveHDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, int chan, const float* a_data) = 0;
   virtual void SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, int chan, const float* a_data) = 0;
   virtual void SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, const int*   a_data) = 0;
-
+  
   /**
   \brief this function is optional. It is needed for saving depth buffer in 16 bit png.
 
@@ -181,6 +182,7 @@ public:
   bool LoadImageFromFile(const wchar_t* a_fileName,
                          int& w, int& h, int& chan, std::vector<float>& a_data) override;
 
+  void SaveHDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, int chan, const float* a_data) override {};
   void SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, int chan, const float* a_data) override;
   void SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, const int*   a_data) override;
 };

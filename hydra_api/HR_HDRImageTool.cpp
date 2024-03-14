@@ -794,6 +794,7 @@ namespace HydraRender
     bool LoadImageFromFile(const wchar_t* a_fileName, 
                            int& w, int& h, int &chan, std::vector<float>& a_data) override;
 
+    void SaveHDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, int chan, const float* a_data) override;
     void SaveHDRImageToFileHDR(const wchar_t* a_fileName, int w, int h, int chan, const float* a_data) override;
     void SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, const int*   a_data) override;
 
@@ -1028,6 +1029,88 @@ namespace HydraRender
       FreeImage_Unload(dib);
     }
   }
+
+inline float linearToSRGB(float l)
+{
+  if(l <= 0.00313066844250063f)
+    return l * 12.92f;
+  else
+    return 1.055f * std::pow(l, 1.0f/2.4f) - 0.055f;
+}
+
+  void FreeImageTool::SaveHDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, int chan, const float* a_data)
+  {
+    const std::wstring fileExt = CutFileExt(a_fileName);
+    if (fileExt == L".image1i" || fileExt == L".image1ui" || fileExt == L".image4b" || fileExt == L".image4ub")
+    {
+      std::cerr << "Saving hdr image to internal format is unsupported" << std::endl;
+      return;
+    }
+    else
+    {
+      //BYTE* bits = (BYTE*)a_data;
+      //for (int i = 0; i<w*h; i++)
+      //  bits[4 * i + 3] = 255;
+      // FIBITMAP *dib = FreeImage_ConvertFromRawBits((BYTE*)a_data, w, h, 4 * w, 32, FI_RGBA_BLUE_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_RED_MASK, FALSE);
+
+      FIBITMAP* dib = FreeImage_Allocate(w, h, 32);
+      BYTE* bits    = FreeImage_GetBits(dib);
+      //memcpy(bits, data, w*h*sizeof(int32_t));
+      for (int i = 0; i < w * h; i++)
+      {
+        if(chan == 1)
+        {
+          bits[4 * i + 0] = static_cast<unsigned char>(255.0f * linearToSRGB(clamp(a_data[i], 0, 1))); 
+          bits[4 * i + 1] = static_cast<unsigned char>(255.0f * linearToSRGB(clamp(a_data[i], 0, 1)));
+          bits[4 * i + 2] = static_cast<unsigned char>(255.0f * linearToSRGB(clamp(a_data[i], 0, 1)));
+          bits[4 * i + 3] = static_cast<unsigned char>(255.0f * linearToSRGB(clamp(a_data[i], 0, 1)));
+        }
+        else if(chan == 4 )
+        {
+          bits[4 * i + 0] = static_cast<unsigned char>(255.0f * linearToSRGB(clamp(a_data[4 * i + 2], 0, 1))); 
+          bits[4 * i + 1] = static_cast<unsigned char>(255.0f * linearToSRGB(clamp(a_data[4 * i + 1], 0, 1)));
+          bits[4 * i + 2] = static_cast<unsigned char>(255.0f * linearToSRGB(clamp(a_data[4 * i + 0], 0, 1)));
+          bits[4 * i + 3] = static_cast<unsigned char>(255.0f * linearToSRGB(clamp(a_data[4 * i + 3], 0, 1)));
+        }
+        else if(chan == 3)
+        {
+          bits[4 * i + 0] = static_cast<unsigned char>(255.0f * linearToSRGB(clamp(a_data[4 * i + 2], 0, 1))); 
+          bits[4 * i + 1] = static_cast<unsigned char>(255.0f * linearToSRGB(clamp(a_data[4 * i + 1], 0, 1)));
+          bits[4 * i + 2] = static_cast<unsigned char>(255.0f * linearToSRGB(clamp(a_data[4 * i + 0], 0, 1)));
+          bits[4 * i + 3] = 255u; 
+        }
+        
+      }
+
+      FreeImage_SetOutputMessage(FreeImageErrorHandlerHydraInternal);
+
+      auto imageFileFormat = FIF_PNG;
+
+      std::wstring fileName(a_fileName);
+      if (fileName.size() > 4)
+      {
+        std::wstring resolution = fileName.substr(fileName.size() - 4, 4);
+
+        if (resolution.find(L".bmp") != std::wstring::npos || resolution.find(L".BMP") != std::wstring::npos)
+          imageFileFormat = FIF_BMP;
+      }
+      #if defined WIN32
+      if (!FreeImage_SaveU(imageFileFormat, dib, a_fileName))
+      #else
+      char filename_s[512];
+      wcstombs(filename_s, a_fileName, sizeof(filename_s));
+      if (!FreeImage_Save(imageFileFormat, dib, filename_s))
+      #endif
+      {
+        FreeImage_Unload(dib);
+        HrError(L"SaveImageToFile(): FreeImage_Save error on ", a_fileName);
+        return;
+      }
+
+      FreeImage_Unload(dib);
+    } // else 
+
+  } // end function
 
   void FreeImageTool::SaveLDRImageToFileLDR(const wchar_t* a_fileName, int w, int h, const int* a_data)
   {
