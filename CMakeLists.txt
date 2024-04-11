@@ -16,6 +16,11 @@ set(ADDITIONAL_INCLUDE_DIRS
 set(USE_GL OFF CACHE BOOL "Build OpenGL render drivers")
 set(VECTOR_TEX_SUPPORT ON CACHE BOOL "Build with vector textures support extension")
 
+set(TINYEXR_IMPL ON CACHE BOOL "TinyEXR implementation in HydraAPI")
+if(TINYEXR_IMPL)
+  add_compile_definitions(TINYEXR_IMPL)
+endif()
+
 if(WIN32)
   add_compile_definitions(UNICODE _UNICODE)
   set(ADDITIONAL_LIBRARY_DIRS

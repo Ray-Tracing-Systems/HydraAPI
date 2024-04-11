@@ -214,8 +214,10 @@ HAPI bool hrRenderSaveFrameBufferLDR(HRRenderRef a_pRender, const wchar_t* a_out
   return true;
 }
 
-bool SaveImage4fToEXR(const float* rgb, int width, int height, const char* outfilename, float a_normConst = 1.0f, bool a_invertY = false); 
-bool SaveImageToEXR(const float* data, int width, int height, int channels, const char* outfilename, float a_normConst = 1.0f, bool a_invertY = false);
+namespace hr_exr {
+  bool SaveImage4fToEXR(const float* rgb, int width, int height, const char* outfilename, float a_normConst = 1.0f, bool a_invertY = false); 
+  bool SaveImageToEXR(const float* data, int width, int height, int channels, const char* outfilename, float a_normConst = 1.0f, bool a_invertY = false);
+}
 
 HAPI bool hrRenderSaveFrameBufferHDR(HRRenderRef a_pRender, const wchar_t* a_outFileName)
 {
@@ -264,11 +266,11 @@ HAPI bool hrRenderSaveFrameBufferHDR(HRRenderRef a_pRender, const wchar_t* a_out
     std::string fileNameS = ws2s(std::wstring(a_outFileName));
     if (channels == 3 || channels == 4)
     {
-      SaveImage4fToEXR((const float*)imgData.data(), w, h, fileNameS.c_str(), 1.0f, true);
+      hr_exr::SaveImage4fToEXR((const float*)imgData.data(), w, h, fileNameS.c_str(), 1.0f, true);
     }
     else
     {
-      SaveImageToEXR((const float*)imgData.data(), w, h, channels, fileNameS.c_str(), 1.0f, true);
+      hr_exr::SaveImageToEXR((const float*)imgData.data(), w, h, channels, fileNameS.c_str(), 1.0f, true);
     }
   }
   else

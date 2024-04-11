@@ -10,8 +10,10 @@ extern HRObjectManager g_objManager;
 #include <algorithm>
 
 
-
-bool SaveImagesToMultilayerEXR(const float** data, int width, int height, const char** outchannelnames, int n_images, const char* outfilename, bool a_invertY = false);
+namespace hr_exr
+{
+  bool SaveImagesToMultilayerEXR(const float** data, int width, int height, const char** outchannelnames, int n_images, const char* outfilename, bool a_invertY = false);
+}
 
 namespace hr_spectral
 {
@@ -519,7 +521,7 @@ namespace hr_spectral
       channel_names_tmp[i] = std::to_string(int(wavelengths[i])) + ".Y";
       channel_names[i] = channel_names_tmp[i].c_str();
     }
-    SaveImagesToMultilayerEXR(spectralDataPlain.data(), width, height, channel_names.data(), wavelengths.size(), a_filePath.string().c_str(), true);
+    hr_exr::SaveImagesToMultilayerEXR(spectralDataPlain.data(), width, height, channel_names.data(), wavelengths.size(), a_filePath.string().c_str(), true);
   }
 
   std::vector<HRMaterialRef> CreateSpectralDiffuseMaterials(const std::vector<float> &wavelengths,
