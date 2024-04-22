@@ -9,7 +9,7 @@ using LiteMath::float2;
 #include <cmath>
 #include <fstream>
 
-void cmesh::ComputeNormals(cmesh::SimpleMesh& mesh, const int indexNum, bool useFaceNormals)
+void cmesh_hapi::ComputeNormals(cmesh_hapi::SimpleMesh& mesh, const int indexNum, bool useFaceNormals)
 {
   int faceNum = indexNum / 3;
 
@@ -165,12 +165,12 @@ void HR_ComputeTangentSpaceSimple(const int     vertexCount, const int     trian
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-namespace cmesh
+namespace cmesh_hapi
 {
-  void MikeyTSpaceCalc(cmesh::SimpleMesh* pInput, bool basic);
+  void MikeyTSpaceCalc(cmesh_hapi::SimpleMesh* pInput, bool basic);
 };
 
-void cmesh::ComputeTangents(cmesh::SimpleMesh& mesh, int indexNum, TANG_ALGORITHMS a_alg)
+void cmesh_hapi::ComputeTangents(cmesh_hapi::SimpleMesh& mesh, int indexNum, TANG_ALGORITHMS a_alg)
 {
   mesh.vTang4f.resize(mesh.vPos4f.size());
 

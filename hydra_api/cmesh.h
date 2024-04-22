@@ -16,7 +16,7 @@ using cvex::aligned;
 #include <memory>
 #include <cassert>
 
-namespace cmesh
+namespace cmesh_hapi
 {
   // very simple utility mesh representation for working with geometry on the CPU in C++
   //
@@ -66,9 +66,9 @@ namespace cmesh
 
   enum TANG_ALGORITHMS{ TANG_SIMPLE = 0, TANG_MIKEY = 1 };
 
-  void ComputeNormals (cmesh::SimpleMesh& mesh, const int indexNum, bool useFaceNormals);
-  void ComputeTangents(cmesh::SimpleMesh& mesh, int indexNum, TANG_ALGORITHMS a_alg = TANG_MIKEY);
-  void WeldVertices   (cmesh::SimpleMesh& mesh, int indexNum);
+  void ComputeNormals (cmesh_hapi::SimpleMesh& mesh, const int indexNum, bool useFaceNormals);
+  void ComputeTangents(cmesh_hapi::SimpleMesh& mesh, int indexNum, TANG_ALGORITHMS a_alg = TANG_MIKEY);
+  void WeldVertices   (cmesh_hapi::SimpleMesh& mesh, int indexNum);
 
   //struct MultiIndexMesh
   //{

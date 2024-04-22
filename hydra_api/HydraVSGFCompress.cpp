@@ -435,14 +435,14 @@ void _hrDecompressMesh(const std::wstring& a_path, const std::wstring& a_newPath
 //  cmesh::ComputeTangents(cMesh, cMesh.IndicesNum());
   HydraGeomData data = HR_LoadVSGFCompressedData(a_path.c_str(), dataBuffer);
 
-  cmesh::SimpleMesh cMesh(data.getVerticesNumber(), data.getIndicesNumber());
+  cmesh_hapi::SimpleMesh cMesh(data.getVerticesNumber(), data.getIndicesNumber());
   memcpy(cMesh.vPos4f.data(), data.getVertexPositionsFloat4Array(), data.getVerticesNumber() * sizeof(float) * 4);
   memcpy(cMesh.vNorm4f.data(), data.getVertexNormalsFloat4Array(), data.getVerticesNumber() * sizeof(float) * 4);
   memcpy(cMesh.vTexCoord2f.data(), data.getVertexTexcoordFloat2Array(), data.getVerticesNumber() * sizeof(float) * 2);
   memcpy(cMesh.indices.data(), data.getTriangleVertexIndicesArray(), data.getIndicesNumber() * sizeof(uint32_t));
   memcpy(cMesh.matIndices.data(), data.getTriangleMaterialIndicesArray(), data.getIndicesNumber() * sizeof(uint32_t) / 3);
 
-  cmesh::ComputeTangents(cMesh, cMesh.IndicesNum());
+  cmesh_hapi::ComputeTangents(cMesh, cMesh.IndicesNum());
 
   std::ifstream fin;
   hr_ifstream_open(fin, a_path.c_str());

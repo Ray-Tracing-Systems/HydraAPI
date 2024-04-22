@@ -208,7 +208,7 @@ float smoothing_coeff(uint32_t valence)
   return (4.0f - 2.0f * cosf((2.0f * 3.14159265358979323846f) / valence )) / 9.0f;
 }
 
-std::vector<uint32_t> find_vertex_neighbours(int vertex_index, const cmesh::SimpleMesh& mesh)
+std::vector<uint32_t> find_vertex_neighbours(int vertex_index, const cmesh_hapi::SimpleMesh& mesh)
 {
   std::set<uint32_t> neighbours;
   for(int i = 0; i < mesh.indices.size(); i += 3)
@@ -255,13 +255,13 @@ void update_vertex_attrib_by_index_f2(float2 new_val, uint32_t vertex_index, std
   attrib_vec.at(vertex_index * 2 + 1) = new_val.y;
 }
 
-namespace cmesh
+namespace cmesh_hapi
 {
-  float4 vertex_attrib_by_index_f4(const std::string &attrib_name, uint32_t vertex_index, const cmesh::SimpleMesh& mesh);
-  float2 vertex_attrib_by_index_f2(const std::string &attrib_name, uint32_t vertex_index, const cmesh::SimpleMesh& mesh);
+  float4 vertex_attrib_by_index_f4(const std::string &attrib_name, uint32_t vertex_index, const cmesh_hapi::SimpleMesh& mesh);
+  float2 vertex_attrib_by_index_f2(const std::string &attrib_name, uint32_t vertex_index, const cmesh_hapi::SimpleMesh& mesh);
 };
 
-void smooth_common_vertex_attributes(uint32_t vertex_index, const cmesh::SimpleMesh& mesh, float4 &pos, float4 &normal,
+void smooth_common_vertex_attributes(uint32_t vertex_index, const cmesh_hapi::SimpleMesh& mesh, float4 &pos, float4 &normal,
                                      float4 &tangent, float2 &uv)
 {
   auto neighbours  = find_vertex_neighbours(vertex_index, mesh);

@@ -684,8 +684,8 @@ static std::vector<T, aligned<T, 16> > ReadAlignedArrayFromMeshNode(pugi::xml_no
 
 
 const std::wstring GetRealFilePathOfDelayedMesh(pugi::xml_node a_node);
-void HR_CopyMeshToInputMeshFromHydraGeomData(const HydraGeomData& data, cmesh::SimpleMesh& mesh2,
-  cmesh::TANG_ALGORITHMS tangent_comp_alg = cmesh::TANG_ALGORITHMS::TANG_MIKEY);
+void HR_CopyMeshToInputMeshFromHydraGeomData(const HydraGeomData& data, cmesh_hapi::SimpleMesh& mesh2,
+  cmesh_hapi::TANG_ALGORITHMS tangent_comp_alg = cmesh_hapi::TANG_ALGORITHMS::TANG_MIKEY);
 
 void OpenHRMesh(HRMesh* pMesh, pugi::xml_node nodeXml)
 {
@@ -1149,7 +1149,7 @@ static void AddCustomAttributesFromPointers(HRMesh* pMesh, int maxVertexId)
   for (auto ptrs : pMesh->m_inputPointers.customVertPointers)
   {
     {
-      cmesh::SimpleMesh::CustArray arr;
+      cmesh_hapi::SimpleMesh::CustArray arr;
       arr.name  = ptrs.name;
       arr.depth = (ptrs.stride == 3) ? 4 : ptrs.stride;
       arr.apply = 0; // per vertex
@@ -1617,7 +1617,7 @@ void hrMeshComputeNormals(HRMeshRef a_mesh, const int indexNum, bool useFaceNorm
 		return;
 	}
 
-  cmesh::ComputeNormals(pMesh->m_input, indexNum, useFaceNormals);
+  cmesh_hapi::ComputeNormals(pMesh->m_input, indexNum, useFaceNormals);
 }
 
 HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, int indexNum)
@@ -1635,7 +1635,7 @@ HAPI void hrMeshComputeTangents(HRMeshRef a_mesh, int indexNum)
     return;
   }
 
-  cmesh::ComputeTangents(pMesh->m_input, pMesh->m_input.IndicesNum());
+  cmesh_hapi::ComputeTangents(pMesh->m_input, pMesh->m_input.IndicesNum());
 
 }
 

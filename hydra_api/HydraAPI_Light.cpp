@@ -174,9 +174,9 @@ HAPI void hrLightClose(HRLightRef a_pLight)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static cmesh::SimpleMesh CreateSphereMeshForLight(int a_matId, float radius, int numberSlices)
+static cmesh_hapi::SimpleMesh CreateSphereMeshForLight(int a_matId, float radius, int numberSlices)
 {
-  cmesh::SimpleMesh sphere;
+  cmesh_hapi::SimpleMesh sphere;
 
   int i, j;
 
@@ -243,12 +243,12 @@ static cmesh::SimpleMesh CreateSphereMeshForLight(int a_matId, float radius, int
   return sphere;
 }
 
-static cmesh::SimpleMesh CreateRectMeshForLight(int a_matId, float2 size)
+static cmesh_hapi::SimpleMesh CreateRectMeshForLight(int a_matId, float2 size)
 {
   const int numVert    = 4;
   const int numIndices = 6;
 
-  cmesh::SimpleMesh mesh;
+  cmesh_hapi::SimpleMesh mesh;
   mesh.Resize(numVert, numIndices);
 
   float4* vertPos  = (float4*)mesh.vPos4f.data();
@@ -279,7 +279,7 @@ static cmesh::SimpleMesh CreateRectMeshForLight(int a_matId, float2 size)
   return mesh;
 }
 
-static cmesh::SimpleMesh CreateDiskMeshForLight(int a_matId, float a_radius)
+static cmesh_hapi::SimpleMesh CreateDiskMeshForLight(int a_matId, float a_radius)
 {
   const int numVertOld    = 128;
   const int numIndicesOld = numVertOld * 3;
@@ -289,7 +289,7 @@ static cmesh::SimpleMesh CreateDiskMeshForLight(int a_matId, float a_radius)
 
   const int LAST_VERT = numVertOld;
 
-  cmesh::SimpleMesh mesh;
+  cmesh_hapi::SimpleMesh mesh;
   mesh.Resize(numVert, numIndices);
 
   float4* vertPos  = (float4*)mesh.vPos4f.data();
@@ -341,7 +341,7 @@ static cmesh::SimpleMesh CreateDiskMeshForLight(int a_matId, float a_radius)
   return mesh;
 }
 
-static cmesh::SimpleMesh CreateCylinderMeshForLight(int a_matId, float a_radius, float a_height, float a_angle, int a_numberSlices)
+static cmesh_hapi::SimpleMesh CreateCylinderMeshForLight(int a_matId, float a_radius, float a_height, float a_angle, int a_numberSlices)
 {
   const float DEG_TO_RAD     = float(3.14159265358979323846f) / 180.0f;
   const float partOfCircle   = a_angle / 360.0f;
@@ -353,7 +353,7 @@ static cmesh::SimpleMesh CreateCylinderMeshForLight(int a_matId, float a_radius,
   const int numVert    = (numberSliceZ+1)*(numberSliceX+1);
   const int numIndices = numberSliceZ*numberSliceX*6;
 
-  cmesh::SimpleMesh mesh;
+  cmesh_hapi::SimpleMesh mesh;
   mesh.Resize(numVert, numIndices);
   
   float4* vertPos  = (float4*)mesh.vPos4f.data();
@@ -461,7 +461,7 @@ HRMaterialRef HR_UpdateLightMaterial(pugi::xml_node a_lightNode, const std::wstr
   return emissiveMtl;
 }
 
-HRMeshRef HR_UpdateLightMesh(const std::wstring& a_meshName, const cmesh::SimpleMesh& lmesh, const std::wstring& lightIdS)
+HRMeshRef HR_UpdateLightMesh(const std::wstring& a_meshName, const cmesh_hapi::SimpleMesh& lmesh, const std::wstring& lightIdS)
 {
   pugi::xml_node geomlib  = g_objManager.scnData.m_geometryLib;                             // #TODO: accelerate linear search
   pugi::xml_node geomNode = geomlib.find_child_by_attribute(L"light_id", lightIdS.c_str()); // #TODO: accelerate linear search
@@ -515,7 +515,7 @@ bool HR_UpdateLightGeomAndMaterial(pugi::xml_node a_lightNode, const std::wstrin
 
   // update light mesh (2)
   //
-  cmesh::SimpleMesh lmesh;
+  cmesh_hapi::SimpleMesh lmesh;
   {
     if (a_shape == L"rect")
     {

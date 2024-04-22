@@ -111,7 +111,7 @@ struct HRMesh : public HRObject<IHRMesh>
     const int* mindices;
   };
 
-  cmesh::SimpleMesh    m_input;
+  cmesh_hapi::SimpleMesh    m_input;
   InputTriMeshPointers m_inputPointers;
   int                  m_allMeshMatId;
   bool                 m_empty;

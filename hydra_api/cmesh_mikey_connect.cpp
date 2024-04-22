@@ -5,14 +5,14 @@
 
 #include "../utils/mikktspace/mikktspace.h"
 
-namespace cmesh
+namespace cmesh_hapi
 {
   // ***************************************************************** Mikey Tangent Space Calc *****************************************************************
 
   // Return number of primitives in the geometry.
   int getNumFaces(const SMikkTSpaceContext *context)
   {
-    auto *pInput = static_cast <cmesh::SimpleMesh*> (context->m_pUserData);
+    auto *pInput = static_cast <cmesh_hapi::SimpleMesh*> (context->m_pUserData);
   
     return int(pInput->indices.size()/3);
   }
@@ -26,7 +26,7 @@ namespace cmesh
   // Write 3-float position of the vertex's point.
   void getPosition(const SMikkTSpaceContext *context, float outpos[], const int primnum, const int vtxnum)
   {
-    auto *pInput = static_cast <cmesh::SimpleMesh*> (context->m_pUserData);
+    auto *pInput = static_cast <cmesh_hapi::SimpleMesh*> (context->m_pUserData);
     auto index   = pInput->indices.at(primnum * 3 + vtxnum);
 
     outpos[0] = pInput->vPos4f.at(index * 4 + 0);
@@ -37,7 +37,7 @@ namespace cmesh
   // Write 3-float vertex normal.
   void getNormal(const SMikkTSpaceContext *context, float outnormal[], const int primnum, const int vtxnum)
   {
-    auto *pInput = static_cast <cmesh::SimpleMesh*> (context->m_pUserData);
+    auto *pInput = static_cast <cmesh_hapi::SimpleMesh*> (context->m_pUserData);
     auto index   = pInput->indices.at(primnum * 3 + vtxnum);
   
     outnormal[0] = pInput->vNorm4f.at(index * 4 + 0);
@@ -48,7 +48,7 @@ namespace cmesh
   // Write 2-float vertex uv.
   void getTexCoord(const SMikkTSpaceContext *context, float outuv[], const int primnum, const int vtxnum)
   {
-    auto *pInput = static_cast <cmesh::SimpleMesh*> (context->m_pUserData);
+    auto *pInput = static_cast <cmesh_hapi::SimpleMesh*> (context->m_pUserData);
     auto index   = pInput->indices.at(primnum * 3 + vtxnum);
   
     outuv[0] = pInput->vTexCoord2f.at(index * 2 + 0);
@@ -62,7 +62,7 @@ namespace cmesh
                       const int primnum,
                       const int vtxnum)
   {
-    auto *pInput = static_cast <cmesh::SimpleMesh*> (context->m_pUserData);
+    auto *pInput = static_cast <cmesh_hapi::SimpleMesh*> (context->m_pUserData);
     auto index   = pInput->indices.at(primnum * 3 + vtxnum);
   
     pInput->vTang4f.at(index * 4 + 0) = tangentu[0];
@@ -80,7 +80,7 @@ namespace cmesh
                  const int primnum,
                  const int vtxnum)
   {
-    auto *pInput = static_cast <cmesh::SimpleMesh*> (context->m_pUserData);
+    auto *pInput = static_cast <cmesh_hapi::SimpleMesh*> (context->m_pUserData);
     auto index   = pInput->indices[primnum * 3 + vtxnum];
   
     pInput->vTang4f[index * 4 + 0] = tangentu[0];
@@ -89,7 +89,7 @@ namespace cmesh
     pInput->vTang4f[index * 4 + 3] = 1.0f;
   }
 
-  void MikeyTSpaceCalc(cmesh::SimpleMesh* pInput, bool basic)
+  void MikeyTSpaceCalc(cmesh_hapi::SimpleMesh* pInput, bool basic)
   { 
     assert(pInput != nullptr);
   

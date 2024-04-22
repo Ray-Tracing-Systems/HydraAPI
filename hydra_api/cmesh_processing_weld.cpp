@@ -9,7 +9,7 @@ using LiteMath::float2;
 #include <fstream>
 #include <unordered_map>
 
-namespace cmesh
+namespace cmesh_hapi
 {
   struct vertex_cache
   {
@@ -66,7 +66,7 @@ namespace cmesh
       }
   };
 
-  float4 vertex_attrib_by_index_f4(const std::string &attrib_name, uint32_t vertex_index, const cmesh::SimpleMesh& mesh)
+  float4 vertex_attrib_by_index_f4(const std::string &attrib_name, uint32_t vertex_index, const cmesh_hapi::SimpleMesh& mesh)
   {
     float4 res;
     if(attrib_name == "pos")
@@ -96,7 +96,7 @@ namespace cmesh
     attrib_vec.at(vertex_index * 4 + 3) = new_val.w;
   }
 
-  float2 vertex_attrib_by_index_f2(const std::string &attrib_name, uint32_t vertex_index, const cmesh::SimpleMesh& mesh)
+  float2 vertex_attrib_by_index_f2(const std::string &attrib_name, uint32_t vertex_index, const cmesh_hapi::SimpleMesh& mesh)
   {
     float2 res;
     if(attrib_name == "uv")
@@ -117,11 +117,11 @@ namespace cmesh
 
 
 
-void cmesh::WeldVertices(cmesh::SimpleMesh& mesh, int indexNum)
+void cmesh_hapi::WeldVertices(cmesh_hapi::SimpleMesh& mesh, int indexNum)
 {
   std::vector<uint32_t> indices_new;
   //std::unordered_map<float3, uint32_t, float3_hash, pos_eq> vertex_hash;
-  std::unordered_map<vertex_cache, uint32_t, cmesh::vertex_cache_hash, cmesh::vertex_cache_eq> vertex_hash;
+  std::unordered_map<vertex_cache, uint32_t, cmesh_hapi::vertex_cache_hash, cmesh_hapi::vertex_cache_eq> vertex_hash;
 
   std::vector<float> vertices_new(mesh.vPos4f.size()*2, 0.0f);
   std::vector<float> normals_new(mesh.vNorm4f.size()*2, 0.0f);

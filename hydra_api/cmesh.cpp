@@ -7,7 +7,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void cmesh::SimpleMesh::Resize(int a_vertNum, int a_indNum)
+void cmesh_hapi::SimpleMesh::Resize(int a_vertNum, int a_indNum)
 {
   vPos4f.resize(a_vertNum*4);
   vNorm4f.resize(a_vertNum*4);
@@ -17,7 +17,7 @@ void cmesh::SimpleMesh::Resize(int a_vertNum, int a_indNum)
   matIndices.resize(a_indNum/PolySize()); 
 }
 
-void cmesh::SimpleMesh::Clear()
+void cmesh_hapi::SimpleMesh::Clear()
 {
   vPos4f.clear();
   vNorm4f.clear();
@@ -28,7 +28,7 @@ void cmesh::SimpleMesh::Clear()
   customArrays.clear();
 }
 
-void cmesh::SimpleMesh::FreeMem()
+void cmesh_hapi::SimpleMesh::FreeMem()
 {
   vPos4f      = std::vector<float, aligned<float,16> >();
   vNorm4f     = std::vector<float, aligned<float,16> >();
@@ -45,7 +45,7 @@ size_t align_to_16(size_t type_size, size_t N)
   return (requested % 16) / type_size + N;
 }
 
-void cmesh::SimpleMesh::Reserve(size_t vNum, size_t indNum)
+void cmesh_hapi::SimpleMesh::Reserve(size_t vNum, size_t indNum)
 {
   vPos4f.reserve (align_to_16(sizeof(float), vNum * 4 + 10));
   vNorm4f.reserve(align_to_16(sizeof(float), vNum * 4 + 10));
@@ -92,7 +92,7 @@ std::vector<uint32_t> CreateQuadTriIndices(const int a_sizeX, const int a_sizeY)
   return indicesData;
 }
 
-cmesh::SimpleMesh cmesh::CreateQuad(const int a_sizeX, const int a_sizeY, const float a_size)
+cmesh_hapi::SimpleMesh cmesh_hapi::CreateQuad(const int a_sizeX, const int a_sizeY, const float a_size)
 {
   const int vertNumX = a_sizeX + 1;
   const int vertNumY = a_sizeY + 1;
@@ -100,7 +100,7 @@ cmesh::SimpleMesh cmesh::CreateQuad(const int a_sizeX, const int a_sizeY, const 
   const int quadsNum = a_sizeX*a_sizeY;
   const int vertNum  = vertNumX*vertNumY;
 
-  cmesh::SimpleMesh res(vertNum, quadsNum*2*3);
+  cmesh_hapi::SimpleMesh res(vertNum, quadsNum*2*3);
 
   const float edgeLength  = a_size / float(a_sizeX);
   const float edgeLength2 = sqrtf(2.0f)*edgeLength;
@@ -140,7 +140,7 @@ cmesh::SimpleMesh cmesh::CreateQuad(const int a_sizeX, const int a_sizeY, const 
   return res;
 }
 
-cmesh::SimpleMesh cmesh::LoadMeshFromVSGF(const char* a_fileName)
+cmesh_hapi::SimpleMesh cmesh_hapi::LoadMeshFromVSGF(const char* a_fileName)
 {
   std::ifstream input(a_fileName, std::ios::binary);
   if(!input.is_open())

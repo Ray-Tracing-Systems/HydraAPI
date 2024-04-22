@@ -678,8 +678,8 @@ HRMeshDriverInput HR_GetMeshDataPointers(size_t a_meshId)
 
 std::vector<HRBatchInfo> FormMatDrawListRLE(const std::vector<uint32_t>& matIndices);
 
-void HR_CopyMeshToInputMeshFromHydraGeomData(const HydraGeomData& data,  cmesh::SimpleMesh& mesh2,
-  cmesh::TANG_ALGORITHMS tangent_comp_alg)
+void HR_CopyMeshToInputMeshFromHydraGeomData(const HydraGeomData& data,  cmesh_hapi::SimpleMesh& mesh2,
+  cmesh_hapi::TANG_ALGORITHMS tangent_comp_alg)
 {
   HydraGeomData::Header header = data.getHeader();
   const bool dontHaveTangents  = (header.flags & HydraGeomData::HAS_TANGENT)    == 0;
@@ -739,17 +739,17 @@ void UpdateMeshFromChunk(int32_t a_id, HRMesh& mesh, std::vector<HRBatchInfo>& a
     isOBJ = std::find(obj_extensions.begin(), obj_extensions.end(), tail) != obj_extensions.end();
   }
 
-  cmesh::TANG_ALGORITHMS tang_alg = cmesh::TANG_ALGORITHMS::TANG_MIKEY;
+  cmesh_hapi::TANG_ALGORITHMS tang_alg = cmesh_hapi::TANG_ALGORITHMS::TANG_MIKEY;
   if (nodeXML.attribute(L"tangent_computation"))
   {
     std::wstring tang_str = nodeXML.attribute(L"tangent_computation").as_string();
     if (tang_str == L"simple")
-      tang_alg = cmesh::TANG_ALGORITHMS::TANG_SIMPLE;
+      tang_alg = cmesh_hapi::TANG_ALGORITHMS::TANG_SIMPLE;
   }
 
   HRMeshDriverInput input   {};
   HydraGeomData     data    {};
-  cmesh::SimpleMesh tmpMesh {};
+  cmesh_hapi::SimpleMesh tmpMesh {};
   if (isOBJ)
   {
     HR_LoadDataFromOBJ(path, {}, data);
