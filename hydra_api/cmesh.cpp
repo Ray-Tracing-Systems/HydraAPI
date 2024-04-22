@@ -39,23 +39,29 @@ void cmesh::SimpleMesh::FreeMem()
   customArrays.clear();                       /// its a vector of vectors
 }
 
+size_t align_to_16(size_t type_size, size_t N)
+{
+  size_t requested = type_size * N;
+  return (requested % 16) / type_size + N;
+}
+
 void cmesh::SimpleMesh::Reserve(size_t vNum, size_t indNum)
 {
-  vPos4f.reserve (vNum * 4 + 10);
-  vNorm4f.reserve(vNum * 4 + 10);
-  vTang4f.reserve(vNum * 4 + 10);
-  vTexCoord2f.reserve(vNum * 2 + 10);
+  vPos4f.reserve (align_to_16(sizeof(float), vNum * 4 + 10));
+  vNorm4f.reserve(align_to_16(sizeof(float), vNum * 4 + 10));
+  vTang4f.reserve(align_to_16(sizeof(float), vNum * 4 + 10));
+  vTexCoord2f.reserve(align_to_16(sizeof(float), vNum * 2 + 10));
   
   if(indices.capacity() < indNum + 10)
-    indices.reserve(indNum + 10);
+    indices.reserve(align_to_16(sizeof(uint32_t), indNum + 10));
   
   if(matIndices.capacity() < indNum / PolySize() + 10) 
-    matIndices.reserve(indNum / PolySize() + 10);     
+    matIndices.reserve(align_to_16(sizeof(uint32_t), indNum / PolySize() + 10));     
   
   for (auto& arr : customArrays)
   {
-    arr.idata.reserve(1*vNum);
-    arr.fdata.reserve(4*vNum);
+    arr.idata.reserve(align_to_16(sizeof(uint32_t), 1*vNum));
+    arr.fdata.reserve(align_to_16(sizeof(float), 4*vNum));
   }
 }
 

@@ -127,10 +127,10 @@ struct HRDriverInfo
   bool supportMeshLoadFromInternalFormat;
   bool supportLighting;
   bool createsLightGeometryItself;
+  int64_t memTotal = 0l;
   bool supportGetFrameBufferLine;
   bool supportUtilityPrepass;
   bool supportDisplacement;
-  int64_t memTotal = 0l;
 
   std::wstring driverName = L"";
 
