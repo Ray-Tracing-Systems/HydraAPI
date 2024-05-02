@@ -157,6 +157,19 @@ HRMaterial* HRObjectManager::PtrById(HRMaterialRef a_ref)
     return &scnData.materials[a_ref.id];
 }
 
+HRSpectrum* HRObjectManager::PtrById(HRSpectrumRef a_ref)
+{
+  if (scnData.spectra.empty())
+    return nullptr;
+  else if (a_ref.id < 0 || a_ref.id >= (int)scnData.spectra.size())
+  {
+    HrError(L"Invalid HRSpectrumRef, id = ", a_ref.id);
+    return nullptr;
+  }
+  else
+    return &scnData.spectra[a_ref.id];
+}
+
 HRCamera* HRObjectManager::PtrById(HRCameraRef a_ref)
 {
   if (scnData.cameras.empty())

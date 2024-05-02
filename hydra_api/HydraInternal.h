@@ -111,6 +111,12 @@ struct IHRMat : public IHRObject
   virtual ~IHRMat() = default;
 };
 
+struct IHRSpec : public IHRObject
+{
+  IHRSpec()          = default;
+  virtual ~IHRSpec() = default;
+};
+
 struct IHRCam : public IHRObject
 {
   IHRCam()          = default;

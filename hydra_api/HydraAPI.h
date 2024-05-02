@@ -85,6 +85,7 @@ struct HRSceneLibraryInfo
 struct HRMeshRef     { int32_t id; HRMeshRef()     : id(-1) {} }; ///< Mesh  reference
 struct HRLightRef    { int32_t id; HRLightRef()    : id(-1) {} }; ///< Light reference
 struct HRMaterialRef { int32_t id; HRMaterialRef() : id(-1) {} }; ///< Material reference
+struct HRSpectrumRef { int32_t id; HRSpectrumRef() : id(-1) {} }; ///< Spectrum reference
 struct HRCameraRef   { int32_t id; HRCameraRef()   : id(-1) {} }; ///< Camera reference
 
 /**
@@ -593,6 +594,12 @@ If material was not open, this function return reference to empty dummy node. Al
 */
 HAPI pugi::xml_node    hrMaterialParamNode(HRMaterialRef a_matRef);
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+HAPI HRSpectrumRef     hrSpectrumCreateFromFile(const wchar_t* a_fileName);
+
+HAPI HRSpectrumRef     hrSpectrumCreateFromTextures(const wchar_t* a_name, const HRTextureNodeRef* a_textures, const float* a_wavelengths, int a_size);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

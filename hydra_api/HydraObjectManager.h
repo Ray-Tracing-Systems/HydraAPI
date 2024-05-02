@@ -135,6 +135,12 @@ struct HRMaterial : public HRObject<IHRMat>
   std::shared_ptr<IHRMat> pImpl;
 };
 
+struct HRSpectrum : public HRObject<IHRSpec>
+{
+  HRSpectrum() = default;
+  std::shared_ptr<IHRSpec> pImpl;
+};
+
 struct HRCamera : public HRObject<IHRCam>
 {
   HRCamera() = default;
@@ -332,6 +338,7 @@ struct HRSceneData : public HRObject<IHRSceneData>
 
   static const int TEXTURES_RESERVE = 1000;
   static const int MATERIAL_RESERVE = 1000;
+  static const int SPECTRA_RESERVE  = 1000;
   static const int LIGHTS_RESERVE   = 1000;
   static const int CAMERAS_RESERVE  = 100;
   static const int MESHES_RESERVE   = 10000;
@@ -344,6 +351,7 @@ struct HRSceneData : public HRObject<IHRSceneData>
   std::vector<HRMesh>        meshes;
   std::vector<HRLight>       lights;
   std::vector<HRMaterial>    materials;
+  std::vector<HRSpectrum>    spectra;
   std::vector<HRCamera>      cameras;
   std::vector<HRTextureNode> textures;
   VirtualBuffer              m_vbCache;
@@ -351,6 +359,7 @@ struct HRSceneData : public HRObject<IHRSceneData>
   pugi::xml_document         m_xmlDoc;
   pugi::xml_node             m_texturesLib;
   pugi::xml_node             m_materialsLib;
+  pugi::xml_node             m_spectraLib;
   pugi::xml_node             m_lightsLib;
   pugi::xml_node             m_cameraLib;
   pugi::xml_node             m_geometryLib;
@@ -358,6 +367,7 @@ struct HRSceneData : public HRObject<IHRSceneData>
   pugi::xml_node             m_settingsNode;
 
   std::unordered_map<std::wstring, int32_t>      m_textureCache;
+  std::unordered_map<std::wstring, int32_t>      m_spectraCache;
   std::unordered_map<std::wstring, std::wstring> m_iesCache;
 
   // dependency data
@@ -511,6 +521,7 @@ struct HRObjectManager
   HRMesh*        PtrById(HRMeshRef a_ref);
   HRLight*       PtrById(HRLightRef a_ref);
   HRMaterial*    PtrById(HRMaterialRef a_ref);
+  HRSpectrum*    PtrById(HRSpectrumRef a_ref);
   HRCamera*      PtrById(HRCameraRef a_ref);
   HRTextureNode* PtrById(HRTextureNodeRef a_ref);
   HRSceneInst*   PtrById(HRSceneInstRef a_ref);
@@ -533,6 +544,7 @@ struct HRObjectManager
 
   inline pugi::xml_node textures_lib_append_child()  { return scnData.m_texturesLib.append_child(L"texture"); }
   inline pugi::xml_node materials_lib_append_child() { return scnData.m_materialsLib.append_child(L"material"); }
+  inline pugi::xml_node spectra_lib_append_child()   { return scnData.m_spectraLib.append_child(L"spectrum"); }
   inline pugi::xml_node lights_lib_append_child()    { return scnData.m_lightsLib.append_child(L"light"); }
   inline pugi::xml_node camera_lib_append_child()    { return scnData.m_cameraLib.append_child(L"camera"); }
 

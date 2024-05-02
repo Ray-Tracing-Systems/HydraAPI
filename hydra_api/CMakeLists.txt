@@ -14,6 +14,7 @@ set(SOURCE_FILES
         HydraAPI_Light.cpp
         HydraAPI_LoadExistingLibrary.cpp
         HydraAPI_Material.cpp
+        HydraAPI_Spectrum.cpp
         HydraAPI_Texture.cpp
         HydraAPI_TextureProcLex.cpp
         HydraAPI_EXR.cpp
