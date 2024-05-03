@@ -217,14 +217,29 @@ HAPI void _hrMeshInstanceFromNode(HRSceneInstRef a_pScn, pugi::xml_node a_node)
     model.remapListId = a_node.attribute(L"rmap_id").as_int();
 
   /////////////////////////////////////////////////////////////////////////////////////////////
-  const wchar_t* matString = a_node.attribute(L"matrix").as_string();
-  std::wstringstream matStream(matString);
-  float a_mat[16];
-  for (int i = 0; i < 16; i++)
-    matStream >> a_mat[i];
+  {
+    const wchar_t* matString = a_node.attribute(L"matrix").as_string();
+    std::wstringstream matStream(matString);
+    float a_mat[16];
+    for (int i = 0; i < 16; i++)
+      matStream >> a_mat[i];
+
+    memcpy(model.m, a_mat, 16 * sizeof(float));
+  }
   /////////////////////////////////////////////////////////////////////////////////////////////
 
-  memcpy(model.m, a_mat, 16 * sizeof(float));
+  auto motionNode = a_node.child(L"motion");
+  if(motionNode)
+  {
+    const wchar_t* matString = motionNode.attribute(L"matrix").as_string();
+    std::wstringstream matStream(matString);
+    float a_mat[16];
+    for (int i = 0; i < 16; i++)
+      matStream >> a_mat[i];
+
+    memcpy(model.m_end, a_mat, 16 * sizeof(float));
+  }
+
   pScn->drawList.push_back(model);
 }
 

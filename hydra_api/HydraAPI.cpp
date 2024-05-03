@@ -487,6 +487,17 @@ HAPI void hrSceneClose(HRSceneInstRef a_pScn)
     nodeXML.append_attribute(L"scn_sid") = scn_sid.c_str();
     nodeXML.append_attribute(L"matrix")  = mstr.c_str();
 
+    if(elem.is_moving)
+    {
+      std::wstringstream outMat;
+      for (int j = 0; j < 16;j++)
+        outMat << elem.m_end[j] << L" ";
+
+      std::wstring mstr = outMat.str();
+      auto motionNode = nodeXML.append_child(L"motion");
+      motionNode.append_attribute(L"matrix").set_value(mstr.c_str());
+    }
+
     nodeXML.append_copy(elem.node);
   }
 
@@ -628,6 +639,99 @@ HAPI int hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh,
     auto mat  = LiteMath::float4x4(a_mat);
     auto inst_bbox = transformBBox(bbox, mat);
     pScn->m_bbox = mergeBBoxes(pScn->m_bbox, inst_bbox);
+  }
+
+  return int(pScn->drawList.size() - 1); // number current instance
+}
+
+HAPI int hrMeshInstanceMotion(HRSceneInstRef a_pScn, HRMeshRef a_pMesh, 
+                              float a_start[16], float a_end[16], 
+                              const int32_t* a_mmListm, int32_t a_mmListSize)
+{
+  HRSceneInst* pScn = g_objManager.PtrById(a_pScn);
+  HRMesh*     pMesh = g_objManager.PtrById(a_pMesh);
+
+  if (pScn == nullptr)
+  {
+    HrError(L"hrMeshInstance: nullptr input");
+    return 0;
+  }
+
+  if (!pScn->opened)
+  {
+    HrError(L"hrMeshInstance: scene is not opened");
+    return 0;
+  }
+
+  if (a_pMesh.id == -1 || pMesh == nullptr)
+  {
+    HrError(L"hrMeshInstance: mesh with id == -1");
+    return -1;
+  }
+
+  if(pMesh->m_empty)
+  {
+    HrPrint(HR_SEVERITY_WARNING, L"hrMeshInstance: empty mesh with id = ", a_pMesh.id);
+    return -1;
+  }
+
+
+  int32_t mmId = -1;
+
+  if (a_mmListm != nullptr && a_mmListSize > 0 && a_mmListSize%2 == 0) // create new material remap list
+  {
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// sort remap list by
+    struct Int2
+    {
+      int32_t from;
+      int32_t to;
+    };
+
+    std::vector<Int2> rempListSorted(a_mmListSize/2);
+    memcpy(&rempListSorted[0], a_mmListm, a_mmListSize * sizeof(int));
+
+    std::sort(rempListSorted.begin(), rempListSorted.end(), [](Int2 a, Int2 b) -> bool { return a.from < b.from; });
+    a_mmListm = (const int32_t*)&rempListSorted[0];
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// sort remap list by
+
+    uint64_t hash = XXH64(a_mmListm, a_mmListSize*sizeof(int32_t), 459662034736); // compute xx hash of material list
+    
+    auto p = pScn->m_remapCache.find(hash);
+    if (p == pScn->m_remapCache.end())
+    {
+      std::vector<int32_t> data(a_mmListm, a_mmListm + a_mmListSize);
+      pScn->m_remapList.push_back(data);
+
+      mmId = int32_t(pScn->m_remapList.size()) - 1;
+      pScn->m_remapCache[hash] = mmId;
+    }
+    else
+      mmId = p->second;
+  }
+
+  HRSceneInst::Instance model;
+  model.meshId                                  = a_pMesh.id;
+  model.remapListId                             = mmId;                
+  memcpy(model.m,     a_start, 16 * sizeof(float));
+  memcpy(model.m_end, a_end,   16 * sizeof(float));
+  model.scene_id                                = a_pScn.id;
+  model.scene_sid                               = pScn->instancedScenesCounter;  
+  model.node                                    = pScn->m_pTmpXlmDoc->append_child(L"transform_sequence");
+  model.node.force_attribute(L"transformation") = L"scale * rotation * position";
+  model.node.force_attribute(L"rotation")       = L"Euler in dergees";
+  model.is_moving                               = true;
+  pScn->drawList.push_back(model);
+  
+  if(g_objManager.m_computeBBoxes && pMesh->pImpl != nullptr)
+  {
+    auto bbox = pMesh->pImpl->getBBox();
+    auto mat1  = LiteMath::float4x4(model.m);
+    auto mat2  = LiteMath::float4x4(model.m_end);
+    auto inst_bbox_start = transformBBox(bbox, mat1);
+    auto inst_bbox_end = transformBBox(bbox, mat2);
+    pScn->m_bbox = mergeBBoxes(pScn->m_bbox, inst_bbox_start);
+    pScn->m_bbox = mergeBBoxes(pScn->m_bbox, inst_bbox_end);
   }
 
   return int(pScn->drawList.size() - 1); // number current instance

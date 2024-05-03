@@ -937,6 +937,11 @@ HAPI pugi::xml_node    hrSceneParamNode(HRSceneInstRef a_pScn);
 */
 HAPI int               hrMeshInstance(HRSceneInstRef a_pScn, HRMeshRef a_pMesh, float a_mat[16], 
                                       const int32_t* a_mmListm = nullptr, int32_t a_mmListSize = 0);
+
+
+HAPI int               hrMeshInstanceMotion(HRSceneInstRef a_pScn, HRMeshRef a_pMesh, 
+                                            float a_start[16], float a_end[16],
+                                            const int32_t* a_mmListm = nullptr, int32_t a_mmListSize = 0);
 /**
 \brief like glDrawArraysInstanced, but for lights
 \param a_pScn          - pointer to scene where mesh instances will be inserted

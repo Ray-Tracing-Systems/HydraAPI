@@ -426,15 +426,22 @@ struct HRSceneInst : public HRObject<IHRSceneInst>
   struct Instance
   {
     Instance() : lightInstId(-1), lightId(-1), meshId(-1), remapListId(-1), lightGroupInstId(-1), scene_id(-1),
-                 scene_sid(0)
+                 scene_sid(0), is_moving(false)
     {
       m[0] = 1; m[1] = 0; m[2] = 0; m[3] = 0;
       m[4] = 0; m[5] = 1; m[6] = 0; m[7] = 0;
       m[8] = 0; m[9] = 0; m[10]= 1; m[11]= 0;
       m[12]= 0; m[13]= 0; m[14]= 0; m[15]= 1;
+
+      m_end[0] = 1; m_end[1] = 0; m_end[2] = 0; m_end[3] = 0;
+      m_end[4] = 0; m_end[5] = 1; m_end[6] = 0; m_end[7] = 0;
+      m_end[8] = 0; m_end[9] = 0; m_end[10]= 1; m_end[11]= 0;
+      m_end[12]= 0; m_end[13]= 0; m_end[14]= 0; m_end[15]= 1;
     }
 
+    bool     is_moving;
     float    m[16];
+    float    m_end[16];
     int32_t  lightInstId;
     int32_t  lightId;
     int32_t  meshId;
