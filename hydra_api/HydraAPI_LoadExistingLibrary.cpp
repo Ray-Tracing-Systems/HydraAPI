@@ -70,6 +70,22 @@ HRMaterialRef _hrMaterialCreateFromNode(pugi::xml_node a_node)
   return ref;
 }
 
+HRSpectrumRef _hrSpectrumCreateFromNode(pugi::xml_node a_node)
+{
+  const wchar_t* a_objectName = a_node.attribute(L"name").as_string();
+
+  HRSpectrumRef ref;
+  ref.id = HR_IDType(g_objManager.scnData.spectra.size());
+
+  HRSpectrum spec;
+  spec.name = std::wstring(a_objectName);
+  spec.id = ref.id;
+  g_objManager.scnData.spectra.push_back(spec);
+  g_objManager.scnData.spectra[ref.id].update(a_node);
+
+  return ref;
+}
+
 const std::wstring GetRealFilePathOfDelayedMesh(pugi::xml_node a_node)
 {
   const std::wstring dl       = a_node.attribute(L"dl").as_string();
@@ -395,7 +411,13 @@ int32_t _hrSceneLibraryLoad(const wchar_t* a_libPath, int a_stateId, const std::
     if(node.attribute(L"id") != nullptr)
       _hrTexture2DCreateFromNode(node);
 
-  // (4) load materials
+  // (4.1) load spectra
+  //
+  for (pugi::xml_node node = g_objManager.scnData.m_spectraLib.first_child(); node != nullptr; node = node.next_sibling())
+    if(node.attribute(L"id") != nullptr)
+      _hrSpectrumCreateFromNode(node);
+
+  // (4.2) load materials
   //
   for (pugi::xml_node node = g_objManager.scnData.m_materialsLib.first_child(); node != nullptr; node = node.next_sibling())
     if(node.attribute(L"id") != nullptr)

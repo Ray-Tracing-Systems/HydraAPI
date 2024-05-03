@@ -82,6 +82,7 @@ void HRObjectManager::destroy()
 	scnData.m_geometryLib  = pugi::xml_node();
 	scnData.m_settingsNode = pugi::xml_node();
 	scnData.m_sceneNode    = pugi::xml_node();
+  scnData.m_spectraLib   = pugi::xml_node();
 
 	scnData.m_vbCache.Destroy();
 
@@ -263,6 +264,7 @@ void clear_node_childs(pugi::xml_node a_xmlNode)
 void HRSceneData::init(bool a_attachMode, HRSystemMutex* a_pVBSysMutexLock, size_t a_vbSize)
 {
   m_texturesLib  = m_xmlDoc.append_child(L"textures_lib");
+  m_spectraLib   = m_xmlDoc.append_child(L"spectra_lib");
   m_materialsLib = m_xmlDoc.append_child(L"materials_lib");
   m_geometryLib  = m_xmlDoc.append_child(L"geometry_lib");
   m_lightsLib    = m_xmlDoc.append_child(L"lights_lib");
