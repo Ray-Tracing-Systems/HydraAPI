@@ -99,7 +99,7 @@ HAPI HRSpectrumRef hrSpectrumCreateFromTextures(const wchar_t* a_name, const HRT
     }
     ws << a_wavelengths[i] << L" " << a_textures[i].id << L" ";
   }
-
+  attr.set_value(ws.str().c_str());
   g_objManager.scnData.spectra[ref.id].update(specNodeXml);
 
   return ref;
