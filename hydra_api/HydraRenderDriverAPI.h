@@ -182,6 +182,9 @@ struct HRMeshDriverInput
   const char*  allData;
 };
 
+#ifdef AllocAll
+#undef AllocAll
+#endif
 
 /** \brief Basic Render Driver.
 *
