@@ -923,6 +923,14 @@ HAPI void hrRenderOpen(HRRenderRef a_pRender, HR_OPEN_MODE a_mode)
     return;
   }
   
+  if (a_mode == HR_WRITE_DISCARD)
+  {
+    auto nodeXML = pSettings->xml_node();
+    clear_node_childs(nodeXML);
+    nodeXML.append_attribute(L"type").set_value(pSettings->name.c_str());
+    nodeXML.append_attribute(L"id").set_value(a_pRender.id);
+  }
+  
   pSettings->opened   = true;
   pSettings->openMode = a_mode;
 }
