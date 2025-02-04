@@ -20,6 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define CRT_TUNSTALL_H
 
 #include <vector>
+#include <cstdint>
 
 
 namespace crt {
