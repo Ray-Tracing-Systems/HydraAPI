@@ -59,10 +59,12 @@ git submodule update
 sudo apt-get install python3-dev
 ```
 3. Build hydra bindings with Cmake (hydra_api/hydra_api_py)
+Specify the path to python, for example in Blender.
  ```shell
 mkdir build
 cd build
-cmake .. -DPYTHON_EXECUTABLE=/path/to/your/python3
+cmake .. -DPython3_EXECUTABLE="c:\Program Files\Blender Foundation\Blender 4.5\4.5\python\bin\python.exe" 
+cmake --build . --config Release
 ```
 4. Import resulting library in your python project
 
